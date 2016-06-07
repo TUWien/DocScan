@@ -23,6 +23,11 @@ public class MainActivity extends AppCompatActivity {
 
         boolean init = OpenCVLoader.initDebug();
 
+        if (init) {
+            System.loadLibrary("wrapper");
+//            System.loadLibrary("openCVLibrary310");
+        }
+        int b = 0;
     }
 
     @Override
@@ -91,10 +96,10 @@ public class MainActivity extends AppCompatActivity {
     private void initCamera() {
 
         // Create an instance of Camera
-        mCamera = Camera.open(0);
+//        mCamera = Camera.open(0);
 
         // Create our Preview view and set it as the content of our activity.
-        mPreview = new CameraPreview(this, mCamera);
+        mPreview = new CameraPreview(this);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
 
