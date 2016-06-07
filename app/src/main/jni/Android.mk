@@ -9,7 +9,10 @@ OPENCV_INSTALL_MODULES:=on
 OPENCV_LIB_TYPE:=SHARED
 include ${OPENCVROOT}/sdk/native/jni/OpenCV.mk
 
+LOCAL_SRC_FILES := NativeWrapper.cpp
 LOCAL_LDLIBS += -llog
-LOCAL_MODULE := JNIpart
+LOCAL_MODULE := wrapper
+LOCAL_CFLAGS += -std=c++11
+LOCAL_LDFLAGS += -ljnigraphics
 
 include $(BUILD_SHARED_LIBRARY)
