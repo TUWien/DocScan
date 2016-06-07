@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.FrameLayout;
 
@@ -14,6 +15,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Camera mCamera;
     private CameraPreview mPreview;
+
+    private static final int PERMISSION_CAMERA = 0;
 
 
     static {
@@ -27,8 +30,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        requestPermission();
-        initCamera();
+        requestPermission();
+//        initCamera();
 
     }
 
@@ -47,10 +50,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestPermission() {
 
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                Manifest.permission.CAMERA)) {
-
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_CONTACTS},
+                    PERMISSION_CAMERA);
         }
+        else
+            initCamera();
+
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+//                Manifest.permission.CAMERA)) {
+//
+//        }
 
     }
 
@@ -59,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                                            String permissions[], int[] grantResults) {
 //        initCamera();
         switch (requestCode) {
-            case 10: {
+            case PERMISSION_CAMERA: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
