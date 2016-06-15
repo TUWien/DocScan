@@ -9,11 +9,13 @@ import org.opencv.core.Mat;
  */
 public class NativeWrapper {
 
-    public static void handleFrame(int width, int height, byte[] nv21Data, Bitmap bitmap) {
+//    public static void handleFrame(int width, int height, byte[] nv21Data, Bitmap bitmap) {
+//
+//        nativeHandleFrame(width, height, nv21Data, bitmap);
+//
+//    }
 
-        nativeHandleFrame(width, height, nv21Data, bitmap);
-
-    }
+    public static native void handleFrame(int width, int height, byte yuv[], int[] rgba);
 
     public static native void nativeHandleFrame(int width, int height, byte[] nv21Data, Bitmap bitmap);
 

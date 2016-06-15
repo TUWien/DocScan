@@ -1,14 +1,15 @@
 package at.ac.tuwien.caa.docscan;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ImageFormat;
-import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Build;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -29,6 +30,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private int mFrameSize;
     private Bitmap mBitmap;
     private int[] mRGBA;
+    private Activity mActivity;
+    private int  frameCounter;
+    private long lastNanoTime;
 
     public CameraPreview(Context context) {
         super(context);
@@ -111,9 +115,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                     }
                 }
 
-                mCamera.setDisplayOrientation(270);
-//                MainActivity.setCameraDisplayOrientation(mCamera);
-
                 params.setPreviewSize(getFrameWidth(), getFrameHeight());
 
                 List<String> FocusModes = params.getSupportedFocusModes();
@@ -121,12 +122,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                     params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
                 }
 
-//                mCamera.setDisplayOrientation(180);
-
-
                 mCamera.setParameters(params);
 
-                /* Now allocate the buffer */
+                /* Allocate the buffer */
                 params = mCamera.getParameters();
                 int size = params.getPreviewSize().width * params.getPreviewSize().height;
                 size = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
@@ -141,18 +139,31 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                     Log.e(TAG, "mCamera.setPreviewDisplay/setPreviewTexture fails: " + e);
                 }
 
-                /* Notify that the preview is about to be started and deliver preview size */
+
                 onPreviewStarted(params.getPreviewSize().width, params.getPreviewSize().height);
 
                 /* Now we can start a preview */
                 try {
+
 //                    MainActivity.setCameraDisplayOrientation(mCamera);
+                    frameCounter = 0;
+                    lastNanoTime = System.nanoTime();
+
                     mCamera.startPreview();
                     Log.d(TAG, "================== camera started ==================");
                 }
                 catch (Exception e) {
                     Log.d(TAG, "!!!!!!!!!!!!!!!!!! camera failed !!!!!!!!!!!!!!!!!!!");
+                    Log.d(TAG, e.getMessage());
                 }
+
+//                try {
+////                    mCamera.setDisplayOrientation(90);
+//                    Log.d(TAG, "orientation set.");
+//                }
+//                catch (Exception e) {
+//                    Log.d(TAG, "failed to set orientation!");
+//                }
             }
         }
     }
@@ -178,21 +189,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mThreadRun = true;
         Log.i(TAG, "Starting processing thread");
         while (mThreadRun) {
-            Bitmap bmp = null;
+
+            Bitmap previewBitmap = null;
 
             synchronized (this) {
-                try {
-                    this.wait();
-                    bmp = processFrame(mFrame);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    this.wait();
+                previewBitmap = getPreviewBitmap(mFrame);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
             }
 
-            if (bmp != null) {
+            if (previewBitmap != null) {
                 Canvas canvas = mHolder.lockCanvas();
                 if (canvas != null) {
-                    canvas.drawBitmap(bmp, (canvas.getWidth() - getFrameWidth()) / 2, (canvas.getHeight() - getFrameHeight()) / 2, null);
+                    canvas.drawBitmap(previewBitmap, (canvas.getWidth() - getFrameWidth()) / 2, (canvas.getHeight() - getFrameHeight()) / 2, null);
                     mHolder.unlockCanvasAndPost(canvas);
                 }
             }
@@ -227,19 +239,65 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     }
 
-    protected Bitmap processFrame(byte[] data) {
+    protected Bitmap getPreviewBitmap(byte[] data) {
+
+        frameCounter++;
+        if(frameCounter >= 30)
+        {
+            int fps = (int) (frameCounter * 1e9 / (System.nanoTime() - lastNanoTime));
+            Log.i(TAG, "FPS: "+ fps + " " + getFrameWidth() +" x " + getFrameHeight());
+
+
+            frameCounter = 0;
+            lastNanoTime = System.nanoTime();
+        }
+
         int[] rgba = mRGBA;
-        FindFeatures(getFrameWidth(), getFrameHeight(), data, rgba);
 
-        Bitmap bmp = mBitmap;
-        bmp.setPixels(rgba, 0/* offset */, getFrameWidth() /* stride */, 0, 0, getFrameWidth(), getFrameHeight());
+        NativeWrapper.handleFrame(getFrameWidth(), getFrameHeight(), data, rgba);
 
-        return bmp;
+        Bitmap previewBitmap = mBitmap;
+        previewBitmap.setPixels(rgba, 0/* offset */, getFrameWidth() /* stride */, 0, 0, getFrameWidth(), getFrameHeight());
+
+        return previewBitmap;
     }
 
-    public native void FindFeatures(int width, int height, byte yuv[], int[] rgba);
+    public void setActivity(Activity activity) {
+
+        mActivity = activity;
+
+    }
+
+    private int getDisplayOrientation() {
+        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
+        }
+        return degrees;
+    }
+
+
+//    public native void FindFeatures(int width, int height, byte yuv[], int[] rgba);
 
 //    static {
 //        System.loadLibrary("opencv-jni");
 //    }
+
+    private native void setup(int width, int height);
+
+    private native void handleFrame(int width, int height, byte[] nv21Data, Bitmap bitmap);
+
+    private native void tearDown();
 }

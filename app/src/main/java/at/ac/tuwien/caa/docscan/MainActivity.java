@@ -61,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         mActivity = this;
 
-        mPreview.openCamera();
+        mPreview.setActivity(this);
+
 
 
     }
@@ -85,11 +86,11 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_CONTACTS},
+                    new String[]{Manifest.permission.CAMERA},
                     PERMISSION_CAMERA);
         }
-//        else
-//            mPreview.openCamera();
+        else
+            mPreview.openCamera();
 //        initCamera();
 
 //            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
@@ -109,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 //                    initCamera();
+                    mPreview.openCamera();
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
 
