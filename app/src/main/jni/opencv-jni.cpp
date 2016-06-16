@@ -5,6 +5,7 @@
 #include <vector>
 #include <android/log.h>
 #include <time.h>
+#include "NativeWrapper.h"
 
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,"opencv-jni",__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,"opencv-jni",__VA_ARGS__)
@@ -15,12 +16,14 @@ using namespace cv;
 double lastTime;
 
 extern "C" {
+/*
 JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_handleFrame(JNIEnv* env, jobject thiz, jint width, jint height, jbyteArray yuv, jintArray bgra)
 {
     jbyte* _yuv  = env->GetByteArrayElements(yuv, 0);
     jint*  _bgra = env->GetIntArrayElements(bgra, 0);
 
     Mat myuv(height + height/2, width, CV_8UC1, (unsigned char *)_yuv);
+
     Mat mbgra(height, width, CV_8UC4, (unsigned char *)_bgra);
     Mat mgray(height, width, CV_8UC1, (unsigned char *)_yuv);
 
@@ -32,13 +35,8 @@ JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_handleFrame(J
 
     vector<KeyPoint> v;
 
-    /*
-    FastFeatureDetector detector(50);
-    detector.detect(mgray, v);
-    for( size_t i = 0; i < v.size(); i++ )
-        circle(mbgra, Point(v[i].pt.x, v[i].pt.y), 10, Scalar(0,0,255,255));
-    */
 
+    circle(mbgra, Point(100, 100), 10, Scalar(0,0,255,255));
 
 
     env->ReleaseIntArrayElements(bgra, _bgra, 0);
@@ -51,6 +49,39 @@ JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_handleFrame(J
 	 double timeDelta = currentTime-lastTime;
 	 lastTime = currentTime;
 	 //LOGI("FPS: %f",timeDelta);
+}
+*/
+JNIEXPORT void Java_at_ac_tuwien_caa_docscan_NativeWrapper_handleFrame2(JNIEnv *env, jobject thiz, jint width, jint height, jbyteArray nv21Data, jobject bitmap)
+{
+    try
+    {
+        // create output rgba-formatted output Mat object using the raw Java data
+        // allocated by the Bitmap object to prevent an extra memcpy. note that
+        // the bitmap must be created in ARGB_8888 format
+        AndroidBitmapAccessor bitmapAccessor(env, bitmap);
+        cv::Mat rgba(height, width, CV_8UC4, bitmapAccessor.getData());
+
+        // create input nv21-formatted input Mat object using the raw Java data to
+        // prevent extraneous allocations. note the use of height*1.5 to account
+        // for the nv21 (YUV420) formatting
+        JavaArrayAccessor< jbyteArray, uchar > nv21Accessor(env, nv21Data);
+        cv::Mat nv21(height * 1.5, width, CV_8UC1, nv21Accessor.getData());
+
+        // initialize the rgba output using the nv21 data
+        cv::cvtColor(nv21, rgba, CV_YUV2RGBA_NV21);
+        circle(rgba, Point(100, 100), 10, Scalar(0,0,255,255));
+
+        // convert the nv21 image to grayscale by lopping off the extra 0.5*height bits. note
+        // this this ctor is smart enough to not actually copy the data
+        cv::Mat gray(nv21, cv::Rect(0, 0, width, height));
+
+        // do your processing on the nv21 and/or grayscale image here, making sure to update the
+        // rgba mat with the appropriate output
+    }
+    catch(const AndroidBitmapAccessorException& e)
+    {
+        LOGE("error locking bitmap: %d", e.code);
+    }
 }
 
 }

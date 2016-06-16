@@ -118,7 +118,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 List<Camera.Size> sizes = params.getSupportedPreviewSizes();
 
                 mFrameWidth = width;
-                mFrameHeight = height;
+//                mFrameHeight = height;
 
                 // selecting optimal camera preview size
                 {
@@ -280,10 +280,11 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         int[] rgba = mRGBA;
 
-        NativeWrapper.handleFrame(getFrameWidth(), getFrameHeight(), data, rgba);
-
         Bitmap previewBitmap = mBitmap;
-        previewBitmap.setPixels(rgba, 0/* offset */, getFrameWidth() /* stride */, 0, 0, getFrameWidth(), getFrameHeight());
+        NativeWrapper.handleFrame2(getFrameWidth(), getFrameHeight(), data, previewBitmap);
+
+//        Bitmap previewBitmap = mBitmap;
+//        previewBitmap.setPixels(rgba, 0/* offset */, getFrameWidth() /* stride */, 0, 0, getFrameWidth(), getFrameHeight());
 
         return previewBitmap;
     }

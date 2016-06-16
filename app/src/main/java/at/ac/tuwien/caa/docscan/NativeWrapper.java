@@ -16,7 +16,8 @@ public class NativeWrapper {
 //    }
 
     public static native void handleFrame(int width, int height, byte yuv[], int[] rgba);
-
+//    public static native void handleFrame2(int width, int height, byte yuv[], int[] rgba);
+    public static native void handleFrame2(int width, int height, byte[] nv21Data, Bitmap bitmap);
     public static native void nativeHandleFrame(int width, int height, byte[] nv21Data, Bitmap bitmap);
 
     public static void logPolar(Mat src, Mat dst, float xCenter, float yCenter, double scaleLog, double scale, double angle) {
