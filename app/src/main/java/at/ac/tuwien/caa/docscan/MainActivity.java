@@ -36,10 +36,30 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);
 
         mPreview = new CameraPreview(this);
         setContentView(mPreview);
+
+
+//        setContentView(R.layout.activity_main);
+//
+//        ImageView i = new ImageView(this);
+//
+//        SurfaceView camView = new SurfaceView(this);
+//        SurfaceHolder camHolder = camView.getHolder();
+//        int PreviewSizeWidth = 640;
+//        int PreviewSizeHeight= 480;
+//
+//        CameraPreview2 camPreview = new CameraPreview2(640, 480, i);
+//
+//        camHolder.addCallback(camPreview);
+//        camHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+//
+//
+//        FrameLayout mainLayout = (FrameLayout) findViewById(R.id.camera_preview);
+//        mainLayout.addView(camView, new LayoutParams(PreviewSizeWidth, PreviewSizeHeight));
+//        mainLayout.addView(i, new LayoutParams(PreviewSizeWidth, PreviewSizeHeight));
 
         requestPermission();
 //        initCamera();
