@@ -7,6 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.opengl.GLES20;
 import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
@@ -33,12 +34,16 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private Activity mActivity;
     private int  frameCounter;
     private long lastNanoTime;
+    private boolean isCameraReady;
 
     public CameraPreview(Context context) {
         super(context);
         mHolder = getHolder();
         mHolder.addCallback(this);
+
         Log.i(TAG, "Instantiated new " + this.getClass());
+
+        isCameraReady = false;
     }
 
     public int getFrameWidth() {
@@ -50,13 +55,20 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void setPreview() throws IOException {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+
             mCamera.setPreviewTexture(new SurfaceTexture(10));
+
+        }
         else
             mCamera.setPreviewDisplay(null);
     }
 
     public boolean openCamera() {
+
         Log.i(TAG, "openCamera");
         releaseCamera();
         mCamera = Camera.open();
@@ -69,14 +81,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         mCamera.setPreviewCallbackWithBuffer(new Camera.PreviewCallback() {
             public void onPreviewFrame(byte[] data, Camera camera) {
+
                 synchronized (CameraPreview.this) {
                     System.arraycopy(data, 0, mFrame, 0, data.length);
                     CameraPreview.this.notify();
                 }
+
                 camera.addCallbackBuffer(mBuffer);
+
             }
         });
         return true;
+
     }
 
     public void releaseCamera() {
@@ -93,7 +109,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         onPreviewStopped();
     }
 
-    public void setupCamera(int width, int height) {
+    public void setupCamera(SurfaceHolder holder, int width, int height) {
+
         Log.i(TAG, "setupCamera");
         synchronized (this) {
             if (mCamera != null) {
@@ -115,6 +132,9 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                     }
                 }
 
+//                mFrameHeight = 432;
+//                mFrameWidth = 768;
+
                 params.setPreviewSize(getFrameWidth(), getFrameHeight());
 
                 List<String> FocusModes = params.getSupportedFocusModes();
@@ -128,16 +148,19 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 params = mCamera.getParameters();
                 int size = params.getPreviewSize().width * params.getPreviewSize().height;
                 size = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
+//                size = 777600;
+                Log.d(TAG, "Size: " + size);
                 mBuffer = new byte[size];
                 /* The buffer where the current frame will be copied */
                 mFrame = new byte[size];
                 mCamera.addCallbackBuffer(mBuffer);
-
-                try {
-                    setPreview();
-                } catch (IOException e) {
-                    Log.e(TAG, "mCamera.setPreviewDisplay/setPreviewTexture fails: " + e);
-                }
+//                try {
+//                    setPreview();
+////                    mCamera.setPreviewDisplay(holder);
+//
+//                } catch (IOException e) {
+//                    Log.e(TAG, "mCamera.setPreviewDisplay/setPreviewTexture fails: " + e);
+//                }
 
 
                 onPreviewStarted(params.getPreviewSize().width, params.getPreviewSize().height);
@@ -150,28 +173,27 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                     lastNanoTime = System.nanoTime();
 
                     mCamera.startPreview();
-                    Log.d(TAG, "================== camera started ==================");
+
                 }
                 catch (Exception e) {
-                    Log.d(TAG, "!!!!!!!!!!!!!!!!!! camera failed !!!!!!!!!!!!!!!!!!!");
                     Log.d(TAG, e.getMessage());
                 }
 
-//                try {
-////                    mCamera.setDisplayOrientation(90);
-//                    Log.d(TAG, "orientation set.");
-//                }
-//                catch (Exception e) {
-//                    Log.d(TAG, "failed to set orientation!");
-//                }
+                try {
+                    setPreview();
+                } catch (IOException e) {
+                    Log.e(TAG, "mCamera.setPreviewDisplay/setPreviewTexture fails: " + e);
+                }
+
             }
         }
     }
 
-    public void surfaceChanged(SurfaceHolder _holder, int format, int width, int height) {
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.i(TAG, "surfaceChanged");
-        setupCamera(width, height);
 
+        isCameraReady = openCamera();
+        setupCamera(holder, width, height);
 
     }
 
@@ -190,22 +212,26 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         Log.i(TAG, "Starting processing thread");
         while (mThreadRun) {
 
-            Bitmap previewBitmap = null;
+            if (mFrame != null) {
 
-            synchronized (this) {
-//                try {
-//                    this.wait();
-                previewBitmap = getPreviewBitmap(mFrame);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-            }
+                Bitmap previewBitmap = null;
 
-            if (previewBitmap != null) {
-                Canvas canvas = mHolder.lockCanvas();
-                if (canvas != null) {
-                    canvas.drawBitmap(previewBitmap, (canvas.getWidth() - getFrameWidth()) / 2, (canvas.getHeight() - getFrameHeight()) / 2, null);
-                    mHolder.unlockCanvasAndPost(canvas);
+                synchronized (this) {
+                    //                try {
+                    //                    this.wait();
+
+                    previewBitmap = getPreviewBitmap(mFrame);
+                    //                } catch (InterruptedException e) {
+                    //                    e.printStackTrace();
+                    //                }
+                }
+
+                if (previewBitmap != null) {
+                    Canvas canvas = mHolder.lockCanvas();
+                    if (canvas != null) {
+                        canvas.drawBitmap(previewBitmap, (canvas.getWidth() - getFrameWidth()) / 2, (canvas.getHeight() - getFrameHeight()) / 2, null);
+                        mHolder.unlockCanvasAndPost(canvas);
+                    }
                 }
             }
         }
