@@ -37,3 +37,8 @@
 .DS_Store
 /build
 /captures
+Android.mk
+/.idea/*
+/gradle/wrapper*
+gradlew
+gradlew.bat
