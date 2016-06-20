@@ -29,5 +29,5 @@ it points to your opencv installation
 
 
 ## Links
-[1] https://sourceforge.net/projects/opencvlibrary/files/opencv-android/3.1.0/OpenCV-3.1.0-android-sdk.zip/download
-[2] https://www.learn2crack.com/2016/03/setup-opencv-sdk-android-studio.html
+- [1] https://sourceforge.net/projects/opencvlibrary/files/opencv-android/3.1.0/OpenCV-3.1.0-android-sdk.zip/download
+- [2] https://www.learn2crack.com/2016/03/setup-opencv-sdk-android-studio.html
