@@ -5,9 +5,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
-import android.opengl.GLES20;
 import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
@@ -35,6 +35,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private int  frameCounter;
     private long lastNanoTime;
     private boolean isCameraReady;
+    private int orientation;
 
     public CameraPreview(Context context) {
         super(context);
@@ -113,6 +114,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         Log.i(TAG, "setupCamera");
         synchronized (this) {
+            mHolder = holder;
             if (mCamera != null) {
                 Camera.Parameters params = mCamera.getParameters();
                 List<Camera.Size> sizes = params.getSupportedPreviewSizes();
@@ -192,14 +194,19 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         Log.i(TAG, "surfaceChanged");
 
-        isCameraReady = openCamera();
+//        releaseCamera();
+//        isCameraReady = openCamera();
+        orientation = getDisplayOrientation();
+
         setupCamera(holder, width, height);
+
+        (new Thread(this)).start();
 
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
         Log.i(TAG, "surfaceCreated");
-        (new Thread(this)).start();
+
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
@@ -216,14 +223,15 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
                 Bitmap previewBitmap = null;
 
+                // Must be synchronized, otherwise the image is not synchronized:
                 synchronized (this) {
-                    //                try {
-                    //                    this.wait();
+//                                    try {
+//                                        this.wait();
 
                     previewBitmap = getPreviewBitmap(mFrame);
-                    //                } catch (InterruptedException e) {
-                    //                    e.printStackTrace();
-                    //                }
+//                                    } catch (InterruptedException e) {
+//                                        e.printStackTrace();
+//                                    }
                 }
 
                 if (previewBitmap != null) {
@@ -247,7 +255,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     protected void onPreviewStarted(int previewWidth, int previewHeight) {
         mFrameSize = previewWidth * previewHeight;
         mRGBA = new int[mFrameSize];
-        mBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888);
+//        if (orientation == 90)
+            mBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Bitmap.Config.ARGB_8888);
+//        else
+//            mBitmap = Bitmap.createBitmap(previewHeight, previewWidth, Bitmap.Config.ARGB_8888);
     }
 
     /**
@@ -281,7 +292,23 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         int[] rgba = mRGBA;
 
         Bitmap previewBitmap = mBitmap;
-        NativeWrapper.handleFrame2(getFrameWidth(), getFrameHeight(), data, previewBitmap);
+//        if (orientation == 0)
+//            NativeWrapper.handleFrame2(getFrameHeight(), getFrameWidth(), data, previewBitmap);
+//        else
+            NativeWrapper.handleFrame2(getFrameWidth(), getFrameHeight(), data, previewBitmap);
+
+//        if (orientation == 0 && previewBitmap != null) {
+//            // create a matrix for the manipulation
+//            Matrix matrix = new Matrix();
+//            // resize the bit map
+////            matrix.postScale(, scaleHeight);
+//            // rotate the Bitmap
+//            matrix.postRotate(90);
+//            previewBitmap = Bitmap.createBitmap(previewBitmap, 0, 0, previewBitmap.getWidth(), previewBitmap.getHeight(), matrix, true);
+//        }
+
+        // recreate the new Bitmap
+//        Bitmap resizedBitmap = Bitmap.createBitmap(bitmapOriginal, 0, 0, widthOriginal, heightOriginal, matrix, true);
 
 //        Bitmap previewBitmap = mBitmap;
 //        previewBitmap.setPixels(rgba, 0/* offset */, getFrameWidth() /* stride */, 0, 0, getFrameWidth(), getFrameHeight());

@@ -56,6 +56,7 @@ public:
         bitmap(bitmap),
         data(NULL)
     {
+
         int rv = AndroidBitmap_lockPixels(env, bitmap, reinterpret_cast< void** >(&data));
         if(rv != ANDROID_BITMAP_RESULT_SUCCESS)
         {

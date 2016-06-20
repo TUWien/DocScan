@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
         mActivity = this;
 
         mPreview.setActivity(this);
+        mPreview.openCamera();
 
 
 
