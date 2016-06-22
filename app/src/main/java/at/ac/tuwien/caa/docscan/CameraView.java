@@ -1,14 +1,10 @@
 package at.ac.tuwien.caa.docscan;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.hardware.Camera;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.ImageView;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -19,6 +15,7 @@ import java.util.List;
 /**
  * Created by fabian on 16.06.2016.
  */
+
 public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback
 {
 
@@ -73,39 +70,13 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     }
 
     private Camera mCamera = null;
-    private ImageView MyCameraPreview = null;
-    private Bitmap bitmap = null;
-    private int[] pixels = null;
-    private byte[] data = null;
-    private int imageFormat;
     private int previewSizeWidth;
     private int previewSizeHeight;
-    private boolean bProcessing = false;
     private SurfaceHolder holder;
     private byte[] mFrame;
     private CameraFrameThread mCameraFrameThread;
 
-    private Handler mHandler;
-
-//    public CameraView(Context context) {
-//
-//        super(context);
-//
-//        holder = getHolder();
-//        holder.addCallback(this);
-//
-//
-//
-//    }
-//
-//    public CameraView(Context context, AttributeSet attrs, int defStyle) {
-//
-//        super(context, attrs, defStyle);
-//
-//        holder = getHolder();
-//        holder.addCallback(this);
-//
-//    }
+    private static String TAG = "CameraView";
 
     public CameraView(Context context, AttributeSet attrs) {
 
@@ -115,7 +86,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         holder = getHolder();
         holder.addCallback(this);
 
-        mCameraFrameThread = new CameraFrameThread(this);
+        mCameraFrameThread = null;
 
     }
 
@@ -123,16 +94,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     public void onPreviewFrame(byte[] pixels, Camera arg1)
     {
         mFrame = pixels;
-//        // At preview mode, the frame data will push to here.
-//        if (imageFormat == ImageFormat.NV21)
-//        {
-//            //We only accept the NV21(YUV420) format.
-//            if ( !bProcessing )
-//            {
-//                data = pixels;
-//                mHandler.post(DoImageProcessing);
-//            }
-//        }
+
     }
 
     public void onPause()
@@ -177,10 +139,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         params.setPreviewSize(previewSizeWidth, previewSizeHeight);
 
-        bitmap = Bitmap.createBitmap(previewSizeWidth, previewSizeHeight, Bitmap.Config.ARGB_8888);
-        pixels = new int[previewSizeWidth * previewSizeHeight];
-
-        imageFormat = params.getPreviewFormat();
 
         mCamera.setParameters(params);
 
@@ -204,8 +162,13 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             mCamera = null;
         }
 
+        mCameraFrameThread = new CameraFrameThread(this);
+
         mCameraFrameThread.setRunning(true);
-        mCameraFrameThread.start();
+        Thread.State state = mCameraFrameThread.getState();
+        // TODO: check why the thread is already started - if the app is restarted. The thread should be dead!
+        if (mCameraFrameThread.getState() == Thread.State.NEW)
+            mCameraFrameThread.start();
     }
 
     @Override
@@ -222,6 +185,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             }
         }
 
+        Thread.State state = mCameraFrameThread.getState();
+
         mCamera.setPreviewCallback(null);
         mCamera.stopPreview();
         mCamera.release();
@@ -235,37 +200,5 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     }
 
 
-    //
-    // Native JNI
-    //
-//    public native boolean ImageProcessing(int width, int height,
-//                                          byte[] NV21FrameData, int [] pixels);
-//    static
-//    {
-//        System.loadLibrary("ImageProcessing");
-//    }
 
-    private Runnable DoImageProcessing = new Runnable()
-    {
-        public void run()
-        {
-//            Log.i("MyRealTimeImageProcessing", "DoImageProcessing():");
-//            bProcessing = true;
-////            NativeWrapper.handleFrame2(PreviewSizeWidth, PreviewSizeHeight, FrameData, pixels);
-////            ImageProcessing(PreviewSizeWidth, PreviewSizeHeight, FrameData, pixels);
-//
-//            bitmap.setPixels(pixels, 0, previewSizeWidth, 0, 0, previewSizeWidth, previewSizeHeight);
-//            MyCameraPreview.setImageBitmap(bitmap);
-//            bProcessing = false;
-
-            Canvas canvas = holder.lockCanvas();
-
-            if (canvas != null) {
-                Bitmap b = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-                canvas.drawBitmap(b, (canvas.getWidth() - previewSizeWidth) / 2, (canvas.getHeight() - previewSizeHeight) / 2, null);
-                holder.unlockCanvasAndPost(canvas);
-            }
-
-        }
-    };
 }
