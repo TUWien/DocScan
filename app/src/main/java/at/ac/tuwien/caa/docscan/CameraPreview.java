@@ -37,6 +37,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     private boolean isCameraReady;
     private int orientation;
 
+    private boolean useBuffer = false;
+
     public CameraPreview(Context context) {
         super(context);
         mHolder = getHolder();
@@ -80,18 +82,41 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             return false;
         }
 
-        mCamera.setPreviewCallbackWithBuffer(new Camera.PreviewCallback() {
-            public void onPreviewFrame(byte[] data, Camera camera) {
+        if (!useBuffer) {
 
-                synchronized (CameraPreview.this) {
-                    System.arraycopy(data, 0, mFrame, 0, data.length);
-                    CameraPreview.this.notify();
+            mCamera.setPreviewCallback(new Camera.PreviewCallback() {
+                public void onPreviewFrame(byte[] arg0, Camera arg1) {
+                    //                // At preview mode, the frame data will push to here.
+                    //                if (imageFormat == ImageFormat.NV21)
+                    //                {
+                    //                    //We only accept the NV21(YUV420) format.
+                    //                    if ( !bProcessing )
+                    //                    {
+                    //                        FrameData = arg0;
+                    //                        mHandler.post(DoImageProcessing);
+                    //                    }
+                    //                }
                 }
+            });
 
-                camera.addCallbackBuffer(mBuffer);
+        }
+        else {
 
-            }
-        });
+            mCamera.setPreviewCallbackWithBuffer(new Camera.PreviewCallback() {
+                public void onPreviewFrame(byte[] data, Camera camera) {
+
+                    synchronized (CameraPreview.this) {
+                        System.arraycopy(data, 0, mFrame, 0, data.length);
+                        CameraPreview.this.notify();
+                    }
+
+                    camera.addCallbackBuffer(mBuffer);
+
+                }
+            });
+
+        }
+
         return true;
 
     }
@@ -152,20 +177,23 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 size = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
 //                size = 777600;
                 Log.d(TAG, "Size: " + size);
-                mBuffer = new byte[size];
-                /* The buffer where the current frame will be copied */
-                mFrame = new byte[size];
-                mCamera.addCallbackBuffer(mBuffer);
-//                try {
-//                    setPreview();
-////                    mCamera.setPreviewDisplay(holder);
-//
-//                } catch (IOException e) {
-//                    Log.e(TAG, "mCamera.setPreviewDisplay/setPreviewTexture fails: " + e);
-//                }
+
+                if (useBuffer) {
+                    mBuffer = new byte[size];
+                    /* The buffer where the current frame will be copied */
+                    mFrame = new byte[size];
+                    mCamera.addCallbackBuffer(mBuffer);
+                    //                try {
+                    //                    setPreview();
+                    ////                    mCamera.setPreviewDisplay(holder);
+                    //
+                    //                } catch (IOException e) {
+                    //                    Log.e(TAG, "mCamera.setPreviewDisplay/setPreviewTexture fails: " + e);
+                    //                }
 
 
-                onPreviewStarted(params.getPreviewSize().width, params.getPreviewSize().height);
+                    onPreviewStarted(params.getPreviewSize().width, params.getPreviewSize().height);
+                }
 
                 /* Now we can start a preview */
                 try {
@@ -200,7 +228,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         setupCamera(holder, width, height);
 
-        (new Thread(this)).start();
+//        (new Thread(this)).start();
 
     }
 

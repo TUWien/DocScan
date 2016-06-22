@@ -3,12 +3,16 @@ package at.ac.tuwien.caa.docscan;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.widget.ImageView;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -19,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_CAMERA = 0;
     private static Activity mActivity;
+    private CameraView mCameraView;
+    private DrawView mDrawView;
 
 
     static {
@@ -38,28 +44,32 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mPreview = new CameraPreview(this);
-        setContentView(mPreview);
+//        mPreview = new CameraPreview(this);
+//        setContentView(mPreview);
 
 
 //        setContentView(R.layout.activity_main);
 //
-//        ImageView i = new ImageView(this);
+        ImageView i = new ImageView(this);
 //
-//        SurfaceView camView = new SurfaceView(this);
-//        SurfaceHolder camHolder = camView.getHolder();
-//        int PreviewSizeWidth = 640;
-//        int PreviewSizeHeight= 480;
+        SurfaceView camView = new SurfaceView(this);
+        SurfaceHolder camHolder = camView.getHolder();
+        int PreviewSizeWidth = 640;
+        int PreviewSizeHeight= 480;
 //
 //        CameraPreview2 camPreview = new CameraPreview2(640, 480, i);
 //
-//        camHolder.addCallback(camPreview);
-//        camHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        mCameraView = (CameraView) findViewById(R.id.camera_view);
+        mDrawView = (DrawView) findViewById(R.id.overlay_view);
+        mDrawView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+
+
+//        mCameraView = new CameraView(this);
 //
 //
 //        FrameLayout mainLayout = (FrameLayout) findViewById(R.id.camera_preview);
-//        mainLayout.addView(camView, new LayoutParams(PreviewSizeWidth, PreviewSizeHeight));
-//        mainLayout.addView(i, new LayoutParams(PreviewSizeWidth, PreviewSizeHeight));
+//        mainLayout.addView(mCameraView, new FrameLayout.LayoutParams(PreviewSizeWidth, PreviewSizeHeight));
+//        mainLayout.addView(i, new FrameLayout.LayoutParams(PreviewSizeWidth, PreviewSizeHeight));
 
         requestPermission();
 //        initCamera();
@@ -70,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
 
         super.onPause();
-        mPreview.releaseCamera();
+//        mPreview.releaseCamera();
 
     }
 
@@ -81,8 +91,8 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         mActivity = this;
 
-        mPreview.setActivity(this);
-        mPreview.openCamera();
+//        mPreview.setActivity(this);
+//        mPreview.openCamera();
 
 
 
@@ -110,8 +120,8 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.CAMERA},
                     PERMISSION_CAMERA);
         }
-        else
-            mPreview.openCamera();
+//        else
+//            mPreview.openCamera();
 //        initCamera();
 
 //            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
