@@ -15,6 +15,12 @@ public class NativeWrapper {
 //
 //    }
 
+    public static void processFrame(Mat src) {
+        nativeProcessFrame(src.getNativeObjAddr());
+    }
+
+    private static native void nativeProcessFrame(long src);
+
     public static native void handleFrame(int width, int height, byte yuv[], int[] rgba);
 //    public static native void handleFrame2(int width, int height, byte yuv[], int[] rgba);
     public static native void handleFrame2(int width, int height, byte[] nv21Data, Bitmap bitmap);

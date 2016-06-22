@@ -25,6 +25,9 @@ it points to your opencv installation
 
 ## Debugging Hint
  `Genymotion` is a nice tool for debugging the app (on your PC)
+ - If you wanna debug on PC with Genymotion you must change the architecture:
+ - In `.\app\src\main\jni\Application.mk` set: `APP_ABI := x86`
+ - Note: By using the x86 the Genymotion emulation is much faster (compared to the standard ADB emulator which emulates arm processors)
 
 
 
