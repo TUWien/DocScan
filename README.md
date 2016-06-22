@@ -6,7 +6,7 @@ App for document scanning.
 - `JDK` v7 or newer
 - Install `Android Studio`
 - `OpenCV` for Android [1]
-- Android NDK
+- Android NDK (will be installed via Android Studio)
 
 ## Configuration
 - copy`.\app\src\main\jni\AndroidSkel.mk` to `.\app\src\main\jni\Android.mk`
@@ -14,11 +14,13 @@ App for document scanning.
 - change `OPENCVROOT:= C:\cvl\dmrz\code\opencv_sdk\OpenCV-android-sdk` such that
 it points to your opencv installation
 - Open Project from Android Studio
+- You will see a dialog "Gradle settings for this project are not configured yet. Would you like the project to use the Gradle wrapper? ..." - click Ok
 - Import OpenCV module [2]
 - Add Android NDK
   - Open `Tools > Android > SDK Manager`
   - Tab SDK Tools
   - Check NDK (takes a few minutes to download/install)
+  - Restart Android Studio
   - In `.\app\build.gradle` change this line:
     `commandLine "C:\\...\\Local\\Android\\Sdk\\ndk-bundle\\ndk-build.cmd",`
     You will find the path in (right click `app > Open Module Settings > SDK Location`)
