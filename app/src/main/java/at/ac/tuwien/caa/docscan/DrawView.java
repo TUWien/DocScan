@@ -22,7 +22,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 
         private Paint mRectPaint;
 
-        public DrawerThread(SurfaceHolder surfaceHolder, Context context) {
+        public DrawerThread(SurfaceHolder surfaceHolder) {
 
 
             mSurfaceHolder = surfaceHolder;
@@ -72,6 +72,10 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 
         private void draw(Canvas canvas) {
 
+            if (canvas == null) {
+                return;
+            }
+
             canvas.drawRect(0, 0, 100, 100, mRectPaint);
 
 //            canvas.save();
@@ -90,7 +94,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
 
-        mDrawerThread = new DrawerThread(holder, context);
+
 
     }
 
@@ -98,8 +102,11 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
     public void surfaceCreated(SurfaceHolder holder)
     {
 
+        mDrawerThread = new DrawerThread(holder);
         mDrawerThread.setRunning(true);
-        mDrawerThread.start();
+        // TODO: check why the thread is already started - if the app is restarted. The thread should be dead!
+        if (mDrawerThread.getState() == Thread.State.NEW)
+            mDrawerThread.start();
 
     }
 
@@ -124,5 +131,13 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
     }
+
+
+
+//    @Override
+//    public void onWindowFocusChanged(boolean hasWindowFocus) {
+//        if (!hasWindowFocus) mDrawerThread.setRunning(false);
+//    }
+
 
 }

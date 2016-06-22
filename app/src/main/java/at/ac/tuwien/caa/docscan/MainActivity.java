@@ -18,6 +18,7 @@ import org.opencv.android.OpenCVLoader;
 
 public class MainActivity extends AppCompatActivity {
 
+
     private Camera mCamera;
     private CameraPreview mPreview;
 
@@ -43,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mActivity = this;
 
 //        mPreview = new CameraPreview(this);
 //        setContentView(mPreview);
@@ -80,23 +83,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
 
         super.onPause();
+
 //        mPreview.releaseCamera();
 
     }
 
-    @Override
-    protected void onResume() {
-//        Log.i(TAG, "onResume");
-
-        super.onResume();
-        mActivity = this;
-
-//        mPreview.setActivity(this);
-//        mPreview.openCamera();
-
-
-
-    }
+//    @Override
+//    protected void onResume() {
+////        Log.i(TAG, "onResume");
+//
+//        super.onResume();
+//        mActivity = this;
+//
+////        mPreview.setActivity(this);
+////        mPreview.openCamera();
+//
+//
+//
+//    }
 
 
     /** A safe way to get an instance of the Camera object. */
