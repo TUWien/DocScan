@@ -12,7 +12,7 @@ namespace rdf {
 
     std::vector<rdf::Patch> getPatches(cv::Mat inputImg) {
 
-        rdf::FocusEstimation fe;
+        static rdf::FocusEstimation fe;
         int w = inputImg.cols < inputImg.rows ? inputImg.cols : inputImg.rows;
         int ws = (int)ceil((double)w / 5.0);
         //int ws = 500;
@@ -98,8 +98,8 @@ namespace rdf {
 
 			cv::Mat sqdImg = mSrcImg.mul(mSrcImg);
 			cv::Mat meanImg, meanSqdImg;
-			cv::boxFilter(mSrcImg, meanImg, CV_64FC1, cv::Size(mWindowSize, mWindowSize));
-			cv::boxFilter(sqdImg, meanSqdImg, CV_64FC1, cv::Size(mWindowSize, mWindowSize));
+			cv::boxFilter(mSrcImg, meanImg, CV_32FC1, cv::Size(mWindowSize, mWindowSize));
+			cv::boxFilter(sqdImg, meanSqdImg, CV_32FC1, cv::Size(mWindowSize, mWindowSize));
 
 			cv::Mat localStdImg = meanSqdImg - meanImg.mul(meanImg);
 			localStdImg = localStdImg.mul(localStdImg);
@@ -128,7 +128,7 @@ namespace rdf {
 
 			double thr = 0;
 			cv::Mat mask = FM >= thr;
-			mask.convertTo(mask, CV_64FC1, 1 / 255.0);
+			mask.convertTo(mask, CV_32FC1, 1 / 255.0);
 
 			FM = FM.mul(mask);
 
@@ -159,7 +159,7 @@ namespace rdf {
 	double BasicFM::computeLAPE()
 	{
 		cv::Mat laImg;
-		cv::Laplacian(mSrcImg, laImg, CV_64F);
+		cv::Laplacian(mSrcImg, laImg, CV_32F);
 		laImg = laImg.mul(laImg);
 
 		cv::Scalar m, v;
@@ -173,7 +173,7 @@ namespace rdf {
 	double BasicFM::computeLAPV()
 	{
 		cv::Mat laImg;
-		cv::Laplacian(mSrcImg, laImg, CV_64F);
+		cv::Laplacian(mSrcImg, laImg, CV_32F);
 
 		cv::Scalar m, v;
 		cv::meanStdDev(laImg, m, v);
@@ -242,8 +242,8 @@ namespace rdf {
 		if (mSrcImg.channels() != 1)
 			cv::cvtColor(mSrcImg, mSrcImg, CV_RGB2GRAY);
 
-		if (mSrcImg.depth() != CV_64F)
-			mSrcImg.convertTo(mSrcImg, CV_64F);
+		if (mSrcImg.depth() != CV_32F)
+			mSrcImg.convertTo(mSrcImg, CV_32F);
 
 		return true;
 	}
@@ -278,7 +278,7 @@ namespace rdf {
 		if (fImg.empty())
 			return false;
 
-		if (fmImg.channels() != 1 || fImg.depth() != CV_64F)
+		if (fmImg.channels() != 1 || fImg.depth() != CV_32F)
 			return false;
 
 		BasicFM fmClass;
@@ -364,7 +364,7 @@ namespace rdf {
 		cv::Mat binImg;
 		mSrcImg.convertTo(binImg, CV_8U, 255);
 		cv::threshold(binImg, binImg, 0, 1, CV_THRESH_BINARY_INV | CV_THRESH_OTSU);
-		binImg.convertTo(binImg, CV_64F);
+		binImg.convertTo(binImg, CV_32F);
 
 		return compute(fm, binImg, binary);
 	}
@@ -383,10 +383,10 @@ namespace rdf {
 		}
 
 		if (mSrcImg.depth() == CV_8U)
-			mSrcImg.convertTo(mSrcImg, CV_64F, 1.0/255.0);
+			mSrcImg.convertTo(mSrcImg, CV_32F);
 
 		if (mSrcImg.depth() == CV_32F)
-			mSrcImg.convertTo(mSrcImg, CV_64F);
+			mSrcImg.convertTo(mSrcImg, CV_32F);
 	}
 
 	void FocusEstimation::setWindowSize(int s)
@@ -684,8 +684,8 @@ namespace rdf {
 			mSrcImg = channels[0];
 		}
 
-		if (mSrcImg.depth() != CV_64F)
-			mSrcImg.convertTo(mSrcImg, CV_64F, 1.0/255.0);
+		if (mSrcImg.depth() != CV_32F)
+			mSrcImg.convertTo(mSrcImg, CV_32F, 1.0/255.0);
 
 		return true;
 	}
