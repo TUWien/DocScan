@@ -11,6 +11,8 @@
 
 extern "C" {
     JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeProcessFrame(JNIEnv *, jclass, jlong);
+    //JNIEXPORT jobject JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeProcessFrame2(JNIEnv *, jclass, jlong);
+    JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPatches(JNIEnv *, jclass, jlong);
 }
 
 
@@ -101,6 +103,9 @@ namespace rdf {
 		std::string fmS() const;
 		double fmRef() const;
 
+		// inserted by fabian (allows for getting the coordinates without using OpenCV):
+        int upperLeftX() const;
+        int upperLeftY() const;
 
 	protected:
 
