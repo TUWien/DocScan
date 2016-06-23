@@ -16,7 +16,9 @@ import android.widget.ImageView;
 
 import org.opencv.android.OpenCVLoader;
 
-public class MainActivity extends AppCompatActivity {
+import at.ac.tuwien.caa.docscan.cv.Patch;
+
+public class MainActivity extends AppCompatActivity implements NativeWrapper.CVCallback {
 
 
     private Camera mCamera;
@@ -157,6 +159,45 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public static int getCameraOrientation(android.hardware.Camera camera)
+
+    {
+
+
+        int cameraId = 0;
+
+        android.hardware.Camera.CameraInfo info =
+                new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(cameraId, info);
+        int rotation = mActivity.getWindowManager().getDefaultDisplay()
+                .getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
+        }
+
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+
+        return result;
+
+    }
 
     public static void setCameraDisplayOrientation(android.hardware.Camera camera) {
 
@@ -186,16 +227,11 @@ public class MainActivity extends AppCompatActivity {
         camera.setDisplayOrientation(result);
     }
 
+    @Override
+    public void onFocusMeasured(Patch[] patches) {
 
-//    private void initCamera() {
-//
-//        // Create an instance of Camera
-////        mCamera = Camera.open(0);
-//
-//        // Create our Preview view and set it as the content of our activity.
-//        mPreview = new CameraPreview(this);
-//        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-//        preview.addView(mPreview);
-//
-//    }
-}
+        mDrawView.setFocusPatches(patches);
+
+    }
+
+ }

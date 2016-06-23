@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 
 import org.opencv.core.Mat;
 
+import at.ac.tuwien.caa.docscan.cv.Patch;
+
 /**
  * Created by fabian on 07.06.2016.
  */
@@ -15,11 +17,33 @@ public class NativeWrapper {
 //
 //    }
 
+    public static Patch[] getPatches(Mat src) {
+
+        Patch[] patches = nativeGetPatches(src.getNativeObjAddr());
+
+        return patches;
+
+    }
+
+
+
+
     public static void processFrame(Mat src) {
         nativeProcessFrame(src.getNativeObjAddr());
     }
 
+    public static Patch processFrameTest(Mat src) {
+
+        Patch patch =  null;
+//        Patch patch = nativeProcessFrame2(src.getNativeObjAddr());
+
+        return patch;
+
+    }
+
+    private static native Patch[] nativeGetPatches(long src);
     private static native void nativeProcessFrame(long src);
+    private static native Patch nativeProcessFrame2(long src);
 
     public static native void handleFrame(int width, int height, byte yuv[], int[] rgba);
 //    public static native void handleFrame2(int width, int height, byte yuv[], int[] rgba);
@@ -33,4 +57,12 @@ public class NativeWrapper {
     }
 
     private static native void nativeLogPolar(long src, long dst, float xCenter, float yCenter,  double scaleLog, double scale, double angle);
+
+    // Callbacks:
+
+    public static interface CVCallback {
+
+        void onFocusMeasured(Patch[] patches);
+
+    }
 }

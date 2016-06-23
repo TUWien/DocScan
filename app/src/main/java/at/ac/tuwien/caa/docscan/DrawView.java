@@ -2,10 +2,14 @@ package at.ac.tuwien.caa.docscan;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
  * Based on Lunar Lander example:
@@ -21,6 +25,8 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         private int mCanvasWidth, mCanvasHeight;
 
         private Paint mRectPaint;
+        private Paint mTextPaint;
+        private Patch[] mFocusPatches;
 
         public DrawerThread(SurfaceHolder surfaceHolder) {
 
@@ -30,6 +36,16 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 //            Initialize drawing stuff:
             mRectPaint = new Paint();
 
+            mTextPaint = new Paint();
+
+            final float testTextSize = 48f;
+            mTextPaint.setTextSize(testTextSize);
+
+        }
+
+        private void setFocusPatches(Patch[] focusPatches) {
+
+            mFocusPatches = focusPatches;
 
         }
 
@@ -76,7 +92,23 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
                 return;
             }
 
-            canvas.drawRect(0, 0, 100, 100, mRectPaint);
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+
+//            canvas.drawRect(0, 0, 100, 100, mRectPaint);
+
+            if (mFocusPatches == null)
+                return;
+
+            Patch patch;
+
+            for (int i = 0; i < mFocusPatches.length; i++) {
+
+                patch = mFocusPatches[i];
+                String fValue = String.format("%.2f", patch.getFM());
+                canvas.drawText(fValue, patch.getPX(), patch.getPY()+ 50, mTextPaint);
+
+            }
+
 
 //            canvas.save();
         }
@@ -95,6 +127,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
         holder.addCallback(this);
 
 
+
+    }
+
+    public void setFocusPatches(Patch[] focusPatches) {
+
+        mDrawerThread.setFocusPatches(focusPatches);
 
     }
 

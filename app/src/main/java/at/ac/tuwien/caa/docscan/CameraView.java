@@ -6,11 +6,14 @@ import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import java.io.IOException;
 import java.util.List;
+
+import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
  * Created by fabian on 16.06.2016.
@@ -59,7 +62,21 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                     Mat mat = new Mat(mSurfaceWidth, mSurfaceHeight, CvType.CV_8UC3);
                     mat.put(0, 0, frame);
 
-                    NativeWrapper.processFrame(mat);
+                    int angle = MainActivity.getCameraOrientation(mCamera);
+
+                    Mat tmp;
+
+                    if (angle == 0) {
+                        tmp = mat.t();
+                        Core.flip(tmp, mat, 1);
+                        tmp.release();
+                    }
+
+//                    NativeWrapper.processFrame(mat);
+//                    Patch p = NativeWrapper.processFrameTest(mat);
+                    Patch[] patches = NativeWrapper.getPatches(mat);
+                    mCVCallback.onFocusMeasured(patches);
+
                 }
 
 //                }
@@ -75,6 +92,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     private SurfaceHolder holder;
     private byte[] mFrame;
     private CameraFrameThread mCameraFrameThread;
+    private NativeWrapper.CVCallback mCVCallback;
 
     private static String TAG = "CameraView";
 
@@ -82,6 +100,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
 
         super(context, attrs);
+
+        mCVCallback = (NativeWrapper.CVCallback) context;
 
         holder = getHolder();
         holder.addCallback(this);
