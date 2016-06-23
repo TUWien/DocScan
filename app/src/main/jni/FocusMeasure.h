@@ -2,23 +2,16 @@
 // Created by fabian on 21.06.2016.
 //
 
-#ifndef DOCSCAN_FOCUSMEASURE_H
-#define DOCSCAN_FOCUSMEASURE_H
-
-#endif //DOCSCAN_FOCUSMEASURE_H
+#pragma once
 
 #include <opencv2/core/core.hpp>
 
-extern "C" {
-    JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeProcessFrame(JNIEnv *, jclass, jlong);
-    //JNIEXPORT jobject JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeProcessFrame2(JNIEnv *, jclass, jlong);
-    JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPatches(JNIEnv *, jclass, jlong);
-}
-
-
 namespace rdf {
 
-// read defines
+    // read defines
+    class Patch;
+
+    std::vector<rdf::Patch> getPatches(cv::Mat inputImg);
 
 	class BasicFM {
 
