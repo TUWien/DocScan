@@ -9,9 +9,9 @@ OPENCV_INSTALL_MODULES:=on
 OPENCV_LIB_TYPE:=SHARED
 include ${OPENCVROOT}/sdk/native/jni/OpenCV.mk
 
-LOCAL_SRC_FILES := FocusMeasure.cpp
+LOCAL_SRC_FILES := FocusMeasure.cpp DocScanInterface.cpp
 LOCAL_LDLIBS += -llog
-LOCAL_MODULE := opencv-jni
+LOCAL_MODULE := docscan-native
 LOCAL_CFLAGS += -std=c++11
 LOCAL_LDFLAGS += -ljnigraphics
 

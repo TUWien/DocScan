@@ -3,12 +3,14 @@ package at.ac.tuwien.caa.docscan;
 import android.content.Context;
 import android.hardware.Camera;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,6 +24,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback
 {
 
+    public static final String DEBUG_TAG = "[Camera View]";
 
     class CameraFrameThread extends Thread {
 
@@ -56,25 +59,35 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
             while (mIsRunning) {
                 // TODO: I am not sure if this access should be synchronized, but I guess:
-//                synchronized (mCameraView) {
-                frame = mCameraView.getFrame();
+                //synchronized (mCameraView) {
+                    frame = mCameraView.getFrame();
+                //}
                 if (frame != null) {
-                    Mat mat = new Mat(mSurfaceWidth, mSurfaceHeight, CvType.CV_8UC3);
-                    mat.put(0, 0, frame);
+                    Scalar s = new Scalar(5.0);
+
+                    // 1.5 since YUV
+                    Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1, s);
+                    yuv.put(0, 0, frame);
+
+                    Mat rgbMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
+                    Imgproc.cvtColor(yuv, rgbMat, Imgproc.COLOR_YUV2RGB_NV21);
+
+                    Log.d(DEBUG_TAG, "buffer size: " + frame.length + " expected: " + mFrameWidth*mFrameHeight);
+                    Log.d(DEBUG_TAG, "size: " + mFrameWidth + " x " + mFrameHeight);
 
                     int angle = MainActivity.getCameraOrientation(mCamera);
 
                     Mat tmp;
 
-                    if (angle == 0) {
-                        tmp = mat.t();
-                        Core.flip(tmp, mat, 1);
-                        tmp.release();
-                    }
+                    //if (angle == 0) {
+                    //    tmp = mat.t();
+                    //    Core.flip(tmp, mat, 1);
+                    //    tmp.release();
+                    //}
 
 //                    NativeWrapper.processFrame(mat);
 //                    Patch p = NativeWrapper.processFrameTest(mat);
-                    Patch[] patches = NativeWrapper.getPatches(mat);
+                    Patch[] patches = NativeWrapper.getPatches(rgbMat);
                     mCVCallback.onFocusMeasured(patches);
 
                 }
@@ -87,9 +100,9 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     }
 
     private Camera mCamera = null;
-    private int previewSizeWidth;
-    private int previewSizeHeight;
-    private SurfaceHolder holder;
+    private int mFrameWidth;
+    private int mFrameHeight;
+    private SurfaceHolder mHolder;
     private byte[] mFrame;
     private CameraFrameThread mCameraFrameThread;
     private NativeWrapper.CVCallback mCVCallback;
@@ -103,8 +116,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         mCVCallback = (NativeWrapper.CVCallback) context;
 
-        holder = getHolder();
-        holder.addCallback(this);
+        mHolder = getHolder();
+        mHolder.addCallback(this);
 
         mCameraFrameThread = null;
 
@@ -147,8 +160,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         int minDiff = Integer.MAX_VALUE;
         for (Camera.Size size : sizes) {
             if (Math.abs(size.height - height) < minDiff) {
-                previewSizeWidth = size.width;
-                previewSizeHeight = size.height;
+                mFrameWidth = size.width;
+                mFrameHeight = size.height;
                 minDiff = Math.abs(size.height - height);
             }
         }
@@ -157,7 +170,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
             params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
 
-        params.setPreviewSize(previewSizeWidth, previewSizeHeight);
+        params.setPreviewSize(mFrameWidth, mFrameHeight);
 
 
         mCamera.setParameters(params);

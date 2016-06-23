@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
         if (init) {
 //            System.loadLibrary("wrapper");
-            System.loadLibrary("opencv-jni");
+            System.loadLibrary("docscan-native");
 //            System.loadLibrary("openCVLibrary310");
         }
         int b = 0;
