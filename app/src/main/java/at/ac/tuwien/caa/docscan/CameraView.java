@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
@@ -63,21 +64,23 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                     frame = mCameraView.getFrame();
                 //}
                 if (frame != null) {
-                    Scalar s = new Scalar(5.0);
 
                     // 1.5 since YUV
-                    Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1, s);
+                    Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
                     yuv.put(0, 0, frame);
 
+                    // TODO: check the dynamic range of the RGB image
                     Mat rgbMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                     Imgproc.cvtColor(yuv, rgbMat, Imgproc.COLOR_YUV2RGB_NV21);
 
-                    Log.d(DEBUG_TAG, "buffer size: " + frame.length + " expected: " + mFrameWidth*mFrameHeight);
-                    Log.d(DEBUG_TAG, "size: " + mFrameWidth + " x " + mFrameHeight);
+                    //Core.MinMaxLocResult mm = Core.minMaxLoc(yuv);
 
-                    int angle = MainActivity.getCameraOrientation(mCamera);
+                    //Log.d(DEBUG_TAG, "buffer size: " + frame.length + " expected: " + mFrameWidth*mFrameHeight);
+                    //Log.d(DEBUG_TAG, "size: " + mFrameWidth + " x " + mFrameHeight);
+                    //Log.d(DEBUG_TAG, "range: [" + mm.minVal + " " + mm.maxVal + "]");
+                    //int angle = MainActivity.getCameraOrientation(mCamera);
 
-                    Mat tmp;
+                    //Mat tmp;
 
                     //if (angle == 0) {
                     //    tmp = mat.t();
