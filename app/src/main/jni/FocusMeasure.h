@@ -25,12 +25,12 @@
 
 #include <opencv2/core/core.hpp>
 
-namespace rdf {
+namespace dsc {
 
     // read defines
     class Patch;
 
-    std::vector<rdf::Patch> getPatches(cv::Mat inputImg);
+    std::vector<dsc::Patch> getPatches(cv::Mat inputImg);
 
 	class BasicFM {
 
