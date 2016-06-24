@@ -17,7 +17,7 @@ public class NativeWrapper {
 //
 //    }
 
-    public static Patch[] getPatches(Mat src) {
+    public static Patch[] getFocusMeasures(Mat src) {
 
         Patch[] patches = nativeGetPatches(src.getNativeObjAddr());
 

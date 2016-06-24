@@ -3,14 +3,11 @@ package at.ac.tuwien.caa.docscan;
 import android.content.Context;
 import android.hardware.Camera;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
@@ -69,28 +66,19 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                     Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
                     yuv.put(0, 0, frame);
 
-                    // TODO: check the dynamic range of the RGB image
                     Mat rgbMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                     Imgproc.cvtColor(yuv, rgbMat, Imgproc.COLOR_YUV2RGB_NV21);
 
-                    //Core.MinMaxLocResult mm = Core.minMaxLoc(yuv);
+//                    LinkedList<Mat> ch = new LinkedList<Mat>();
+//                    Core.split(rgbMat, ch);
+//
+//                    Core.MinMaxLocResult mm = Core.minMaxLoc(ch.getFirst());
+//
+//                    //Log.d(DEBUG_TAG, "buffer size: " + frame.length + " expected: " + mFrameWidth*mFrameHeight);
+//                    //Log.d(DEBUG_TAG, "size: " + mFrameWidth + " x " + mFrameHeight);
+//                    Log.d(DEBUG_TAG, "range: [" + mm.minVal + " " + mm.maxVal + "]");
 
-                    //Log.d(DEBUG_TAG, "buffer size: " + frame.length + " expected: " + mFrameWidth*mFrameHeight);
-                    //Log.d(DEBUG_TAG, "size: " + mFrameWidth + " x " + mFrameHeight);
-                    //Log.d(DEBUG_TAG, "range: [" + mm.minVal + " " + mm.maxVal + "]");
-                    //int angle = MainActivity.getCameraOrientation(mCamera);
-
-                    //Mat tmp;
-
-                    //if (angle == 0) {
-                    //    tmp = mat.t();
-                    //    Core.flip(tmp, mat, 1);
-                    //    tmp.release();
-                    //}
-
-//                    NativeWrapper.processFrame(mat);
-//                    Patch p = NativeWrapper.processFrameTest(mat);
-                    Patch[] patches = NativeWrapper.getPatches(rgbMat);
+                    Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
                     mCVCallback.onFocusMeasured(patches);
 
                 }
