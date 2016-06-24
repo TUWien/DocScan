@@ -40,6 +40,7 @@
 #ifdef WITH_OPENCV
 
 #include "opencv2/core.hpp"
+#include "opencv/cxcore.h"	// c functions e.g. cvRound
 #else
 
 //#define int64 long long;
@@ -608,7 +609,7 @@ public:
 	/** 
 	 * Normal vector.
 	 * @return a vector which is normal to the current vector
-	 * (rotated by 90° counter clockwise).
+	 * (rotated by 90ï¿½ counter clockwise).
 	 */
 	DkVector normalVec() const {
 
@@ -704,7 +705,7 @@ public:
 	 **/
 	cv::Size getCvSize() const {
 
-		return cv::Size(cvRound(width), cvRound(height));
+		return cv::Size((int)cvRound(width), (int)cvRound(height));
 	}
 #endif
 };
