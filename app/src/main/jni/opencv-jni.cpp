@@ -1,3 +1,6 @@
+
+#ifndef NO_JNI
+
 #include <jni.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -9,9 +12,6 @@
 
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,"opencv-jni",__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,"opencv-jni",__VA_ARGS__)
-
-using namespace std;
-using namespace cv;
 
 double lastTime;
 
@@ -85,3 +85,5 @@ JNIEXPORT void Java_at_ac_tuwien_caa_docscan_NativeWrapper_handleFrame2(JNIEnv *
 }
 
 }
+
+#endif	// #ifndef NO_JNI

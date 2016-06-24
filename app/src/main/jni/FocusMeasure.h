@@ -25,12 +25,22 @@
 
 #include <opencv2/core/core.hpp>
 
+#ifndef DllCoreExport
+#ifdef DK_DLL_EXPORT
+#define DllCoreExport __declspec(dllexport)
+#else
+#define DllCoreExport
+#endif
+#endif
+
+// hide dll-interface warning
+#pragma warning(disable: 4251)
+
+
 namespace dsc {
 
     // read defines
     class Patch;
-
-    std::vector<dsc::Patch> getPatches(cv::Mat inputImg);
 
 	class BasicFM {
 
@@ -93,8 +103,8 @@ namespace dsc {
 	};
 
 
-
-	class Patch {
+	class DllCoreExport Patch {
+	
 	public:
 		Patch();
 		Patch(cv::Point p, int w, int h, double f);
@@ -131,7 +141,7 @@ namespace dsc {
 		double mArea = -1;
 	};
 
-	class FocusEstimation {
+	class DllCoreExport FocusEstimation {
 
 	public:
 		enum FocusMeasure { BREN = 0, GLVA, GLVN, GLLV, GRAT, GRAS, LAPE, LAPV, ROGR };
@@ -148,6 +158,8 @@ namespace dsc {
 		void setWindowSize(int s);
 		void setSplitSize(int s);
 		int windowSize() const;
+
+		static std::vector<dsc::Patch> apply(const cv::Mat& src);
 
 	protected:
 		cv::Mat mSrcImg;

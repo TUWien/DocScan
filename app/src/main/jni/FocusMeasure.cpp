@@ -23,7 +23,10 @@
 
 #include "FocusMeasure.h"
 
+#ifndef NO_JNI
 #include <android/log.h>
+#endif
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -32,28 +35,6 @@
 #include <iostream>
 
 namespace dsc {
-
-    std::vector<dsc::Patch> getPatches(cv::Mat inputImg) {
-
-        static dsc::FocusEstimation fe;
-        int w = inputImg.cols < inputImg.rows ? inputImg.cols : inputImg.rows;
-        int ws = (int)ceil((double)w / 5.0);
-        //int ws = 500;
-        fe.setWindowSize(ws);
-
-        fe.setImg(inputImg);
-
-        fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
-        std::vector<dsc::Patch> results = fe.fmPatches();
-
-        return fe.fmPatches();
-
-
-    //    std::ostringstream ss;
-    //    ss << results[0].fm();
-    //    __android_log_write(ANDROID_LOG_INFO, "FocusMeasureDummy", ss.str().c_str());
-
-    }
 
 	BasicFM::BasicFM()
 	{
@@ -289,6 +270,23 @@ namespace dsc {
 		setImg(img);
 
 		mWindowSize = wSize;
+	}
+
+	std::vector<dsc::Patch> FocusEstimation::apply(const cv::Mat& src) 
+	{
+
+		static dsc::FocusEstimation fe;
+		int w = src.cols < src.rows ? src.cols : src.rows;
+		int ws = (int)ceil((double)w / 5.0);
+		//int ws = 500;
+		fe.setWindowSize(ws);
+
+		fe.setImg(src);
+
+		fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
+		std::vector<dsc::Patch> results = fe.fmPatches();
+
+		return fe.fmPatches();
 	}
 
 	bool FocusEstimation::compute(FocusMeasure fm, cv::Mat fmImg, bool binary)
