@@ -104,6 +104,7 @@ namespace rdf {
 		cv::Point upperLeft() const;
 		cv::Point center() const;
 		void setFmRef(double f);
+		void setFm(double f);
 		void setWeight(double w);
 		void setArea(double a);
 		int width() const;

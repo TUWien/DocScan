@@ -43,10 +43,29 @@ namespace rdf {
 
         fe.setImg(inputImg);
 
+        //version 1
         fe.compute(rdf::FocusEstimation::FocusMeasure::LAPV);
-        std::vector<rdf::Patch> results = fe.fmPatches();
+        std::vector<rdf::Patch> resultP = fe.fmPatches();
 
-        return fe.fmPatches();
+        //version 2
+        //fe.compute(rdf::FocusEstimation::FocusMeasure::LAPV);
+        //std::vector<rdf::Patch> resultP = fe.fmPatches();
+
+        //version 3 with foreground estimation
+        //fe.compute();
+        //std::vector<rdf::Patch> resultP = fe.fmPatches();
+        //fe.computeRefPatches();
+        //std::vector<rdf::Patch> refResults = fe.fmPatches();
+
+        //for (int i = 0; i < resultP.size(); i++) {
+        //	rdf::Patch tmpPatch = resultP[i];
+        //	rdf::Patch tmpPatchRef = refResults[i];
+        //    double fmV = tmpPatchRef.fm() > 0 ? tmpPatch.fm() / tmpPatchRef.fm() : 0;
+        //    resultP[i].setFm(fmV);
+        //}
+
+
+        return resultP;
 
 
     //    std::ostringstream ss;
@@ -78,6 +97,9 @@ namespace rdf {
 			FM = FM.mul(FM);
 
 			cv::Scalar fm = cv::mean(FM);
+			//normalize
+			//255*255 / 2 -> max value
+			fm[0] = fm[0] / ((255.0*255.0)/2.0);
 			mVal = fm[0];
 		}
 		else {
@@ -201,8 +223,12 @@ namespace rdf {
 		cv::Scalar m, v;
 		cv::meanStdDev(laImg, m, v);
 
-		mVal = v[0] * v[0];
-		//mVal = v[0];
+		mVal = (v[0] * v[0]);  //mVal = Var = sigma*sigma
+		//max(var) = 1040400 = 1020*1020
+		//1020 = 4 *255 if filter [0 1 0; 1 -4 1; 0 1 0]
+		//see cv::Laplacian
+		//normalize
+		mVal = mVal / 1040400.0;
 
 		return mVal;
 	}
@@ -385,8 +411,8 @@ namespace rdf {
 			return false;
 
 		cv::Mat binImg;
-		mSrcImg.convertTo(binImg, CV_8U, 255);
-		cv::threshold(binImg, binImg, 0, 1, CV_THRESH_BINARY_INV | CV_THRESH_OTSU);
+		mSrcImg.convertTo(binImg, CV_8U);
+		cv::threshold(binImg, binImg, 0, 255, CV_THRESH_BINARY_INV | CV_THRESH_OTSU);
 		binImg.convertTo(binImg, CV_32F);
 
 		return compute(fm, binImg, binary);
@@ -470,6 +496,11 @@ namespace rdf {
 	void Patch::setFmRef(double f)
 	{
 		mFmReference = f;
+	}
+
+	void Patch::setFm(double f)
+	{
+	    mFm = f;
 	}
 
 	void Patch::setWeight(double w)
