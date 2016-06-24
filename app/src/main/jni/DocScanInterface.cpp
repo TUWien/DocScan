@@ -38,7 +38,7 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 
 
     // call the main function:
-    std::vector<rdf::Patch> patches = rdf::getPatches(*((cv::Mat*)src));
+    std::vector<dsc::Patch> patches = dsc::getPatches(*((cv::Mat*)src));
 
     // find the Java Patch class and its constructor:
     jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/Patch");
@@ -74,10 +74,10 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 
 }
 
-//JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativePageSegmentation(JNIEnv * env, jclass cls, jlong src) {
+JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativePageSegmentation(JNIEnv * env, jclass cls, jlong src) {
 
     // call the main function:
-    //rdf::PageRect = rdf::pageSegmentation(*((cv::Mat*)src));
+    std::vector<dsc::PageRect> = dsc::pageSegmentation(*((cv::Mat*)src));
 
     /*
     // find the Java Patch class and its constructor:

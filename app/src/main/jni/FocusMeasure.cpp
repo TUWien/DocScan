@@ -31,11 +31,11 @@
 #include <string>
 #include <iostream>
 
-namespace rdf {
+namespace dsc {
 
-    std::vector<rdf::Patch> getPatches(cv::Mat inputImg) {
+    std::vector<dsc::Patch> getPatches(cv::Mat inputImg) {
 
-        static rdf::FocusEstimation fe;
+        static dsc::FocusEstimation fe;
         int w = inputImg.cols < inputImg.rows ? inputImg.cols : inputImg.rows;
         int ws = (int)ceil((double)w / 5.0);
         //int ws = 500;
@@ -43,8 +43,8 @@ namespace rdf {
 
         fe.setImg(inputImg);
 
-        fe.compute(rdf::FocusEstimation::FocusMeasure::LAPV);
-        std::vector<rdf::Patch> results = fe.fmPatches();
+        fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
+        std::vector<dsc::Patch> results = fe.fmPatches();
 
         return fe.fmPatches();
 
@@ -224,7 +224,7 @@ namespace rdf {
 			FM.convertTo(tmp, CV_32F);
 
 			// TODO: check if we need Algorithms.h
-			//double r = (double)rdf::Algorithms::instance().statMomentMat(tmp, cv::Mat(), 0.98f);
+			//double r = (double)dsc::Algorithms::instance().statMomentMat(tmp, cv::Mat(), 0.98f);
 
             double r = 1;
 			//mVal = r > 0 ? m[0] / r : m[0];
@@ -320,31 +320,31 @@ namespace rdf {
 
 				switch (fm)
 				{
-				case rdf::FocusEstimation::BREN:
+				case dsc::FocusEstimation::BREN:
 					f = fmClass.computeBREN();
 					break;
-				case rdf::FocusEstimation::GLVA:
+				case dsc::FocusEstimation::GLVA:
 					f = fmClass.computeGLVA();
 					break;
-				case rdf::FocusEstimation::GLVN:
+				case dsc::FocusEstimation::GLVN:
 					f = fmClass.computeGLVN();
 					break;
-				case rdf::FocusEstimation::GLLV:
+				case dsc::FocusEstimation::GLLV:
 					f = fmClass.computeGLLV();
 					break;
-				case rdf::FocusEstimation::GRAT:
+				case dsc::FocusEstimation::GRAT:
 					f = fmClass.computeGRAT();
 					break;
-				case rdf::FocusEstimation::GRAS:
+				case dsc::FocusEstimation::GRAS:
 					f = fmClass.computeGRAS();
 					break;
-				case rdf::FocusEstimation::LAPE:
+				case dsc::FocusEstimation::LAPE:
 					f = fmClass.computeLAPE();
 					break;
-				case rdf::FocusEstimation::LAPV:
+				case dsc::FocusEstimation::LAPV:
 					f = fmClass.computeLAPV();
 					break;
-				case rdf::FocusEstimation::ROGR:
+				case dsc::FocusEstimation::ROGR:
 					f = fmClass.computeROGR();
 					break;
 				default:
@@ -640,13 +640,13 @@ namespace rdf {
 
 					switch (fm)
 					{
-					case rdf::ContrastEstimation::WEBER:
+					case dsc::ContrastEstimation::WEBER:
 						c = contClass.computeWeber();
 						break;
-					case rdf::ContrastEstimation::MICHELSON:
+					case dsc::ContrastEstimation::MICHELSON:
 						c = contClass.computeMichelson();
 						break;
-					case rdf::ContrastEstimation::RMS:
+					case dsc::ContrastEstimation::RMS:
 						c = contClass.computeRMS();
 						break;
 					default:
