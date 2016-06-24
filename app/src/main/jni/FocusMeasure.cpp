@@ -425,26 +425,26 @@ namespace dsc {
 
 		fe.setImg(src);
 
-		//version 1
-		fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
-		std::vector<dsc::Patch> resultP = fe.fmPatches();
+		////version 1
+		//fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
+		//std::vector<dsc::Patch> resultP = fe.fmPatches();
 
-		//version 2
+		////version 2
 		//fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
 		//std::vector<dsc::Patch> resultP = fe.fmPatches();
 
 		//version 3 with foreground estimation
-		//fe.compute();
-		//std::vector<dsc::Patch> resultP = fe.fmPatches();
-		//fe.computeRefPatches();
-		//std::vector<dsc::Patch> refResults = fe.fmPatches();
+		fe.compute();
+		std::vector<dsc::Patch> resultP = fe.fmPatches();
+		fe.computeRefPatches();
+		std::vector<dsc::Patch> refResults = fe.fmPatches();
 
-		//for (int i = 0; i < resultP.size(); i++) {
-		//	dsc::Patch tmpPatch = resultP[i];
-		//	dsc::Patch tmpPatchRef = refResults[i];
-		//    double fmV = tmpPatchRef.fm() > 0 ? tmpPatch.fm() / tmpPatchRef.fm() : 0;
-		//    resultP[i].setFm(fmV);
-		//}
+		for (int i = 0; i < resultP.size(); i++) {
+			dsc::Patch tmpPatch = resultP[i];
+			dsc::Patch tmpPatchRef = refResults[i];
+		    double fmV = tmpPatchRef.fm() > 0 ? tmpPatch.fm() / tmpPatchRef.fm() : 0;
+		    resultP[i].setFm(fmV);
+		}
 
 
 		return resultP;
