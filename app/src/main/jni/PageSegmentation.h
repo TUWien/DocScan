@@ -24,30 +24,25 @@
 
 #pragma once
 
-#include "DkPageSegmentationUtils.h"
+#include "PageSegmentationUtils.h"
 
 #pragma warning(push, 0)	// no warnings from includes - begin
 #include <opencv2/core/core.hpp>
 #pragma warning(pop)		// no warnings from includes - end
 
+#ifndef DllCoreExport
+#ifdef DK_DLL_EXPORT
+#define DllCoreExport __declspec(dllexport)
+#elif DK_DLL_IMPORT
+#define DllCoreExport
+#else
+#define DllCoreExport
+#endif
+#endif
+
 namespace dsc {
 
-class DkRotatingRect;
-
-class DkPageRect {
-
-public:
-    DkPageRect();
-
-    void setPoly(const std::vector<DkVector>& poly);
-    std::vector<DkVector> getPoly() const;
-
-private:
-    std::vector<DkVector> mPoly;
-
-}
-
-class DkPageSegmentation {
+class DllCoreExport DkPageSegmentation {
 
 public:
 	DkPageSegmentation(const cv::Mat& colImg = cv::Mat());
@@ -56,35 +51,35 @@ public:
 	virtual void filterDuplicates(float overlap = 0.6f, float areaRatio = 0.5f);
 	virtual void filterDuplicates(std::vector<DkPolyRect>& rects, float overlap = 0.6f, float areaRatio = 0.1f) const;
 
-	virtual std::vector<DkPolyRect> getRects() const { return rects; };
+	virtual std::vector<DkPolyRect> getRects() const { return mRects; };
 	virtual cv::Mat getDebugImg() const;
-	virtual QImage getCropped(const QImage& img) const;
+	//virtual QImage getCropped(const QImage& mImg) const;
 	virtual void draw(cv::Mat& img, const cv::Scalar& col = cv::Scalar(255, 222, 0)) const;
-	virtual void draw(QImage& img, const QColor& col = QColor(255, 222, 0)) const;
+	//virtual void draw(QImage& mImg, const QColor& col = QColor(255, 222, 0)) const;
 	virtual void draw(cv::Mat& img, const std::vector<DkPolyRect>& rects, const cv::Scalar& col = cv::Scalar(255, 222, 0)) const;
 	DkPolyRect getMaxRect() const;
+	DkPolyRect getDocumentRect() const;
 
-	bool looseDetection;
-
-    static std::vector<dsc::PageRect> apply(const cv::Mat& src);
+    static std::vector<DkPolyRect> apply(const cv::Mat& src);
 
 protected:
-	cv::Mat img;
+	cv::Mat mImg;
 	cv::Mat dbgImg;
 
 	int thresh = 80;
 	int numThresh = 10;
-	double minArea = 12000;
-	double maxArea = 0;
+	double mMinArea = 12000;
+	double mMaxArea = 0;
 	float maxSide = 0;
 	float maxSideFactor = 0.97f;
 	float scale = 1.0f;
+	bool looseDetection = true;
 
-	std::vector<DkPolyRect> rects;
+	std::vector<DkPolyRect> mRects;
 
 	virtual cv::Mat findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& squares) const;
-	QImage cropToRect(const QImage& img, const nmc::DkRotatingRect& rect, const QColor& bgCol = QColor(0,0,0)) const;
-	void drawRects(QPainter* p, const std::vector<DkPolyRect>& rects, const QColor& col = QColor(100, 100, 100)) const;
+	//QImage cropToRect(const QImage& mImg, const nmc::DkRotatingRect& rect, const QColor& bgCol = QColor(0,0,0)) const;
+	//void drawRects(QPainter* p, const std::vector<DkPolyRect>& mRects, const QColor& col = QColor(100, 100, 100)) const;
 };
 
 };

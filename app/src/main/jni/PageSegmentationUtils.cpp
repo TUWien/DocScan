@@ -22,7 +22,7 @@
 
  *******************************************************************************************************/
 
-#include "DkPageSegmentationUtils.h"
+#include "PageSegmentationUtils.h"
 
 #pragma warning(push, 0)	// no warnings from includes - begin
 #include <opencv2/imgproc/imgproc.hpp>
@@ -34,7 +34,7 @@ namespace dsc {
 // DkIntersectPoly --------------------------------------------------------------------
 DkIntersectPoly::DkIntersectPoly() {};
 
-DkIntersectPoly::DkIntersectPoly(std::vector<nmc::DkVector> vecA, std::vector<nmc::DkVector> vecB) {
+DkIntersectPoly::DkIntersectPoly(std::vector<DkVector> vecA, std::vector<DkVector> vecB) {
 
 	this->vecA = vecA;
 	this->vecB = vecB;
@@ -45,12 +45,12 @@ double DkIntersectPoly::compute() {
 
 	// defines
 	gamut = 500000000;
-	minRange = nmc::DkVector(FLT_MAX, FLT_MAX);
-	maxRange = nmc::DkVector(-FLT_MAX, -FLT_MAX);
-	computeBoundingBox(vecA, &minRange, &maxRange);
-	computeBoundingBox(vecB, &minRange, &maxRange);
+	mMinRange = DkVector(FLT_MAX, FLT_MAX);
+	mMaxRange = DkVector(-FLT_MAX, -FLT_MAX);
+	computeBoundingBox(vecA, &mMinRange, &mMaxRange);
+	computeBoundingBox(vecB, &mMinRange, &mMaxRange);
 
-	scale = maxRange - minRange;
+	scale = mMaxRange - mMinRange;
 
 	if (scale.minCoord() == 0) return 0; //rechteck mit h�he oder breite = 0
 
@@ -61,7 +61,7 @@ double DkIntersectPoly::compute() {
 
 	// check input
 	if (vecA.size() < 3 || vecB.size() < 3) {
-		qDebug() << "The polygons must consist of at least 3 points but they are: (vecA: " << vecA.size() << ", vecB: " << vecB.size();
+		std::cout << "The polygons must consist of at least 3 points but they are: (vecA: " << vecA.size() << ", vecB: " << vecB.size() << std::endl;
 		return 0;
 	}
 
@@ -165,7 +165,7 @@ bool DkIntersectPoly::ovl(DkIPoint p, DkIPoint q) {
 	return (p.x < q.y && q.x < p.y);
 };
 
-void DkIntersectPoly::getVertices(const std::vector<nmc::DkVector>& vec, std::vector<DkVertex> *ip, int noise) {
+void DkIntersectPoly::getVertices(const std::vector<DkVector>& vec, std::vector<DkVertex> *ip, int noise) {
 
 	std::vector<DkIPoint> vecTmp;
 
@@ -173,8 +173,8 @@ void DkIntersectPoly::getVertices(const std::vector<nmc::DkVector>& vec, std::ve
 	for (int idx = 0; idx < (int)vec.size(); idx++) {
 
 		DkIPoint cp;
-		cp.x = ((int)((vec[idx].x - minRange.x) * scale.x - gamut / 2) & ~7) | noise | (idx & 1);
-		cp.y = ((int)((vec[idx].y - minRange.y) * scale.y - gamut / 2) & ~7) | noise | (idx & 1);
+		cp.x = ((int)((vec[idx].x - mMinRange.x) * scale.x - gamut / 2) & ~7) | noise | (idx & 1);
+		cp.y = ((int)((vec[idx].y - mMinRange.y) * scale.y - gamut / 2) & ~7) | noise | (idx & 1);
 
 		vecTmp.push_back(cp);
 	}
@@ -196,7 +196,7 @@ void DkIntersectPoly::getVertices(const std::vector<nmc::DkVector>& vec, std::ve
 	}
 };
 
-void DkIntersectPoly::computeBoundingBox(std::vector<nmc::DkVector> vec, nmc::DkVector *minRange, nmc::DkVector *maxRange) {
+void DkIntersectPoly::computeBoundingBox(const std::vector<DkVector>& vec, DkVector *minRange, DkVector *maxRange) {
 
 
 	for (unsigned int idx = 0; idx < vec.size(); idx++) {
@@ -209,36 +209,36 @@ void DkIntersectPoly::computeBoundingBox(std::vector<nmc::DkVector> vec, nmc::Dk
 // DkPolyRect --------------------------------------------------------------------
 DkPolyRect::DkPolyRect(const std::vector<cv::Point>& pts) {
 
-	toDkVectors(pts, this->pts);
+	toDkVectors(pts, this->mPts);
 	computeMaxCosine();
 	area = DBL_MAX;
 }
 
-DkPolyRect::DkPolyRect(const std::vector<nmc::DkVector>& pts) {
-	this->pts = pts;
+DkPolyRect::DkPolyRect(const std::vector<DkVector>& pts) {
+	this->mPts = pts;
 	computeMaxCosine();
 	area = DBL_MAX;
 }
 
 bool DkPolyRect::empty() const {
-	return pts.empty();
+	return mPts.empty();
 }
 
-void DkPolyRect::toDkVectors(const std::vector<cv::Point>& pts, std::vector<nmc::DkVector>& dkPts) const {
+void DkPolyRect::toDkVectors(const std::vector<cv::Point>& pts, std::vector<DkVector>& dkPts) const {
 
 	for (int idx = 0; idx < (int)pts.size(); idx++)
-		dkPts.push_back(nmc::DkVector(pts.at(idx)));
+		dkPts.push_back(DkVector(pts.at(idx)));
 }
 
 void DkPolyRect::computeMaxCosine() {
 
 	maxCosine = 0;
 
-	for (int idx = 2; idx < (int)pts.size()+2; idx++ ) {
+	for (int idx = 2; idx < (int)mPts.size()+2; idx++ ) {
 
-		nmc::DkVector& c = pts[(idx-1)%pts.size()];	// current corner;
-		nmc::DkVector& c1 = pts[idx%pts.size()];
-		nmc::DkVector& c2 = pts[idx-2];
+		DkVector& c = mPts[(idx-1)%mPts.size()];	// current corner;
+		DkVector& c1 = mPts[idx%mPts.size()];
+		DkVector& c2 = mPts[idx-2];
 
 		double cosine = abs((c1-c).cosv(c2-c));
 
@@ -248,52 +248,52 @@ void DkPolyRect::computeMaxCosine() {
 
 double DkPolyRect::intersectArea(const DkPolyRect& pr) const {
 
-	return DkIntersectPoly(pts, pr.pts).compute();
+	return DkIntersectPoly(mPts, pr.mPts).compute();
 }
 
 void DkPolyRect::scale(float s) {
 
-	for (size_t idx = 0; idx < pts.size(); idx++)
-		pts[idx] = pts[idx]*s;
+	for (size_t idx = 0; idx < mPts.size(); idx++)
+		mPts[idx] = mPts[idx]*s;
 
 	area = DBL_MAX;	// update
 }
 
 void DkPolyRect::scaleCenter(float s) {
 
-	nmc::DkVector c = center();
+	DkVector c = center();
 
-	for (size_t idx = 0; idx < pts.size(); idx++) {
-		pts[idx] = nmc::DkVector(pts[idx]-c)*s+c;
+	for (size_t idx = 0; idx < mPts.size(); idx++) {
+		mPts[idx] = DkVector(mPts[idx]-c)*s+c;
 	}
 
 	area = DBL_MAX;	// update
 }
 
-nmc::DkVector DkPolyRect::center() const {
+DkVector DkPolyRect::center() const {
 
-	nmc::DkVector c;
+	DkVector c;
 
-	for (size_t idx = 0; idx < pts.size(); idx++)
-		c += pts[idx];
+	for (size_t idx = 0; idx < mPts.size(); idx++)
+		c += mPts[idx];
 
-	c /= (float)pts.size();
+	c /= (float)mPts.size();
 
 	return c;
 }
 
 
-bool DkPolyRect::inside(const nmc::DkVector& vec) const {
+bool DkPolyRect::inside(const DkVector& vec) const {
 
 	float lastsign = 0;
 
 	// we assume, that the polygon is convex
 	// so if the point has a different scalar product
 	// for one side of the polygon - it is not inside
-	for (size_t idx = 1; idx < pts.size()+1; idx++) {
+	for (size_t idx = 1; idx < mPts.size()+1; idx++) {
 
-		nmc::DkVector dv(pts[idx-1] - pts[idx%pts.size()]);
-		float csign = dv.scalarProduct(vec - pts[idx%pts.size()]);
+		DkVector dv(mPts[idx-1] - mPts[idx%mPts.size()]);
+		float csign = dv.scalarProduct(vec - mPts[idx%mPts.size()]);
 
 		if (lastsign*csign < 0) {
 			return false;
@@ -309,8 +309,8 @@ float DkPolyRect::maxSide() const {
 
 	float ms = 0;
 
-	for (size_t idx = 1; idx < pts.size()+1; idx++) {
-		float cs = nmc::DkVector(pts[idx-1] - pts[idx%pts.size()]).norm();
+	for (size_t idx = 1; idx < mPts.size()+1; idx++) {
+		float cs = DkVector(mPts[idx-1] - mPts[idx%mPts.size()]).norm();
 
 		if (ms < cs)
 			ms = cs;
@@ -340,34 +340,34 @@ bool DkPolyRect::compArea(const DkPolyRect& pl, const DkPolyRect& pr) {
 	return pl.getAreaConst() < pr.getAreaConst();
 }
 
-nmc::DkRotatingRect DkPolyRect::toRotatingRect() const {
-
-	if (empty())
-		return nmc::DkRotatingRect();
-
-	// find the largest rectangle
-	std::vector<cv::Point> largeRect = toCvPoints();
-
-	cv::RotatedRect rect = cv::minAreaRect(largeRect);
-
-	// convert to corners
-	nmc::DkVector xVec = nmc::DkVector(rect.size.width * 0.5f, 0);
-	xVec.rotate(-rect.angle*DK_DEG2RAD);
-
-	nmc::DkVector yVec = nmc::DkVector(0, rect.size.height * 0.5f);
-	yVec.rotate(-rect.angle*DK_DEG2RAD);
-
-	QPolygonF poly;
-	poly.append(nmc::DkVector(rect.center - xVec + yVec).toQPointF());
-	poly.append(nmc::DkVector(rect.center + xVec + yVec).toQPointF());
-	poly.append(nmc::DkVector(rect.center + xVec - yVec).toQPointF());
-	poly.append(nmc::DkVector(rect.center - xVec - yVec).toQPointF());
-
-	nmc::DkRotatingRect rr;
-	rr.setPoly(poly);
-
-	return rr;
-}
+//DkRotatingRect DkPolyRect::toRotatingRect() const {
+//
+//	if (empty())
+//		return DkRotatingRect();
+//
+//	// find the largest rectangle
+//	std::vector<cv::Point> largeRect = toCvPoints();
+//
+//	cv::RotatedRect rect = cv::minAreaRect(largeRect);
+//
+//	// convert to corners
+//	DkVector xVec = DkVector(rect.size.width * 0.5f, 0);
+//	xVec.rotate(-rect.angle*DK_DEG2RAD);
+//
+//	DkVector yVec = DkVector(0, rect.size.height * 0.5f);
+//	yVec.rotate(-rect.angle*DK_DEG2RAD);
+//
+//	QPolygonF poly;
+//	poly.append(DkVector(rect.center - xVec + yVec).toQPointF());
+//	poly.append(DkVector(rect.center + xVec + yVec).toQPointF());
+//	poly.append(DkVector(rect.center + xVec - yVec).toQPointF());
+//	poly.append(DkVector(rect.center - xVec - yVec).toQPointF());
+//
+//	DkRotatingRect rr;
+//	rr.setPoly(poly);
+//
+//	return rr;
+//}
 
 void DkPolyRect::draw(cv::Mat& img, const cv::Scalar& col) const {
 
@@ -380,23 +380,23 @@ void DkPolyRect::draw(cv::Mat& img, const cv::Scalar& col) const {
 	cv::polylines(img, &p, &n, 1, true, col, 4);
 }
 
-std::vector<nmc::DkVector> DkPolyRect::getCorners() const {
-	return pts;
+std::vector<DkVector> DkPolyRect::getCorners() const {
+	return mPts;
 }
 
 DkBox DkPolyRect::getBBox() const {
 
-	nmc::DkVector uc(FLT_MAX, FLT_MAX), lc(-FLT_MAX, -FLT_MAX);
+	DkVector uc(FLT_MAX, FLT_MAX), lc(-FLT_MAX, -FLT_MAX);
 
-	for (size_t idx = 0; idx < pts.size(); idx++) {
+	for (size_t idx = 0; idx < mPts.size(); idx++) {
 
-		uc = uc.minVec(pts[idx]);
-		lc = lc.maxVec(pts[idx]);
+		uc = uc.minVec(mPts[idx]);
+		lc = lc.maxVec(mPts[idx]);
 	}
 
 
-	if (pts.empty())
-		qDebug() << "bbox of empty poly rect requested!!";
+	if (mPts.empty())
+		std::cout << "bbox of empty poly rect requested!!" << std::endl;
 
 	DkBox box(uc, lc-uc);
 
@@ -406,22 +406,11 @@ DkBox DkPolyRect::getBBox() const {
 std::vector<cv::Point> DkPolyRect::toCvPoints() const {
 
 	std::vector<cv::Point> cvPts;
-	for (int idx = 0; idx < (int)pts.size(); idx++) {
-		cvPts.push_back(pts[idx].getCvPoint());
+	for (int idx = 0; idx < (int)mPts.size(); idx++) {
+		cvPts.push_back(mPts[idx].getCvPoint());
 	}
 
 	return cvPts;
-}
-
-QPolygonF DkPolyRect::toPolygon() const {
-
-	QPolygonF poly;
-
-	for (const nmc::DkVector& v : pts) {
-		poly.append(v.toQPointF());
-	}
-
-	return poly;
 }
 
 };
