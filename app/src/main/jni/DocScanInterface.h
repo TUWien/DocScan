@@ -23,9 +23,13 @@
 
 #pragma once
 
+#ifndef NO_JNI
+
 #include <jni.h>
 
 extern "C" {
     JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetFocusMeasures(JNIEnv *, jclass, jlong);
     JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativePageSegmentation(JNIEnv *, jclass, jlong);
 }
+
+#endif // #ifndef NO_JNI

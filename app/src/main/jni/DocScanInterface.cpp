@@ -21,6 +21,8 @@
  *  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
+#ifndef NO_JNI
+
 #include "DocScanInterface.h"
 #include "FocusMeasure.h"
 #include "PageSegmentation.h"
@@ -39,7 +41,7 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 
 
     // call the main function:
-    std::vector<dsc::Patch> patches = dsc::getPatches(*((cv::Mat*)src));
+    std::vector<dsc::Patch> patches = dsc::FocusMeasure::apply(*((cv::Mat*)src));
 
     // find the Java Patch class and its constructor:
     jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/Patch");
@@ -113,3 +115,5 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 //    return outJNIArray;
 
 //}
+
+#endif // #ifndef NO_JNI
