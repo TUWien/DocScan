@@ -275,6 +275,7 @@ namespace dsc {
 	std::vector<dsc::Patch> FocusEstimation::apply(const cv::Mat& src) 
 	{
 
+		// create instance only on first call
 		static dsc::FocusEstimation fe;
 		int w = src.cols < src.rows ? src.cols : src.rows;
 		int ws = (int)ceil((double)w / 5.0);

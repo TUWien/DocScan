@@ -46,6 +46,7 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
     // find the Java Patch class and its constructor:
     jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/Patch");
     jmethodID cnstrctr = env->GetMethodID(patchClass, "<init>", "(IIIID)V");
+    // "(IIIID)V" -> IIII 4xint D 1xdouble V return void
 
     // convert the patches vector to a Java array:
     jobjectArray outJNIArray = env->NewObjectArray(patches.size(), patchClass, NULL);

@@ -29,6 +29,7 @@
 #include <iostream>
 
 #include "FocusMeasure.h"
+#include "PageSegmentation.h"
 
 #pragma comment (linker, "/SUBSYSTEM:CONSOLE")
 
@@ -62,19 +63,29 @@ int main(int argc, char** argv) {
 	return 0;
 }
 
-bool testFocusMeasure(const std::string& filePath) {
+bool loadImage(const std::string& filePath, cv::Mat& img) {
 
-	cv::Mat img = cv::imread(filePath);
+	img = cv::imread(filePath);
 
 	if (img.empty()) {
 		std::cerr << "could not load: " << img << std::endl;
 		return false;
 	}
 
+	return true;
+}
+
+bool testFocusMeasure(const std::string& filePath) {
+
+	cv::Mat img;
+	
+	if (!loadImage(filePath, img))
+		return false;
+
 	std::vector<dsc::Patch> patches = dsc::FocusEstimation::apply(img);
 
 	if (patches.empty()) {
-		std::cerr << "could not load: " << img << std::endl;
+		std::cerr << "FocusEstimation returned no patches for image: " << img << std::endl;
 		return false;
 	}
 
@@ -95,7 +106,20 @@ bool testFocusMeasure(const std::string& filePath) {
 
 bool testPageSegmentation(const std::string& filePath) {
 
-	std::cout << "test page segmentation not implemented..." << std::endl;
-	return false;
+	cv::Mat img;
+
+	if (!loadImage(filePath, img))
+		return false;
+
+
+	std::vector<dsc::DkPolyRect> pageRects = dsc::DkPageSegmentation::apply(img);
+
+	if (pageRects.empty()) {
+		std::cerr << "PageSegmentation returned no page rects for: " << filePath << std::endl;
+		return false;
+	}
+
+	//std::cout << "test page segmentation not implemented..." << std::endl;
+	return true;
 }
 
