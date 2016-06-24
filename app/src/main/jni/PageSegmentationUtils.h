@@ -185,7 +185,7 @@ public:
 	**/
 	cv::Rect getCvRect() const {
 
-		return cv::Rect(cvRound(uc.x), cvRound(uc.y), cvRound(size().width), cvRound(size().height));
+		return cv::Rect(dsc::round(uc.x), dsc::round(uc.y), dsc::round(size().width), dsc::round(size().height));
 	}
 
 	static DkBox contour2BBox(const std::vector<std::vector<cv::Point> >& pts) {
@@ -268,21 +268,21 @@ public:
 	* @return x value in pixel of the upperleft corner.
 	**/
 	int getX() const {
-		return cvRound(uc.x);
+		return dsc::round(uc.x);
 	};
 	/**
 	* Returns the y value of the upper left corner.
 	* @return y value in pixel of the upperleft corner.
 	**/
 	int getY() const {
-		return cvRound(uc.y);
+		return dsc::round(uc.y);
 	};
 	/**
 	* Returns the width of the box.
 	* @return the width in pixel of the box.
 	**/
 	int getWidth() const {
-		return cvRound(lc.x-uc.x);
+		return dsc::round(lc.x-uc.x);
 	};
 	/**
 	* Returns the width of the box.
@@ -296,7 +296,7 @@ public:
 	* @return the height in pixel of the box.
 	**/
 	int getHeight() const {
-		return cvRound(lc.y-uc.y);
+		return dsc::round(lc.y-uc.y);
 	};
 	/**
 	* Returns the height of the box as float
