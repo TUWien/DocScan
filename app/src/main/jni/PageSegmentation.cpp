@@ -32,7 +32,22 @@
 
 namespace dsc {
 
-// DkSegmentBurger --------------------------------------------------------------------
+// DkPageRect --------------------------------------------------------------------
+DkPageRect::DkPageRect() {
+
+}
+
+void DkPageRect::setPoly(const std::vector<DkVector>& poly) {
+
+    mPoly = poly;
+}
+
+std::vector<DkVector> DkPageRect::getPoly() const {
+
+    return mPoly;
+}
+
+// DkPageSegmentation --------------------------------------------------------------------
 // This code is based on OpenCV's rectangle sample (squares.cpp)
 DkPageSegmentation::DkPageSegmentation(const cv::Mat& colImg /* = cv::Mat */) {
 
@@ -391,6 +406,10 @@ void DkPageSegmentation::draw(cv::Mat& img, const std::vector<DkPolyRect>& rects
 	}
 }
 
+static std::vector<dsc::PageRect> DkPageSegmentation::apply(const cv::Mat& src) {
+
+
+}
 
 
 };
