@@ -43,10 +43,29 @@ namespace rdf {
 
         fe.setImg(inputImg);
 
+        //version 1
         fe.compute(rdf::FocusEstimation::FocusMeasure::LAPV);
-        std::vector<rdf::Patch> results = fe.fmPatches();
+        std::vector<rdf::Patch> resultP = fe.fmPatches();
 
-        return fe.fmPatches();
+        //version 2
+        //fe.compute(rdf::FocusEstimation::FocusMeasure::LAPV);
+        //std::vector<rdf::Patch> resultP = fe.fmPatches();
+
+        //version 3 with foreground estimation
+        //fe.compute();
+        //std::vector<rdf::Patch> resultP = fe.fmPatches();
+        //fe.computeRefPatches();
+        //std::vector<rdf::Patch> refResults = fe.fmPatches();
+
+        //for (int i = 0; i < resultP.size(); i++) {
+        //	rdf::Patch tmpPatch = resultP[i];
+        //	rdf::Patch tmpPatchRef = refResults[i];
+        //    double fmV = tmpPatchRef.fm() > 0 ? tmpPatch.fm() / tmpPatchRef.fm() : 0;
+        //    resultP[i].setFm(fmV);
+        //}
+
+
+        return resultP;
 
 
     //    std::ostringstream ss;
@@ -78,6 +97,9 @@ namespace rdf {
 			FM = FM.mul(FM);
 
 			cv::Scalar fm = cv::mean(FM);
+			//normalize
+			//255*255 / 2 -> max value
+			fm[0] = fm[0] / ((255.0*255.0)/2.0);
 			mVal = fm[0];
 		}
 		else {
@@ -94,7 +116,7 @@ namespace rdf {
 
 			cv::Scalar m, v;
 			cv::meanStdDev(mSrcImg, m, v);
-			mVal = v[0];
+			mVal = v[0] / 127.5;
 
 		}
 
@@ -125,11 +147,15 @@ namespace rdf {
 			cv::boxFilter(sqdImg, meanSqdImg, CV_32FC1, cv::Size(mWindowSize, mWindowSize));
 
 			cv::Mat localStdImg = meanSqdImg - meanImg.mul(meanImg);
-			localStdImg = localStdImg.mul(localStdImg);
+			cv::sqrt(localStdImg, localStdImg);
+			//localStdImg = localStdImg.mul(localStdImg);
 
 			cv::Scalar m, v;
 			cv::meanStdDev(localStdImg, m, v);
-			mVal = v[0] * v[0];
+			//normalize
+			//max std = 127.5 -> max v = 63.75
+			//63.75*63.75 = 4065
+			mVal = v[0] * v[0] / 4065;
 		}
 
 
@@ -151,13 +177,13 @@ namespace rdf {
 
 			double thr = 0;
 			cv::Mat mask = FM >= thr;
-			mask.convertTo(mask, CV_32FC1, 1 / 255.0);
+			mask.convertTo(mask, CV_32FC1, 255.0);
 
 			FM = FM.mul(mask);
 
 			cv::Scalar fm = cv::sum(FM) / cv::sum(mask);
-
-			mVal = fm[0];
+            //normalize
+			mVal = fm[0] / 255.0;
 		}
 
 		return mVal;
@@ -173,7 +199,7 @@ namespace rdf {
 			dH = dH.mul(dH);
 
 			cv::Scalar fm = cv::mean(dH);
-			mVal = fm[0];
+			mVal = fm[0] / (255.0*255.0);
 		}
 
 		return mVal;
@@ -188,7 +214,7 @@ namespace rdf {
 		cv::Scalar m, v;
 		cv::meanStdDev(laImg, m, v);
 
-		mVal = m[0];
+		mVal = m[0] / 1040400.0;
 
 		return mVal;
 	}
@@ -201,8 +227,12 @@ namespace rdf {
 		cv::Scalar m, v;
 		cv::meanStdDev(laImg, m, v);
 
-		mVal = v[0] * v[0];
-		//mVal = v[0];
+		mVal = (v[0] * v[0]);  //mVal = Var = sigma*sigma
+		//max(var) = 1040400 = 1020*1020
+		//1020 = 4 *255 if filter [0 1 0; 1 -4 1; 0 1 0]
+		//see cv::Laplacian
+		//normalize
+		mVal = mVal / 1040400.0;
 
 		return mVal;
 	}
@@ -226,7 +256,7 @@ namespace rdf {
 			// TODO: check if we need Algorithms.h
 			//double r = (double)rdf::Algorithms::instance().statMomentMat(tmp, cv::Mat(), 0.98f);
 
-            double r = 1;
+            double r = 255.0*255.0;
 			//mVal = r > 0 ? m[0] / r : m[0];
 			mVal = m[0] / r;
 		}
@@ -385,8 +415,8 @@ namespace rdf {
 			return false;
 
 		cv::Mat binImg;
-		mSrcImg.convertTo(binImg, CV_8U, 255);
-		cv::threshold(binImg, binImg, 0, 1, CV_THRESH_BINARY_INV | CV_THRESH_OTSU);
+		mSrcImg.convertTo(binImg, CV_8U);
+		cv::threshold(binImg, binImg, 0, 255, CV_THRESH_BINARY_INV | CV_THRESH_OTSU);
 		binImg.convertTo(binImg, CV_32F);
 
 		return compute(fm, binImg, binary);
@@ -470,6 +500,11 @@ namespace rdf {
 	void Patch::setFmRef(double f)
 	{
 		mFmReference = f;
+	}
+
+	void Patch::setFm(double f)
+	{
+	    mFm = f;
 	}
 
 	void Patch::setWeight(double w)
