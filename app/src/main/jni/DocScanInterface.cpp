@@ -23,6 +23,7 @@
 
 #include "DocScanInterface.h"
 #include "FocusMeasure.h"
+#include "PageSegmentation.h"
 
 #include <android/log.h>
 #include <jni.h>
@@ -77,7 +78,7 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativePageSegmentation(JNIEnv * env, jclass cls, jlong src) {
 
     // call the main function:
-    std::vector<dsc::PageRect> = dsc::pageSegmentation(*((cv::Mat*)src));
+    std::vector<dsc::DkPageRect> = dsc::pageSegmentation(*((cv::Mat*)src));
 
     /*
     // find the Java Patch class and its constructor:

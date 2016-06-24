@@ -34,6 +34,19 @@ namespace dsc {
 
 class DkRotatingRect;
 
+class DkPageRect {
+
+public:
+    DkPageRect();
+
+    void setPoly(const std::vector<DkVector>& poly);
+    std::vector<DkVector> getPoly() const;
+
+private:
+    std::vector<DkVector> mPoly;
+
+}
+
 class DkPageSegmentation {
 
 public:
@@ -52,6 +65,8 @@ public:
 	DkPolyRect getMaxRect() const;
 
 	bool looseDetection;
+
+    static std::vector<dsc::PageRect> apply(const cv::Mat& src);
 
 protected:
 	cv::Mat img;
