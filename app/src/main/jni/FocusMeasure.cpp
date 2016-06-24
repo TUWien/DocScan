@@ -23,7 +23,6 @@
 
 #include "FocusMeasure.h"
 
-#include <android/log.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 
@@ -31,48 +30,7 @@
 #include <string>
 #include <iostream>
 
-namespace rdf {
-
-    std::vector<rdf::Patch> getPatches(cv::Mat inputImg) {
-
-        static rdf::FocusEstimation fe;
-        int w = inputImg.cols < inputImg.rows ? inputImg.cols : inputImg.rows;
-        int ws = (int)ceil((double)w / 5.0);
-        //int ws = 500;
-        fe.setWindowSize(ws);
-
-        fe.setImg(inputImg);
-
-        //version 1
-        fe.compute(rdf::FocusEstimation::FocusMeasure::LAPV);
-        std::vector<rdf::Patch> resultP = fe.fmPatches();
-
-        //version 2
-        //fe.compute(rdf::FocusEstimation::FocusMeasure::LAPV);
-        //std::vector<rdf::Patch> resultP = fe.fmPatches();
-
-        //version 3 with foreground estimation
-        //fe.compute();
-        //std::vector<rdf::Patch> resultP = fe.fmPatches();
-        //fe.computeRefPatches();
-        //std::vector<rdf::Patch> refResults = fe.fmPatches();
-
-        //for (int i = 0; i < resultP.size(); i++) {
-        //	rdf::Patch tmpPatch = resultP[i];
-        //	rdf::Patch tmpPatchRef = refResults[i];
-        //    double fmV = tmpPatchRef.fm() > 0 ? tmpPatch.fm() / tmpPatchRef.fm() : 0;
-        //    resultP[i].setFm(fmV);
-        //}
-
-
-        return resultP;
-
-
-    //    std::ostringstream ss;
-    //    ss << results[0].fm();
-    //    __android_log_write(ANDROID_LOG_INFO, "FocusMeasureDummy", ss.str().c_str());
-
-    }
+namespace dsc {
 
 	BasicFM::BasicFM()
 	{
@@ -254,7 +212,7 @@ namespace rdf {
 			FM.convertTo(tmp, CV_32F);
 
 			// TODO: check if we need Algorithms.h
-			//double r = (double)rdf::Algorithms::instance().statMomentMat(tmp, cv::Mat(), 0.98f);
+			//double r = (double)dsc::Algorithms::instance().statMomentMat(tmp, cv::Mat(), 0.98f);
 
             double r = 255.0*255.0;
 			//mVal = r > 0 ? m[0] / r : m[0];
@@ -350,31 +308,31 @@ namespace rdf {
 
 				switch (fm)
 				{
-				case rdf::FocusEstimation::BREN:
+				case dsc::FocusEstimation::BREN:
 					f = fmClass.computeBREN();
 					break;
-				case rdf::FocusEstimation::GLVA:
+				case dsc::FocusEstimation::GLVA:
 					f = fmClass.computeGLVA();
 					break;
-				case rdf::FocusEstimation::GLVN:
+				case dsc::FocusEstimation::GLVN:
 					f = fmClass.computeGLVN();
 					break;
-				case rdf::FocusEstimation::GLLV:
+				case dsc::FocusEstimation::GLLV:
 					f = fmClass.computeGLLV();
 					break;
-				case rdf::FocusEstimation::GRAT:
+				case dsc::FocusEstimation::GRAT:
 					f = fmClass.computeGRAT();
 					break;
-				case rdf::FocusEstimation::GRAS:
+				case dsc::FocusEstimation::GRAS:
 					f = fmClass.computeGRAS();
 					break;
-				case rdf::FocusEstimation::LAPE:
+				case dsc::FocusEstimation::LAPE:
 					f = fmClass.computeLAPE();
 					break;
-				case rdf::FocusEstimation::LAPV:
+				case dsc::FocusEstimation::LAPV:
 					f = fmClass.computeLAPV();
 					break;
-				case rdf::FocusEstimation::ROGR:
+				case dsc::FocusEstimation::ROGR:
 					f = fmClass.computeROGR();
 					break;
 				default:
@@ -455,6 +413,46 @@ namespace rdf {
 	int FocusEstimation::windowSize() const
 	{
 		return mWindowSize;
+	}
+
+	std::vector<dsc::Patch> dsc::FocusEstimation::apply(const cv::Mat & src) {
+
+		static dsc::FocusEstimation fe;
+		int w = src.cols < src.rows ? src.cols : src.rows;
+		int ws = (int)ceil((double)w / 5.0);
+		//int ws = 500;
+		fe.setWindowSize(ws);
+
+		fe.setImg(src);
+
+		//version 1
+		fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
+		std::vector<dsc::Patch> resultP = fe.fmPatches();
+
+		//version 2
+		//fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
+		//std::vector<dsc::Patch> resultP = fe.fmPatches();
+
+		//version 3 with foreground estimation
+		//fe.compute();
+		//std::vector<dsc::Patch> resultP = fe.fmPatches();
+		//fe.computeRefPatches();
+		//std::vector<dsc::Patch> refResults = fe.fmPatches();
+
+		//for (int i = 0; i < resultP.size(); i++) {
+		//	dsc::Patch tmpPatch = resultP[i];
+		//	dsc::Patch tmpPatchRef = refResults[i];
+		//    double fmV = tmpPatchRef.fm() > 0 ? tmpPatch.fm() / tmpPatchRef.fm() : 0;
+		//    resultP[i].setFm(fmV);
+		//}
+
+
+		return resultP;
+
+
+		//    std::ostringstream ss;
+		//    ss << results[0].fm();
+		//    __android_log_write(ANDROID_LOG_INFO, "FocusMeasureDummy", ss.str().c_str());
 	}
 
 	Patch::Patch()
@@ -675,13 +673,13 @@ namespace rdf {
 
 					switch (fm)
 					{
-					case rdf::ContrastEstimation::WEBER:
+					case dsc::ContrastEstimation::WEBER:
 						c = contClass.computeWeber();
 						break;
-					case rdf::ContrastEstimation::MICHELSON:
+					case dsc::ContrastEstimation::MICHELSON:
 						c = contClass.computeMichelson();
 						break;
-					case rdf::ContrastEstimation::RMS:
+					case dsc::ContrastEstimation::RMS:
 						c = contClass.computeRMS();
 						break;
 					default:
