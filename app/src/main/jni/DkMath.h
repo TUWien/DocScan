@@ -37,16 +37,8 @@
 #pragma warning(disable: 4127)		// no 'conditional expression is constant' if qDebug() messages are removed
 #endif
 
-#ifdef WITH_OPENCV
-
 #include "opencv2/core.hpp"
-#include "opencv/cxcore.h"	// c functions e.g. cvRound
-#else
-
-//#define int64 long long;
-#define CV_PI 3.141592653589793238462643383279
-
-#endif
+#include "opencv/cxcore.h"	// c functions e.g. dsc::round
 
 #define DK_DEG2RAD	0.017453292519943
 #define DK_RAD2DEG 	57.295779513082323
@@ -66,6 +58,8 @@
 #endif
 
 namespace dsc {
+
+int round(double x);
 
 /** 
  * Provides useful mathematical functions.
@@ -201,7 +195,6 @@ public:
 		this->y = y;
 	};
 
-#ifdef WITH_OPENCV
 	/**
 	 * Initializes an object by means of the OpenCV size.
 	 * @param s the size.
@@ -228,7 +221,6 @@ public:
 		this->x = (float)p.x;
 		this->y = (float)p.y;
 	};
-#endif
 
 	/** 
 	 * Default destructor.
@@ -655,7 +647,7 @@ public:
 	};
 
 	virtual DkVector round() const {
-		return DkVector((float)cvRound(x), (float)cvRound(y));
+		return DkVector((float)dsc::round(x), (float)dsc::round(y));
 	} 
 
 	///** 
@@ -678,7 +670,6 @@ public:
 		return DkVector(x*vec.x, y*vec.y);
 	};
 
-#ifdef WITH_OPENCV
 	/**
 	 * Convert DkVector to cv::Point.
 	 * @return a cv::Point having the vector's coordinates.
@@ -695,7 +686,7 @@ public:
 	 **/
 	virtual cv::Point getCvPoint() const {
 
-		return cv::Point(cvRound(x), cvRound(y));
+		return cv::Point(dsc::round(x), dsc::round(y));
 	};
 
 	/**
@@ -705,9 +696,8 @@ public:
 	 **/
 	cv::Size getCvSize() const {
 
-		return cv::Size((int)cvRound(width), (int)cvRound(height));
+		return cv::Size(dsc::round(width), dsc::round(height));
 	}
-#endif
 };
 
 }

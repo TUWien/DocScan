@@ -139,12 +139,12 @@ void DkIntersectPoly::cross(DkVertex a, DkVertex b, DkVertex c, DkVertex d, doub
 	double r1 = a1 / ((double)a1 + a2 + DBL_EPSILON);
 	double r2 = a3 / ((double)a3 + a4 + DBL_EPSILON);
 
-	cntrib((int)a.ip.x + cvRound((double)(r1 * (double)(b.ip.x - a.ip.x))),
-		(int)a.ip.y + cvRound((double)(r1 * (double)(b.ip.y - a.ip.y))),
+	cntrib((int)a.ip.x + dsc::round((double)(r1 * (double)(b.ip.x - a.ip.x))),
+		(int)a.ip.y + dsc::round((double)(r1 * (double)(b.ip.y - a.ip.y))),
 		b.ip.x, b.ip.y, 1);
 	cntrib(d.ip.x, d.ip.y,
-		(int)c.ip.x + cvRound((double)(r2 * (double)(d.ip.x - c.ip.x))),
-		(int)c.ip.y + cvRound((double)(r2 * (double)(d.ip.y - c.ip.y))),
+		(int)c.ip.x + dsc::round((double)(r2 * (double)(d.ip.x - c.ip.x))),
+		(int)c.ip.y + dsc::round((double)(r2 * (double)(d.ip.y - c.ip.y))),
 		1);
 };
 

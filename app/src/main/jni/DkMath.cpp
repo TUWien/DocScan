@@ -33,6 +33,16 @@
 
 namespace dsc {
 
+// we had issues with cvRound - that came from a wrong define
+// so basically we could use cvRound instead of our own definition (again)
+int round(double x) {
+
+	if(x >= (int)x+0.5)
+		return (int)x++;
+	else
+		return (int)x;
+}
+
 // DkMath --------------------------------------------------------------------
 
 /** 
@@ -172,7 +182,7 @@ bool DkMath::isPowerOfTwo(unsigned int ps) {
 
 float DkMath::getNextPowerOfTwoDivisior(float factor) {
 
-	int iv = cvRound(1.0f/factor);
+	int iv = dsc::round(1.0f/factor);
 	int pt = getNextPowerOfTwo(iv);
 
 	// if the number is not yet a power of two or pt is one
