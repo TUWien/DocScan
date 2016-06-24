@@ -1,3 +1,26 @@
+/*********************************************************************************
+ *  DocScan is a Android app for document scanning.
+ *
+ *  Author:         Fabian Hollaus, Florian Kleber, Markus Diem
+ *  Organization:   TU Wien, Computer Vision Lab
+ *  Date created:   16. June 2016
+ *
+ *  This file is part of DocScan.
+ *
+ *  DocScan is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Foobar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ *********************************************************************************/
+
 package at.ac.tuwien.caa.docscan;
 
 import android.Manifest;
@@ -22,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
 
     private Camera mCamera;
-    private CameraPreview mPreview;
 
     private static final int PERMISSION_CAMERA = 0;
     private static Activity mActivity;
@@ -147,7 +169,8 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 //                    initCamera();
-                    mPreview.openCamera();
+                    // TODO: do we need this function at all?
+//                    mPreview.openCamera();
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
 

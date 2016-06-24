@@ -42,3 +42,6 @@ Android.mk
 /gradle/wrapper*
 gradlew
 gradlew.bat
+app/build
+openCVLibrary310
+import-summary.txt
