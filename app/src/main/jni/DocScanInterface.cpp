@@ -21,8 +21,11 @@
  *  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
+#ifndef NO_JNI
+
 #include "DocScanInterface.h"
 #include "FocusMeasure.h"
+#include "PageSegmentation.h"
 
 #include <android/log.h>
 #include <jni.h>
@@ -38,11 +41,12 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 
 
     // call the main function:
-    std::vector<rdf::Patch> patches = rdf::getPatches(*((cv::Mat*)src));
+    std::vector<dsc::Patch> patches = dsc::FocusEstimation::apply(*((cv::Mat*)src));
 
     // find the Java Patch class and its constructor:
     jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/Patch");
     jmethodID cnstrctr = env->GetMethodID(patchClass, "<init>", "(IIIID)V");
+    // "(IIIID)V" -> IIII 4xint D 1xdouble V return void
 
     // convert the patches vector to a Java array:
     jobjectArray outJNIArray = env->NewObjectArray(patches.size(), patchClass, NULL);
@@ -74,41 +78,4 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 
 }
 
-//JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativePageSegmentation(JNIEnv * env, jclass cls, jlong src) {
-
-    // call the main function:
-    //rdf::PageRect = rdf::pageSegmentation(*((cv::Mat*)src));
-
-    /*
-    // find the Java Patch class and its constructor:
-    jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/Patch");
-    jmethodID cnstrctr = env->GetMethodID(patchClass, "<init>", "(IIIID)V");
-
-    // convert the patches vector to a Java array:
-    jobjectArray outJNIArray = env->NewObjectArray(patches.size(), patchClass, NULL);
-
-    //jobject patch1 = env->NewObject(patchClass, cnstrctr, 1, 42, 3, 4, 5.4);
-    jobject patch;
-    for (int i = 0; i < patches.size(); i++) {
-        patch = env->NewObject(patchClass, cnstrctr, patches[i].upperLeftX(), patches[i].upperLeftY(),
-            patches[i].width(), patches[i].height(), patches[i].fm());
-        env->SetObjectArrayElement(outJNIArray, i, patch);
-    }
-    */
-
-    // set the returned array:
-
-
-    //setObjectArrayElement(env*, outJNIArray, 0, patch1);
-
-/*
-    if (cnstrctr == 0)
-        __android_log_write(ANDROID_LOG_INFO, "FocusMeasure", "did not find constructor.");
-
-    else
-        __android_log_write(ANDROID_LOG_INFO, "FocusMeasure", "found constructor!");
-*/
-
-//    return outJNIArray;
-
-//}
+#endif // #ifndef NO_JNI

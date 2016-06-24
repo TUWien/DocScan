@@ -45,3 +45,8 @@ gradlew.bat
 app/build
 openCVLibrary310
 import-summary.txt
+
+# msvc
+build2015*
+CMakeUser.cmake
+testimg.jpg
