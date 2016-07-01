@@ -12,8 +12,7 @@ OPENCV_INSTALL_MODULES:=on
 OPENCV_LIB_TYPE:=SHARED
 include ${OPENCVROOT}/sdk/native/jni/OpenCV.mk
 
-# Compile all CPP files, by not using LOCAL_SRC_FILES
-#LOCAL_SRC_FILES := DocScanInterface.cpp FocusMeasure.cpp
+LOCAL_SRC_FILES := DocScanInterface.cpp FocusMeasure.cpp DkMath.cpp
 LOCAL_LDLIBS += -llog
 LOCAL_MODULE := docscan-native
 LOCAL_CFLAGS += -std=c++11
