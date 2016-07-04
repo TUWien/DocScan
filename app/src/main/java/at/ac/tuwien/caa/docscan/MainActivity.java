@@ -26,16 +26,19 @@ package at.ac.tuwien.caa.docscan;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.widget.ImageView;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -50,6 +53,11 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     private static Activity mActivity;
     private CameraView mCameraView;
     private DrawView mDrawView;
+
+    private DrawerLayout mDrawerLayout;
+    private ActionBarDrawerToggle mDrawerToggle;
+    private CharSequence mDrawerTitle;
+    private CharSequence mTitle;
 
 
     static {
@@ -71,36 +79,13 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
         mActivity = this;
 
-//        mPreview = new CameraPreview(this);
-//        setContentView(mPreview);
+        setupNavigationDrawer();
 
-
-//        setContentView(R.layout.activity_main);
-//
-        ImageView i = new ImageView(this);
-//
-        SurfaceView camView = new SurfaceView(this);
-        SurfaceHolder camHolder = camView.getHolder();
-        int PreviewSizeWidth = 640;
-        int PreviewSizeHeight= 480;
-//
-//        CameraPreview2 camPreview = new CameraPreview2(640, 480, i);
-//
         mCameraView = (CameraView) findViewById(R.id.camera_view);
         mDrawView = (DrawView) findViewById(R.id.overlay_view);
         mDrawView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
-
-//        mCameraView = new CameraView(this);
-//
-//
-//        FrameLayout mainLayout = (FrameLayout) findViewById(R.id.camera_preview);
-//        mainLayout.addView(mCameraView, new FrameLayout.LayoutParams(PreviewSizeWidth, PreviewSizeHeight));
-//        mainLayout.addView(i, new FrameLayout.LayoutParams(PreviewSizeWidth, PreviewSizeHeight));
-
         requestPermission();
-//        initCamera();
-
     }
 
     @Override
@@ -257,4 +242,124 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
     }
 
- }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu, menu);
+//        return true;
+//    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+
+        // Pass the event to ActionBarDrawerToggle, if it returns
+        // true, then it has handled the app icon touch event
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
+
+
+        switch (item.getItemId()) {
+
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
+                return true;
+
+
+
+
+
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    private void setupNavigationDrawer() {
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+
+//            /** Called when a drawer has settled in a completely closed state. */
+//            public void onDrawerClosed(View view) {
+//                super.onDrawerClosed(view);
+//                getSupportActionBar().setTitle(mTitle);
+//            }
+//
+//            /** Called when a drawer has settled in a completely open state. */
+//            public void onDrawerOpened(View drawerView) {
+//                super.onDrawerOpened(drawerView);
+//                getSupportActionBar().setTitle(mDrawerTitle);
+//            }
+
+
+        };
+
+        // Set the drawer toggle as the DrawerListener
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+        NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
+        setupDrawerContent(mDrawer);
+
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
+    }
+
+
+    private void setupDrawerContent(NavigationView navigationView) {
+
+        navigationView.setNavigationItemSelectedListener(
+
+                new NavigationView.OnNavigationItemSelectedListener() {
+
+                    @Override
+
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+
+                        selectDrawerItem(menuItem);
+
+                        return true;
+
+                    }
+
+                });
+
+    }
+
+    private void selectDrawerItem(MenuItem menuItem) {
+
+        switch(menuItem.getItemId()) {
+
+
+
+        }
+
+        mDrawerLayout.closeDrawers();
+
+    }
+
+}

@@ -115,9 +115,11 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
                 return;
             }
 
-            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+//            Clear the screen from previous drawings:
+            canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
 
-//            canvas.drawRect(0, 0, 100, 100, mRectPaint);
+//            mRectPaint.setARGB(255,100,100,100);
+//            canvas.drawRect(0, 0, mCanvasWidth-10, mCanvasHeight-10, mRectPaint);
 
             if (mFocusPatches == null)
                 return;
