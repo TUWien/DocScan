@@ -320,12 +320,14 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-        NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
-        setupDrawerContent(mDrawer);
+        // Used for naviatigation drawer: This is currently not used!
 
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
+//        NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
+//        setupDrawerContent(mDrawer);
+//
+//
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setHomeButtonEnabled(true);
 
     }
 

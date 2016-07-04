@@ -157,71 +157,29 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
 
-//        mCameraFrameThread.setSurfaceSize(width, height);
         Camera.Parameters params = mCamera.getParameters();
-        List<Camera.Size> sizes = params.getSupportedPreviewSizes();
+        List<Camera.Size> cameraSizes = params.getSupportedPreviewSizes();
 
+        Camera.Size bestSize = getBestFittingSize(cameraSizes, width, height);
 
-//        int minDiff = Integer.MAX_VALUE;
-//        for (Camera.Size size : sizes) {
-//            if (Math.abs(size.height - height) < minDiff) {
-//                mFrameWidth = size.width;
-//                mFrameHeight = size.height;
-//                minDiff = Math.abs(size.height - height);
-//            }
-//        }
-
-        final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio=(double)height / width;
-
-
-        Camera.Size optimalSize = null;
-        double minDiff = Double.MAX_VALUE;
-
-        int targetHeight = height;
-
-        for (Camera.Size size : sizes) {
-            double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
-            if (Math.abs(size.height - targetHeight) < minDiff) {
-                optimalSize = size;
-                minDiff = Math.abs(size.height - targetHeight);
-            }
-        }
-
-        if (optimalSize == null) {
-            minDiff = Double.MAX_VALUE;
-            for (Camera.Size size : sizes) {
-                if (Math.abs(size.height - targetHeight) < minDiff) {
-                    optimalSize = size;
-                    minDiff = Math.abs(size.height - targetHeight);
-                }
-            }
-        }
-
-        mFrameWidth = optimalSize.width;
-        mFrameHeight = optimalSize.height;
+        mFrameWidth = bestSize.width;
+        mFrameHeight = bestSize.height;
 
         setAspectRatio(mFrameWidth, mFrameHeight);
 
-//        mCameraFrameThread.setSurfaceSize(mFrameWidth, mFrameHeight);
 
         // Use autofocus if available:
         if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
             params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
 
-//        mFrameWidth = 1920;
-//        mFrameHeight = 1080;
-//
         params.setPreviewSize(mFrameWidth, mFrameHeight);
-//        params.setPreviewSize(mFrameHeight, mFrameWidth);
-
 
         mCamera.setParameters(params);
 
         MainActivity.setCameraDisplayOrientation(mCamera);
 
         try {
+
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
 
@@ -233,33 +191,107 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     }
 
 
+    private Camera.Size getBestFittingSize(List<Camera.Size> cameraSizes, int width, int height) {
+
+        Camera.Size bestSize = null;
+
+        final double ASPECT_TOLERANCE = 0.1;
+        double targetRatio = (double)height / width;
+
+        double minDiff = Double.MAX_VALUE;
+
+        int targetHeight;
+        if (width < height)
+            targetHeight = height;
+        else
+            targetHeight = width;
+
+        for (Camera.Size size : cameraSizes) {
+            double ratio;
+            if (width < height)
+                ratio = (double) size.width / size.height;
+            else
+                ratio = (double) size.height / size.width;
+
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
+            if (Math.abs(size.height - targetHeight) < minDiff) {
+                bestSize = size;
+                minDiff = Math.abs(size.height - targetHeight);
+            }
+        }
+
+        if (bestSize == null) {
+            minDiff = Double.MAX_VALUE;
+            for (Camera.Size size : cameraSizes) {
+                if (Math.abs(size.height - targetHeight) < minDiff) {
+                    bestSize = size;
+                    minDiff = Math.abs(size.height - targetHeight);
+                }
+            }
+        }
+
+        return bestSize;
+
+    }
+
     public void setAspectRatio(int width, int height) {
 //        if (width < 0 || height < 0) {
 //            throw new IllegalArgumentException("Size cannot be negative.");
 //        }
         mRatioWidth = width;
         mRatioHeight = height;
-        requestLayout();
+//        requestLayout();
     }
 
-//    @Override
-//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-//        int width = MeasureSpec.getSize(widthMeasureSpec);
-//        int height = MeasureSpec.getSize(heightMeasureSpec);
-//        if (0 == mRatioWidth || 0 == mRatioHeight) {
-//            setMeasuredDimension(width, height);
-//        } else {
+    // Scales the camera view so that the preview has original width to height ratio:
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+        if (0 == mRatioWidth || 0 == mRatioHeight) {
+            setMeasuredDimension(width, height);
+        } else {
+
+
+            // Note that mFrameWidth > mFrameHeight - regardless of the orientation!
+            // Portrait mode:
+            if (width < height) {
+                double resizeFac = (double) width / mFrameHeight;
+                int scaledHeight = (int) Math.round(mFrameWidth * resizeFac);
+                if (scaledHeight > height)
+                    scaledHeight = height;
+                setMeasuredDimension(width, scaledHeight);
+            }
+            // Landscape mode:
+            else {
+                double resizeFac = (double) height / mFrameHeight;
+                int scaledWidth = (int) Math.round(mFrameWidth * resizeFac);
+                if (scaledWidth > width)
+                    scaledWidth = width;
+                setMeasuredDimension(scaledWidth, height);
+
+            }
+
+
+
+//            // Portrait mode use the available width:
 //            if (width < height * mRatioWidth / mRatioHeight) {
-//                double tmp = width * mRatioHeight / mRatioWidth;
-//                setMeasuredDimension(width, (int) tmp);
+//                double resizeFac = (double) mFrameHeight / mFrameWidth;
+//                int scaledHeight = (int) Math.round(height * resizeFac);
+//
+////                setMeasuredDimension(width, (int) tmp);
+//                setMeasuredDimension(width, 200);
+////                setMeasuredDimension((int) tmp , width);
 ////                setMeasuredDimension(width, width * mRatioHeight / mRatioWidth);
+//            // Landscape mode:
 //            } else {
 //                double tmp = height * mRatioWidth / mRatioHeight;
-//                setMeasuredDimension(height * mRatioWidth / mRatioHeight, height);
+////                setMeasuredDimension(height * mRatioWidth / mRatioHeight, height);
+//                setMeasuredDimension(height, (int) tmp);
 //            }
-//        }
-//    }
+        }
+    }
 
     @Override
     public void surfaceCreated(SurfaceHolder arg0)

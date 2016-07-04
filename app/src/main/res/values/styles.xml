@@ -8,14 +8,14 @@
         <!--<item name="colorAccent">@color/colorAccent</item>-->
     <!--</style>-->
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Taken from the Google color palette: -->
         <!-- https://www.google.com/design/spec/style/color.html#color-color-palette -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">#263238</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <!--<item name="android:dialogTheme">@style/AppCompatAlertDialogStyle</item>-->
-        <!--<item name="android:alertDialogTheme">@style/AppCompatAlertDialogStyle</item>-->
+
     </style>
+
 
 </resources>
