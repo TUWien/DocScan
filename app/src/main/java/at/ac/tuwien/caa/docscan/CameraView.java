@@ -43,7 +43,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  * Created by fabian on 16.06.2016.
  */
 
-public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback
+public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, OverlayView.SizeUpdate
 {
 
     public static final String DEBUG_TAG = "[Camera View]";
@@ -121,8 +121,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     private CameraFrameThread mCameraFrameThread;
     private NativeWrapper.CVCallback mCVCallback;
     private SurfaceHolder mHolder;
-    private int mRatioWidth;
-    private int mRatioHeight;
 
     private static String TAG = "CameraView";
 
@@ -164,9 +162,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         mFrameWidth = bestSize.width;
         mFrameHeight = bestSize.height;
-
-        setAspectRatio(mFrameWidth, mFrameHeight);
-
 
         // Use autofocus if available:
         if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
@@ -234,64 +229,50 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
     }
 
-    public void setAspectRatio(int width, int height) {
-//        if (width < 0 || height < 0) {
-//            throw new IllegalArgumentException("Size cannot be negative.");
-//        }
-        mRatioWidth = width;
-        mRatioHeight = height;
-//        requestLayout();
+    public void setMeasuredSize(int width, int height) {
+
+        setMeasuredDimension(width, height);
+
     }
 
-    // Scales the camera view so that the preview has original width to height ratio:
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
-        if (0 == mRatioWidth || 0 == mRatioHeight) {
-            setMeasuredDimension(width, height);
-        } else {
-
-
-            // Note that mFrameWidth > mFrameHeight - regardless of the orientation!
-            // Portrait mode:
-            if (width < height) {
-                double resizeFac = (double) width / mFrameHeight;
-                int scaledHeight = (int) Math.round(mFrameWidth * resizeFac);
-                if (scaledHeight > height)
-                    scaledHeight = height;
-                setMeasuredDimension(width, scaledHeight);
-            }
-            // Landscape mode:
-            else {
-                double resizeFac = (double) height / mFrameHeight;
-                int scaledWidth = (int) Math.round(mFrameWidth * resizeFac);
-                if (scaledWidth > width)
-                    scaledWidth = width;
-                setMeasuredDimension(scaledWidth, height);
-
-            }
-
-
-
-//            // Portrait mode use the available width:
-//            if (width < height * mRatioWidth / mRatioHeight) {
-//                double resizeFac = (double) mFrameHeight / mFrameWidth;
-//                int scaledHeight = (int) Math.round(height * resizeFac);
+//    public void setMeasuredSize(int width, height) {
 //
-////                setMeasuredDimension(width, (int) tmp);
-//                setMeasuredDimension(width, 200);
-////                setMeasuredDimension((int) tmp , width);
-////                setMeasuredDimension(width, width * mRatioHeight / mRatioWidth);
-//            // Landscape mode:
-//            } else {
-//                double tmp = height * mRatioWidth / mRatioHeight;
-////                setMeasuredDimension(height * mRatioWidth / mRatioHeight, height);
-//                setMeasuredDimension(height, (int) tmp);
+//        setMeasuredDimension(width, height);
+//
+//    }
+
+//    // Scales the camera view so that the preview has original width to height ratio:
+//    @Override
+//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+//
+//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+//        int width = MeasureSpec.getSize(widthMeasureSpec);
+//        int height = MeasureSpec.getSize(heightMeasureSpec);
+//        if (0 == mFrameHeight || 0 == mFrameWidth) {
+//            setMeasuredDimension(width, height);
+//        } else {
+//
+//
+//            // Note that mFrameWidth > mFrameHeight - regardless of the orientation!
+//            // Portrait mode:
+//            if (width < height) {
+//                double resizeFac = (double) width / mFrameHeight;
+//                int scaledHeight = (int) Math.round(mFrameWidth * resizeFac);
+//                if (scaledHeight > height)
+//                    scaledHeight = height;
+//                setMeasuredDimension(width, scaledHeight);
 //            }
-        }
-    }
+//            // Landscape mode:
+//            else {
+//                double resizeFac = (double) height / mFrameHeight;
+//                int scaledWidth = (int) Math.round(mFrameWidth * resizeFac);
+//                if (scaledWidth > width)
+//                    scaledWidth = width;
+//                setMeasuredDimension(scaledWidth, height);
+//            }
+//
+//        }
+//    }
 
     @Override
     public void surfaceCreated(SurfaceHolder arg0)
@@ -339,6 +320,18 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         mCamera.stopPreview();
         mCamera.release();
         mCamera = null;
+    }
+
+    public int getFrameWidth() {
+
+        return mFrameWidth;
+
+    }
+
+    public int getFrameHeight() {
+
+        return mFrameHeight;
+
     }
 
     protected byte[] getFrame() {

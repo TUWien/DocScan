@@ -7,21 +7,23 @@
 
 
 
-    <!-- The main content view -->
-    <FrameLayout
+    <!-- The main content view START -->
+    <at.ac.tuwien.caa.docscan.OverlayView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:id="@+id/overlay_view"
         >
         <at.ac.tuwien.caa.docscan.DrawView
-            android:id="@+id/overlay_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:id="@+id/draw_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
         <at.ac.tuwien.caa.docscan.CameraView
             android:id="@+id/camera_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
-    </FrameLayout>
+    </at.ac.tuwien.caa.docscan.OverlayView>
+    <!-- The main content view END -->
 
 
 

@@ -39,7 +39,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  * https://github.com/Miserlou/Android-SDK-Samples/blob/master/LunarLander
  */
 
-public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
+public class DrawView extends SurfaceView implements SurfaceHolder.Callback, OverlayView.SizeUpdate {
 
     class DrawerThread extends Thread {
 
@@ -118,8 +118,8 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 //            Clear the screen from previous drawings:
             canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
 
-//            mRectPaint.setARGB(255,100,100,100);
-//            canvas.drawRect(0, 0, mCanvasWidth-10, mCanvasHeight-10, mRectPaint);
+            mRectPaint.setARGB(200,0,100,0);
+            canvas.drawRect(0, 0, mCanvasWidth, mCanvasHeight, mRectPaint);
 
             if (mFocusPatches == null)
                 return;
@@ -134,8 +134,6 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
 
             }
 
-
-//            canvas.save();
         }
 
     }
@@ -192,6 +190,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback {
             } catch (InterruptedException e) {
             }
         }
+
+    }
+
+    public void setMeasuredSize(int width, int height) {
+
+        setMeasuredDimension(width, height);
 
     }
 

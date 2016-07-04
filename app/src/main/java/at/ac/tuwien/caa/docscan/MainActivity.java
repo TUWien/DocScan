@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
     private static final int PERMISSION_CAMERA = 0;
     private static Activity mActivity;
+    private OverlayView mOverlayView;
     private CameraView mCameraView;
     private DrawView mDrawView;
 
@@ -82,8 +83,12 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         setupNavigationDrawer();
 
         mCameraView = (CameraView) findViewById(R.id.camera_view);
-        mDrawView = (DrawView) findViewById(R.id.overlay_view);
+        mDrawView = (DrawView) findViewById(R.id.draw_view);
         mDrawView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
+
+        mOverlayView = (OverlayView) findViewById(R.id.overlay_view);
+        mOverlayView.setCameraView(mCameraView);
+        mOverlayView.setDrawView(mDrawView);
 
         requestPermission();
     }
@@ -299,7 +304,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     private void setupNavigationDrawer() {
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
 
 //            /** Called when a drawer has settled in a completely closed state. */
@@ -320,7 +324,10 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-        // Used for naviatigation drawer: This is currently not used!
+        // START --------------------- navigation drawer ---------------------
+
+        // Used for naviatigation drawer: This is currently not used, but is left to be uncommented!
+
 
 //        NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
 //        setupDrawerContent(mDrawer);
@@ -329,6 +336,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 //        getSupportActionBar().setHomeButtonEnabled(true);
 
+        // END --------------------- navigation drawer ---------------------
     }
 
 
