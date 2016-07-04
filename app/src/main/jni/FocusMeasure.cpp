@@ -32,15 +32,26 @@
 
 namespace dsc {
 
+	/// <summary>
+	/// Initializes a new instance of the Basic Focus Measure class.
+	/// </summary>
 	BasicFM::BasicFM()
 	{
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="BasicFM"/> class and sets the source image.
+	/// </summary>
+	/// <param name="img">The img.</param>
 	BasicFM::BasicFM(const cv::Mat & img)
 	{
 		mSrcImg = img;
 	}
 
+	/// <summary>
+	/// Computes Brenner's focus measure (gradient based)
+	/// </summary>
+	/// <returns>The focus measure value</returns>
 	double BasicFM::computeBREN()
 	{
 
@@ -67,6 +78,11 @@ namespace dsc {
 		return mVal;
 	}
 
+	/// <summary>
+	/// Computes the gray-level variance (Krotkov86).
+	/// Has used for autofocus and SFF.
+	/// </summary>
+	/// <returns>The focus measure value</returns>
 	double BasicFM::computeGLVA()
 	{
 
@@ -82,6 +98,10 @@ namespace dsc {
 		return mVal;
 	}
 
+	/// <summary>
+	/// Computes the normalized gray level local variance (Santos97)
+	/// </summary>
+	/// <returns>The focus measure value</returns>
 	double BasicFM::computeGLVN()
 	{
 
@@ -94,6 +114,10 @@ namespace dsc {
 		return mVal;
 	}
 
+	/// <summary>
+	/// Computes the gray level local variance (Pech00)
+	/// </summary>
+	/// <returns>The focus measure value</returns>
 	double BasicFM::computeGLLV()
 	{
 
@@ -120,6 +144,10 @@ namespace dsc {
 		return mVal;
 	}
 
+	/// <summary>
+	/// Computes the thresholded gradient (Snatos97).
+	/// </summary>
+	/// <returns>The focus measure value</returns>
 	double BasicFM::computeGRAT()
 	{
 
@@ -147,6 +175,10 @@ namespace dsc {
 		return mVal;
 	}
 
+	/// <summary>
+	/// Computes the squared gradient in horizontal direction (Eskicioglu95)
+	/// </summary>
+	/// <returns>The focus measure value</returns>
 	double BasicFM::computeGRAS()
 	{
 
@@ -163,6 +195,10 @@ namespace dsc {
 		return mVal;
 	}
 
+	/// <summary>
+	/// Computes the energy of laplacian (Subbarao92a)
+	/// </summary>
+	/// <returns>The focus measure value</returns>
 	double BasicFM::computeLAPE()
 	{
 		cv::Mat laImg;
@@ -177,6 +213,10 @@ namespace dsc {
 		return mVal;
 	}
 
+	/// <summary>
+	/// Computes the Variance of the Laplacians
+	/// </summary>
+	/// <returns>The focus measure value</returns>
 	double BasicFM::computeLAPV()
 	{
 		cv::Mat laImg;
@@ -195,6 +235,10 @@ namespace dsc {
 		return mVal;
 	}
 
+	/// <summary>
+	/// Computes Brenner's focus measure and determines the ratio of the median/mean.
+	/// </summary>
+	/// <returns>The focus measure value</returns>
 	double BasicFM::computeROGR()
 	{
 		if (checkInput()) {
@@ -222,26 +266,47 @@ namespace dsc {
 		return mVal;
 	}
 
+	/// <summary>
+	/// Sets the img (will be converted to one channel and 32F.
+	/// </summary>
+	/// <param name="img">The source img.</param>
 	void BasicFM::setImg(const cv::Mat & img)
 	{
 		mSrcImg = img;
 	}
 
+	/// <summary>
+	/// Returns the fm value if calculated. Otherwise -1 is returned.
+	/// </summary>
+	/// <returns>The focus measure value</returns>
 	double BasicFM::val() const
 	{
 		return mVal;
 	}
 
+	/// <summary>
+	/// Sets the size of the window for focus measure which use a sliding window.
+	/// Default value = 15.
+	/// </summary>
+	/// <param name="s">The size s of the sliding window.</param>
 	void BasicFM::setWindowSize(int s)
 	{
 		mWindowSize = s;
 	}
 
+	/// <summary>
+	/// Returns the window size for focus measure which use a sliding window.
+	/// </summary>
+	/// <returns>Window size</returns>
 	int BasicFM::windowSize() const
 	{
 		return mWindowSize;
 	}
 
+	/// <summary>
+	/// Checks the input and converts to grayscale and 32F if necessary
+	/// </summary>
+	/// <returns>False if the src image is empty, true otherwise.</returns>
 	bool BasicFM::checkInput()
 	{
 		if (mSrcImg.empty())
@@ -260,10 +325,18 @@ namespace dsc {
 	}
 
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FocusEstimation"/> class.
+	/// </summary>
 	FocusEstimation::FocusEstimation()
 	{
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FocusEstimation"/> class.
+	/// The source image of which the focus should be estimated is set.
+	/// </summary>
+	/// <param name="img">The source img.</param>
 	FocusEstimation::FocusEstimation(const cv::Mat & img)
 	{
 
@@ -271,6 +344,12 @@ namespace dsc {
 
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="FocusEstimation"/> class.
+	/// The source image of which the focus should be estimated is set and the patch window size (sliding window).
+	/// </summary>
+	/// <param name="img">The source img.</param>
+	/// <param name="wSize">Size w of the sliding window.</param>
 	FocusEstimation::FocusEstimation(const cv::Mat & img, int wSize)
 	{
 
@@ -279,6 +358,14 @@ namespace dsc {
 		mWindowSize = wSize;
 	}
 
+	/// <summary>
+	/// Calculates for each image patch the focus measure value. Result is a vector of Patches (see class Patch).
+	/// If the image is binary, the relative foreground (foreground pixel / patchSize) and the weight is stored for each Patch.
+	/// </summary>
+	/// <param name="fm">The specified focuse measure method fm (e.g. Brenner).</param>
+	/// <param name="fmImg">The image fmImg to calculate the focus measure on. If empty, the src image is taken.</param>
+	/// <param name="binary">if set to <c>true</c> [binary] the input image is binary, specifying the foreground image. The foreground area and the weight is saved to the image patch</param>
+	/// <returns>True if the focus measure could be computed, false otherwise.</returns>
 	bool FocusEstimation::compute(FocusMeasure fm, cv::Mat fmImg, bool binary)
 	{
 
@@ -367,6 +454,15 @@ namespace dsc {
 		return true;
 	}
 
+
+	/// <summary>
+	/// Computes the reference patches. The foreground is estimmated using Otsu.
+	/// Based on the foreground image the fm for each patch is calculated.
+	/// This can be seen as ideal reference, since only ideal edges exist (0-1).
+	/// </summary>
+	/// <param name="fm">The specified focuse measure method fm (e.g. Brenner).</param>
+	/// <param name="binary">if set to <c>true</c> [binary] the input image is binary, specifying the foreground image. The foreground area and the weight is saved to the image patch in this case.</param>
+	/// <returns></returns>
 	bool FocusEstimation::computeRefPatches(FocusMeasure fm, bool binary)
 	{
 		if (mSrcImg.empty())
@@ -380,11 +476,20 @@ namespace dsc {
 		return compute(fm, binImg, binary);
 	}
 
+	/// <summary>
+	/// Returns the patches containing the fm value and optional the area and the weight.
+	/// </summary>
+	/// <returns>Returns the local image patches</returns>
 	std::vector<Patch> FocusEstimation::fmPatches() const
 	{
 		return mFmPatches;
 	}
 
+	/// <summary>
+	/// Sets the source img.
+	/// If needed the image is converted to grayscale and 32F.
+	/// </summary>
+	/// <param name="img">The img.</param>
 	void FocusEstimation::setImg(const cv::Mat & img)
 	{
 		mSrcImg = img;
@@ -400,21 +505,41 @@ namespace dsc {
 			mSrcImg.convertTo(mSrcImg, CV_32F);
 	}
 
+	/// <summary>
+	/// Sets the size of the window (image patch) which is used to calculate a local focus measure.
+	/// </summary>
+	/// <param name="s">The local window (patch) size s.</param>
 	void FocusEstimation::setWindowSize(int s)
 	{
 		mWindowSize = s;
 	}
 
+	/// <summary>
+	/// Sets the split size (spacing) between local image patches (0 by default).
+	/// </summary>
+	/// <param name="s">The split size (spacing) s.</param>
 	void FocusEstimation::setSplitSize(int s)
 	{
 		mSplitSize = s;
 	}
 
+	/// <summary>
+	/// Returns the window size (local patch size).
+	/// </summary>
+	/// <returns>The local window size.</returns>
 	int FocusEstimation::windowSize() const
 	{
 		return mWindowSize;
 	}
 
+	/// <summary>
+	/// Applies the specified focus estimation.
+	/// The window size is 1/5 min(width/height) of the src image.
+	/// Currently, Brenner is used as fm value and the foreground is estimated (Otsu)
+	/// to normalize the fm value.
+	/// </summary>
+	/// <param name="src">The source image.</param>
+	/// <returns>A vector with image patches containing the fm value.</returns>
 	std::vector<dsc::Patch> dsc::FocusEstimation::apply(const cv::Mat & src) {
 
 		static dsc::FocusEstimation fe;
@@ -455,10 +580,20 @@ namespace dsc {
 		//    __android_log_write(ANDROID_LOG_INFO, "FocusMeasureDummy", ss.str().c_str());
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Patch"/> class.
+	/// </summary>
 	Patch::Patch()
 	{
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Patch"/> class.
+	/// </summary>
+	/// <param name="p">The upper left point of the patch.</param>
+	/// <param name="w">The width of the patch.</param>
+	/// <param name="h">The height of the patch.</param>
+	/// <param name="f">The focus measure of the patch.</param>
 	Patch::Patch(cv::Point p, int w, int h, double f)
 	{
 		mUpperLeft = p;
@@ -467,6 +602,14 @@ namespace dsc {
 		mFm = f;
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Patch"/> class.
+	/// </summary>
+	/// <param name="p">The upper left point of the patch.</param>
+	/// <param name="w">The width of the patch.</param>
+	/// <param name="h">The height of the patch.</param>
+	/// <param name="f">The focus measure of the patch.</param>
+	/// <param name="fRef">The reference focus measure of the patch.</param>
 	Patch::Patch(cv::Point p, int w, int h, double f, double fRef)
 	{
 		mUpperLeft = p;
@@ -476,6 +619,12 @@ namespace dsc {
 		mFmReference = fRef;
 	}
 
+	/// <summary>
+	/// Sets the position based on the upper left point, the height and the width.
+	/// </summary>
+	/// <param name="p">The upper left point of the patch.</param>
+	/// <param name="w">The width of the patch.</param>
+	/// <param name="h">The height of the patch.</param>
 	void Patch::setPosition(cv::Point p, int w, int h)
 	{
 		mUpperLeft = p;
@@ -483,11 +632,19 @@ namespace dsc {
 		mHeight = h;
 	}
 
+	/// <summary>
+	/// Returns the upper left point.
+	/// </summary>
+	/// <returns>The upper left point.</returns>
 	cv::Point Patch::upperLeft() const
 	{
 		return mUpperLeft;
 	}
 
+	/// <summary>
+	/// Returns the center of the patch.
+	/// </summary>
+	/// <returns>The center point.</returns>
 	cv::Point Patch::center() const
 	{
 		cv::Point center(mUpperLeft.x+mWidth/2, mUpperLeft.y+mHeight/2);
@@ -495,68 +652,121 @@ namespace dsc {
 		return center;
 	}
 
+	/// <summary>
+	/// Sets the focus measure reference value.
+	/// </summary>
+	/// <param name="f">The fm reference value.</param>
 	void Patch::setFmRef(double f)
 	{
 		mFmReference = f;
 	}
 
+	/// <summary>
+	/// Sets the focus measure value.
+	/// </summary>
+	/// <param name="f">The f.</param>
 	void Patch::setFm(double f)
 	{
 	    mFm = f;
 	}
 
+	/// <summary>
+	/// Sets the weight of  the patch based on the ratio of the detected foreground and the area.
+	/// </summary>
+	/// <param name="w">The weight.</param>
 	void Patch::setWeight(double w)
 	{
 		mWeight = w;
 	}
 
+	/// <summary>
+	/// Sets the area of the patch (foreground).
+	/// </summary>
+	/// <param name="a">Foreground Area.</param>
 	void Patch::setArea(double a)
 	{
 		mArea = a;
 	}
 
+	/// <summary>
+	/// Returns the patch width.
+	/// </summary>
+	/// <returns>The Width.</returns>
 	int Patch::width() const
 	{
 		return mWidth;
 	}
 
+	/// <summary>
+	/// Returns the patch height.
+	/// </summary>
+	/// <returns>The height.</returns>
 	int Patch::height() const
 	{
 		return mHeight;
 	}
 
+	/// <summary>
+	// Returns the fm value
+	/// </summary>
+	/// <returns>The fm.</returns>
 	double Patch::fm() const
 	{
 		return mFm;
 	}
 
+	/// <summary>
+	/// Returns the weight based on the ratio of the foreground and patch size,
+	/// </summary>
+	/// <returns>The weight</returns>
 	double Patch::weight() const
 	{
 		return mWeight;
 	}
 
+	/// <summary>
+	/// Returns the area of the detected foreground.
+	/// </summary>
+	/// <returns>The foreground area.</returns>
 	double Patch::area() const
 	{
 		return mArea;
 	}
 
+	/// <summary>
+	/// Returns the fm value as string. NOT IMPLEMENTED.
+	/// </summary>
+	/// <returns>The fm value.</returns>
 	std::string Patch::fmS() const
 	{
 		return std::string();
 	}
 
+	/// <summary>
+	/// Returns the reference fm value.
+	/// </summary>
+	/// <returns>The reference fm value.</returns>
 	double Patch::fmRef() const
 	{
 		return mFmReference;
 	}
 
-	// inserted by fabian (allows for getting the coordinates without using OpenCV):
+	/// <summary>
+	/// The x coordinate of the upper left point of the patch.
+	/// (allows for getting the coordinates without using OpenCV).
+	/// </summary>
+	/// <returns>The x coordinate of the upper left point.</returns>
 	int Patch::upperLeftX() const {
 
 	    return (int) mUpperLeft.x;
 
 	}
 
+	/// <summary>
+	/// The y coordinate of the upper left point of the patch.
+	/// (allows for getting the coordinates without using OpenCV).
+	/// </summary>
+	/// <returns>The y coordinate of the upper left point.</returns>
     int Patch::upperLeftY() const {
 
         return (int) mUpperLeft.y;
