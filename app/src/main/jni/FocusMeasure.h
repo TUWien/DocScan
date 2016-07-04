@@ -42,6 +42,10 @@ namespace dsc {
     // read defines
     class Patch;
 
+	/// <summary>
+	/// Basic class to calculate the focus level for each image pixel - Focus Measure (FM).
+	/// The focus operators are gradient-based, Laplacian-based and Statistics-based operators.
+	/// </summary>
 	class BasicFM {
 
 	public:
@@ -76,6 +80,11 @@ namespace dsc {
 	};
 
 
+	/// <summary>
+	/// Basic Contrast class.
+	/// Calculates Weber, Michelson and Root-Mean-Square (RMS) contrast for an image.
+	/// Experimentally!!!
+	/// </summary>
 	class BasicContrast {
 
 	public:
@@ -103,6 +112,10 @@ namespace dsc {
 	};
 
 
+	/// <summary>
+	/// Defines an image patch. For each image patch the focus measure, the area detected as foreground,
+	/// and thus a weighting can be stored.
+	/// </summary>
 	class DllCoreExport Patch {
 	
 	public:
@@ -142,6 +155,13 @@ namespace dsc {
 		double mArea = -1;
 	};
 
+	/// <summary>
+	/// Calculates the focus measures for an image (based on the BasicFM class).
+	/// Based on a defined sliding window size, for each window (image patch) the fm value
+	/// is calculated. The fm method can be chosen (see enum FocusMeasure and BasicFM class).
+	/// To normalize the fm value, the foreground for each patch is estimated using Otsu, and the
+	/// fm value for the binary foreground image is calculated as reference.
+	/// </summary>
 	class DllCoreExport FocusEstimation {
 
 	public:
@@ -173,6 +193,11 @@ namespace dsc {
 	};
 
 
+	/// <summary>
+	/// Estimates the Contrast for an image using the BasicContrast Class.
+	/// (Based on Weber, Michelson and RMS contrast).
+	/// Experimentally!!!
+	/// </summary>
 	class ContrastEstimation {
 
 	public:
