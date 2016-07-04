@@ -26,6 +26,7 @@ package at.ac.tuwien.caa.docscan;
 import android.content.Context;
 import android.hardware.Camera;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -51,7 +52,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         private CameraView mCameraView;
         private boolean mIsRunning;
-        private int mSurfaceWidth,mSurfaceHeight;
+
 
         public CameraFrameThread(CameraView cameraView) {
 
@@ -65,12 +66,12 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         }
 
-        public void setSurfaceSize(int width, int height) {
-
-            mSurfaceWidth = width;
-            mSurfaceHeight = height;
-
-        }
+//        public void setSurfaceSize(int width, int height) {
+//
+//            mSurfaceWidth = width;
+//            mSurfaceHeight = height;
+//
+//        }
 
         @Override
         public void run() {
@@ -116,10 +117,12 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     private Camera mCamera = null;
     private int mFrameWidth;
     private int mFrameHeight;
-    private SurfaceHolder mHolder;
     private byte[] mFrame;
     private CameraFrameThread mCameraFrameThread;
     private NativeWrapper.CVCallback mCVCallback;
+    private SurfaceHolder mHolder;
+    private int mRatioWidth;
+    private int mRatioHeight;
 
     private static String TAG = "CameraView";
 
@@ -153,45 +156,110 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
-//        Parameters parameters;
 
-//        parameters = mCamera.getParameters();
-//        // Set the camera preview size
-//        parameters.setPreviewSize(PreviewSizeWidth, PreviewSizeHeight);
-
-        holder = holder;
-//        mHandler = new Handler(Looper.getMainLooper());
-
-        mCameraFrameThread.setSurfaceSize(width, height);
+//        mCameraFrameThread.setSurfaceSize(width, height);
         Camera.Parameters params = mCamera.getParameters();
         List<Camera.Size> sizes = params.getSupportedPreviewSizes();
 
-//        mFrameWidth = width;
-//        mFrameHeight = height;
 
-        // selecting optimal camera preview size
+//        int minDiff = Integer.MAX_VALUE;
+//        for (Camera.Size size : sizes) {
+//            if (Math.abs(size.height - height) < minDiff) {
+//                mFrameWidth = size.width;
+//                mFrameHeight = size.height;
+//                minDiff = Math.abs(size.height - height);
+//            }
+//        }
 
-        int minDiff = Integer.MAX_VALUE;
+        final double ASPECT_TOLERANCE = 0.1;
+        double targetRatio=(double)height / width;
+
+
+        Camera.Size optimalSize = null;
+        double minDiff = Double.MAX_VALUE;
+
+        int targetHeight = height;
+
         for (Camera.Size size : sizes) {
-            if (Math.abs(size.height - height) < minDiff) {
-                mFrameWidth = size.width;
-                mFrameHeight = size.height;
-                minDiff = Math.abs(size.height - height);
+            double ratio = (double) size.width / size.height;
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
+            if (Math.abs(size.height - targetHeight) < minDiff) {
+                optimalSize = size;
+                minDiff = Math.abs(size.height - targetHeight);
             }
         }
+
+        if (optimalSize == null) {
+            minDiff = Double.MAX_VALUE;
+            for (Camera.Size size : sizes) {
+                if (Math.abs(size.height - targetHeight) < minDiff) {
+                    optimalSize = size;
+                    minDiff = Math.abs(size.height - targetHeight);
+                }
+            }
+        }
+
+        mFrameWidth = optimalSize.width;
+        mFrameHeight = optimalSize.height;
+
+        setAspectRatio(mFrameWidth, mFrameHeight);
+
+//        mCameraFrameThread.setSurfaceSize(mFrameWidth, mFrameHeight);
 
         // Use autofocus if available:
         if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
             params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
 
+//        mFrameWidth = 1920;
+//        mFrameHeight = 1080;
+//
         params.setPreviewSize(mFrameWidth, mFrameHeight);
+//        params.setPreviewSize(mFrameHeight, mFrameWidth);
 
 
         mCamera.setParameters(params);
 
         MainActivity.setCameraDisplayOrientation(mCamera);
-        mCamera.startPreview();
+
+        try {
+            mCamera.setPreviewDisplay(mHolder);
+            mCamera.startPreview();
+
+        } catch (Exception e){
+            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+        }
+
+
     }
+
+
+    public void setAspectRatio(int width, int height) {
+//        if (width < 0 || height < 0) {
+//            throw new IllegalArgumentException("Size cannot be negative.");
+//        }
+        mRatioWidth = width;
+        mRatioHeight = height;
+        requestLayout();
+    }
+
+//    @Override
+//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+//        int width = MeasureSpec.getSize(widthMeasureSpec);
+//        int height = MeasureSpec.getSize(heightMeasureSpec);
+//        if (0 == mRatioWidth || 0 == mRatioHeight) {
+//            setMeasuredDimension(width, height);
+//        } else {
+//            if (width < height * mRatioWidth / mRatioHeight) {
+//                double tmp = width * mRatioHeight / mRatioWidth;
+//                setMeasuredDimension(width, (int) tmp);
+////                setMeasuredDimension(width, width * mRatioHeight / mRatioWidth);
+//            } else {
+//                double tmp = height * mRatioWidth / mRatioHeight;
+//                setMeasuredDimension(height * mRatioWidth / mRatioHeight, height);
+//            }
+//        }
+//    }
 
     @Override
     public void surfaceCreated(SurfaceHolder arg0)
@@ -201,6 +269,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         {
             // If did not set the SurfaceHolder, the preview area will be black.
             mCamera.setPreviewDisplay(arg0);
+            mHolder = arg0;
             mCamera.setPreviewCallback(this);
         }
         catch (IOException e)
