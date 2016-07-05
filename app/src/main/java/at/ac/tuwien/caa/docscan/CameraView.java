@@ -69,13 +69,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         }
 
-//        public void setSurfaceSize(int width, int height) {
-//
-//            mSurfaceWidth = width;
-//            mSurfaceHeight = height;
-//
-//        }
-
         @Override
         public void run() {
 
@@ -96,30 +89,17 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                     Mat rgbMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                     Imgproc.cvtColor(yuv, rgbMat, Imgproc.COLOR_YUV2RGB_NV21);
 
-//                    LinkedList<Mat> ch = new LinkedList<Mat>();
-//                    Core.split(rgbMat, ch);
-//
-//                    Core.MinMaxLocResult mm = Core.minMaxLoc(ch.getFirst());
-//
-//                    //Log.d(DEBUG_TAG, "buffer size: " + frame.length + " expected: " + mFrameWidth*mFrameHeight);
-//                    //Log.d(DEBUG_TAG, "size: " + mFrameWidth + " x " + mFrameHeight);
-//                    Log.d(DEBUG_TAG, "range: [" + mm.minVal + " " + mm.maxVal + "]");
-
                     if (mIsFocusMeasured) {
                         Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
                         mCVCallback.onFocusMeasured(patches);
                     }
 
                     if (mIsPageSegmented) {
-
                         DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(rgbMat);
                         mCVCallback.onPageSegmented(polyRects);
-
                     }
 
                 }
-
-//                }
 
             }
         }
@@ -133,6 +113,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     private CameraFrameThread mCameraFrameThread;
     private NativeWrapper.CVCallback mCVCallback;
     private SurfaceHolder mHolder;
+    private int mSurfaceWidth, mSurfaceHeight;
+    private boolean mIsSurfaceReady, mIsPermissionGiven;
 
     private static String TAG = "CameraView";
 
@@ -145,6 +127,9 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         mHolder = getHolder();
         mHolder.addCallback(this);
+
+        mIsSurfaceReady = false;
+        mIsPermissionGiven = false;
 
         mCameraFrameThread = null;
 
@@ -167,32 +152,47 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
     {
 
-        Camera.Parameters params = mCamera.getParameters();
-        List<Camera.Size> cameraSizes = params.getSupportedPreviewSizes();
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
+        mHolder = holder;
 
-        Camera.Size bestSize = getBestFittingSize(cameraSizes, width, height);
+        mIsSurfaceReady = true;
 
-        mFrameWidth = bestSize.width;
-        mFrameHeight = bestSize.height;
+        if (mIsPermissionGiven && mCamera == null)
+            initCamera();
 
-        // Use autofocus if available:
-        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+//        mHolder = holder;
 
-        params.setPreviewSize(mFrameWidth, mFrameHeight);
+//        initCamera();
 
-        mCamera.setParameters(params);
-
-        MainActivity.setCameraDisplayOrientation(mCamera);
-
-        try {
-
-            mCamera.setPreviewDisplay(mHolder);
-            mCamera.startPreview();
-
-        } catch (Exception e){
-            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
-        }
+//        Camera.Parameters params = mCamera.getParameters();
+//        List<Camera.Size> cameraSizes = params.getSupportedPreviewSizes();
+//
+//        Camera.Size bestSize = getBestFittingSize(cameraSizes, width, height);
+//
+//        mFrameWidth = bestSize.width;
+//        mFrameHeight = bestSize.height;
+//
+//        // Use autofocus if available:
+//        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
+//            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+//
+//        params.setPreviewSize(mFrameWidth, mFrameHeight);
+//
+//        mCamera.setParameters(params);
+//
+//        // Determine the preview orientation. Note that the frame size in onPreviewFrame is not changed by this!
+//        int cameraDisplayOrientation = MainActivity.getCameraDisplayOrientation();
+//        mCamera.setDisplayOrientation(cameraDisplayOrientation);
+//
+//        try {
+//
+//            mCamera.setPreviewDisplay(mHolder);
+//            mCamera.startPreview();
+//
+//        } catch (Exception e){
+//            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+//        }
 
 
     }
@@ -247,55 +247,25 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
     }
 
-//    public void setMeasuredSize(int width, height) {
-//
-//        setMeasuredDimension(width, height);
-//
-//    }
+    public void giveCameraPermission() {
 
-//    // Scales the camera view so that the preview has original width to height ratio:
-//    @Override
-//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//
-//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-//        int width = MeasureSpec.getSize(widthMeasureSpec);
-//        int height = MeasureSpec.getSize(heightMeasureSpec);
-//        if (0 == mFrameHeight || 0 == mFrameWidth) {
-//            setMeasuredDimension(width, height);
-//        } else {
-//
-//
-//            // Note that mFrameWidth > mFrameHeight - regardless of the orientation!
-//            // Portrait mode:
-//            if (width < height) {
-//                double resizeFac = (double) width / mFrameHeight;
-//                int scaledHeight = (int) Math.round(mFrameWidth * resizeFac);
-//                if (scaledHeight > height)
-//                    scaledHeight = height;
-//                setMeasuredDimension(width, scaledHeight);
-//            }
-//            // Landscape mode:
-//            else {
-//                double resizeFac = (double) height / mFrameHeight;
-//                int scaledWidth = (int) Math.round(mFrameWidth * resizeFac);
-//                if (scaledWidth > width)
-//                    scaledWidth = width;
-//                setMeasuredDimension(scaledWidth, height);
-//            }
-//
-//        }
-//    }
+        mIsPermissionGiven = true;
 
-    @Override
-    public void surfaceCreated(SurfaceHolder arg0)
-    {
-        mCamera = Camera.open();
+        if (mIsSurfaceReady && mCamera == null)
+            initCamera();
+    }
+
+    private void initCamera() {
+
+        if (mCamera == null)
+            mCamera = Camera.open();
+
         try
         {
             // If did not set the SurfaceHolder, the preview area will be black.
-            mCamera.setPreviewDisplay(arg0);
-            mHolder = arg0;
+            mCamera.setPreviewDisplay(mHolder);
             mCamera.setPreviewCallback(this);
+
         }
         catch (IOException e)
         {
@@ -306,32 +276,110 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         mCameraFrameThread = new CameraFrameThread(this);
 
         mCameraFrameThread.setRunning(true);
-        Thread.State state = mCameraFrameThread.getState();
+
         // TODO: check why the thread is already started - if the app is restarted. The thread should be dead!
         if (mCameraFrameThread.getState() == Thread.State.NEW)
             mCameraFrameThread.start();
+
+
+        Camera.Parameters params = mCamera.getParameters();
+        List<Camera.Size> cameraSizes = params.getSupportedPreviewSizes();
+
+        Camera.Size bestSize = getBestFittingSize(cameraSizes, mSurfaceWidth, mSurfaceHeight);
+
+        mFrameWidth = bestSize.width;
+        mFrameHeight = bestSize.height;
+
+        // Use autofocus if available:
+        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+
+        params.setPreviewSize(mFrameWidth, mFrameHeight);
+
+        mCamera.setParameters(params);
+
+        // Determine the preview orientation. Note that the frame size in onPreviewFrame is not changed by this!
+        int cameraDisplayOrientation = MainActivity.getCameraDisplayOrientation();
+        mCamera.setDisplayOrientation(cameraDisplayOrientation);
+
+        try {
+
+            mCamera.setPreviewDisplay(mHolder);
+            mCamera.startPreview();
+
+        } catch (Exception e){
+            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+        }
+
     }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+
+        mHolder = holder;
+
+    }
+
+
+//    @Override
+//    public void surfaceCreated(SurfaceHolder arg0)
+//    {
+//
+//        if (mCamera != null)
+//            mCamera = Camera.open();
+//
+//        try
+//        {
+//            // If did not set the SurfaceHolder, the preview area will be black.
+//            mCamera.setPreviewDisplay(arg0);
+//            mHolder = arg0;
+//            mCamera.setPreviewCallback(this);
+//
+//        }
+//        catch (IOException e)
+//        {
+//            mCamera.release();
+//            mCamera = null;
+//        }
+//
+//        mCameraFrameThread = new CameraFrameThread(this);
+//
+//        mCameraFrameThread.setRunning(true);
+//
+//        // TODO: check why the thread is already started - if the app is restarted. The thread should be dead!
+//        if (mCameraFrameThread.getState() == Thread.State.NEW)
+//            mCameraFrameThread.start();
+//
+//
+//    }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder arg0)
     {
 
-        boolean retry = true;
-        mCameraFrameThread.setRunning(false);
-        while (retry) {
-            try {
-                mCameraFrameThread.join();
-                retry = false;
-            } catch (InterruptedException e) {
+        if (mCameraFrameThread != null) {
+
+            boolean retry = true;
+            mCameraFrameThread.setRunning(false);
+            while (retry) {
+                try {
+                    mCameraFrameThread.join();
+                    retry = false;
+                } catch (InterruptedException e) {
+                }
             }
+
+
         }
 
-        Thread.State state = mCameraFrameThread.getState();
+        if (mCamera != null) {
 
-        mCamera.setPreviewCallback(null);
-        mCamera.stopPreview();
-        mCamera.release();
-        mCamera = null;
+            mCamera.setPreviewCallback(null);
+            mCamera.stopPreview();
+            mCamera.release();
+            mCamera = null;
+
+        }
     }
 
     public int getFrameWidth() {

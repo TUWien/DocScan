@@ -51,11 +51,7 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
     jmethodID cnstrctr = env->GetMethodID(polyRectClass, "<init>", "(FFFFFFFF)V");
 
     if (cnstrctr == 0)
-        __android_log_write(ANDROID_LOG_INFO, "DkPageSegmentation", "did not find constructor!!!");
-
-    else
-        __android_log_write(ANDROID_LOG_INFO, "DkPageSegmentation", "found constructor!!!");
-
+        __android_log_write(ANDROID_LOG_INFO, "DkPageSegmentation", "did not find constructor!");
 
     // convert the polyRects vector to a Java array:
     jobjectArray outJNIArray = env->NewObjectArray(polyRects.size(), polyRectClass, NULL);
@@ -68,16 +64,9 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 
         std::vector<cv::Point> points = polyRects[i].toCvPoints();
 
+        // TODO: check why this happens:
         if (points.empty())
             continue;
-
-        std::stringstream strs;
-        strs << points[0].x;
-        //strs << 42;
-        std::string temp_str = strs.str();
-        char* char_type = (char*) temp_str.c_str();
-
-        __android_log_write(ANDROID_LOG_INFO, "DocScanInterfaceFH", char_type);
 
         polyRect = env->NewObject(polyRectClass, cnstrctr,
             (float) points[0].x, (float)  points[0].y, (float) points[1].x, (float) points[1].y, (float) points[2].x, (float) points[2].y, (float) points[3].x, (float) points[3].y);
