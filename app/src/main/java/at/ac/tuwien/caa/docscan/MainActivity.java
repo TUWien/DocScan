@@ -152,58 +152,11 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mCameraView.giveCameraPermission();
-//                    initCamera();
-                    // TODO: do we need this function at all?
-//                    mPreview.openCamera();
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
 
                 }
             }
 
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
-    }
-
-    public static int getCameraOrientation(android.hardware.Camera camera)
-
-    {
-
-
-        int cameraId = 0;
-
-        android.hardware.Camera.CameraInfo info =
-                new android.hardware.Camera.CameraInfo();
-        android.hardware.Camera.getCameraInfo(cameraId, info);
-        int rotation = mActivity.getWindowManager().getDefaultDisplay()
-                .getRotation();
-        int degrees = 0;
-        switch (rotation) {
-            case Surface.ROTATION_0:
-                degrees = 0;
-                break;
-            case Surface.ROTATION_90:
-                degrees = 90;
-                break;
-            case Surface.ROTATION_180:
-                degrees = 180;
-                break;
-            case Surface.ROTATION_270:
-                degrees = 270;
-                break;
-        }
-
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
-        } else {  // back-facing
-            result = (info.orientation - degrees + 360) % 360;
-        }
-
-        return result;
-
     }
 
     // 0 is regular landscape
@@ -341,13 +294,11 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
         // Used for naviatigation drawer: This is currently not used, but is left to be uncommented!
 
+        NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
+        setupDrawerContent(mDrawer);
 
-//        NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
-//        setupDrawerContent(mDrawer);
-//
-//
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-//        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         // END --------------------- navigation drawer ---------------------
     }
