@@ -98,23 +98,10 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
         super.onPause();
 
-//        mPreview.releaseCamera();
 
     }
 
-//    @Override
-//    protected void onResume() {
-////        Log.i(TAG, "onResume");
-//
-//        super.onResume();
-//        mActivity = this;
-//
-////        mPreview.setActivity(this);
-////        mPreview.openCamera();
-//
-//
-//
-//    }
+
 
 
     /** A safe way to get an instance of the Camera object. */
