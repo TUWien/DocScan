@@ -53,7 +53,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         private CameraView mCameraView;
         private boolean mIsRunning;
-        private boolean mIsFocusMeasured = false;
+        private boolean mIsFocusMeasured = true;
         private boolean mIsPageSegmented = true;
 
 
