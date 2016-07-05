@@ -42,6 +42,7 @@ import android.view.Surface;
 
 import org.opencv.android.OpenCVLoader;
 
+import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
 public class MainActivity extends AppCompatActivity implements NativeWrapper.CVCallback {
@@ -273,6 +274,13 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     public void onFocusMeasured(Patch[] patches) {
 
         mOverlayView.setFocusPatches(patches);
+
+    }
+
+    @Override
+    public void onPageSegmented(DkPolyRect[] dkPolyRects) {
+
+        mOverlayView.setDkPolyRects(dkPolyRects);
 
     }
 

@@ -27,11 +27,16 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.util.ArrayList;
+
+import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
@@ -49,7 +54,10 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
         private Paint mRectPaint;
         private Paint mTextPaint;
+        private Paint mSegmentationPaint;
         private Patch[] mFocusPatches;
+        private DkPolyRect[] mPolyRects;
+        private Path mSegmentationPath;
 
         public DrawerThread(SurfaceHolder surfaceHolder) {
 
@@ -57,18 +65,35 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
             mSurfaceHolder = surfaceHolder;
 
 //            Initialize drawing stuff:
+
+            // Used for debugging rectangle
             mRectPaint = new Paint();
 
+            // Used to print out measured focus:
             mTextPaint = new Paint();
 
             final float testTextSize = 48f;
             mTextPaint.setTextSize(testTextSize);
+
+            // Used to paint the page segmentation boundaries:
+            mSegmentationPaint = new Paint();
+            mSegmentationPaint = new Paint();
+            mSegmentationPaint.setColor(Color.GREEN);
+            mSegmentationPaint.setStyle(Paint.Style.STROKE);
+            mSegmentationPaint.setStrokeWidth(4);
+            mSegmentationPath = new Path();
 
         }
 
         private void setFocusPatches(Patch[] focusPatches) {
 
             mFocusPatches = focusPatches;
+
+        }
+
+        private void setPolyRects(DkPolyRect[] polyRects) {
+
+            mPolyRects = polyRects;
 
         }
 
@@ -118,22 +143,58 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 //            Clear the screen from previous drawings:
             canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
 
-            mRectPaint.setARGB(200,0,100,0);
-            canvas.drawRect(mCanvasWidth - 10, mCanvasHeight - 10, mCanvasWidth + 10, mCanvasHeight + 10, mRectPaint);
+//            Debugging rectangle:
+//            mRectPaint.setARGB(200,0,100,0);
+//            canvas.drawRect(mCanvasWidth - 10, mCanvasHeight - 10, mCanvasWidth + 10, mCanvasHeight + 10, mRectPaint);
 
 //            mRectPaint.setARGB(255,100,100,0);
 //            canvas.drawRect(0, 0, mCanvasWidth, mCanvasHeight, mRectPaint);
 
-            if (mFocusPatches == null)
-                return;
 
-            Patch patch;
+            if (mFocusPatches != null) {
 
-            for (int i = 0; i < mFocusPatches.length; i++) {
+                Patch patch;
 
-                patch = mFocusPatches[i];
-                String fValue = String.format("%.2f", patch.getFM());
-                canvas.drawText(fValue, patch.getDrawViewPX(), patch.getDrawViewPY()+ 50, mTextPaint);
+                for (int i = 0; i < mFocusPatches.length; i++) {
+
+                    patch = mFocusPatches[i];
+                    String fValue = String.format("%.2f", patch.getFM());
+                    canvas.drawText(fValue, patch.getDrawViewPX(), patch.getDrawViewPY() + 50, mTextPaint);
+
+                }
+
+            }
+
+            if (mPolyRects != null) {
+
+                for (DkPolyRect polyRect : mPolyRects) {
+
+                    // TODO: find out why this is partially NULL:
+                    if (polyRect == null)
+                        continue;
+
+                    mSegmentationPath.reset();
+
+                    ArrayList<PointF> screenPoints = polyRect.getScreenPoints();
+
+                    boolean isStartSet = false;
+
+                    for (PointF point : screenPoints) {
+
+                        if (!isStartSet) {
+                            mSegmentationPath.moveTo(point.x, point.y);
+                            isStartSet = true;
+                        }
+                        else
+                            mSegmentationPath.lineTo(point.x, point.y);
+
+                    }
+
+                    mSegmentationPath.close();
+
+                    canvas.drawPath(mSegmentationPath, mSegmentationPaint);
+
+                }
 
             }
 
@@ -158,6 +219,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
     public void setFocusPatches(Patch[] focusPatches) {
 
         mDrawerThread.setFocusPatches(focusPatches);
+
+    }
+
+    public void setPolyRects(DkPolyRect[] polyRects) {
+
+        mDrawerThread.setPolyRects(polyRects);
 
     }
 

@@ -37,6 +37,7 @@ import org.opencv.imgproc.Imgproc;
 import java.io.IOException;
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
@@ -52,6 +53,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         private CameraView mCameraView;
         private boolean mIsRunning;
+        private boolean mIsFocusMeasured = false;
+        private boolean mIsPageSegmented = true;
 
 
         public CameraFrameThread(CameraView cameraView) {
@@ -102,8 +105,17 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 //                    //Log.d(DEBUG_TAG, "size: " + mFrameWidth + " x " + mFrameHeight);
 //                    Log.d(DEBUG_TAG, "range: [" + mm.minVal + " " + mm.maxVal + "]");
 
-                    Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
-                    mCVCallback.onFocusMeasured(patches);
+                    if (mIsFocusMeasured) {
+                        Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
+                        mCVCallback.onFocusMeasured(patches);
+                    }
+
+                    if (mIsPageSegmented) {
+
+                        DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(rgbMat);
+                        mCVCallback.onPageSegmented(polyRects);
+
+                    }
 
                 }
 
