@@ -37,6 +37,71 @@
 #include <string>
 #include <iostream>
 
+
+JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPageSegmentation(JNIEnv * env, jclass cls, jlong src) {
+
+
+
+
+    // call the main function:
+    std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(*((cv::Mat*)src));
+
+    jclass polyRectClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/DkPolyRect");
+    // "(FFFFFFFF)V" -> (8 x float) return void
+    jmethodID cnstrctr = env->GetMethodID(polyRectClass, "<init>", "(FFFFFFFF)V");
+
+    if (cnstrctr == 0)
+        __android_log_write(ANDROID_LOG_INFO, "DkPageSegmentation", "did not find constructor!!!");
+
+    else
+        __android_log_write(ANDROID_LOG_INFO, "DkPageSegmentation", "found constructor!!!");
+
+
+    // convert the polyRects vector to a Java array:
+    jobjectArray outJNIArray = env->NewObjectArray(polyRects.size(), polyRectClass, NULL);
+
+    //jobject patch1 = env->NewObject(patchClass, cnstrctr, 1, 42, 3, 4, 5.4);
+    jobject polyRect;
+
+
+    for (int i = 0; i < polyRects.size(); i++) {
+
+        std::vector<cv::Point> points = polyRects[i].toCvPoints();
+
+        if (points.empty())
+            continue;
+
+        std::stringstream strs;
+        strs << points[0].x;
+        //strs << 42;
+        std::string temp_str = strs.str();
+        char* char_type = (char*) temp_str.c_str();
+
+        __android_log_write(ANDROID_LOG_INFO, "DocScanInterfaceFH", char_type);
+
+        polyRect = env->NewObject(polyRectClass, cnstrctr,
+            (float) points[0].x, (float)  points[0].y, (float) points[1].x, (float) points[1].y, (float) points[2].x, (float) points[2].y, (float) points[3].x, (float) points[3].y);
+
+        env->SetObjectArrayElement(outJNIArray, i, polyRect);
+
+
+    }
+
+    /*
+    std::stringstream strs;
+    strs << polyRects.size();
+    std::string temp_str = strs.str();
+    char* char_type = (char*) temp_str.c_str();
+
+    __android_log_write(ANDROID_LOG_INFO, "DocScanInterface", char_type);
+    */
+
+
+
+    return outJNIArray;
+
+}
+
 JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetFocusMeasures(JNIEnv * env, jclass cls, jlong src) {
 
 
@@ -46,7 +111,7 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
     // find the Java Patch class and its constructor:
     jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/Patch");
     jmethodID cnstrctr = env->GetMethodID(patchClass, "<init>", "(FFIID)V");
-    // "(IIIID)V" -> IIII 4xint D 1xdouble V return void
+    // "(FFIID)V" -> (float float int int double) return void
 
     // convert the patches vector to a Java array:
     jobjectArray outJNIArray = env->NewObjectArray(patches.size(), patchClass, NULL);

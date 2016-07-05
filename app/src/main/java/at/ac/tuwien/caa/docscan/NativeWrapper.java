@@ -24,6 +24,8 @@
 package at.ac.tuwien.caa.docscan;
 
 import org.opencv.core.Mat;
+
+import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
@@ -39,15 +41,29 @@ public class NativeWrapper {
 
     }
 
+    private static native Patch[] nativeGetFocusMeasures(long src);
+
+    public static DkPolyRect[] getPageSegmentation(Mat src) {
+
+        return nativeGetPageSegmentation(src.getNativeObjAddr());
+
+    }
+
+    private static native DkPolyRect[] nativeGetPageSegmentation(long src);
+
+
     public static void processFrame(Mat src) {
         nativeProcessFrame(src.getNativeObjAddr());
     }
 
-    private static native Patch[] nativeGetFocusMeasures(long src);
+//    private static void nativeGetPageSegmentation(long src);
+
+
     private static native void nativeProcessFrame(long src);
 
     // Callbacks:
     public static interface CVCallback {
         void onFocusMeasured(Patch[] patches);
+        void onPageSegmented(DkPolyRect[] polyRects);
     }
 }
