@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
+import at.ac.tuwien.caa.docscan.cv.Patch;
+
 /**
  * Created by fabian on 04.07.2016.
  */
@@ -18,6 +20,10 @@ public class OverlayView extends FrameLayout {
 
     private CameraView mCameraView;
     private DrawView mDrawView;
+
+    private static final int ORIENTATION_LANDSCAPE = 0;
+    private static final int ORIENTATION_PORTRAIT = 90;
+    private static final int ORIENTATION_FLIPPED_LANDSCAPE = 180;
 
     public OverlayView(Context context, AttributeSet attrs) {
 
@@ -35,6 +41,61 @@ public class OverlayView extends FrameLayout {
 
         mDrawView = drawView;
 
+    }
+
+    // Converts the coordinates of the patches and passes it to the DrawView:
+    public void setFocusPatches(Patch[] patches) {
+
+        Patch patch;
+        int drawViewWidth = mDrawView.getWidth();
+        int drawViewHeight = mDrawView.getHeight();
+
+        int frameWidth = mCameraView.getFrameWidth();
+        int frameHeight = mCameraView.getFrameHeight();
+
+        float drawViewPX = -1;
+        float drawViewPY = -1;
+
+        int cameraDisplayOrientation = MainActivity.getCameraDisplayOrientation();
+
+        for (int i = 0; i < patches.length; i++) {
+
+            patch = patches[i];
+
+            // Check here for the orientation:
+            // Note: frameWidth is always greater than frameHeight - regardless of the orientation.
+            switch (cameraDisplayOrientation) {
+
+                case ORIENTATION_LANDSCAPE:
+                    drawViewPX = patch.getPX() / frameWidth * drawViewWidth;
+                    drawViewPY = patch.getPY() / frameHeight * drawViewHeight;
+                    break;
+
+                case ORIENTATION_PORTRAIT:
+                    drawViewPX = (frameHeight- patch.getPY()) / frameHeight * drawViewWidth;
+                    drawViewPY = patch.getPX() / frameWidth * drawViewHeight;
+                    break;
+
+                case ORIENTATION_FLIPPED_LANDSCAPE:
+                    drawViewPX = (frameWidth - patch.getPX()) / frameWidth * drawViewWidth;
+                    drawViewPY = (frameHeight - patch.getPY()) / frameHeight * drawViewHeight;
+                    break;
+
+            }
+//            drawViewPX = patch.getPX() / frameWidth * drawViewWidth;
+            if (drawViewPX > drawViewWidth)
+                drawViewPX = drawViewWidth;
+
+//            drawViewPY = patch.getPY() / frameHeight * drawViewHeight;
+            if (drawViewPY > drawViewHeight)
+                drawViewPY = drawViewHeight;
+
+            patch.setDrawViewPX(drawViewPX);
+            patch.setDrawViewPY(drawViewPY);
+
+        }
+
+        mDrawView.setFocusPatches(patches);
     }
 
     // Scales the camera view so that the preview has original width to height ratio:

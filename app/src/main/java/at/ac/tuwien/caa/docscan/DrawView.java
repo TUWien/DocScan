@@ -118,7 +118,10 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 //            Clear the screen from previous drawings:
             canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
 
-//            mRectPaint.setARGB(200,0,100,0);
+            mRectPaint.setARGB(200,0,100,0);
+            canvas.drawRect(mCanvasWidth - 10, mCanvasHeight - 10, mCanvasWidth + 10, mCanvasHeight + 10, mRectPaint);
+
+//            mRectPaint.setARGB(255,100,100,0);
 //            canvas.drawRect(0, 0, mCanvasWidth, mCanvasHeight, mRectPaint);
 
             if (mFocusPatches == null)
@@ -130,7 +133,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
                 patch = mFocusPatches[i];
                 String fValue = String.format("%.2f", patch.getFM());
-                canvas.drawText(fValue, patch.getPX(), patch.getPY()+ 50, mTextPaint);
+                canvas.drawText(fValue, patch.getDrawViewPX(), patch.getDrawViewPY()+ 50, mTextPaint);
 
             }
 
