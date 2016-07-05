@@ -196,6 +196,11 @@ public class OverlayView extends FrameLayout {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
+        if (mCameraView == null) {
+            setChildMeasuredDimension(width, height);
+            return;
+        }
+
         int frameWidth = mCameraView.getFrameWidth();
         int frameHeight = mCameraView.getFrameHeight();
 

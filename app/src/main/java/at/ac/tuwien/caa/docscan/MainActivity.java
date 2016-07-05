@@ -76,7 +76,9 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         mActivity = this;
@@ -91,7 +93,11 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         mOverlayView.setCameraView(mCameraView);
         mOverlayView.setDrawView(mDrawView);
 
-        requestPermission();
+        // This must be called after the CameraView has been created:
+        requestCameraPermission();
+
+
+
     }
 
     @Override
@@ -117,15 +123,14 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         return c; // returns null if camera is unavailable
     }
 
-    private void requestPermission() {
+    private void requestCameraPermission() {
 
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.CAMERA},
-                    PERMISSION_CAMERA);
+        if (ContextCompat.checkSelfPermission(this,Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
         }
+        else
+            mCameraView.giveCameraPermission();
+
 //        else
 //            mPreview.openCamera();
 //        initCamera();
@@ -146,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mCameraView.giveCameraPermission();
 //                    initCamera();
                     // TODO: do we need this function at all?
 //                    mPreview.openCamera();
@@ -236,38 +242,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
     }
 
-    public static void setCameraDisplayOrientation(android.hardware.Camera camera) {
-
-
-        int cameraId = 0;
-
-        android.hardware.Camera.CameraInfo info =
-                new android.hardware.Camera.CameraInfo();
-        android.hardware.Camera.getCameraInfo(cameraId, info);
-
-        int rotation = mActivity.getWindowManager().getDefaultDisplay()
-                .getRotation();
-
-        int degrees = 0;
-
-        switch (rotation) {
-            case Surface.ROTATION_0: degrees = 0; break;
-            case Surface.ROTATION_90: degrees = 90; break;
-            case Surface.ROTATION_180: degrees = 180; break;
-            case Surface.ROTATION_270: degrees = 270; break;
-        }
-
-        int result;
-        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
-        } else {  // back-facing
-            result = (info.orientation - degrees + 360) % 360;
-        }
-        camera.setDisplayOrientation(result);
-
-    }
-
     // ================= start: CALLBACKS called from native files =================
 
     @Override
@@ -285,6 +259,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     }
 
     // ================= end: CALLBACKS called from native files =================
+
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
