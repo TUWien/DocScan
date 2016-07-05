@@ -756,9 +756,9 @@ namespace dsc {
 	/// (allows for getting the coordinates without using OpenCV).
 	/// </summary>
 	/// <returns>The x coordinate of the upper left point.</returns>
-	int Patch::upperLeftX() const {
+	float Patch::centerX() const {
 
-	    return (int) mUpperLeft.x;
+	    return (float) center().x;
 
 	}
 
@@ -767,9 +767,9 @@ namespace dsc {
 	/// (allows for getting the coordinates without using OpenCV).
 	/// </summary>
 	/// <returns>The y coordinate of the upper left point.</returns>
-    int Patch::upperLeftY() const {
+    float Patch::centerY() const {
 
-        return (int) mUpperLeft.y;
+        return (float) center().y;
 
     }
 

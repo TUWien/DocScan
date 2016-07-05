@@ -5,13 +5,13 @@ package at.ac.tuwien.caa.docscan.cv;
  */
 public class Patch {
 
-    // TODO: check if type int is appropriate - at the moment it seems so:
-    private int mPX, mPY;
+    private float mPX, mPY;
     private int mWidth, mHeight;
     private double mFm;
+    private float mDrawViewPX, mDrawViewPY;
 
 
-    public Patch(int pX, int pY, int width, int height, double fM) {
+    public Patch(float pX, float pY, int width, int height, double fM) {
 
         mPX = pX;
         mPY = pY;
@@ -21,25 +21,54 @@ public class Patch {
 
     }
 
-    public int getPX() {
+    public float getPX() {
+
         return mPX;
+
     }
 
-    public int getPY() {
+    public float getPY() {
+
         return mPY;
+
     }
 
     public int getWidth() {
+
         return mWidth;
+
     }
 
     public int getHeight() {
+
         return mHeight;
+
     }
 
     public double getFM() {
+
         return mFm;
+
     }
+
+    public void setDrawViewPX(float drawViewPX) {
+
+        mDrawViewPX = drawViewPX;
+    }
+
+    public float getDrawViewPX() {
+
+        return mDrawViewPX;
+
+    }
+
+    public float getDrawViewPY() {
+
+        return mDrawViewPY;
+
+    }
+
+    public void setDrawViewPY(float drawViewPY) { mDrawViewPY = drawViewPY; }
 
 }
 

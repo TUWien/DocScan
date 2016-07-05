@@ -139,9 +139,9 @@ namespace dsc {
 		std::string fmS() const;
 		double fmRef() const;
 
-		// inserted by fabian (allows for getting the coordinates without using OpenCV):
-        int upperLeftX() const;
-        int upperLeftY() const;
+		// allows for getting the coordinates without using OpenCV:
+        float centerX() const;
+        float centerY() const;
 
 	protected:
 
