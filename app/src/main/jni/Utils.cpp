@@ -19,7 +19,6 @@ void Utils::print(const std::string &text, const std::string &moduleName) {
 	std::cout << moduleName << " " << text << std::endl;
 #else
 
-
 	const char* c_text = (const char*)text.c_str();
 	const char* c_moduleName = (const char*)moduleName.c_str();
 
