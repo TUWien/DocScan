@@ -198,7 +198,6 @@ cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPol
 						(!maxSide || cr.maxSide() < maxSide*scale) && 
 						cr.getMaxCosine() < 0.3 ) {
 
-						double a = std::acos(cr.getMaxCosine()) * DK_RAD2DEG;
 						rects.push_back(cr);
 					}
 				}
@@ -402,7 +401,6 @@ void DkPageSegmentation::draw(cv::Mat& img, const std::vector<DkPolyRect>& rects
 
 std::vector<DkPolyRect> DkPageSegmentation::apply(const cv::Mat& src) {
 
-    Utils::print("apply called", "PageSegmentation");
 	std::vector<DkPolyRect> pageRects;
 
 	// run the page segmentation
