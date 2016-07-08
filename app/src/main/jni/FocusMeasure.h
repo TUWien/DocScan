@@ -133,6 +133,9 @@ namespace dsc {
 		int width() const;
 		int height() const;
 
+		bool isSharp() const;
+		void setSharpness(bool s = false);
+
 		double fm() const;
 		double weight() const;
 		double area() const;
@@ -148,6 +151,8 @@ namespace dsc {
 		cv::Point mUpperLeft;
 		int mWidth = 0;
 		int mHeight = 0;
+
+		bool mIsSharp = false;
 
 		double mFm = -1;
 		double mFmReference = -1;
@@ -180,7 +185,10 @@ namespace dsc {
 		void setSplitSize(int s);
 		int windowSize() const;
 
-		static std::vector<dsc::Patch> apply(const cv::Mat& src);
+		void setGlobalFMThreshold(double fmt);
+		double getGlobalFMThreshold() const;
+
+		static std::vector<dsc::Patch> apply(const cv::Mat& src, const double globalFMThr = 0.15);
 
 	protected:
 		cv::Mat mSrcImg;
@@ -190,6 +198,8 @@ namespace dsc {
 		// parameters
 		int mWindowSize = 40;
 		int mSplitSize = 0;
+
+		double mGlobalFMThresh = 0.15;
 	};
 
 
