@@ -65,8 +65,29 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
         std::vector<cv::Point> points = polyRects[i].toCvPoints();
 
         // TODO: check why this happens:
-        if (points.empty())
+        if (points.empty()) {
+
+            std::stringstream strs;
+            strs << i;
+            std::string temp_str = strs.str();
+            char* char_type = (char*) temp_str.c_str();
+
+            __android_log_write(ANDROID_LOG_INFO, "DocScanInterfaceEmpty", char_type);
+
             continue;
+
+
+        }
+        else {
+
+            std::stringstream strs;
+            strs << i;
+            std::string temp_str = strs.str();
+            char* char_type = (char*) temp_str.c_str();
+
+            __android_log_write(ANDROID_LOG_INFO, "DocScanInterfaceNotEmpty", char_type);
+
+        }
 
         polyRect = env->NewObject(polyRectClass, cnstrctr,
             (float) points[0].x, (float)  points[0].y, (float) points[1].x, (float) points[1].y, (float) points[2].x, (float) points[2].y, (float) points[3].x, (float) points[3].y);
