@@ -96,8 +96,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         // This must be called after the CameraView has been created:
         requestCameraPermission();
 
-
-
     }
 
     @Override
@@ -293,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         // START --------------------- navigation drawer ---------------------
 
         // Used for naviatigation drawer: This is currently not used, but is left to be uncommented!
+
 
         NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
         setupDrawerContent(mDrawer);

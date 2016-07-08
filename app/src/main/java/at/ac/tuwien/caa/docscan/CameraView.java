@@ -25,6 +25,8 @@ package at.ac.tuwien.caa.docscan;
 
 import android.content.Context;
 import android.hardware.Camera;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -43,6 +45,8 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 /**
  * Created by fabian on 16.06.2016.
  */
+
+// TODO: check out this thread: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438
 
 public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, OverlayView.SizeUpdate
 {
@@ -97,6 +101,9 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                     if (mIsPageSegmented) {
                         DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(rgbMat);
                         mCVCallback.onPageSegmented(polyRects);
+                        if (polyRects.length > 0)
+                            if (polyRects[0] != null)
+                                Log.d(TAG, "rects: " + polyRects[0].getPoints());
                     }
 
                 }
@@ -104,6 +111,38 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             }
         }
 
+    }
+
+    // Taken from: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438
+    private CameraHandlerThread mThread = null;
+    private class CameraHandlerThread extends HandlerThread {
+        Handler mHandler = null;
+
+        CameraHandlerThread() {
+            super("CameraHandlerThread");
+            start();
+            mHandler = new Handler(getLooper());
+        }
+
+        synchronized void notifyCameraOpened() {
+            notify();
+        }
+
+        void openCamera() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    initCamera();
+                    notifyCameraOpened();
+                }
+            });
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {
+                Log.w(TAG, "wait was interrupted");
+            }
+        }
     }
 
     private Camera mCamera = null;
@@ -158,42 +197,25 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         mIsSurfaceReady = true;
 
-        if (mIsPermissionGiven && mCamera == null)
-            initCamera();
+        if (mIsPermissionGiven && mCamera == null) {
 
-//        mHolder = holder;
+            openCameraThread();
 
-//        initCamera();
+        }
 
-//        Camera.Parameters params = mCamera.getParameters();
-//        List<Camera.Size> cameraSizes = params.getSupportedPreviewSizes();
 //
-//        Camera.Size bestSize = getBestFittingSize(cameraSizes, width, height);
-//
-//        mFrameWidth = bestSize.width;
-//        mFrameHeight = bestSize.height;
-//
-//        // Use autofocus if available:
-//        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
-//            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-//
-//        params.setPreviewSize(mFrameWidth, mFrameHeight);
-//
-//        mCamera.setParameters(params);
-//
-//        // Determine the preview orientation. Note that the frame size in onPreviewFrame is not changed by this!
-//        int cameraDisplayOrientation = MainActivity.getCameraDisplayOrientation();
-//        mCamera.setDisplayOrientation(cameraDisplayOrientation);
-//
-//        try {
-//
-//            mCamera.setPreviewDisplay(mHolder);
-//            mCamera.startPreview();
-//
-//        } catch (Exception e){
-//            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
-//        }
 
+    }
+
+    private void openCameraThread() {
+
+        if (mThread == null) {
+            mThread = new CameraHandlerThread();
+        }
+
+        synchronized (mThread) {
+            mThread.openCamera();
+        }
 
     }
 
@@ -252,7 +274,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         mIsPermissionGiven = true;
 
         if (mIsSurfaceReady && mCamera == null)
-            initCamera();
+            openCameraThread();
     }
 
     private void initCamera() {
