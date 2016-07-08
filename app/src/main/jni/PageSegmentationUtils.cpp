@@ -243,6 +243,7 @@ void DkPolyRect::computeMaxCosine() {
 		double cosine = abs((c1-c).cosv(c2-c));
 
 		maxCosine = std::max(maxCosine, cosine);
+
 	}
 }
 

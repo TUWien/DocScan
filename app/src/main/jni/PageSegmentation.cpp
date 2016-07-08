@@ -25,6 +25,7 @@
 #include "PageSegmentation.h"
 #include "PageSegmentationUtils.h"
 #include "DkMath.h"	// nomacs
+#include "Utils.h"
 
 #pragma warning(push, 0)	// no warnings from includes - begin
 #include <opencv2/imgproc/imgproc.hpp>
@@ -195,8 +196,13 @@ cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPol
 					// (all angles are ~90 degree)
 					if(/*cr.maxSide() < std::max(tImg.rows, tImg.cols)*maxSideFactor && */
 						(!maxSide || cr.maxSide() < maxSide*scale) && 
-						cr.getMaxCosine() < 0.3 ) {
+						cr.getMaxCosine() < 0.1 ) {
+
+						double a = std::acos(cr.getMaxCosine()) * DK_RAD2DEG;
+                        Utils::print("max angle: " + Utils::num2str(a), "PageSegmentation");
+
 						rects.push_back(cr);
+
 					}
 				}
 			}
@@ -405,7 +411,11 @@ std::vector<DkPolyRect> DkPageSegmentation::apply(const cv::Mat& src) {
 	DkPageSegmentation segM(src);
 	segM.compute();
 	segM.filterDuplicates();
-	pageRects.push_back(segM.getDocumentRect());
+
+	DkPolyRect r = segM.getDocumentRect();
+
+	if (!r.empty())
+	    pageRects.push_back(r);
 
 	return pageRects;
 }
