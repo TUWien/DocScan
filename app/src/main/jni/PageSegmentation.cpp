@@ -166,7 +166,7 @@ cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPol
 			// DEBUG ------------------------
 
 			// test each contour
-			for( size_t i = 0; i < contours.size(); i++ ) {
+			for (size_t i = 0; i < contours.size(); i++) {
 				// approxicv::Mate contour with accuracy proportional
 				// to the contour perimeter
 				approxPolyDP(cv::Mat(contours[i]), approx, arcLength(cv::Mat(contours[i]), true)*0.02, true);
