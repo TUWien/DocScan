@@ -24,9 +24,12 @@
 
 #include "PageSegmentationUtils.h"
 
+#include "Utils.h"
+
 #pragma warning(push, 0)	// no warnings from includes - begin
 #include <opencv2/imgproc/imgproc.hpp>
 #pragma warning(pop)		// no warnings from includes - end
+
 
 namespace dsc {
 
@@ -57,7 +60,7 @@ double DkIntersectPoly::compute() {
 	scale.x = gamut / scale.x;
 	scale.y = gamut / scale.y;
 
-	float ascale = scale.x * scale.y;
+	double ascale = scale.x * scale.y;
 
 	// check input
 	if (vecA.size() < 3 || vecB.size() < 3) {
@@ -234,16 +237,14 @@ void DkPolyRect::computeMaxCosine() {
 
 	maxCosine = 0;
 
-	for (int idx = 2; idx < (int)mPts.size()+2; idx++ ) {
+	for (int idx = 2; idx < (int)mPts.size()+2; idx++) {
 
 		DkVector& c = mPts[(idx-1)%mPts.size()];	// current corner;
 		DkVector& c1 = mPts[idx%mPts.size()];
 		DkVector& c2 = mPts[idx-2];
 
-		double cosine = abs((c1-c).cosv(c2-c));
-
+		double cosine = fabs((c1-c).cosv(c2-c));
 		maxCosine = std::max(maxCosine, cosine);
-
 	}
 }
 
@@ -323,7 +324,7 @@ float DkPolyRect::maxSide() const {
 double DkPolyRect::getArea() {
 
 	if (area == DBL_MAX)
-		area = abs(intersectArea(*this));
+		area = fabs(intersectArea(*this));
 
 	return area;
 }
@@ -331,7 +332,7 @@ double DkPolyRect::getArea() {
 double DkPolyRect::getAreaConst() const {
 
 	if (area == DBL_MAX)
-		return abs(intersectArea(*this));
+		return fabs(intersectArea(*this));
 
 	return area;
 }

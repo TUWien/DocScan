@@ -70,7 +70,7 @@ protected:
 	int numThresh = 10;
 	double mMinArea = 12000;
 	double mMaxArea = 0;
-	float maxSide = 0;
+	float maxSide = 0;   // do not find the image's border
 	float maxSideFactor = 0.97f;
 	float scale = 1.0f;
 	bool looseDetection = true;

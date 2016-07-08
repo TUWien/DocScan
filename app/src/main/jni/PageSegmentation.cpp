@@ -110,7 +110,7 @@ cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPol
 	cv::Mat lImg(tImg.size(), CV_8UC1);
 
 	// find squares in every color plane of the image
-	for( int c = 0; c < 3; c++ ) {
+	for ( int c = 0; c < 3; c++ ) {
 
 		int ch[] = {c, 0};
 		mixChannels(&tImg, 1, &gray0, 1, ch, 1);
@@ -121,8 +121,8 @@ cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPol
 
 		int nT = numThresh;//(c == 0) ? numThresh*2 : numThresh;	// more luminance thresholds
 
-							// try several threshold levels
-		for( int l = 0; l < nT; l++ ) {
+		// try several threshold levels
+		for ( int l = 0; l < nT; l++ ) {
 
 			// hack: use Canny instead of zero threshold level.
 			// Canny helps to catch squares with gradient shading
@@ -184,10 +184,10 @@ cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPol
 				// Note: absolute value of an area is used because
 				// area may be positive or negative - in accordance with the
 				// contour orientation
-				if( approx.size() == 4 &&
+				if (approx.size() == 4 &&
 					fabs(cArea) > mMinArea*scale*scale &&
 					(!mMaxArea || fabs(cArea) < mMaxArea*scale*scale) && 
-					isContourConvex(cv::Mat(approx)) ) {
+					isContourConvex(cv::Mat(approx))) {
 
 					DkPolyRect cr(approx);
 					//moutc << mMinArea*scale*scale << " < " << fabs(cArea) << " < " << mMaxArea*scale*scale << dkendl;
@@ -196,13 +196,10 @@ cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPol
 					// (all angles are ~90 degree)
 					if(/*cr.maxSide() < std::max(tImg.rows, tImg.cols)*maxSideFactor && */
 						(!maxSide || cr.maxSide() < maxSide*scale) && 
-						cr.getMaxCosine() < 0.1 ) {
+						cr.getMaxCosine() < 0.3 ) {
 
 						double a = std::acos(cr.getMaxCosine()) * DK_RAD2DEG;
-                        Utils::print("max angle: " + Utils::num2str(a), "PageSegmentation");
-
 						rects.push_back(cr);
-
 					}
 				}
 			}
@@ -308,7 +305,7 @@ void DkPageSegmentation::filterDuplicates(std::vector<DkPolyRect>& rects, float 
 			if (oA/cA < areaRatio)	// since we sort, we know that oA is larger
 				continue;
 
-			double intersection = abs(oR.intersectArea(cR));
+			double intersection = fabs(oR.intersectArea(cR));
 
 			if (std::max(intersection/cR.getArea(), intersection/oR.getArea()) > overlap) {
 
@@ -405,6 +402,7 @@ void DkPageSegmentation::draw(cv::Mat& img, const std::vector<DkPolyRect>& rects
 
 std::vector<DkPolyRect> DkPageSegmentation::apply(const cv::Mat& src) {
 
+    Utils::print("apply called", "PageSegmentation");
 	std::vector<DkPolyRect> pageRects;
 
 	// run the page segmentation

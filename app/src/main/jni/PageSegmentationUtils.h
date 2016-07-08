@@ -288,7 +288,7 @@ public:
 	* Returns the width of the box.
 	* @return float the width in pixel fo the box.
 	**/ 
-	float getWidthF() const {
+	double getWidthF() const {
 		return lc.x-uc.x;
 	};
 	/**
@@ -302,7 +302,7 @@ public:
 	* Returns the height of the box as float
 	* @return float height in pixel of the box.
 	**/ 
-	float getHeightF() const {
+	double getHeightF() const {
 		return lc.y-uc.y;
 	};
 	/**
@@ -323,13 +323,13 @@ public:
 		lc = uc+size;
 	};
 
-	float area() const {
+	double area() const {
 
 		DkVector s = size();
 		return s.width*s.height;
 	};
 
-	float intersectArea(const DkBox& box) const {
+	double intersectArea(const DkBox& box) const {
 
 		DkVector tmp1 = lc.maxVec(box.lc);
 		DkVector tmp2 = uc.maxVec(box.uc);
