@@ -40,6 +40,8 @@
 #include "opencv2/core.hpp"
 #include "opencv/cxcore.h"	// c functions e.g. dsc::round
 
+#include "Utils.h"
+
 #define DK_DEG2RAD	0.017453292519943
 #define DK_RAD2DEG 	57.295779513082323
 
@@ -183,7 +185,7 @@ public:
 	/** 
 	 * Default constructor.
 	 **/
-	DkVector() : x(0), y(0) {};
+	DkVector() : x(0.0f), y(0.0f) {};
 
 	/** 
 	 * Initializes an object.
@@ -233,7 +235,7 @@ public:
 	 */
 	virtual bool operator== (const DkVector &vec) const {
 
-		return (this->x == vec.x && this->y == vec.y);
+		return (x == vec.x && y == vec.y);
 	};
 
 	/**
@@ -528,7 +530,8 @@ public:
 	};
 
 	double cosv(const DkVector& vec) const {
-		return (this->x*vec.x + this->y*vec.y) / (sqrt(this->x*this->x + this->y*this->y)*sqrt(vec.x*vec.x + vec.y*vec.y));
+
+		return (x*vec.x + y*vec.y) / (sqrt(x*x + y*y)*sqrt(vec.x*vec.x + vec.y*vec.y));
 	};
 
 	/**
