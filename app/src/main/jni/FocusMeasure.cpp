@@ -532,6 +532,16 @@ namespace dsc {
 		return mWindowSize;
 	}
 
+	void FocusEstimation::setGlobalFMThreshold(double fmt)
+	{
+		mGlobalFMThresh = fmt;
+	}
+
+	double FocusEstimation::getGlobalFMThreshold() const
+	{
+		return mGlobalFMThresh;
+	}
+
 	/// <summary>
 	/// Applies the specified focus estimation.
 	/// The window size is 1/5 min(width/height) of the src image.
@@ -540,7 +550,7 @@ namespace dsc {
 	/// </summary>
 	/// <param name="src">The source image.</param>
 	/// <returns>A vector with image patches containing the fm value.</returns>
-	std::vector<dsc::Patch> dsc::FocusEstimation::apply(const cv::Mat & src) {
+	std::vector<dsc::Patch> dsc::FocusEstimation::apply(const cv::Mat & src, const double globalFMThr) {
 
 		static dsc::FocusEstimation fe;
 		int w = src.cols < src.rows ? src.cols : src.rows;
@@ -549,6 +559,7 @@ namespace dsc {
 		fe.setWindowSize(ws);
 
 		fe.setImg(src);
+		fe.setGlobalFMThreshold(globalFMThr);
 
 		////version 1
 		//fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
@@ -569,6 +580,9 @@ namespace dsc {
 			dsc::Patch tmpPatchRef = refResults[i];
 		    double fmV = tmpPatchRef.fm() > 0 ? tmpPatch.fm() / tmpPatchRef.fm() : 0;
 		    resultP[i].setFm(fmV);
+			bool s = fmV < fe.getGlobalFMThreshold() ? false : true;
+			resultP[i].setSharpness(s);
+
 		}
 
 
@@ -704,6 +718,16 @@ namespace dsc {
 	int Patch::height() const
 	{
 		return mHeight;
+	}
+
+	bool Patch::isSharp() const
+	{
+		return mIsSharp;
+	}
+
+	void Patch::setSharpness(bool s)
+	{
+		mIsSharp = s;
 	}
 
 	/// <summary>
