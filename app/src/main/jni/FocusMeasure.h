@@ -192,6 +192,9 @@ namespace dsc {
 		void setGlobalFMThreshold(double fmt);
 		double getGlobalFMThreshold() const;
 
+		void setTextThrshold(double t);
+		double textThr() const;
+
 		static std::vector<dsc::Patch> apply(const cv::Mat& src, const double globalFMThr = 0.15);
 
 	protected:
@@ -204,6 +207,7 @@ namespace dsc {
 		int mSplitSize = 0;
 
 		double mGlobalFMThresh = 0.15;
+		double mTextThreshold = 0.3;
 	};
 
 
