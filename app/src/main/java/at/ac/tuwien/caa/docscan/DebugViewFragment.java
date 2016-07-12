@@ -27,6 +27,30 @@ public class DebugViewFragment extends Fragment {
 
     }
 
+    public void setTimeText(int senderId, long time) {
+
+        String text = String.valueOf(time);
+        TextView textView = null;
+
+        switch (senderId) {
+
+            case TaskTimer.FOCUS_MEASURE_ID:
+                textView = mFocusMeasureTextView;
+                break;
+
+        }
+
+        if (textView != null)
+            setTextViewText(textView, text);
+
+    }
+
+    private void setTextViewText(TextView textView, String text) {
+
+        textView.setText(text);
+
+    }
+
     public void setFocusMeasureTime(long time) {
 
         mFocusMeasureTextView.setText(String.valueOf(time));

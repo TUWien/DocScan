@@ -95,14 +95,35 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
                     if (mIsFocusMeasured) {
 
-                        if (MainActivity.isDebugViewEnabled()) {
-                            Patch[] patches = NativeWrapper.getFocusMeasuresDebug(rgbMat);
-                            mCVCallback.onFocusMeasured(patches, NativeWrapper.getFocusMeasureTime());
-                        }
-                        else {
-                            Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
-                            mCVCallback.onFocusMeasured(patches);
-                        }
+                        if (MainActivity.isDebugViewEnabled())
+                            mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
+
+                        Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
+
+                        if (MainActivity.isDebugViewEnabled())
+                            mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
+
+                        mCVCallback.onFocusMeasured(patches);
+
+
+//                        focusMeasure(rgbMat);
+
+
+//                        if (MainActivity.isDebugViewEnabled()) {
+//
+//
+////                            String test = Thread.currentThread().getStackTrace()
+//
+////                            mTimerCallbacks.onTimerStarted(this);
+//
+//                            StackTraceElement[] elements = Thread.currentThread().getStackTrace();
+//                            Patch[] patches = NativeWrapper.getFocusMeasuresDebug(rgbMat);
+//                            mCVCallback.onFocusMeasured(patches, NativeWrapper.getFocusMeasureTime());
+//                        }
+//                        else {
+//                            Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
+//                            mCVCallback.onFocusMeasured(patches);
+//                        }
 
                     }
 
@@ -120,6 +141,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         }
 
     }
+
+
 
     // Taken from: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438
     private CameraHandlerThread mThread = null;
@@ -159,6 +182,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     private byte[] mFrame;
     private CameraFrameThread mCameraFrameThread;
     private NativeWrapper.CVCallback mCVCallback;
+    private TaskTimer.TimerCallbacks mTimerCallbacks;
     private SurfaceHolder mHolder;
     private int mSurfaceWidth, mSurfaceHeight;
     private boolean mIsSurfaceReady, mIsPermissionGiven;
@@ -171,6 +195,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         super(context, attrs);
 
         mCVCallback = (NativeWrapper.CVCallback) context;
+        mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
 
         mHolder = getHolder();
         mHolder.addCallback(this);

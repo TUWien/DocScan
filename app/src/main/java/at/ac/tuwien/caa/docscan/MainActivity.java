@@ -45,7 +45,9 @@ import org.opencv.android.OpenCVLoader;
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
-public class MainActivity extends AppCompatActivity implements NativeWrapper.CVCallback {
+public class MainActivity extends AppCompatActivity implements NativeWrapper.CVCallback, TaskTimer.TimerCallbacks {
+
+    public static final int STACK_TRACE_ELEMENT_NUM = 2;
 
     private static final int PERMISSION_CAMERA = 0;
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
@@ -59,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private DebugViewFragment mDebugViewFragment;
+
+    // Used for stopping the time of 'heavy' tasks:
+    private TaskTimer mTaskTimer;
 
 
     static {
@@ -216,8 +221,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
                     mDebugViewFragment.setFocusMeasureTime(time);
                 }
             });
-
-
         }
 
     }
@@ -231,6 +234,48 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     }
 
     // ================= end: CALLBACKS called from native files =================
+
+
+    // ================= start: CALLBACKS invoking TaskTimer =================
+
+    @Override
+    public void onTimerStarted(int senderId) {
+
+        if (mTaskTimer == null)
+            return;
+
+        mTaskTimer.startTaskTimer(senderId);
+
+
+    }
+
+    @Override
+    public void onTimerStopped(final int senderId) {
+
+        if (mTaskTimer == null)
+            return;
+
+        final long timePast = mTaskTimer.getTaskTime(senderId);
+
+        // Normally the timer callback should just be called if the debug view is visible:
+        if (mIsDebugViewEnabled) {
+
+            if (mDebugViewFragment != null) {
+                // The update of the UI elements must be done from the UI thread:
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mDebugViewFragment.setTimeText(senderId, timePast);
+                    }
+                });
+            }
+
+        }
+
+
+    }
+
+    // ================= end: CALLBACKS invoking TaskTimer =================
 
 
     @Override
@@ -327,8 +372,10 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
             case R.id.action_show_debug_view:
 
                 // Create the debug view - if it is not already created:
-                if (mDebugViewFragment == null)
+                if (mDebugViewFragment == null) {
+                    mTaskTimer = new TaskTimer();
                     mDebugViewFragment = new DebugViewFragment();
+                }
 
                 // Show the debug view:
                 if (getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT) == null) {

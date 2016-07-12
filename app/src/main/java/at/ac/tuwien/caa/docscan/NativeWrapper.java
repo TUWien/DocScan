@@ -38,6 +38,8 @@ public class NativeWrapper {
 
     public static Patch[] getFocusMeasures(Mat src) {
 
+        StackTraceElement[] elements = Thread.currentThread().getStackTrace();
+
         Patch[] patches = nativeGetFocusMeasures(src.getNativeObjAddr());
 
         return patches;
@@ -101,7 +103,7 @@ public class NativeWrapper {
     private static native void nativeProcessFrame(long src);
 
     // Callbacks:
-    public static interface CVCallback {
+    public interface CVCallback {
         // used in 'normal' mode with no debug view:
         void onFocusMeasured(Patch[] patches);
         void onPageSegmented(DkPolyRect[] polyRects);
