@@ -136,6 +136,9 @@ namespace dsc {
 		bool isSharp() const;
 		void setSharpness(bool s = false);
 
+		bool foreground() const;
+		void setForeground(bool b);
+
 		double fm() const;
 		double weight() const;
 		double area() const;
@@ -153,6 +156,7 @@ namespace dsc {
 		int mHeight = 0;
 
 		bool mIsSharp = false;
+		bool mForeground = false;
 
 		double mFm = -1;
 		double mFmReference = -1;
