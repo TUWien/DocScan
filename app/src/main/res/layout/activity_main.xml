@@ -6,25 +6,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/container_layout">
+        <!-- The main content view is contained in a Fragment: -->
+        <fragment
+            android:name="at.ac.tuwien.caa.docscan.OverlayViewFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/overlay_view"
+            >
+        </fragment>
 
+    </FrameLayout>
 
-    <!-- The main content view START -->
-    <at.ac.tuwien.caa.docscan.OverlayView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/overlay_view"
+    <!--
+    <fragment
+        android:name="at.ac.tuwien.caa.docscan.DebugViewFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/debug_view"
         >
-        <at.ac.tuwien.caa.docscan.DrawView
-            android:id="@+id/draw_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-        <at.ac.tuwien.caa.docscan.CameraView
-            android:id="@+id/camera_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+    </fragment>
+    -->
 
-    </at.ac.tuwien.caa.docscan.OverlayView>
-    <!-- The main content view END -->
 
     <!-- The navigation drawer -->
     <android.support.design.widget.NavigationView
@@ -34,7 +41,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="left"
         android:background="@color/navigation_drawer_bg_color"
-        app:menu="@menu/drawer_view"
+        app:menu="@menu/drawer_view_menu"
         app:itemTextColor="@color/navigation_drawer_text_color"
         />
 

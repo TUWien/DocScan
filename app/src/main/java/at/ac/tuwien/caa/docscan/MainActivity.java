@@ -47,19 +47,18 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 
 public class MainActivity extends AppCompatActivity implements NativeWrapper.CVCallback {
 
-
-    private Camera mCamera;
-
     private static final int PERMISSION_CAMERA = 0;
+    private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
+
+    private static boolean mIsDebugViewEnabled = false;
+
     private static Activity mActivity;
     private OverlayView mOverlayView;
     private CameraView mCameraView;
     private DrawView mDrawView;
-
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
-    private CharSequence mDrawerTitle;
-    private CharSequence mTitle;
+    private DebugViewFragment mDebugViewFragment;
 
 
     static {
@@ -67,9 +66,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         boolean init = OpenCVLoader.initDebug();
 
         if (init) {
-//            System.loadLibrary("wrapper");
             System.loadLibrary("docscan-native");
-//            System.loadLibrary("openCVLibrary310");
         }
         int b = 0;
     }
@@ -103,10 +100,14 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
         super.onPause();
 
-
     }
 
+    @Override
+    protected void onDestroy() {
 
+        super.onDestroy();
+
+    }
 
 
     /** A safe way to get an instance of the Camera object. */
@@ -128,15 +129,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         }
         else
             mCameraView.giveCameraPermission();
-
-//        else
-//            mPreview.openCamera();
-//        initCamera();
-
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-//                Manifest.permission.CAMERA)) {
-//
-//        }
 
     }
 
@@ -210,6 +202,34 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
     }
 
+    // Debug routine that is only invoked if debug view is shown:
+    @Override
+    public void onFocusMeasured(Patch[] patches, final long time) {
+
+        if (mOverlayView != null)
+            mOverlayView.setFocusPatches(patches);
+
+        if (mDebugViewFragment != null) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mDebugViewFragment.setFocusMeasureTime(time);
+                }
+            });
+
+
+        }
+
+    }
+
+    // Debug routine that is only invoked if debug view is shown:
+    @Override
+    public void onPageSegmented(DkPolyRect[] dkPolyRects, long time) {
+
+        mOverlayView.setDkPolyRects(dkPolyRects);
+
+    }
+
     // ================= end: CALLBACKS called from native files =================
 
 
@@ -225,14 +245,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
-
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu, menu);
-//        return true;
-//    }
 
 
     @Override
@@ -255,10 +267,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
 
-
-
-
-
         }
 
 
@@ -266,33 +274,21 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     }
 
 
+    public static boolean isDebugViewEnabled() {
+
+        return mIsDebugViewEnabled;
+
+    }
+
     private void setupNavigationDrawer() {
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
 
-//            /** Called when a drawer has settled in a completely closed state. */
-//            public void onDrawerClosed(View view) {
-//                super.onDrawerClosed(view);
-//                getSupportActionBar().setTitle(mTitle);
-//            }
-//
-//            /** Called when a drawer has settled in a completely open state. */
-//            public void onDrawerOpened(View drawerView) {
-//                super.onDrawerOpened(drawerView);
-//                getSupportActionBar().setTitle(mDrawerTitle);
-//            }
-
-
         };
 
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-
-        // START --------------------- navigation drawer ---------------------
-
-        // Used for naviatigation drawer: This is currently not used, but is left to be uncommented!
-
 
         NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
         setupDrawerContent(mDrawer);
@@ -301,7 +297,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-        // END --------------------- navigation drawer ---------------------
     }
 
 
@@ -328,6 +323,25 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     private void selectDrawerItem(MenuItem menuItem) {
 
         switch(menuItem.getItemId()) {
+
+            case R.id.action_show_debug_view:
+
+                // Create the debug view - if it is not already created:
+                if (mDebugViewFragment == null)
+                    mDebugViewFragment = new DebugViewFragment();
+
+                // Show the debug view:
+                if (getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT) == null) {
+                    mIsDebugViewEnabled = true;
+                    menuItem.setTitle(R.string.hide_debug_view_text);
+                    getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+                }
+                // Hide the debug view:
+                else {
+                    mIsDebugViewEnabled = false;
+                    menuItem.setTitle(R.string.show_debug_view_text);
+                    getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
+                }
 
 
 
