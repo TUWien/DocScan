@@ -544,6 +544,14 @@ namespace dsc {
 		return mGlobalFMThresh;
 	}
 
+	void FocusEstimation::setTextThrshold(double t)	{
+		mTextThreshold = t;
+	}
+
+	double FocusEstimation::textThr() const	{
+		return mTextThreshold;
+	}
+
 	/// <summary>
 	/// Applies the specified focus estimation.
 	/// The window size is 1/5 min(width/height) of the src image.
@@ -585,7 +593,7 @@ namespace dsc {
 			bool s = fmV < fe.getGlobalFMThreshold() ? false : true;
 			resultP[i].setSharpness(s);
 
-			bool text = tmpPatchRef.weight() < 0.3 ? false : true;
+			bool text = tmpPatchRef.weight() < fe.textThr() ? false : true;
 			resultP[i].setForeground(text);
 
 		}
