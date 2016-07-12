@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         }
 
         int result;
+
         if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
             result = (info.orientation + degrees) % 360;
             result = (360 - result) % 360;  // compensate the mirror
@@ -298,6 +299,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         // END --------------------- navigation drawer ---------------------
     }

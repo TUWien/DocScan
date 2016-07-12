@@ -5,6 +5,8 @@
     <color name="colorAccent">#FF4081</color>
 
     <color name="actionbar_bg_color">#aa666666</color>
+    <color name="navigation_drawer_bg_color">#11111111</color>
     <color name="white">#ffffff</color>
+    <color name="navigation_drawer_text_color">#ffffff</color>
 
 </resources>
