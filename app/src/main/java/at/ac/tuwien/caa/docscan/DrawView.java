@@ -72,8 +72,9 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
             // Used to print out measured focus:
             mTextPaint = new Paint();
 
-            final float testTextSize = 48f;
-            mTextPaint.setTextSize(testTextSize);
+            // Taken from here: http://stackoverflow.com/questions/3061930/how-to-set-unit-for-paint-settextsize
+            int scaledFontSize = getResources().getDimensionPixelSize(R.dimen.draw_view_focus_font_size);
+            mTextPaint.setTextSize(scaledFontSize);
 
             // Used to paint the page segmentation boundaries:
             mSegmentationPaint = new Paint();
