@@ -323,6 +323,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         // Determine the preview orientation. Note that the frame size in onPreviewFrame is not changed by this!
         int cameraDisplayOrientation = MainActivity.getCameraDisplayOrientation();
         mCamera.setDisplayOrientation(cameraDisplayOrientation);
+        mCamera.getParameters().setRotation(cameraDisplayOrientation);
 
         try {
 
@@ -342,38 +343,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
     }
 
-
-//    @Override
-//    public void surfaceCreated(SurfaceHolder arg0)
-//    {
-//
-//        if (mCamera != null)
-//            mCamera = Camera.open();
-//
-//        try
-//        {
-//            // If did not set the SurfaceHolder, the preview area will be black.
-//            mCamera.setPreviewDisplay(arg0);
-//            mHolder = arg0;
-//            mCamera.setPreviewCallback(this);
-//
-//        }
-//        catch (IOException e)
-//        {
-//            mCamera.release();
-//            mCamera = null;
-//        }
-//
-//        mCameraFrameThread = new CameraFrameThread(this);
-//
-//        mCameraFrameThread.setRunning(true);
-//
-//        // TODO: check why the thread is already started - if the app is restarted. The thread should be dead!
-//        if (mCameraFrameThread.getState() == Thread.State.NEW)
-//            mCameraFrameThread.start();
-//
-//
-//    }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder arg0)
