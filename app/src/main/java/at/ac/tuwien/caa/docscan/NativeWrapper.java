@@ -33,6 +33,9 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  */
 public class NativeWrapper {
 
+    private static long mPageSegmentationTime;
+    private static long mFocusMeasureTime;
+
     public static Patch[] getFocusMeasures(Mat src) {
 
         Patch[] patches = nativeGetFocusMeasures(src.getNativeObjAddr());
@@ -41,11 +44,47 @@ public class NativeWrapper {
 
     }
 
+    // This is only called if the debug view is active:
+    public static Patch[] getFocusMeasuresDebug(Mat src) {
+
+        long startTime = System.currentTimeMillis();
+        Patch[] patches = nativeGetFocusMeasures(src.getNativeObjAddr());
+        mFocusMeasureTime = System.currentTimeMillis() - startTime;
+
+        return patches;
+
+    }
+
+    public static long getFocusMeasureTime() {
+
+        return mFocusMeasureTime;
+
+    }
+
     private static native Patch[] nativeGetFocusMeasures(long src);
+
+
 
     public static DkPolyRect[] getPageSegmentation(Mat src) {
 
         return nativeGetPageSegmentation(src.getNativeObjAddr());
+
+    }
+
+    // This is only called if the debug view is active:
+    public static DkPolyRect[] getPageSegmentationDebug(Mat src) {
+
+        long startTime = System.currentTimeMillis();
+        Patch[] patches = nativeGetFocusMeasures(src.getNativeObjAddr());
+        mPageSegmentationTime = System.currentTimeMillis() - startTime;
+
+        return nativeGetPageSegmentation(src.getNativeObjAddr());
+
+    }
+
+    public static long getPageSegmentationTime() {
+
+        return mPageSegmentationTime;
 
     }
 
@@ -63,7 +102,13 @@ public class NativeWrapper {
 
     // Callbacks:
     public static interface CVCallback {
+        // used in 'normal' mode with no debug view:
         void onFocusMeasured(Patch[] patches);
         void onPageSegmented(DkPolyRect[] polyRects);
+
+        // used in 'debug' mode with debug view:
+        void onFocusMeasured(Patch[] patches, long time);
+        void onPageSegmented(DkPolyRect[] polyRects, long time);
+
     }
 }

@@ -94,8 +94,16 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                     Imgproc.cvtColor(yuv, rgbMat, Imgproc.COLOR_YUV2RGB_NV21);
 
                     if (mIsFocusMeasured) {
-                        Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
-                        mCVCallback.onFocusMeasured(patches);
+
+                        if (MainActivity.isDebugViewEnabled()) {
+                            Patch[] patches = NativeWrapper.getFocusMeasuresDebug(rgbMat);
+                            mCVCallback.onFocusMeasured(patches, NativeWrapper.getFocusMeasureTime());
+                        }
+                        else {
+                            Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
+                            mCVCallback.onFocusMeasured(patches);
+                        }
+
                     }
 
                     if (mIsPageSegmented) {
