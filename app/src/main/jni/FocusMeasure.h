@@ -136,6 +136,9 @@ namespace dsc {
 		bool isSharp() const;
 		void setSharpness(bool s = false);
 
+		bool foreground() const;
+		void setForeground(bool b);
+
 		double fm() const;
 		double weight() const;
 		double area() const;
@@ -153,6 +156,7 @@ namespace dsc {
 		int mHeight = 0;
 
 		bool mIsSharp = false;
+		bool mForeground = false;
 
 		double mFm = -1;
 		double mFmReference = -1;
@@ -188,6 +192,9 @@ namespace dsc {
 		void setGlobalFMThreshold(double fmt);
 		double getGlobalFMThreshold() const;
 
+		void setTextThrshold(double t);
+		double textThr() const;
+
 		static std::vector<dsc::Patch> apply(const cv::Mat& src, const double globalFMThr = 0.15);
 
 	protected:
@@ -200,6 +207,7 @@ namespace dsc {
 		int mSplitSize = 0;
 
 		double mGlobalFMThresh = 0.15;
+		double mTextThreshold = 0.3;
 	};
 
 

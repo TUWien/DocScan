@@ -431,19 +431,21 @@ namespace dsc {
 
 				if (binary) {
 					cv::Scalar relArea = cv::sum(tile);
-					relArea[0] = relArea[0] / (double)(mWindowSize * mWindowSize);
 					r.setArea(relArea[0]);
+					relArea[0] = relArea[0] / (double)(mWindowSize * mWindowSize);
+					
 					//area completely written with text ~ 0.1
 					//normalize to 1
 					relArea[0] *= 10.0;
+					r.setWeight(relArea[0]);
 
 					//weight with sigmoid function
 					//-6: shift sigmoid to the right
 					//*10: scale normalized Area
-					double a = 10.0;
-					double b = -6.0;
-					double weight = 1.0 / (1 + std::exp(-(relArea[0] * a + b)));
-					r.setWeight(weight);
+					//double a = 10.0;
+					//double b = -6.0;
+					//double weight = 1.0 / (1 + std::exp(-(relArea[0] * a + b)));
+					//r.setWeight(weight);
 				}
 
 
@@ -542,6 +544,14 @@ namespace dsc {
 		return mGlobalFMThresh;
 	}
 
+	void FocusEstimation::setTextThrshold(double t)	{
+		mTextThreshold = t;
+	}
+
+	double FocusEstimation::textThr() const	{
+		return mTextThreshold;
+	}
+
 	/// <summary>
 	/// Applies the specified focus estimation.
 	/// The window size is 1/5 min(width/height) of the src image.
@@ -572,7 +582,7 @@ namespace dsc {
 		//version 3 with foreground estimation
 		fe.compute();
 		std::vector<dsc::Patch> resultP = fe.fmPatches();
-		fe.computeRefPatches();
+		fe.computeRefPatches(dsc::FocusEstimation::BREN, true);
 		std::vector<dsc::Patch> refResults = fe.fmPatches();
 
 		for (int i = 0; i < resultP.size(); i++) {
@@ -582,6 +592,9 @@ namespace dsc {
 		    resultP[i].setFm(fmV);
 			bool s = fmV < fe.getGlobalFMThreshold() ? false : true;
 			resultP[i].setSharpness(s);
+
+			bool text = tmpPatchRef.weight() < fe.textThr() ? false : true;
+			resultP[i].setForeground(text);
 
 		}
 
@@ -728,6 +741,16 @@ namespace dsc {
 	void Patch::setSharpness(bool s)
 	{
 		mIsSharp = s;
+	}
+
+	bool Patch::foreground() const
+	{
+		return mForeground;
+	}
+
+	void Patch::setForeground(bool b)
+	{
+		mForeground = b;
 	}
 
 	/// <summary>
