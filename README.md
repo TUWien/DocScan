@@ -42,3 +42,11 @@ it points to your opencv installation (contains the folders: apk, sample, sdk)
 ## Links
 - [1] https://sourceforge.net/projects/opencvlibrary/files/opencv-android/3.1.0/OpenCV-3.1.0-android-sdk.zip/download
 - [2] https://www.learn2crack.com/2016/03/setup-opencv-sdk-android-studio.html
+
+## Visual Studio Project (C++ Library)
+- Optional
+- C++ lib for Page Segmentation and Focus Measure
+- use CMake to create a Visual Studio Project
+  - Source Code Path: DocScan/app/src/main
+  - binaries path e.g.: DocScan/build2015-x64
+  - Specify OpenCV_DIR
