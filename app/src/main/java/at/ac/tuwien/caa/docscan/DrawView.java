@@ -12,13 +12,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Foobar is distributed in the hope that it will be useful,
+ *  DocScan is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
 package at.ac.tuwien.caa.docscan;
@@ -52,12 +52,13 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
         private boolean mIsRunning;
         private int mCanvasWidth, mCanvasHeight;
 
-        private Paint mRectPaint;
         private Paint mTextPaint;
         private Paint mSegmentationPaint;
         private Patch[] mFocusPatches;
         private DkPolyRect[] mPolyRects;
         private Path mSegmentationPath;
+
+        // Used for debug output:
 
         public DrawerThread(SurfaceHolder surfaceHolder) {
 
@@ -65,9 +66,6 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
             mSurfaceHolder = surfaceHolder;
 
 //            Initialize drawing stuff:
-
-            // Used for debugging rectangle
-            mRectPaint = new Paint();
 
             // Used to print out measured focus:
             mTextPaint = new Paint();
@@ -101,11 +99,23 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
         @Override
         public void run() {
             while (mIsRunning) {
+
                 Canvas canvas = null;
+
                 try {
+
                     canvas = mSurfaceHolder.lockCanvas(null);
                     synchronized (mSurfaceHolder) {
+
+                        if (MainActivity.isDebugViewEnabled())
+                            mTimerCallbacks.onTimerStarted(TaskTimer.DRAW_VIEW_ID);
+
                         draw(canvas);
+
+                        if (MainActivity.isDebugViewEnabled())
+                            mTimerCallbacks.onTimerStopped(TaskTimer.DRAW_VIEW_ID);
+
+
                     }
                 } finally {
                     // do this in a finally so that if an exception is thrown
@@ -213,6 +223,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
 
     private DrawerThread mDrawerThread;
+    private TaskTimer.TimerCallbacks mTimerCallbacks;
 
     public DrawView(Context context, AttributeSet attrs) {
 
@@ -220,6 +231,8 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
+
+        mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
 
 
 

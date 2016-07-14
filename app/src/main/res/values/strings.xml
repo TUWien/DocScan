@@ -1,11 +1,26 @@
 <resources>
+
     <string name="app_name">DocScan</string>
+
+    <!-- Use in the MainActivity: start -->
 
     <string name="show_debug_view_text">Show debug view</string>
     <string name="hide_debug_view_text">Hide debug view</string>
 
-    <string name="focus_measure_debug_text">Focus measure time:</string>
-    <string name="page_segmentation_debug_text">Page segmentation time:</string>
+    <!-- Use in the MainActivity: end -->
+
+
+    <!-- Use in the debug view: start -->
+
+    <string name="table_head_task_text">Task</string>
+    <string name="table_head_time_text">time (ms)</string>
+    <string name="focus_measure_debug_text">Focus measure:</string>
+    <string name="page_segmentation_debug_text">Page segmentation:</string>
+    <string name="camera_frame_debug_text">Camera frame:</string>
+    <string name="mat_conversion_debug_text">Mat conversion:</string>
+    <string name="draw_view_debug_text">Draw view:</string>
+
+    <!-- Use in the debug view: start -->
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>

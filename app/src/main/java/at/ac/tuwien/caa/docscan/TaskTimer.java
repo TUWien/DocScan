@@ -1,15 +1,39 @@
+/*********************************************************************************
+ *  DocScan is a Android app for document scanning.
+ *
+ *  Author:         Fabian Hollaus, Florian Kleber, Markus Diem
+ *  Organization:   TU Wien, Computer Vision Lab
+ *  Date created:   12. July 2016
+ *
+ *  This file is part of DocScan.
+ *
+ *  DocScan is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  DocScan is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
+ *********************************************************************************/
+
 package at.ac.tuwien.caa.docscan;
 
 import java.util.ArrayList;
 
-/**
- * Created by fabian on 12.07.2016.
- */
+
 public class TaskTimer {
 
 
     public static final int FOCUS_MEASURE_ID = 0;
     public static final int PAGE_SEGMENTATION_ID = 1;
+    public static final int DRAW_VIEW_ID = 2;
+    public static final int CAMERA_FRAME_ID = 3;
+    public static final int MAT_CONVERSION_ID = 4;
 
     private ArrayList<Task> mTasks;
 
@@ -18,6 +42,9 @@ public class TaskTimer {
         mTasks = new ArrayList<Task>();
         mTasks.add(new Task(FOCUS_MEASURE_ID));
         mTasks.add(new Task(PAGE_SEGMENTATION_ID));
+        mTasks.add(new Task(DRAW_VIEW_ID));
+        mTasks.add(new Task(CAMERA_FRAME_ID));
+        mTasks.add(new Task(MAT_CONVERSION_ID));
 
     }
 
