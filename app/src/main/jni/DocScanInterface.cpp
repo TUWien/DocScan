@@ -47,6 +47,9 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
     std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(*((cv::Mat*)src));
 
     jclass polyRectClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/DkPolyRect");
+
+    // JNI type signatures: http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
+
     // "(FFFFFFFF)V" -> (8 x float) return void
     jmethodID cnstrctr = env->GetMethodID(polyRectClass, "<init>", "(FFFFFFFF)V");
 
@@ -120,8 +123,11 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 
     // find the Java Patch class and its constructor:
     jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/Patch");
-    jmethodID cnstrctr = env->GetMethodID(patchClass, "<init>", "(FFIID)V");
-    // "(FFIID)V" -> (float float int int double) return void
+
+    // JNI type signatures: http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
+    // "(FFIIDZZ)V" -> (float float int int double boolean boolean) return void
+    jmethodID cnstrctr = env->GetMethodID(patchClass, "<init>", "(FFIIDZZ)V");
+
 
     // convert the patches vector to a Java array:
     jobjectArray outJNIArray = env->NewObjectArray(patches.size(), patchClass, NULL);
@@ -131,7 +137,8 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 
     for (int i = 0; i < patches.size(); i++) {
         patch = env->NewObject(patchClass, cnstrctr, patches[i].centerX(), patches[i].centerY(),
-            patches[i].width(), patches[i].height(), patches[i].fm());
+            patches[i].width(), patches[i].height(), patches[i].fm(),
+            patches[i].isSharp(), patches[i].foreground());
         env->SetObjectArrayElement(outJNIArray, i, patch);
     }
 

@@ -160,10 +160,13 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
                     patch = mFocusPatches[i];
                     String fValue = String.format("%.2f", patch.getFM());
-                    if (patch.getFM() <= 0.15)
-                        mTextPaint.setColor(Color.RED);
-                    else
-                        mTextPaint.setColor(Color.GREEN);
+
+                    if (patch.getIsForeGround()) {
+                        if (patch.getIsSharp())
+                            mTextPaint.setColor(Color.GREEN);
+                        else
+                            mTextPaint.setColor(Color.RED);
+                    }
 
                     canvas.drawText(fValue, patch.getDrawViewPX(), patch.getDrawViewPY() + 50, mTextPaint);
 
