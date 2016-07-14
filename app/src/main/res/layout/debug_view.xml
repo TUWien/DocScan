@@ -1,18 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:columnCount="2"
+    android:layout_gravity="center"
     android:background="@color/debug_view_bg_color"
     >
 
     <TextView
+        android:id="@+id/focus_measure_label_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/focus_measure_debug_text"/>
+        android:text="@string/focus_measure_debug_text"
+        android:textColor="@color/white"
+
+        />
     <TextView
         android:id="@+id/focus_measure_time_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:text="4242"
+        />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/page_segmentation_label_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/page_segmentation_debug_text"
+        android:layout_below="@+id/focus_measure_label_view"
+        android:textColor="@color/white"
+        />
+
+    <TextView
+        android:id="@+id/page_segmentation_time_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:text="4242"
+        />
+
+
+</GridLayout>

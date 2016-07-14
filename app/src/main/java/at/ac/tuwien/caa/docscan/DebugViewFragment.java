@@ -13,7 +13,7 @@ import android.widget.TextView;
 public class DebugViewFragment extends Fragment {
 
 
-    private TextView mFocusMeasureTextView;
+    private TextView mFocusMeasureTextView, mPageSegmentationTextView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -22,6 +22,7 @@ public class DebugViewFragment extends Fragment {
         View debugView = (View) inflater.inflate(R.layout.debug_view, container, false);
 
         mFocusMeasureTextView = (TextView) debugView.findViewById(R.id.focus_measure_time_view);
+        mPageSegmentationTextView = (TextView) debugView.findViewById(R.id.page_segmentation_time_view);
 
         return debugView;
 
@@ -37,6 +38,10 @@ public class DebugViewFragment extends Fragment {
             case TaskTimer.FOCUS_MEASURE_ID:
                 textView = mFocusMeasureTextView;
                 break;
+            case TaskTimer.PAGE_SEGMENTATION_ID:
+                textView = mPageSegmentationTextView;
+                break;
+
 
         }
 
