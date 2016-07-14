@@ -12,13 +12,13 @@
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  Foobar is distributed in the hope that it will be useful,
+ *  DocScan is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public License
- *  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
 package at.ac.tuwien.caa.docscan;
@@ -42,9 +42,6 @@ import java.util.List;
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
-/**
- * Created by fabian on 16.06.2016.
- */
 
 // TODO: check out this thread: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438
 
@@ -86,12 +83,22 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                 //}
                 if (frame != null) {
 
+                    // Measure the time if required:
+                    if (MainActivity.isDebugViewEnabled())
+                        mTimerCallbacks.onTimerStarted(TaskTimer.MAT_CONVERSION_ID);
+
                     // 1.5 since YUV
                     Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
                     yuv.put(0, 0, frame);
 
                     Mat rgbMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                     Imgproc.cvtColor(yuv, rgbMat, Imgproc.COLOR_YUV2RGB_NV21);
+
+
+                    // Measure the time if required:
+                    if (MainActivity.isDebugViewEnabled())
+                        mTimerCallbacks.onTimerStopped(TaskTimer.MAT_CONVERSION_ID);
+
 
                     if (mIsFocusMeasured) {
 
@@ -201,6 +208,17 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     @Override
     public void onPreviewFrame(byte[] pixels, Camera arg1)
     {
+
+        // Measure the time if required:
+
+        if (MainActivity.isDebugViewEnabled()) {
+
+            // Take care that in this case the timer is first stopped (contrary to the other calls):
+            mTimerCallbacks.onTimerStopped(TaskTimer.CAMERA_FRAME_ID);
+            mTimerCallbacks.onTimerStarted(TaskTimer.CAMERA_FRAME_ID);
+
+        }
+
         mFrame = pixels;
 
     }
@@ -249,7 +267,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         Camera.Size bestSize = null;
 
         final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio = (double)height / width;
+        double targetRatio = (double) height / width;
 
         double minDiff = Double.MAX_VALUE;
 
