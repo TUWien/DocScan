@@ -95,6 +95,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
                     if (mIsFocusMeasured) {
 
+                        // Measure the time if required:
                         if (MainActivity.isDebugViewEnabled())
                             mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
 
@@ -106,29 +107,19 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                         mCVCallback.onFocusMeasured(patches);
 
 
-//                        focusMeasure(rgbMat);
-
-
-//                        if (MainActivity.isDebugViewEnabled()) {
-//
-//
-////                            String test = Thread.currentThread().getStackTrace()
-//
-////                            mTimerCallbacks.onTimerStarted(this);
-//
-//                            StackTraceElement[] elements = Thread.currentThread().getStackTrace();
-//                            Patch[] patches = NativeWrapper.getFocusMeasuresDebug(rgbMat);
-//                            mCVCallback.onFocusMeasured(patches, NativeWrapper.getFocusMeasureTime());
-//                        }
-//                        else {
-//                            Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
-//                            mCVCallback.onFocusMeasured(patches);
-//                        }
-
                     }
 
                     if (mIsPageSegmented) {
+
+                        // Measure the time if required:
+                        if (MainActivity.isDebugViewEnabled())
+                            mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
+
                         DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(rgbMat);
+
+                        if (MainActivity.isDebugViewEnabled())
+                            mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
+
                         mCVCallback.onPageSegmented(polyRects);
                         if (polyRects.length > 0)
                             if (polyRects[0] != null)

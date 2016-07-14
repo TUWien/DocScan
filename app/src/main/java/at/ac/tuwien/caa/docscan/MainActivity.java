@@ -37,6 +37,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Surface;
 
@@ -95,6 +96,19 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         mOverlayView.setCameraView(mCameraView);
         mOverlayView.setDrawView(mDrawView);
 
+        // This is used to measure execution time of time intense tasks:
+        mTaskTimer = new TaskTimer();
+
+        mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
+
+
+
+        if (mDebugViewFragment == null)
+            mIsDebugViewEnabled = false;
+        else
+            mIsDebugViewEnabled = true;
+
+
         // This must be called after the CameraView has been created:
         requestCameraPermission();
 
@@ -113,6 +127,8 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         super.onDestroy();
 
     }
+
+
 
 
     /** A safe way to get an instance of the Camera object. */
@@ -147,7 +163,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mCameraView.giveCameraPermission();
-
                 }
             }
 
@@ -338,9 +353,19 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
         setupDrawerContent(mDrawer);
 
+
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        Menu menu = mDrawer.getMenu();
+        MenuItem item = menu.findItem(R.id.action_show_debug_view);
+
+        if (mIsDebugViewEnabled)
+            item.setTitle(R.string.hide_debug_view_text);
+        else
+            item.setTitle(R.string.show_debug_view_text);
 
     }
 
@@ -373,7 +398,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
                 // Create the debug view - if it is not already created:
                 if (mDebugViewFragment == null) {
-                    mTaskTimer = new TaskTimer();
                     mDebugViewFragment = new DebugViewFragment();
                 }
 

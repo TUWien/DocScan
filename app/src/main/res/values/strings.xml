@@ -5,6 +5,7 @@
     <string name="hide_debug_view_text">Hide debug view</string>
 
     <string name="focus_measure_debug_text">Focus measure time:</string>
+    <string name="page_segmentation_debug_text">Page segmentation time:</string>
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
