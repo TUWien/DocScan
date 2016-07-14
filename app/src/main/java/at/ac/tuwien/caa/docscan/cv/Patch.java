@@ -8,6 +8,9 @@ public class Patch {
     private float mPX, mPY;
     private int mWidth, mHeight;
     private double mFm;
+    private boolean mIsSharp, mIsForeGround;
+
+    // These are coordinates used for drawing:
     private float mDrawViewPX, mDrawViewPY;
 
 
@@ -18,6 +21,18 @@ public class Patch {
         mWidth = width;
         mHeight = height;
         mFm = fM;
+
+    }
+
+    public Patch(float pX, float pY, int width, int height, double fM, boolean isSharp, boolean isForeGround) {
+
+        mPX = pX;
+        mPY = pY;
+        mWidth = width;
+        mHeight = height;
+        mFm = fM;
+        mIsSharp = isSharp;
+        mIsForeGround = isForeGround;
 
     }
 
@@ -50,6 +65,19 @@ public class Patch {
         return mFm;
 
     }
+
+    public boolean getIsSharp() {
+
+        return mIsSharp;
+
+    }
+
+    public boolean getIsForeGround() {
+
+        return mIsForeGround;
+
+    }
+
 
     public void setDrawViewPX(float drawViewPX) {
 
