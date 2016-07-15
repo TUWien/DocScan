@@ -589,11 +589,15 @@ namespace dsc {
 			dsc::Patch tmpPatch = resultP[i];
 			dsc::Patch tmpPatchRef = refResults[i];
 		    double fmV = tmpPatchRef.fm() > 0 ? tmpPatch.fm() / tmpPatchRef.fm() : 0;
+		    //try this one
+		    //double fmV = (tmpPatchRef.fm() > 0  && tmpPatch.fm() > tmpPatchRef.fm()) ? tmpPatch.fm() / tmpPatchRef.fm() : 0;
 		    resultP[i].setFm(fmV);
 			bool s = fmV < fe.getGlobalFMThreshold() ? false : true;
 			resultP[i].setSharpness(s);
 
 			bool text = tmpPatchRef.weight() < fe.textThr() ? false : true;
+			//try this one
+			//bool text = (tmpPatchRef.weight() < fe.textThr() || tmpPatchRef.weight() > 5) ? false : true;
 			resultP[i].setForeground(text);
 
 		}

@@ -207,7 +207,7 @@ namespace dsc {
 		int mSplitSize = 0;
 
 		double mGlobalFMThresh = 0.15;
-		double mTextThreshold = 0.8;
+		double mTextThreshold = 0.5;
 	};
 
 
