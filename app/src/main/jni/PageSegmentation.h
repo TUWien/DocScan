@@ -68,8 +68,9 @@ protected:
 
 	int thresh = 80;
 	int numThresh = 10;
-	double mMinArea = 0.9;
+	double mMinArea = 0.05;
 	double mMaxArea = 0;
+
 	float maxSide = 0;   // do not find the image's border
 	float maxSideFactor = 0.97f;
 	float scale = 0.25f;

@@ -50,3 +50,7 @@ it points to your opencv installation (contains the folders: apk, sample, sdk)
   - Source Code Path: DocScan/app/src/main
   - binaries path e.g.: DocScan/build2015-x64
   - Specify OpenCV_DIR
+
+## Exporting to apk
+- Build -> Generate Signed APK
+- The APK is now under 'DocScan\app\build\outputs\apk\app-release-unaligned.apk'
