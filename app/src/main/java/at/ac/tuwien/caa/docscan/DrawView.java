@@ -24,6 +24,7 @@
 package at.ac.tuwien.caa.docscan;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -57,6 +58,9 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
         private Patch[] mFocusPatches;
         private DkPolyRect[] mPolyRects;
         private Path mSegmentationPath;
+        private final int GOOD_TEXT_COLOR = getResources().getColor(R.color.hud_bad_text_color);
+        private final int BAD_TEXT_COLOR = getResources().getColor(R.color.hud_good_text_color);
+        private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
 
         // Used for debug output:
 
@@ -77,9 +81,9 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
             // Used to paint the page segmentation boundaries:
             mSegmentationPaint = new Paint();
             mSegmentationPaint = new Paint();
-            mSegmentationPaint.setColor(Color.GREEN);
+            mSegmentationPaint.setColor(PAGE_RECT_COLOR);
             mSegmentationPaint.setStyle(Paint.Style.STROKE);
-            mSegmentationPaint.setStrokeWidth(4);
+            mSegmentationPaint.setStrokeWidth(7);
             mSegmentationPath = new Path();
 
         }
@@ -173,12 +177,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
                     if (patch.getIsForeGround()) {
                         if (patch.getIsSharp())
-                            mTextPaint.setColor(Color.GREEN);
+                            mTextPaint.setColor(GOOD_TEXT_COLOR);
                         else
-                            mTextPaint.setColor(Color.RED);
-                    }
+                            mTextPaint.setColor(BAD_TEXT_COLOR);
 
-                    canvas.drawText(fValue, patch.getDrawViewPX(), patch.getDrawViewPY() + 50, mTextPaint);
+                        canvas.drawText(fValue, patch.getDrawViewPX(), patch.getDrawViewPY() + 50, mTextPaint);
+                    }
 
                 }
 

@@ -108,6 +108,7 @@ cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPol
 
 	cv::Mat gray0(tImg.size(), CV_8UC1);
 	cv::Mat lImg(tImg.size(), CV_8UC1);
+	double imageSize = tImg.rows*tImg.cols;
 
 	// find squares in every color plane of the image
 	for ( int c = 0; c < 3; c++ ) {
@@ -148,7 +149,7 @@ cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPol
 
 					double cArea = contourArea(cv::Mat(contours[i]));
 
-					if (fabs(cArea) > mMinArea*scale*scale && (!mMaxArea || fabs(cArea) < mMaxArea*(scale*scale))) {
+					if (fabs(cArea/imageSize) > mMinArea && (!mMaxArea || fabs(cArea) < mMaxArea*(scale*scale))) {
 						std::vector<cv::Point> cHull;
 						cv::convexHull(cv::Mat(contours[i]), cHull, false);
 						hull.push_back(cHull);
@@ -185,7 +186,7 @@ cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPol
 				// area may be positive or negative - in accordance with the
 				// contour orientation
 				if (approx.size() == 4 &&
-					fabs(cArea) > mMinArea*scale*scale &&
+					fabs(cArea/imageSize) > mMinArea &&
 					(!mMaxArea || fabs(cArea) < mMaxArea*scale*scale) && 
 					isContourConvex(cv::Mat(approx))) {
 
