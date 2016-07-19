@@ -119,6 +119,17 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     protected void onPause() {
 
         super.onPause();
+        mCameraView.pause();
+        mDrawView.pause();
+
+    }
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+        mCameraView.resume();
+        mDrawView.resume();
 
     }
 

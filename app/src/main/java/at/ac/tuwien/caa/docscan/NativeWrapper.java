@@ -61,6 +61,8 @@ public class NativeWrapper {
 
     }
 
+    public static native void nativeGetPageSegmentationTest(int width, int height, byte yuv[], int[] rgba);
+
     private static native Patch[] nativeGetFocusMeasures(long src);
 
 

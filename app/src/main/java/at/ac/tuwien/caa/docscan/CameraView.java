@@ -124,30 +124,18 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
     }
 
-//    public void resume() {
-//
-//        if (mIsPermissionGiven && mCamera == null) {
-//
-//            if (mIsSurfaceReady)
-//                openCameraThread();
-//
-//        }
-//
-//    }
+    public void resume() {
 
-//    public void onPause()
-//    {
-//
-//
-//
-//        if (mCamera != null) {
-//            mCamera.release();
-//            mCamera = null;
-//        }
-//
-//        mFocusMeasurementThread.st
-//
-//    }
+        if (mIsPermissionGiven && mCamera == null) {
+
+            if (mIsSurfaceReady)
+                openCameraThread();
+
+        }
+
+    }
+
+
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
@@ -308,10 +296,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
     }
 
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder arg0)
-    {
+    public void pause() {
 
         // Stop the threads safely:
         stopThread(mPageSegmentationThread);
@@ -325,6 +310,16 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             mCamera = null;
 
         }
+
+        mIsSurfaceReady = false;
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder arg0)
+    {
+
+
     }
 
     private void stopThread(CVThread thread) {
