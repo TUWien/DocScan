@@ -61,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     private DrawView mDrawView;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
+
+    // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
 
     // Used for stopping the time of 'heavy' tasks:
@@ -96,11 +98,13 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         mOverlayView.setCameraView(mCameraView);
         mOverlayView.setDrawView(mDrawView);
 
+        // This must be called after the CameraView has been created:
+        requestCameraPermission();
+
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
-
 
 
         if (mDebugViewFragment == null)
@@ -108,9 +112,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         else
             mIsDebugViewEnabled = true;
 
-
-        // This must be called after the CameraView has been created:
-        requestCameraPermission();
 
     }
 
@@ -128,20 +129,6 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
     }
 
-
-
-
-    /** A safe way to get an instance of the Camera object. */
-    public static Camera getCameraInstance(){
-        Camera c = null;
-        try {
-            c = Camera.open(); // attempt to get a Camera instance
-        }
-        catch (Exception e){
-            // Camera is not available (in use or does not exist)
-        }
-        return c; // returns null if camera is unavailable
-    }
 
     private void requestCameraPermission() {
 

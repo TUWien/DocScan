@@ -43,147 +43,31 @@ import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
 
-// TODO: check out this thread: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438
-
 public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, OverlayView.SizeUpdate
 {
 
     public static final String DEBUG_TAG = "[Camera View]";
 
-    class CameraFrameThread extends Thread {
-
-        private CameraView mCameraView;
-        private boolean mIsRunning;
-        private boolean mIsFocusMeasured = true;
-        private boolean mIsPageSegmented = true;
-
-
-        public CameraFrameThread(CameraView cameraView) {
-
-            mCameraView = cameraView;
-
-        }
-
-        public void setRunning(boolean running) {
-
-            mIsRunning = running;
-
-        }
-
-        @Override
-        public void run() {
-
-            byte[] frame;
-
-
-            while (mIsRunning) {
-                // TODO: I am not sure if this access should be synchronized, but I guess:
-                //synchronized (mCameraView) {
-                    frame = mCameraView.getFrame();
-                //}
-                if (frame != null) {
-
-                    // Measure the time if required:
-                    if (MainActivity.isDebugViewEnabled())
-                        mTimerCallbacks.onTimerStarted(TaskTimer.MAT_CONVERSION_ID);
-
-                    // 1.5 since YUV
-                    Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
-                    yuv.put(0, 0, frame);
-
-                    Mat rgbMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
-                    Imgproc.cvtColor(yuv, rgbMat, Imgproc.COLOR_YUV2RGB_NV21);
-
-
-                    // Measure the time if required:
-                    if (MainActivity.isDebugViewEnabled())
-                        mTimerCallbacks.onTimerStopped(TaskTimer.MAT_CONVERSION_ID);
-
-
-                    if (mIsFocusMeasured) {
-
-                        // Measure the time if required:
-                        if (MainActivity.isDebugViewEnabled())
-                            mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
-
-                        Patch[] patches = NativeWrapper.getFocusMeasures(rgbMat);
-
-                        if (MainActivity.isDebugViewEnabled())
-                            mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
-
-                        mCVCallback.onFocusMeasured(patches);
-
-
-                    }
-
-                    if (mIsPageSegmented) {
-
-                        // Measure the time if required:
-                        if (MainActivity.isDebugViewEnabled())
-                            mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
-
-                        DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(rgbMat);
-
-                        if (MainActivity.isDebugViewEnabled())
-                            mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
-
-                        mCVCallback.onPageSegmented(polyRects);
-                        if (polyRects.length > 0)
-                            if (polyRects[0] != null)
-                                Log.d(TAG, "rects: " + polyRects[0].getPoints());
-                    }
-
-                }
-
-            }
-        }
-
-    }
-
-
-
-    // Taken from: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438
-    private CameraHandlerThread mThread = null;
-    private class CameraHandlerThread extends HandlerThread {
-        Handler mHandler = null;
-
-        CameraHandlerThread() {
-            super("CameraHandlerThread");
-            start();
-            mHandler = new Handler(getLooper());
-        }
-
-        synchronized void notifyCameraOpened() {
-            notify();
-        }
-
-        void openCamera() {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    initCamera();
-                    notifyCameraOpened();
-                }
-            });
-            try {
-                wait();
-            }
-            catch (InterruptedException e) {
-                Log.w(TAG, "wait was interrupted");
-            }
-        }
-    }
-
     private Camera mCamera = null;
     private int mFrameWidth;
     private int mFrameHeight;
     private byte[] mFrame;
-    private CameraFrameThread mCameraFrameThread;
+
     private NativeWrapper.CVCallback mCVCallback;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private SurfaceHolder mHolder;
     private int mSurfaceWidth, mSurfaceHeight;
     private boolean mIsSurfaceReady, mIsPermissionGiven;
+
+    private long mLastTime;
+
+    private static long FRAME_TIME_DIFF = 300;
+
+    private CameraView mCameraView;
+    private Mat mFrameMat;
+    private PageSegmentationThread mPageSegmentationThread;
+    private FocusMeasurementThread mFocusMeasurementThread;
+
 
     private static String TAG = "CameraView";
 
@@ -201,15 +85,12 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         mIsSurfaceReady = false;
         mIsPermissionGiven = false;
 
-        mCameraFrameThread = null;
 
     }
 
     @Override
     public void onPreviewFrame(byte[] pixels, Camera arg1)
     {
-
-        // Measure the time if required:
 
         if (MainActivity.isDebugViewEnabled()) {
 
@@ -219,15 +100,54 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         }
 
-        mFrame = pixels;
+
+        long currentTime = System.currentTimeMillis();
+
+        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
+
+            synchronized (mCameraView) {
+
+                // 1.5 since YUV
+                Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
+                yuv.put(0, 0, pixels);
+
+
+                mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
+                Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
+
+                mLastTime = currentTime;
+                mCameraView.notify();
+
+            }
+
+        }
 
     }
 
-    public void onPause()
-    {
+//    public void resume() {
+//
+//        if (mIsPermissionGiven && mCamera == null) {
+//
+//            if (mIsSurfaceReady)
+//                openCameraThread();
+//
+//        }
+//
+//    }
 
-        mCamera.stopPreview();
-    }
+//    public void onPause()
+//    {
+//
+//
+//
+//        if (mCamera != null) {
+//            mCamera.release();
+//            mCamera = null;
+//        }
+//
+//        mFocusMeasurementThread.st
+//
+//    }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height)
@@ -245,10 +165,9 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         }
 
-//
-
     }
 
+    // Do this in an own thread, so that the onPreviewFrame method is not called on the UI thread
     private void openCameraThread() {
 
         if (mThread == null) {
@@ -337,13 +256,17 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             mCamera = null;
         }
 
-        mCameraFrameThread = new CameraFrameThread(this);
 
-        mCameraFrameThread.setRunning(true);
+        mCameraView = this;
 
         // TODO: check why the thread is already started - if the app is restarted. The thread should be dead!
-        if (mCameraFrameThread.getState() == Thread.State.NEW)
-            mCameraFrameThread.start();
+        mPageSegmentationThread = new PageSegmentationThread(mCameraView);
+        if (mPageSegmentationThread.getState() == Thread.State.NEW)
+            mPageSegmentationThread.start();
+
+        mFocusMeasurementThread = new FocusMeasurementThread(mCameraView);
+        if (mFocusMeasurementThread.getState() == Thread.State.NEW)
+            mFocusMeasurementThread.start();
 
 
         Camera.Parameters params = mCamera.getParameters();
@@ -390,20 +313,9 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     public void surfaceDestroyed(SurfaceHolder arg0)
     {
 
-        if (mCameraFrameThread != null) {
-
-            boolean retry = true;
-            mCameraFrameThread.setRunning(false);
-            while (retry) {
-                try {
-                    mCameraFrameThread.join();
-                    retry = false;
-                } catch (InterruptedException e) {
-                }
-            }
-
-
-        }
+        // Stop the threads safely:
+        stopThread(mPageSegmentationThread);
+        stopThread(mFocusMeasurementThread);
 
         if (mCamera != null) {
 
@@ -413,6 +325,25 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             mCamera = null;
 
         }
+    }
+
+    private void stopThread(CVThread thread) {
+
+        if (thread != null) {
+
+            boolean retry = true;
+
+            thread.setRunning(false);
+            while (retry) {
+                try {
+                    thread.join();
+                    retry = false;
+                } catch (InterruptedException e) {
+                }
+            }
+
+        }
+
     }
 
     public int getFrameWidth() {
@@ -427,11 +358,147 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
     }
 
-    protected byte[] getFrame() {
 
-        return mFrame;
+    public abstract class CVThread extends Thread {
 
+        private CameraView mCameraView;
+        protected boolean mIsRunning = true;
+
+        protected abstract void execute();
+
+        public CVThread() {
+
+        }
+
+        public CVThread(CameraView cameraView) {
+
+
+
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+            mCameraView = cameraView;
+
+        }
+
+        @Override
+        public void run() {
+
+            while (mIsRunning) {
+
+                synchronized (mCameraView) {
+                    try {
+                        mCameraView.wait();
+
+                        execute();
+
+                    } catch (InterruptedException e) {
+
+                    }
+
+                }
+
+            }
+        }
+
+        public void setRunning(boolean running) {
+
+            mIsRunning = running;
+
+        }
     }
+
+    public class PageSegmentationThread extends CVThread {
+
+        public PageSegmentationThread(CameraView cameraView) {
+            super(cameraView);
+        }
+
+        protected void execute() {
+
+            if (mIsRunning) {
+
+                // Measure the time if required:
+                if (MainActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
+
+                DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
+
+                if (MainActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
+
+                mCVCallback.onPageSegmented(polyRects);
+
+
+            }
+        }
+    }
+
+    private class FocusMeasurementThread extends CVThread {
+
+        public FocusMeasurementThread(CameraView cameraView) {
+            super(cameraView);
+        }
+
+
+        protected void execute() {
+
+            if (mIsRunning) {
+
+                // Measure the time if required:
+                if (MainActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
+
+                Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
+
+                if (MainActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
+
+
+
+                if (MainActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
+
+                mCVCallback.onFocusMeasured(patches);
+
+
+            }
+        }
+    }
+
+
+
+    // Taken from: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438
+    private CameraHandlerThread mThread = null;
+    private class CameraHandlerThread extends HandlerThread {
+        Handler mHandler = null;
+
+        CameraHandlerThread() {
+            super("CameraHandlerThread");
+            start();
+            mHandler = new Handler(getLooper());
+        }
+
+        synchronized void notifyCameraOpened() {
+            notify();
+        }
+
+        void openCamera() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    initCamera();
+                    notifyCameraOpened();
+                }
+            });
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {
+                Log.w(TAG, "wait was interrupted");
+            }
+        }
+    }
+
+
 
 
 
