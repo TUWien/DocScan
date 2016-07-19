@@ -38,6 +38,101 @@
 #include <iostream>
 
 
+JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPageSegmentationTest(JNIEnv* env, jobject thiz, jint width, jint height, jbyteArray yuv, jintArray bgra)
+{
+
+
+    jbyte* _yuv  = env->GetByteArrayElements(yuv, 0);
+    jint*  _bgra = env->GetIntArrayElements(bgra, 0);
+
+    cv::Mat myuv(height + height/2, width, CV_8UC1, (unsigned char *)_yuv);
+    cv::Mat mbgra(height, width, CV_8UC4, (unsigned char *)_bgra);
+    cv::Mat mgray(height, width, CV_8UC1, (unsigned char *)_yuv);
+
+    //Please make attention about BGRA byte order
+    //ARGB stored in java as int array becomes BGRA at native level
+    cv::cvtColor(myuv, mbgra, CV_YUV420sp2BGR, 4);
+
+    dsc::Utils::print("asdf", "asf");
+    // call the main function:
+
+/*
+    std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(mbgra);
+
+    jclass polyRectClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/DkPolyRect");
+
+    // JNI type signatures: http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
+
+    // "(FFFFFFFF)V" -> (8 x float) return void
+    jmethodID cnstrctr = env->GetMethodID(polyRectClass, "<init>", "(FFFFFFFF)V");
+
+    if (cnstrctr == 0)
+        __android_log_write(ANDROID_LOG_INFO, "DkPageSegmentation", "did not find constructor!");
+
+    // convert the polyRects vector to a Java array:
+    jobjectArray outJNIArray = env->NewObjectArray(polyRects.size(), polyRectClass, NULL);
+
+    //jobject patch1 = env->NewObject(patchClass, cnstrctr, 1, 42, 3, 4, 5.4);
+    jobject polyRect;
+
+
+    for (int i = 0; i < polyRects.size(); i++) {
+
+        std::vector<cv::Point> points = polyRects[i].toCvPoints();
+
+        // TODO: check why this happens:
+        if (points.empty()) {
+
+            std::stringstream strs;
+            strs << i;
+            std::string temp_str = strs.str();
+            char* char_type = (char*) temp_str.c_str();
+
+            __android_log_write(ANDROID_LOG_INFO, "DocScanInterfaceEmpty", char_type);
+
+            continue;
+
+
+        }
+        else {
+
+            std::stringstream strs;
+            strs << i;
+            std::string temp_str = strs.str();
+            char* char_type = (char*) temp_str.c_str();
+
+            __android_log_write(ANDROID_LOG_INFO, "DocScanInterfaceNotEmpty", char_type);
+
+        }
+
+        polyRect = env->NewObject(polyRectClass, cnstrctr,
+            (float) points[0].x, (float)  points[0].y, (float) points[1].x, (float) points[1].y, (float) points[2].x, (float) points[2].y, (float) points[3].x, (float) points[3].y);
+
+        env->SetObjectArrayElement(outJNIArray, i, polyRect);
+
+
+    }
+
+    /*
+    std::stringstream strs;
+    strs << polyRects.size();
+    std::string temp_str = strs.str();
+    char* char_type = (char*) temp_str.c_str();
+
+    __android_log_write(ANDROID_LOG_INFO, "DocScanInterface", char_type);
+    */
+
+
+
+    //return outJNIArray;
+
+
+
+    env->ReleaseIntArrayElements(bgra, _bgra, 0);
+    env->ReleaseByteArrayElements(yuv, _yuv, 0);
+
+}
+
 JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPageSegmentation(JNIEnv * env, jclass cls, jlong src) {
 
 

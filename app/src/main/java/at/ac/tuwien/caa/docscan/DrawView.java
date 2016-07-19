@@ -24,7 +24,6 @@
 package at.ac.tuwien.caa.docscan;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -51,7 +50,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
         private SurfaceHolder mSurfaceHolder;
         private boolean mIsRunning;
-        private int mCanvasWidth, mCanvasHeight;
+        private boolean mIsPaused;
 
         private Paint mTextPaint;
         private Paint mSegmentationPaint;
@@ -68,6 +67,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
 
             mSurfaceHolder = surfaceHolder;
+            mIsPaused = false;
 
 //            Initialize drawing stuff:
 
@@ -88,6 +88,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
         }
 
+        public void pause(boolean paused) {
+            synchronized (mSurfaceHolder) {
+                mIsPaused = paused;
+            }
+        }
+
         private void setFocusPatches(Patch[] focusPatches) {
 
             mFocusPatches = focusPatches;
@@ -102,6 +108,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
         @Override
         public void run() {
+
             while (mIsRunning) {
 
                 Canvas canvas = null;
@@ -111,15 +118,17 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
                     canvas = mSurfaceHolder.lockCanvas(null);
                     synchronized (mSurfaceHolder) {
 
-                        if (MainActivity.isDebugViewEnabled())
-                            mTimerCallbacks.onTimerStarted(TaskTimer.DRAW_VIEW_ID);
+                        if (!mIsPaused) {
 
-                        draw(canvas);
+                            if (MainActivity.isDebugViewEnabled())
+                                mTimerCallbacks.onTimerStarted(TaskTimer.DRAW_VIEW_ID);
 
-                        if (MainActivity.isDebugViewEnabled())
-                            mTimerCallbacks.onTimerStopped(TaskTimer.DRAW_VIEW_ID);
+                            draw(canvas);
 
+                            if (MainActivity.isDebugViewEnabled())
+                                mTimerCallbacks.onTimerStopped(TaskTimer.DRAW_VIEW_ID);
 
+                        }
                     }
                 } finally {
                     // do this in a finally so that if an exception is thrown
@@ -133,15 +142,15 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
         }
 
 
-        /* Callback invoked when the surface dimensions change. */
-        public void setSurfaceSize(int width, int height) {
-            // synchronized to make sure these all change atomically
-            synchronized (mSurfaceHolder) {
-                mCanvasWidth = width;
-                mCanvasHeight = height;
-
-            }
-        }
+//        /* Callback invoked when the surface dimensions change. */
+//        public void setSurfaceSize(int width, int height) {
+//            // synchronized to make sure these all change atomically
+//            synchronized (mSurfaceHolder) {
+//                mCanvasWidth = width;
+//                mCanvasHeight = height;
+//
+//            }
+//        }
 
         public void setRunning(boolean b) {
 
@@ -229,6 +238,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
     private DrawerThread mDrawerThread;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
 
+
     public DrawView(Context context, AttributeSet attrs) {
 
         super(context, attrs);
@@ -268,7 +278,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        mDrawerThread.setSurfaceSize(width, height);
+//        mDrawerThread.setSurfaceSize(width, height);
     }
 
     @Override
@@ -288,18 +298,27 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
     }
 
+    public void resume() {
+
+        if (mDrawerThread != null)
+            mDrawerThread.pause(false);
+
+
+    }
+
+    public void pause() {
+
+        if (mDrawerThread != null)
+            mDrawerThread.pause(true);
+
+    }
+
+
     public void setMeasuredSize(int width, int height) {
 
         setMeasuredDimension(width, height);
 
     }
-
-
-
-//    @Override
-//    public void onWindowFocusChanged(boolean hasWindowFocus) {
-//        if (!hasWindowFocus) mDrawerThread.setRunning(false);
-//    }
 
 
 }
