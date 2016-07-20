@@ -46,7 +46,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, OverlayView.SizeUpdate
 {
 
-    public static final String DEBUG_TAG = "[Camera View]";
+
 
     private Camera mCamera = null;
     private int mFrameWidth;
@@ -160,6 +160,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
         if (mThread == null) {
             mThread = new CameraHandlerThread();
+//            mThread.setPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
         }
 
         synchronized (mThread) {
@@ -228,6 +229,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
     private void initCamera() {
 
+        Log.d(TAG, "initializing camera...");
+
         if (mCamera == null)
             mCamera = Camera.open();
 
@@ -246,6 +249,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
 
         mCameraView = this;
+
+        Log.d(TAG, "initializing threads...");
 
         // TODO: check why the thread is already started - if the app is restarted. The thread should be dead!
         mPageSegmentationThread = new PageSegmentationThread(mCameraView);
@@ -286,6 +291,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         } catch (Exception e){
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
+
+        Log.d(TAG, "camera started");
 
     }
 
@@ -377,21 +384,24 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         @Override
         public void run() {
 
-            while (mIsRunning) {
+            synchronized (mCameraView) {
 
-                synchronized (mCameraView) {
-                    try {
-                        mCameraView.wait();
+                while (mIsRunning) {
 
-                        execute();
 
-                    } catch (InterruptedException e) {
+                        try {
+
+                            mCameraView.wait();
+
+                            execute();
+
+                        } catch (InterruptedException e) {
+
+                        }
 
                     }
 
                 }
-
-            }
         }
 
         public void setRunning(boolean running) {
