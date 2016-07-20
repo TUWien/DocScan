@@ -37,6 +37,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Surface;
@@ -49,6 +50,8 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 public class MainActivity extends AppCompatActivity implements NativeWrapper.CVCallback, TaskTimer.TimerCallbacks {
 
     public static final int STACK_TRACE_ELEMENT_NUM = 2;
+
+    private static String TAG = "MainActivity";
 
     private static final int PERMISSION_CAMERA = 0;
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
@@ -95,8 +98,10 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         mDrawView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
         mOverlayView = (OverlayView) findViewById(R.id.overlay_view);
-        mOverlayView.setCameraView(mCameraView);
-        mOverlayView.setDrawView(mDrawView);
+
+//        mOverlayView.setCameraView(mCameraView);
+//        mOverlayView.setDrawView(mDrawView);
+        mOverlayView.setViews(mCameraView, mDrawView);
 
         // This must be called after the CameraView has been created:
         requestCameraPermission();
@@ -119,8 +124,12 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     protected void onPause() {
 
         super.onPause();
-        mCameraView.pause();
+        Log.d(TAG, "pausing draw view...");
         mDrawView.pause();
+        Log.d(TAG, "pausing camera view...");
+        mCameraView.pause();
+
+        Log.d(TAG, "all views are paused...");
 
     }
 
@@ -128,8 +137,12 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     protected void onResume() {
 
         super.onResume();
+        Log.d(TAG, "resuming camera view...");
         mCameraView.resume();
+        Log.d(TAG, "resuming draw view...");
         mDrawView.resume();
+
+        Log.d(TAG, "all views are resumed...");
 
     }
 

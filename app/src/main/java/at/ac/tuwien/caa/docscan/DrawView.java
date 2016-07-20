@@ -50,7 +50,6 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
         private SurfaceHolder mSurfaceHolder;
         private boolean mIsRunning;
-        private boolean mIsPaused;
 
         private Paint mTextPaint;
         private Paint mSegmentationPaint;
@@ -61,13 +60,16 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
         private final int BAD_TEXT_COLOR = getResources().getColor(R.color.hud_good_text_color);
         private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
 
+        private int mCanvasWidth, mCanvasHeight;
+
+//        private Paint mRectPaint;
+
         // Used for debug output:
 
         public DrawerThread(SurfaceHolder surfaceHolder) {
 
 
             mSurfaceHolder = surfaceHolder;
-            mIsPaused = false;
 
 //            Initialize drawing stuff:
 
@@ -86,13 +88,12 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
             mSegmentationPaint.setStrokeWidth(7);
             mSegmentationPath = new Path();
 
+            // Used for debugging rectangle
+//            mRectPaint = new Paint();
+
         }
 
-        public void pause(boolean paused) {
-            synchronized (mSurfaceHolder) {
-                mIsPaused = paused;
-            }
-        }
+
 
         private void setFocusPatches(Patch[] focusPatches) {
 
@@ -116,9 +117,26 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
                 try {
 
                     canvas = mSurfaceHolder.lockCanvas(null);
+
                     synchronized (mSurfaceHolder) {
 
-                        if (!mIsPaused) {
+//                        if (!mIsPaused) {
+
+
+
+                            synchronized (mCameraView) {
+
+                                try {
+
+                                    mCameraView.wait();
+
+
+                                } catch (InterruptedException e) {
+
+                                }
+                            }
+
+
 
                             if (MainActivity.isDebugViewEnabled())
                                 mTimerCallbacks.onTimerStarted(TaskTimer.DRAW_VIEW_ID);
@@ -128,7 +146,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
                             if (MainActivity.isDebugViewEnabled())
                                 mTimerCallbacks.onTimerStopped(TaskTimer.DRAW_VIEW_ID);
 
-                        }
+//                        }
                     }
                 } finally {
                     // do this in a finally so that if an exception is thrown
@@ -152,9 +170,23 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 //            }
 //        }
 
+        /* Callback invoked when the surface dimensions change. */
+        public void setSurfaceSize(int width, int height) {
+            // synchronized to make sure these all change atomically
+            synchronized (mSurfaceHolder) {
+                mCanvasWidth = width;
+                mCanvasHeight = height;
+
+            }
+        }
+
         public void setRunning(boolean b) {
 
-            mIsRunning = b;
+            synchronized (mSurfaceHolder) {
+
+                mIsRunning = b;
+
+            }
 
         }
 
@@ -169,8 +201,9 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
 //            Debugging rectangle:
 //            mRectPaint.setARGB(200,0,100,0);
-//            canvas.drawRect(mCanvasWidth - 10, mCanvasHeight - 10, mCanvasWidth + 10, mCanvasHeight + 10, mRectPaint);
+//            canvas.drawRect(mCanvasWidth - 200, mCanvasHeight - 200, mCanvasWidth + 200, mCanvasHeight + 200, mRectPaint);
 
+//            canvas.drawRect(0, 0, mCanvasWidth, mCanvasHeight, mRectPaint);
 //            mRectPaint.setARGB(255,100,100,0);
 //            canvas.drawRect(0, 0, mCanvasWidth, mCanvasHeight, mRectPaint);
 
@@ -237,6 +270,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
     private DrawerThread mDrawerThread;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
+    private CameraView mCameraView;
 
 
     public DrawView(Context context, AttributeSet attrs) {
@@ -252,15 +286,23 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
     }
 
+    public void setCameraView(CameraView cameraView) {
+
+        mCameraView = cameraView;
+
+    }
+
     public void setFocusPatches(Patch[] focusPatches) {
 
-        mDrawerThread.setFocusPatches(focusPatches);
+        if (mDrawerThread != null)
+            mDrawerThread.setFocusPatches(focusPatches);
 
     }
 
     public void setPolyRects(DkPolyRect[] polyRects) {
 
-        mDrawerThread.setPolyRects(polyRects);
+        if (mDrawerThread != null)
+            mDrawerThread.setPolyRects(polyRects);
 
     }
 
@@ -278,7 +320,10 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
 //        mDrawerThread.setSurfaceSize(width, height);
+        if (mDrawerThread != null)
+            mDrawerThread.setSurfaceSize(width, height);
     }
 
     @Override
@@ -301,7 +346,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
     public void resume() {
 
         if (mDrawerThread != null)
-            mDrawerThread.pause(false);
+            mDrawerThread.setRunning(true);
 
 
     }
@@ -309,9 +354,10 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
     public void pause() {
 
         if (mDrawerThread != null)
-            mDrawerThread.pause(true);
+            mDrawerThread.setRunning(false);
 
     }
+
 
 
     public void setMeasuredSize(int width, int height) {

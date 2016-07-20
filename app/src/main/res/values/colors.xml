@@ -15,4 +15,5 @@
 
     <color name="hud_page_rect_color">#dfa0</color>
 
+    <color name="photo_button_view_bg_color">#5111</color>
 </resources>

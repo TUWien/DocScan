@@ -56,6 +56,15 @@ public class OverlayView extends FrameLayout {
 
     }
 
+    public void setViews(CameraView cameraView, DrawView drawView) {
+
+        mCameraView = cameraView;
+        mDrawView = drawView;
+
+        drawView.setCameraView(mCameraView);
+
+    }
+
     public void setCameraView(CameraView cameraView) {
 
         mCameraView = cameraView;
@@ -108,7 +117,8 @@ public class OverlayView extends FrameLayout {
 
         }
 
-        mDrawView.setPolyRects(polyRects);
+        if (mDrawView != null)
+            mDrawView.setPolyRects(polyRects);
 
     }
 
@@ -136,39 +146,11 @@ public class OverlayView extends FrameLayout {
             patch.setDrawViewPX(screenPoint.x);
             patch.setDrawViewPY(screenPoint.y);
 
-//            // Check here for the orientation:
-//            // Note: frameWidth is always greater than frameHeight - regardless of the orientation.
-//            switch (cameraDisplayOrientation) {
-//
-//                case ORIENTATION_LANDSCAPE:
-//                    drawViewPX = patch.getPX() / frameWidth * drawViewWidth;
-//                    drawViewPY = patch.getPY() / frameHeight * drawViewHeight;
-//                    break;
-//
-//                case ORIENTATION_PORTRAIT:
-//                    drawViewPX = (frameHeight - patch.getPY()) / frameHeight * drawViewWidth;
-//                    drawViewPY = patch.getPX() / frameWidth * drawViewHeight;
-//                    break;
-//
-//                case ORIENTATION_FLIPPED_LANDSCAPE:
-//                    drawViewPX = (frameWidth - patch.getPX()) / frameWidth * drawViewWidth;
-//                    drawViewPY = (frameHeight - patch.getPY()) / frameHeight * drawViewHeight;
-//                    break;
-//
-//            }
-//
-//            if (drawViewPX > drawViewWidth)
-//                drawViewPX = drawViewWidth;
-//
-//            if (drawViewPY > drawViewHeight)
-//                drawViewPY = drawViewHeight;
-//
-//            patch.setDrawViewPX(drawViewPX);
-//            patch.setDrawViewPY(drawViewPY);
 
         }
 
-        mDrawView.setFocusPatches(patches);
+        if (mDrawView != null)
+            mDrawView.setFocusPatches(patches);
     }
 
     private PointF getScreenCoordinates(PointF framePos, int frameWidth, int frameHeight, int drawWidth, int drawHeight, int orientation) {
@@ -266,6 +248,13 @@ public class OverlayView extends FrameLayout {
             mDrawView.setMeasuredSize(width, height);
 
 
+    }
+
+    public class ViewState {
+
+        public ViewState() {
+
+        }
     }
 
 

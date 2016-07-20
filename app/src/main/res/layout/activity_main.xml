@@ -7,23 +7,57 @@
     android:id="@+id/drawer_layout"
     >
 
-    <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
     <FrameLayout
-
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/container_layout">
-        <!-- The main content view is contained in a Fragment: -->
-        <fragment
-            android:name="at.ac.tuwien.caa.docscan.OverlayViewFragment"
+        >
+
+        <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
+        <FrameLayout
+
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/overlay_view"
-            >
-        </fragment>
+
+
+            android:id="@+id/container_layout">
+            <!-- The main content view is contained in a Fragment: -->
+            <fragment
+                android:name="at.ac.tuwien.caa.docscan.OverlayViewFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/overlay_view"
+                >
+            </fragment>
+
+        </FrameLayout>
+
+        <RelativeLayout
+            android:layout_gravity="bottom"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+
+            android:background="@color/photo_button_view_bg_color">
+
+            <ImageButton
+                android:layout_centerInParent="true"
+                android:id="@+id/photo_button"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_photo_camera"
+                android:background="@color/photo_button_view_bg_color"
+
+                />
+            <Button
+                android:layout_alignParentRight="true"
+
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:text="dummy"
+                android:layout_toRightOf="@+id/photo_button"
+                />
+        </RelativeLayout>
 
     </FrameLayout>
-
 
     <!-- The navigation drawer -->
     <android.support.design.widget.NavigationView
