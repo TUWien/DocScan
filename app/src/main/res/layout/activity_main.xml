@@ -44,7 +44,7 @@
                 android:layout_width="100dp"
                 android:layout_height="match_parent"
                 android:src="@drawable/ic_photo_camera"
-                android:background="@color/photo_button_view_bg_color"
+                android:background="@drawable/photo_shoot_button_selector"
 
                 />
             <Button

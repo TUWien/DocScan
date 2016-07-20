@@ -68,7 +68,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     private PageSegmentationThread mPageSegmentationThread;
     private FocusMeasurementThread mFocusMeasurementThread;
 
-
     private static String TAG = "CameraView";
 
     public CameraView(Context context, AttributeSet attrs) {
@@ -85,6 +84,13 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         mIsSurfaceReady = false;
         mIsPermissionGiven = false;
 
+
+    }
+
+    public void shootPhoto(Camera.PictureCallback callback) {
+
+        if (mCamera != null)
+            mCamera.takePicture(null, null, callback);
 
     }
 
@@ -306,8 +312,11 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     public void pause() {
 
         // Stop the threads safely:
-        stopThread(mPageSegmentationThread);
-        stopThread(mFocusMeasurementThread);
+        if (mPageSegmentationThread != null)
+            stopThread(mPageSegmentationThread);
+
+        if (mFocusMeasurementThread != null)
+            stopThread(mFocusMeasurementThread);
 
         if (mCamera != null) {
 

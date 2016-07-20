@@ -28,6 +28,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
@@ -110,50 +111,50 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
         @Override
         public void run() {
 
-            while (mIsRunning) {
+            synchronized (mSurfaceHolder) {
 
-                Canvas canvas = null;
+                while (mIsRunning) {
 
-                try {
+                    Canvas canvas = null;
 
-                    canvas = mSurfaceHolder.lockCanvas(null);
+                    try {
 
-                    synchronized (mSurfaceHolder) {
+                        canvas = mSurfaceHolder.lockCanvas(null);
+
 
 //                        if (!mIsPaused) {
 
 
+                        synchronized (mCameraView) {
 
-                            synchronized (mCameraView) {
+                            try {
 
-                                try {
-
-                                    mCameraView.wait();
+                                mCameraView.wait();
 
 
-                                } catch (InterruptedException e) {
+                            } catch (InterruptedException e) {
 
-                                }
                             }
+                        }
 
 
+                        if (MainActivity.isDebugViewEnabled())
+                            mTimerCallbacks.onTimerStarted(TaskTimer.DRAW_VIEW_ID);
 
-                            if (MainActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStarted(TaskTimer.DRAW_VIEW_ID);
+                        draw(canvas);
 
-                            draw(canvas);
-
-                            if (MainActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStopped(TaskTimer.DRAW_VIEW_ID);
+                        if (MainActivity.isDebugViewEnabled())
+                            mTimerCallbacks.onTimerStopped(TaskTimer.DRAW_VIEW_ID);
 
 //                        }
-                    }
-                } finally {
-                    // do this in a finally so that if an exception is thrown
-                    // during the above, we don't leave the Surface in an
-                    // inconsistent state
-                    if (canvas != null) {
-                        mSurfaceHolder.unlockCanvasAndPost(canvas);
+
+                    } finally {
+                        // do this in a finally so that if an exception is thrown
+                        // during the above, we don't leave the Surface in an
+                        // inconsistent state
+                        if (canvas != null) {
+                            mSurfaceHolder.unlockCanvasAndPost(canvas);
+                        }
                     }
                 }
             }
@@ -279,6 +280,8 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
+        // This is necessary to enable semi-transparent DrawView
+        holder.setFormat(PixelFormat.TRANSLUCENT);
 
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
 
