@@ -27,9 +27,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.PixelFormat;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -41,8 +44,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Surface;
+import android.view.View;
+import android.widget.ImageButton;
 
 import org.opencv.android.OpenCVLoader;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
@@ -54,7 +66,11 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     private static String TAG = "MainActivity";
 
     private static final int PERMISSION_CAMERA = 0;
+    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
+
+
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
+    public static String IMG_FILENAME_PREFIX = "IMG_";
 
     private static boolean mIsDebugViewEnabled = false;
 
@@ -64,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     private DrawView mDrawView;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
+    private Camera.PictureCallback mPictureCallback;
 
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
@@ -95,16 +112,14 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
         mCameraView = (CameraView) findViewById(R.id.camera_view);
         mDrawView = (DrawView) findViewById(R.id.draw_view);
-        mDrawView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-
         mOverlayView = (OverlayView) findViewById(R.id.overlay_view);
-
-//        mOverlayView.setCameraView(mCameraView);
-//        mOverlayView.setDrawView(mDrawView);
         mOverlayView.setViews(mCameraView, mDrawView);
 
         // This must be called after the CameraView has been created:
         requestCameraPermission();
+
+        // Callback used for saving images:
+        initPictureCallback();
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
@@ -120,16 +135,79 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
     }
 
+    private void initPictureCallback() {
+
+        // Callback for picture saving:
+
+        mPictureCallback = new Camera.PictureCallback() {
+
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+
+                File pictureFile = getOutputMediaFile(getResources().getString(R.string.app_name));
+
+                if (pictureFile == null){
+                    Log.d(TAG, "Error creating media file, check storage permissions");
+                    return;
+                }
+
+                try {
+
+                    FileOutputStream fos = new FileOutputStream(pictureFile);
+
+                    Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
+                    int rotation = getCameraDisplayOrientation();
+                    image = rotate(image, rotation);
+                    image.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+
+                    fos.close();
+
+                } catch (FileNotFoundException e) {
+                    Log.d(TAG, "File not found: " + e.getMessage());
+                } catch (IOException e) {
+                    Log.d(TAG, "Error accessing file: " + e.getMessage());
+                }
+
+
+            }
+        };
+
+        // Listener for photo shoot button:
+
+        ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
+
+        photoButton.setOnClickListener(
+            new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // get an image from the camera
+                requestFileSave();
+            }
+        });
+
+    }
+    // Taken from http://stackoverflow.com/questions/15808719/controlling-the-camera-to-take-pictures-in-portrait-doesnt-rotate-the-final-ima:
+    private Bitmap rotate(Bitmap bitmap, int degree) {
+
+        int w = bitmap.getWidth();
+        int h = bitmap.getHeight();
+
+        Matrix mtx = new Matrix();
+        mtx.setRotate(degree);
+
+        return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
+
+    }
+
     @Override
     protected void onPause() {
 
         super.onPause();
-        Log.d(TAG, "pausing draw view...");
-        mDrawView.pause();
-        Log.d(TAG, "pausing camera view...");
-        mCameraView.pause();
 
-        Log.d(TAG, "all views are paused...");
+        if (mDrawView != null)
+            mDrawView.pause();
+        if (mCameraView != null)
+            mCameraView.pause();
 
     }
 
@@ -137,12 +215,9 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     protected void onResume() {
 
         super.onResume();
-        Log.d(TAG, "resuming camera view...");
-        mCameraView.resume();
-        Log.d(TAG, "resuming draw view...");
-        mDrawView.resume();
 
-        Log.d(TAG, "all views are resumed...");
+        mCameraView.resume();
+        mDrawView.resume();
 
     }
 
@@ -152,6 +227,8 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         super.onDestroy();
 
     }
+
+
 
 
     private void requestCameraPermission() {
@@ -165,18 +242,32 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        boolean isPermissionGiven = (grantResults[0] == PackageManager.PERMISSION_GRANTED);
 //        initCamera();
         switch (requestCode) {
-            case PERMISSION_CAMERA: {
+            case PERMISSION_CAMERA:
                 // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (isPermissionGiven)
                     mCameraView.giveCameraPermission();
-                }
-            }
+                else
+                    Log.d(TAG, "permission not given");
 
+                break;
+
+
+            case PERMISSION_WRITE_EXTERNAL_STORAGE:
+                if (isPermissionGiven)
+                    takePicture();
+
+                else
+                    Log.d(TAG, "permission not given");
+
+
+                break;
         }
     }
 
@@ -432,5 +523,60 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         mDrawerLayout.closeDrawers();
 
     }
+
+
+    // ================= start: methods for file handling =================
+
+
+    // This method is used to enable file saving in marshmallow (Android 6), since in this version file saving is not allowed without user permission:
+    private void requestFileSave() {
+
+        // Check Permissions Now
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+        }
+        else
+            takePicture();
+
+    }
+
+    private void takePicture() {
+
+        mCameraView.shootPhoto(mPictureCallback);
+
+    }
+
+
+
+    private static File getOutputMediaFile(String appName){
+        // To be safe, you should check that the SDCard is mounted
+        // using Environment.getExternalStorageState() before doing this.
+
+
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), appName);
+        // This location works best if you want the created images to be shared
+        // between applications and persist after your app has been uninstalled.
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+                Log.d(TAG, "failed to create directory");
+                return null;
+            }
+        }
+
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        File mediaFile = new File(mediaStorageDir.getPath() + File.separator + IMG_FILENAME_PREFIX + timeStamp + ".jpg");
+
+
+        return mediaFile;
+    }
+
+
+    // ================= end: methods for file handling =================
+
+
 
 }
