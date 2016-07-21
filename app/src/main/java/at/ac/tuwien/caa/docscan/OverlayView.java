@@ -25,7 +25,7 @@ package at.ac.tuwien.caa.docscan;
 
 import android.content.Context;
 import android.graphics.PointF;
-import android.util.AttributeSet;
+import android.hardware.Camera;
 import android.widget.FrameLayout;
 
 import java.util.ArrayList;
@@ -50,9 +50,9 @@ public class OverlayView extends FrameLayout {
     private static final int ORIENTATION_PORTRAIT = 90;
     private static final int ORIENTATION_FLIPPED_LANDSCAPE = 180;
 
-    public OverlayView(Context context, AttributeSet attrs) {
+    public OverlayView(Context context, Camera camera, Camera.CameraInfo cameraInfo, int displayOrientation) {
 
-        super(context, attrs);
+        super(context);
 
     }
 

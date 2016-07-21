@@ -61,8 +61,6 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 
 public class MainActivity extends AppCompatActivity implements NativeWrapper.CVCallback, TaskTimer.TimerCallbacks {
 
-    public static final int STACK_TRACE_ELEMENT_NUM = 2;
-
     private static String TAG = "MainActivity";
 
     private static final int PERMISSION_CAMERA = 0;
@@ -88,7 +86,9 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     // Used for stopping the time of 'heavy' tasks:
     private TaskTimer mTaskTimer;
 
-
+    /**
+     * Static initialization of the OpenCV and docscan-native modules.
+     */
     static {
 
         boolean init = OpenCVLoader.initDebug();
@@ -96,9 +96,13 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         if (init) {
             System.loadLibrary("docscan-native");
         }
-        int b = 0;
+
     }
 
+    /**
+     *
+     * @param savedInstanceState
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -110,9 +114,9 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
         setupNavigationDrawer();
 
-        mCameraView = (CameraView) findViewById(R.id.camera_view);
-        mDrawView = (DrawView) findViewById(R.id.draw_view);
-        mOverlayView = (OverlayView) findViewById(R.id.overlay_view);
+//        mCameraView = (CameraView) findViewById(R.id.camera_view);
+//        mDrawView = (DrawView) findViewById(R.id.draw_view);
+//        mOverlayView = (OverlayView) findViewById(R.id.overlay_view);
         mOverlayView.setViews(mCameraView, mDrawView);
 
         // This must be called after the CameraView has been created:
@@ -233,7 +237,7 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
 
     private void requestCameraPermission() {
 
-        if (ContextCompat.checkSelfPermission(this,Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
         }
         else
@@ -244,9 +248,8 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
 
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        boolean isPermissionGiven = (grantResults[0] == PackageManager.PERMISSION_GRANTED);
+        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
 //        initCamera();
         switch (requestCode) {
             case PERMISSION_CAMERA:
@@ -289,10 +292,12 @@ public class MainActivity extends AppCompatActivity implements NativeWrapper.CVC
         int degrees = 0;
 
         switch (rotation) {
+
             case Surface.ROTATION_0: degrees = 0; break;
             case Surface.ROTATION_90: degrees = 90; break;
             case Surface.ROTATION_180: degrees = 180; break;
             case Surface.ROTATION_270: degrees = 270; break;
+
         }
 
         int result;
