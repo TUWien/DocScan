@@ -31,7 +31,6 @@ import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
-import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -63,7 +62,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
         private int mCanvasWidth, mCanvasHeight;
 
-//        private Paint mRectPaint;
+        private Paint mRectPaint;
 
         // Used for debug output:
 
@@ -90,7 +89,7 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
             mSegmentationPath = new Path();
 
             // Used for debugging rectangle
-//            mRectPaint = new Paint();
+            mRectPaint = new Paint();
 
         }
 
@@ -111,31 +110,33 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
         @Override
         public void run() {
 
+//            if (mCameraView == null)
+//                return;
+
+            if (mSurfaceHolder == null)
+                return;
+
             synchronized (mSurfaceHolder) {
 
                 while (mIsRunning) {
 
                     Canvas canvas = null;
 
-                    try {
-
-                        canvas = mSurfaceHolder.lockCanvas(null);
-
-
-//                        if (!mIsPaused) {
-
-
-                        synchronized (mCameraView) {
-
-                            try {
-
-                                mCameraView.wait();
-
-
-                            } catch (InterruptedException e) {
-
-                            }
-                        }
+//                    try {
+//
+//                        canvas = mSurfaceHolder.lockCanvas(null);
+//
+//                        synchronized (mCameraView) {
+//
+//                            try {
+//
+//                                mCameraView.wait();
+//
+//
+//                            } catch (InterruptedException e) {
+//
+//                            }
+//                        }
 
 
                         if (MainActivity.isDebugViewEnabled())
@@ -148,14 +149,14 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 
 //                        }
 
-                    } finally {
-                        // do this in a finally so that if an exception is thrown
-                        // during the above, we don't leave the Surface in an
-                        // inconsistent state
-                        if (canvas != null) {
-                            mSurfaceHolder.unlockCanvasAndPost(canvas);
-                        }
-                    }
+//                    } finally {
+//                        // do this in a finally so that if an exception is thrown
+//                        // during the above, we don't leave the Surface in an
+//                        // inconsistent state
+//                        if (canvas != null) {
+//                            mSurfaceHolder.unlockCanvasAndPost(canvas);
+//                        }
+//                    }
                 }
             }
         }
@@ -205,8 +206,8 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
 //            canvas.drawRect(mCanvasWidth - 200, mCanvasHeight - 200, mCanvasWidth + 200, mCanvasHeight + 200, mRectPaint);
 
 //            canvas.drawRect(0, 0, mCanvasWidth, mCanvasHeight, mRectPaint);
-//            mRectPaint.setARGB(255,100,100,0);
-//            canvas.drawRect(0, 0, mCanvasWidth, mCanvasHeight, mRectPaint);
+            mRectPaint.setARGB(255,100,100,0);
+            canvas.drawRect(0, 0, mCanvasWidth, mCanvasHeight, mRectPaint);
 
 
             if (mFocusPatches != null) {
@@ -274,9 +275,9 @@ public class DrawView extends SurfaceView implements SurfaceHolder.Callback, Ove
     private CameraView mCameraView;
 
 
-    public DrawView(Context context, AttributeSet attrs) {
+    public DrawView(Context context) {
 
-        super(context, attrs);
+        super(context);
 
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);

@@ -9,6 +9,9 @@
 
     <!-- Use in the MainActivity: end -->
 
+    <!-- Use in the camera_unavailable_view: -->
+
+    <string name="camera_not_available_text">The camera is unfortunately not available.</string>
 
     <!-- Use in the debug view: start -->
 

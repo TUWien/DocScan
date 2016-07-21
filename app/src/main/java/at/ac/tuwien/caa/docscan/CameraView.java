@@ -238,7 +238,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         Log.d(TAG, "initializing camera...");
 
         if (mCamera == null)
-            mCamera = Camera.open();
+            mCamera = Camera.open(0);
 
         try
         {

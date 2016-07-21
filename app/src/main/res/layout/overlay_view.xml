@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<at.ac.tuwien.caa.docscan.OverlayView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
-    <at.ac.tuwien.caa.docscan.DrawView
-        android:id="@+id/draw_view"
+    <at.ac.tuwien.caa.docscan.PaintView
+        android:id="@+id/paint_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    <at.ac.tuwien.caa.docscan.CameraView
+    <at.ac.tuwien.caa.docscan.CameraPreview
         android:id="@+id/camera_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-</at.ac.tuwien.caa.docscan.OverlayView>
+</FrameLayout>
