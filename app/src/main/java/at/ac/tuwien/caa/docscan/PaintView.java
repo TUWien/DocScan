@@ -21,9 +21,13 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
-    private SurfaceHolder mHolder;
     private DrawerThread mDrawerThread;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
+
+    private boolean mRefreshRequired;
+    private Patch[] mFocusPatches;
+    private DkPolyRect[] mPolyRects;
+
 
     public PaintView(Context context, AttributeSet attrs) {
 
@@ -33,7 +37,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         holder.addCallback(this);
         // This is necessary to enable semi-transparent DrawView
         holder.setFormat(PixelFormat.TRANSLUCENT);
-
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
 
 
@@ -44,10 +47,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     {
 
         mDrawerThread = new DrawerThread(holder);
+
         mDrawerThread.setRunning(true);
+
+
         // TODO: check why the thread is already started - if the app is restarted. The thread should be dead!
         if (mDrawerThread.getState() == Thread.State.NEW)
             mDrawerThread.start();
+
 
     }
 
@@ -91,6 +98,21 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    public void setFocusPatches(Patch[] focusPatches) {
+
+
+        mFocusPatches = focusPatches;
+        mRefreshRequired = true;
+
+    }
+
+    public void setDkPolyRects(DkPolyRect[] dkPolyRects) {
+
+        mPolyRects = dkPolyRects;
+        mRefreshRequired = true;
+
+    }
+
     class DrawerThread extends Thread {
 
         private SurfaceHolder mSurfaceHolder;
@@ -98,14 +120,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         private Paint mTextPaint;
         private Paint mSegmentationPaint;
-        private Patch[] mFocusPatches;
-        private DkPolyRect[] mPolyRects;
         private Path mSegmentationPath;
         private final int GOOD_TEXT_COLOR = getResources().getColor(R.color.hud_bad_text_color);
         private final int BAD_TEXT_COLOR = getResources().getColor(R.color.hud_good_text_color);
         private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
 
         private int mCanvasWidth, mCanvasHeight;
+
 
         private Paint mRectPaint;
 
@@ -136,24 +157,29 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             // Used for debugging rectangle
             mRectPaint = new Paint();
 
-        }
-
-
-
-        private void setFocusPatches(Patch[] focusPatches) {
-
-            mFocusPatches = focusPatches;
+            mRefreshRequired = false;
 
         }
 
-        private void setPolyRects(DkPolyRect[] polyRects) {
 
-            mPolyRects = polyRects;
 
-        }
+//        private void setFocusPatches(Patch[] focusPatches) {
+//
+//            mFocusPatches = focusPatches;
+//
+//        }
+//
+//        private void setPolyRects(DkPolyRect[] polyRects) {
+//
+//            mPolyRects = polyRects;
+//
+//        }
 
         @Override
         public void run() {
+
+
+
 
             while (mIsRunning) {
 
@@ -161,9 +187,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
                 try {
                     canvas = mSurfaceHolder.lockCanvas();
-//                    synchronized (mSurfaceHolder) {
-//                        draw(canvas);
-//                    }
+                    synchronized (mSurfaceHolder) {
+
+                        if (mRefreshRequired)
+                            draw(canvas);
+
+
+                    }
 
                 } finally {
                     // do this in a finally so that if an exception is thrown
@@ -275,6 +305,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 //            mRectPaint.setARGB(255,100,100,0);
             canvas.drawRect(0, 0, 1000, 1000, mRectPaint);
 
+            mRefreshRequired = false;
+
 
 //            if (mFocusPatches != null) {
 //
@@ -336,4 +368,4 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
-}
+ }

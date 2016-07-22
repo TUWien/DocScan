@@ -1,21 +1,29 @@
 package at.ac.tuwien.caa.docscan;
 
+import android.content.Context;
 import android.hardware.Camera;
+import android.hardware.display.DisplayManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Display;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
 
+import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.cv.Patch;
+
 /**
  * Created by fabian on 21.07.2016.
  */
-public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks {
+public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks, NativeWrapper.CVCallback {
 
-    private static final String TAG = "CameraPreview";
+    private static final String TAG = "CameraActivity";
 
     /**
      * Id of the camera to access. 0 is the first camera.
@@ -33,6 +41,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private DebugViewFragment mDebugViewFragment;
     private boolean mIsDebugViewEnabled;
     private int mDisplayRotation;
+    private static Context mContext;
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -63,6 +72,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             initActivity();
 
         }
+
+        mContext = this;
+
     }
 
     private void initActivity() {
@@ -72,9 +84,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_view);
         mCameraPreview.setCamera(mCamera, mCameraInfo, mDisplayRotation);
 
-        mPaintView = (PaintView) findViewById(R.id.paint_view);
+//        mPaintView = (PaintView) findViewById(R.id.paint_view);
 
-        // This is used to measure execution time of time intense tasks:
+        // This is used to mea'sure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
     }
@@ -92,17 +104,75 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
     @Override
+    public void onStop() {
+
+        super.onStop();
+
+        boolean b = isChangingConfigurations();
+
+        mCameraPreview.stop();
+
+    }
+
+    // Taken from: http://stackoverflow.com/questions/2474367/how-can-i-tell-if-the-screen-is-on-in-android
+    public static boolean isScreenOn() {
+
+        // If API level >= 20
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            DisplayManager dm = (DisplayManager) mContext.getSystemService(Context.DISPLAY_SERVICE);
+            for (Display display : dm.getDisplays()) {
+                if (display.getState() != Display.STATE_OFF) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        // TODO: not tested!
+        else {
+            PowerManager powerManager = (PowerManager) mContext.getSystemService(POWER_SERVICE);
+            return powerManager.isScreenOn();
+        }
+
+
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.i(TAG, "On Restart .....");
+
+        boolean isOrientationChanged = isChangingConfigurations();
+
+    }
+
+    @Override
+    public void onDestroy() {
+
+        super.onDestroy();
+
+    }
+
+
+
+        @Override
     public void onResume() {
 
+
+
+
         super.onResume();
+
 
         // Resume camera access:
         // Basically this method just calls initCamera, but inside an own thread.
         openCameraThread();
 
-        if (mCameraPreview != null)
+        if (mCameraPreview != null) {
             // This should only be called if the Activity is resumed after it has been paused:
             mCameraPreview.setCamera(mCamera, mCameraInfo, mDisplayRotation);
+            mCameraPreview.resume();
+//            mCameraPreview.resume();
+        }
 
 //        // Resume drawing thread:
         if (mPaintView != null)
@@ -204,6 +274,29 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+
+    // ================= start: CALLBACKS called from native files =================
+
+    @Override
+    public void onFocusMeasured(Patch[] patches) {
+
+        if (mPaintView != null)
+            mPaintView.setFocusPatches(patches);
+
+    }
+
+    @Override
+    public void onPageSegmented(DkPolyRect[] dkPolyRects) {
+
+        if (mPaintView != null)
+            mPaintView.setDkPolyRects(dkPolyRects);
+
+    }
+
+    // ================= end: CALLBACKS called from native files =================
+
+
+
     // ================= end: CALLBACKS invoking TaskTimer =================
 
 
@@ -238,6 +331,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             }
         }
     }
+
 
 
 }

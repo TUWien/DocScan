@@ -104,13 +104,10 @@ public class NativeWrapper {
 
     // Callbacks:
     public interface CVCallback {
-        // used in 'normal' mode with no debug view:
+
         void onFocusMeasured(Patch[] patches);
         void onPageSegmented(DkPolyRect[] polyRects);
 
-        // used in 'debug' mode with debug view:
-        void onFocusMeasured(Patch[] patches, long time);
-        void onPageSegmented(DkPolyRect[] polyRects, long time);
 
     }
 }
