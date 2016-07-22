@@ -14,10 +14,13 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.cv.Patch;
+
 /**
  * Created by fabian on 21.07.2016.
  */
-public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
+public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {{}
 
     private static final String TAG = "CameraPreview";
     private SurfaceHolder mHolder;
@@ -25,6 +28,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private Camera.CameraInfo mCameraInfo;
     private int mDisplayOrientation;
     private int mSurfaceWidth, mSurfaceHeight;
+    private TaskTimer.TimerCallbacks mTimerCallbacks;
+    private NativeWrapper.CVCallback mCVCallback;
+
+    private PageSegmentationThread mPageSegmentationThread;
+    private FocusMeasurementThread mFocusMeasurementThread;
+
 
     private Mat mFrameMat;
 
@@ -34,6 +43,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private long mLastTime;
     private static long FRAME_TIME_DIFF = 300;
 
+    private boolean isCameraInitialized;
+
     public CameraPreview(Context context) {
         super(context);
 
@@ -41,6 +52,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // underlying surface is created and destroyed.
         mHolder = getHolder();
         mHolder.addCallback(this);
+
+        isCameraInitialized = false;
 
     }
 
@@ -51,6 +64,16 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         mHolder = getHolder();
         mHolder.addCallback(this);
+
+        mCVCallback = (NativeWrapper.CVCallback) context;
+        mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
+
+    }
+
+
+    public void stop() {
+
+        isCameraInitialized = false;
 
     }
 
@@ -85,11 +108,27 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // If your preview can change or rotate, take care of those events here.
         // Make sure to stop the preview before resizing or reformatting it.
 
+        if (mCamera != null && CameraActivity.isScreenOn())
+            initCamera(width, height);
+
+    }
+
+    public void resume() {
+
+        if (!isCameraInitialized)
+            initCamera(mSurfaceWidth, mSurfaceHeight);
+
+    }
+
+    private void initCamera(int width, int height) {
+
         if (mHolder.getSurface() == null) {
             // preview surface does not exist
             Log.d(TAG, "Preview surface does not exist");
             return;
         }
+
+        isCameraInitialized = true;
 
         // stop preview before making changes
         try {
@@ -122,6 +161,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         params.setPreviewSize(mFrameWidth, mFrameHeight);
 
         mCamera.setParameters(params);
+
+        mPageSegmentationThread = new PageSegmentationThread(this);
+        if (mPageSegmentationThread.getState() == Thread.State.NEW)
+            mPageSegmentationThread.start();
+
+        mFocusMeasurementThread = new FocusMeasurementThread(this);
+        if (mFocusMeasurementThread.getState() == Thread.State.NEW)
+            mFocusMeasurementThread.start();
+
 
         try {
 
@@ -294,6 +342,139 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         }
 
     }
+
+    public int getFrameWidth() {
+        return mFrameWidth;
+    }
+
+    public int getFrameHeight() {
+        return mFrameHeight;
+    }
+
+
+    // ================= start: CVThread and subclasses =================
+
+
+    public abstract class CVThread extends Thread {
+
+        protected CameraPreview mCameraView;
+        protected boolean mIsRunning = true;
+//        protected NativeWrapper.CVCallback mCVCallback;
+
+        protected abstract void execute();
+
+        public CVThread() {
+
+        }
+
+        public CVThread(CameraPreview cameraView) {
+
+
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+            mCameraView = cameraView;
+
+        }
+
+        @Override
+        public void run() {
+
+            synchronized (mCameraView) {
+
+                while (mIsRunning) {
+
+//                    if (mFrameMat != null && mCVCallback != null) {
+
+                        try {
+
+                            mCameraView.wait();
+
+                            execute();
+
+                        } catch (InterruptedException e) {
+
+                        }
+
+//                    }
+                }
+
+            }
+        }
+
+        public void setRunning(boolean running) {
+
+            mIsRunning = running;
+
+        }
+
+    }
+
+    public class PageSegmentationThread extends CVThread {
+
+        public PageSegmentationThread(CameraPreview cameraView) {
+
+            super(cameraView);
+
+        }
+
+        protected void execute() {
+
+            if (mIsRunning) {
+
+                // Measure the time if required:
+//                if (MainActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
+
+
+
+                    DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
+
+//                if (MainActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
+
+                    mCVCallback.onPageSegmented(polyRects);
+
+
+
+
+
+            }
+        }
+    }
+
+    class FocusMeasurementThread extends CVThread {
+
+        public FocusMeasurementThread(CameraPreview cameraView) {
+            super(cameraView);
+        }
+
+
+        protected void execute() {
+
+            if (mIsRunning) {
+
+//                // Measure the time if required:
+//                if (MainActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
+
+                Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
+//
+//                if (MainActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
+//
+//
+//                if (MainActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
+
+//                mCVCallback.onFocusMeasured(patches);
+
+
+            }
+        }
+    }
+
+
+    // ================= end: CVThread and subclasses =================
+
 
 
 }
