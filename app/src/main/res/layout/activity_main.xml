@@ -2,6 +2,7 @@
 <android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
@@ -24,13 +25,23 @@
 
             android:id="@+id/container_layout">
             <!--&lt;!&ndash; The main content view is contained in a Fragment: &ndash;&gt;-->
-            <fragment
-                android:name="at.ac.tuwien.caa.docscan.OverlayViewFragment"
+            <!--<fragment-->
+                <!--android:name="at.ac.tuwien.caa.docscan.OverlayViewFragment"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:id="@+id/overlay_view"-->
+                <!--&gt;-->
+            <!--</fragment>-->
+
+            <at.ac.tuwien.caa.docscan.PaintView
+                android:id="@+id/paint_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/overlay_view"
-                >
-            </fragment>
+                tools:layout="@layout/abc_screen_simple" />
+            <at.ac.tuwien.caa.docscan.CameraPreview
+                android:id="@+id/camera_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
         </FrameLayout>
 
