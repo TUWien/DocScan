@@ -43,7 +43,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private long mLastTime;
     private static long FRAME_TIME_DIFF = 300;
 
-    private boolean isCameraInitialized;
+    private boolean isCameraInitialized, mIsCameraPreviewStarted;
 
     public CameraPreview(Context context) {
         super(context);
@@ -54,6 +54,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mHolder.addCallback(this);
 
         isCameraInitialized = false;
+        mIsCameraPreviewStarted = false;
 
     }
 
@@ -119,8 +120,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     public void resume() {
 
+
         if (!isCameraInitialized)
             initCamera(mSurfaceWidth, mSurfaceHeight);
+
+    }
+
+    public void pause() {
+
+        isCameraInitialized = false;
 
     }
 
@@ -180,6 +188,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.setPreviewDisplay(mHolder);
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();
+            mIsCameraPreviewStarted = true;
             Log.d(TAG, "Camera preview started.");
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
