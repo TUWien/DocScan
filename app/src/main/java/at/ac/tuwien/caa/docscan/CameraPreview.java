@@ -186,7 +186,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         }
 
         // Tell the dependent Activity that the frame dimension (might have) change:
-        mDimensionChangeCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight);
+        mDimensionChangeCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
 
 
     }
@@ -359,7 +359,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public interface DimensionChangeCallback {
 
         void onMeasuredDimensionChange(int width, int height);
-        void onFrameDimensionChange(int width, int height);
+        void onFrameDimensionChange(int width, int height, int cameraOrientation);
 
     }
 

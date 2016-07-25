@@ -6,11 +6,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
+import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
@@ -106,8 +109,15 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void pause() {
 
-        if (mDrawerThread != null)
+        if (mDrawerThread != null) {
+            // It is necessary to call notify here, because otherwise there will be a deadlock in the
+            // run method, which waits for the mCVResult object. The deadlock will arise after the
+            // app is resumed (for example after an orientation change).
+            synchronized (mCVResult) {
+                mCVResult.notify();
+            }
             mDrawerThread.setRunning(false);
+        }
 
     }
 
@@ -195,13 +205,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 //
                 Canvas canvas = null;
 //
-//                synchronized (mCameraPreview) {
-//
-//                    try {
-//                        mCameraPreview.wait();
-//                    } catch (InterruptedException e) {
-//
-//                    }
+                synchronized (mCVResult) {
+
+                    try {
+                        mCVResult.wait();
+                    } catch (InterruptedException e) {
+
+                    }
 ////                    }
 
                     try {
@@ -215,8 +225,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                             mSurfaceHolder.unlockCanvasAndPost(canvas);
                         }
                     }
-//
-//                }
+
+                }
 
 //                }
 
@@ -327,11 +337,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             if (mCVResult != null) {
                 if (mCVResult.getPatches() != null) {
 
-                    Patch patch;
+//                    Patch patch;
 
-                    for (int i = 0; i < mCVResult.getPatches().length; i++) {
+                    for (Patch patch : mCVResult.getPatches()) {
 
-                        patch = mCVResult.getPatches()[i];
                         String fValue = String.format("%.2f", patch.getFM());
 
                         if (patch.getIsForeGround()) {
@@ -342,6 +351,33 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
                             canvas.drawText(fValue, patch.getDrawViewPX(), patch.getDrawViewPY() + 50, mTextPaint);
                         }
+
+                    }
+
+                }
+
+                if (mCVResult.getDKPolyRects() != null) {
+
+                    for (DkPolyRect dkPolyRect : mCVResult.getDKPolyRects()) {
+
+                        mSegmentationPath.reset();
+
+                        ArrayList<PointF> screenPoints = dkPolyRect.getScreenPoints();
+
+                        boolean isStartSet = false;
+
+                        for (PointF point : screenPoints) {
+
+                            if (!isStartSet) {
+                                mSegmentationPath.moveTo(point.x, point.y);
+                                isStartSet = true;
+                            } else
+                                mSegmentationPath.lineTo(point.x, point.y);
+
+                        }
+
+                        mSegmentationPath.close();
+                        canvas.drawPath(mSegmentationPath, mSegmentationPaint);
 
                     }
 
