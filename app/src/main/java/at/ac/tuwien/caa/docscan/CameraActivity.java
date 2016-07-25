@@ -21,7 +21,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 /**
  * Created by fabian on 21.07.2016.
  */
-public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks, NativeWrapper.CVCallback {
+public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks, NativeWrapper.CVCallback, CameraPreview.DimensionChangeCallback {
 
     private static final String TAG = "CameraActivity";
 
@@ -36,7 +36,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private Camera mCamera;
     private Camera.CameraInfo mCameraInfo;
     private CameraHandlerThread mThread = null;
-
+    private CVResult mCVResult;
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
     private boolean mIsDebugViewEnabled;
@@ -81,13 +81,21 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         setContentView(R.layout.activity_main);
 
+        mCVResult = new CVResult();
+
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_view);
         mCameraPreview.setCamera(mCamera, mCameraInfo, mDisplayRotation);
 
-//        mPaintView = (PaintView) findViewById(R.id.paint_view);
+        mPaintView = (PaintView) findViewById(R.id.paint_view);
+//        // TODO: the reference to the camera preview class is just needed to lock the mPaintView, think about a nicer solution:
+        mPaintView.setCameraPreview(mCameraPreview);
+        mPaintView.setCVResult(mCVResult);
 
-        // This is used to mea'sure execution time of time intense tasks:
+        mCVResult.setDisplayRotation(mDisplayRotation);
+
+        // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
+
 
     }
 
@@ -96,10 +104,13 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         super.onPause();
         // Stop camera access
-        releaseCamera();
 
         if (mPaintView != null)
             mPaintView.pause();
+
+        releaseCamera();
+
+
 
     }
 
@@ -108,13 +119,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         super.onStop();
 
-        boolean b = isChangingConfigurations();
-
         mCameraPreview.stop();
 
     }
 
     // Taken from: http://stackoverflow.com/questions/2474367/how-can-i-tell-if-the-screen-is-on-in-android
+    @SuppressWarnings("deprecation") // suppressed because the not deprecated function is called if API level >= 20
     public static boolean isScreenOn() {
 
         // If API level >= 20
@@ -137,24 +147,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
     @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.i(TAG, "On Restart .....");
-
-        boolean isOrientationChanged = isChangingConfigurations();
-
-    }
-
-    @Override
-    public void onDestroy() {
-
-        super.onDestroy();
-
-    }
-
-
-
-        @Override
     public void onResume() {
 
 
@@ -272,6 +264,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         // Get the rotation of the screen to adjust the preview image accordingly.
         mDisplayRotation = getWindowManager().getDefaultDisplay().getRotation();
 
+
     }
 
 
@@ -280,16 +273,18 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     @Override
     public void onFocusMeasured(Patch[] patches) {
 
-        if (mPaintView != null)
-            mPaintView.setFocusPatches(patches);
+//        if (mPaintView != null)
+//            mPaintView.setFocusPatches(patches);
 
+        if (mCVResult != null)
+            mCVResult.setPatches(patches);
     }
 
     @Override
     public void onPageSegmented(DkPolyRect[] dkPolyRects) {
 
-        if (mPaintView != null)
-            mPaintView.setDkPolyRects(dkPolyRects);
+//        if (mPaintView != null)
+//            mPaintView.setDkPolyRects(dkPolyRects);
 
     }
 
@@ -297,8 +292,24 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
 
-    // ================= end: CALLBACKS invoking TaskTimer =================
+    // =================  start: CameraPreview.DimensionChange CALLBACK =================
 
+    @Override
+    public void onMeasuredDimensionChange(int width, int height) {
+
+        mCVResult.setViewDimensions(width, height);
+
+    }
+
+
+    @Override
+    public void onFrameDimensionChange(int width, int height) {
+
+        mCVResult.setFrameDimensions(width, height);
+
+    }
+
+    // =================  end: CameraPreview.DimensionChange CALLBACK =================
 
     // Taken from: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438
     private class CameraHandlerThread extends HandlerThread {

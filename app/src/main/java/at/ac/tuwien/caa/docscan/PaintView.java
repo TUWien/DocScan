@@ -8,6 +8,7 @@ import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -24,14 +25,17 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     private DrawerThread mDrawerThread;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
 
-    private boolean mRefreshRequired;
     private Patch[] mFocusPatches;
     private DkPolyRect[] mPolyRects;
+
+    private CVResult mCVResult;
+
+    private static final String TAG = "PaintView";
 
 
     public PaintView(Context context, AttributeSet attrs) {
 
-        super(context);
+        super(context, attrs);
 
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
@@ -39,6 +43,15 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         holder.setFormat(PixelFormat.TRANSLUCENT);
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
 
+    }
+
+
+
+
+
+    public void setCVResult(CVResult cvResult) {
+
+        mCVResult = cvResult;
 
     }
 
@@ -100,16 +113,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void setFocusPatches(Patch[] focusPatches) {
 
-
         mFocusPatches = focusPatches;
-        mRefreshRequired = true;
 
     }
 
     public void setDkPolyRects(DkPolyRect[] dkPolyRects) {
 
         mPolyRects = dkPolyRects;
-        mRefreshRequired = true;
 
     }
 
@@ -157,8 +167,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             // Used for debugging rectangle
             mRectPaint = new Paint();
 
-            mRefreshRequired = false;
-
         }
 
 
@@ -179,32 +187,39 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         public void run() {
 
 
-
+// TODO: Clean up this mess! This causes some seconds after orientation change:
 
             while (mIsRunning) {
 
+//                    synchronized (mSurfaceHolder) {
+//
                 Canvas canvas = null;
+//
+//                synchronized (mCameraPreview) {
+//
+//                    try {
+//                        mCameraPreview.wait();
+//                    } catch (InterruptedException e) {
+//
+//                    }
+////                    }
 
-                try {
-                    canvas = mSurfaceHolder.lockCanvas();
-                    synchronized (mSurfaceHolder) {
-
-                        if (mRefreshRequired)
-                            draw(canvas);
-
-
+                    try {
+                        canvas = mSurfaceHolder.lockCanvas();
+                        draw(canvas);
+                    } finally {
+                        // do this in a finally so that if an exception is thrown
+                        // during the above, we don't leave the Surface in an
+                        // inconsistent state
+                        if (canvas != null) {
+                            mSurfaceHolder.unlockCanvasAndPost(canvas);
+                        }
                     }
+//
+//                }
 
-                } finally {
-                    // do this in a finally so that if an exception is thrown
-                    // during the above, we don't leave the Surface in an
-                    // inconsistent state
-                    if (canvas != null) {
-                        mSurfaceHolder.unlockCanvasAndPost(canvas);
-                    }
-                }
+//                }
 
-            }
 
 //            if (mCameraView == null)
 //                return;
@@ -255,6 +270,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 //                    }
 //                }
 //            }
+            }
         }
 
 
@@ -290,6 +306,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         private void draw(Canvas canvas) {
 
+            Log.d(TAG, "draw");
+
             if (canvas == null) {
                 return;
             }
@@ -298,37 +316,38 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
 
 //            Debugging rectangle:
-            mRectPaint.setARGB(200,0,100,0);
-//            canvas.drawRect(mCanvasWidth - 200, mCanvasHeight - 200, mCanvasWidth + 200, mCanvasHeight + 200, mRectPaint);
-
-//            canvas.drawRect(0, 0, mCanvasWidth, mCanvasHeight, mRectPaint);
-//            mRectPaint.setARGB(255,100,100,0);
-            canvas.drawRect(0, 0, 1000, 1000, mRectPaint);
-
-            mRefreshRequired = false;
+//            mRectPaint.setARGB(200,0,100,0);
+////            canvas.drawRect(mCanvasWidth - 200, mCanvasHeight - 200, mCanvasWidth + 200, mCanvasHeight + 200, mRectPaint);
+//
+////            canvas.drawRect(0, 0, mCanvasWidth, mCanvasHeight, mRectPaint);
+////            mRectPaint.setARGB(255,100,100,0);
+//            canvas.drawRect(0, 0, mCanvasWidth - 100, mCanvasHeight - 100, mRectPaint);
 
 
-//            if (mFocusPatches != null) {
-//
-//                Patch patch;
-//
-//                for (int i = 0; i < mFocusPatches.length; i++) {
-//
-//                    patch = mFocusPatches[i];
-//                    String fValue = String.format("%.2f", patch.getFM());
-//
-//                    if (patch.getIsForeGround()) {
-//                        if (patch.getIsSharp())
-//                            mTextPaint.setColor(GOOD_TEXT_COLOR);
-//                        else
-//                            mTextPaint.setColor(BAD_TEXT_COLOR);
-//
-//                        canvas.drawText(fValue, patch.getDrawViewPX(), patch.getDrawViewPY() + 50, mTextPaint);
-//                    }
-//
-//                }
-//
-//            }
+            if (mCVResult != null) {
+                if (mCVResult.getPatches() != null) {
+
+                    Patch patch;
+
+                    for (int i = 0; i < mCVResult.getPatches().length; i++) {
+
+                        patch = mCVResult.getPatches()[i];
+                        String fValue = String.format("%.2f", patch.getFM());
+
+                        if (patch.getIsForeGround()) {
+                            if (patch.getIsSharp())
+                                mTextPaint.setColor(GOOD_TEXT_COLOR);
+                            else
+                                mTextPaint.setColor(BAD_TEXT_COLOR);
+
+                            canvas.drawText(fValue, patch.getDrawViewPX(), patch.getDrawViewPY() + 50, mTextPaint);
+                        }
+
+                    }
+
+                }
+
+            }
 //
 //            if (mPolyRects != null) {
 //

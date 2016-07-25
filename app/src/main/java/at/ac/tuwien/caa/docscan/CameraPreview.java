@@ -30,10 +30,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private int mSurfaceWidth, mSurfaceHeight;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private NativeWrapper.CVCallback mCVCallback;
+    private DimensionChangeCallback mDimensionChangeCallback;
 
     private PageSegmentationThread mPageSegmentationThread;
     private FocusMeasurementThread mFocusMeasurementThread;
-
 
     private Mat mFrameMat;
 
@@ -66,6 +66,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mHolder.addCallback(this);
 
         mCVCallback = (NativeWrapper.CVCallback) context;
+        mDimensionChangeCallback = (DimensionChangeCallback) context;
+
+        // used for debugging:
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
 
     }
@@ -105,9 +108,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-        // If your preview can change or rotate, take care of those events here.
-        // Make sure to stop the preview before resizing or reformatting it.
 
+
+        // Check that the screen is on, because surfaceChanged is also called after the screen is turned off in landscape mode.
+        // (Because the activity is resumed in such cases)
         if (mCamera != null && CameraActivity.isScreenOn())
             initCamera(width, height);
 
@@ -181,6 +185,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
 
+        // Tell the dependent Activity that the frame dimension (might have) change:
+        mDimensionChangeCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight);
+
+
     }
 
 
@@ -196,7 +204,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //
 //        }
 
-
+        Log.d(TAG, "frame received.");
         long currentTime = System.currentTimeMillis();
 
         if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
@@ -324,11 +332,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             // Note that mFrameWidth > mFrameHeight - regardless of the orientation!
             // Portrait mode:
             if (width < height) {
+
                 double resizeFac = (double) width / frameHeight;
                 int scaledHeight = (int) Math.round(frameWidth * resizeFac);
                 if (scaledHeight > height)
                     scaledHeight = height;
                 setMeasuredDimension(width, scaledHeight);
+
             }
             // Landscape mode:
             else {
@@ -337,9 +347,19 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 if (scaledWidth > width)
                     scaledWidth = width;
                 setMeasuredDimension(scaledWidth, height);
+
             }
 
         }
+
+        // Finally tell the dependent Activity the dimension has changed:
+        mDimensionChangeCallback.onMeasuredDimensionChange(getMeasuredWidth(), getMeasuredHeight());
+    }
+
+    public interface DimensionChangeCallback {
+
+        void onMeasuredDimensionChange(int width, int height);
+        void onFrameDimensionChange(int width, int height);
 
     }
 
@@ -381,6 +401,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             synchronized (mCameraView) {
 
                 while (mIsRunning) {
+
 
 //                    if (mFrameMat != null && mCVCallback != null) {
 
@@ -465,7 +486,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //                if (MainActivity.isDebugViewEnabled())
 //                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
 
-//                mCVCallback.onFocusMeasured(patches);
+                mCVCallback.onFocusMeasured(patches);
 
 
             }
@@ -474,6 +495,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 
     // ================= end: CVThread and subclasses =================
+
 
 
 
