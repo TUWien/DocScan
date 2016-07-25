@@ -1,7 +1,8 @@
 package at.ac.tuwien.caa.docscan;
 
 import android.graphics.PointF;
-import android.view.Surface;
+
+import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
@@ -20,7 +21,7 @@ public class CVResult {
     private Patch[] mPatches;
     private int mViewWidth, mViewHeight;
     private int mFrameHeight, mFrameWidth;
-    private int mDisplayRotation;
+    private int mCameraOrientation;
 
     public CVResult() {
 
@@ -29,7 +30,17 @@ public class CVResult {
 
     public void setDKPolyRects(DkPolyRect[] dkPolyRects) {
 
-        mDKPolyRects = dkPolyRects;
+        synchronized (this) {
+
+            mDKPolyRects = dkPolyRects;
+
+            updateRects();
+
+            this.notify();
+
+        }
+
+
 
     }
 
@@ -41,9 +52,15 @@ public class CVResult {
 
     public void setPatches(Patch[] patches) {
 
-        mPatches = patches;
+        synchronized (this) {
 
-        updatePatches();
+            mPatches = patches;
+
+            updatePatches();
+
+            this.notify();
+
+        }
 
     }
 
@@ -61,18 +78,15 @@ public class CVResult {
     }
 
 
-    public void setFrameDimensions(int width, int height) {
+    public void setFrameDimensions(int width, int height, int cameraOrientation) {
 
         mFrameWidth = width;
         mFrameHeight = height;
+        mCameraOrientation = cameraOrientation;
 
     }
 
-    public void setDisplayRotation(int displayRotation) {
 
-        mDisplayRotation = displayRotation;
-
-    }
 
     private void updatePatches() {
 
@@ -84,10 +98,42 @@ public class CVResult {
 
             patch = mPatches[i];
             framePoint = new PointF(patch.getPX(), patch.getPY());
-            screenPoint = getScreenCoordinates(framePoint, mFrameWidth, mFrameHeight, mViewWidth, mViewHeight, mDisplayRotation);
+            screenPoint = getScreenCoordinates(framePoint, mFrameWidth, mFrameHeight, mViewWidth, mViewHeight, mCameraOrientation);
 
             patch.setDrawViewPX(screenPoint.x);
             patch.setDrawViewPY(screenPoint.y);
+
+
+        }
+
+
+    }
+
+    private void updateRects() {
+
+        DkPolyRect polyRect;
+        PointF screenPoint, framePoint;
+
+        for (int i = 0; i < mDKPolyRects.length; i++) {
+
+            polyRect = mDKPolyRects[i];
+
+            if (polyRect == null)
+                continue;
+
+            ArrayList<PointF> points = polyRect.getPoints();
+//            if (points == null)
+//                continue;
+
+            ArrayList<PointF> screenPoints = new ArrayList<PointF>();
+
+            for (int j = 0; j < points.size(); j++) {
+                framePoint = new PointF(points.get(j).x, points.get(j).y);
+                screenPoint = getScreenCoordinates(framePoint, mFrameWidth, mFrameHeight, mViewWidth, mViewHeight, mCameraOrientation);
+                screenPoints.add(screenPoint);
+            }
+
+            polyRect.setScreenPoints(screenPoints);
 
 
         }
@@ -106,28 +152,27 @@ public class CVResult {
 
         switch (orientation) {
 
-            case Surface.ROTATION_0: // Portrait mode
+            case ORIENTATION_PORTRAIT: // Portrait mode
                 drawViewPX = (frameHeight - framePos.y) / frameHeight * drawWidth;
                 drawViewPY = framePos.x / frameWidth * drawHeight;
                 break;
 
-//            drawViewPX = framePos.x / frameWidth * drawWidth;
-//                drawViewPY = framePos.y / frameHeight * drawHeight;
-//                break;
+            case ORIENTATION_FLIPPED_PORTRAIT: // Portrait mode
+                drawViewPX = framePos.y / frameHeight * drawWidth;
+                drawViewPY = (frameWidth - framePos.x) / frameWidth * drawHeight;
+                break;
 
-//                drawViewPX = (frameHeight - framePos.y) / frameHeight * drawWidth;
-//                drawViewPY = framePos.x / frameWidth * drawHeight;
-//                break;
-            case Surface.ROTATION_90: // Landscape mode
+
+
+            case ORIENTATION_LANDSCAPE: // Landscape mode
                 drawViewPX = framePos.x / frameWidth * drawWidth;
                 drawViewPY = framePos.y / frameHeight * drawHeight;
                 break;
 
-            case Surface.ROTATION_270: // Landscape mode flipped
+            case ORIENTATION_FLIPPED_LANDSCAPE: // Landscape mode flipped
                 drawViewPX = (frameWidth - framePos.x) / frameWidth * drawWidth;
                 drawViewPY = (frameHeight - framePos.y) / frameHeight * drawHeight;
                 break;
-
 
         }
 

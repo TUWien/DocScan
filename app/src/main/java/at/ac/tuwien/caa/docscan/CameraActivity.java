@@ -88,10 +88,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         mPaintView = (PaintView) findViewById(R.id.paint_view);
 //        // TODO: the reference to the camera preview class is just needed to lock the mPaintView, think about a nicer solution:
-        mPaintView.setCameraPreview(mCameraPreview);
+//        mPaintView.setCameraPreview(mCameraPreview);
         mPaintView.setCVResult(mCVResult);
 
-        mCVResult.setDisplayRotation(mDisplayRotation);
+//        mCVResult.setDisplayRotation(mDisplayRotation);
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
@@ -273,18 +273,17 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     @Override
     public void onFocusMeasured(Patch[] patches) {
 
-//        if (mPaintView != null)
-//            mPaintView.setFocusPatches(patches);
-
         if (mCVResult != null)
             mCVResult.setPatches(patches);
+
     }
 
     @Override
     public void onPageSegmented(DkPolyRect[] dkPolyRects) {
 
-//        if (mPaintView != null)
-//            mPaintView.setDkPolyRects(dkPolyRects);
+        if (mCVResult != null)
+            mCVResult.setDKPolyRects(dkPolyRects);
+
 
     }
 
@@ -301,15 +300,16 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
-
     @Override
-    public void onFrameDimensionChange(int width, int height) {
+    public void onFrameDimensionChange(int width, int height, int cameraOrientation) {
 
-        mCVResult.setFrameDimensions(width, height);
+        mCVResult.setFrameDimensions(width, height, cameraOrientation);
 
     }
 
     // =================  end: CameraPreview.DimensionChange CALLBACK =================
+
+
 
     // Taken from: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438
     private class CameraHandlerThread extends HandlerThread {
