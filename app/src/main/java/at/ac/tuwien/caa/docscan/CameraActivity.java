@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -16,10 +17,16 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.PowerManager;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -42,6 +49,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks, NativeWrapper.CVCallback, CameraPreview.DimensionChangeCallback {
 
     private static final String TAG = "CameraActivity";
+    private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
     private static String IMG_FILENAME_PREFIX = "IMG_";
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
     private Camera.PictureCallback mPictureCallback;
@@ -64,6 +72,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private int mDisplayRotation;
     private static Context mContext;
     private int mCameraOrientation;
+    private DrawerLayout mDrawerLayout;
+    private ActionBarDrawerToggle mDrawerToggle;
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -169,10 +179,21 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 //        mPaintView.setCameraPreview(mCameraPreview);
         mPaintView.setCVResult(mCVResult);
 
+        setupNavigationDrawer();
+
 //        mCVResult.setDisplayRotation(mDisplayRotation);
+        mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
+
+        if (mDebugViewFragment == null)
+            mIsDebugViewEnabled = false;
+        else
+            mIsDebugViewEnabled = true;
+
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
+
+
 
         initPictureCallback();
 
@@ -247,7 +268,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         }
     }
 
-
+    // ================= start: methods for saving pictures =================
 
     private void initPictureCallback() {
 
@@ -312,7 +333,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
-    // ================= start: methods for file handling =================
+
 
 
     // This method is used to enable file saving in marshmallow (Android 6), since in this version file saving is not allowed without user permission:
@@ -363,8 +384,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
-    // ================= end: methods for file handling =================
-
 
 
     // Taken from http://stackoverflow.com/questions/15808719/controlling-the-camera-to-take-pictures-in-portrait-doesnt-rotate-the-final-ima:
@@ -379,6 +398,136 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
 
     }
+
+    // ================= end: methods for saving pictures =================
+
+
+    // ================= start: methods for navigation drawer =================
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+
+        // Pass the event to ActionBarDrawerToggle, if it returns
+        // true, then it has handled the app icon touch event
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
+
+
+        switch (item.getItemId()) {
+
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
+                return true;
+
+        }
+
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+    private void setupNavigationDrawer() {
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+
+        };
+
+        // Set the drawer toggle as the DrawerListener
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+
+        NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
+        setupDrawerContent(mDrawer);
+
+
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        Menu menu = mDrawer.getMenu();
+        MenuItem item = menu.findItem(R.id.action_show_debug_view);
+
+        if (mIsDebugViewEnabled)
+            item.setTitle(R.string.hide_debug_view_text);
+        else
+            item.setTitle(R.string.show_debug_view_text);
+
+    }
+
+
+    private void setupDrawerContent(NavigationView navigationView) {
+
+        navigationView.setNavigationItemSelectedListener(
+
+                new NavigationView.OnNavigationItemSelectedListener() {
+
+                    @Override
+
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+
+                        selectDrawerItem(menuItem);
+
+                        return true;
+
+                    }
+
+                });
+
+    }
+
+    private void selectDrawerItem(MenuItem menuItem) {
+
+        switch(menuItem.getItemId()) {
+
+            case R.id.action_show_debug_view:
+
+                // Create the debug view - if it is not already created:
+                if (mDebugViewFragment == null) {
+                    mDebugViewFragment = new DebugViewFragment();
+                }
+
+                // Show the debug view:
+                if (getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT) == null) {
+                    mIsDebugViewEnabled = true;
+                    menuItem.setTitle(R.string.hide_debug_view_text);
+                    getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+                }
+                // Hide the debug view:
+                else {
+                    mIsDebugViewEnabled = false;
+                    menuItem.setTitle(R.string.show_debug_view_text);
+                    getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
+                }
+
+
+
+        }
+
+        mDrawerLayout.closeDrawers();
+
+    }
+
+    // ================= end: methods for navigation drawer =================
 
 
     // ================= start: CALLBACKS invoking TaskTimer =================
