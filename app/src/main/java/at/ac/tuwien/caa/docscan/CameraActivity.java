@@ -2,11 +2,14 @@ package at.ac.tuwien.caa.docscan;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.hardware.display.DisplayManager;
 import android.media.MediaScannerConnection;
@@ -22,13 +25,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
@@ -38,6 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
@@ -46,13 +53,15 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 /**
  * Created by fabian on 21.07.2016.
  */
-public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks, NativeWrapper.CVCallback, CameraPreview.DimensionChangeCallback {
+public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks, NativeWrapper.CVCallback, CameraPreview.DimensionChangeCallback, MediaScannerConnection.MediaScannerConnectionClient {
 
     private static final String TAG = "CameraActivity";
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
     private static String IMG_FILENAME_PREFIX = "IMG_";
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 0;
     private Camera.PictureCallback mPictureCallback;
+    private ImageButton mGalleryButton;
 
     /**
      * Id of the camera to access. 0 is the first camera.
@@ -68,12 +77,14 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private CVResult mCVResult;
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
-    private boolean mIsDebugViewEnabled;
+    private static boolean mIsDebugViewEnabled;
     private int mDisplayRotation;
     private static Context mContext;
     private int mCameraOrientation;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
+    private MediaScannerConnection mMediaScannerConnection;
+    private boolean mIsPictureSafe;
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -94,6 +105,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         openCameraThread();
 
@@ -181,6 +195,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         setupNavigationDrawer();
 
+
+
 //        mCVResult.setDisplayRotation(mDisplayRotation);
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
 
@@ -194,7 +210,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mTaskTimer = new TaskTimer();
 
 
-
+        initGalleryCallback();
         initPictureCallback();
 
 
@@ -268,6 +284,147 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         }
     }
 
+    // ================= start: methods for opening the gallery =================
+
+    private void initGalleryCallback() {
+
+        mGalleryButton = (ImageButton) findViewById(R.id.gallery_button);
+
+        mGalleryButton.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        openGallery();
+                    }
+                });
+
+
+    }
+
+    private void openGallery() {
+
+        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+
+        if (currentApiVersion >= Build.VERSION_CODES.M)
+            requestFileOpen();
+        else
+            startScan();
+
+    }
+
+    // This method is used to enable file saving in marshmallow (Android 6), since in this version external file opening is not allowed without user permission:
+    private void requestFileOpen() {
+
+        // Check Permissions Now
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
+        }
+        else
+            startScan();
+
+    }
+
+    private void startScan() {
+
+
+        if(mMediaScannerConnection != null)
+            mMediaScannerConnection.disconnect();
+
+
+        mMediaScannerConnection = new MediaScannerConnection(this, this);
+        mMediaScannerConnection.connect();
+
+    }
+
+    @Override
+    public void onMediaScannerConnected() {
+
+        File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
+
+        if (mediaStorageDir == null) {
+
+            showNoFileFoundDialog();
+            return;
+
+        }
+
+        String[] files = mediaStorageDir.list();
+
+        if (files == null) {
+
+            showNoFileFoundDialog();
+            return;
+
+        }
+        else if (files.length == 0) {
+
+            showNoFileFoundDialog();
+            return;
+
+        }
+
+        //	    Opens the most recent image:
+        Arrays.sort(files);
+
+        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1];
+
+
+        mMediaScannerConnection.scanFile(fileName, null);
+    }
+
+    @Override
+    public void onScanCompleted(String path, Uri uri) {
+
+        try {
+
+
+            if (uri != null) {
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+//                    I do not know why setData(uri) is not working with Marshmallows, it just opens one image (not the folder), with setData(Uri.fromFile) it is working:
+
+                    int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+                    if (currentApiVersion >= Build.VERSION_CODES.M)
+                        intent.setDataAndType(Uri.fromFile(new File(path)), "image/*");
+                    else
+                        intent.setData(uri);
+//
+
+                    startActivity(intent);
+
+            }
+
+
+
+
+        }
+        finally {
+            mMediaScannerConnection.disconnect();
+            mMediaScannerConnection = null;
+        }
+
+    }
+
+    private void showNoFileFoundDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.no_file_found_msg).setTitle(R.string.no_file_found_title);
+
+        builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+    }
+
+
+    // ================= end: methods for opening the gallery =================
+
+
     // ================= start: methods for saving pictures =================
 
     private void initPictureCallback() {
@@ -293,7 +450,26 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                     Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
                     image = rotate(image, mCameraOrientation);
                     image.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+
+
+
                     fos.close();
+
+//                    // Set the preview image on the gallery button, this must be done one the UI thread:
+                    Bitmap thumb = Bitmap.createScaledBitmap(image, 200, 200, false);
+                    final BitmapDrawable bdrawable = new BitmapDrawable(getResources(), thumb);
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+                                mGalleryButton.setBackground(bdrawable);
+                            else
+                                mGalleryButton.setBackgroundDrawable(bdrawable);
+
+                            mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
+                        }
+                    });
 
 //                    Finally tell the MediaScannerConnection that a new file has been saved.
 //                    This is necessary, since the Android system will not detect the image in time,
@@ -307,6 +483,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
                                 }
                             });
+
+                    mIsPictureSafe = true;
 
                 } catch (FileNotFoundException e) {
                     Log.d(TAG, "File not found: " + e.getMessage());
@@ -326,14 +504,14 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // get an image from the camera
-                        requestFileSave();
+                        if (mIsPictureSafe) {
+                            // get an image from the camera
+                            requestFileSave();
+                        }
                     }
                 });
 
     }
-
-
 
 
     // This method is used to enable file saving in marshmallow (Android 6), since in this version file saving is not allowed without user permission:
@@ -351,6 +529,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     private void takePicture() {
 
+        mIsPictureSafe = false;
         mCamera.takePicture(null, null, mPictureCallback);
 
 
@@ -363,17 +542,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         // using Environment.getExternalStorageState() before doing this.
 
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), appName);
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                Log.d(TAG, "failed to create directory");
-                return null;
-            }
-        }
+        File mediaStorageDir = getMediaStorageDir(appName);
 
         // Create a media file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -381,6 +550,22 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
         return mediaFile;
+    }
+
+    private static File getMediaStorageDir(String appName) {
+
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), appName);
+
+        // Create the storage directory if it does not exist
+        if (! mediaStorageDir.exists()){
+            if (! mediaStorageDir.mkdirs()){
+
+                return null;
+            }
+        }
+
+        return mediaStorageDir;
     }
 
 
@@ -519,7 +704,21 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                     getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
                 }
 
+                break;
 
+            // Text for focus measurement:
+            case R.id.action_show_fm_values:
+
+                if (mPaintView.isFocusTextVisible()) {
+                    menuItem.setTitle(R.string.show_fm_values_text);
+                    mPaintView.drawFocusText(false);
+                }
+                else {
+                    menuItem.setTitle(R.string.hide_fm_values_text);
+                    mPaintView.drawFocusText(true);
+                }
+
+                break;
 
         }
 
@@ -569,6 +768,14 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    public static boolean isDebugViewEnabled() {
+
+        return mIsDebugViewEnabled;
+
+    }
+
+    // ================= stop: CALLBACKS invoking TaskTimer =================
+
     // Do this in an own thread, so that the onPreviewFrame method is not called on the UI thread
     private void openCameraThread() {
 
@@ -597,6 +804,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         // Get the rotation of the screen to adjust the preview image accordingly.
         mDisplayRotation = getWindowManager().getDefaultDisplay().getRotation();
 
+        mIsPictureSafe = true;
 
     }
 

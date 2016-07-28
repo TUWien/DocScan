@@ -1,9 +1,13 @@
 package at.ac.tuwien.caa.docscan;
 
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.PointF;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -12,6 +16,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
@@ -20,7 +25,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 /**
  * Created by fabian on 21.07.2016.
  */
-public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {{}
+public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {{}
 
     private static final String TAG = "CameraPreview";
     private SurfaceHolder mHolder;
@@ -42,6 +47,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private long mLastTime;
     private static long FRAME_TIME_DIFF = 300;
+
+    private static final int FOCUS_HALF_AREA = 1000;
 
     private boolean isCameraInitialized, mIsCameraPreviewStarted;
 
@@ -132,6 +139,132 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+
+        if (mCamera == null)
+            return true;
+
+        // We wait until the finger is up again:
+        if (event.getAction() != MotionEvent.ACTION_UP)
+            return true;
+
+
+        float touchX = event.getX();
+        float touchY = event.getY();
+        PointF touchScreen = new PointF(touchX, touchY);
+
+        // The camera field of view is normalized so that -1000,-1000 is top left and 1000, 1000 is
+        // bottom right. Not that multiple areas are possible, but currently only one is used.
+
+        float focusRectHalfSize = .2f;
+
+        // Normalize the coordinates of the touch event:
+        float centerX = getMeasuredWidth() / 2;
+        float centerY = getMeasuredHeight() / 2;
+        PointF centerScreen = new PointF(centerX, centerY);
+
+
+        Point upperLeft = transformPoint(centerScreen, touchScreen, -focusRectHalfSize, -focusRectHalfSize);
+        Point lowerRight = transformPoint(centerScreen, touchScreen, focusRectHalfSize, focusRectHalfSize);
+
+        Rect focusRect = new Rect(upperLeft.x, upperLeft.y, lowerRight.x, lowerRight.y);
+
+        Camera.Area focusArea = new Camera.Area(focusRect, 750);
+        List<Camera.Area> focusAreas = new ArrayList<>();
+        focusAreas.add(focusArea);
+
+
+//        Camera.Parameters params = mCamera.getParameters();
+
+//        params.setFocusAreas(focusAreas);
+//
+//        mCamera.setParameters(params);
+
+//        if (mCamera != null) {
+
+        mCamera.cancelAutoFocus();
+
+        Camera.Parameters parameters = mCamera.getParameters();
+        if (parameters.getFocusMode() != Camera.Parameters.FOCUS_MODE_AUTO) {
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        }
+        if (parameters.getMaxNumFocusAreas() > 0) {
+
+            parameters.setFocusAreas(focusAreas);
+//            mCamera.setParameters(parameters);
+        }
+
+        mCamera.setParameters(parameters);
+//        mCamera.startPreview();
+
+        mCamera.autoFocus(new Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean success, Camera camera) {
+
+                camera.cancelAutoFocus();
+
+                if (camera.getParameters().getFocusMode() != Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO) {
+//
+//
+////                        mCamera.stopPreview();
+                    Camera.Parameters parameters = camera.getParameters();
+                    mCamera.autoFocus(null);
+                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+//                    if (parameters.getMaxNumFocusAreas() > 0) {
+//                        parameters.setFocusAreas(null);
+//                    }
+                    mCamera.setParameters(parameters);
+//                    mCamera.startPreview();
+                }
+            }
+
+        });
+
+        return true; //processed
+
+    }
+
+    private Point transformPoint(PointF centerScreen, PointF touchScreen, float offSetX, float offSetY) {
+
+        // Translate the point:
+        PointF normalizedPoint = new PointF(touchScreen.x, touchScreen.y);
+//        normalizedPoint.offset(offSetX, offSetY);
+
+        normalizedPoint.offset(-centerScreen.x, -centerScreen.y);
+
+        // Scale the point between -1 and 1:
+        normalizedPoint.x = normalizedPoint.x / centerScreen.x;
+        normalizedPoint.y = normalizedPoint.y / centerScreen.y;
+
+        normalizedPoint.offset(offSetX, offSetY);
+
+        // Scale the point between -1000 and 1000:
+        normalizedPoint.x = normalizedPoint.x * FOCUS_HALF_AREA;
+        normalizedPoint.y = normalizedPoint.y * FOCUS_HALF_AREA;
+
+        // Clamp the values if necessary:
+        if (normalizedPoint.x < -FOCUS_HALF_AREA)
+            normalizedPoint.x = -FOCUS_HALF_AREA;
+        else if (normalizedPoint.x > FOCUS_HALF_AREA)
+            normalizedPoint.x = FOCUS_HALF_AREA;
+
+        if (normalizedPoint.y < -FOCUS_HALF_AREA)
+            normalizedPoint.y = -FOCUS_HALF_AREA;
+        else if (normalizedPoint.y > FOCUS_HALF_AREA)
+            normalizedPoint.y = FOCUS_HALF_AREA;
+
+        Point transformedPoint = new Point(Math.round(normalizedPoint.x), Math.round(normalizedPoint.y));
+
+        return transformedPoint;
+
+    }
+
+
+
     private void initCamera(int width, int height) {
 
         if (mHolder.getSurface() == null) {
@@ -188,6 +321,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.setPreviewDisplay(mHolder);
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();
+
+//            mCamera.autoFocus(this);
             mIsCameraPreviewStarted = true;
             Log.d(TAG, "Camera preview started.");
         } catch (Exception e) {
@@ -205,13 +340,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public void onPreviewFrame(byte[] pixels, Camera arg1)
     {
 
-//        if (MainActivity.isDebugViewEnabled()) {
-//
-//            // Take care that in this case the timer is first stopped (contrary to the other calls):
-//            mTimerCallbacks.onTimerStopped(TaskTimer.CAMERA_FRAME_ID);
-//            mTimerCallbacks.onTimerStarted(TaskTimer.CAMERA_FRAME_ID);
-//
-//        }
+        if (CameraActivity.isDebugViewEnabled()) {
+
+            // Take care that in this case the timer is first stopped (contrary to the other calls):
+            mTimerCallbacks.onTimerStopped(TaskTimer.CAMERA_FRAME_ID);
+            mTimerCallbacks.onTimerStarted(TaskTimer.CAMERA_FRAME_ID);
+
+        }
 
         Log.d(TAG, "frame received.");
         long currentTime = System.currentTimeMillis();
@@ -220,6 +355,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
             synchronized (this) {
 
+                // Measure the time if required:
+                if (CameraActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStarted(TaskTimer.MAT_CONVERSION_ID);
+
+
                 // 1.5 since YUV
                 Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
                 yuv.put(0, 0, pixels);
@@ -227,6 +367,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                 mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                 Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
+
+                // Measure the time if required:
+                if (CameraActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStopped(TaskTimer.MAT_CONVERSION_ID);
+
 
                 mLastTime = currentTime;
                 this.notify();
@@ -365,6 +510,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mDimensionChangeCallback.onMeasuredDimensionChange(getMeasuredWidth(), getMeasuredHeight());
     }
 
+    @Override
+    public void onAutoFocus(boolean success, Camera camera) {
+
+    }
+
     public interface DimensionChangeCallback {
 
         void onMeasuredDimensionChange(int width, int height);
@@ -451,15 +601,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             if (mIsRunning) {
 
                 // Measure the time if required:
-//                if (MainActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
+                if (CameraActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
 
 
 
                     DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
 
-//                if (MainActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
+                if (CameraActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
 
                     mCVCallback.onPageSegmented(polyRects);
 
@@ -483,8 +633,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             if (mIsRunning) {
 
 //                // Measure the time if required:
-//                if (MainActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
+                if (CameraActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
 
                 Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
 //
@@ -492,8 +642,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
 //
 //
-//                if (MainActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
+                if (CameraActivity.isDebugViewEnabled())
+                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
 
                 mCVCallback.onFocusMeasured(patches);
 
