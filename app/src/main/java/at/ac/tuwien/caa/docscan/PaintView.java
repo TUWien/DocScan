@@ -64,6 +64,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    public boolean isFocusTextVisible() {
+
+        return mDrawFocusText;
+
+    }
+
+
+
 
     public void setCVResult(CVResult cvResult) {
 
@@ -91,6 +99,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         if (mDrawerThread != null)
             mDrawerThread.setSurfaceSize(width, height);
     }
+
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
@@ -276,6 +285,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 return;
             }
 
+            if (CameraActivity.isDebugViewEnabled())
+                mTimerCallbacks.onTimerStarted(TaskTimer.DRAW_VIEW_ID);
+
 //            Clear the screen from previous drawings:
             canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
 
@@ -291,6 +303,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     drawPageSegmentation(canvas);
 
             }
+
+            if (CameraActivity.isDebugViewEnabled())
+                mTimerCallbacks.onTimerStopped(TaskTimer.DRAW_VIEW_ID);
+
         }
 
         private void drawPageSegmentation(Canvas canvas) {
@@ -359,11 +375,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         if (textWidth == -1) {
                             mTextPaint.getTextBounds(fValue, 0, fValue.length(), textRect);
                             textWidth = (float) textRect.width() / 2;
-//                            textHeight = (float) textRect.height() / 2;
                         }
 
                         canvas.drawText(fValue, patch.getDrawViewPX() - textWidth,
-                                patch.getDrawViewPY() + RECT_HALF_SIZE, mTextPaint);
+                                patch.getDrawViewPY() - RECT_HALF_SIZE - 10, mTextPaint);
 
                     }
 

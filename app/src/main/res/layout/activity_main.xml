@@ -24,15 +24,6 @@
 
 
             android:id="@+id/container_layout">
-            <!--&lt;!&ndash; The main content view is contained in a Fragment: &ndash;&gt;-->
-            <!--<fragment-->
-                <!--android:name="at.ac.tuwien.caa.docscan.OverlayViewFragment"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:id="@+id/overlay_view"-->
-                <!--&gt;-->
-            <!--</fragment>-->
-
             <at.ac.tuwien.caa.docscan.PaintView
                 android:id="@+id/paint_view"
                 android:layout_width="match_parent"
@@ -59,16 +50,19 @@
                 android:layout_height="match_parent"
                 android:src="@drawable/ic_photo_camera"
                 android:background="@drawable/photo_shoot_button_selector"
-
                 />
-            <Button
+
+
+            <ImageButton
+                android:id="@+id/gallery_button"
                 android:layout_alignParentRight="true"
-
-                android:layout_width="10dp"
-                android:layout_height="wrap_content"
-                android:text="dummy"
-                android:layout_toRightOf="@+id/photo_button"
+                android:layout_width="70dp"
+                android:layout_height="match_parent"
+                android:scaleType="centerInside"
+                android:adjustViewBounds="true"
+                android:padding="@dimen/activity_horizontal_margin"
                 />
+
         </RelativeLayout>
 
     </LinearLayout>
