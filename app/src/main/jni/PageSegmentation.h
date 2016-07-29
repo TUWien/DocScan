@@ -72,7 +72,7 @@ protected:
 	double mMaxArea = 0;
 	float maxSide = 0;   // do not find the image's border
 	float maxSideFactor = 0.97f;
-	float scale = 0.25f;
+	float scale = 0.5f;
 	bool looseDetection = true;
 
 	std::vector<DkPolyRect> mRects;

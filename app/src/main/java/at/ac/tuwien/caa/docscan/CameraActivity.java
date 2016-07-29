@@ -438,6 +438,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
 
+                // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
+                mCamera.startPreview();
+
                 Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
 
                 FileSaver fileSaver = new FileSaver(data);
@@ -983,6 +986,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
         }
+
+//        protected void onPostExecute(Void dummy) {
+//            // The Void dummy argument is necessary so that onPostExecute gets called.
+//
+//        }
 
 
     }
