@@ -1,3 +1,26 @@
+/*********************************************************************************
+ *  DocScan is a Android app for document scanning.
+ *
+ *  Author:         Fabian Hollaus, Florian Kleber, Markus Diem
+ *  Organization:   TU Wien, Computer Vision Lab
+ *  Date created:   21. July 2016
+ *
+ *  This file is part of DocScan.
+ *
+ *  DocScan is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  DocScan is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
+ *********************************************************************************/
+
 package at.ac.tuwien.caa.docscan;
 
 import android.Manifest;
@@ -53,8 +76,10 @@ import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
- * Created by fabian on 21.07.2016.
+ * This is the main class of the app. It is responsible for creating the other views and handling
+ * callbacks from the created views as well as user input.
  */
+
 public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks, NativeWrapper.CVCallback, CameraPreview.DimensionChangeCallback, MediaScannerConnection.MediaScannerConnectionClient {
 
     private static final String TAG = "CameraActivity";
@@ -103,6 +128,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     // ================= start: methods from the Activity lifecyle =================
 
+    /**
+     * Creates the camera Activity.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -128,6 +157,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
+    /**
+     * Stops the camera and the paint view thread.
+     */
     @Override
     public void onPause() {
 
@@ -144,6 +176,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Stops the camera.
+     */
     @Override
     public void onStop() {
 
@@ -154,6 +189,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
+    /**
+     * Called after the Activity resumes. Resumes the camera and the the paint view thread.
+     */
     @Override
     public void onResume() {
 
@@ -181,6 +219,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     // ================= end: methods from the Activity lifecyle =================
 
+    /**
+     * Initializes the activity: camera preview, draw view, debug view, navigation drawer and timer
+     * are initialized in this method.
+     */
+
     private void initActivity() {
 
         setContentView(R.layout.activity_main);
@@ -191,15 +234,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mCameraPreview.setCamera(mCamera, mCameraInfo, mDisplayRotation);
 
         mPaintView = (PaintView) findViewById(R.id.paint_view);
-//        // TODO: the reference to the camera preview class is just needed to lock the mPaintView, think about a nicer solution:
-//        mPaintView.setCameraPreview(mCameraPreview);
         mPaintView.setCVResult(mCVResult);
 
         setupNavigationDrawer();
 
-
-
-//        mCVResult.setDisplayRotation(mDisplayRotation);
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
 
         if (mDebugViewFragment == null)
@@ -211,13 +249,18 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
-
         initGalleryCallback();
         initPictureCallback();
 
 
     }
 
+    /**
+     * Returns a boolean indicating if the screen is turned on. This method is necessary to prevent a
+     * resume of the Activity if the display is turned off and the app is in landscape mode, because
+     * this causes a resume of the app in portrait mode.
+     * @return boolean indicating if the screen is on
+     */
     // Taken from: http://stackoverflow.com/questions/2474367/how-can-i-tell-if-the-screen-is-on-in-android
     @SuppressWarnings("deprecation") // suppressed because the not deprecated function is called if API level >= 20
     public static boolean isScreenOn() {
@@ -232,7 +275,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             }
             return false;
         }
-        // TODO: not tested!
+        // TODO: not tested on API level < 20
         else {
             PowerManager powerManager = (PowerManager) mContext.getSystemService(POWER_SERVICE);
             return powerManager.isScreenOn();
@@ -241,8 +284,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
-
-    /** A safe way to get an instance of the Camera object. */
+    /**
+     * Returns a Camera object.
+     * @param cameraId ID of the camera
+     * @return Camera object
+     */
     private Camera getCameraInstance(int cameraId) {
         Camera c = null;
         try {
@@ -266,6 +312,13 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Called after permission has been given or has been rejected. This is necessary on Android M
+     * and younger Android systems.
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
 
@@ -288,6 +341,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     // ================= start: methods for opening the gallery =================
 
+    /**
+     * Connects the gallery button with its OnClickListener.
+     */
     private void initGalleryCallback() {
 
         mGalleryButton = (ImageButton) findViewById(R.id.gallery_button);
@@ -303,6 +359,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Opens the MediaScanner (if permission is given) to scan for saved pictures.
+     */
     private void openGallery() {
 
         int currentApiVersion = android.os.Build.VERSION.SDK_INT;
@@ -314,7 +373,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
-    // This method is used to enable file saving in marshmallow (Android 6), since in this version external file opening is not allowed without user permission:
+    /**
+     * Request to read the external storage. This method is used to enable file saving in marshmallow
+     * (Android 6), since in this version external file opening is not allowed without user permission.
+     */
     private void requestFileOpen() {
 
         // Check Permissions Now
@@ -327,6 +389,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Starts the MediaScanner.
+     */
     private void startScan() {
 
 
@@ -339,42 +404,44 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Tells the MediaScanner where the directory of DocScan pictures is and tells it to scan the
+     * most recent file.
+     */
     @Override
     public void onMediaScannerConnected() {
 
         File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
 
         if (mediaStorageDir == null) {
-
             showNoFileFoundDialog();
             return;
-
         }
 
         String[] files = mediaStorageDir.list();
 
         if (files == null) {
-
             showNoFileFoundDialog();
             return;
-
         }
         else if (files.length == 0) {
-
             showNoFileFoundDialog();
             return;
-
         }
 
         //	    Opens the most recent image:
         Arrays.sort(files);
-
         String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1];
-
-
         mMediaScannerConnection.scanFile(fileName, null);
+
     }
 
+    /**
+     * Starts an intent with the last saved picture as data. This event is then handled by a user
+     * defined app (like the image gallery app).
+     * @param path
+     * @param uri
+     */
     @Override
     public void onScanCompleted(String path, Uri uri) {
 
@@ -408,6 +475,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Shows a dialog saying that no saved picture has been found.
+     */
     private void showNoFileFoundDialog() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -429,6 +499,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     // ================= start: methods for saving pictures =================
 
+    /**
+     * Callback called after an image has been taken by the camera.
+     */
     private void initPictureCallback() {
 
         // Callback for picture saving:
@@ -441,63 +514,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
                 mCamera.startPreview();
 
+                // Save the image in an own thread (AsyncTask):
                 Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
-
                 FileSaver fileSaver = new FileSaver(data);
                 fileSaver.execute(uri);
-
-//                if (pictureFile == null){
-//                    Log.d(TAG, "Error creating media file, check storage permissions");
-//                    return;
-//                }
-//
-//                try {
-//
-//                    FileOutputStream fos = new FileOutputStream(pictureFile);
-//
-//                    Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
-//                    image = rotate(image, mCameraOrientation);
-//                    image.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-//
-//
-//
-//                    fos.close();
-//
-////                    // Set the preview image on the gallery button, this must be done one the UI thread:
-////                    Bitmap thumb = Bitmap.createScaledBitmap(image, 200, 200, false);
-////                    final BitmapDrawable bdrawable = new BitmapDrawable(getResources(), thumb);
-////                    runOnUiThread(new Runnable() {
-////
-////                        @Override////                        public void run() {
-////                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-////                                mGalleryButton.setBackground(bdrawable);
-////                            else
-////                                mGalleryButton.setBackgroundDrawable(bdrawable);
-////
-////                            mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
-////                        }
-////                    });
-//
-////                    Finally tell the MediaScannerConnection that a new file has been saved.
-////                    This is necessary, since the Android system will not detect the image in time,
-////                    and hence it is not visible in the gallery for example.
-//                    MediaScannerConnection.scanFile(getApplicationContext(),
-//                            new String[]{pictureFile.toString()}, null,
-//                            new MediaScannerConnection.OnScanCompletedListener() {
-//
-//                                public void onScanCompleted(String path, Uri uri) {
-//
-//
-//                                }
-//                            });
-//
-//                    mIsPictureSafe = true;
-//
-//                } catch (FileNotFoundException e) {
-//                    Log.d(TAG, "File not found: " + e.getMessage());
-//                } catch (IOException e) {
-//                    Log.d(TAG, "Error accessing file: " + e.getMessage());
-//                }
 
 
             }
@@ -521,7 +541,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
-    // This method is used to enable file saving in marshmallow (Android 6), since in this version file saving is not allowed without user permission:
+    /**
+     * This method is used to enable file saving in marshmallow (Android 6), since in this version
+     * file saving is not allowed without user permission.
+     */
     private void requestFileSave() {
 
         // Check Permissions Now
@@ -534,6 +557,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Tells the camera to take a picture.
+     */
     private void takePicture() {
 
         mIsPictureSafe = false;
@@ -542,8 +568,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
-
-
+    /**
+     * Returns the URI of a new file containing a time stamp.
+     * @param appName name of the app, this is used for gathering the directory string.
+     * @return the filename.
+     */
     private static Uri getOutputMediaFile(String appName){
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
@@ -560,6 +589,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         return uri;
     }
 
+    /**
+     * Returns the path to the directory in which the images are saved.
+     * @param appName name of the app, this is used for gathering the directory string.
+     * @return the path where the images are stored.
+     */
     private static File getMediaStorageDir(String appName) {
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
@@ -576,15 +610,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         return mediaStorageDir;
     }
 
-
-
-
-//    // Taken from http://stackoverflow.com/questions/15808719/controlling-the-camera-to-take-pictures-in-portrait-doesnt-rotate-the-final-ima:
-//    private Bitmap rotate(Bitmap bitmap, int degree) {
-//
-//
-//
-//    }
 
     // ================= end: methods for saving pictures =================
 
@@ -606,12 +631,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
 
-        // Pass the event to ActionBarDrawerToggle, if it returns
-        // true, then it has handled the app icon touch event
         if (mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
@@ -631,7 +651,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
-
+    /**
+     * Initializes the navigation drawer, when the app is started.
+     */
     private void setupNavigationDrawer() {
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -662,6 +684,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
+    /**
+     * Connects the items in the navigation drawer with a listener.
+     * @param navigationView
+     */
     private void setupDrawerContent(NavigationView navigationView) {
 
         navigationView.setNavigationItemSelectedListener(
@@ -682,6 +708,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Called after an item is selected in the navigation drawer.
+     * @param menuItem ID of the selected item.
+     */
     private void selectDrawerItem(MenuItem menuItem) {
 
         switch(menuItem.getItemId()) {
@@ -731,8 +761,13 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     // ================= end: methods for navigation drawer =================
 
 
+
     // ================= start: CALLBACKS invoking TaskTimer =================
 
+    /**
+     * Called before a task is executed. This is used to measure the time of the task execution.
+     * @param senderId ID of the sender, as defined in TaskTimer.
+     */
     @Override
     public void onTimerStarted(int senderId) {
 
@@ -744,6 +779,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Called after a task is executed. This is used to measure the time of the task execution.
+     * @param senderId ID of the sender, as defined in TaskTimer.
+     */
     @Override
     public void onTimerStopped(final int senderId) {
 
@@ -770,6 +809,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Returns true if the debug view is visible. Mainly used before TaskTimer events are triggered.
+     * @return boolean
+     */
     public static boolean isDebugViewEnabled() {
 
         return mIsDebugViewEnabled;
@@ -778,7 +821,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     // ================= stop: CALLBACKS invoking TaskTimer =================
 
-    // Do this in an own thread, so that the onPreviewFrame method is not called on the UI thread
+
+    /**
+     * Initializes the camera in an own thread, so that the Camera.onPreviewFrame method is not
+     * called on the UI thread.
+     */
+
     private void openCameraThread() {
 
         if (mCamera == null) {
@@ -796,6 +844,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Initializes the camera.
+     */
     private void initCamera() {
 
         // Open an instance of the first camera and retrieve its info.
@@ -813,6 +864,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     // ================= start: CALLBACKS called from native files =================
 
+    /**
+     * Called after focus measurement is finished.
+     * @param patches
+     */
     @Override
     public void onFocusMeasured(Patch[] patches) {
 
@@ -821,6 +876,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Called after page segmentation is finished.
+     * @param dkPolyRects
+     */
     @Override
     public void onPageSegmented(DkPolyRect[] dkPolyRects) {
 
@@ -836,6 +895,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     // =================  start: CameraPreview.DimensionChange CALLBACK =================
 
+    /**
+     * Called after the dimension of the camera view is set. The dimensions are necessary to convert
+     * the frame coordinates to view coordinates.
+     * @param width width of the view
+     * @param height height of the view
+     */
     @Override
     public void onMeasuredDimensionChange(int width, int height) {
 
@@ -843,6 +908,13 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Called after the dimension of the camera frame is set. The dimensions are necessary to convert
+     * the frame coordinates to view coordinates.
+     * @param width width of the frame
+     * @param height height of the frame
+     * @param cameraOrientation orientation of the camera
+     */
     @Override
     public void onFrameDimensionChange(int width, int height, int cameraOrientation) {
 
@@ -855,7 +927,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
 
-    // Taken from: http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438
+
+
+    /**
+     * Class extending HandlerThread, used to initialize the camera in an own thread.
+     * Taken from: <a href="http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438}">stackoverflow</a>
+     */
     private class CameraHandlerThread extends HandlerThread {
 
         Handler mHandler = null;
@@ -888,6 +965,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
+    /**
+     * Class used to save pictures in an own thread (AsyncTask).
+     */
     private class FileSaver extends AsyncTask<Uri, Void, Void> {
 
         private byte[] mData;
@@ -895,12 +975,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         public FileSaver(byte[] data) {
 
             mData = data;
-
-//            super(context);
-//
-//            this.context = context;
-//
-//            spinnerText = getResources().getString(R.string.file_save_text);
 
         }
 
@@ -927,19 +1001,13 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
                 FileOutputStream fos = new FileOutputStream(outFile);
 
+                // Rotate the image according to the camera orientation:
                 Bitmap image = BitmapFactory.decodeByteArray(mData, 0, mData.length);
-//                image = rotate(image, mCameraOrientation);
-
-                int w = image.getWidth();
-                int h = image.getHeight();
-
                 Matrix mtx = new Matrix();
                 mtx.setRotate(mCameraOrientation);
 
-                image = Bitmap.createBitmap(image, 0, 0, w, h, mtx, true);
-
+                image = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), mtx, true);
                 image.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-
 
                 fos.close();
 
@@ -968,10 +1036,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 });
 
 
-                            }
-                        });
+                }
+            });
 
-                mIsPictureSafe = true;
+            mIsPictureSafe = true;
 
             }
             catch (FileNotFoundException e) {

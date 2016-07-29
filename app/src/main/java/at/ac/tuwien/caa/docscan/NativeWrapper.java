@@ -28,79 +28,51 @@ import org.opencv.core.Mat;
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
-
+/**
+ * Class responsible for calling native methods (for page segmentation and focus measurement).
+ */
 public class NativeWrapper {
 
-    private static long mPageSegmentationTime;
-    private static long mFocusMeasureTime;
 
+    /**
+     * Returns an array of Patch objects, containing focus measurement results.
+     * @param src OpenCV Mat
+     * @return array of Patch objects
+     */
     public static Patch[] getFocusMeasures(Mat src) {
 
-        StackTraceElement[] elements = Thread.currentThread().getStackTrace();
-
         Patch[] patches = nativeGetFocusMeasures(src.getNativeObjAddr());
 
         return patches;
 
     }
 
-    // This is only called if the debug view is active:
-    public static Patch[] getFocusMeasuresDebug(Mat src) {
-
-        long startTime = System.currentTimeMillis();
-        Patch[] patches = nativeGetFocusMeasures(src.getNativeObjAddr());
-        mFocusMeasureTime = System.currentTimeMillis() - startTime;
-
-        return patches;
-
-    }
-
-    public static long getFocusMeasureTime() {
-
-        return mFocusMeasureTime;
-
-    }
-
-    public static native void nativeGetPageSegmentationTest(int width, int height, byte yuv[], int[] rgba);
-
-    private static native Patch[] nativeGetFocusMeasures(long src);
-
-
-
+    /**
+     * Returns an array of DkPolyRect objects, containing page segmentation results.
+     * @param src OpenCV Mat
+     * @return array of DkPolyRect objects
+     */
     public static DkPolyRect[] getPageSegmentation(Mat src) {
 
         return nativeGetPageSegmentation(src.getNativeObjAddr());
 
     }
 
-    // This is only called if the debug view is active:
-    public static DkPolyRect[] getPageSegmentationDebug(Mat src) {
+    /**
+     * Native method for focus measurement.
+     * @param src
+     * @return
+     */
+    private static native Patch[] nativeGetFocusMeasures(long src);
 
-        long startTime = System.currentTimeMillis();
-        Patch[] patches = nativeGetFocusMeasures(src.getNativeObjAddr());
-        mPageSegmentationTime = System.currentTimeMillis() - startTime;
 
-        return nativeGetPageSegmentation(src.getNativeObjAddr());
-
-    }
-
-    public static long getPageSegmentationTime() {
-
-        return mPageSegmentationTime;
-
-    }
-
+    /**
+     * Native method for page segmentation.
+     * @param src
+     * @return
+     */
     private static native DkPolyRect[] nativeGetPageSegmentation(long src);
 
-
-    public static void processFrame(Mat src) {
-        nativeProcessFrame(src.getNativeObjAddr());
-    }
-
-//    private static void nativeGetPageSegmentation(long src);
-
-
-    private static native void nativeProcessFrame(long src);
 
     // Callbacks:
     public interface CVCallback {

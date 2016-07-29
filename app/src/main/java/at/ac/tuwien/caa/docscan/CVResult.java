@@ -1,3 +1,26 @@
+/*********************************************************************************
+ *  DocScan is a Android app for document scanning.
+ *
+ *  Author:         Fabian Hollaus, Florian Kleber, Markus Diem
+ *  Organization:   TU Wien, Computer Vision Lab
+ *  Date created:   22. July 2016
+ *
+ *  This file is part of DocScan.
+ *
+ *  DocScan is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  DocScan is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
+ *********************************************************************************/
+
 package at.ac.tuwien.caa.docscan;
 
 import android.graphics.PointF;
@@ -8,7 +31,10 @@ import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
- * Created by fabian on 22.07.2016.
+ * Class responsible for holding the results of the page segmentation and focus measurement tasks.
+ * The coordinates of the resulting objects are mapped by this class from frame to screen coordinates.
+ * Note that the drawing thread in the PaintView is waiting for updates of this class, so take care
+ * to call notify if the class receives an update.
  */
 public class CVResult {
 
@@ -28,12 +54,18 @@ public class CVResult {
 
     }
 
+    /**
+     * Sets the DkPolyRect array, calculated by PageSegmentation.cpp
+     * @param dkPolyRects array of page segmentation results
+     */
     public void setDKPolyRects(DkPolyRect[] dkPolyRects) {
 
         synchronized (this) {
 
             mDKPolyRects = dkPolyRects;
             updateRects();
+            // notify is necessary, because the PaintView is waiting for updates on the CVResult
+            // object. If notify is not called no update would be drawn.
             this.notify();
 
         }
@@ -52,18 +84,28 @@ public class CVResult {
 
             mPatches = patches;
             updatePatches();
+            // notify is necessary, because the PaintView is waiting for updates on the CVResult
+            // object. If notify is not called no update would be drawn.
             this.notify();
 
         }
 
     }
 
+    /**
+     * @return focus measurement results
+     */
     public Patch[] getPatches() {
 
         return mPatches;
 
     }
 
+    /**
+     * Sets the dimension of the view.
+     * @param width
+     * @param height
+     */
     public void setViewDimensions(int width, int height) {
 
         mViewWidth = width;
@@ -71,7 +113,12 @@ public class CVResult {
 
     }
 
-
+    /**
+     * Sets the dimensions of the camera preview frame.
+     * @param width
+     * @param height
+     * @param cameraOrientation
+     */
     public void setFrameDimensions(int width, int height, int cameraOrientation) {
 
         mFrameWidth = width;
@@ -80,8 +127,9 @@ public class CVResult {
 
     }
 
-
-
+    /**
+     * Converts the coordinates of the patches to screen coordinates.
+     */
     private void updatePatches() {
 
 
@@ -103,6 +151,9 @@ public class CVResult {
 
     }
 
+    /**
+     * Converts the coordinates of the rects to screen coordinates.
+     */
     private void updateRects() {
 
         DkPolyRect polyRect;
@@ -136,6 +187,16 @@ public class CVResult {
     }
 
 
+    /**
+     * Transforms frame coordinates to screen coordinates.
+     * @param framePos
+     * @param frameWidth
+     * @param frameHeight
+     * @param drawWidth
+     * @param drawHeight
+     * @param orientation
+     * @return
+     */
     private PointF getScreenCoordinates(PointF framePos, int frameWidth, int frameHeight, int drawWidth, int drawHeight, int orientation) {
 
 

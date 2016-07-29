@@ -25,7 +25,10 @@ package at.ac.tuwien.caa.docscan;
 
 import java.util.ArrayList;
 
-
+/**
+ * Class used to measure the execution time of time intensive tasks. Each task has an ID and a an
+ * assigned execution time.
+ */
 public class TaskTimer {
 
 
@@ -37,6 +40,9 @@ public class TaskTimer {
 
     private ArrayList<Task> mTasks;
 
+    /**
+     * Creates a list of Tasks.
+     */
     public TaskTimer() {
 
         mTasks = new ArrayList<Task>();
@@ -48,6 +54,10 @@ public class TaskTimer {
 
     }
 
+    /**
+     * Starts a timer.
+     * @param taskId ID of the task
+     */
     public void startTaskTimer(int taskId) {
 
         Task task = getTask(taskId);
@@ -56,6 +66,11 @@ public class TaskTimer {
 
     }
 
+    /**
+     * Stops the timer and returns the execution time.
+     * @param taskId ID of the task
+     * @return time in milliseconds
+     */
     public long getTaskTime(int taskId) {
 
         Task task = getTask(taskId);
@@ -66,6 +81,11 @@ public class TaskTimer {
 
     }
 
+    /**
+     * Finds a task by ID in the task list.
+     * @param taskId ID of the task
+     * @return Task
+     */
     private Task getTask(int taskId) {
 
         for (Task task : mTasks) {
@@ -77,6 +97,7 @@ public class TaskTimer {
 
     }
 
+
     public interface TimerCallbacks {
 
         void onTimerStarted(int senderId);
@@ -84,6 +105,9 @@ public class TaskTimer {
 
     }
 
+    /**
+     * Task class.
+     */
     private class Task {
 
         private long mStartTime;

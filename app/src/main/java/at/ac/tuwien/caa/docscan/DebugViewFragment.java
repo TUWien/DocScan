@@ -30,7 +30,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-
+/**
+ * Fragment used to show the execution time of time intensive tasks.
+ */
 public class DebugViewFragment extends Fragment {
 
 
@@ -54,6 +56,11 @@ public class DebugViewFragment extends Fragment {
 
     }
 
+    /**
+     * Updates a TextView showing the execution time of a task.
+     * @param senderId ID of the Task. See TaskTimer for possible values.
+     * @param time time in milliseconds
+     */
     public void setTimeText(int senderId, long time) {
 
         String text = String.valueOf(time);
@@ -87,12 +94,6 @@ public class DebugViewFragment extends Fragment {
     private void setTextViewText(TextView textView, String text) {
 
         textView.setText(text);
-
-    }
-
-    public void setFocusMeasureTime(long time) {
-
-        mFocusMeasureTextView.setText(String.valueOf(time));
 
     }
 
