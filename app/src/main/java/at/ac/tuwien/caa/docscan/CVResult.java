@@ -33,14 +33,10 @@ public class CVResult {
         synchronized (this) {
 
             mDKPolyRects = dkPolyRects;
-
             updateRects();
-
             this.notify();
 
         }
-
-
 
     }
 
@@ -55,9 +51,7 @@ public class CVResult {
         synchronized (this) {
 
             mPatches = patches;
-
             updatePatches();
-
             this.notify();
 
         }

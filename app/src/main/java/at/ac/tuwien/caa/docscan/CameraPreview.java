@@ -353,6 +353,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
 
+            // TODO: check if the threads are still in their execution state and wait until they have finished.
             synchronized (this) {
 
                 // Measure the time if required:
