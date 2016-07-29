@@ -10,10 +10,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.hardware.display.DisplayManager;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -436,61 +438,63 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
 
-                File pictureFile = getOutputMediaFile(getResources().getString(R.string.app_name));
+                Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
 
-                if (pictureFile == null){
-                    Log.d(TAG, "Error creating media file, check storage permissions");
-                    return;
-                }
+                FileSaver fileSaver = new FileSaver(data);
+                fileSaver.execute(uri);
 
-                try {
-
-                    FileOutputStream fos = new FileOutputStream(pictureFile);
-
-                    Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
-                    image = rotate(image, mCameraOrientation);
-                    image.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-
-
-
-                    fos.close();
-
-//                    // Set the preview image on the gallery button, this must be done one the UI thread:
-                    Bitmap thumb = Bitmap.createScaledBitmap(image, 200, 200, false);
-                    final BitmapDrawable bdrawable = new BitmapDrawable(getResources(), thumb);
-                    runOnUiThread(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-                                mGalleryButton.setBackground(bdrawable);
-                            else
-                                mGalleryButton.setBackgroundDrawable(bdrawable);
-
-                            mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
-                        }
-                    });
-
-//                    Finally tell the MediaScannerConnection that a new file has been saved.
-//                    This is necessary, since the Android system will not detect the image in time,
-//                    and hence it is not visible in the gallery for example.
-                    MediaScannerConnection.scanFile(getApplicationContext(),
-                            new String[]{pictureFile.toString()}, null,
-                            new MediaScannerConnection.OnScanCompletedListener() {
-
-                                public void onScanCompleted(String path, Uri uri) {
-
-
-                                }
-                            });
-
-                    mIsPictureSafe = true;
-
-                } catch (FileNotFoundException e) {
-                    Log.d(TAG, "File not found: " + e.getMessage());
-                } catch (IOException e) {
-                    Log.d(TAG, "Error accessing file: " + e.getMessage());
-                }
+//                if (pictureFile == null){
+//                    Log.d(TAG, "Error creating media file, check storage permissions");
+//                    return;
+//                }
+//
+//                try {
+//
+//                    FileOutputStream fos = new FileOutputStream(pictureFile);
+//
+//                    Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
+//                    image = rotate(image, mCameraOrientation);
+//                    image.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+//
+//
+//
+//                    fos.close();
+//
+////                    // Set the preview image on the gallery button, this must be done one the UI thread:
+////                    Bitmap thumb = Bitmap.createScaledBitmap(image, 200, 200, false);
+////                    final BitmapDrawable bdrawable = new BitmapDrawable(getResources(), thumb);
+////                    runOnUiThread(new Runnable() {
+////
+////                        @Override////                        public void run() {
+////                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+////                                mGalleryButton.setBackground(bdrawable);
+////                            else
+////                                mGalleryButton.setBackgroundDrawable(bdrawable);
+////
+////                            mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
+////                        }
+////                    });
+//
+////                    Finally tell the MediaScannerConnection that a new file has been saved.
+////                    This is necessary, since the Android system will not detect the image in time,
+////                    and hence it is not visible in the gallery for example.
+//                    MediaScannerConnection.scanFile(getApplicationContext(),
+//                            new String[]{pictureFile.toString()}, null,
+//                            new MediaScannerConnection.OnScanCompletedListener() {
+//
+//                                public void onScanCompleted(String path, Uri uri) {
+//
+//
+//                                }
+//                            });
+//
+//                    mIsPictureSafe = true;
+//
+//                } catch (FileNotFoundException e) {
+//                    Log.d(TAG, "File not found: " + e.getMessage());
+//                } catch (IOException e) {
+//                    Log.d(TAG, "Error accessing file: " + e.getMessage());
+//                }
 
 
             }
@@ -537,7 +541,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
 
-    private static File getOutputMediaFile(String appName){
+    private static Uri getOutputMediaFile(String appName){
         // To be safe, you should check that the SDCard is mounted
         // using Environment.getExternalStorageState() before doing this.
 
@@ -548,8 +552,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File mediaFile = new File(mediaStorageDir.getPath() + File.separator + IMG_FILENAME_PREFIX + timeStamp + ".jpg");
 
+        Uri uri = Uri.fromFile(mediaFile);
 
-        return mediaFile;
+        return uri;
     }
 
     private static File getMediaStorageDir(String appName) {
@@ -571,18 +576,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
 
-    // Taken from http://stackoverflow.com/questions/15808719/controlling-the-camera-to-take-pictures-in-portrait-doesnt-rotate-the-final-ima:
-    private Bitmap rotate(Bitmap bitmap, int degree) {
-
-        int w = bitmap.getWidth();
-        int h = bitmap.getHeight();
-
-        Matrix mtx = new Matrix();
-        mtx.setRotate(degree);
-
-        return Bitmap.createBitmap(bitmap, 0, 0, w, h, mtx, true);
-
-    }
+//    // Taken from http://stackoverflow.com/questions/15808719/controlling-the-camera-to-take-pictures-in-portrait-doesnt-rotate-the-final-ima:
+//    private Bitmap rotate(Bitmap bitmap, int degree) {
+//
+//
+//
+//    }
 
     // ================= end: methods for saving pictures =================
 
@@ -884,6 +883,110 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             }
         }
     }
+
+
+    private class FileSaver extends AsyncTask<Uri, Void, Void> {
+
+        private byte[] mData;
+
+        public FileSaver(byte[] data) {
+
+            mData = data;
+
+//            super(context);
+//
+//            this.context = context;
+//
+//            spinnerText = getResources().getString(R.string.file_save_text);
+
+        }
+
+        @Override
+        protected Void doInBackground(Uri... uris) {
+
+            final File outFile = new File(uris[0].getPath());
+
+            try {
+
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Drawable drawable = getResources().getDrawable(R.drawable.ic_gallery_busy);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+                            mGalleryButton.setBackground(drawable);
+                        else
+                            mGalleryButton.setBackgroundDrawable(drawable);
+
+                        mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
+                    }
+                });
+
+                FileOutputStream fos = new FileOutputStream(outFile);
+
+                Bitmap image = BitmapFactory.decodeByteArray(mData, 0, mData.length);
+//                image = rotate(image, mCameraOrientation);
+
+                int w = image.getWidth();
+                int h = image.getHeight();
+
+                Matrix mtx = new Matrix();
+                mtx.setRotate(mCameraOrientation);
+
+                image = Bitmap.createBitmap(image, 0, 0, w, h, mtx, true);
+
+                image.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+
+
+                fos.close();
+
+                final Bitmap imageCopy = image;
+
+                MediaScannerConnection.scanFile(getApplicationContext(),
+                        new String[]{outFile.toString()}, null,
+                        new MediaScannerConnection.OnScanCompletedListener() {
+
+                            public void onScanCompleted(String path, Uri uri) {
+
+                    // Set the preview image on the gallery button, this must be done one the UI thread:
+                    Bitmap thumb = Bitmap.createScaledBitmap(imageCopy, 200, 200, false);
+                    final BitmapDrawable bdrawable = new BitmapDrawable(getResources(), thumb);
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+                            mGalleryButton.setBackground(bdrawable);
+                        else
+                            mGalleryButton.setBackgroundDrawable(bdrawable);
+
+                        mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
+                    }
+                });
+
+
+                            }
+                        });
+
+                mIsPictureSafe = true;
+
+            }
+            catch (FileNotFoundException e) {
+                Log.d(TAG, "Could not find file: " + outFile);
+            }
+            catch (IOException e) {
+                Log.d(TAG, "Could not save file: " + outFile);
+            }
+
+
+            return null;
+
+
+        }
+
+
+    }
+
 
 
 

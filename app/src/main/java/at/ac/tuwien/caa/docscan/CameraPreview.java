@@ -368,6 +368,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                 Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
 
+                yuv.release();
+
                 // Measure the time if required:
                 if (CameraActivity.isDebugViewEnabled())
                     mTimerCallbacks.onTimerStopped(TaskTimer.MAT_CONVERSION_ID);
