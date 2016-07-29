@@ -1,3 +1,26 @@
+/*********************************************************************************
+ *  DocScan is a Android app for document scanning.
+ *
+ *  Author:         Fabian Hollaus, Florian Kleber, Markus Diem
+ *  Organization:   TU Wien, Computer Vision Lab
+ *  Date created:   21. July 2016
+ *
+ *  This file is part of DocScan.
+ *
+ *  DocScan is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  DocScan is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
+ *********************************************************************************/
+
 package at.ac.tuwien.caa.docscan;
 
 import android.content.Context;
@@ -23,7 +46,9 @@ import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
- * Created by fabian on 21.07.2016.
+ * Class for showing the camera preview. This class is extending SurfaceView and making use of the
+ * Camera API. The received frames are converted to OpenCV Mat's in a fixed time interval. The Mat
+ * is used by two thread classes (inner classes): FocusMeasurementThread and PageSegmentationThread.
  */
 public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {{}
 
@@ -40,32 +65,42 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private PageSegmentationThread mPageSegmentationThread;
     private FocusMeasurementThread mFocusMeasurementThread;
 
+    // Mat used by mPageSegmentationThread and mFocusMeasurementThread:
     private Mat mFrameMat;
 
     private int mFrameWidth;
     private int mFrameHeight;
 
     private long mLastTime;
+
+    // Used for generating mFrameMat at a 'fixed' frequency:
     private static long FRAME_TIME_DIFF = 300;
 
+    // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
-    private boolean isCameraInitialized, mIsCameraPreviewStarted;
-
-    public CameraPreview(Context context) {
-        super(context);
-
-        // Install a SurfaceHolder.Callback so we get notified when the
-        // underlying surface is created and destroyed.
-        mHolder = getHolder();
-        mHolder.addCallback(this);
-
-        isCameraInitialized = false;
-        mIsCameraPreviewStarted = false;
-
-    }
+    private boolean isCameraInitialized;
 
 
+//    public CameraPreview(Context context) {
+//
+//        super(context);
+//
+//        // Install a SurfaceHolder.Callback so we get notified when the
+//        // underlying surface is created and destroyed.
+//        mHolder = getHolder();
+//        mHolder.addCallback(this);
+//
+//        isCameraInitialized = false;
+//
+//
+//    }
+
+    /**
+     * Creates the CameraPreview and the callbacks required to send events to the activity.
+     * @param context
+     * @param attrs
+     */
     public CameraPreview(Context context, AttributeSet attrs) {
 
         super(context, attrs);
@@ -88,6 +123,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    /**
+     * Initializes the camera.
+     * @param camera camera object
+     * @param cameraInfo camera information
+     * @param displayOrientation orientation of the display in degrees
+     */
     public void setCamera(Camera camera, Camera.CameraInfo cameraInfo, int displayOrientation) {
 
         mCamera = camera;
@@ -98,23 +139,28 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
+    /**
+     * Called after the surface is created. Here nothing is done, because surfaceChanged is called
+     * afterwards.
+     * @param holder
+     */
     public void surfaceCreated(SurfaceHolder holder) {
-        // The Surface has been created, now tell the camera where to draw the preview.
-//        try {
-//            mCamera.setPreviewDisplay(holder);
-//            mCamera.startPreview();
-//            Log.d(TAG, "Camera preview started.");
-//        } catch (IOException e) {
-//            Log.d(TAG, "Error setting camera preview: " + e.getMessage());
-//        }
+
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // empty. Take care of releasing the Camera preview in your activity.
+
     }
 
 
-
+    /**
+     * Called once the surface is changed. This happens after orientation changes or if the activity
+     * is started (or resumed).
+     * @param holder
+     * @param format
+     * @param width
+     * @param height
+     */
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
 
@@ -125,6 +171,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    /**
+     * Called after the activity is resumed.
+     */
     public void resume() {
 
 
@@ -133,6 +182,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+
     public void pause() {
 
         isCameraInitialized = false;
@@ -140,7 +190,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
-
+    /**
+     * Called after the user touches the view in order to make an auto focus. The auto focus region
+     * is set device independent by using Camera.Area.
+     * @see <a href="https://developer.android.com/reference/android/hardware/Camera.Area.html">Camera.Area</a>
+     * @param event a touch event
+     * @return a boolean indicating if the event has been processed
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
@@ -177,15 +233,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         List<Camera.Area> focusAreas = new ArrayList<>();
         focusAreas.add(focusArea);
 
-
-//        Camera.Parameters params = mCamera.getParameters();
-
-//        params.setFocusAreas(focusAreas);
-//
-//        mCamera.setParameters(params);
-
-//        if (mCamera != null) {
-
         mCamera.cancelAutoFocus();
 
         Camera.Parameters parameters = mCamera.getParameters();
@@ -218,7 +265,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //                        parameters.setFocusAreas(null);
 //                    }
                     mCamera.setParameters(parameters);
-//                    mCamera.startPreview();
+
                 }
             }
 
@@ -228,6 +275,14 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    /**
+     * Transforms screen coordinates to the camera field of view
+     * @param centerScreen
+     * @param touchScreen
+     * @param offSetX
+     * @param offSetY
+     * @return
+     */
     private Point transformPoint(PointF centerScreen, PointF touchScreen, float offSetX, float offSetY) {
 
         // Translate the point:
@@ -264,7 +319,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
-
+    /**
+     * Initializes the camera with the preview size and the orientation. Starts the page segmentation
+     * and the focus measurement threads.
+     * @param width width of the surface
+     * @param height height of the surface
+     */
     private void initCamera(int width, int height) {
 
         if (mHolder.getSurface() == null) {
@@ -322,8 +382,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();
 
-//            mCamera.autoFocus(this);
-            mIsCameraPreviewStarted = true;
             Log.d(TAG, "Camera preview started.");
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
@@ -335,9 +393,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-
+    /**
+     * Called after the preview received a new frame (as byte array).
+     * @param pixels byte array containgin the frame.
+     * @param camera camera
+     */
     @Override
-    public void onPreviewFrame(byte[] pixels, Camera arg1)
+    public void onPreviewFrame(byte[] pixels, Camera camera)
     {
 
         if (CameraActivity.isDebugViewEnabled()) {
@@ -389,7 +451,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
-
+    /**
+     * Returns the preview size that fits best into the surface view.
+     * @param cameraSizes possible frame sizes (camera dependent)
+     * @param width width of the surface view
+     * @param height height of the surface view
+     * @return best fitting size
+     */
     private Camera.Size getBestFittingSize(List<Camera.Size> cameraSizes, int width, int height) {
 
         Camera.Size bestSize = null;
@@ -435,7 +503,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     /**
      * Calculate the correct orientation for a {@link Camera} preview that is displayed on screen.
-     *
      * Implementation is based on the sample code provided in
      * {@link Camera#setDisplayOrientation(int)}.
      */
@@ -469,7 +536,16 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         return result;
     }
 
-    // Scales the camera view so that the preview has original width to height ratio:
+    /**
+     * Scales the camera view so that the preview has original width to height ratio, this is
+     * necessary to avoid a stretching of the camera preview. If this function is not used, the
+     * size of the camera preview frames is equal to the available space (defined by the view).
+     *
+     * @see <a href="https://developer.android.com/reference/android/view/View.html#onMeasure(int,%20int)>onMeasure</a>
+     *
+     * @param widthMeasureSpec  horizontal space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec
+     * @param heightMeasureSpec vertical space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec
+     */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
@@ -518,6 +594,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    /**
+     * Interfaces used to tell the activity that a dimension is changed. This is used to enable
+     * a conversion between frame and screen coordinates (necessary for drawing in PaintView).
+     */
     public interface DimensionChangeCallback {
 
         void onMeasuredDimensionChange(int width, int height);
@@ -525,23 +605,20 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-    public int getFrameWidth() {
-        return mFrameWidth;
-    }
-
-    public int getFrameHeight() {
-        return mFrameHeight;
-    }
 
 
     // ================= start: CVThread and subclasses =================
 
 
+    /**
+     * Abstract class extending a thread, concerned with computer vision tasks. Note that this class
+     * and its child are connected to the CameraPreview, so that the tasks are only executed in case
+     * of updates of the mFrameMat.
+     */
     public abstract class CVThread extends Thread {
 
         protected CameraPreview mCameraView;
         protected boolean mIsRunning = true;
-//        protected NativeWrapper.CVCallback mCVCallback;
 
         protected abstract void execute();
 
@@ -557,6 +634,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         }
 
+        /**
+         * The main loop of the thread.
+         */
         @Override
         public void run() {
 
@@ -564,20 +644,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                 while (mIsRunning) {
 
-
-//                    if (mFrameMat != null && mCVCallback != null) {
-
                         try {
-
                             mCameraView.wait();
-
                             execute();
 
                         } catch (InterruptedException e) {
-
                         }
 
-//                    }
                 }
 
             }
@@ -591,6 +664,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    /**
+     * Class responsible for calling the native method for page detection.
+     */
     public class PageSegmentationThread extends CVThread {
 
         public PageSegmentationThread(CameraPreview cameraView) {
@@ -624,6 +700,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         }
     }
 
+    /**
+     * Class responsible for calling the native method for focus measurement.
+     */
     class FocusMeasurementThread extends CVThread {
 
         public FocusMeasurementThread(CameraPreview cameraView) {
@@ -640,11 +719,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
 
                 Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
-//
-//                if (MainActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
-//
-//
+
                 if (CameraActivity.isDebugViewEnabled())
                     mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
 

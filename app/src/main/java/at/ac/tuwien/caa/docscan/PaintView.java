@@ -1,3 +1,26 @@
+/*********************************************************************************
+ *  DocScan is a Android app for document scanning.
+ *
+ *  Author:         Fabian Hollaus, Florian Kleber, Markus Diem
+ *  Organization:   TU Wien, Computer Vision Lab
+ *  Date created:   12. July 2016
+ *
+ *  This file is part of DocScan.
+ *
+ *  DocScan is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  DocScan is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
+ *********************************************************************************/
+
 package at.ac.tuwien.caa.docscan;
 
 import android.content.Context;
@@ -20,16 +43,17 @@ import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
- * Based on Lunar Lander example:
- * https://github.com/Miserlou/Android-SDK-Samples/blob/master/LunarLander
+ * Class responsible for drawing the results of the page segmentation and focus measurement tasks.
+ * The thread handling is based on this Android example:
+ * <a href="https://github.com/Miserlou/Android-SDK-Samples/blob/master/LunarLander">Lunar Lander</a>
  */
-
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
 
     private DrawerThread mDrawerThread;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
 
+    // boolean indicating whether the values of the focus measurement should be drawn:
     private boolean mDrawFocusText;
     private SurfaceHolder mHolder;
 
@@ -38,7 +62,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final String TAG = "PaintView";
 
-
+    /**
+     * Creates the PaintView, the timerCallback and the thread responsible for the drawing.
+     * @param context of the Activity
+     * @param attrs attributes of the activity. Note that we need to pass the attributes in order to
+     *              find the view by its ID (findViewById) in the activity.
+     */
     public PaintView(Context context, AttributeSet attrs) {
 
         super(context, attrs);
@@ -57,28 +86,41 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
-
+    /**
+     * Method used for turning the drawing of the focus values on or off
+     * @param drawText boolean
+     */
     public void drawFocusText(boolean drawText) {
 
         mDrawFocusText = drawText;
 
     }
 
+    /**
+     * Returns if the focus values are drawn.
+     * @return boolean
+     */
     public boolean isFocusTextVisible() {
 
         return mDrawFocusText;
 
     }
 
-
-
-
+    /**
+     * Sets the CVResult. The draw method is only called if the CVResult notifies the PaintView that
+     * it has been updated.
+     * @param cvResult CVResult to which the PaintView is connected
+     */
     public void setCVResult(CVResult cvResult) {
 
         mCVResult = cvResult;
 
     }
 
+    /**
+     * Called after the surface is created.
+     * @param holder
+     */
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
@@ -91,16 +133,26 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    /**
+     * Called after the surface is changed.
+     * @param holder
+     * @param format
+     * @param width
+     * @param height
+     */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
         mHolder = holder;
 
-        if (mDrawerThread != null)
-            mDrawerThread.setSurfaceSize(width, height);
+//        if (mDrawerThread != null)
+//            mDrawerThread.setSurfaceSize(width, height);
     }
 
-
+    /**
+     * Called if the surface is destroyed. Shuts down the drawer thread.
+     * @param holder the surface holder
+     */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
 
@@ -118,6 +170,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    /**
+     * Called if the activity is resumed. Here the drawer thread is recreated if necessary.
+     */
     public void resume() {
 
 
@@ -147,6 +202,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    /**
+     * Pauses the drawer thread.
+     */
     public void pause() {
 
         if (mDrawerThread != null) {
@@ -162,6 +220,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
+    /**
+     * Class responsible for the actual drawing.
+     */
     class DrawerThread extends Thread {
 
         private SurfaceHolder mSurfaceHolder;
@@ -179,8 +240,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
         private final int FOCUS_SHARP_RECT_COLOR = getResources().getColor(R.color.hud_focus_sharp_rect_color);
         private final int FOCUS_UNSHARP_RECT_COLOR = getResources().getColor(R.color.hud_focus_unssharp_rect_color);
-
-        private int mCanvasWidth, mCanvasHeight;
 
 
         private Paint mFocusSharpRectPaint;
@@ -224,6 +283,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         }
 
+        /**
+         * Continuous looping method used for waiting for updates of the CVResult object. The draw
+         * method is only called after the CVResult object is updated. Note that this saves a lot of
+         * CPU usage.
+         * @see <a href="https://developer.android.com/training/custom-views/optimizing-view.html">Optimizing the View</a>
+         */
         @Override
         public void run() {
 
@@ -259,16 +324,20 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
 
-        /* Callback invoked when the surface dimensions change. */
-        public void setSurfaceSize(int width, int height) {
-            // synchronized to make sure these all change atomically
-            synchronized (mSurfaceHolder) {
-                mCanvasWidth = width;
-                mCanvasHeight = height;
+//        /* Callback invoked when the surface dimensions change. */
+//        public void setSurfaceSize(int width, int height) {
+//            // synchronized to make sure these all change atomically
+//            synchronized (mSurfaceHolder) {
+//                mCanvasWidth = width;
+//                mCanvasHeight = height;
+//
+//            }
+//        }
 
-            }
-        }
-
+        /**
+         * Used for pausing and resuming the drawer thread.
+         * @param b
+         */
         public void setRunning(boolean b) {
 
             synchronized (mSurfaceHolder) {
@@ -279,6 +348,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         }
 
+        /**
+         * Method used for the drawing of the CV result.
+         * @param canvas
+         */
         private void draw(Canvas canvas) {
 
             if (canvas == null) {
@@ -309,6 +382,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         }
 
+        /**
+         * Draws the output of the page segmentation task.
+         * @param canvas
+         */
         private void drawPageSegmentation(Canvas canvas) {
 
             for (DkPolyRect dkPolyRect : mCVResult.getDKPolyRects()) {
@@ -337,6 +414,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         }
 
+        /**
+         * Draws the output of the focus measurement task.
+         * @param canvas
+         */
         private void drawFocusMeasure(Canvas canvas) {
 
             Rect textRect = new Rect();
@@ -390,8 +471,5 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
     }
-
-
-
 
  }

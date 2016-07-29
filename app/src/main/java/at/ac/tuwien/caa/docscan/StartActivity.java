@@ -1,3 +1,26 @@
+/*********************************************************************************
+ *  DocScan is a Android app for document scanning.
+ *
+ *  Author:         Fabian Hollaus, Florian Kleber, Markus Diem
+ *  Organization:   TU Wien, Computer Vision Lab
+ *  Date created:   21. July 2016
+ *
+ *  This file is part of DocScan.
+ *
+ *  DocScan is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  DocScan is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
+ *********************************************************************************/
+
 package at.ac.tuwien.caa.docscan;
 
 import android.Manifest;
@@ -11,7 +34,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 /**
- * Created by fabian on 21.07.2016.
+ * Activity called after the app is started. This activity is responsible for requesting the camera
+ * permission. If the permission is given the CameraActivity is started via an intent.
+ * Based on this example: <a href="https://github.com/googlesamples/android-RuntimePermissionsBasic">android-RuntimePermissionsBasic
+ </a>
  */
 public class StartActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -69,38 +95,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         // END_INCLUDE(startCamera)
     }
 
-//    /**
-//     * Requests the {@link android.Manifest.permission#CAMERA} permission.
-//     * If an additional rationale should be displayed, the user has to launch the request from
-//     * a SnackBar that includes additional information.
-//     */
-//    private void requestCameraPermission() {
-//        // Permission has not been granted and must be requested.
-//        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-//                Manifest.permission.CAMERA)) {
-//            // Provide an additional rationale to the user if the permission was not granted
-//            // and the user would benefit from additional context for the use of the permission.
-//            // Display a SnackBar with a button to request the missing permission.
-//            Snackbar.make(mLayout, "Camera access is required to display the camera preview.",
-//                    Snackbar.LENGTH_INDEFINITE).setAction("OK", new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    // Request the permission
-//                    ActivityCompat.requestPermissions(StartActivity.this,
-//                            new String[]{Manifest.permission.CAMERA},
-//                            PERMISSION_CAMERA);
-//                }
-//            }).show();
-//
-//        } else {
-//            Snackbar.make(mLayout,
-//                    "Permission is not available. Requesting camera permission.",
-//                    Snackbar.LENGTH_SHORT).show();
-//            // Request the permission. The result will be received in onRequestPermissionResult().
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA},
-//                    PERMISSION_CAMERA);
-//        }
-//    }
+
 
     private void requestCameraPermission() {
 
