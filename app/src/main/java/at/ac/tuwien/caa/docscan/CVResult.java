@@ -24,6 +24,7 @@
 package at.ac.tuwien.caa.docscan;
 
 import android.graphics.PointF;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -38,16 +39,24 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  */
 public class CVResult {
 
+    public static final int DOCUMENT_STATE_OK = 0;
+    public static final int DOCUMENT_STATE_EMPTY = 1;
+    public static final int DOCUMENT_STATE_SMALL = 2;
+
     private static final int ORIENTATION_LANDSCAPE = 0;
     private static final int ORIENTATION_PORTRAIT = 90;
     private static final int ORIENTATION_FLIPPED_LANDSCAPE = 180;
     private static final int ORIENTATION_FLIPPED_PORTRAIT = 270;
+
+    private static final String TAG = "CVResult";
 
     private DkPolyRect[] mDKPolyRects;
     private Patch[] mPatches;
     private int mViewWidth, mViewHeight;
     private int mFrameHeight, mFrameWidth;
     private int mCameraOrientation;
+
+    private int mCVState;
 
     public CVResult() {
 
@@ -64,9 +73,7 @@ public class CVResult {
 
             mDKPolyRects = dkPolyRects;
             updateRects();
-            // notify is necessary, because the PaintView is waiting for updates on the CVResult
-            // object. If notify is not called no update would be drawn.
-            this.notify();
+            stateUpdated();
 
         }
 
@@ -84,10 +91,7 @@ public class CVResult {
 
             mPatches = patches;
             updatePatches();
-            // notify is necessary, because the PaintView is waiting for updates on the CVResult
-            // object. If notify is not called no update would be drawn.
-            this.notify();
-
+            stateUpdated();
         }
 
     }
@@ -133,18 +137,16 @@ public class CVResult {
     private void updatePatches() {
 
 
-        Patch patch;
+//        Patch patch;
         PointF screenPoint, framePoint;
 
-        for (int i = 0; i < mPatches.length; i++) {
+        for (Patch patch : mPatches) {
 
-            patch = mPatches[i];
             framePoint = new PointF(patch.getPX(), patch.getPY());
             screenPoint = getScreenCoordinates(framePoint, mFrameWidth, mFrameHeight, mViewWidth, mViewHeight, mCameraOrientation);
 
             patch.setDrawViewPX(screenPoint.x);
             patch.setDrawViewPY(screenPoint.y);
-
 
         }
 
@@ -156,19 +158,23 @@ public class CVResult {
      */
     private void updateRects() {
 
-        DkPolyRect polyRect;
         PointF screenPoint, framePoint;
 
-        for (int i = 0; i < mDKPolyRects.length; i++) {
+        for (DkPolyRect rect : mDKPolyRects) {
 
-            polyRect = mDKPolyRects[i];
+            rect.getPoints();
+
+        }
+
+
+        for (DkPolyRect polyRect : mDKPolyRects) {
 
             if (polyRect == null)
                 continue;
 
             ArrayList<PointF> points = polyRect.getPoints();
 //            if (points == null)
-//                continue;
+//                continue;s
 
             ArrayList<PointF> screenPoints = new ArrayList<PointF>();
 
@@ -186,6 +192,72 @@ public class CVResult {
 
     }
 
+    public int getState() {
+
+        return mCVState;
+
+    }
+
+    private void stateUpdated() {
+
+
+        mCVState = getCVState();
+
+        Log.d(TAG, "CV state: " + Integer.toString(mCVState));
+
+        // notify is necessary, because the PaintView is waiting for updates on the CVResult
+        // object. If notify is not called no update would be drawn.
+        this.notify();
+    }
+
+    private int getCVState() {
+
+        if (mDKPolyRects == null)
+            return DOCUMENT_STATE_EMPTY;
+
+        if (mDKPolyRects.length == 0)
+            return DOCUMENT_STATE_EMPTY;
+
+        // TODO: what happens if more rects are present?
+        DkPolyRect polyRect = mDKPolyRects[0];
+
+        int minDisplayLength = Math.min(mViewWidth, mViewHeight);
+        ArrayList<PointF> points = polyRect.getScreenPoints();
+
+        // These are just dummy statements for getting started...
+        // Here will be probably a decision tree in the future.
+        double[] sideLengths = new double[4];
+        double minSideLength;
+        sideLengths[0] = getEculideanDistance(points.get(0), points.get(1));
+        sideLengths[1] = getEculideanDistance(points.get(1), points.get(2));
+        sideLengths[2] = getEculideanDistance(points.get(2), points.get(3));
+        sideLengths[3] = getEculideanDistance(points.get(3), points.get(0));
+
+        minSideLength = Math.min(sideLengths[0], sideLengths[1]);
+        minSideLength = Math.min(minSideLength, sideLengths[2]);
+        minSideLength = Math.min(minSideLength, sideLengths[3]);
+
+        Log.d(TAG, "side length: " + minSideLength);
+        Log.d(TAG, "min display length: " + minDisplayLength);
+
+        if (minSideLength < minDisplayLength * 0.5)
+            return DOCUMENT_STATE_SMALL;
+        else
+            return DOCUMENT_STATE_OK;
+
+
+    }
+
+    private double getEculideanDistance(PointF p1, PointF p2) {
+
+        float distX = p1.x - p2.x;
+        float distY = p1.y - p2.y;
+
+        double dist = Math.sqrt((double) (distX * distX + distY * distY));
+
+        return dist;
+
+    }
 
     /**
      * Transforms frame coordinates to screen coordinates.

@@ -410,7 +410,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         }
 
-        Log.d(TAG, "frame received.");
+//        Log.d(TAG, "frame received.");
         long currentTime = System.currentTimeMillis();
 
         if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
