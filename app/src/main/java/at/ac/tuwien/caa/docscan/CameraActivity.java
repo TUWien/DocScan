@@ -36,6 +36,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.hardware.display.DisplayManager;
+import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -1000,46 +1001,64 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 });
 
                 FileOutputStream fos = new FileOutputStream(outFile);
-
-                // Rotate the image according to the camera orientation:
-                Bitmap image = BitmapFactory.decodeByteArray(mData, 0, mData.length);
-                Matrix mtx = new Matrix();
-                mtx.setRotate(mCameraOrientation);
-
-                image = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), mtx, true);
-                image.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+                fos.write(mData);
 
                 fos.close();
 
-                final Bitmap imageCopy = image;
+                // Set exif orientation (avoid a real rotation of the image):
+                // TODO: Test on more devices. Currently tested on: Nexus 5X, Moto E
+                final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
 
-                MediaScannerConnection.scanFile(getApplicationContext(),
-                        new String[]{outFile.toString()}, null,
-                        new MediaScannerConnection.OnScanCompletedListener() {
+                if (exif != null) {
+                    int orientation = getExifOrientation();
+                    String exifOrientation = Integer.toString(orientation);
 
-                            public void onScanCompleted(String path, Uri uri) {
+                    exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+                    exif.saveAttributes();
+                }
 
-                    // Set the preview image on the gallery button, this must be done one the UI thread:
-                    Bitmap thumb = Bitmap.createScaledBitmap(imageCopy, 200, 200, false);
-                    final BitmapDrawable bdrawable = new BitmapDrawable(getResources(), thumb);
-                runOnUiThread(new Runnable() {
+//    Set the thumbnail on the gallery button, this must be done one the UI thread:
 
-                    @Override
-                    public void run() {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-                            mGalleryButton.setBackground(bdrawable);
-                        else
-                            mGalleryButton.setBackgroundDrawable(bdrawable);
+                MediaScannerConnection.scanFile(getApplicationContext(), new String[]{outFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
 
-                        mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
+                    public void onScanCompleted(String path, Uri uri) {
+//
+
+                        if (exif != null) {
+
+                            byte[] thumbData = exif.getThumbnail();
+                            Bitmap thumbnail = BitmapFactory.decodeByteArray(thumbData, 0, thumbData.length);
+
+                            // Rotate the image according to the camera orientation - unfortunately it seems that the exif.getThumbnail is not using the orientation tag.
+
+                            Matrix mtx = new Matrix();
+                            mtx.setRotate(mCameraOrientation);
+
+                            thumbnail = Bitmap.createBitmap(thumbnail, 0, 0, thumbnail.getWidth(), thumbnail.getHeight(), mtx, true);
+
+                            final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), thumbnail);
+
+                            runOnUiThread(new Runnable() {
+
+                                @Override
+                                public void run() {
+
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+                                        mGalleryButton.setBackground(thumbDrawable);
+                                    else
+                                        mGalleryButton.setBackgroundDrawable(thumbDrawable);
+
+                                    mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
+                                }
+
+                            });
+
+                        }
+
                     }
                 });
 
-
-                }
-            });
-
-            mIsPictureSafe = true;
+                mIsPictureSafe = true;
 
             }
             catch (FileNotFoundException e) {
@@ -1055,10 +1074,24 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         }
 
-//        protected void onPostExecute(Void dummy) {
-//            // The Void dummy argument is necessary so that onPostExecute gets called.
-//
-//        }
+        private int getExifOrientation() {
+
+            switch (mCameraOrientation) {
+
+                case 0:
+                    return 1;
+                case 90:
+                    return 6;
+                case 180:
+                    return 3;
+                case 270:
+                    return 8;
+
+            }
+
+            return -1;
+
+        }
 
 
     }
