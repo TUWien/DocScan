@@ -120,12 +120,17 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     static {
 
         boolean init = OpenCVLoader.initDebug();
+//         It seems like we need this for Android 4:
+        if (!OpenCVLoader.initDebug()) {
+            // Handle initialization error
+        } else {
 
-        if (init) {
+            System.loadLibrary("opencv_java3");
             System.loadLibrary("docscan-native");
         }
 
     }
+
 
     // ================= start: methods from the Activity lifecyle =================
 
