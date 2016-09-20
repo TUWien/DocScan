@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/action_show_debug_view"
+            android:title="@string/show_debug_view_text"
+            app:showAsAction="always"/>
+        <item
+            android:id="@+id/action_show_debug_view2"
+            android:title="@string/show_fm_values_text"
+            app:showAsAction="always"/>
+    </group>
+
+</menu>
