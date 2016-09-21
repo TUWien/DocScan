@@ -38,6 +38,7 @@ import android.hardware.Camera;
 import android.hardware.display.DisplayManager;
 import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -203,6 +204,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
         super.onResume();
+
+
 
 
         // Resume camera access:
@@ -1028,40 +1031,35 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 MediaScannerConnection.scanFile(getApplicationContext(), new String[]{outFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
 
                     public void onScanCompleted(String path, Uri uri) {
-//
 
-                        if (exif != null) {
 
-                            byte[] thumbData = exif.getThumbnail();
-                            Bitmap thumbnail = BitmapFactory.decodeByteArray(thumbData, 0, thumbData.length);
+                        Bitmap resized = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(outFile.toString()), 200, 200);
 
-                            // Rotate the image according to the camera orientation - unfortunately it seems that the exif.getThumbnail is not using the orientation tag.
+                        Matrix mtx = new Matrix();
+                        mtx.setRotate(mCameraOrientation);
 
-                            Matrix mtx = new Matrix();
-                            mtx.setRotate(mCameraOrientation);
+                        resized = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), mtx, true);
 
-                            thumbnail = Bitmap.createBitmap(thumbnail, 0, 0, thumbnail.getWidth(), thumbnail.getHeight(), mtx, true);
+                        final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), resized);
 
-                            final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), thumbnail);
+                        runOnUiThread(new Runnable() {
 
-                            runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
 
-                                @Override
-                                public void run() {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+                                    mGalleryButton.setBackground(thumbDrawable);
+                                else
+                                    mGalleryButton.setBackgroundDrawable(thumbDrawable);
 
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-                                        mGalleryButton.setBackground(thumbDrawable);
-                                    else
-                                        mGalleryButton.setBackgroundDrawable(thumbDrawable);
+                                mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
+                            }
 
-                                    mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
-                                }
-
-                            });
-
-                        }
+                        });
 
                     }
+
+//                    }
                 });
 
                 mIsPictureSafe = true;
