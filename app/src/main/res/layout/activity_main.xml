@@ -24,15 +24,17 @@
 
 
             android:id="@+id/container_layout">
+
+            <at.ac.tuwien.caa.docscan.CameraPreview
+                android:id="@+id/camera_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
             <at.ac.tuwien.caa.docscan.PaintView
                 android:id="@+id/paint_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:layout="@layout/abc_screen_simple" />
-            <at.ac.tuwien.caa.docscan.CameraPreview
-                android:id="@+id/camera_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
 
         </FrameLayout>
 

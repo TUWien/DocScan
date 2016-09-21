@@ -73,6 +73,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         super(context, attrs);
 
+        // This is necessary to assure that the view is on top of the camera view. On some devices
+        // like Galaxy Tab 10.1 this was not always the case.
+        this.setZOrderMediaOverlay(true);
+
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
         // This is necessary to enable semi-transparent DrawView
