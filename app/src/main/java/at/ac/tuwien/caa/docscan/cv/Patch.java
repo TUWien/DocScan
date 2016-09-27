@@ -23,6 +23,8 @@
 
 package at.ac.tuwien.caa.docscan.cv;
 
+import android.graphics.PointF;
+
 /**
  * Class containing the output of the focus measurement task. This class is used in
  * DocScanInterface.cpp Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetFocusMeasures
@@ -99,6 +101,11 @@ public class Patch {
 
     }
 
+    public PointF getPoint() {
+
+        return new PointF(mPX, mPY);
+    }
+
     /**
      * Returns the width of the patch in frame coordinates.
      * @return
@@ -139,6 +146,10 @@ public class Patch {
 
     }
 
+    public void setIsSharp(boolean isSharp) {
+        mIsSharp = isSharp;
+    }
+
     /**
      * Returns a boolean indicating whether the patch belongs to the foreground (meaning it has
      * enough image content).
@@ -150,6 +161,11 @@ public class Patch {
 
     }
 
+    public void setIsForeGround(boolean isForeGround) {
+
+        mIsForeGround = isForeGround;
+
+    }
 
     /**
      * Sets the x coordinate of the center of patch in screen coordinates.
