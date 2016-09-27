@@ -21,15 +21,12 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.cv;
 
 import android.graphics.PointF;
 import android.util.Log;
 
 import java.util.ArrayList;
-
-import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
-import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
  * Class responsible for holding the results of the page segmentation and focus measurement tasks.
@@ -148,7 +145,24 @@ public class CVResult {
             patch.setDrawViewPX(screenPoint.x);
             patch.setDrawViewPY(screenPoint.y);
 
+            boolean isInsidePolyRect = false;
+
+            if (mDKPolyRects != null) {
+
+                for (DkPolyRect polyRect : mDKPolyRects) {
+
+                    if (patch.getIsForeGround() && polyRect.isInside(patch.getPoint()))
+                        isInsidePolyRect = true;
+                }
+
+            }
+
+            patch.setIsForeGround(isInsidePolyRect);
+
+
         }
+
+
 
 
     }
@@ -179,9 +193,12 @@ public class CVResult {
             ArrayList<PointF> screenPoints = new ArrayList<PointF>();
 
             for (int j = 0; j < points.size(); j++) {
+
                 framePoint = new PointF(points.get(j).x, points.get(j).y);
                 screenPoint = getScreenCoordinates(framePoint, mFrameWidth, mFrameHeight, mViewWidth, mViewHeight, mCameraOrientation);
                 screenPoints.add(screenPoint);
+
+
             }
 
             polyRect.setScreenPoints(screenPoints);
@@ -315,4 +332,7 @@ public class CVResult {
 
     }
 
+
+
 }
+

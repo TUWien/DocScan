@@ -92,5 +92,30 @@ public class DkPolyRect {
 
     }
 
+    public boolean isInside(PointF point) {
+
+        float lastSign = 0;
+
+        // we assume, that the polygon is convex
+        // so if the point has a different scalar product
+        // for one side of the polygon - it is not inside
+
+        for (int i = 1; i < mPoints.size() + 1; i++) {
+
+            DkVector dv = new DkVector(mPoints.get(i - 1), mPoints.get(i % mPoints.size()));
+            float cSign = dv.scalarProduct(new DkVector(point, mPoints.get(i  % mPoints.size())));
+
+            if (lastSign * cSign < 0) {
+                return false;
+            }
+
+            lastSign = cSign;
+
+        }
+
+        return true;
+
+    }
+
 
 }
