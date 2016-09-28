@@ -62,6 +62,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
@@ -74,6 +75,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
+import at.ac.tuwien.caa.docscan.cv.CVResult;
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
@@ -82,7 +84,9 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  * callbacks from the created views as well as user input.
  */
 
-public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks, NativeWrapper.CVCallback, CameraPreview.DimensionChangeCallback, MediaScannerConnection.MediaScannerConnectionClient {
+public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks,
+        NativeWrapper.CVCallback, CameraPreview.DimensionChangeCallback, CVResult.CVResultCallback,
+        MediaScannerConnection.MediaScannerConnectionClient {
 
     private static final String TAG = "CameraActivity";
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
@@ -114,6 +118,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private ActionBarDrawerToggle mDrawerToggle;
     private MediaScannerConnection mMediaScannerConnection;
     private boolean mIsPictureSafe;
+    private TextView mTextView;
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -237,7 +242,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         setContentView(R.layout.activity_main);
 
-        mCVResult = new CVResult();
+        mCVResult = new CVResult(this);
 
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_view);
         mCameraPreview.setCamera(mCamera, mCameraInfo, mDisplayRotation);
@@ -248,6 +253,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         setupNavigationDrawer();
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
+        mTextView = (TextView) findViewById(R.id.instruction_view);
 
         if (mDebugViewFragment == null)
             mIsDebugViewEnabled = false;
@@ -903,6 +909,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
 
+
+
     // =================  start: CameraPreview.DimensionChange CALLBACK =================
 
     /**
@@ -930,6 +938,42 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         mCameraOrientation = cameraOrientation;
         mCVResult.setFrameDimensions(width, height, cameraOrientation);
+
+    }
+
+    @Override
+    public void onStatusChange(final int state) {
+
+        final String msg = getInstructionMessage(state);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                mTextView.setText(msg);
+            }
+        });
+
+    }
+
+    private String getInstructionMessage(int state) {
+
+        switch (state) {
+
+            case CVResult.DOCUMENT_STATE_EMPTY:
+                return getResources().getString(R.string.instruction_empty);
+
+            case CVResult.DOCUMENT_STATE_OK:
+                return getResources().getString(R.string.instruction_ok);
+
+            case CVResult.DOCUMENT_STATE_SMALL:
+                return getResources().getString(R.string.instruction_small);
+
+            case CVResult.DOCUMENT_STATE_PERSPECTIVE:
+                return getResources().getString(R.string.instruction_perspective);
+        }
+
+        return getResources().getString(R.string.instruction_unknown);
 
     }
 

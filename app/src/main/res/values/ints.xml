@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <integer name="min_page_area_percentage">30</integer>
+    <integer name="max_page_angle">94</integer>
+
+</resources>

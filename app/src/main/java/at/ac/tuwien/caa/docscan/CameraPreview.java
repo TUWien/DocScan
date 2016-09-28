@@ -37,6 +37,7 @@ import android.view.SurfaceView;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -50,8 +51,10 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  * Camera API. The received frames are converted to OpenCV Mat's in a fixed time interval. The Mat
  * is used by two thread classes (inner classes): FocusMeasurementThread and PageSegmentationThread.
  */
-public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {{}
+public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {
 
+    private static final int MAX_MAT_WIDTH = 1000;
+    private static final int MAX_MAT_HEIGHT = 1000;
     private static final String TAG = "CameraPreview";
     private SurfaceHolder mHolder;
     private Camera mCamera;
@@ -67,6 +70,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     // Mat used by mPageSegmentationThread and mFocusMeasurementThread:
     private Mat mFrameMat;
+    private int mMatWidth, mMatHeight;
 
     private int mFrameWidth;
     private int mFrameHeight;
@@ -387,8 +391,20 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
 
+        // Determine the size of the Mat used for page segmentation and focus measure:
+        if (mFrameWidth > MAX_MAT_WIDTH)
+            mMatWidth = MAX_MAT_WIDTH;
+        else
+            mMatWidth = mFrameWidth;
+
+        if (mFrameHeight > MAX_MAT_HEIGHT)
+            mMatHeight = MAX_MAT_HEIGHT;
+        else
+            mMatHeight = mFrameHeight;
+
         // Tell the dependent Activity that the frame dimension (might have) change:
-        mDimensionChangeCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
+//        mDimensionChangeCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
+        mDimensionChangeCallback.onFrameDimensionChange(mMatWidth, mMatHeight, orientation);
 
 
     }
@@ -430,6 +446,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                 mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                 Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
+
+                Size s = new Size(mMatWidth, mMatHeight);
+                Imgproc.resize(mFrameMat, mFrameMat, s);
 
                 yuv.release();
 
