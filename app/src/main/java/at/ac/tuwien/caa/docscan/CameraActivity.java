@@ -971,6 +971,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
             case CVResult.DOCUMENT_STATE_PERSPECTIVE:
                 return getResources().getString(R.string.instruction_perspective);
+
+            case CVResult.DOCUMENT_STATE_UNSHARP:
+                return getResources().getString(R.string.instruction_unsharp);
+
         }
 
         return getResources().getString(R.string.instruction_unknown);
