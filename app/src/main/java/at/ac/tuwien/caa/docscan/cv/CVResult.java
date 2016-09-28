@@ -43,6 +43,7 @@ public class CVResult {
     public static final int DOCUMENT_STATE_EMPTY = 1;
     public static final int DOCUMENT_STATE_SMALL = 2;
     public static final int DOCUMENT_STATE_PERSPECTIVE = 3;
+    public static final int DOCUMENT_STATE_UNSHARP = 4;
 
     private static final int ORIENTATION_LANDSCAPE = 0;
     private static final int ORIENTATION_PORTRAIT = 90;
@@ -58,6 +59,7 @@ public class CVResult {
     private int mCameraOrientation;
     private CVResultCallback mCallback;
     private Context mContext;
+    private int mRatioSharpUnsharp;
 
     private int mCVState;
 
@@ -80,6 +82,10 @@ public class CVResult {
             updateRects();
             stateUpdated();
 
+            // notify is necessary, because the PaintView is waiting for updates on the CVResult
+            // object. If notify is not called no update would be drawn.
+            this.notify();
+
         }
 
     }
@@ -96,7 +102,10 @@ public class CVResult {
 
             mPatches = patches;
             updatePatches();
-            stateUpdated();
+//            stateUpdated();
+            // notify is necessary, because the PaintView is waiting for updates on the CVResult
+            // object. If notify is not called no update would be drawn.
+            this.notify();
         }
 
     }
@@ -145,11 +154,13 @@ public class CVResult {
 //        Patch patch;
         PointF screenPoint, framePoint;
 
+        int sharpCnt = 0;
+        int unsharpCnt = 0;
+
         for (Patch patch : mPatches) {
 
             framePoint = new PointF(patch.getPX(), patch.getPY());
             screenPoint = getScreenCoordinates(framePoint, mFrameWidth, mFrameHeight, mViewWidth, mViewHeight, mCameraOrientation);
-//            screenPoint = getScreenCoordinates(framePoint, 500, 500, mViewWidth, mViewHeight, mCameraOrientation);
             patch.setDrawViewPX(screenPoint.x);
             patch.setDrawViewPY(screenPoint.y);
 
@@ -159,19 +170,25 @@ public class CVResult {
 
                 for (DkPolyRect polyRect : mDKPolyRects) {
 
-                    if (patch.getIsForeGround() && polyRect.isInside(patch.getPoint()))
+                    if (patch.getIsForeGround() && polyRect.isInside(patch.getPoint())) {
                         isInsidePolyRect = true;
-                }
 
+                        if (patch.getIsSharp())
+                            sharpCnt++;
+                        else
+                            unsharpCnt++;
+                    }
+                }
             }
 
             patch.setIsForeGround(isInsidePolyRect);
-
-
         }
 
-
-
+        int foreGroundCnt = sharpCnt + unsharpCnt;
+        if (foreGroundCnt > 0)
+            mRatioSharpUnsharp = (int) Math.round(((float) sharpCnt / foreGroundCnt) * 100);
+        else
+            mRatioSharpUnsharp = 0;
 
     }
 
@@ -228,14 +245,8 @@ public class CVResult {
 
 
         mCVState = getCVState();
-
-        Log.d(TAG, "CV state: " + Integer.toString(mCVState));
-
         mCallback.onStatusChange(mCVState);
 
-        // notify is necessary, because the PaintView is waiting for updates on the CVResult
-        // object. If notify is not called no update would be drawn.
-        this.notify();
     }
 
     private int getCVState() {
@@ -246,58 +257,54 @@ public class CVResult {
         if (mDKPolyRects.length == 0)
             return DOCUMENT_STATE_EMPTY;
 
-        // TODO: what happens if more rects are present?
         DkPolyRect polyRect = mDKPolyRects[0];
+
+        if (!isAreaCorrect(polyRect))
+            return DOCUMENT_STATE_SMALL;
+
+        if (!isAngleCorrect(polyRect))
+            return DOCUMENT_STATE_PERSPECTIVE;
+
+        if (!isSharp())
+            return DOCUMENT_STATE_UNSHARP;
+
+        return DOCUMENT_STATE_OK;
+
+    }
+
+    private boolean isAreaCorrect(DkPolyRect polyRect) {
 
         double area = polyRect.getArea();
         double matArea = mFrameWidth * mFrameHeight;
 
-        Log.d(TAG, "area: " + area);
-        Log.d(TAG, "matArea: " + matArea);
-
         double areaPerc = area / matArea * 100;
 
-        Log.d(TAG, "areaPerc: " + areaPerc);
-
-
         if (areaPerc < mContext.getResources().getInteger(R.integer.min_page_area_percentage))
-            return DOCUMENT_STATE_SMALL;
+            return false;
+
+        return true;
+
+    }
+
+    private boolean isAngleCorrect(DkPolyRect polyRect) {
 
         double largestAngle = polyRect.getLargestAngle();
 
         if (largestAngle > mContext.getResources().getInteger(R.integer.max_page_angle))
-            return DOCUMENT_STATE_PERSPECTIVE;
+            return false;
 
+        return true;
 
-//        if (largestAng)
-        Log.d(TAG, "largest angle: " + largestAngle);
+    }
 
-        return DOCUMENT_STATE_OK;
+    private boolean isSharp() {
 
-//        int minDisplayLength = Math.min(mViewWidth, mViewHeight);
-//        ArrayList<PointF> points = polyRect.getScreenPoints();
-//
-//        // These are just dummy statements for getting started...
-//        // Here will be probably a decision tree in the future.
-//        double[] sideLengths = new double[4];
-//        double minSideLength;
-//        sideLengths[0] = getEculideanDistance(points.get(0), points.get(1));
-//        sideLengths[1] = getEculideanDistance(points.get(1), points.get(2));
-//        sideLengths[2] = getEculideanDistance(points.get(2), points.get(3));
-//        sideLengths[3] = getEculideanDistance(points.get(3), points.get(0));
-//
-//        minSideLength = Math.min(sideLengths[0], sideLengths[1]);
-//        minSideLength = Math.min(minSideLength, sideLengths[2]);
-//        minSideLength = Math.min(minSideLength, sideLengths[3]);
-//
-//        Log.d(TAG, "side length: " + minSideLength);
-//        Log.d(TAG, "min display length: " + minDisplayLength);
-//
-//        if (minSideLength < minDisplayLength * 0.5)
-//            return DOCUMENT_STATE_SMALL;
-//        else
-//            return DOCUMENT_STATE_OK;
+        Log.d(TAG, "sharp ratio: " + mRatioSharpUnsharp);
 
+        if (mRatioSharpUnsharp < mContext.getResources().getInteger(R.integer.min_focus_ratio))
+            return false;
+
+        return true;
 
     }
 
