@@ -92,6 +92,33 @@ public class DkPolyRect {
 
     }
 
+    public double getLargestAngle() {
+
+        double maxAngle = 0;
+
+        for (int i = 1; i < mPoints.size() + 1; i++) {
+
+            DkVector v1 = new DkVector(mPoints.get(i - 1), mPoints.get(i % mPoints.size()));
+            DkVector v2 = new DkVector(mPoints.get(i  % mPoints.size()), mPoints.get((i+1) % mPoints.size()));
+
+            double cAngle = v1.angle(v2);
+            if (cAngle > maxAngle)
+                maxAngle = cAngle;
+
+        }
+
+        return maxAngle;
+    }
+
+    public double getArea() {
+
+        double area = 0.5 * Math.abs((mPoints.get(0).y - mPoints.get(2).y) * (mPoints.get(3).x - mPoints.get(1).x) +
+                        (mPoints.get(1).y - mPoints.get(3).y) * (mPoints.get(0).x - mPoints.get(2).x));
+
+        return area;
+
+    }
+
     public boolean isInside(PointF point) {
 
         float lastSign = 0;

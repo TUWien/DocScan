@@ -37,6 +37,7 @@
 
     <string name="instruction_empty">no document found</string>
     <string name="instruction_small">move closer</string>
+    <string name="instruction_perspective">change perspective</string>
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>
 </resources>

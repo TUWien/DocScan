@@ -40,6 +40,7 @@ import android.view.SurfaceView;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import at.ac.tuwien.caa.docscan.cv.CVResult;
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
@@ -225,6 +226,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
+
+
     /**
      * Class responsible for the actual drawing.
      */
@@ -386,7 +389,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     drawPageSegmentation(canvas);
 
                 // Output the document state:
-                drawDocumentState(canvas);
+//                drawDocumentState(canvas);
 
             }
 

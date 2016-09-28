@@ -23,10 +23,13 @@
 
 package at.ac.tuwien.caa.docscan.cv;
 
+import android.content.Context;
 import android.graphics.PointF;
 import android.util.Log;
 
 import java.util.ArrayList;
+
+import at.ac.tuwien.caa.docscan.R;
 
 /**
  * Class responsible for holding the results of the page segmentation and focus measurement tasks.
@@ -39,6 +42,7 @@ public class CVResult {
     public static final int DOCUMENT_STATE_OK = 0;
     public static final int DOCUMENT_STATE_EMPTY = 1;
     public static final int DOCUMENT_STATE_SMALL = 2;
+    public static final int DOCUMENT_STATE_PERSPECTIVE = 3;
 
     private static final int ORIENTATION_LANDSCAPE = 0;
     private static final int ORIENTATION_PORTRAIT = 90;
@@ -52,11 +56,15 @@ public class CVResult {
     private int mViewWidth, mViewHeight;
     private int mFrameHeight, mFrameWidth;
     private int mCameraOrientation;
+    private CVResultCallback mCallback;
+    private Context mContext;
 
     private int mCVState;
 
-    public CVResult() {
+    public CVResult(Context context) {
 
+        mCallback = (CVResultCallback) context;
+        mContext = context;
 
     }
 
@@ -141,7 +149,7 @@ public class CVResult {
 
             framePoint = new PointF(patch.getPX(), patch.getPY());
             screenPoint = getScreenCoordinates(framePoint, mFrameWidth, mFrameHeight, mViewWidth, mViewHeight, mCameraOrientation);
-
+//            screenPoint = getScreenCoordinates(framePoint, 500, 500, mViewWidth, mViewHeight, mCameraOrientation);
             patch.setDrawViewPX(screenPoint.x);
             patch.setDrawViewPY(screenPoint.y);
 
@@ -196,6 +204,7 @@ public class CVResult {
 
                 framePoint = new PointF(points.get(j).x, points.get(j).y);
                 screenPoint = getScreenCoordinates(framePoint, mFrameWidth, mFrameHeight, mViewWidth, mViewHeight, mCameraOrientation);
+//                screenPoint = getScreenCoordinates(framePoint, 500, 500, mViewWidth, mViewHeight, mCameraOrientation);
                 screenPoints.add(screenPoint);
 
 
@@ -222,6 +231,8 @@ public class CVResult {
 
         Log.d(TAG, "CV state: " + Integer.toString(mCVState));
 
+        mCallback.onStatusChange(mCVState);
+
         // notify is necessary, because the PaintView is waiting for updates on the CVResult
         // object. If notify is not called no update would be drawn.
         this.notify();
@@ -238,29 +249,54 @@ public class CVResult {
         // TODO: what happens if more rects are present?
         DkPolyRect polyRect = mDKPolyRects[0];
 
-        int minDisplayLength = Math.min(mViewWidth, mViewHeight);
-        ArrayList<PointF> points = polyRect.getScreenPoints();
+        double area = polyRect.getArea();
+        double matArea = mFrameWidth * mFrameHeight;
 
-        // These are just dummy statements for getting started...
-        // Here will be probably a decision tree in the future.
-        double[] sideLengths = new double[4];
-        double minSideLength;
-        sideLengths[0] = getEculideanDistance(points.get(0), points.get(1));
-        sideLengths[1] = getEculideanDistance(points.get(1), points.get(2));
-        sideLengths[2] = getEculideanDistance(points.get(2), points.get(3));
-        sideLengths[3] = getEculideanDistance(points.get(3), points.get(0));
+        Log.d(TAG, "area: " + area);
+        Log.d(TAG, "matArea: " + matArea);
 
-        minSideLength = Math.min(sideLengths[0], sideLengths[1]);
-        minSideLength = Math.min(minSideLength, sideLengths[2]);
-        minSideLength = Math.min(minSideLength, sideLengths[3]);
+        double areaPerc = area / matArea * 100;
 
-        Log.d(TAG, "side length: " + minSideLength);
-        Log.d(TAG, "min display length: " + minDisplayLength);
+        Log.d(TAG, "areaPerc: " + areaPerc);
 
-        if (minSideLength < minDisplayLength * 0.5)
+
+        if (areaPerc < mContext.getResources().getInteger(R.integer.min_page_area_percentage))
             return DOCUMENT_STATE_SMALL;
-        else
-            return DOCUMENT_STATE_OK;
+
+        double largestAngle = polyRect.getLargestAngle();
+
+        if (largestAngle > mContext.getResources().getInteger(R.integer.max_page_angle))
+            return DOCUMENT_STATE_PERSPECTIVE;
+
+
+//        if (largestAng)
+        Log.d(TAG, "largest angle: " + largestAngle);
+
+        return DOCUMENT_STATE_OK;
+
+//        int minDisplayLength = Math.min(mViewWidth, mViewHeight);
+//        ArrayList<PointF> points = polyRect.getScreenPoints();
+//
+//        // These are just dummy statements for getting started...
+//        // Here will be probably a decision tree in the future.
+//        double[] sideLengths = new double[4];
+//        double minSideLength;
+//        sideLengths[0] = getEculideanDistance(points.get(0), points.get(1));
+//        sideLengths[1] = getEculideanDistance(points.get(1), points.get(2));
+//        sideLengths[2] = getEculideanDistance(points.get(2), points.get(3));
+//        sideLengths[3] = getEculideanDistance(points.get(3), points.get(0));
+//
+//        minSideLength = Math.min(sideLengths[0], sideLengths[1]);
+//        minSideLength = Math.min(minSideLength, sideLengths[2]);
+//        minSideLength = Math.min(minSideLength, sideLengths[3]);
+//
+//        Log.d(TAG, "side length: " + minSideLength);
+//        Log.d(TAG, "min display length: " + minDisplayLength);
+//
+//        if (minSideLength < minDisplayLength * 0.5)
+//            return DOCUMENT_STATE_SMALL;
+//        else
+//            return DOCUMENT_STATE_OK;
 
 
     }
@@ -333,6 +369,12 @@ public class CVResult {
     }
 
 
+    // Callbacks:
+    public interface CVResultCallback {
+
+        void onStatusChange(int status);
+
+    }
 
 }
 
