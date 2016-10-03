@@ -54,9 +54,11 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.PopupMenu;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
@@ -86,7 +88,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 
 public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks,
         NativeWrapper.CVCallback, CameraPreview.DimensionChangeCallback, CVResult.CVResultCallback,
-        MediaScannerConnection.MediaScannerConnectionClient {
+        MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener {
 
     private static final String TAG = "CameraActivity";
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
@@ -119,6 +121,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private MediaScannerConnection mMediaScannerConnection;
     private boolean mIsPictureSafe;
     private TextView mTextView;
+
+    private MenuItem mModeMenuItem;
+    private Drawable mManualShootDrawable, mAutoShootDrawable;
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -266,6 +271,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         initGalleryCallback();
         initPictureCallback();
+        initDrawables();
 
 
     }
@@ -298,6 +304,24 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.actionbar_menu, menu);
+
+        mModeMenuItem = menu.findItem(R.id.shoot_mode_item);
+
+        return true;
+    }
+
+    private void initDrawables() {
+
+        mAutoShootDrawable = getResources().getDrawable(R.drawable.auto_shoot);
+        mManualShootDrawable = getResources().getDrawable(R.drawable.manual_auto);
+
+    }
+
 
     /**
      * Returns a Camera object.
@@ -660,6 +684,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
 
+
         }
 
 
@@ -926,6 +951,38 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    public void showPopup(MenuItem item){
+
+        View menuItemView = findViewById(R.id.shoot_mode_item);
+        PopupMenu popupMenu = new PopupMenu(this, menuItemView);
+        popupMenu.setOnMenuItemClickListener(this);
+        popupMenu.inflate(R.menu.shoot_mode_menu);
+        popupMenu.show();
+
+
+    }
+
+    @Override
+    public boolean onMenuItemClick(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.manual_mode_item:
+                mModeMenuItem.setIcon(mManualShootDrawable);
+                return true;
+            case R.id.auto_mode_item:
+                mModeMenuItem.setIcon(mAutoShootDrawable);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+
+//    public void showPopup(View v) {
+//        PopupMenu popup = new PopupMenu(this, v);
+//        MenuInflater inflater = popup.getMenuInflater();
+//        inflater.inflate(R.menu.actions, popup.getMenu());
+//        popup.show();
+//    }
     /**
      * Called after the dimension of the camera frame is set. The dimensions are necessary to convert
      * the frame coordinates to view coordinates.

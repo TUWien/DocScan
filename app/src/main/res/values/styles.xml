@@ -30,5 +30,9 @@
         <item name="background">@null</item>
     </style>
 
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/loading_screen</item>
+    </style>
+
 
 </resources>

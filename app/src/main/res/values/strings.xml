@@ -41,4 +41,8 @@
     <string name="instruction_unsharp">focus</string>
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>
+
+    <!-- Menus -->
+    <string name="manual_mode">Manual shoot mode</string>
+    <string name="auto_mode">Auto shoot mode</string>
 </resources>
