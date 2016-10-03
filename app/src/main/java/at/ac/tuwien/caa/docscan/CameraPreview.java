@@ -78,7 +78,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private long mLastTime;
 
     // Used for generating mFrameMat at a 'fixed' frequency:
-    private static long FRAME_TIME_DIFF = 10;
+    private static long FRAME_TIME_DIFF = 100;
 
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;

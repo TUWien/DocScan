@@ -121,9 +121,14 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private MediaScannerConnection mMediaScannerConnection;
     private boolean mIsPictureSafe;
     private TextView mTextView;
-
     private MenuItem mModeMenuItem;
     private Drawable mManualShootDrawable, mAutoShootDrawable;
+    private boolean mIsAutoMode = false;
+    private long mStartTime;
+    private boolean mIsWaitingForCapture = false;
+
+    // TODO: use here values.ints
+    private final int DOCUMENT_STEADY_TIME = 5000;
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -141,6 +146,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         }
 
     }
+
+
 
 
     // ================= start: methods from the Activity lifecyle =================
@@ -967,9 +974,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         switch (item.getItemId()) {
             case R.id.manual_mode_item:
                 mModeMenuItem.setIcon(mManualShootDrawable);
+                mIsAutoMode = false;
                 return true;
             case R.id.auto_mode_item:
                 mModeMenuItem.setIcon(mAutoShootDrawable);
+                mIsAutoMode = true;
                 return true;
             default:
                 return false;
@@ -1001,7 +1010,40 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     @Override
     public void onStatusChange(final int state) {
 
-        final String msg = getInstructionMessage(state);
+        final String msg;
+
+        if (!mIsPictureSafe) {
+            msg = getResources().getString(R.string.taking_picture_text);
+        }
+
+        else if (!mIsAutoMode || state != CVResult.DOCUMENT_STATE_OK) {
+            mIsWaitingForCapture = false;
+            msg = getInstructionMessage(state);
+        }
+
+        else {
+            if (!mIsWaitingForCapture) {
+                mStartTime = System.currentTimeMillis();
+                mIsWaitingForCapture = true;
+                msg = "";
+            }
+            else {
+                // Count down:
+                long timePast = System.currentTimeMillis() - mStartTime;
+                if (timePast < DOCUMENT_STEADY_TIME) {
+                    long timeLeft = DOCUMENT_STEADY_TIME - timePast;
+                    msg = getResources().getString(R.string.dont_move_text) + " " + Math.round(timeLeft / 1000);
+                }
+                else {
+                    // Take the picture:
+                    msg = getResources().getString(R.string.taking_picture_text);
+                    mIsWaitingForCapture = false;
+                    if (mIsPictureSafe)
+                        requestFileSave();
+                }
+
+            }
+        }
 
         runOnUiThread(new Runnable() {
             @Override
@@ -1010,6 +1052,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 mTextView.setText(msg);
             }
         });
+
+
 
     }
 

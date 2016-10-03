@@ -196,13 +196,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 mDrawerThread = new DrawerThread(mHolder);
                 mDrawerThread.setRunning(true);
                 mDrawerThread.start();
-
             }
             else
                 mDrawerThread.setRunning(true);
-
-
-
         }
 
 
@@ -240,6 +236,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private Paint mBGPaint;
         private Paint mSegmentationPaint;
         private Path mSegmentationPath;
+        private Paint mHelperPaint;
 
         private static final float RECT_HALF_SIZE = 30;
         private static final String TEXT_FORMAT = "%.2f";
@@ -250,6 +247,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
         private final int FOCUS_SHARP_RECT_COLOR = getResources().getColor(R.color.hud_focus_sharp_rect_color);
         private final int FOCUS_UNSHARP_RECT_COLOR = getResources().getColor(R.color.hud_focus_unssharp_rect_color);
+        private final int HELPER_LINE_COLOR = getResources().getColor(R.color.hud_helper_line_color);
 
 
         private Paint mFocusSharpRectPaint;
@@ -290,6 +288,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mFocusUnsharpRectPaint.setStrokeWidth(2);
             mFocusUnsharpRectPaint.setStyle(Paint.Style.STROKE);
             mFocusUnsharpRectPaint.setColor(FOCUS_UNSHARP_RECT_COLOR);
+
+            mHelperPaint = new Paint();
+            mHelperPaint.setStrokeWidth(2);
+            mHelperPaint.setStyle(Paint.Style.STROKE);
+            mHelperPaint.setColor(HELPER_LINE_COLOR);
 
             mBGPaint = new Paint();
             mBGPaint.setColor(STATE_TEXT_BG_COLOR);
@@ -456,6 +459,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
                 boolean isStartSet = false;
 
+
+
                 for (PointF point : screenPoints) {
 
                     if (!isStartSet) {
@@ -463,6 +468,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         isStartSet = true;
                     } else
                         mSegmentationPath.lineTo(point.x, point.y);
+
+                    canvas.drawLine(0, point.y, getWidth(), point.y, mHelperPaint);
+                    canvas.drawLine(point.x, 0, point.x, mCVResult.getViewHeight(), mHelperPaint);
 
                 }
 
