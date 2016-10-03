@@ -249,7 +249,6 @@ public class CVResult {
 
     private void stateUpdated() {
 
-
         mCVState = getCVState();
         mCallback.onStatusChange(mCVState);
 
