@@ -145,6 +145,12 @@ public class CVResult {
 
     }
 
+    public int getViewHeight() {
+
+        return mViewHeight;
+
+    }
+
     /**
      * Converts the coordinates of the patches to screen coordinates.
      */

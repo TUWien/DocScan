@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+        <item
+            android:id="@+id/manual_mode_item"
+            android:icon="@drawable/manual_auto"
+            android:title="@string/manual_mode"
+            />
+
+        <item
+            android:id="@+id/auto_mode_item"
+            android:icon="@drawable/auto_shoot"
+            android:title="@string/auto_mode"
+            />
+
+</menu>

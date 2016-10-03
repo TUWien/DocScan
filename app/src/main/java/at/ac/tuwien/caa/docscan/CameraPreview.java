@@ -53,8 +53,8 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  */
 public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {
 
-    private static final int MAX_MAT_WIDTH = 1000;
-    private static final int MAX_MAT_HEIGHT = 1000;
+    private static final int MAX_MAT_WIDTH = 500;
+    private static final int MAX_MAT_HEIGHT = 500;
     private static final String TAG = "CameraPreview";
     private SurfaceHolder mHolder;
     private Camera mCamera;
@@ -78,7 +78,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private long mLastTime;
 
     // Used for generating mFrameMat at a 'fixed' frequency:
-    private static long FRAME_TIME_DIFF = 300;
+    private static long FRAME_TIME_DIFF = 10;
 
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
