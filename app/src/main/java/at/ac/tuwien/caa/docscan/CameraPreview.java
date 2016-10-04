@@ -53,8 +53,13 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  */
 public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {
 
-    private static final int MAX_MAT_WIDTH = 500;
-    private static final int MAX_MAT_HEIGHT = 500;
+//    private static final int MAX_MAT_WIDTH = 500;
+//    private static final int MAX_MAT_HEIGHT = 500;
+
+    // Temporary disable scaling of mat:
+    private static final int MAX_MAT_WIDTH = 50000;
+    private static final int MAX_MAT_HEIGHT = 50000;
+
     private static final String TAG = "CameraPreview";
     private SurfaceHolder mHolder;
     private Camera mCamera;
