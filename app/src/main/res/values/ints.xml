@@ -2,8 +2,9 @@
 <resources>
 
     <integer name="min_page_area_percentage">30</integer>
-    <integer name="max_page_angle">94</integer>
-    <integer name="min_focus_ratio">75</integer>
+    <integer name="max_page_angle">97</integer>
+    <integer name="max_rotation">4</integer>
+    <integer name="min_focus_ratio">50</integer>
     <integer name="observation_time">3000</integer> <!-- time in milli-seconds -->
 
 

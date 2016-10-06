@@ -110,6 +110,27 @@ public class DkPolyRect {
         return maxAngle;
     }
 
+    public double getDocumentRotation() {
+
+        double minAngle = 360;
+
+        DkVector v1 = new DkVector(new PointF(0,0), new PointF(0,1));
+
+        for (int i = 1; i < mPoints.size() + 1; i++) {
+
+
+            DkVector v2 = new DkVector(mPoints.get(i  % mPoints.size()), mPoints.get((i+1) % mPoints.size()));
+
+            double cAngle = v1.angle(v2);
+            if (cAngle < minAngle)
+                minAngle = cAngle;
+
+        }
+
+        return minAngle;
+
+    }
+
     public double getArea() {
 
         double area = 0.5 * Math.abs((mPoints.get(0).y - mPoints.get(2).y) * (mPoints.get(3).x - mPoints.get(1).x) +

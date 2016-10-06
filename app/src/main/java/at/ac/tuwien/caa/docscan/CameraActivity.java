@@ -76,6 +76,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import at.ac.tuwien.caa.docscan.cv.CVResult;
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
@@ -87,7 +88,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  */
 
 public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks,
-        NativeWrapper.CVCallback, CameraPreview.DimensionChangeCallback, CVResult.CVResultCallback,
+        NativeWrapper.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
         MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener {
 
     private static final String TAG = "CameraActivity";
@@ -121,11 +122,14 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private MediaScannerConnection mMediaScannerConnection;
     private boolean mIsPictureSafe;
     private TextView mTextView;
-    private MenuItem mModeMenuItem;
-    private Drawable mManualShootDrawable, mAutoShootDrawable;
+    private MenuItem mModeMenuItem, mFlashMenuItem;
+    private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable;
     private boolean mIsAutoMode = false;
     private long mStartTime;
     private boolean mIsWaitingForCapture = false;
+    // We hold here a reference to the popupmenu and the list, because we are not shure what is first initialized:
+    private List<String> mFlashModes;
+    private PopupMenu mFlashPopupMenu;
 
     // TODO: use here values.ints
     private final int DOCUMENT_STEADY_TIME = 5000;
@@ -316,8 +320,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.actionbar_menu, menu);
-
         mModeMenuItem = menu.findItem(R.id.shoot_mode_item);
+        mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
 
         return true;
     }
@@ -326,6 +330,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         mAutoShootDrawable = getResources().getDrawable(R.drawable.auto_shoot);
         mManualShootDrawable = getResources().getDrawable(R.drawable.manual_auto);
+        mFlashAutoDrawable = getResources().getDrawable(R.drawable.ic_flash_auto);
+        mFlashOffDrawable = getResources().getDrawable(R.drawable.ic_flash_off);
+        mFlashOnDrawable = getResources().getDrawable(R.drawable.ic_flash_on);
 
     }
 
@@ -958,7 +965,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
 
-    // =================  start: CameraPreview.DimensionChange CALLBACK =================
+    // =================  start: CameraPreview.CameraPreviewCallback CALLBACK =================
 
     /**
      * Called after the dimension of the camera view is set. The dimensions are necessary to convert
@@ -973,10 +980,59 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
-    public void showPopup(MenuItem item){
+    @Override
+    public void onFlashModesFound(List<String> modes) {
+
+        mFlashModes = modes;
+        if (mFlashPopupMenu != null)
+            setupFlashPopup();
+
+    }
+
+    public void showFlashPopup(MenuItem item) {
+
+        View menuItemView = findViewById(R.id.flash_mode_item);
+        if (menuItemView == null)
+            return;
+        mFlashPopupMenu = new PopupMenu(this, menuItemView);
+        if (mFlashPopupMenu == null)
+            return;
+        mFlashPopupMenu.setOnMenuItemClickListener(this);
+        mFlashPopupMenu.inflate(R.menu.flash_mode_menu);
+        mFlashPopupMenu.show();
+
+    }
+
+    private void setupFlashPopup() {
+
+        if (mFlashPopupMenu == null)
+            return;
+
+        // TODO: Test this on Moto E:
+        if (mFlashModes == null)
+            mFlashMenuItem.setVisible(false);
+        if (mFlashModes.size() == 1)
+            mFlashMenuItem.setVisible(false);
+
+        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO))
+            mFlashPopupMenu.getMenu().findItem(R.id.flash_auto_item).setVisible(false);
+
+        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_ON))
+            mFlashPopupMenu.getMenu().findItem(R.id.flash_on_item).setVisible(false);
+
+        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_OFF))
+            mFlashPopupMenu.getMenu().findItem(R.id.flash_off_item).setVisible(false);
+
+    }
+
+    public void showShootPopup(MenuItem item){
 
         View menuItemView = findViewById(R.id.shoot_mode_item);
+        if (menuItemView == null)
+            return;
         PopupMenu popupMenu = new PopupMenu(this, menuItemView);
+        if (popupMenu == null)
+            return;
         popupMenu.setOnMenuItemClickListener(this);
         popupMenu.inflate(R.menu.shoot_mode_menu);
         popupMenu.show();
@@ -995,6 +1051,21 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 mModeMenuItem.setIcon(mAutoShootDrawable);
                 mIsAutoMode = true;
                 return true;
+            case R.id.flash_auto_item:
+                mFlashMenuItem.setIcon(mFlashAutoDrawable);
+                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
+                return true;
+            case R.id.flash_off_item:
+                mFlashMenuItem.setIcon(mFlashOffDrawable);
+                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+//                mFlashMode = Camera.Parameters.FLASH_MODE_OFF;
+                return true;
+            case R.id.flash_on_item:
+                mFlashMenuItem.setIcon(mFlashOnDrawable);
+                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+//                mFlashMode = Camera.Parameters.FLASH_MODE_ON;
+                return true;
+
             default:
                 return false;
         }
@@ -1102,6 +1173,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
             case CVResult.DOCUMENT_STATE_UNSHARP:
                 return getResources().getString(R.string.instruction_unsharp);
+
+            case CVResult.DOCUMENT_STATE_ROATION:
+                return getResources().getString(R.string.instruction_rotation);
 
             case CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED:
                 return getResources().getString(R.string.instruction_no_focus_measured);
