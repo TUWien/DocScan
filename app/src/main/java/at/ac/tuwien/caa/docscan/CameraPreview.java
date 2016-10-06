@@ -53,12 +53,12 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  */
 public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {
 
-//    private static final int MAX_MAT_WIDTH = 500;
-//    private static final int MAX_MAT_HEIGHT = 500;
+    private static final int MAX_MAT_WIDTH = 500;
+    private static final int MAX_MAT_HEIGHT = 500;
 
     // Temporary disable scaling of mat:
-    private static final int MAX_MAT_WIDTH = 50000;
-    private static final int MAX_MAT_HEIGHT = 50000;
+//    private static final int MAX_MAT_WIDTH = 50000;
+//    private static final int MAX_MAT_HEIGHT = 50000;
 
     private static final String TAG = "CameraPreview";
     private SurfaceHolder mHolder;
@@ -68,7 +68,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private int mSurfaceWidth, mSurfaceHeight;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private NativeWrapper.CVCallback mCVCallback;
-    private DimensionChangeCallback mDimensionChangeCallback;
+    private CameraPreviewCallback mCameraPreviewCallback;
 
     private PageSegmentationThread mPageSegmentationThread;
     private FocusMeasurementThread mFocusMeasurementThread;
@@ -118,7 +118,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mHolder.addCallback(this);
 
         mCVCallback = (NativeWrapper.CVCallback) context;
-        mDimensionChangeCallback = (DimensionChangeCallback) context;
+        mCameraPreviewCallback = (CameraPreviewCallback) context;
 
         // used for debugging:
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
@@ -261,21 +261,21 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             @Override
             public void onAutoFocus(boolean success, Camera camera) {
 
-                camera.cancelAutoFocus();
-
-                if (camera.getParameters().getFocusMode() != Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO) {
+//                camera.cancelAutoFocus();
 //
+//                if (camera.getParameters().getFocusMode() != Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO) {
+////
+////
+//////                        mCamera.stopPreview();
+//                    Camera.Parameters parameters = camera.getParameters();
+//                    mCamera.autoFocus(null);
+//                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+////                    if (parameters.getMaxNumFocusAreas() > 0) {
+////                        parameters.setFocusAreas(null);
+////                    }
+//                    mCamera.setParameters(parameters);
 //
-////                        mCamera.stopPreview();
-                    Camera.Parameters parameters = camera.getParameters();
-                    mCamera.autoFocus(null);
-                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-//                    if (parameters.getMaxNumFocusAreas() > 0) {
-//                        parameters.setFocusAreas(null);
-//                    }
-                    mCamera.setParameters(parameters);
-
-                }
+//                }
             }
 
         });
@@ -377,6 +377,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         params.setPreviewSize(mFrameWidth, mFrameHeight);
 
+        List<String> flashModes = params.getSupportedFlashModes();
+        mCameraPreviewCallback.onFlashModesFound(flashModes);
+
         mCamera.setParameters(params);
 
         mPageSegmentationThread = new PageSegmentationThread(this);
@@ -386,7 +389,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mFocusMeasurementThread = new FocusMeasurementThread(this);
         if (mFocusMeasurementThread.getState() == Thread.State.NEW)
             mFocusMeasurementThread.start();
-
 
         try {
 
@@ -412,7 +414,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         // Tell the dependent Activity that the frame dimension (might have) change:
 //        mDimensionChangeCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
-        mDimensionChangeCallback.onFrameDimensionChange(mMatWidth, mMatHeight, orientation);
+        mCameraPreviewCallback.onFrameDimensionChange(mMatWidth, mMatHeight, orientation);
 
 
     }
@@ -622,7 +624,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         }
 
         // Finally tell the dependent Activity the dimension has changed:
-        mDimensionChangeCallback.onMeasuredDimensionChange(getMeasuredWidth(), getMeasuredHeight());
+        mCameraPreviewCallback.onMeasuredDimensionChange(getMeasuredWidth(), getMeasuredHeight());
     }
 
     @Override
@@ -630,14 +632,23 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    public void setFlashMode(String flashMode) {
+
+        Camera.Parameters params = mCamera.getParameters();
+        params.setFlashMode(flashMode);
+        mCamera.setParameters(params);
+
+    }
+
     /**
      * Interfaces used to tell the activity that a dimension is changed. This is used to enable
      * a conversion between frame and screen coordinates (necessary for drawing in PaintView).
      */
-    public interface DimensionChangeCallback {
+    public interface CameraPreviewCallback {
 
         void onMeasuredDimensionChange(int width, int height);
         void onFrameDimensionChange(int width, int height, int cameraOrientation);
+        void onFlashModesFound(List<String> modes);
 
     }
 

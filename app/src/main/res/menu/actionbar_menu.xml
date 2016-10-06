@@ -3,11 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/flash_mode_item"
+        android:icon="@drawable/ic_flash_off"
+        android:title="Shoot Mode"
+        app:showAsAction="always"
+        android:onClick="showFlashPopup"
+        />
+
+    <item
         android:id="@+id/shoot_mode_item"
         android:icon="@drawable/manual_auto"
-        android:title="asdf"
+        android:title="Shoot Mode"
         app:showAsAction="always"
-        android:onClick="showPopup"
+        android:onClick="showShootPopup"
         />
 
 </menu>

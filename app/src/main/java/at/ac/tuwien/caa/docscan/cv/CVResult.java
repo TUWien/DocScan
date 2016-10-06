@@ -43,8 +43,9 @@ public class CVResult {
     public static final int DOCUMENT_STATE_EMPTY = 1;
     public static final int DOCUMENT_STATE_SMALL = 2;
     public static final int DOCUMENT_STATE_PERSPECTIVE = 3;
-    public static final int DOCUMENT_STATE_NO_FOCUS_MEASURED = 4;
-    public static final int DOCUMENT_STATE_UNSHARP = 5;
+    public static final int DOCUMENT_STATE_ROATION = 4;
+    public static final int DOCUMENT_STATE_NO_FOCUS_MEASURED = 5;
+    public static final int DOCUMENT_STATE_UNSHARP = 6;
 
     private static final int ORIENTATION_LANDSCAPE = 0;
     private static final int ORIENTATION_PORTRAIT = 90;
@@ -270,8 +271,11 @@ public class CVResult {
         if (!isAreaCorrect(polyRect))
             return DOCUMENT_STATE_SMALL;
 
-        if (!isAngleCorrect(polyRect))
+        if (!isPerspectiveCorrect(polyRect))
             return DOCUMENT_STATE_PERSPECTIVE;
+
+        if (!isRotationCorrect(polyRect))
+            return DOCUMENT_STATE_ROATION;
 
         if (mPatches == null)
             return DOCUMENT_STATE_NO_FOCUS_MEASURED;
@@ -297,7 +301,7 @@ public class CVResult {
 
     }
 
-    private boolean isAngleCorrect(DkPolyRect polyRect) {
+    private boolean isPerspectiveCorrect(DkPolyRect polyRect) {
 
         double largestAngle = polyRect.getLargestAngle();
 
@@ -306,6 +310,16 @@ public class CVResult {
 
         return true;
 
+    }
+
+    private boolean isRotationCorrect(DkPolyRect polyRect) {
+
+        double minAngle = polyRect.getDocumentRotation();
+        Log.d(TAG, "angle: " + minAngle);
+        if (minAngle > mContext.getResources().getInteger(R.integer.max_rotation))
+            return false;
+
+        return true;
     }
 
     private boolean isSharp() {
