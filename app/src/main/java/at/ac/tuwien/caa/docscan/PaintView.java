@@ -32,7 +32,6 @@ import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -57,6 +56,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     // boolean indicating whether the values of the focus measurement should be drawn:
     private boolean mDrawFocusText;
+    private boolean mDrawGuideLines = false;
     private SurfaceHolder mHolder;
 
     private CVResult mCVResult;
@@ -222,6 +222,17 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
+    public void drawGuideLines(boolean drawGuideLines) {
+
+        mDrawGuideLines = drawGuideLines;
+
+    }
+
+    public boolean areGuideLinesDrawn() {
+
+        return mDrawGuideLines;
+
+    }
 
 
     /**
@@ -232,11 +243,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private SurfaceHolder mSurfaceHolder;
         private boolean mIsRunning;
 
+
         private Paint mTextPaint;
         private Paint mBGPaint;
         private Paint mSegmentationPaint;
         private Path mSegmentationPath;
-        private Paint mHelperPaint;
+        private Paint mGuidePaint;
 
         private static final float RECT_HALF_SIZE = 30;
         private static final String TEXT_FORMAT = "%.2f";
@@ -289,10 +301,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mFocusUnsharpRectPaint.setStyle(Paint.Style.STROKE);
             mFocusUnsharpRectPaint.setColor(FOCUS_UNSHARP_RECT_COLOR);
 
-            mHelperPaint = new Paint();
-            mHelperPaint.setStrokeWidth(2);
-            mHelperPaint.setStyle(Paint.Style.STROKE);
-            mHelperPaint.setColor(HELPER_LINE_COLOR);
+            mGuidePaint = new Paint();
+            mGuidePaint.setStrokeWidth(2);
+            mGuidePaint.setStyle(Paint.Style.STROKE);
+            mGuidePaint.setColor(HELPER_LINE_COLOR);
 
             mBGPaint = new Paint();
             mBGPaint.setColor(STATE_TEXT_BG_COLOR);
@@ -364,6 +376,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         }
 
+
+
         /**
          * Method used for the drawing of the CV result.
          * @param canvas
@@ -401,49 +415,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         }
 
-        private void drawDocumentState(Canvas canvas) {
-
-            // Get the size of the text in screen units so that we can center the text:
-            // (Do this just for the first iteration.)
-
-            String instruction = getInstructionMessage();
 
 
-
-            Rect textRect = new Rect();
-            mTextPaint.getTextBounds(instruction, 0, instruction.length(), textRect);
-            float textWidth = (float) textRect.width() / 2;
-            float textHeight = (float) textRect.height() / 2;
-
-            float textXPos = canvas.getWidth() / 2 - textWidth;
-            float textYPos = canvas.getHeight() / 2;
-
-            mTextPaint.setColor(Color.BLACK);
-
-            RectF textRectF = new RectF(textXPos-15, textYPos-textHeight * 2-15, textXPos + textWidth * 2+15, textYPos +15);
-            canvas.drawRoundRect(textRectF, 15, 15, mBGPaint);
-
-            canvas.drawText(instruction, textXPos, textYPos, mTextPaint);
-
-        }
-
-        private String getInstructionMessage() {
-
-            switch (mCVResult.getState()) {
-
-                case CVResult.DOCUMENT_STATE_EMPTY:
-                    return getResources().getString(R.string.instruction_empty);
-
-                case CVResult.DOCUMENT_STATE_OK:
-                    return getResources().getString(R.string.instruction_ok);
-
-                case CVResult.DOCUMENT_STATE_SMALL:
-                    return getResources().getString(R.string.instruction_small);
-            }
-
-            return getResources().getString(R.string.instruction_unknown);
-
-        }
 
         /**
          * Draws the output of the page segmentation task.
@@ -469,9 +442,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     } else
                         mSegmentationPath.lineTo(point.x, point.y);
 
-                    canvas.drawLine(0, point.y, getWidth(), point.y, mHelperPaint);
-                    canvas.drawLine(point.x, 0, point.x, mCVResult.getViewHeight(), mHelperPaint);
-
+                    if (mDrawGuideLines) {
+                        canvas.drawLine(0, point.y, getWidth(), point.y, mGuidePaint);
+                        canvas.drawLine(point.x, 0, point.x, mCVResult.getViewHeight(), mGuidePaint);
+                    }
                 }
 
                 mSegmentationPath.close();

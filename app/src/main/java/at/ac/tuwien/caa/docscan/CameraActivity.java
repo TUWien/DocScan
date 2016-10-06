@@ -800,6 +800,21 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
                 break;
 
+            // Text for focus measurement:
+            case R.id.action_show_guide:
+
+                if (mPaintView.areGuideLinesDrawn()) {
+                    mPaintView.drawGuideLines(false);
+                    menuItem.setTitle(R.string.show_guide_text);
+                }
+                else {
+                    mPaintView.drawGuideLines(true);
+                    menuItem.setTitle(R.string.hide_guide_text);
+                }
+
+                break;
+
+
         }
 
         mDrawerLayout.closeDrawers();
@@ -1010,7 +1025,19 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     @Override
     public void onStatusChange(final int state) {
 
+        // Check if we need the focus measurement at this point:
+        if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+            mCameraPreview.startFocusMeasurement(true);
+
+        }
+        else if (state != CVResult.DOCUMENT_STATE_UNSHARP && state != CVResult.DOCUMENT_STATE_OK) {
+            mCameraPreview.startFocusMeasurement(false);
+            mCVResult.setPatches(null);
+        }
+
         final String msg;
+
+//        mCameraPreview.startFocusMeasurement(true);
 
         if (!mIsPictureSafe) {
             msg = getResources().getString(R.string.taking_picture_text);
@@ -1075,6 +1102,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
             case CVResult.DOCUMENT_STATE_UNSHARP:
                 return getResources().getString(R.string.instruction_unsharp);
+
+            case CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED:
+                return getResources().getString(R.string.instruction_no_focus_measured);
 
         }
 

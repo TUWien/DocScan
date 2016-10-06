@@ -83,7 +83,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private long mLastTime;
 
     // Used for generating mFrameMat at a 'fixed' frequency:
-    private static long FRAME_TIME_DIFF = 100;
+    private static long FRAME_TIME_DIFF = 200;
 
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
@@ -369,6 +369,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mFrameHeight = bestSize.height;
 
         // Use autofocus if available:
+//        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
+//            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+
         if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
             params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
 
@@ -452,8 +455,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                 Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
 
-                Size s = new Size(mMatWidth, mMatHeight);
-                Imgproc.resize(mFrameMat, mFrameMat, s);
+                if (mFrameWidth > mMatWidth || mFrameHeight > mMatHeight) {
+                    Size s = new Size(mMatWidth, mMatHeight);
+                    Imgproc.resize(mFrameMat, mFrameMat, s);
+                }
 
                 yuv.release();
 
@@ -470,6 +475,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         }
 
+
+
+    }
+
+    public void startFocusMeasurement(boolean start) {
+
+        mFocusMeasurementThread.setRunning(start);
 
 
     }
@@ -629,31 +641,21 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    public boolean isFocusMeasured() {
+
+        return mFocusMeasurementThread.mIsRunning;
+
+    }
 
 
-    // ================= start: CVThread and subclasses =================
+    public class FocusMeasurementThread extends Thread {
+
+        private CameraPreview mCameraView;
+        private boolean mIsRunning;
 
 
-    /**
-     * Abstract class extending a thread, concerned with computer vision tasks. Note that this class
-     * and its child are connected to the CameraPreview, so that the tasks are only executed in case
-     * of updates of the mFrameMat.
-     */
-    public abstract class CVThread extends Thread {
+        public FocusMeasurementThread(CameraPreview cameraView) {
 
-        protected CameraPreview mCameraView;
-        protected boolean mIsRunning = true;
-
-        protected abstract void execute();
-
-        public CVThread() {
-
-        }
-
-        public CVThread(CameraPreview cameraView) {
-
-
-            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
             mCameraView = cameraView;
 
         }
@@ -666,14 +668,31 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
             synchronized (mCameraView) {
 
-                while (mIsRunning) {
+                while (true) {
 
-                        try {
-                            mCameraView.wait();
-                            execute();
+                    try {
+                        mCameraView.wait();
 
-                        } catch (InterruptedException e) {
+
+                        if (mIsRunning) {
+
+//                // Measure the time if required:
+                            if (CameraActivity.isDebugViewEnabled())
+                                mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
+
+                            Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
+
+                            if (CameraActivity.isDebugViewEnabled())
+                                mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
+
+                            mCVCallback.onFocusMeasured(patches);
+
+
                         }
+//                        execute();
+
+                    } catch (InterruptedException e) {
+                    }
 
                 }
 
@@ -686,73 +705,198 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         }
 
+
+
     }
 
-    /**
-     * Class responsible for calling the native method for page detection.
-     */
-    public class PageSegmentationThread extends CVThread {
+    public class PageSegmentationThread extends Thread {
+
+        private CameraPreview mCameraView;
+        private boolean mIsRunning;
+
 
         public PageSegmentationThread(CameraPreview cameraView) {
 
-            super(cameraView);
+            mCameraView = cameraView;
+            mIsRunning = true;
 
         }
 
-        protected void execute() {
+        /**
+         * The main loop of the thread.
+         */
+        @Override
+        public void run() {
 
-            if (mIsRunning) {
+            synchronized (mCameraView) {
 
-                // Measure the time if required:
-                if (CameraActivity.isDebugViewEnabled())
-                    mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
+                while (true) {
 
-
-
-                    DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
-
-                if (CameraActivity.isDebugViewEnabled())
-                    mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
-
-                    mCVCallback.onPageSegmented(polyRects);
+                    try {
+                        mCameraView.wait();
 
 
+                        if (mIsRunning) {
+
+                            // Measure the time if required:
+                            if (CameraActivity.isDebugViewEnabled())
+                                mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
 
 
+
+                            DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
+
+                            if (CameraActivity.isDebugViewEnabled())
+                                mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
+
+                            mCVCallback.onPageSegmented(polyRects);
+
+
+                        }
+//                        execute();
+
+                    } catch (InterruptedException e) {
+                    }
+
+                }
 
             }
         }
-    }
 
-    /**
-     * Class responsible for calling the native method for focus measurement.
-     */
-    class FocusMeasurementThread extends CVThread {
+        public void setRunning(boolean running) {
 
-        public FocusMeasurementThread(CameraPreview cameraView) {
-            super(cameraView);
+            mIsRunning = running;
+
         }
 
 
-        protected void execute() {
 
-            if (mIsRunning) {
+    }
 
+
+    // ================= start: CVThread and subclasses =================
+
+
+//    /**
+//     * Abstract class extending a thread, concerned with computer vision tasks. Note that this class
+//     * and its child are connected to the CameraPreview, so that the tasks are only executed in case
+//     * of updates of the mFrameMat.
+//     */
+//    public abstract class CVThread extends Thread {
+//
+//        protected CameraPreview mCameraView;
+//        protected boolean mIsRunning = true;
+//
+//        protected abstract void execute();
+//
+//        public CVThread() {
+//
+//        }
+//
+//        public CVThread(CameraPreview cameraView) {
+//
+//
+//            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+//            mCameraView = cameraView;
+//
+//        }
+//
+//        /**
+//         * The main loop of the thread.
+//         */
+//        @Override
+//        public void run() {
+//
+//            synchronized (mCameraView) {
+//
+//                while (true) {
+//
+//                        try {
+//                            mCameraView.wait();
+//                            execute();
+//
+//                        } catch (InterruptedException e) {
+//                        }
+//
+//                }
+//
+//            }
+//        }
+//
+//        public void setRunning(boolean running) {
+//
+//            mIsRunning = running;
+//
+//        }
+//
+//    }
+//
+//    /**
+//     * Class responsible for calling the native method for page detection.
+//     */
+//    public class PageSegmentationThread extends CVThread {
+//
+//        public PageSegmentationThread(CameraPreview cameraView) {
+//
+//            super(cameraView);
+//
+//        }
+//
+//        protected void execute() {
+//
+//            if (mIsRunning) {
+//
 //                // Measure the time if required:
-                if (CameraActivity.isDebugViewEnabled())
-                    mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
+//                if (CameraActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
+//
+//
+//
+//                    DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
+//
+//                if (CameraActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
+//
+//                    mCVCallback.onPageSegmented(polyRects);
+//
+//
+//
+//
+//
+//            }
+//        }
+//
+//    }
 
-                Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
-
-                if (CameraActivity.isDebugViewEnabled())
-                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
-
-                mCVCallback.onFocusMeasured(patches);
-
-
-            }
-        }
-    }
+//    /**
+//     * Class responsible for calling the native method for focus measurement.
+//     */
+//    class FocusMeasurementThread extends CVThread {
+//
+//        public FocusMeasurementThread(CameraPreview cameraView) {
+//            super(cameraView);
+//        }
+//
+//
+//        protected void execute() {
+//
+//            if (mIsRunning) {
+//
+////                // Measure the time if required:
+//                if (CameraActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
+//
+//                Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
+//
+//                if (CameraActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
+//
+//                mCVCallback.onFocusMeasured(patches);
+//
+//
+//            }
+//        }
+//    }
 
 
     // ================= end: CVThread and subclasses =================
