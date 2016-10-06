@@ -7,6 +7,8 @@
     <string name="show_debug_view_text">Show debug view</string>
     <string name="hide_debug_view_text">Hide debug view</string>
     <string name="show_fm_values_text">Show focus values</string>
+    <string name="show_guide_text">Show guide lines</string>
+    <string name="hide_guide_text">Hide guide lines</string>
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="dont_move_text">Do not move for: </string>
     <string name="taking_picture_text">Taking picture</string>
@@ -40,6 +42,7 @@
     <string name="instruction_empty">no document found</string>
     <string name="instruction_small">move closer</string>
     <string name="instruction_perspective">change perspective</string>
+    <string name="instruction_no_focus_measured">calculating focus</string>
     <string name="instruction_unsharp">focus</string>
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>

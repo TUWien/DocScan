@@ -14,4 +14,10 @@
             android:title="@string/show_fm_values_text" />
     </group>
 
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/action_show_guide"
+            android:title="@string/show_guide_text" />
+    </group>
+
 </menu>

@@ -43,7 +43,8 @@ public class CVResult {
     public static final int DOCUMENT_STATE_EMPTY = 1;
     public static final int DOCUMENT_STATE_SMALL = 2;
     public static final int DOCUMENT_STATE_PERSPECTIVE = 3;
-    public static final int DOCUMENT_STATE_UNSHARP = 4;
+    public static final int DOCUMENT_STATE_NO_FOCUS_MEASURED = 4;
+    public static final int DOCUMENT_STATE_UNSHARP = 5;
 
     private static final int ORIENTATION_LANDSCAPE = 0;
     private static final int ORIENTATION_PORTRAIT = 90;
@@ -156,6 +157,8 @@ public class CVResult {
      */
     private void updatePatches() {
 
+        if (mPatches == null)
+            return;
 
 //        Patch patch;
         PointF screenPoint, framePoint;
@@ -269,6 +272,9 @@ public class CVResult {
 
         if (!isAngleCorrect(polyRect))
             return DOCUMENT_STATE_PERSPECTIVE;
+
+        if (mPatches == null)
+            return DOCUMENT_STATE_NO_FOCUS_MEASURED;
 
         if (!isSharp())
             return DOCUMENT_STATE_UNSHARP;
