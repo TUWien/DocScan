@@ -5,7 +5,8 @@
     <integer name="max_page_angle">97</integer>
     <integer name="max_rotation">4</integer>
     <integer name="min_focus_ratio">50</integer>
-    <integer name="observation_time">3000</integer> <!-- time in milli-seconds -->
 
+    <integer name="observation_time">3000</integer> <!-- time in milli-seconds -->
+    <integer name="flicker_time">1000</integer> <!-- time in milli-seconds -->
 
 </resources>

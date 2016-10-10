@@ -62,8 +62,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -130,6 +131,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     // We hold here a reference to the popupmenu and the list, because we are not shure what is first initialized:
     private List<String> mFlashModes;
     private PopupMenu mFlashPopupMenu;
+    private boolean mIsFlashModeInit = false;
 
     // TODO: use here values.ints
     private final int DOCUMENT_STEADY_TIME = 5000;
@@ -276,13 +278,14 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         else
             mIsDebugViewEnabled = true;
 
-
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
         initGalleryCallback();
         initPictureCallback();
         initDrawables();
+
+        loadThumbnail();
 
 
     }
@@ -321,7 +324,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.actionbar_menu, menu);
         mModeMenuItem = menu.findItem(R.id.shoot_mode_item);
+
         mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
+        if (mIsFlashModeInit && mFlashModes == null)
+            mFlashMenuItem.setVisible(false);
 
         return true;
     }
@@ -616,6 +622,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private void takePicture() {
 
         mIsPictureSafe = false;
+        mPaintView.showFlicker();
         mCamera.takePicture(null, null, mPictureCallback);
 
 
@@ -727,7 +734,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-
         Menu menu = mDrawer.getMenu();
         MenuItem item = menu.findItem(R.id.action_show_debug_view);
 
@@ -984,6 +990,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     public void onFlashModesFound(List<String> modes) {
 
         mFlashModes = modes;
+        mIsFlashModeInit = true;
+
+        if (mFlashModes == null && mFlashMenuItem != null)
+            mFlashMenuItem.setVisible(false);
+
         if (mFlashPopupMenu != null)
             setupFlashPopup();
 
@@ -994,9 +1005,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         View menuItemView = findViewById(R.id.flash_mode_item);
         if (menuItemView == null)
             return;
+
         mFlashPopupMenu = new PopupMenu(this, menuItemView);
         if (mFlashPopupMenu == null)
             return;
+
         mFlashPopupMenu.setOnMenuItemClickListener(this);
         mFlashPopupMenu.inflate(R.menu.flash_mode_menu);
         mFlashPopupMenu.show();
@@ -1072,12 +1085,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
-//    public void showPopup(View v) {
-//        PopupMenu popup = new PopupMenu(this, v);
-//        MenuInflater inflater = popup.getMenuInflater();
-//        inflater.inflate(R.menu.actions, popup.getMenu());
-//        popup.show();
-//    }
     /**
      * Called after the dimension of the camera frame is set. The dimensions are necessary to convert
      * the frame coordinates to view coordinates.
@@ -1190,6 +1197,64 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
 
+    private void loadThumbnail() {
+
+        File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
+        if (mediaStorageDir == null)
+            return;
+
+        String[] files = mediaStorageDir.list();
+
+        if (files == null)
+            return;
+        else if (files.length == 0)
+            return;
+
+        // Determine the most recent image:
+        Arrays.sort(files);
+        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1];
+
+
+        Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName.toString()), 200, 200);
+        if (thumbNailBitmap == null)
+            return;
+
+        // Determine the rotation angle of the image:
+        int angle = -1;
+        try {
+            ExifInterface exif = new ExifInterface(fileName);
+            String attr = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+            angle = getAngleFromExif(Integer.valueOf(attr));
+        } catch (IOException e) {
+            return;
+        }
+
+        //Rotate the image:
+        Matrix mtx = new Matrix();
+        mtx.setRotate(angle);
+        thumbNailBitmap = Bitmap.createBitmap(thumbNailBitmap, 0, 0, thumbNailBitmap.getWidth(), thumbNailBitmap.getHeight(), mtx, true);
+
+        // Update the gallery button:
+        final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), thumbNailBitmap);
+        if (thumbDrawable == null)
+            return;
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setGalleryButtonDrawable(thumbDrawable);
+            }
+        });
+
+    }
+
+    private void setGalleryButtonDrawable(Drawable drawable) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+            mGalleryButton.setBackground(drawable);
+        else
+            mGalleryButton.setBackgroundDrawable(drawable);
+    }
 
 
     /**
@@ -1227,6 +1292,44 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         }
     }
 
+    private int getExifOrientation() {
+
+        switch (mCameraOrientation) {
+
+            case 0:
+                return 1;
+            case 90:
+                return 6;
+            case 180:
+                return 3;
+            case 270:
+                return 8;
+
+        }
+
+        return -1;
+
+    }
+
+    private int getAngleFromExif(int orientation) {
+
+        switch (orientation) {
+
+            case 1:
+                return 0;
+            case 6:
+                return 90;
+            case 3:
+                return 180;
+            case 8:
+                return 270;
+
+        }
+
+        return -1;
+
+    }
+
 
     /**
      * Class used to save pictures in an own thread (AsyncTask).
@@ -1248,18 +1351,17 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
             try {
 
-                runOnUiThread(new Runnable() {
+                final RotateAnimation ranim = (RotateAnimation) AnimationUtils.loadAnimation(getApplicationContext(), R.anim.image_button_rotate);
 
+                runOnUiThread(new Runnable() {
+//
                     @Override
                     public void run() {
                         Drawable drawable = getResources().getDrawable(R.drawable.ic_gallery_busy);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-                            mGalleryButton.setBackground(drawable);
-                        else
-                            mGalleryButton.setBackgroundDrawable(drawable);
-
-                        mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
+                        setGalleryButtonDrawable(drawable);
+                        mGalleryButton.setAnimation(ranim);
                     }
+
                 });
 
                 FileOutputStream fos = new FileOutputStream(outFile);
@@ -1269,6 +1371,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
                 // Set exif orientation (avoid a real rotation of the image):
                 // TODO: Test on more devices. Currently tested on: Nexus 5X, Moto E
+                // TODO: check if we loose here other exif values
                 final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
 
                 if (exif != null) {
@@ -1300,12 +1403,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                             @Override
                             public void run() {
 
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-                                    mGalleryButton.setBackground(thumbDrawable);
-                                else
-                                    mGalleryButton.setBackgroundDrawable(thumbDrawable);
+                                ranim.cancel();
+                                setGalleryButtonDrawable(thumbDrawable);
 
-                                mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
+//                                mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
+//                                mPaintView.showSpinner(false);
                             }
 
                         });
@@ -1331,24 +1433,13 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         }
 
-        private int getExifOrientation() {
 
-            switch (mCameraOrientation) {
-
-                case 0:
-                    return 1;
-                case 90:
-                    return 6;
-                case 180:
-                    return 3;
-                case 270:
-                    return 8;
-
-            }
-
-            return -1;
-
-        }
+//        @Override
+//        protected void onPostExecute(Void v) {
+//
+//            mPaintView.showSpinner(false);
+//
+//        }
 
 
     }

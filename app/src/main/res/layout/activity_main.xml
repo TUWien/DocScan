@@ -55,7 +55,6 @@
             android:layout_gravity="bottom"
             android:layout_width="match_parent"
             android:layout_height="100dp"
-
             android:background="@color/photo_button_view_bg_color">
 
             <ImageButton

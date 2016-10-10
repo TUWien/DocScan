@@ -186,7 +186,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public void resume() {
 
 
-        if (!isCameraInitialized)
+        if (!isCameraInitialized && mSurfaceWidth > 0)
             initCamera(mSurfaceWidth, mSurfaceHeight);
 
     }

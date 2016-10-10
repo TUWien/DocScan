@@ -32,6 +32,7 @@ import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -58,7 +59,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean mDrawFocusText;
     private boolean mDrawGuideLines = false;
     private SurfaceHolder mHolder;
-
+    private static Spinner mSpinner;
+    private static Flicker mFlicker;
     private CVResult mCVResult;
 
 
@@ -89,6 +91,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         mDrawerThread = new DrawerThread(holder);
 
         mDrawFocusText = false;
+
+        mSpinner = new Spinner();
+        mFlicker = new Flicker();
 
     }
 
@@ -234,6 +239,18 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    public void showFlicker() {
+
+        // This is necessary, since we do not want to wait for the next update from the mCVResult:
+        synchronized (mCVResult) {
+            mCVResult.notify();
+        }
+
+        mFlicker.mVisible = true;
+
+    }
+
+
 
     /**
      * Class responsible for the actual drawing.
@@ -264,6 +281,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         private Paint mFocusSharpRectPaint;
         private Paint mFocusUnsharpRectPaint;
+        private int angle = 0;
 
         // Used for debug output:
 
@@ -323,30 +341,37 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             while (mIsRunning) {
 
                 Canvas canvas = null;
-//
-                // This wait is used to assure that the drawing function is just called after an update
-                // from the native package:
-                synchronized (mCVResult) {
 
-                    try {
-                        mCVResult.wait();
-                    } catch (InterruptedException e) {
+                if (mFlicker.mVisible)
+                    mFlicker.draw();
 
-                    }
+                else {
 
-                    try {
-                        canvas = mSurfaceHolder.lockCanvas();
-                        draw(canvas);
-                    } finally {
-                        // do this in a finally so that if an exception is thrown
-                        // during the above, we don't leave the Surface in an
-                        // inconsistent state
-                        if (canvas != null) {
-                            mSurfaceHolder.unlockCanvasAndPost(canvas);
+                    // This wait is used to assure that the drawing function is just called after an update
+                    // from the native package:
+                    synchronized (mCVResult) {
+
+                        try {
+                            mCVResult.wait();
+                        } catch (InterruptedException e) {
+
                         }
-                    }
 
+                        try {
+                            canvas = mSurfaceHolder.lockCanvas();
+                            draw(canvas);
+                        } finally {
+                            // do this in a finally so that if an exception is thrown
+                            // during the above, we don't leave the Surface in an
+                            // inconsistent state
+                            if (canvas != null) {
+                                mSurfaceHolder.unlockCanvasAndPost(canvas);
+                            }
+                        }
+
+                    }
                 }
+
 
             }
         }
@@ -404,6 +429,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 // Page segmentation:
                 if (mCVResult.getDKPolyRects() != null)
                     drawPageSegmentation(canvas);
+
+//                drawSavingAnimation(canvas);
 
                 // Output the document state:
 //                drawDocumentState(canvas);
@@ -504,14 +531,138 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                                 patch.getDrawViewPY() - RECT_HALF_SIZE - 10, mTextPaint);
 
                     }
-
                 }
-
             }
+        }
 
+//        private void drawSavingAnimation(Canvas canvas) {
+//
+//            Paint arcPaint = new Paint();
+//            arcPaint = new Paint();
+//            arcPaint.setColor(Color.GREEN);
+//            arcPaint.setStyle(Paint.Style.STROKE);
+//            arcPaint.setStrokeWidth(7);
+//            RectF r = new RectF(0, 0, 200, 200);
+//            canvas.drawArc(r, angle, angle + 45, false, arcPaint);
+//            angle = angle + 45;
+//            angle = angle % 360;
+//
+//        }
+
+
+
+    }
+
+    /**
+     * This class is used when a picture is taken.
+     */
+    private class Flicker {
+
+        private boolean mVisible;
+        private Paint mFlickerPaint;
+
+        private Flicker() {
+
+            mVisible = false;
+
+            mFlickerPaint = new Paint();
+            mFlickerPaint.setStyle(Paint.Style.FILL);
+            mFlickerPaint.setColor(getResources().getColor(R.color.flicker_color));
+
+        }
+
+        private void draw() {
+
+            Canvas canvas = mHolder.lockCanvas();
+//            Clear the screen from previous drawings:
+            canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
+            Rect rect = new Rect(0,0, getWidth(), mCVResult.getViewHeight());
+            canvas.drawRect(rect, mFlickerPaint);
+
+            long startTime = System.currentTimeMillis();
+            long currentTime = -1;
+
+            while(currentTime - startTime < getResources().getInteger(R.integer.flicker_time))
+                currentTime = System.currentTimeMillis();
+
+
+            if (canvas != null)
+                mHolder.unlockCanvasAndPost(canvas);
+
+            mVisible = false;
 
         }
 
     }
+
+    private class Spinner {
+
+        private boolean mVisible;
+        private int angle;
+        private long lastTime;
+        private static final int CIRCLE_RADIUS = 200;
+        private RectF rect;
+        private int nextAngle;
+
+        private Spinner() {
+
+            angle = 0;
+            mVisible = false;
+
+
+        }
+
+        private void setVisible(boolean visible) {
+
+            mVisible = visible;
+            if (visible) {
+                angle = 0;
+                lastTime = -1;
+                nextAngle = 45;
+            }
+
+        }
+
+        private void draw() {
+
+            int startX = getWidth() / 2 - CIRCLE_RADIUS / 2;
+            int startY = getHeight() / 2 - CIRCLE_RADIUS / 2;
+            rect = new RectF(startX, startY, startX + CIRCLE_RADIUS, startY + CIRCLE_RADIUS);
+            angle = 0;
+
+
+            long currentTime = System.currentTimeMillis();
+//            canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
+
+            if (lastTime == -1 || (currentTime - lastTime) > 100) {
+
+//            Clear the screen from previous drawings:
+
+                Canvas canvas = mHolder.lockCanvas();
+
+                canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
+
+                Paint arcPaint = new Paint();
+                arcPaint.setColor(Color.CYAN);
+                arcPaint.setStyle(Paint.Style.STROKE);
+                arcPaint.setStrokeWidth(10);
+
+                canvas.drawArc(rect, angle, nextAngle, false, arcPaint);
+                nextAngle = nextAngle + 45;
+
+                if (nextAngle > 360)
+                    nextAngle = 45;
+
+                lastTime = currentTime;
+
+                if (canvas != null)
+                    mHolder.unlockCanvasAndPost(canvas);
+
+            }
+
+        }
+    }
+
+
 
  }
