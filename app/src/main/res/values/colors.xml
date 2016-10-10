@@ -20,6 +20,7 @@
 
     <color name="hud_state_rect_color">#11111111</color>
     <color name="hud_helper_line_color">#bb636363</color>
+    <color name="flicker_color">#bb636363</color>
 
     <color name="photo_button_view_bg_color">#000</color>
 </resources>
