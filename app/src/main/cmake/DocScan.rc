@@ -51,7 +51,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,26573
+ FILEVERSION 1,0,0,26580
  PRODUCTVERSION 1,0,0,26472
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -69,7 +69,7 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "TU Wien"
             VALUE "FileDescription", "flowView - a visualization tool for FCS data and AutoGating"
-            VALUE "FileVersion", "1.0.0.26573"
+            VALUE "FileVersion", "1.0.0.26580"
             VALUE "InternalName", "flowView.exe"
             VALUE "LegalCopyright", "(C) 2015 TU Wien, Computer Vision Lab, Markus Diem"
             VALUE "OriginalFilename", "flowView.exe"

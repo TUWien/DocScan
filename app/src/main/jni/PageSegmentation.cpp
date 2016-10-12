@@ -84,23 +84,30 @@ void DkPageSegmentation::compute() {
 
 	cv::Mat imgLab;
 
-	if (scale == 1.0f && 960.0f/mImg.cols < 0.8f)
-		scale = 960.0f/mImg.cols;
+	// compute scale factor
+	int maxImgSide = std::max(mImg.rows, mImg.cols);
+	scale = (float)maxImgWidth / maxImgSide;
+
+	if (scale <= 0.0)
+		std::cout << "[DkPageSegmentation] illegal image scaling detected..." << std::endl;
+
+	// do not upscale
+	if (scale > 0.8f || scale <= 0.0f)
+		scale = 1.0f;
 
 	cv::cvtColor(mImg, imgLab, CV_RGB2Lab);	// boost colors
 	cv::Mat lImg = findRectangles(imgLab, mRects);
 
 
-	std::cout << "[DkPageSegmentation] " << mRects.size() << " rectangles circles found resize factor: " << scale << std::endl;
+	std::cout << "[DkPageSegmentation] " << mRects.size() << " rectangles found resize factor: " << scale << std::endl;
 }
 
 cv::Mat DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& rects) const {
 
 	cv::Mat tImg, gray;
 
-
 	if (scale != 1.0f)
-		cv::resize(img, tImg, cv::Size(), scale, scale, CV_INTER_AREA);	// inter nn -> assuming resize to be 1/(2^n)
+		cv::resize(img, tImg, cv::Size(), scale, scale, CV_INTER_AREA);
 	else
 		tImg = img;
 

@@ -53,12 +53,9 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  */
 public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {
 
-    private static final int MAX_MAT_WIDTH = 500;
-    private static final int MAX_MAT_HEIGHT = 500;
-
-    // Temporary disable scaling of mat:
-//    private static final int MAX_MAT_WIDTH = 50000;
-//    private static final int MAX_MAT_HEIGHT = 50000;
+    //// let the C routine decide which resolution they need...
+    //private static final int MAX_MAT_WIDTH = 500;
+    //private static final int MAX_MAT_HEIGHT = 500;
 
     private static final String TAG = "CameraPreview";
     private SurfaceHolder mHolder;
@@ -402,7 +399,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         }
 
         // Determine the size of the Mat used for page segmentation and focus measure:
-        if (mFrameWidth > MAX_MAT_WIDTH)
+        /*if (mFrameWidth > MAX_MAT_WIDTH)
             mMatWidth = MAX_MAT_WIDTH;
         else
             mMatWidth = mFrameWidth;
@@ -410,7 +407,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mFrameHeight > MAX_MAT_HEIGHT)
             mMatHeight = MAX_MAT_HEIGHT;
         else
-            mMatHeight = mFrameHeight;
+            mMatHeight = mFrameHeight;*/
+
+        mMatWidth = mFrameWidth;
+        mMatHeight = mFrameHeight;
 
         // Tell the dependent Activity that the frame dimension (might have) change:
 //        mDimensionChangeCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
