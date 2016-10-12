@@ -40,9 +40,12 @@ DkIllumination::DkIllumination(const cv::Mat & img, const DkPolyRect & rect) {
 
 void DkIllumination::compute() {
 
-	// TODO: crop according to the page rect
 	cv::Mat img = mImg;
 	
+	if (!mPageRect.empty()) {
+		img = img(mPageRect.getBBox().getCvRect());
+	}
+
 	if (img.channels() > 1)
 		cv::cvtColor(img, img, CV_RGB2GRAY);
 
