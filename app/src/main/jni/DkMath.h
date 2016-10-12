@@ -61,7 +61,7 @@
 
 namespace dsc {
 
-int round(double x);
+DllCoreExport int round(double x);
 
 /** 
  * Provides useful mathematical functions.

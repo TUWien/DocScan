@@ -36,7 +36,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-bool testPageSegmentation(const std::string& filePath);
+bool testPageSegmentation(const std::string& filePath, const std::string& outputPath = "");
 bool testFocusMeasure(const std::string& filePath);
  
 int main(int argc, char** argv) {
@@ -54,8 +54,10 @@ int main(int argc, char** argv) {
 	else
 		std::cout << "[SUCCESS] focus measure succesfull..." << std::endl;
 
+	std::string oPath = argc > 2 ? argv[2] : "";
+
 	// test the page segmentation module
-	if (!testPageSegmentation(path))
+	if (!testPageSegmentation(path, oPath))
 		std::cerr << "[FAIL] page segmentation NOT succesfull... input file: " << path << std::endl;
 	else
 		std::cout << "[SUCCESS] page segmentation succesfull..." << std::endl;
@@ -104,7 +106,7 @@ bool testFocusMeasure(const std::string& filePath) {
 	return true;
 }
 
-bool testPageSegmentation(const std::string& filePath) {
+bool testPageSegmentation(const std::string& filePath, const std::string& outputPath) {
 
 	cv::Mat img;
 
@@ -117,6 +119,15 @@ bool testPageSegmentation(const std::string& filePath) {
 	if (pageRects.empty()) {
 		std::cerr << "PageSegmentation returned no page rects for: " << filePath << std::endl;
 		return false;
+	}
+
+	// save results?!
+	if (!outputPath.empty()) {
+		cv::Mat dstImg = img.clone();
+		for (auto rect : pageRects)
+			rect.draw(dstImg);
+
+		cv::imwrite(outputPath, dstImg);
 	}
 
 	//std::cout << "test page segmentation not implemented..." << std::endl;
