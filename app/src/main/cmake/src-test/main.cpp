@@ -30,6 +30,7 @@
 
 #include "FocusMeasure.h"
 #include "PageSegmentation.h"
+#include "Illumination.h"
 
 #pragma comment (linker, "/SUBSYSTEM:CONSOLE")
 
@@ -117,18 +118,26 @@ bool testPageSegmentation(const std::string& filePath, const std::string& output
 	std::vector<dsc::DkPolyRect> pageRects = dsc::DkPageSegmentation::apply(img);
 
 	if (pageRects.empty()) {
+
+		double illVal = dsc::DkIllumination::apply(img);
+		std::cout << "illumination value: " << illVal << std::endl;
+
 		std::cerr << "PageSegmentation returned no page rects for: " << filePath << std::endl;
 		return false;
 	}
 
 	// save results?!
 	if (!outputPath.empty()) {
+		
 		cv::Mat dstImg = img.clone();
 		for (auto rect : pageRects)
 			rect.draw(dstImg);
 
 		cv::imwrite(outputPath, dstImg);
 	}
+
+	double illVal = dsc::DkIllumination::apply(img, pageRects[0]);
+	std::cout << "illumination value: " << illVal << std::endl;
 
 	//std::cout << "test page segmentation not implemented..." << std::endl;
 	return true;
