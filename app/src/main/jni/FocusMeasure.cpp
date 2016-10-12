@@ -57,7 +57,7 @@ namespace dsc {
 
 		if (checkInput()) {
 
-		/*
+
 			//this should be the faster version...
             cv::Mat FM(mSrcImg.rows - 2, mSrcImg.cols - 2, mSrcImg.type());
             for (int rowIdx = 0; rowIdx < mSrcImg.rows - 2; rowIdx++) {
@@ -76,8 +76,9 @@ namespace dsc {
                     ptrFm[colIdx] *= ptrFm[colIdx];
                 }
             }
-		*/
 
+            /*
+            //old version
 			cv::Mat dH = mSrcImg(cv::Range::all(), cv::Range(2, mSrcImg.cols)) - mSrcImg(cv::Range::all(), cv::Range(0, mSrcImg.cols - 2));
 			cv::Mat dV = mSrcImg(cv::Range(2, mSrcImg.rows), cv::Range::all()) - mSrcImg(cv::Range(0, mSrcImg.rows - 2), cv::Range::all());
 			dH = cv::abs(dH);
@@ -85,6 +86,8 @@ namespace dsc {
 
 			cv::Mat FM = cv::max(dH(cv::Range(0, dH.rows - 2), cv::Range::all()), dV(cv::Range::all(), cv::Range(0, dV.cols - 2)));
 			FM = FM.mul(FM);
+            //end old version
+            */
 
 			cv::Scalar fm = cv::mean(FM);
 			//normalize
