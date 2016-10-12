@@ -57,6 +57,27 @@ namespace dsc {
 
 		if (checkInput()) {
 
+		/*
+			//this should be the faster version...
+            cv::Mat FM(mSrcImg.rows - 2, mSrcImg.cols - 2, mSrcImg.type());
+            for (int rowIdx = 0; rowIdx < mSrcImg.rows - 2; rowIdx++) {
+
+                const double *ptrSrc = mSrcImg.ptr<double>(rowIdx);
+                const double *ptrSrc2 = mSrcImg.ptr<double>(rowIdx+2);
+
+                double *ptrFm = FM.ptr<double>(rowIdx);
+
+                for (int colIdx = 0; colIdx < mSrcImg.cols-2; colIdx++) {
+
+                    double diffH = ptrSrc[colIdx + 2] - ptrSrc[colIdx];
+                    double diffV = ptrSrc2[colIdx] - ptrSrc[colIdx];
+
+                    ptrFm[colIdx] = cv::max(cv::abs(diffH), cv::abs(diffV));
+                    ptrFm[colIdx] *= ptrFm[colIdx];
+                }
+            }
+		*/
+
 			cv::Mat dH = mSrcImg(cv::Range::all(), cv::Range(2, mSrcImg.cols)) - mSrcImg(cv::Range::all(), cv::Range(0, mSrcImg.cols - 2));
 			cv::Mat dV = mSrcImg(cv::Range(2, mSrcImg.rows), cv::Range::all()) - mSrcImg(cv::Range(0, mSrcImg.rows - 2), cv::Range::all());
 			dH = cv::abs(dH);
