@@ -66,19 +66,18 @@ protected:
 	cv::Mat mImg;
 	cv::Mat dbgImg;
 
-	int thresh = 80;
-	int numThresh = 10;
+	int numThresh = 15;	// -> threshold every 17 
 	double mMinArea = 12000;
 	double mMaxArea = 0;
 	float maxSide = 0;   // do not find the image's border
 	float maxSideFactor = 0.97f;
 	float scale = 0.0f;	// is computed from maxImgWidth
-	int maxImgWidth = 1500;
+	int maxImgWidth = 1000;
 	bool looseDetection = true;
 
 	std::vector<DkPolyRect> mRects;
 
-	virtual cv::Mat findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& squares) const;
+	virtual void findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& squares) const;
 	//QImage cropToRect(const QImage& mImg, const nmc::DkRotatingRect& rect, const QColor& bgCol = QColor(0,0,0)) const;
 	//void drawRects(QPainter* p, const std::vector<DkPolyRect>& mRects, const QColor& col = QColor(100, 100, 100)) const;
 };
