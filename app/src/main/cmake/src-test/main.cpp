@@ -128,6 +128,7 @@ bool testPageSegmentation(const std::string& filePath, const std::string& output
 
 	// save results?!
 	if (!outputPath.empty()) {
+		
 		cv::Mat dstImg = img.clone();
 		for (auto rect : pageRects)
 			rect.draw(dstImg);
