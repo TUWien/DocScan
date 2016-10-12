@@ -52,3 +52,10 @@ import-summary.txt
 build2015*
 CMakeUser.cmake
 testimg.jpg
+/testimg-syn.jpg
+/testimg-syn-g.jpg
+/testimg-syn-g-r.jpg
+/testimg-orig.jpg
+/testimg-g.jpg
+/test.png
+/result.tif
