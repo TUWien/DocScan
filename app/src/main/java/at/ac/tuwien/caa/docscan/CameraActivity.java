@@ -55,6 +55,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -65,6 +66,7 @@ import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -132,6 +134,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private List<String> mFlashModes;
     private PopupMenu mFlashPopupMenu;
     private boolean mIsFlashModeInit = false;
+    private byte[] mPictureData;
 
     // TODO: use here values.ints
     private final int DOCUMENT_STEADY_TIME = 5000;
@@ -268,6 +271,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mPaintView = (PaintView) findViewById(R.id.paint_view);
         mPaintView.setCVResult(mCVResult);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        toolbar.getBackground().setAlpha(0);
+
         setupNavigationDrawer();
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
@@ -326,8 +333,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mModeMenuItem = menu.findItem(R.id.shoot_mode_item);
 
         mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
-        if (mIsFlashModeInit && mFlashModes == null)
-            mFlashMenuItem.setVisible(false);
 
         return true;
     }
@@ -387,12 +392,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         switch (requestCode) {
 
             case PERMISSION_WRITE_EXTERNAL_STORAGE:
-                if (isPermissionGiven)
-                    takePicture();
-
+                if (isPermissionGiven && mPictureData != null)
+                    savePicture(mPictureData);
                 else
                     Log.d(TAG, "permission not given");
-
 
                 break;
         }
@@ -433,12 +436,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
     /**
-     * Request to read the external storage. This method is used to enable file saving in marshmallow
+     * Request to read the external storage. This method is used to enable file saving in Android >= marshmallow
      * (Android 6), since in this version external file opening is not allowed without user permission.
      */
     private void requestFileOpen() {
 
-        // Check Permissions Now
+        // Check permission
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // ask for permission:
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
@@ -453,10 +456,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
      */
     private void startScan() {
 
-
         if(mMediaScannerConnection != null)
             mMediaScannerConnection.disconnect();
-
 
         mMediaScannerConnection = new MediaScannerConnection(this, this);
         mMediaScannerConnection.connect();
@@ -572,12 +573,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
                 // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
                 mCamera.startPreview();
-
-                // Save the image in an own thread (AsyncTask):
-                Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
-                FileSaver fileSaver = new FileSaver(data);
-                fileSaver.execute(uri);
-
+                requestPictureSave(data);
 
             }
         };
@@ -592,7 +588,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                     public void onClick(View v) {
                         if (mIsPictureSafe) {
                             // get an image from the camera
-                            requestFileSave();
+                            takePicture();
                         }
                     }
                 });
@@ -600,21 +596,22 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
-    /**
-     * This method is used to enable file saving in marshmallow (Android 6), since in this version
-     * file saving is not allowed without user permission.
-     */
-    private void requestFileSave() {
 
-        // Check Permissions Now
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
-        }
-        else
-            takePicture();
-
-    }
+//    /**
+//     * This method is used to enable file saving in marshmallow (Android 6), since in this version
+//     * file saving is not allowed without user permission.
+//     */
+//    private void requestFileSave() {
+//
+//        // Check Permissions Now
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//            // ask for permission:
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+//        }
+//        else if (mPictureData != null)
+//            savePicture(mPictureData);
+//
+//    }
 
     /**
      * Tells the camera to take a picture.
@@ -625,6 +622,33 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mPaintView.showFlicker();
         mCamera.takePicture(null, null, mPictureCallback);
 
+    }
+
+    private void requestPictureSave(byte[] data) {
+
+        // Check if we have the permission to save images:
+        // Check permission
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            mPictureData = data;
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+        }
+        else
+            savePicture(data);
+
+
+        // Ask for permission and store the data as a member:
+
+
+
+    }
+
+    private void savePicture(byte[] data) {
+
+        // Save the image in an own thread (AsyncTask):
+        Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
+        FileSaver fileSaver = new FileSaver(data);
+        fileSaver.execute(uri);
 
     }
 
@@ -634,9 +658,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
      * @return the filename.
      */
     private static Uri getOutputMediaFile(String appName){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
 
         File mediaStorageDir = getMediaStorageDir(appName);
 
@@ -984,17 +1005,22 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         mCVResult.setViewDimensions(width, height);
 
+        View container = (View) findViewById(R.id.container_layout);
+        LinearLayout.LayoutParams p = (LinearLayout.LayoutParams) container.getLayoutParams();
+        p.height = height;
+        container.setLayoutParams(p);
+
+//        View paintView = (View) findViewById(R.id.paint_view);
+//        FrameLayout.LayoutParams pf = (FrameLayout.LayoutParams) paintView.getLayoutParams();
+//        pf.height = height;
+//        paintView.setLayoutParams(pf);
+
     }
 
     @Override
     public void onFlashModesFound(List<String> modes) {
 
         mFlashModes = modes;
-        mIsFlashModeInit = true;
-
-        if (mFlashModes == null && mFlashMenuItem != null)
-            mFlashMenuItem.setVisible(false);
-
         if (mFlashPopupMenu != null)
             setupFlashPopup();
 
@@ -1085,6 +1111,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
+//    public void showPopup(View v) {
+//        PopupMenu popup = new PopupMenu(this, v);
+//        MenuInflater inflater = popup.getMenuInflater();
+//        inflater.inflate(R.menu.actions, popup.getMenu());
+//        popup.show();
+//    }
     /**
      * Called after the dimension of the camera frame is set. The dimensions are necessary to convert
      * the frame coordinates to view coordinates.
@@ -1144,7 +1176,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                     msg = getResources().getString(R.string.taking_picture_text);
                     mIsWaitingForCapture = false;
                     if (mIsPictureSafe)
-                        requestFileSave();
+                        takePicture();
                 }
 
             }
