@@ -9,6 +9,7 @@
     <color name="debug_view_bg_color">#aa666666</color>
     <color name="white">#ffffff</color>
     <color name="navigation_drawer_text_color">#ffffff</color>
+    <color name="button_view_bg_color">#333</color>
 
     <color name="hud_good_text_color">#d666</color>
     <color name="hud_bad_text_color">#a3a3</color>

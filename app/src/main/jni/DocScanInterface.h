@@ -30,6 +30,7 @@
 extern "C" {
     JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetFocusMeasures(JNIEnv *, jclass, jlong);
     JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPageSegmentation(JNIEnv *, jclass, jlong);
+    JNIEXPORT jdouble JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetIllumination(JNIEnv *, jclass, jlong, jobject);
 
     JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPageSegmentationTest(JNIEnv*, jobject, jint, jint, jbyteArray, jintArray);
 }

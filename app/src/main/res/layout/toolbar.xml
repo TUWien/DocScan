@@ -5,11 +5,9 @@
     xmlns:app="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:background="@color/actionbar_bg_color"
+    android:background="@color/navigation_drawer_bg_color"
     android:elevation="4dp"
-    app:theme="@style/CustomActionBar"
-
-    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+    app:theme="@style/CustomActionBar"/>
 
     <!--android:background="?attr/colorPrimary"-->
     <!--android:theme="@style/ThemeOverlay.AppCompat.ActionBar"-->

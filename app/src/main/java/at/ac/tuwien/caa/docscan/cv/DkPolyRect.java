@@ -165,5 +165,41 @@ public class DkPolyRect {
 
     }
 
+    public float getX1() {
+        return mPoints.get(0).x;
+    }
+
+    public float getY1() {
+        return mPoints.get(0).y;
+    }
+
+    public float getX2() {
+        return mPoints.get(1).x;
+    }
+
+
+    public float getY2() {
+        return mPoints.get(1).y;
+    }
+
+    public float getX3() {
+        return mPoints.get(2).x;
+    }
+
+
+    public float getY3() {
+        return mPoints.get(2).y;
+    }
+
+
+    public float getX4() {
+        return mPoints.get(3).x;
+    }
+
+
+    public float getY4() {
+        return mPoints.get(3).y;
+    }
+
 
 }

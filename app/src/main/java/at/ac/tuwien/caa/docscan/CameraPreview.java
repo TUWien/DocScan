@@ -69,6 +69,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private PageSegmentationThread mPageSegmentationThread;
     private FocusMeasurementThread mFocusMeasurementThread;
+    private IlluminationThread mIlluminationThread;
 
     // Mat used by mPageSegmentationThread and mFocusMeasurementThread:
     private Mat mFrameMat;
@@ -86,6 +87,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private static final int FOCUS_HALF_AREA = 1000;
 
     private boolean isCameraInitialized;
+    private DkPolyRect mIlluminationRect;
 
 
 //    public CameraPreview(Context context) {
@@ -387,6 +389,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mFocusMeasurementThread.getState() == Thread.State.NEW)
             mFocusMeasurementThread.start();
 
+        mIlluminationThread = new IlluminationThread(this);
+        if (mIlluminationThread.getState() == Thread.State.NEW)
+            mIlluminationThread.start();
+
         try {
 
             mCamera.setPreviewDisplay(mHolder);
@@ -476,16 +482,24 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             }
 
         }
-
-
-
     }
 
     public void startFocusMeasurement(boolean start) {
 
         mFocusMeasurementThread.setRunning(start);
 
+    }
 
+    public void startIllumination(boolean start) {
+
+        mIlluminationThread.setRunning(start);
+
+    }
+
+    public void setIlluminationRect(DkPolyRect illuminationRect) {
+
+        mIlluminationRect = illuminationRect;
+        
     }
 
 
@@ -588,6 +602,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
@@ -783,6 +798,71 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 
     }
+
+    public class IlluminationThread extends Thread {
+
+        private CameraPreview mCameraView;
+        private boolean mIsRunning;
+
+
+        public IlluminationThread(CameraPreview cameraView) {
+
+            mCameraView = cameraView;
+            mIsRunning = false;
+
+        }
+
+        /**
+         * The main loop of the thread.
+         */
+        @Override
+        public void run() {
+
+            synchronized (mCameraView) {
+
+                while (true) {
+
+                    try {
+                        mCameraView.wait();
+
+
+                        if (mIsRunning) {
+
+                            // Measure the time if required:
+                            if (CameraActivity.isDebugViewEnabled())
+                                mTimerCallbacks.onTimerStarted(TaskTimer.ILLUMINATION_ID);
+
+                            double illuminationValue = -1;
+                            if (mIlluminationRect != null)
+                                illuminationValue = NativeWrapper.getIllumination(mFrameMat, mIlluminationRect);
+
+                            if (CameraActivity.isDebugViewEnabled())
+                                mTimerCallbacks.onTimerStopped(TaskTimer.ILLUMINATION_ID);
+
+                            mCVCallback.onIluminationComputed(illuminationValue);
+
+
+                        }
+//                        execute();
+
+                    } catch (InterruptedException e) {
+                    }
+
+                }
+
+            }
+        }
+
+        public void setRunning(boolean running) {
+
+            mIsRunning = running;
+
+        }
+
+
+
+    }
+
 
 
     // ================= start: CVThread and subclasses =================
