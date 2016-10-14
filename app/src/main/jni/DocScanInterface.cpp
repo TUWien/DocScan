@@ -26,6 +26,7 @@
 #include "DocScanInterface.h"
 #include "FocusMeasure.h"
 #include "PageSegmentation.h"
+#include "Illumination.h"
 
 #include <android/log.h>
 #include <jni.h>
@@ -133,6 +134,48 @@ JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPage
 
 }
 
+JNIEXPORT jdouble JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetIllumination(JNIEnv * env, jclass cls, jlong src, jobject polyRect) {
+
+    //dsc::DkIllumination::apply(*((cv::Mat*)src), (DkPolyRect) polyRect);
+
+    dsc::Utils::print("Illumination", "DocScanInterface");
+
+    jclass polyRectClass = env->GetObjectClass(polyRect);
+
+    //dsc::Utils::print(dsc::Utils::num2str(x1), "DocScanInterface");
+
+    std::vector<cv::Point> pts = std::vector<cv::Point>();
+
+    jmethodID getX1 = env->GetMethodID(polyRectClass, "getX1", "()F");
+    float x1 = env->CallFloatMethod(polyRect, getX1);
+    jmethodID getY1 = env->GetMethodID(polyRectClass, "getY1", "()F");
+    float y1 = env->CallFloatMethod(polyRect, getY1);
+    pts.push_back(cv::Point(x1, y1));
+
+    jmethodID getX2 = env->GetMethodID(polyRectClass, "getX2", "()F");
+    float x2 = env->CallFloatMethod(polyRect, getX2);
+    jmethodID getY2 = env->GetMethodID(polyRectClass, "getY2", "()F");
+    float y2 = env->CallFloatMethod(polyRect, getY2);
+    pts.push_back(cv::Point(x2, y2));
+
+    jmethodID getX3 = env->GetMethodID(polyRectClass, "getX3", "()F");
+    float x3 = env->CallFloatMethod(polyRect, getX3);
+    jmethodID getY3 = env->GetMethodID(polyRectClass, "getY3", "()F");
+    float y3 = env->CallFloatMethod(polyRect, getY3);
+    pts.push_back(cv::Point(x3, y3));
+
+    jmethodID getX4 = env->GetMethodID(polyRectClass, "getX4", "()F");
+    float x4 = env->CallFloatMethod(polyRect, getX4);
+    jmethodID getY4 = env->GetMethodID(polyRectClass, "getY4", "()F");
+    float y4 = env->CallFloatMethod(polyRect, getY4);
+    pts.push_back(cv::Point(x4, y4));
+
+    dsc::DkPolyRect p = dsc::DkPolyRect(pts);
+
+    return dsc::DkIllumination::apply(*((cv::Mat*)src), p);
+
+}
+
 JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPageSegmentation(JNIEnv * env, jclass cls, jlong src) {
 
 
@@ -162,8 +205,7 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 
         std::vector<cv::Point> points = polyRects[i].toCvPoints();
 
-        // TODO: check why this happens:
-        if (points.empty()) {
+         if (points.empty()) {
 
             std::stringstream strs;
             strs << i;

@@ -37,6 +37,7 @@ public class TaskTimer {
     public static final int DRAW_VIEW_ID = 2;
     public static final int CAMERA_FRAME_ID = 3;
     public static final int MAT_CONVERSION_ID = 4;
+    public static final int ILLUMINATION_ID = 5;
 
     private ArrayList<Task> mTasks;
 

@@ -2,4 +2,6 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@drawable/photo_shoot_button_selected" android:state_pressed="true" />
     <item android:drawable="@drawable/photo_shoot_button_normal" />
+    <!--<item android:drawable="@drawable/numpad_button_bg_selected" android:state_selected="true"></item>-->
+
 </selector>

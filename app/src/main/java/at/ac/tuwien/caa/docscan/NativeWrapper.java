@@ -58,6 +58,10 @@ public class NativeWrapper {
 
     }
 
+    public static double getIllumination(Mat src, DkPolyRect polyRect) {
+        return nativeGetIllumination(src.getNativeObjAddr(), polyRect);
+    }
+
     /**
      * Native method for focus measurement.
      * @param src
@@ -73,13 +77,15 @@ public class NativeWrapper {
      */
     private static native DkPolyRect[] nativeGetPageSegmentation(long src);
 
+    private static native double nativeGetIllumination(long src, DkPolyRect polyRect);
+
 
     // Callbacks:
     public interface CVCallback {
 
         void onFocusMeasured(Patch[] patches);
         void onPageSegmented(DkPolyRect[] polyRects);
-
+        void onIluminationComputed(double value);
 
     }
 }

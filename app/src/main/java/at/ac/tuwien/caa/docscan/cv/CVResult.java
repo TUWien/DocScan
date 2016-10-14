@@ -46,6 +46,8 @@ public class CVResult {
     public static final int DOCUMENT_STATE_ROATION = 4;
     public static final int DOCUMENT_STATE_NO_FOCUS_MEASURED = 5;
     public static final int DOCUMENT_STATE_UNSHARP = 6;
+    public static final int DOCUMENT_STATE_NO_ILLUMINATION_MEASURED = 7;
+    public static final int DOCOUMENT_STATE_BAD_ILLUMINATION = 8;
 
     private static final int ORIENTATION_LANDSCAPE = 0;
     private static final int ORIENTATION_PORTRAIT = 90;
@@ -64,6 +66,8 @@ public class CVResult {
     private int mRatioSharpUnsharp;
 
     private int mCVState;
+    private double mIllumination;
+    private boolean mIsIlluminationComputed;
 
     public CVResult(Context context) {
 
@@ -118,6 +122,24 @@ public class CVResult {
     public Patch[] getPatches() {
 
         return mPatches;
+
+    }
+
+    public void setIllumination(double illumination) {
+
+        mIllumination = illumination;
+
+    }
+
+    public double getIllumination() {
+
+        return mIllumination;
+
+    }
+
+    public void setIsIlluminationComputed(boolean isIlluminationComputed) {
+
+        mIsIlluminationComputed = isIlluminationComputed;
 
     }
 
@@ -283,6 +305,12 @@ public class CVResult {
         if (!isSharp())
             return DOCUMENT_STATE_UNSHARP;
 
+        if (!mIsIlluminationComputed)
+            return DOCUMENT_STATE_NO_ILLUMINATION_MEASURED;
+
+        if (!isIlluminationOK())
+            return DOCOUMENT_STATE_BAD_ILLUMINATION;
+
         return DOCUMENT_STATE_OK;
 
     }
@@ -330,6 +358,18 @@ public class CVResult {
             return false;
 
         return true;
+
+    }
+
+
+    private boolean isIlluminationOK() {
+
+        Log.d(TAG, "illumination " + mIllumination);
+
+//        if (mRatioSharpUnsharp < mContext.getResources().getInteger(R.integer.min_focus_ratio))
+//            return false;
+
+        return false;
 
     }
 

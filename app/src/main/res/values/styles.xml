@@ -8,30 +8,32 @@
         <!--<item name="colorAccent">@color/colorAccent</item>-->
     <!--</style>-->
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Taken from the Google color palette: -->
-        <!-- https://www.google.com/design/spec/style/color.html#color-color-palette -->
+    <!--<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">-->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">#263238</item>
         <item name="colorAccent">@color/colorAccent</item>
-
-        <item name="android:actionBarStyle">@style/ThemeActionBar</item>
-        <item name="android:windowActionBarOverlay">true</item>
-        <!-- Support library compatibility -->
-        <item name="actionBarStyle">@style/ThemeActionBar</item>
+        <item name="windowActionBar">false</item>
         <item name="windowActionBarOverlay">true</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
 
     </style>
 
-    <style name="ThemeActionBar"
-        parent="Widget.AppCompat.Light.ActionBar.Solid">
-        <item name="android:background">@null</item>
-        <!-- Support library compatibility -->
-        <item name="background">@null</item>
+    <style name="DrawerArrowStyle" parent="@style/Widget.AppCompat.DrawerArrowToggle">
+        <item name="spinBars">true</item>
+        <item name="color">@android:color/white</item>
     </style>
 
     <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@drawable/loading_screen</item>
+    </style>
+
+    <style name="CustomActionBar" parent="@style/ThemeOverlay.AppCompat.ActionBar">
+        <item name="android:windowActionBarOverlay">true</item>
+        <!-- Support library compatibility -->
+        <item name="windowActionBarOverlay">true</item>
     </style>
 
 

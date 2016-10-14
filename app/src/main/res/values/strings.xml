@@ -44,13 +44,15 @@
     <string name="instruction_perspective">change perspective</string>
     <string name="instruction_rotation">rotate</string>
     <string name="instruction_no_focus_measured">calculating focus</string>
-    <string name="instruction_unsharp">focus</string>
+    <string name="instruction_unsharp">not focused</string>
+    <string name="instruction_no_illumination_measured">calculating illumination</string>
+    <string name="instruction_bad_illumination">change illumination</string>
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>
 
     <!-- Menus -->
-    <string name="manual_mode">Manual shoot mode</string>
-    <string name="auto_mode">Auto shoot mode</string>
+    <string name="manual_mode">Manual shoot</string>
+    <string name="auto_mode">Auto shoot</string>
     <string name="flash_off_mode">Flash off</string>
     <string name="flash_auto_mode">Flash auto</string>
     <string name="flash_on_mode">Flash on</string>
