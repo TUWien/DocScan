@@ -265,9 +265,15 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private Paint mBGPaint;
         private Paint mSegmentationPaint;
         private Path mSegmentationPath;
+        private Path mFocusPath;
         private Paint mGuidePaint;
 
         private static final float RECT_HALF_SIZE = 30;
+        private final float FOCUS_RECT_HEIGHT = getResources().getDimension(R.dimen.focus_height);
+        private final float FOCUS_RECT_HALF_HEIGHT = FOCUS_RECT_HEIGHT / 2;
+        private final float FOCUS_RECT_SHORT_LENGTH = getResources().getDimension(R.dimen.focus_short_length);
+        private final float FOCUS_RECT_OFFSET = (float) (FOCUS_RECT_SHORT_LENGTH * 1.5);
+        private static final float RECT_HALF_HALF_SIZE = 15;
         private static final String TEXT_FORMAT = "%.2f";
 
         private final int STATE_TEXT_BG_COLOR = getResources().getColor(R.color.hud_state_rect_color);
@@ -281,7 +287,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         private Paint mFocusSharpRectPaint;
         private Paint mFocusUnsharpRectPaint;
-        private int angle = 0;
 
         // Used for debug output:
 
@@ -305,19 +310,21 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mSegmentationPaint = new Paint();
             mSegmentationPaint.setColor(PAGE_RECT_COLOR);
             mSegmentationPaint.setStyle(Paint.Style.STROKE);
-            mSegmentationPaint.setStrokeWidth(7);
+            mSegmentationPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_stroke_width));
             mSegmentationPath = new Path();
 
 
             mFocusSharpRectPaint = new Paint();
-            mFocusSharpRectPaint.setStrokeWidth(2);
+            mFocusSharpRectPaint.setStrokeWidth(getResources().getDimension(R.dimen.focus_stroke_width));
+
             mFocusSharpRectPaint.setStyle(Paint.Style.STROKE);
             mFocusSharpRectPaint.setColor(FOCUS_SHARP_RECT_COLOR);
 
             mFocusUnsharpRectPaint = new Paint();
-            mFocusUnsharpRectPaint.setStrokeWidth(2);
+            mFocusUnsharpRectPaint.setStrokeWidth(getResources().getDimension(R.dimen.focus_stroke_width));
             mFocusUnsharpRectPaint.setStyle(Paint.Style.STROKE);
             mFocusUnsharpRectPaint.setColor(FOCUS_UNSHARP_RECT_COLOR);
+            mFocusPath = new Path();
 
             mGuidePaint = new Paint();
             mGuidePaint.setStrokeWidth(2);
@@ -328,6 +335,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mBGPaint.setColor(STATE_TEXT_BG_COLOR);
 
         }
+
+
 
         /**
          * Continuous looping method used for waiting for updates of the CVResult object. The draw
@@ -491,6 +500,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             Rect textRect = new Rect();
             float textWidth = -1;
+
+            mFocusPath.reset();
 //            float textHeight = -1;
 
             for (Patch patch : mCVResult.getPatches()) {
@@ -504,8 +515,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         if (mDrawFocusText)
                             mTextPaint.setColor(GOOD_TEXT_COLOR);
 
-                        canvas.drawRect(patch.getDrawViewPX() - RECT_HALF_SIZE, patch.getDrawViewPY() - RECT_HALF_SIZE,
-                                patch.getDrawViewPX() + RECT_HALF_SIZE, patch.getDrawViewPY() + RECT_HALF_SIZE, mFocusSharpRectPaint);
+                        drawFocusRect(canvas, mFocusSharpRectPaint, patch.getDrawViewPX(), patch.getDrawViewPY());
 
                     }
                     else {
@@ -513,8 +523,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         if (mDrawFocusText)
                             mTextPaint.setColor(BAD_TEXT_COLOR);
 
-                        canvas.drawRect(patch.getDrawViewPX() - RECT_HALF_SIZE, patch.getDrawViewPY() - RECT_HALF_SIZE,
-                                patch.getDrawViewPX() + RECT_HALF_SIZE, patch.getDrawViewPY() + RECT_HALF_SIZE, mFocusUnsharpRectPaint);
+                        drawFocusRect(canvas, mFocusUnsharpRectPaint, patch.getDrawViewPX(), patch.getDrawViewPY());
+
+
                     }
 
 
@@ -527,12 +538,41 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                             textWidth = (float) textRect.width() / 2;
                         }
 
+
                         canvas.drawText(fValue, patch.getDrawViewPX() - textWidth,
-                                patch.getDrawViewPY() - RECT_HALF_SIZE - 10, mTextPaint);
+                                patch.getDrawViewPY(), mTextPaint);
 
                     }
                 }
             }
+        }
+
+        private void drawFocusRect(Canvas canvas, Paint paint, float x, float y) {
+
+            mFocusPath.moveTo(x - FOCUS_RECT_OFFSET + FOCUS_RECT_SHORT_LENGTH, y - FOCUS_RECT_HALF_HEIGHT);
+            mFocusPath.lineTo(x - FOCUS_RECT_OFFSET, y - FOCUS_RECT_HALF_HEIGHT);
+            mFocusPath.lineTo(x - FOCUS_RECT_OFFSET, y + FOCUS_RECT_HALF_HEIGHT);
+            mFocusPath.lineTo(x - FOCUS_RECT_OFFSET + FOCUS_RECT_SHORT_LENGTH, y + FOCUS_RECT_HALF_HEIGHT);
+
+            mFocusPath.moveTo(x + FOCUS_RECT_OFFSET - FOCUS_RECT_SHORT_LENGTH, y - FOCUS_RECT_HALF_HEIGHT);
+            mFocusPath.lineTo(x + FOCUS_RECT_OFFSET, y - FOCUS_RECT_HALF_HEIGHT);
+            mFocusPath.lineTo(x + FOCUS_RECT_OFFSET, y + FOCUS_RECT_HALF_HEIGHT);
+            mFocusPath.lineTo(x + FOCUS_RECT_OFFSET - FOCUS_RECT_SHORT_LENGTH, y + FOCUS_RECT_HALF_HEIGHT);
+
+            canvas.drawPath(mFocusPath, paint);
+
+
+//            canvas.drawLine(x - FOCUS_RECT_OFFSET, y - FOCUS_RECT_HALF_HEIGHT,
+//                    x - FOCUS_RECT_OFFSET, y + FOCUS_RECT_HALF_HEIGHT, paint);
+//
+//            // left horizontal upper line:
+//            canvas.drawLine(x - FOCUS_RECT_OFFSET, y - FOCUS_RECT_HALF_HEIGHT,
+//                    x - FOCUS_RECT_OFFSET + FOCUS_RECT_SHORT_LENGTH, y - FOCUS_RECT_HALF_HEIGHT, paint);
+//
+//            // left horizontal lower line:
+//            canvas.drawLine(x - FOCUS_RECT_OFFSET, y + FOCUS_RECT_HALF_HEIGHT,
+//                    x - FOCUS_RECT_OFFSET + FOCUS_RECT_SHORT_LENGTH, y + FOCUS_RECT_HALF_HEIGHT, paint);
+
         }
 
 //        private void drawSavingAnimation(Canvas canvas) {

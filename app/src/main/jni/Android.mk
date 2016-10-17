@@ -12,7 +12,7 @@ OPENCV_INSTALL_MODULES:=on
 OPENCV_LIB_TYPE:=SHARED
 include ${OPENCVROOT}/sdk/native/jni/OpenCV.mk
 
-LOCAL_SRC_FILES := DocScanInterface.cpp FocusMeasure.cpp DkMath.cpp PageSegmentationUtils.cpp PageSegmentation.cpp Utils.cpp
+LOCAL_SRC_FILES := DocScanInterface.cpp FocusMeasure.cpp DkMath.cpp PageSegmentationUtils.cpp PageSegmentation.cpp Utils.cpp Illumination.cpp
 LOCAL_LDLIBS += -llog
 LOCAL_MODULE := docscan-native
 LOCAL_CFLAGS += -std=c++11
