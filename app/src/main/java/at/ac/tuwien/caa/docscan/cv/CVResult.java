@@ -366,10 +366,14 @@ public class CVResult {
 
         Log.d(TAG, "illumination " + mIllumination);
 
+        if (mIllumination > .3)
+            return true;
+        else
+            return false;
+
 //        if (mRatioSharpUnsharp < mContext.getResources().getInteger(R.integer.min_focus_ratio))
 //            return false;
 
-        return false;
 
     }
 

@@ -5,4 +5,10 @@
     <!--<dimen name="draw_view_text_size">25</dimen>-->
     <dimen name="draw_view_focus_font_size">15sp</dimen>
     <dimen name="instruction_view_margin_bottom">100dp</dimen>
+    <dimen name="focus_stroke_width">3dp</dimen>
+    <dimen name="focus_height">30dp</dimen>
+    <dimen name="focus_short_length">14dp</dimen>
+
+    <dimen name="page_stroke_width">4dp</dimen>
+
 </resources>

@@ -37,7 +37,6 @@ import android.view.SurfaceView;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -73,7 +72,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     // Mat used by mPageSegmentationThread and mFocusMeasurementThread:
     private Mat mFrameMat;
-    private int mMatWidth, mMatHeight;
 
     private int mFrameWidth;
     private int mFrameHeight;
@@ -185,7 +183,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public void resume() {
 
 
-        if (!isCameraInitialized && mSurfaceWidth > 0)
+        if (!isCameraInitialized)
             initCamera(mSurfaceWidth, mSurfaceHeight);
 
     }
@@ -356,6 +354,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mSurfaceHeight = height;
 
         int orientation = calculatePreviewOrientation(mCameraInfo, mDisplayOrientation);
+        // TODO: find the reason for this exception:
+//        java.lang.RuntimeException: Camera is being used after Camera.release() was called
+//        at android.hardware.Camera.setDisplayOrientation(Native Method)
+//        at at.ac.tuwien.caa.docscan.CameraPreview.initCamera(CameraPreview.java:357)
+//        at at.ac.tuwien.caa.docscan.CameraPreview.surfaceChanged(CameraPreview.java:176)
         mCamera.setDisplayOrientation(orientation);
 
 
@@ -415,12 +418,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         else
             mMatHeight = mFrameHeight;*/
 
-        mMatWidth = mFrameWidth;
-        mMatHeight = mFrameHeight;
 
         // Tell the dependent Activity that the frame dimension (might have) change:
-//        mDimensionChangeCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
-        mCameraPreviewCallback.onFrameDimensionChange(mMatWidth, mMatHeight, orientation);
+        mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
+//        mCameraPreviewCallback.onFrameDimensionChange(mMatWidth, mMatHeight, orientation);
 
 
     }
@@ -462,11 +463,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                 mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                 Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
-
-                if (mFrameWidth > mMatWidth || mFrameHeight > mMatHeight) {
-                    Size s = new Size(mMatWidth, mMatHeight);
-                    Imgproc.resize(mFrameMat, mFrameMat, s);
-                }
 
                 yuv.release();
 
@@ -606,10 +602,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        int frameWidth = mFrameWidth;
-        int frameHeight = mFrameHeight;
-
-        if (0 == frameHeight || 0 == frameWidth) {
+        if (mFrameHeight == 0|| mFrameWidth == 0) {
 //            setChildMeasuredDimension(width, height);
             setMeasuredDimension(width, height);
         } else {
@@ -619,8 +612,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             // Portrait mode:
             if (width < height) {
 
-                double resizeFac = (double) width / frameHeight;
-                int scaledHeight = (int) Math.round(frameWidth * resizeFac);
+                double resizeFac = (double) width / mFrameHeight;
+                int scaledHeight = (int) Math.round(mFrameWidth * resizeFac);
                 if (scaledHeight > height)
                     scaledHeight = height;
                 setMeasuredDimension(width, scaledHeight);
@@ -628,8 +621,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             }
             // Landscape mode:
             else {
-                double resizeFac = (double) height / frameHeight;
-                int scaledWidth = (int) Math.round(frameWidth * resizeFac);
+                double resizeFac = (double) height / mFrameHeight;
+                int scaledWidth = (int) Math.round(mFrameWidth * resizeFac);
                 if (scaledWidth > width)
                     scaledWidth = width;
                 setMeasuredDimension(scaledWidth, height);
@@ -824,7 +817,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                     try {
                         mCameraView.wait();
-
 
                         if (mIsRunning) {
 

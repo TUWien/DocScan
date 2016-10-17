@@ -620,7 +620,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private void requestPictureSave(byte[] data) {
 
         // Check if we have the permission to save images:
-        // Check permission
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             mPictureData = data;
             // ask for permission:
@@ -628,8 +627,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         } else
             savePicture(data);
 
-
-        // Ask for permission and store the data as a member:
 
 
     }
@@ -1004,6 +1001,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     public void onMeasuredDimensionChange(int width, int height) {
 
         mCVResult.setViewDimensions(width, height);
+
+//        mLiveViewLayout.setFrameDimension(width, height);
+
+//        View container = (View) findViewById(R.id.container_layout);
+
 
 //        // This is necessary to resize the parent view (holding the camera preview and the paint view):
 ////        View container = (View) findViewById(R.id.container_layout);

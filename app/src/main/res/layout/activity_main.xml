@@ -17,7 +17,7 @@
 
 
         <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
-        <FrameLayout
+        <at.ac.tuwien.caa.docscan.LiveViewLayout
 
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -33,6 +33,9 @@
                 android:layout_height="match_parent"
                 android:background="@color/hud_focus_sharp_rect_color"
                 tools:layout="@layout/abc_screen_simple" />
+
+            <include layout="@layout/toolbar"
+                android:id="@+id/toolbar"/>
 
             <at.ac.tuwien.caa.docscan.PaintView
                 android:id="@+id/paint_view"
@@ -61,10 +64,9 @@
                 android:gravity="center"
                 />
 
-            <include layout="@layout/toolbar"
-                android:id="@+id/toolbar"/>
 
-        </FrameLayout>
+
+        </at.ac.tuwien.caa.docscan.LiveViewLayout>
 
         <RelativeLayout
             android:layout_gravity="bottom"
