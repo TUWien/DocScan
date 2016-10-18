@@ -22,6 +22,7 @@
  *********************************************************************************/
 
 #include "FocusMeasure.h"
+#include "Utils.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
@@ -586,6 +587,8 @@ namespace dsc {
 	/// <returns>A vector with image patches containing the fm value.</returns>
 	std::vector<dsc::Patch> dsc::FocusEstimation::apply(const cv::Mat & src, const double globalFMThr) {
 
+	 Utils::print("FocusMeasure", "1");
+
 		static dsc::FocusEstimation fe;
 		int w = src.cols < src.rows ? src.cols : src.rows;
 		int ws = (int)ceil((double)w / 5.0);
@@ -594,6 +597,8 @@ namespace dsc {
 
 		fe.setImg(src);
 		fe.setGlobalFMThreshold(globalFMThr);
+
+		dsc::Utils::print("FocusMeasure", "2");
 
 		////version 1
 		//fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
@@ -626,6 +631,7 @@ namespace dsc {
 
 		}
 
+        dsc::Utils::print("FocusMeasure", "3");
 
 		return resultP;
 
