@@ -61,6 +61,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private static Spinner mSpinner;
     private static Flicker mFlicker;
+    private static Counter mCounter;
     private CVResult mCVResult;
 
 
@@ -92,8 +93,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         mDrawFocusText = false;
 
-        mSpinner = new Spinner();
+//        mSpinner = new Spinner();
         mFlicker = new Flicker();
+        mCounter = new Counter();
 
     }
 
@@ -241,15 +243,27 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void showFlicker() {
 
+        mFlicker.mVisible = true;
+
         // This is necessary, since we do not want to wait for the next update from the mCVResult:
         synchronized (mCVResult) {
             mCVResult.notify();
         }
 
-        mFlicker.mVisible = true;
+
 
     }
 
+    public void showCounter() {
+
+        // This is necessary, since we do not want to wait for the next update from the mCVResult:
+        synchronized (mCVResult) {
+            mCVResult.notify();
+        }
+
+        mCounter.mVisible = true;
+
+    }
 
 
     /**
@@ -354,6 +368,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 if (mFlicker.mVisible)
                     mFlicker.draw();
 
+//                else if (mCounter.mVisible) {
+//                    mCounter.draw();
+//                    return;
+//                }
+
+
                 else {
 
                     // This wait is used to assure that the drawing function is just called after an update
@@ -365,6 +385,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         } catch (InterruptedException e) {
 
                         }
+
+                        if (mFlicker.mVisible)
+                            continue;
 
                         try {
                             canvas = mSurfaceHolder.lockCanvas();
@@ -429,7 +452,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
 
             if (mCVResult != null) {
-
 
                 // Focus measure:
                 if (mCVResult.getPatches() != null)
@@ -593,38 +615,156 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+
+    protected abstract class Drawer {
+
+        protected boolean mVisible;
+
+        protected Drawer() {
+            mVisible = false;
+
+        }
+
+        protected abstract void execute(Canvas canvas);
+
+        protected void draw() {
+
+            Canvas canvas = mHolder.lockCanvas();
+//            Clear the screen from previous drawings:
+//            canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
+
+            execute(canvas);
+
+            if (canvas != null)
+                mHolder.unlockCanvasAndPost(canvas);
+
+            mVisible = false;
+
+
+
+        }
+
+    }
+
+    private class Counter extends Drawer {
+
+        private Paint mCounterPaint;
+
+        private Counter() {
+
+            super();
+
+            mCounterPaint = new Paint();
+            // Get device independent screen units:
+            // Taken from here: http://stackoverflow.com/questions/3061930/how-to-set-unit-for-paint-settextsize
+            int scaledFontSize = getResources().getDimensionPixelSize(R.dimen.draw_view_focus_font_size);
+            mCounterPaint.setTextSize(scaledFontSize);
+
+
+
+        }
+
+        protected void execute(Canvas canvas) {
+
+//            long startTime = System.currentTimeMillis();
+//            long currentTime = -1;
+//
+//
+//
+//            long waitTime = (long) getResources().getInteger(R.integer.counter_time);
+//            int counterTime = Math.round(waitTime / 1000);
+//
+//            int lastTimeLeft = -1;
+//            long timePast = -1;
+//
+//            while(timePast < waitTime) {
+//
+//                canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
+//                timePast = System.currentTimeMillis() - startTime;
+//                long timeLeft = waitTime - timePast;
+//
+//                drawText(canvas, Integer.toString(Math.round(timeLeft / 1000)));
+//
+//            }
+
+
+
+            long lastTime = -1;
+            long startTime = System.currentTimeMillis();
+            long currentTime = -1;
+            long waitTime = (long) getResources().getInteger(R.integer.counter_time);
+
+            while(currentTime - startTime <  waitTime) {
+
+                if (lastTime == -1 || (currentTime - lastTime) > 100) {
+
+                    //            Clear the screen from previous drawings:
+//                    canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
+                    drawText(canvas, "fabian");
+                    canvas.drawText("fabian", 200,200, mCounterPaint);
+
+                    lastTime = currentTime;
+
+                }
+            }
+
+
+
+
+        }
+
+        private void drawText(Canvas canvas, String text) {
+
+            Rect textRect = new Rect();
+
+            mCounterPaint.getTextBounds(text, 0, text.length(), textRect);
+            float offsetX = (float) textRect.width() / 2;
+            float offsetY = (float) textRect.height() / 2;
+
+            canvas.drawText(text, getWidth() / 2 - offsetX, getHeight() / 2 - offsetY, mCounterPaint);
+
+
+        }
+
+    }
+
     /**
      * This class is used when a picture is taken.
      */
     private class Flicker {
 
-        private boolean mVisible;
         private Paint mFlickerPaint;
+        private boolean mVisible;
 
         private Flicker() {
-
-            mVisible = false;
 
             mFlickerPaint = new Paint();
             mFlickerPaint.setStyle(Paint.Style.FILL);
             mFlickerPaint.setColor(getResources().getColor(R.color.flicker_color));
+            mVisible = false;
 
         }
 
         private void draw() {
 
             Canvas canvas = mHolder.lockCanvas();
-//            Clear the screen from previous drawings:
-            canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
+
             Rect rect = new Rect(0,0, getWidth(), mCVResult.getViewHeight());
             canvas.drawRect(rect, mFlickerPaint);
 
+            if (canvas != null)
+                mHolder.unlockCanvasAndPost(canvas);
+
+            // After the painting wait some time:
             long startTime = System.currentTimeMillis();
             long currentTime = -1;
 
             while(currentTime - startTime < getResources().getInteger(R.integer.flicker_time))
                 currentTime = System.currentTimeMillis();
 
+            // Remove the painting:
+            canvas = mHolder.lockCanvas();
+            canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
 
             if (canvas != null)
                 mHolder.unlockCanvasAndPost(canvas);
@@ -632,6 +772,28 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mVisible = false;
 
         }
+
+//        protected void draw() {
+//
+//            Canvas canvas = mHolder.lockCanvas();
+////            Clear the screen from previous drawings:
+//            canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
+//            Rect rect = new Rect(0,0, getWidth(), mCVResult.getViewHeight());
+//            canvas.drawRect(rect, mFlickerPaint);
+//
+//            long startTime = System.currentTimeMillis();
+//            long currentTime = -1;
+//
+//            while(currentTime - startTime < getResources().getInteger(R.integer.flicker_time))
+//                currentTime = System.currentTimeMillis();
+//
+//
+//            if (canvas != null)
+//                mHolder.unlockCanvasAndPost(canvas);
+//
+//            mVisible = false;
+//
+//        }
 
     }
 

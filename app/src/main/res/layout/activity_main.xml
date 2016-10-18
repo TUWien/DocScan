@@ -54,6 +54,17 @@
                 android:background="@android:color/transparent"/>
 
             <TextView
+                android:id="@+id/counter_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:textColor="@color/photo_button_view_bg_color"
+                android:gravity="center"
+                android:visibility="invisible"
+                android:textSize="@dimen/draw_view_counter_font_size"
+                />
+
+            <TextView
                 android:id="@+id/instruction_view"
                 android:layout_width="160dp"
                 android:layout_height="wrap_content"

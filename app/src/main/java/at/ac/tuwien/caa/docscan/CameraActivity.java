@@ -109,6 +109,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private TaskTimer mTaskTimer;
     private CameraPreview mCameraPreview;
     private PaintView mPaintView;
+    private TextView mCounterView;
     private Camera mCamera;
     private Camera.CameraInfo mCameraInfo;
     private CameraHandlerThread mThread = null;
@@ -136,7 +137,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private byte[] mPictureData;
 
     // TODO: use here values.ints
-    private final int DOCUMENT_STEADY_TIME = 5000;
+    private final int DOCUMENT_STEADY_TIME = 3000;
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -265,6 +266,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         mPaintView = (PaintView) findViewById(R.id.paint_view);
         mPaintView.setCVResult(mCVResult);
+
+        mCounterView = (TextView) findViewById(R.id.counter_view);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -1158,7 +1161,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             mCameraPreview.startIllumination(true);
             mCVResult.setIsIlluminationComputed(true);
 
-        } else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCOUMENT_STATE_BAD_ILLUMINATION) {
+        } else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
             mCameraPreview.startIllumination(false);
             mCVResult.setIsIlluminationComputed(false);
             if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
@@ -1167,29 +1170,15 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             }
         }
 
-
-
-
-//        else if (state != CVResult.DOCOUMENT_STATE_BAD_ILLUMINATION && state != CVResult.DOCUMENT_STATE_OK) {
-//            mCameraPreview.startIllumination(false);
-//            mCVResult.setIsIlluminationComputed(false);
-//        }
-//        else if (state != CVResult.DOCUMENT_STATE_UNSHARP && state != CVResult.DOCUMENT_STATE_OK) {
-//            mCameraPreview.startFocusMeasurement(false);
-//            mCVResult.setPatches(null);
-//        }
-
-//        // Check if we need the illumination measurement at this point:
-//        if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
-//            mCameraPreview.setIlluminationRect(mCVResult.getDKPolyRects()[0]);
-//            mCameraPreview.startIllumination(true);
-//            mCVResult.setIsIlluminationComputed(true);
-//
-//        }
-//        else if (state != CVResult.DOCOUMENT_STATE_BAD_ILLUMINATION && state != CVResult.DOCUMENT_STATE_OK) {
-//            mCameraPreview.startIllumination(false);
-//            mCVResult.setIsIlluminationComputed(false);
-//        }
+        // Check if we need the counter text view:
+        if (!mIsAutoMode || state != CVResult.DOCUMENT_STATE_OK) {
+            runOnUiThread(new Runnable() {
+            @Override
+                public void run() {
+                    mCounterView.setVisibility(View.INVISIBLE);
+                }
+            });
+        }
 
         final String msg;
 
@@ -1209,17 +1198,44 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 mStartTime = System.currentTimeMillis();
                 mIsWaitingForCapture = true;
                 msg = "";
+                mPaintView.showCounter();
+
             }
             else {
                 // Count down:
                 long timePast = System.currentTimeMillis() - mStartTime;
                 if (timePast < DOCUMENT_STEADY_TIME) {
-                    long timeLeft = DOCUMENT_STEADY_TIME - timePast;
-                    msg = getResources().getString(R.string.dont_move_text) + " " + Math.round(timeLeft / 1000);
+                    final long timeLeft = DOCUMENT_STEADY_TIME - timePast;
+                    msg = getResources().getString(R.string.dont_move_text);
+
+                    final int counter = Math.round(timeLeft / 1000);
+//                    if (counter > 0) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mCounterView.setVisibility(View.VISIBLE);
+                                mCounterView.setText(Integer.toString(counter));
+                            }
+                        });
+//                    }
+//                    else {
+//                        runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                mCounterView.setVisibility(View.INVISIBLE);
+//                            }
+//                        });
+//                    }
                 }
                 else {
                     // Take the picture:
                     msg = getResources().getString(R.string.taking_picture_text);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mCounterView.setVisibility(View.INVISIBLE);
+                        }
+                    });
                     mIsWaitingForCapture = false;
                     if (mIsPictureSafe)
                         takePicture();
@@ -1259,10 +1275,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             case CVResult.DOCUMENT_STATE_UNSHARP:
                 return getResources().getString(R.string.instruction_unsharp);
 
-            case CVResult.DOCOUMENT_STATE_BAD_ILLUMINATION:
+            case CVResult.DOCUMENT_STATE_BAD_ILLUMINATION:
                 return getResources().getString(R.string.instruction_bad_illumination);
 
-            case CVResult.DOCUMENT_STATE_ROATION:
+            case CVResult.DOCUMENT_STATE_ROTATION:
                 return getResources().getString(R.string.instruction_rotation);
 
             case CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED:

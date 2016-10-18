@@ -7,6 +7,7 @@
     <integer name="min_focus_ratio">50</integer>
 
     <integer name="observation_time">3000</integer> <!-- time in milli-seconds -->
-    <integer name="flicker_time">1000</integer> <!-- time in milli-seconds -->
+    <integer name="flicker_time">200</integer> <!-- time in milli-seconds -->
+    <integer name="counter_time">3000</integer> <!-- time in milli-seconds -->
 
 </resources>
