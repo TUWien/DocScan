@@ -4,6 +4,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <!--<dimen name="draw_view_text_size">25</dimen>-->
     <dimen name="draw_view_focus_font_size">15sp</dimen>
+    <dimen name="draw_view_counter_font_size">50sp</dimen>
     <dimen name="instruction_view_margin_bottom">100dp</dimen>
     <dimen name="focus_stroke_width">3dp</dimen>
     <dimen name="focus_height">30dp</dimen>

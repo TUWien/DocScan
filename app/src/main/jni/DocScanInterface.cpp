@@ -224,9 +224,6 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
             strs << i;
             std::string temp_str = strs.str();
             char* char_type = (char*) temp_str.c_str();
-
-            __android_log_write(ANDROID_LOG_INFO, "DocScanInterfaceNotEmpty", char_type);
-
         }
 
         polyRect = env->NewObject(polyRectClass, cnstrctr,

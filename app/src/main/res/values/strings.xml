@@ -10,7 +10,6 @@
     <string name="show_guide_text">Show guide lines</string>
     <string name="hide_guide_text">Hide guide lines</string>
     <string name="hide_fm_values_text">Hide focus values</string>
-    <string name="dont_move_text">Do not move for: </string>
     <string name="taking_picture_text">Taking picture</string>
 
     <!-- Use in the MainActivity: end -->
@@ -49,6 +48,7 @@
     <string name="instruction_bad_illumination">change illumination</string>
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>
+    <string name="dont_move_text">Do not move</string>
 
     <!-- Menus -->
     <string name="manual_mode">Manual shoot</string>

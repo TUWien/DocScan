@@ -39,20 +39,24 @@ import at.ac.tuwien.caa.docscan.R;
  */
 public class CVResult {
 
-    public static final int DOCUMENT_STATE_OK = 0;
+    // Take care this must be ordered!
     public static final int DOCUMENT_STATE_EMPTY = 1;
     public static final int DOCUMENT_STATE_SMALL = 2;
     public static final int DOCUMENT_STATE_PERSPECTIVE = 3;
-    public static final int DOCUMENT_STATE_ROATION = 4;
+    public static final int DOCUMENT_STATE_ROTATION = 4;
     public static final int DOCUMENT_STATE_NO_FOCUS_MEASURED = 5;
     public static final int DOCUMENT_STATE_UNSHARP = 6;
     public static final int DOCUMENT_STATE_NO_ILLUMINATION_MEASURED = 7;
-    public static final int DOCOUMENT_STATE_BAD_ILLUMINATION = 8;
+    public static final int DOCUMENT_STATE_BAD_ILLUMINATION = 8;
+
+    public static final int DOCUMENT_STATE_OK = 10;
 
     private static final int ORIENTATION_LANDSCAPE = 0;
     private static final int ORIENTATION_PORTRAIT = 90;
     private static final int ORIENTATION_FLIPPED_LANDSCAPE = 180;
     private static final int ORIENTATION_FLIPPED_PORTRAIT = 270;
+
+    private static final int MAX_STATE_CORRECTION_CNT = 2;
 
     private static final String TAG = "CVResult";
 
@@ -64,8 +68,9 @@ public class CVResult {
     private CVResultCallback mCallback;
     private Context mContext;
     private int mRatioSharpUnsharp;
+    private int mCorrectedStatesCnt = 0;
 
-    private int mCVState;
+    private int mCVState = -1;
     private double mIllumination;
     private boolean mIsIlluminationComputed;
 
@@ -267,18 +272,30 @@ public class CVResult {
 
     }
 
-    public int getState() {
-
-        return mCVState;
-
-    }
-
     private void stateUpdated() {
 
-        mCVState = getCVState();
+        int currentCVState = getCVState();
+
+        // check if the current CV state should be corrected - this is mainly used to remove small outliers:
+        if (currentCVState < mCVState) {
+            mCorrectedStatesCnt++;
+            Log.d(TAG, "correcting cv state: " + mCorrectedStatesCnt);
+            if (mCorrectedStatesCnt > MAX_STATE_CORRECTION_CNT) {
+                mCVState = currentCVState;
+                mCorrectedStatesCnt = 0;
+            }
+        }
+        else {
+            mCVState = currentCVState;
+            mCorrectedStatesCnt = 0;
+        }
+
+
         mCallback.onStatusChange(mCVState);
 
     }
+
+
 
     private int getCVState() {
 
@@ -297,7 +314,7 @@ public class CVResult {
             return DOCUMENT_STATE_PERSPECTIVE;
 
         if (!isRotationCorrect(polyRect))
-            return DOCUMENT_STATE_ROATION;
+            return DOCUMENT_STATE_ROTATION;
 
         if (mPatches == null)
             return DOCUMENT_STATE_NO_FOCUS_MEASURED;
@@ -309,7 +326,7 @@ public class CVResult {
             return DOCUMENT_STATE_NO_ILLUMINATION_MEASURED;
 
         if (!isIlluminationOK())
-            return DOCOUMENT_STATE_BAD_ILLUMINATION;
+            return DOCUMENT_STATE_BAD_ILLUMINATION;
 
         return DOCUMENT_STATE_OK;
 

@@ -353,12 +353,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mSurfaceWidth = width;
         mSurfaceHeight = height;
 
+        if (mCamera == null)
+            return;
+
         int orientation = calculatePreviewOrientation(mCameraInfo, mDisplayOrientation);
-        // TODO: find the reason for this exception:
-//        java.lang.RuntimeException: Camera is being used after Camera.release() was called
-//        at android.hardware.Camera.setDisplayOrientation(Native Method)
-//        at at.ac.tuwien.caa.docscan.CameraPreview.initCamera(CameraPreview.java:357)
-//        at at.ac.tuwien.caa.docscan.CameraPreview.surfaceChanged(CameraPreview.java:176)
         mCamera.setDisplayOrientation(orientation);
 
 
