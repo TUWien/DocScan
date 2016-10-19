@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/container_layout">
+
+
+
+        <at.ac.tuwien.caa.docscan.CameraPreview
+            android:id="@+id/camera_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/hud_focus_sharp_rect_color"
+            />
+
+
+
+        <at.ac.tuwien.caa.docscan.PaintView
+            android:id="@+id/paint_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
+
+
+        <!--This is necessary because on the Samsung Galaxy Tab 10.1 (Android 4.0.4) the
+        navigation drawer is drawn below the PaintView (=SurfaceView). Got this from:
+        http://stackoverflow.com/questions/20373529/navigationdrawer-under-mapfragment-and-cameraview-surfaceview
+        -->
+        <FrameLayout
+            android:id="@+id/bugfixview"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:background="@android:color/transparent"/>
+
+        <TextView
+            android:id="@+id/counter_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:textColor="@color/photo_button_view_bg_color"
+            android:gravity="center"
+            android:visibility="invisible"
+            android:textSize="@dimen/draw_view_counter_font_size"
+            />
+
+        <TextView
+            android:id="@+id/instruction_view"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical|bottom"
+            android:textColor="@color/white"
+            android:background="@color/debug_view_bg_color"
+            android:layout_marginBottom="@dimen/instruction_view_margin_bottom"
+            android:gravity="center"
+            />
+    </FrameLayout>
+
+
+
+</LinearLayout>

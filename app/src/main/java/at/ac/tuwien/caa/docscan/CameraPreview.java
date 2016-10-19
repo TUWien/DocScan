@@ -459,6 +459,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 yuv.put(0, 0, pixels);
 
 
+                if (mFrameMat != null)
+                    mFrameMat.release();
+
                 mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                 Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
 

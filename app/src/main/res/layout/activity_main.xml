@@ -8,110 +8,37 @@
     android:id="@+id/drawer_layout"
     >
 
-    <LinearLayout
-        android:orientation="vertical"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-
+        android:id="@+id/main_layout"
         >
 
 
         <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
-        <at.ac.tuwien.caa.docscan.LiveViewLayout
+        <!--<at.ac.tuwien.caa.docscan.LiveViewLayout-->
 
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:id="@+id/container_layout"
-            >
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:id="@+id/container_layout"-->
+            <!--&gt;-->
 
+        <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
+        <fragment android:name="at.ac.tuwien.caa.docscan.CameraPaintFragment"
+            android:id="@+id/camera_paint_fragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:tag="CameraPaintFragment" />
 
+        <include layout="@layout/toolbar"
+            android:id="@+id/toolbar"/>
+        <!--</at.ac.tuwien.caa.docscan.LiveViewLayout>-->
 
-            <at.ac.tuwien.caa.docscan.CameraPreview
-                android:id="@+id/camera_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/hud_focus_sharp_rect_color"
-                tools:layout="@layout/abc_screen_simple" />
+        <include layout="@layout/camera_controls_layout"
+            android:id="@+id/camera_controls_layout" />
 
-            <include layout="@layout/toolbar"
-                android:id="@+id/toolbar"/>
-
-            <at.ac.tuwien.caa.docscan.PaintView
-                android:id="@+id/paint_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:layout="@layout/abc_screen_simple"
-                />
-            <!--This is necessary because on the Samsung Galaxy Tab 10.1 (Android 4.0.4) the
-            navigation drawer is drawn below the PaintView (=SurfaceView). Got the advice from:
-            http://stackoverflow.com/questions/20373529/navigationdrawer-under-mapfragment-and-cameraview-surfaceview
-            -->
-            <FrameLayout
-                android:id="@+id/bugfixview"
-                android:layout_height="match_parent"
-                android:layout_width="match_parent"
-                android:background="@android:color/transparent"/>
-
-            <TextView
-                android:id="@+id/counter_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|center_horizontal"
-                android:textColor="@color/photo_button_view_bg_color"
-                android:gravity="center"
-                android:visibility="invisible"
-                android:textSize="@dimen/draw_view_counter_font_size"
-                />
-
-            <TextView
-                android:id="@+id/instruction_view"
-                android:layout_width="160dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|bottom"
-                android:textColor="@color/white"
-                android:background="@color/debug_view_bg_color"
-                android:layout_marginBottom="@dimen/instruction_view_margin_bottom"
-                android:gravity="center"
-                />
-
-
-
-        </at.ac.tuwien.caa.docscan.LiveViewLayout>
-
-        <RelativeLayout
-            android:layout_gravity="bottom"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-
-            android:background="@color/button_view_bg_color">
-
-            <ImageButton
-                android:layout_centerInParent="true"
-                android:id="@+id/photo_button"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@drawable/ic_photo_camera"
-                android:background="@drawable/photo_shoot_button_selector"
-                />
-
-
-            <ImageButton
-                android:id="@+id/gallery_button"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:scaleType="centerInside"
-                android:adjustViewBounds="true"
-                android:padding="@dimen/activity_horizontal_margin"
-                android:layout_marginRight="25dp"
-                android:background="@null"
-                />
-
-        </RelativeLayout>
-
-    </LinearLayout>
+    </RelativeLayout>
 
     <!-- The navigation drawer -->
     <android.support.design.widget.NavigationView
