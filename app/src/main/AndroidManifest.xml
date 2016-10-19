@@ -21,7 +21,10 @@
 
         <activity
             android:name=".CameraActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:configChanges="orientation|screenSize"
+            />
+        <!--android:configChanges="keyboardHidden|orientation|screenSize"-->
 
     </application>
 

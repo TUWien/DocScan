@@ -62,6 +62,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
@@ -95,6 +96,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     private static final String TAG = "CameraActivity";
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
+    private static final String CAMERA_PAINT_FRAGMENT = "CameraPaintFragment";
     private static String IMG_FILENAME_PREFIX = "IMG_";
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
     private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 0;
@@ -116,6 +118,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private CVResult mCVResult;
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
+//    private CameraPaintFragment mCameraFragment;
     private static boolean mIsDebugViewEnabled;
     private int mDisplayRotation;
     private static Context mContext;
@@ -174,15 +177,15 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         openCameraThread();
 
-        if (mCamera == null || mCameraInfo == null) {
-            // Camera is not available, display error message
-            Toast.makeText(this, "Camera is not available.", Toast.LENGTH_SHORT).show();
-            setContentView(R.layout.camera_unavailable_view);
-        } else {
+//        if (mCamera == null || mCameraInfo == null) {
+//            // Camera is not available, display error message
+//            Toast.makeText(this, "Camera is not available.", Toast.LENGTH_SHORT).show();
+//            setContentView(R.layout.camera_unavailable_view);
+//        } else {
 
             initActivity();
 
-        }
+//        }
 
         mContext = this;
 
@@ -276,6 +279,18 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
         mTextView = (TextView) findViewById(R.id.instruction_view);
+
+//        mCameraFragment = (CameraPaintFragment) getSupportFragmentManager().findFragmentByTag(CAMERA_PAINT_FRAGMENT);
+//
+//        // create the fragment and data the first time
+//        if (mCameraFragment == null) {
+//            // add the fragment
+//            mCameraFragment = new CameraPaintFragment();
+//            getSupportFragmentManager().beginTransaction().add(mCameraFragment, CAMERA_PAINT_FRAGMENT).commit();
+//            // load the data from the web
+////            dataFragment.setData(loadMyData());
+//        }
+
 
         if (mDebugViewFragment == null)
             mIsDebugViewEnabled = false;
@@ -575,6 +590,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             }
         };
 
+    }
+
+    private void setupPhotoShootButtonCallback() {
+
         // Listener for photo shoot button:
 
         ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
@@ -699,9 +718,54 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
+
+        int displayRotation = getWindowManager().getDefaultDisplay().getRotation();
+        mCameraPreview.setCamera(mCamera, mCameraInfo, displayRotation);
+
+        ViewGroup appRoot = (ViewGroup) findViewById(R.id.main_layout);
+        View f = findViewById(R.id.camera_controls_layout);
+        appRoot.removeView(f);
+
+//        LinearLayout l = (LinearLayout) findViewById(R.id.main_layout);
+//        l.setOrientation(LinearLayout.HORIZONTAL);
+
+        getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
+
+        setupPhotoShootButtonCallback();
+        initGalleryCallback();
+        loadThumbnail();
+
+//        View subview = getLayoutInflater().inflate(R.layout.activity_main, appRoot);
+
+//
+//        // remove old switcher, shutter and shutter icon
+//        View cameraControlsView = findViewById(R.id.camera_controls_layout);
+////        if (cameraControlsView != null)
+//        appRoot.removeView(cameraControlsView);
+////
+//        RelativeLayout l = (RelativeLayout) findViewById(R.id.main_layout);
+//        l.setOrientation(LinearLayout.HORIZONTAL);
+
+//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+//                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+//        params.addRule(RelativeLayout.RIGHT_OF, R.id.camera_paint_fragment);
+////
+//
+//        RelativeLayout r = (RelativeLayout) findViewById(R.id.camera_controls_layout);
+//        r.setLayoutParams(params);
+
+        // create new layout with the current orientation
+//        LayoutInflater inflater = getLayoutInflater();
+//        inflater.inflate(R.layout.ca, appRoot);
+
+//        l.setLayoutParams(layoutParams);
+
     }
+
+
 
 
     @Override
@@ -1007,21 +1071,21 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 //        mLiveViewLayout.setFrameDimension(width, height);
 
-//        View container = (View) findViewById(R.id.container_layout);
+        View container = (View) findViewById(R.id.container_layout);
 
 
 //        // This is necessary to resize the parent view (holding the camera preview and the paint view):
 ////        View container = (View) findViewById(R.id.container_layout);
-////        LinearLayout.LayoutParams p = (LinearLayout.LayoutParams) container.getLayoutParams();
-////
-////        int rotation = getWindowManager().getDefaultDisplay().getRotation();
-////
-////        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180)
-////            p.height = height;
-////        else
-////            p.width = width;
-////
-////        container.setLayoutParams(p);
+//        LinearLayout.LayoutParams p = (LinearLayout.LayoutParams) container.getLayoutParams();
+//
+//        int rotation = getWindowManager().getDefaultDisplay().getRotation();
+//
+//        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180)
+//            p.height = height;
+//        else
+//            p.width = width;
+//
+//        container.setLayoutParams(p);
 //
 //
 //        View paintView = (View) findViewById(R.id.paint_view);
@@ -1064,17 +1128,22 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         // TODO: Test this on Moto E:
         if (mFlashModes == null)
             mFlashMenuItem.setVisible(false);
-        if (mFlashModes.size() == 1)
-            mFlashMenuItem.setVisible(false);
 
-        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO))
-            mFlashPopupMenu.getMenu().findItem(R.id.flash_auto_item).setVisible(false);
+        else {
 
-        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_ON))
-            mFlashPopupMenu.getMenu().findItem(R.id.flash_on_item).setVisible(false);
+            if (mFlashModes.size() == 1)
+                mFlashMenuItem.setVisible(false);
 
-        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_OFF))
-            mFlashPopupMenu.getMenu().findItem(R.id.flash_off_item).setVisible(false);
+            if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO))
+                mFlashPopupMenu.getMenu().findItem(R.id.flash_auto_item).setVisible(false);
+
+            if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_ON))
+                mFlashPopupMenu.getMenu().findItem(R.id.flash_on_item).setVisible(false);
+
+            if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_OFF))
+                mFlashPopupMenu.getMenu().findItem(R.id.flash_off_item).setVisible(false);
+
+        }
 
     }
 
@@ -1153,7 +1222,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         // Check if we need the focus measurement at this point:
         if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-            mCameraPreview.startFocusMeasurement(true);
+//            mCameraPreview.startFocusMeasurement(true);
         }
         // Check if we need the illumination measurement at this point:
         else if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
@@ -1355,6 +1424,18 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         else
             mGalleryButton.setBackgroundDrawable(drawable);
     }
+
+//    @Override
+//    public void onCameraLoaded(Camera camera, Camera.CameraInfo info, int displayRotation) {
+//
+//        mCamera = camera;
+//        mCameraInfo = info;
+//        // Get the rotation of the screen to adjust the preview image accordingly.
+//        mDisplayRotation = displayRotation;
+//
+//        mIsPictureSafe = true;
+//
+//    }
 
 
     /**
