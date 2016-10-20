@@ -10,7 +10,7 @@
     <color name="white">#ffffff</color>
     <color name="navigation_drawer_text_color">#ffffff</color>
     <!--<color name="button_view_bg_color">#333</color>-->
-    <color name="button_view_bg_color">#000</color>
+    <color name="button_view_bg_color">#333</color>
     <color name="hud_good_text_color">#d666</color>
     <color name="hud_bad_text_color">#a3a3</color>
 
@@ -23,5 +23,5 @@
     <color name="hud_helper_line_color">#bb636363</color>
     <color name="flicker_color">#bb636363</color>
 
-    <color name="photo_button_view_bg_color">#000</color>
+    <color name="photo_button_view_bg_color">#333</color>
 </resources>

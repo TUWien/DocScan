@@ -7,26 +7,27 @@
 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@color/photo_button_view_bg_color"
         android:id="@+id/container_layout">
 
-
-
-        <at.ac.tuwien.caa.docscan.CameraPreview
-            android:id="@+id/camera_view"
+        <at.ac.tuwien.caa.docscan.CameraPaintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/hud_focus_sharp_rect_color"
-            />
+            android:id="@+id/camera_paint_layout">
 
+                <at.ac.tuwien.caa.docscan.CameraPreview
+                    android:id="@+id/camera_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/hud_focus_sharp_rect_color"
+                    />
 
-
-        <at.ac.tuwien.caa.docscan.PaintView
-            android:id="@+id/paint_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
-
-
+                <at.ac.tuwien.caa.docscan.PaintView
+                    android:id="@+id/paint_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    />
+        </at.ac.tuwien.caa.docscan.CameraPaintLayout>
 
         <!--This is necessary because on the Samsung Galaxy Tab 10.1 (Android 4.0.4) the
         navigation drawer is drawn below the PaintView (=SurfaceView). Got this from:
@@ -59,6 +60,10 @@
             android:layout_marginBottom="@dimen/instruction_view_margin_bottom"
             android:gravity="center"
             />
+
+        <include layout="@layout/toolbar"
+            android:id="@+id/toolbar"/>
+
     </FrameLayout>
 
 
