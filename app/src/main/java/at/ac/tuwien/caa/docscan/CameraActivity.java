@@ -300,12 +300,21 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
-        initGalleryCallback();
-        initPictureCallback();
         initDrawables();
+        initPictureCallback();
+        initButtons();
 
+
+
+
+    }
+
+
+    private void initButtons() {
+
+        setupPhotoShootButtonCallback();
+        initGalleryCallback();
         loadThumbnail();
-
 
     }
 
@@ -729,40 +738,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         ViewGroup appRoot = (ViewGroup) findViewById(R.id.main_layout);
         View f = findViewById(R.id.camera_controls_layout);
         appRoot.removeView(f);
-
-//        LinearLayout l = (LinearLayout) findViewById(R.id.main_layout);
-//        l.setOrientation(LinearLayout.HORIZONTAL);
-
         getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
 
         setupPhotoShootButtonCallback();
         initGalleryCallback();
         loadThumbnail();
-
-//        View subview = getLayoutInflater().inflate(R.layout.activity_main, appRoot);
-
-//
-//        // remove old switcher, shutter and shutter icon
-//        View cameraControlsView = findViewById(R.id.camera_controls_layout);
-////        if (cameraControlsView != null)
-//        appRoot.removeView(cameraControlsView);
-////
-//        RelativeLayout l = (RelativeLayout) findViewById(R.id.main_layout);
-//        l.setOrientation(LinearLayout.HORIZONTAL);
-
-//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-//                RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-//        params.addRule(RelativeLayout.RIGHT_OF, R.id.camera_paint_fragment);
-////
-//
-//        RelativeLayout r = (RelativeLayout) findViewById(R.id.camera_controls_layout);
-//        r.setLayoutParams(params);
-
-        // create new layout with the current orientation
-//        LayoutInflater inflater = getLayoutInflater();
-//        inflater.inflate(R.layout.ca, appRoot);
-
-//        l.setLayoutParams(layoutParams);
+        initButtons();
 
     }
 
