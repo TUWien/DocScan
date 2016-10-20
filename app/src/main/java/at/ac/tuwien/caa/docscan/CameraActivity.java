@@ -723,7 +723,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mDrawerToggle.onConfigurationChanged(newConfig);
 
         int displayRotation = getWindowManager().getDefaultDisplay().getRotation();
-        mCameraPreview.setCamera(mCamera, mCameraInfo, displayRotation);
+        if (mCamera != null)
+            mCameraPreview.setCamera(mCamera, mCameraInfo, displayRotation);
 
         ViewGroup appRoot = (ViewGroup) findViewById(R.id.main_layout);
         View f = findViewById(R.id.camera_controls_layout);

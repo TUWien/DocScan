@@ -535,7 +535,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     if (patch.getIsSharp()) {
 
                         if (mDrawFocusText)
-                            mTextPaint.setColor(GOOD_TEXT_COLOR);
+                            mTextPaint.setColor(FOCUS_SHARP_RECT_COLOR);
 
                         drawFocusRect(canvas, mFocusSharpRectPaint, patch.getDrawViewPX(), patch.getDrawViewPY());
 
@@ -543,7 +543,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     else {
 
                         if (mDrawFocusText)
-                            mTextPaint.setColor(BAD_TEXT_COLOR);
+                            mTextPaint.setColor(FOCUS_UNSHARP_RECT_COLOR);
 
                         drawFocusRect(canvas, mFocusUnsharpRectPaint, patch.getDrawViewPX(), patch.getDrawViewPY());
 
@@ -570,6 +570,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         private void drawFocusRect(Canvas canvas, Paint paint, float x, float y) {
+
+            mFocusPath.reset();
 
             mFocusPath.moveTo(x - FOCUS_RECT_OFFSET + FOCUS_RECT_SHORT_LENGTH, y - FOCUS_RECT_HALF_HEIGHT);
             mFocusPath.lineTo(x - FOCUS_RECT_OFFSET, y - FOCUS_RECT_HALF_HEIGHT);
