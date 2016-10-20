@@ -51,6 +51,7 @@ public class CameraPaintFragment extends Fragment {
     }
 
 
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -74,6 +75,10 @@ public class CameraPaintFragment extends Fragment {
         // Inflate the layout for this fragment
         return view;
     }
+
+
+
+
 
 //    public interface TempCallback {
 //

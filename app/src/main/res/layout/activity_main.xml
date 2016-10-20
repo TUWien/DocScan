@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/main_layout"
+        android:background="@color/photo_button_view_bg_color"
         >
 
 
@@ -31,12 +32,15 @@
             android:layout_height="wrap_content"
             android:tag="CameraPaintFragment" />
 
-        <include layout="@layout/toolbar"
-            android:id="@+id/toolbar"/>
+
+
+
         <!--</at.ac.tuwien.caa.docscan.LiveViewLayout>-->
 
         <include layout="@layout/camera_controls_layout"
             android:id="@+id/camera_controls_layout" />
+
+
 
     </RelativeLayout>
 
