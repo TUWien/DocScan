@@ -60,13 +60,14 @@ namespace dsc {
 
 
 			//this should be the faster version...
+
             cv::Mat FM(mSrcImg.rows - 2, mSrcImg.cols - 2, mSrcImg.type());
             for (int rowIdx = 0; rowIdx < mSrcImg.rows - 2; rowIdx++) {
 
-                const double *ptrSrc = mSrcImg.ptr<double>(rowIdx);
-                const double *ptrSrc2 = mSrcImg.ptr<double>(rowIdx+2);
+                const float *ptrSrc = mSrcImg.ptr<float>(rowIdx);
+                const float *ptrSrc2 = mSrcImg.ptr<float>(rowIdx+2);
 
-                double *ptrFm = FM.ptr<double>(rowIdx);
+                float *ptrFm = FM.ptr<float>(rowIdx);
 
                 for (int colIdx = 0; colIdx < mSrcImg.cols-2; colIdx++) {
 
