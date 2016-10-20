@@ -1222,7 +1222,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         // Check if we need the focus measurement at this point:
         if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-//            mCameraPreview.startFocusMeasurement(true);
+            mCameraPreview.startFocusMeasurement(true);
         }
         // Check if we need the illumination measurement at this point:
         else if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
