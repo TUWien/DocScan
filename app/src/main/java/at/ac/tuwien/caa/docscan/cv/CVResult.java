@@ -383,7 +383,7 @@ public class CVResult {
 
         Log.d(TAG, "illumination " + mIllumination);
 
-        if (mIllumination > .3)
+        if (mIllumination <= .3)
             return true;
         else
             return false;

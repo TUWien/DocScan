@@ -138,6 +138,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private PopupMenu mFlashPopupMenu;
     private boolean mIsFlashModeInit = false;
     private byte[] mPictureData;
+    private Drawable mGalleryButtonDrawable;
 
     // TODO: use here values.ints
     private final int DOCUMENT_STEADY_TIME = 3000;
@@ -740,9 +741,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         appRoot.removeView(f);
         getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
 
-        setupPhotoShootButtonCallback();
-        initGalleryCallback();
-        loadThumbnail();
         initButtons();
 
     }
@@ -1053,7 +1051,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 //        mLiveViewLayout.setFrameDimension(width, height);
 
-        View container = (View) findViewById(R.id.container_layout);
+//        View container = (View) findViewById(R.id.container_layout);
 
 
 //        // This is necessary to resize the parent view (holding the camera preview and the paint view):
@@ -1146,6 +1144,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
+
         switch (item.getItemId()) {
             case R.id.manual_mode_item:
                 mModeMenuItem.setIcon(mManualShootDrawable);
@@ -1172,6 +1171,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
             default:
                 return false;
+
         }
     }
 
@@ -1208,6 +1208,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         }
         // Check if we need the illumination measurement at this point:
         else if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
+
+            if (mCVResult.getDKPolyRects() == null)
+                return;
+            if (mCVResult.getDKPolyRects().length == 0)
+                return;
+
             mCameraPreview.setIlluminationRect(mCVResult.getDKPolyRects()[0]);
             mCameraPreview.startIllumination(true);
             mCVResult.setIsIlluminationComputed(true);
@@ -1350,52 +1356,63 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     private void loadThumbnail() {
 
-        File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
-        if (mediaStorageDir == null)
-            return;
+        // Check if a thumbnail is already existing (this should occur on orientation changes):
+        if (mGalleryButtonDrawable != null)
+            setGalleryButtonDrawable(mGalleryButtonDrawable);
 
-        String[] files = mediaStorageDir.list();
+        else {
 
-        if (files == null)
-            return;
-        else if (files.length == 0)
-            return;
+            File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
+            if (mediaStorageDir == null)
+                return;
 
-        // Determine the most recent image:
-        Arrays.sort(files);
-        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1];
+            String[] files = mediaStorageDir.list();
 
+            if (files == null)
+                return;
+            else if (files.length == 0)
+                return;
 
-        Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName.toString()), 200, 200);
-        if (thumbNailBitmap == null)
-            return;
+            // Determine the most recent image:
+            Arrays.sort(files);
+            String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1];
 
-        // Determine the rotation angle of the image:
-        int angle = -1;
-        try {
-            ExifInterface exif = new ExifInterface(fileName);
-            String attr = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
-            angle = getAngleFromExif(Integer.valueOf(attr));
-        } catch (IOException e) {
-            return;
+            ThumbnailLoader thumbnailLoader = new ThumbnailLoader();
+            thumbnailLoader.execute(fileName);
+
         }
 
-        //Rotate the image:
-        Matrix mtx = new Matrix();
-        mtx.setRotate(angle);
-        thumbNailBitmap = Bitmap.createBitmap(thumbNailBitmap, 0, 0, thumbNailBitmap.getWidth(), thumbNailBitmap.getHeight(), mtx, true);
 
-        // Update the gallery button:
-        final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), thumbNailBitmap);
-        if (thumbDrawable == null)
-            return;
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                setGalleryButtonDrawable(thumbDrawable);
-            }
-        });
+//        Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName.toString()), 200, 200);
+//        if (thumbNailBitmap == null)
+//            return;
+//
+//        // Determine the rotation angle of the image:
+//        int angle = -1;
+//        try {
+//            ExifInterface exif = new ExifInterface(fileName);
+//            String attr = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+//            angle = getAngleFromExif(Integer.valueOf(attr));
+//        } catch (IOException e) {
+//            return;
+//        }
+//
+//        //Rotate the image:
+//        Matrix mtx = new Matrix();
+//        mtx.setRotate(angle);
+//        thumbNailBitmap = Bitmap.createBitmap(thumbNailBitmap, 0, 0, thumbNailBitmap.getWidth(), thumbNailBitmap.getHeight(), mtx, true);
+//
+//        // Update the gallery button:
+//        final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), thumbNailBitmap);
+//        if (thumbDrawable == null)
+//            return;
+//
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                setGalleryButtonDrawable(thumbDrawable);
+//            }
+//        });
 
     }
 
@@ -1405,6 +1422,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             mGalleryButton.setBackground(drawable);
         else
             mGalleryButton.setBackgroundDrawable(drawable);
+
+        // Keep a reference to the drawable, because we need it if the orientation is changed:
+        mGalleryButtonDrawable = drawable;
+
     }
 
 //    @Override
@@ -1493,6 +1514,49 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    private class ThumbnailLoader extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... fileNames) {
+
+            String fileName = fileNames[0];
+
+            Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName), 200, 200);
+            if (thumbNailBitmap == null)
+                return null;
+
+            // Determine the rotation angle of the image:
+            int angle = -1;
+            try {
+                ExifInterface exif = new ExifInterface(fileName);
+                String attr = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+                angle = getAngleFromExif(Integer.valueOf(attr));
+            } catch (IOException e) {
+                return null;
+            }
+
+            //Rotate the image:
+            Matrix mtx = new Matrix();
+            mtx.setRotate(angle);
+            thumbNailBitmap = Bitmap.createBitmap(thumbNailBitmap, 0, 0, thumbNailBitmap.getWidth(), thumbNailBitmap.getHeight(), mtx, true);
+
+            // Update the gallery button:
+            final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), thumbNailBitmap);
+            if (thumbDrawable == null)
+                return null;
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setGalleryButtonDrawable(thumbDrawable);
+                }
+            });
+
+            return null;
+
+        }
+
+    }
 
     /**
      * Class used to save pictures in an own thread (AsyncTask).
