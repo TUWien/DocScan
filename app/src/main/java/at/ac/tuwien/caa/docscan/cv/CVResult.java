@@ -56,7 +56,7 @@ public class CVResult {
     private static final int ORIENTATION_FLIPPED_LANDSCAPE = 180;
     private static final int ORIENTATION_FLIPPED_PORTRAIT = 270;
 
-    private static final int MAX_STATE_CORRECTION_CNT = 2;
+    private static final int MAX_STATE_CORRECTION_CNT = 1;
 
     private static final String TAG = "CVResult";
 
@@ -381,16 +381,12 @@ public class CVResult {
 
     private boolean isIlluminationOK() {
 
-        Log.d(TAG, "illumination " + mIllumination);
+//        Log.d(TAG, "illumination " + mIllumination);
 
-        if (mIllumination > .3)
+        if (mIllumination <= .3)
             return true;
         else
             return false;
-
-//        if (mRatioSharpUnsharp < mContext.getResources().getInteger(R.integer.min_focus_ratio))
-//            return false;
-
 
     }
 

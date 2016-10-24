@@ -28,6 +28,8 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -69,6 +71,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private PageSegmentationThread mPageSegmentationThread;
     private FocusMeasurementThread mFocusMeasurementThread;
     private IlluminationThread mIlluminationThread;
+    private CameraHandlerThread mThread = null;
 
     // Mat used by mPageSegmentationThread and mFocusMeasurementThread:
     private Mat mFrameMat;
@@ -172,7 +175,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         // Check that the screen is on, because surfaceChanged is also called after the screen is turned off in landscape mode.
         // (Because the activity is resumed in such cases)
-        if (mCamera != null && CameraActivity.isScreenOn())
+        if (CameraActivity.isScreenOn())
             initCamera(width, height);
 
     }
@@ -183,14 +186,27 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public void resume() {
 
 
-        if (!isCameraInitialized)
-            initCamera(mSurfaceWidth, mSurfaceHeight);
+//        if (!isCameraInitialized)
+        initCamera(mSurfaceWidth, mSurfaceHeight);
 
     }
 
+    public Camera getCamera() {
+        return mCamera;
+    }
+
+    private void releaseCamera() {
+        if (mCamera != null) {
+            mCamera.setPreviewCallback(null);
+            mCamera.stopPreview();
+            mCamera.release();        // release the camera for other applications
+            mCamera = null;
+        }
+    }
 
     public void pause() {
 
+        releaseCamera();
         isCameraInitialized = false;
 
     }
@@ -325,21 +341,24 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
-    /**
-     * Initializes the camera with the preview size and the orientation. Starts the page segmentation
-     * and the focus measurement threads.
-     * @param width width of the surface
-     * @param height height of the surface
-     */
-    private void initCamera(int width, int height) {
+//    private void startCamera() {
+//
+//        isCameraInitialized = true;
+//
+//        // put this in a thread:
+//        mCamera = Camera.open(0);
+//        mCameraInfo = new Camera.CameraInfo();
+//        Camera.getCameraInfo(0, mCameraInfo);
+//
+//    }
 
-        if (mHolder.getSurface() == null) {
-            // preview surface does not exist
-            Log.d(TAG, "Preview surface does not exist");
-            return;
-        }
+    private void initPreview() {
 
-        isCameraInitialized = true;
+        // Get the rotation of the screen to adjust the preview image accordingly.
+        mDisplayOrientation = CameraActivity.getOrientation();
+
+
+//            startCamera();
 
         // stop preview before making changes
         try {
@@ -350,8 +369,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
 
-        mSurfaceWidth = width;
-        mSurfaceHeight = height;
+        ;
 
         if (mCamera == null)
             return;
@@ -420,6 +438,33 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // Tell the dependent Activity that the frame dimension (might have) change:
         mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
 //        mCameraPreviewCallback.onFrameDimensionChange(mMatWidth, mMatHeight, orientation);
+
+
+    }
+
+     /**
+     * Initializes the camera with the preview size and the orientation. Starts the page segmentation
+     * and the focus measurement threads.
+     * @param width width of the surface
+     * @param height height of the surface
+     */
+    private void initCamera(int width, int height) {
+
+        if (mHolder.getSurface() == null) {
+            // preview surface does not exist
+            Log.d(TAG, "Preview surface does not exist");
+            return;
+        }
+
+        mSurfaceWidth = width;
+        mSurfaceHeight = height;
+
+        if (!isCameraInitialized)
+            openCameraThread();
+//        else
+
+        initPreview();
+
 
 
     }
@@ -511,7 +556,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         Camera.Size bestSize = null;
 
-        final double ASPECT_TOLERANCE = 0.1;
+        final double ASPECT_TOLERANCE = 0.2;
         double targetRatio = (double) height / width;
 
         double minDiff = Double.MAX_VALUE;
@@ -585,60 +630,108 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         return result;
     }
 
-    /**
-     * Scales the camera view so that the preview has original width to height ratio, this is
-     * necessary to avoid a stretching of the camera preview. If this function is not used, the
-     * size of the camera preview frames is equal to the available space (defined by the view).
-     *
-     * @see <a href="https://developer.android.com/reference/android/view/View.html#onMeasure(int,%20int)>onMeasure</a>
-     *
-     * @param widthMeasureSpec  horizontal space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec
-     * @param heightMeasureSpec vertical space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec
-     */
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+//    /**
+//     * Scales the camera view so that the preview has original width to height ratio, this is
+//     * necessary to avoid a stretching of the camera preview. If this function is not used, the
+//     * size of the camera preview frames is equal to the available space (defined by the view).
+//     *
+//     * @see <a href="https://developer.android.com/reference/android/view/View.html#onMeasure(int,%20int)>onMeasure</a>
+//     *
+//     * @param widthMeasureSpec  horizontal space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec
+//     * @param heightMeasureSpec vertical space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec
+//     */
+//    @Override
+//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+//
+//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+//
+//        int width = MeasureSpec.getSize(widthMeasureSpec);
+//        int height = MeasureSpec.getSize(heightMeasureSpec);
+//
+//        int mw = 0;
+//        int mh = 0;
+//
+//        if (mFrameHeight == 0|| mFrameWidth == 0) {
+////            setChildMeasuredDimension(width, height);
+//            setMeasuredDimension(width, height);
+//        } else {
+//
+//
+//            // Note that mFrameWidth > mFrameHeight - regardless of the orientation!
+//            // Portrait mode:
+//            if (width < height) {
+//
+//                double resizeFac = (double) width / mFrameHeight;
+//                int scaledHeight = (int) Math.round(mFrameWidth * resizeFac);
+//                if (scaledHeight > height)
+//                    scaledHeight = height;
+////                setMeasuredDimension(width, scaledHeight);
+//
+//                mw = width;
+//                mh = scaledHeight;
+//            }
+//            // Landscape mode:
+//            else {
+//                double resizeFac = (double) height / mFrameHeight;
+//                int scaledWidth = (int) Math.round(mFrameWidth * resizeFac);
+//                if (scaledWidth > width)
+//                    scaledWidth = width;
+////                setMeasuredDimension(scaledWidth, height);
+//
+//                mw = scaledWidth;
+//                mh = height;
+//            }
+//
+//        }
+//
+//        // Finally tell the dependent Activity the dimension has changed:
+////        mCameraPreviewCallback.onMeasuredDimensionChange(getMeasuredWidth(), getMeasuredHeight());
+//        mCameraPreviewCallback.onMeasuredDimensionChange(mw, mh);
+//    }
 
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
+//    @Override
+//    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+//        if (changed && getChildCount() > 0) {
+//            final View child = getChildAt(0);
+//
+//            final int width = r - l;
+//            final int height = b - t;
+//
+//            int previewWidth = width;
+//            int previewHeight = height;
+//            if (mPreviewSize != null) {
+//                previewWidth = mPreviewSize.width;
+//                previewHeight = mPreviewSize.height;
+//            }
+//            if (previewWidth == 0) {
+//                previewWidth = 1;
+//            }
+//            if (previewHeight == 0) {
+//                previewHeight = 1;
+//            }
+//
+//            // Center the child SurfaceView within the parent.
+//            if (width * previewHeight > height * previewWidth) {
+//                final int scaledChildWidth = previewWidth * height / previewHeight;
+//                child.layout((width - scaledChildWidth) / 2, 0, (width + scaledChildWidth) / 2, height);
+//            } else {
+//                final int scaledChildHeight = previewHeight * width / previewWidth;
+//                child.layout(0, (height - scaledChildHeight) / 2, width, (height + scaledChildHeight) / 2);
+//            }
+//        }
+//    }
 
-        if (mFrameHeight == 0|| mFrameWidth == 0) {
-//            setChildMeasuredDimension(width, height);
-            setMeasuredDimension(width, height);
-        } else {
-
-
-            // Note that mFrameWidth > mFrameHeight - regardless of the orientation!
-            // Portrait mode:
-            if (width < height) {
-
-                double resizeFac = (double) width / mFrameHeight;
-                int scaledHeight = (int) Math.round(mFrameWidth * resizeFac);
-                if (scaledHeight > height)
-                    scaledHeight = height;
-                setMeasuredDimension(width, scaledHeight);
-
-            }
-            // Landscape mode:
-            else {
-                double resizeFac = (double) height / mFrameHeight;
-                int scaledWidth = (int) Math.round(mFrameWidth * resizeFac);
-                if (scaledWidth > width)
-                    scaledWidth = width;
-                setMeasuredDimension(scaledWidth, height);
-
-            }
-
-        }
-
-        // Finally tell the dependent Activity the dimension has changed:
-        mCameraPreviewCallback.onMeasuredDimensionChange(getMeasuredWidth(), getMeasuredHeight());
-    }
+//    @Override
+//    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+//
+//        if (changed)
+//            this.layout(0,0,100,100);
+//
+//    }
 
     @Override
     public void onAutoFocus(boolean success, Camera camera) {
-
     }
 
     public void setFlashMode(String flashMode) {
@@ -648,6 +741,71 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mCamera.setParameters(params);
 
     }
+
+    private void openCameraThread() {
+
+        if (mCamera == null) {
+
+            if (mThread == null) {
+                mThread = new CameraHandlerThread();
+//            mThread.setPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+            }
+
+            synchronized (mThread) {
+                mThread.openCamera();
+            }
+
+        }
+
+    }
+
+    private void initCamera() {
+
+        releaseCamera();
+        // Open an instance of the first camera and retrieve its info.
+        mCamera = Camera.open(0);
+        mCameraInfo = new Camera.CameraInfo();
+        Camera.getCameraInfo(0, mCameraInfo);
+
+        // Get the rotation of the screen to adjust the preview image accordingly.
+//        mDisplayRotation = getWindowManager().getDefaultDisplay().getRotation();
+//
+//        mIsPictureSafe = true;
+
+    }
+
+    private class CameraHandlerThread extends HandlerThread {
+
+        Handler mHandler = null;
+
+        CameraHandlerThread() {
+            super("CameraHandlerThread");
+            start();
+            mHandler = new Handler(getLooper());
+        }
+
+        synchronized void notifyCameraOpened() {
+            notify();
+        }
+
+        void openCamera() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    initCamera();
+                    notifyCameraOpened();
+                }
+            });
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {
+                Log.w(TAG, "wait was interrupted");
+            }
+        }
+    }
+
+
 
     /**
      * Interfaces used to tell the activity that a dimension is changed. This is used to enable
@@ -855,6 +1013,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 
     }
+
+
 
 
 
