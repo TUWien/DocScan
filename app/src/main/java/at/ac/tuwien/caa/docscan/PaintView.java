@@ -502,7 +502,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
                     if (mDrawGuideLines) {
                         canvas.drawLine(0, point.y, getWidth(), point.y, mGuidePaint);
-                        canvas.drawLine(point.x, 0, point.x, mCVResult.getViewHeight(), mGuidePaint);
+                        canvas.drawLine(point.x, 0, point.x, getHeight(), mGuidePaint);
                     }
                 }
 
@@ -751,7 +751,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             Canvas canvas = mHolder.lockCanvas();
 
-            Rect rect = new Rect(0,0, getWidth(), mCVResult.getViewHeight());
+            Rect rect = new Rect(0,0, getWidth(), getHeight());
             canvas.drawRect(rect, mFlickerPaint);
 
             if (canvas != null)
@@ -866,6 +866,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         }
     }
+
+//    @Override
+//    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+//
+//        if (changed)
+//            this.layout(0,0,100,100);
+//
+//    }
 
 
 
