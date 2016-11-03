@@ -34,14 +34,12 @@ public class CameraPaintLayout extends FrameLayout {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        int mw = 0;
-        int mh = 0;
-
         if (mFrameHeight == 0|| mFrameWidth == 0) {
 //            setChildMeasuredDimension(width, height);
             setMeasuredDimension(width, height);
         } else {
             // Note that mFrameWidth > mFrameHeight - regardless of the orientation!
+
             // Portrait mode:
             if (width < height) {
 
