@@ -62,9 +62,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
-import android.view.animation.RotateAnimation;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.opencv.android.OpenCVLoader;
@@ -136,6 +135,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private boolean mIsFlashModeInit = false;
     private byte[] mPictureData;
     private Drawable mGalleryButtonDrawable;
+    private ProgressBar mProgressBar;
 
     // TODO: use here values.ints
     private final int DOCUMENT_STEADY_TIME = 3000;
@@ -265,17 +265,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
         mTextView = (TextView) findViewById(R.id.instruction_view);
 
-//        mCameraFragment = (CameraPaintFragment) getSupportFragmentManager().findFragmentByTag(CAMERA_PAINT_FRAGMENT);
-//
-//        // create the fragment and data the first time
-//        if (mCameraFragment == null) {
-//            // add the fragment
-//            mCameraFragment = new CameraPaintFragment();
-//            getSupportFragmentManager().beginTransaction().add(mCameraFragment, CAMERA_PAINT_FRAGMENT).commit();
-//            // load the data from the web
-////            dataFragment.setData(loadMyData());
-//        }
-
 
         if (mDebugViewFragment == null)
             mIsDebugViewEnabled = false;
@@ -389,6 +378,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private void initGalleryCallback() {
 
         mGalleryButton = (ImageButton) findViewById(R.id.gallery_button);
+        mProgressBar = (ProgressBar) findViewById(R.id.saving_progressbar);
 
         mGalleryButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -688,8 +678,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mDrawerToggle.onConfigurationChanged(newConfig);
 
         int displayRotation = getWindowManager().getDefaultDisplay().getRotation();
-//        if (mCamera != null)
-//            mCameraPreview.setCamera(mCamera, mCameraInfo, displayRotation);
+        if (mCameraPreview != null)
+            mCameraPreview.displayRotated();
 
         ViewGroup appRoot = (ViewGroup) findViewById(R.id.main_layout);
         View f = findViewById(R.id.camera_controls_layout);
@@ -1397,6 +1387,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     private void setGalleryButtonDrawable(Drawable drawable) {
 
+        mGalleryButton.setVisibility(View.VISIBLE);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
             mGalleryButton.setBackground(drawable);
         else
@@ -1557,17 +1549,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
             try {
 
-                final RotateAnimation ranim = (RotateAnimation) AnimationUtils.loadAnimation(getApplicationContext(), R.anim.image_button_rotate);
-
                 runOnUiThread(new Runnable() {
-//
                     @Override
                     public void run() {
-                        Drawable drawable = getResources().getDrawable(R.drawable.ic_gallery_busy);
-                        setGalleryButtonDrawable(drawable);
-                        mGalleryButton.setAnimation(ranim);
+                        mGalleryButton.setVisibility(View.INVISIBLE);
+                        mProgressBar.setVisibility(View.VISIBLE);
                     }
-
                 });
 
                 FileOutputStream fos = new FileOutputStream(outFile);
@@ -1609,7 +1596,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                             @Override
                             public void run() {
 
-                                ranim.cancel();
+                                mProgressBar.setVisibility(View.INVISIBLE);
                                 setGalleryButtonDrawable(thumbDrawable);
 
 //                                mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);

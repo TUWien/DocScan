@@ -62,8 +62,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private Camera.CameraInfo mCameraInfo;
-    private int mDisplayOrientation;
-    private int mSurfaceWidth, mSurfaceHeight;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private NativeWrapper.CVCallback mCVCallback;
     private CameraPreviewCallback mCameraPreviewCallback;
@@ -132,28 +130,29 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+//    /**
+//     * Initializes the camera.
+//     * @param camera camera object
+//     * @param cameraInfo camera information
+//     * @param displayOrientation orientation of the display in degrees
+//     */
+//    public void setCamera(Camera camera, Camera.CameraInfo cameraInfo, int displayOrientation) {
+//
+//        mCamera = camera;
+//        mCameraInfo = cameraInfo;
+//        mDisplayOrientation = displayOrientation;
+//        mCamera.setPreviewCallback(this);
+//
+//    }
+
+
     /**
-     * Initializes the camera.
-     * @param camera camera object
-     * @param cameraInfo camera information
-     * @param displayOrientation orientation of the display in degrees
-     */
-    public void setCamera(Camera camera, Camera.CameraInfo cameraInfo, int displayOrientation) {
-
-        mCamera = camera;
-        mCameraInfo = cameraInfo;
-        mDisplayOrientation = displayOrientation;
-        mCamera.setPreviewCallback(this);
-
-    }
-
-
-    /**
-     * Called after the surface is created. Here nothing is done, because surfaceChanged is called
-     * afterwards.
+     * Called after the surface is created.
      * @param holder
      */
     public void surfaceCreated(SurfaceHolder holder) {
+
+        initPreview();
 
     }
 
@@ -175,8 +174,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         // Check that the screen is on, because surfaceChanged is also called after the screen is turned off in landscape mode.
         // (Because the activity is resumed in such cases)
-        if (CameraActivity.isScreenOn())
-            initCamera(width, height);
+//        if (CameraActivity.isScreenOn())
+//            initCamera(width, height);
 
     }
 
@@ -185,9 +184,19 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
      */
     public void resume() {
 
+        if (mHolder.getSurface() == null) {
+            // preview surface does not exist
+            Log.d(TAG, "Preview surface does not exist");
+            return;
+        }
 
-//        if (!isCameraInitialized)
-        initCamera(mSurfaceWidth, mSurfaceHeight);
+//        mSurfaceWidth = width;
+//        mSurfaceHeight = height;
+
+        if (!isCameraInitialized)
+            openCameraThread();
+
+        initPreview();
 
     }
 
@@ -221,7 +230,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
 
         if (mCamera == null)
             return true;
@@ -341,24 +349,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
-//    private void startCamera() {
-//
-//        isCameraInitialized = true;
-//
-//        // put this in a thread:
-//        mCamera = Camera.open(0);
-//        mCameraInfo = new Camera.CameraInfo();
-//        Camera.getCameraInfo(0, mCameraInfo);
-//
-//    }
-
     private void initPreview() {
-
-        // Get the rotation of the screen to adjust the preview image accordingly.
-        mDisplayOrientation = CameraActivity.getOrientation();
-
-
-//            startCamera();
 
         // stop preview before making changes
         try {
@@ -374,22 +365,20 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mCamera == null)
             return;
 
-        int orientation = calculatePreviewOrientation(mCameraInfo, mDisplayOrientation);
+        // Get the rotation of the screen to adjust the preview image accordingly.
+        int displayOrientation = CameraActivity.getOrientation();
+        int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
         mCamera.setDisplayOrientation(orientation);
-
 
         Camera.Parameters params = mCamera.getParameters();
         List<Camera.Size> cameraSizes = params.getSupportedPreviewSizes();
 
-        Camera.Size bestSize = getBestFittingSize(cameraSizes, mSurfaceWidth, mSurfaceHeight);
+        Camera.Size bestSize = getBestFittingSize(cameraSizes, orientation);
 
         mFrameWidth = bestSize.width;
         mFrameHeight = bestSize.height;
 
         // Use autofocus if available:
-//        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
-//            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-
         if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
             params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
 
@@ -423,51 +412,37 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
 
-        // Determine the size of the Mat used for page segmentation and focus measure:
-        /*if (mFrameWidth > MAX_MAT_WIDTH)
-            mMatWidth = MAX_MAT_WIDTH;
-        else
-            mMatWidth = mFrameWidth;
-
-        if (mFrameHeight > MAX_MAT_HEIGHT)
-            mMatHeight = MAX_MAT_HEIGHT;
-        else
-            mMatHeight = mFrameHeight;*/
-
-
         // Tell the dependent Activity that the frame dimension (might have) change:
         mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
-//        mCameraPreviewCallback.onFrameDimensionChange(mMatWidth, mMatHeight, orientation);
 
 
     }
 
-     /**
-     * Initializes the camera with the preview size and the orientation. Starts the page segmentation
-     * and the focus measurement threads.
-     * @param width width of the surface
-     * @param height height of the surface
-     */
-    private void initCamera(int width, int height) {
-
-        if (mHolder.getSurface() == null) {
-            // preview surface does not exist
-            Log.d(TAG, "Preview surface does not exist");
-            return;
-        }
-
-        mSurfaceWidth = width;
-        mSurfaceHeight = height;
-
-        if (!isCameraInitialized)
-            openCameraThread();
-//        else
-
-        initPreview();
-
-
-
-    }
+//     /**
+//     * Initializes the camera with the preview size and the orientation. Starts the page segmentation
+//     * and the focus measurement threads.
+//     * @param width width of the surface
+//     * @param height height of the surface
+//     */
+//    private void initCamera(int width, int height) {
+//
+//        if (mHolder.getSurface() == null) {
+//            // preview surface does not exist
+//            Log.d(TAG, "Preview surface does not exist");
+//            return;
+//        }
+//
+//        mSurfaceWidth = width;
+//        mSurfaceHeight = height;
+//
+//        if (!isCameraInitialized)
+//            openCameraThread();
+//
+//        initPreview();
+//
+//
+//
+//    }
 
     /**
      * Called after the preview received a new frame (as byte array).
@@ -548,45 +523,66 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     /**
      * Returns the preview size that fits best into the surface view.
      * @param cameraSizes possible frame sizes (camera dependent)
-     * @param width width of the surface view
-     * @param height height of the surface view
+     * @param orientation orientation of the surface view
      * @return best fitting size
      */
-    private Camera.Size getBestFittingSize(List<Camera.Size> cameraSizes, int width, int height) {
+    private Camera.Size getBestFittingSize(List<Camera.Size> cameraSizes, int orientation) {
+
+
+        // If the app  is paused (=in background) and the orientation is changed, the width and
+        // height are not switched. So here we have to switch if necessary:
+        int width = getWidth();
+        int height = getHeight();
+
+        if (((orientation == 90 || orientation == 270) && (width > height)) ||
+                ((orientation == 0 || orientation == 180) && (width < height))) {
+            int tmp = width;
+            width = height;
+            height = tmp;
+        }
 
         Camera.Size bestSize = null;
 
-        final double ASPECT_TOLERANCE = 0.2;
-        double targetRatio = (double) height / width;
+        final double ASPECT_TOLERANCE = 0.1;
+
+        double targetRatio;
+        int targetLength;
+
+        if (width > height) {
+            targetRatio = (double) height / width;
+            targetLength = height;
+        }
+        else {
+            targetRatio = (double) width / height;
+            targetLength = width;
+        }
 
         double minDiff = Double.MAX_VALUE;
 
-        int targetHeight;
-        if (width < height)
-            targetHeight = height;
-        else
-            targetHeight = width;
-
         for (Camera.Size size : cameraSizes) {
-            double ratio;
-            if (width < height)
-                ratio = (double) size.width / size.height;
-            else
-                ratio = (double) size.height / size.width;
+            double ratio = (double) size.height / size.width;
 
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
-            if (Math.abs(size.height - targetHeight) < minDiff) {
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE)
+                continue;
+
+            int length = size.height;
+
+            int diff = Math.abs(length - targetLength);
+            if (diff < minDiff) {
                 bestSize = size;
-                minDiff = Math.abs(size.height - targetHeight);
+                minDiff = diff;
             }
         }
 
         if (bestSize == null) {
             minDiff = Double.MAX_VALUE;
             for (Camera.Size size : cameraSizes) {
-                if (Math.abs(size.height - targetHeight) < minDiff) {
+                int length = size.height;
+
+                int diff = Math.abs(length - targetLength);
+                if (diff < minDiff) {
                     bestSize = size;
-                    minDiff = Math.abs(size.height - targetHeight);
+                    minDiff = diff;
                 }
             }
         }
@@ -771,6 +767,21 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //        mDisplayRotation = getWindowManager().getDefaultDisplay().getRotation();
 //
 //        mIsPictureSafe = true;
+
+    }
+
+    public void displayRotated() {
+
+        if (mCamera == null)
+            return;
+
+        // Get the rotation of the screen to adjust the preview image accordingly.
+        int displayOrientation = CameraActivity.getOrientation();
+        int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
+        mCamera.setDisplayOrientation(orientation);
+
+        // Tell the dependent Activity that the frame dimension (might have) change:
+        mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
 
     }
 

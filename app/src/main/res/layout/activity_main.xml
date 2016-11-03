@@ -12,18 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/main_layout"
-        android:background="@color/photo_button_view_bg_color"
+        android:background="@color/colorPrimaryDark"
         >
-
-
-        <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
-        <!--<at.ac.tuwien.caa.docscan.LiveViewLayout-->
-
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="0dp"-->
-            <!--android:layout_weight="1"-->
-            <!--android:id="@+id/container_layout"-->
-            <!--&gt;-->
 
         <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
         <fragment android:name="at.ac.tuwien.caa.docscan.CameraPaintFragment"
@@ -31,9 +21,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:tag="CameraPaintFragment" />
-
-
-
 
         <!--</at.ac.tuwien.caa.docscan.LiveViewLayout>-->
 
