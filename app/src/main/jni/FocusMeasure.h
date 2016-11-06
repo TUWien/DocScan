@@ -211,42 +211,4 @@ namespace dsc {
 	};
 
 
-	/// <summary>
-	/// Estimates the Contrast for an image using the BasicContrast Class.
-	/// (Based on Weber, Michelson and RMS contrast).
-	/// Experimentally!!!
-	/// </summary>
-	class ContrastEstimation {
-
-	public:
-		enum ContrastMeasure { WEBER = 0, MICHELSON, RMS };
-
-		ContrastEstimation();
-		ContrastEstimation(const cv::Mat& img);
-		ContrastEstimation(const cv::Mat& img, int wSize);
-
-		bool compute(ContrastMeasure fm = WEBER);
-		std::vector<Patch> cPatches() const;
-
-		void setImg(const cv::Mat& img);
-		void setWindowSize(int s);
-		void setSplitSize(int s);
-		int windowSize() const;
-		bool checkInput();
-		void setLum(bool b);
-
-	protected:
-		cv::Mat mSrcImg;
-
-		std::vector<Patch> mContPatches;
-
-		// parameters
-		int mWindowSize = 100;
-		int mSplitSize = 0;
-		bool mLuminance = false;
-	};
-
-
-
-
 };
