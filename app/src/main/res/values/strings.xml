@@ -28,7 +28,7 @@
     <string name="mat_conversion_debug_text">Mat conversion:</string>
     <string name="draw_view_debug_text">Draw view:</string>
 
-    <!-- Use in the debug view: start -->
+    <!-- Use in the debug view: end -->
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
@@ -51,6 +51,8 @@
     <string name="dont_move_text">Do not move</string>
 
     <!-- Menus -->
+    <string name="shoot_mode">Shoot mode</string>
+    <string name="flash_mode">Flash mode</string>
     <string name="manual_mode">Manual shoot</string>
     <string name="auto_mode">Auto shoot</string>
     <string name="flash_off_mode">Flash off</string>

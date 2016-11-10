@@ -64,19 +64,28 @@ public class NativeWrapper {
 
     /**
      * Native method for focus measurement.
-     * @param src
-     * @return
+     * @param src input image
+     * @return array of Patch objects
      */
+    @SuppressWarnings("JniMissingFunction")
     private static native Patch[] nativeGetFocusMeasures(long src);
 
 
     /**
      * Native method for page segmentation.
-     * @param src
-     * @return
+     * @param src input image
+     * @return array of DKPolyRect objects
      */
+    @SuppressWarnings("JniMissingFunction")
     private static native DkPolyRect[] nativeGetPageSegmentation(long src);
 
+    /**
+     * Native method for illumination computation.
+     * @param src input image
+     * @param polyRect rectangle describing the page
+     * @return double value measuring the illumination quality
+     */
+    @SuppressWarnings("JniMissingFunction")
     private static native double nativeGetIllumination(long src, DkPolyRect polyRect);
 
 

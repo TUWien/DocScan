@@ -24,6 +24,7 @@
 package at.ac.tuwien.caa.docscan;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,7 +36,6 @@ import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
-import android.hardware.display.DisplayManager;
 import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
@@ -44,18 +44,17 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.PowerManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -76,13 +75,14 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import at.ac.tuwien.caa.docscan.cv.CVResult;
 import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.cv.Patch;
 
 /**
- * This is the main class of the app. It is responsible for creating the other views and handling
+ * The main class of the app. It is responsible for creating the other views and handling
  * callbacks from the created views as well as user input.
  */
 
@@ -92,31 +92,19 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     private static final String TAG = "CameraActivity";
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
-    private static final String CAMERA_PAINT_FRAGMENT = "CameraPaintFragment";
-    private static String IMG_FILENAME_PREFIX = "IMG_";
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
     private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 0;
+    @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
     private ImageButton mGalleryButton;
-
-    /**
-     * Id of the camera to access. 0 is the first camera.
-     */
-    private static final int CAMERA_ID = 0;
-
     private TaskTimer mTaskTimer;
     private CameraPreview mCameraPreview;
     private PaintView mPaintView;
     private TextView mCounterView;
-//    private Camera mCamera;
-    private Camera.CameraInfo mCameraInfo;
-//    private CameraHandlerThread mThread = null;
     private CVResult mCVResult;
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
-//    private CameraPaintFragment mCameraFragment;
     private static boolean mIsDebugViewEnabled;
-    private int mDisplayRotation;
     private static Context mContext;
     private int mCameraOrientation;
     private DrawerLayout mDrawerLayout;
@@ -132,12 +120,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     // We hold here a reference to the popupmenu and the list, because we are not shure what is first initialized:
     private List<String> mFlashModes;
     private PopupMenu mFlashPopupMenu;
-    private boolean mIsFlashModeInit = false;
     private byte[] mPictureData;
     private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
 
-    // TODO: use here values.ints
     private final int DOCUMENT_STEADY_TIME = 3000;
 
     /**
@@ -145,10 +131,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
      */
     static {
 
-        boolean init = OpenCVLoader.initDebug();
-//         It seems like we need this for Android 4:
+//         We need this for Android 4:
         if (!OpenCVLoader.initDebug()) {
-            // Handle initialization error
+            Log.d(TAG, "Error while initializing OpenCV.");
         } else {
 
             System.loadLibrary("opencv_java3");
@@ -158,12 +143,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
-    // ================= start: methods from the Activity lifecyle =================
+    // ================= start: methods from the Activity lifecycle =================
 
     /**
      * Creates the camera Activity.
      *
-     * @param savedInstanceState
+     * @param savedInstanceState saved instance.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,7 +174,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         if (mPaintView != null)
             mPaintView.pause();
 
-        mCameraPreview.pause();
+        if (mCameraPreview != null)
+            mCameraPreview.pause();
 
         super.onPause();
 
@@ -217,19 +203,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         super.onResume();
 
-
         // Resume camera access:
-        // Basically this method just calls initCamera, but inside an own thread.
-//        openCameraThread();
-
-        if (mCameraPreview != null) {
-            // This should only be called if the Activity is resumed after it has been paused:
-//            mCameraPreview.setCamera(mCamera, mCameraInfo, mDisplayRotation);
+        if (mCameraPreview != null)
             mCameraPreview.resume();
-//            mCameraPreview.resume();
-        }
 
-//        // Resume drawing thread:
+        // Resume drawing thread:
         if (mPaintView != null)
             mPaintView.resume();
 
@@ -239,8 +217,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     // ================= end: methods from the Activity lifecyle =================
 
     /**
-     * Initializes the activity: camera preview, draw view, debug view, navigation drawer and timer
-     * are initialized in this method.
+     * Initializes the activity.
      */
 
     private void initActivity() {
@@ -250,10 +227,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mCVResult = new CVResult(this);
 
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_view);
-//        mCameraPreview.setCamera(mCamera, mCameraInfo, mDisplayRotation);
 
         mPaintView = (PaintView) findViewById(R.id.paint_view);
-        mPaintView.setCVResult(mCVResult);
+        if (mPaintView != null)
+            mPaintView.setCVResult(mCVResult);
 
         mCounterView = (TextView) findViewById(R.id.counter_view);
 
@@ -265,7 +242,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
         mTextView = (TextView) findViewById(R.id.instruction_view);
 
-
+        mIsDebugViewEnabled = (mDebugViewFragment == null);
         if (mDebugViewFragment == null)
             mIsDebugViewEnabled = false;
         else
@@ -278,12 +255,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         initPictureCallback();
         initButtons();
 
-
-
-
     }
 
-
+    /**
+     * Initializes the buttons that are used in the camera_controls_layout. These layouts are
+     * recreated on orientation changes, so we need to assign the callbacks again.
+     */
     private void initButtons() {
 
         setupPhotoShootButtonCallback();
@@ -292,36 +269,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
-    /**
-     * Returns a boolean indicating if the screen is turned on. This method is necessary to prevent a
-     * resume of the Activity if the display is turned off and the app is in landscape mode, because
-     * this causes a resume of the app in portrait mode.
-     *
-     * @return boolean indicating if the screen is on
-     */
-    // Taken from: http://stackoverflow.com/questions/2474367/how-can-i-tell-if-the-screen-is-on-in-android
-    @SuppressWarnings("deprecation")
-    // suppressed because the not deprecated function is called if API level >= 20
-    public static boolean isScreenOn() {
 
-        // If API level >= 20
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            DisplayManager dm = (DisplayManager) mContext.getSystemService(Context.DISPLAY_SERVICE);
-            for (Display display : dm.getDisplays()) {
-                if (display.getState() != Display.STATE_OFF) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        // TODO: not tested on API level < 20
-        else {
-            PowerManager powerManager = (PowerManager) mContext.getSystemService(POWER_SERVICE);
-            return powerManager.isScreenOn();
-        }
-
-
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -334,6 +282,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         return true;
     }
 
+    @SuppressWarnings("deprecation")
     private void initDrawables() {
 
         mAutoShootDrawable = getResources().getDrawable(R.drawable.auto_shoot);
@@ -348,9 +297,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
      * Called after permission has been given or has been rejected. This is necessary on Android M
      * and younger Android systems.
      *
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
+     * @param requestCode Request code
+     * @param permissions Permission
+     * @param grantResults results
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
@@ -388,7 +337,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                     }
                 });
 
-
     }
 
     /**
@@ -409,9 +357,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
      * Request to read the external storage. This method is used to enable file saving in Android >= marshmallow
      * (Android 6), since in this version external file opening is not allowed without user permission.
      */
+    @TargetApi(16)
     private void requestFileOpen() {
 
         // Check permission
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // ask for permission:
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
@@ -468,8 +418,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
      * Starts an intent with the last saved picture as data. This event is then handled by a user
      * defined app (like the image gallery app).
      *
-     * @param path
-     * @param uri
+     * @param path Path
+     * @param uri Uri
      */
     @Override
     public void onScanCompleted(String path, Uri uri) {
@@ -528,6 +478,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     /**
      * Callback called after an image has been taken by the camera.
      */
+    @SuppressWarnings("deprecation")
     private void initPictureCallback() {
 
         mIsPictureSafe = true;
@@ -547,11 +498,14 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Setup a listener for photo shoot button.
+     */
     private void setupPhotoShootButtonCallback() {
 
-        // Listener for photo shoot button:
-
         ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
+        if (photoButton == null)
+            return;
 
         photoButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -566,22 +520,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
-
-//    /**
-//     * This method is used to enable file saving in marshmallow (Android 6), since in this version
-//     * file saving is not allowed without user permission.
-//     */
-//    private void requestFileSave() {
-//
-//        // Check Permissions Now
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//            // ask for permission:
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
-//        }
-//        else if (mPictureData != null)
-//            savePicture(mPictureData);
-//
-//    }
 
     /**
      * Tells the camera to take a picture.
@@ -608,9 +546,12 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Save the image in an own thread (AsyncTask):
+     * @param data image as a byte stream.
+     */
     private void savePicture(byte[] data) {
 
-        // Save the image in an own thread (AsyncTask):
         Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
         FileSaver fileSaver = new FileSaver(data);
         fileSaver.execute(uri);
@@ -626,14 +567,14 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private static Uri getOutputMediaFile(String appName) {
 
         File mediaStorageDir = getMediaStorageDir(appName);
+        if (mediaStorageDir == null)
+            return null;
 
         // Create a media file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile = new File(mediaStorageDir.getPath() + File.separator + IMG_FILENAME_PREFIX + timeStamp + ".jpg");
+        File mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
 
-        Uri uri = Uri.fromFile(mediaFile);
-
-        return uri;
+        return Uri.fromFile(mediaFile);
     }
 
     /**
@@ -671,26 +612,39 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             mDrawerToggle.syncState();
     }
 
+    /**
+     * Called after configuration changes -> This includes also orientation change. By handling
+     * orientation changes by ourselves, we can prevent a restart of the camera, which results in a
+     * speedup.
+     * @param newConfig new configuration
+     */
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
 
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
 
-        int displayRotation = getWindowManager().getDefaultDisplay().getRotation();
+        // Tell the camera that the orientation changed, so it can adapt the preview orientation:
         if (mCameraPreview != null)
             mCameraPreview.displayRotated();
 
+        // Change the layout dynamically: Remove the current camera_controls_layout and add a new
+        // one, which is appropriate for the orientation (portrait or landscape xml's).
         ViewGroup appRoot = (ViewGroup) findViewById(R.id.main_layout);
+        if (appRoot == null)
+            return;
+
         View f = findViewById(R.id.camera_controls_layout);
+        if (f == null)
+            return;
+
         appRoot.removeView(f);
         getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
 
+        // Initialize the newly created buttons:
         initButtons();
 
     }
-
-
 
 
     @Override
@@ -700,14 +654,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             return true;
         }
 
-
         switch (item.getItemId()) {
-
             case android.R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
-
-
         }
 
         return super.onOptionsItemSelected(item);
@@ -717,6 +667,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     /**
      * Initializes the navigation drawer, when the app is started.
      */
+    @SuppressWarnings("deprecation")
     private void setupNavigationDrawer() {
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -729,12 +680,24 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
         setupDrawerContent(mDrawer);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
+        // Set the item text for the debug view in the naviation drawer:
+        if (mDrawer == null)
+            return;
 
         Menu menu = mDrawer.getMenu();
+        if (menu == null)
+            return;
+
         MenuItem item = menu.findItem(R.id.action_show_debug_view);
+        if (item == null)
+            return;
 
         if (mIsDebugViewEnabled)
             item.setTitle(R.string.hide_debug_view_text);
@@ -747,7 +710,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     /**
      * Connects the items in the navigation drawer with a listener.
      *
-     * @param navigationView
+     * @param navigationView NavigationView
      */
     private void setupDrawerContent(NavigationView navigationView) {
 
@@ -893,28 +856,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     // ================= stop: CALLBACKS invoking TaskTimer =================
 
 
-    /**
-     * Initializes the camera in an own thread, so that the Camera.onPreviewFrame method is not
-     * called on the UI thread.
-     */
-
-//    private void openCameraThread() {
-//
-//        if (mCamera == null) {
-//
-//            if (mThread == null) {
-//                mThread = new CameraHandlerThread();
-////            mThread.setPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-//            }
-//
-//            synchronized (mThread) {
-//                mThread.openCamera();
-//            }
-//
-//        }
-//
-//    }
-
     public static int getOrientation() {
 
         WindowManager w = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
@@ -923,30 +864,13 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
-//    /**
-//     * Initializes the camera.
-//     */
-//    private void initCamera() {
-//
-//        // Open an instance of the first camera and retrieve its info.
-//        mCamera = getCameraInstance(CAMERA_ID);
-//        mCameraInfo = new Camera.CameraInfo();
-//        Camera.getCameraInfo(CAMERA_ID, mCameraInfo);
-//
-//        // Get the rotation of the screen to adjust the preview image accordingly.
-//        mDisplayRotation = getWindowManager().getDefaultDisplay().getRotation();
-//
-//        mIsPictureSafe = true;
-//
-//    }
-
 
     // ================= start: CALLBACKS called from native files =================
 
     /**
      * Called after focus measurement is finished.
      *
-     * @param patches
+     * @param patches Patches array
      */
     @Override
     public void onFocusMeasured(Patch[] patches) {
@@ -959,7 +883,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     /**
      * Called after page segmentation is finished.
      *
-     * @param dkPolyRects
+     * @param dkPolyRects Array of polyRects
      */
     @Override
     public void onPageSegmented(DkPolyRect[] dkPolyRects) {
@@ -973,7 +897,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     /**
      * Called after page segmentation is finished.
      *
-     * @param value
+     * @param value illumination value
      */
     @Override
     public void onIluminationComputed(double value) {
@@ -1000,44 +924,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     public void onMeasuredDimensionChange(int width, int height) {
 
         mCVResult.setViewDimensions(width, height);
-
-//
-//
-//        CameraPaintFragment f = (CameraPaintFragment) getSupportFragmentManager().findFragmentByTag(CAMERA_PAINT_FRAGMENT);
-//        ViewGroup.LayoutParams l = f.getView().getLayoutParams();
-
-//        int rotation = getWindowManager().getDefaultDisplay().getRotation();
-//        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180)
-//            l.height = width;
-//        else
-//            l.width = width;
-//        l.width = height;
-//        f.getView().setLayoutParams(l);
-
-
-//        mLiveViewLayout.setFrameDimension(width, height);
-
-//        View container = (View) findViewById(R.id.container_layout);
-
-
-//        // This is necessary to resize the parent view (holding the camera preview and the paint view):
-////        View container = (View) findViewById(R.id.container_layout);
-//        LinearLayout.LayoutParams p = (LinearLayout.LayoutParams) container.getLayoutParams();
-//
-//        int rotation = getWindowManager().getDefaultDisplay().getRotation();
-//
-//        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180)
-//            p.height = height;
-//        else
-//            p.width = width;
-//
-//        container.setLayoutParams(p);
-//
-//
-//        View paintView = (View) findViewById(R.id.paint_view);
-//        FrameLayout.LayoutParams pf = (FrameLayout.LayoutParams) paintView.getLayoutParams();
-//        pf.height = height;
-//        paintView.setLayoutParams(pf);
 
     }
 
@@ -1066,6 +952,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    @SuppressWarnings("deprecation")
     private void setupFlashPopup() {
 
         if (mFlashPopupMenu == null)
@@ -1109,6 +996,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean onMenuItemClick(MenuItem item) {
 
         switch (item.getItemId()) {
@@ -1142,13 +1030,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
-//    public void showPopup(View v) {
-//        PopupMenu popup = new PopupMenu(this, v);
-//        MenuInflater inflater = popup.getMenuInflater();
-//        inflater.inflate(R.menu.actions, popup.getMenu());
-//        popup.show();
-//    }
-
     /**
      * Called after the dimension of the camera frame is set. The dimensions are necessary to convert
      * the frame coordinates to view coordinates.
@@ -1164,10 +1045,15 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mCVResult.setFrameDimensions(width, height, cameraOrientation);
 
         CameraPaintLayout l = (CameraPaintLayout) findViewById(R.id.camera_paint_layout);
-        l.setFrameDimensions(width, height);
+        if (l != null)
+            l.setFrameDimensions(width, height);
 
     }
 
+    /**
+     * Called after the the status of the CVResult object is changed.
+     * @param state state of the CVResult
+     */
     @Override
     public void onStatusChange(final int state) {
 
@@ -1224,7 +1110,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 mStartTime = System.currentTimeMillis();
                 mIsWaitingForCapture = true;
                 msg = "";
-                mPaintView.showCounter();
 
             }
             else {
@@ -1240,18 +1125,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                             @Override
                             public void run() {
                                 mCounterView.setVisibility(View.VISIBLE);
-                                mCounterView.setText(Integer.toString(counter));
+                                mCounterView.setText(String.format(Locale.ENGLISH, "%d", counter));
                             }
                         });
-//                    }
-//                    else {
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                mCounterView.setVisibility(View.INVISIBLE);
-//                            }
-//                        });
-//                    }
+
                 }
                 else {
                     // Take the picture:
@@ -1282,6 +1159,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Returns instruction messages, depending on the current state of the CVResult object.
+     * @param state state of the CVResult object
+     * @return instruction message
+     */
     private String getInstructionMessage(int state) {
 
         switch (state) {
@@ -1321,14 +1203,16 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     // =================  end: CameraPreview.DimensionChange CALLBACK =================
 
-
-
+    /**
+     * Shows the last picture taken as a thumbnail on the gallery button.
+     */
     private void loadThumbnail() {
 
         // Check if a thumbnail is already existing (this should occur on orientation changes):
         if (mGalleryButtonDrawable != null)
             setGalleryButtonDrawable(mGalleryButtonDrawable);
 
+        // Load the most recent image from the folder:
         else {
 
             File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
@@ -1351,40 +1235,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         }
 
-
-//        Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName.toString()), 200, 200);
-//        if (thumbNailBitmap == null)
-//            return;
-//
-//        // Determine the rotation angle of the image:
-//        int angle = -1;
-//        try {
-//            ExifInterface exif = new ExifInterface(fileName);
-//            String attr = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
-//            angle = getAngleFromExif(Integer.valueOf(attr));
-//        } catch (IOException e) {
-//            return;
-//        }
-//
-//        //Rotate the image:
-//        Matrix mtx = new Matrix();
-//        mtx.setRotate(angle);
-//        thumbNailBitmap = Bitmap.createBitmap(thumbNailBitmap, 0, 0, thumbNailBitmap.getWidth(), thumbNailBitmap.getHeight(), mtx, true);
-//
-//        // Update the gallery button:
-//        final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), thumbNailBitmap);
-//        if (thumbDrawable == null)
-//            return;
-//
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                setGalleryButtonDrawable(thumbDrawable);
-//            }
-//        });
-
     }
 
+    @SuppressWarnings("deprecation")
     private void setGalleryButtonDrawable(Drawable drawable) {
 
         mGalleryButton.setVisibility(View.VISIBLE);
@@ -1398,54 +1251,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mGalleryButtonDrawable = drawable;
 
     }
-
-//    @Override
-//    public void onCameraLoaded(Camera camera, Camera.CameraInfo info, int displayRotation) {
-//
-//        mCamera = camera;
-//        mCameraInfo = info;
-//        // Get the rotation of the screen to adjust the preview image accordingly.
-//        mDisplayRotation = displayRotation;
-//
-//        mIsPictureSafe = true;
-//
-//    }
-
-
-//    /**
-//     * Class extending HandlerThread, used to initialize the camera in an own thread.
-//     * Taken from: <a href="http://stackoverflow.com/questions/18149964/best-use-of-handlerthread-over-other-similar-classes/19154438#19154438}">stackoverflow</a>
-//     */
-//    private class CameraHandlerThread extends HandlerThread {
-//
-//        Handler mHandler = null;
-//
-//        CameraHandlerThread() {
-//            super("CameraHandlerThread");
-//            start();
-//            mHandler = new Handler(getLooper());
-//        }
-//
-//        synchronized void notifyCameraOpened() {
-//            notify();
-//        }
-//
-//        void openCamera() {
-//            mHandler.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    initCamera();
-//                    notifyCameraOpened();
-//                }
-//            });
-//            try {
-//                wait();
-//            }
-//            catch (InterruptedException e) {
-//                Log.w(TAG, "wait was interrupted");
-//            }
-//        }
-//    }
 
     private int getExifOrientation() {
 
@@ -1485,6 +1290,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    /**
+     * Class responsible for loading thumbnails from images. This is time intense and hence it is
+     * done in an own thread (AsyncTask).
+     */
     private class ThumbnailLoader extends AsyncTask<String, Void, Void> {
 
         @Override
@@ -1561,10 +1370,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                 fos.write(mData);
 
                 fos.close();
-
-                // Set exif orientation (avoid a real rotation of the image):
-                // TODO: Test on more devices. Currently tested on: Nexus 5X, Moto E
-                // TODO: check if we loose here other exif values
                 final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
 
                 if (exif != null) {
@@ -1595,12 +1400,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
                             @Override
                             public void run() {
-
                                 mProgressBar.setVisibility(View.INVISIBLE);
                                 setGalleryButtonDrawable(thumbDrawable);
-
-//                                mGalleryButton.setScaleType(ImageView.ScaleType.FIT_START);
-//                                mPaintView.showSpinner(false);
                             }
 
                         });
@@ -1625,14 +1426,6 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
 
         }
-
-
-//        @Override
-//        protected void onPostExecute(Void v) {
-//
-//            mPaintView.showSpinner(false);
-//
-//        }
 
 
     }

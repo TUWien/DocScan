@@ -339,10 +339,7 @@ public class CVResult {
 
         double areaPerc = area / matArea * 100;
 
-        if (areaPerc < mContext.getResources().getInteger(R.integer.min_page_area_percentage))
-            return false;
-
-        return true;
+        return areaPerc >= mContext.getResources().getInteger(R.integer.min_page_area_percentage);
 
     }
 
@@ -350,10 +347,7 @@ public class CVResult {
 
         double largestAngle = polyRect.getLargestAngle();
 
-        if (largestAngle > mContext.getResources().getInteger(R.integer.max_page_angle))
-            return false;
-
-        return true;
+        return largestAngle <= mContext.getResources().getInteger(R.integer.max_page_angle);
 
     }
 
@@ -361,45 +355,26 @@ public class CVResult {
 
         double minAngle = polyRect.getDocumentRotation();
         Log.d(TAG, "angle: " + minAngle);
-        if (minAngle > mContext.getResources().getInteger(R.integer.max_rotation))
-            return false;
 
-        return true;
+        return minAngle <= mContext.getResources().getInteger(R.integer.max_rotation);
+
     }
 
     private boolean isSharp() {
 
         Log.d(TAG, "sharp ratio: " + mRatioSharpUnsharp);
 
-        if (mRatioSharpUnsharp < mContext.getResources().getInteger(R.integer.min_focus_ratio))
-            return false;
-
-        return true;
+        return mRatioSharpUnsharp >= mContext.getResources().getInteger(R.integer.min_focus_ratio);
 
     }
 
 
     private boolean isIlluminationOK() {
 
-//        Log.d(TAG, "illumination " + mIllumination);
-
-        if (mIllumination <= .3)
-            return true;
-        else
-            return false;
+        return mIllumination <= .3;
 
     }
 
-    private double getEculideanDistance(PointF p1, PointF p2) {
-
-        float distX = p1.x - p2.x;
-        float distY = p1.y - p2.y;
-
-        double dist = Math.sqrt((double) (distX * distX + distY * distY));
-
-        return dist;
-
-    }
 
     /**
      * Transforms frame coordinates to screen coordinates.

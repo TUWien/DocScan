@@ -52,6 +52,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
  * Camera API. The received frames are converted to OpenCV Mat's in a fixed time interval. The Mat
  * is used by two thread classes (inner classes): FocusMeasurementThread and PageSegmentationThread.
  */
+@SuppressWarnings("deprecation")
 public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {
 
     //// let the C routine decide which resolution they need...
@@ -88,25 +89,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean isCameraInitialized;
     private DkPolyRect mIlluminationRect;
 
-
-//    public CameraPreview(Context context) {
-//
-//        super(context);
-//
-//        // Install a SurfaceHolder.Callback so we get notified when the
-//        // underlying surface is created and destroyed.
-//        mHolder = getHolder();
-//        mHolder.addCallback(this);
-//
-//        isCameraInitialized = false;
-//
-//
-//    }
-
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
-     * @param context
-     * @param attrs
+     * @param context context
+     * @param attrs attributes
      */
     public CameraPreview(Context context, AttributeSet attrs) {
 
@@ -130,25 +116,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-//    /**
-//     * Initializes the camera.
-//     * @param camera camera object
-//     * @param cameraInfo camera information
-//     * @param displayOrientation orientation of the display in degrees
-//     */
-//    public void setCamera(Camera camera, Camera.CameraInfo cameraInfo, int displayOrientation) {
-//
-//        mCamera = camera;
-//        mCameraInfo = cameraInfo;
-//        mDisplayOrientation = displayOrientation;
-//        mCamera.setPreviewCallback(this);
-//
-//    }
-
-
     /**
      * Called after the surface is created.
-     * @param holder
+     * @param holder Holder
      */
     public void surfaceCreated(SurfaceHolder holder) {
 
@@ -160,14 +130,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-
     /**
      * Called once the surface is changed. This happens after orientation changes or if the activity
      * is started (or resumed).
-     * @param holder
-     * @param format
-     * @param width
-     * @param height
+     * @param holder holder
+     * @param format format
+     * @param width width
+     * @param height height
      */
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
@@ -190,9 +159,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             return;
         }
 
-//        mSurfaceWidth = width;
-//        mSurfaceHeight = height;
-
         if (!isCameraInitialized)
             openCameraThread();
 
@@ -200,14 +166,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    @SuppressWarnings("deprecation")
     public Camera getCamera() {
         return mCamera;
     }
 
     private void releaseCamera() {
         if (mCamera != null) {
-            mCamera.setPreviewCallback(null);
             mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
             mCamera.release();        // release the camera for other applications
             mCamera = null;
         }
@@ -229,6 +196,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
      * @return a boolean indicating if the event has been processed
      */
     @Override
+    @SuppressWarnings("deprecation")
     public boolean onTouchEvent(MotionEvent event) {
 
         if (mCamera == null)
@@ -282,21 +250,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             @Override
             public void onAutoFocus(boolean success, Camera camera) {
 
-//                camera.cancelAutoFocus();
-//
-//                if (camera.getParameters().getFocusMode() != Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO) {
-////
-////
-//////                        mCamera.stopPreview();
-//                    Camera.Parameters parameters = camera.getParameters();
-//                    mCamera.autoFocus(null);
-//                    parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-////                    if (parameters.getMaxNumFocusAreas() > 0) {
-////                        parameters.setFocusAreas(null);
-////                    }
-//                    mCamera.setParameters(parameters);
-//
-//                }
             }
 
         });
@@ -342,13 +295,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         else if (normalizedPoint.y > FOCUS_HALF_AREA)
             normalizedPoint.y = FOCUS_HALF_AREA;
 
-        Point transformedPoint = new Point(Math.round(normalizedPoint.x), Math.round(normalizedPoint.y));
-
-        return transformedPoint;
+        return new Point(Math.round(normalizedPoint.x), Math.round(normalizedPoint.y));
 
     }
 
-
+    @SuppressWarnings("deprecation")
     private void initPreview() {
 
         // stop preview before making changes
@@ -359,8 +310,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             // ignore: tried to stop a non-existent preview
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
-
-        ;
 
         if (mCamera == null)
             return;
@@ -379,8 +328,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mFrameHeight = bestSize.height;
 
         // Use autofocus if available:
-        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO))
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        else if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        }
 
         params.setPreviewSize(mFrameWidth, mFrameHeight);
 
@@ -407,6 +359,17 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();
 
+            if (params.getFocusMode() == Camera.Parameters.FOCUS_MODE_AUTO) {
+                mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                    @Override
+                    public void onAutoFocus(boolean success, Camera camera) {
+
+                    }
+
+                });
+            }
+
+
             Log.d(TAG, "Camera preview started.");
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
@@ -418,31 +381,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-//     /**
-//     * Initializes the camera with the preview size and the orientation. Starts the page segmentation
-//     * and the focus measurement threads.
-//     * @param width width of the surface
-//     * @param height height of the surface
-//     */
-//    private void initCamera(int width, int height) {
-//
-//        if (mHolder.getSurface() == null) {
-//            // preview surface does not exist
-//            Log.d(TAG, "Preview surface does not exist");
-//            return;
-//        }
-//
-//        mSurfaceWidth = width;
-//        mSurfaceHeight = height;
-//
-//        if (!isCameraInitialized)
-//            openCameraThread();
-//
-//        initPreview();
-//
-//
-//
-//    }
 
     /**
      * Called after the preview received a new frame (as byte array).
@@ -461,7 +399,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         }
 
-//        Log.d(TAG, "frame received.");
         long currentTime = System.currentTimeMillis();
 
         if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
@@ -526,6 +463,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
      * @param orientation orientation of the surface view
      * @return best fitting size
      */
+    @SuppressWarnings("deprecation")
     private Camera.Size getBestFittingSize(List<Camera.Size> cameraSizes, int orientation) {
 
 
@@ -596,6 +534,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
      * Implementation is based on the sample code provided in
      * {@link Camera#setDisplayOrientation(int)}.
      */
+    @SuppressWarnings("deprecation")
     public static int calculatePreviewOrientation(Camera.CameraInfo info, int rotation) {
 
         int degrees = 0;
@@ -626,110 +565,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         return result;
     }
 
-//    /**
-//     * Scales the camera view so that the preview has original width to height ratio, this is
-//     * necessary to avoid a stretching of the camera preview. If this function is not used, the
-//     * size of the camera preview frames is equal to the available space (defined by the view).
-//     *
-//     * @see <a href="https://developer.android.com/reference/android/view/View.html#onMeasure(int,%20int)>onMeasure</a>
-//     *
-//     * @param widthMeasureSpec  horizontal space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec
-//     * @param heightMeasureSpec vertical space requirements as imposed by the parent. The requirements are encoded with View.MeasureSpec
-//     */
-//    @Override
-//    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-//
-//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-//
-//        int width = MeasureSpec.getSize(widthMeasureSpec);
-//        int height = MeasureSpec.getSize(heightMeasureSpec);
-//
-//        int mw = 0;
-//        int mh = 0;
-//
-//        if (mFrameHeight == 0|| mFrameWidth == 0) {
-////            setChildMeasuredDimension(width, height);
-//            setMeasuredDimension(width, height);
-//        } else {
-//
-//
-//            // Note that mFrameWidth > mFrameHeight - regardless of the orientation!
-//            // Portrait mode:
-//            if (width < height) {
-//
-//                double resizeFac = (double) width / mFrameHeight;
-//                int scaledHeight = (int) Math.round(mFrameWidth * resizeFac);
-//                if (scaledHeight > height)
-//                    scaledHeight = height;
-////                setMeasuredDimension(width, scaledHeight);
-//
-//                mw = width;
-//                mh = scaledHeight;
-//            }
-//            // Landscape mode:
-//            else {
-//                double resizeFac = (double) height / mFrameHeight;
-//                int scaledWidth = (int) Math.round(mFrameWidth * resizeFac);
-//                if (scaledWidth > width)
-//                    scaledWidth = width;
-////                setMeasuredDimension(scaledWidth, height);
-//
-//                mw = scaledWidth;
-//                mh = height;
-//            }
-//
-//        }
-//
-//        // Finally tell the dependent Activity the dimension has changed:
-////        mCameraPreviewCallback.onMeasuredDimensionChange(getMeasuredWidth(), getMeasuredHeight());
-//        mCameraPreviewCallback.onMeasuredDimensionChange(mw, mh);
-//    }
-
-
-//    @Override
-//    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-//        if (changed && getChildCount() > 0) {
-//            final View child = getChildAt(0);
-//
-//            final int width = r - l;
-//            final int height = b - t;
-//
-//            int previewWidth = width;
-//            int previewHeight = height;
-//            if (mPreviewSize != null) {
-//                previewWidth = mPreviewSize.width;
-//                previewHeight = mPreviewSize.height;
-//            }
-//            if (previewWidth == 0) {
-//                previewWidth = 1;
-//            }
-//            if (previewHeight == 0) {
-//                previewHeight = 1;
-//            }
-//
-//            // Center the child SurfaceView within the parent.
-//            if (width * previewHeight > height * previewWidth) {
-//                final int scaledChildWidth = previewWidth * height / previewHeight;
-//                child.layout((width - scaledChildWidth) / 2, 0, (width + scaledChildWidth) / 2, height);
-//            } else {
-//                final int scaledChildHeight = previewHeight * width / previewWidth;
-//                child.layout(0, (height - scaledChildHeight) / 2, width, (height + scaledChildHeight) / 2);
-//            }
-//        }
-//    }
-
-//    @Override
-//    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-//
-//        if (changed)
-//            this.layout(0,0,100,100);
-//
-//    }
-
     @Override
     public void onAutoFocus(boolean success, Camera camera) {
     }
 
+    @SuppressWarnings("deprecation")
     public void setFlashMode(String flashMode) {
 
         Camera.Parameters params = mCamera.getParameters();
@@ -755,21 +595,27 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    @SuppressWarnings("deprecation")
     private void initCamera() {
 
-        releaseCamera();
+//        releaseCamera();
         // Open an instance of the first camera and retrieve its info.
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         mCamera = Camera.open(0);
         mCameraInfo = new Camera.CameraInfo();
         Camera.getCameraInfo(0, mCameraInfo);
 
-        // Get the rotation of the screen to adjust the preview image accordingly.
-//        mDisplayRotation = getWindowManager().getDefaultDisplay().getRotation();
-//
-//        mIsPictureSafe = true;
-
     }
 
+    /**
+     * This function is called after orientation changes. The Activity is not resumed on orientation
+     * changes, in order to prevent a camera restart. Thus, the preview has to adapt to the new
+     * orientation.
+     */
     public void displayRotated() {
 
         if (mCamera == null)
@@ -829,13 +675,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onFlashModesFound(List<String> modes);
 
     }
-
-    public boolean isFocusMeasured() {
-
-        return mFocusMeasurementThread.mIsRunning;
-
-    }
-
 
     public class FocusMeasurementThread extends Thread {
 
@@ -1005,7 +844,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 
                         }
-//                        execute();
 
                     } catch (InterruptedException e) {
                     }
@@ -1020,143 +858,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mIsRunning = running;
 
         }
-
-
-
     }
-
-
-
-
-
-    // ================= start: CVThread and subclasses =================
-
-
-//    /**
-//     * Abstract class extending a thread, concerned with computer vision tasks. Note that this class
-//     * and its child are connected to the CameraPreview, so that the tasks are only executed in case
-//     * of updates of the mFrameMat.
-//     */
-//    public abstract class CVThread extends Thread {
-//
-//        protected CameraPreview mCameraView;
-//        protected boolean mIsRunning = true;
-//
-//        protected abstract void execute();
-//
-//        public CVThread() {
-//
-//        }
-//
-//        public CVThread(CameraPreview cameraView) {
-//
-//
-//            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-//            mCameraView = cameraView;
-//
-//        }
-//
-//        /**
-//         * The main loop of the thread.
-//         */
-//        @Override
-//        public void run() {
-//
-//            synchronized (mCameraView) {
-//
-//                while (true) {
-//
-//                        try {
-//                            mCameraView.wait();
-//                            execute();
-//
-//                        } catch (InterruptedException e) {
-//                        }
-//
-//                }
-//
-//            }
-//        }
-//
-//        public void setRunning(boolean running) {
-//
-//            mIsRunning = running;
-//
-//        }
-//
-//    }
-//
-//    /**
-//     * Class responsible for calling the native method for page detection.
-//     */
-//    public class PageSegmentationThread extends CVThread {
-//
-//        public PageSegmentationThread(CameraPreview cameraView) {
-//
-//            super(cameraView);
-//
-//        }
-//
-//        protected void execute() {
-//
-//            if (mIsRunning) {
-//
-//                // Measure the time if required:
-//                if (CameraActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
-//
-//
-//
-//                    DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
-//
-//                if (CameraActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
-//
-//                    mCVCallback.onPageSegmented(polyRects);
-//
-//
-//
-//
-//
-//            }
-//        }
-//
-//    }
-
-//    /**
-//     * Class responsible for calling the native method for focus measurement.
-//     */
-//    class FocusMeasurementThread extends CVThread {
-//
-//        public FocusMeasurementThread(CameraPreview cameraView) {
-//            super(cameraView);
-//        }
-//
-//
-//        protected void execute() {
-//
-//            if (mIsRunning) {
-//
-////                // Measure the time if required:
-//                if (CameraActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
-//
-//                Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
-//
-//                if (CameraActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
-//
-//                mCVCallback.onFocusMeasured(patches);
-//
-//
-//            }
-//        }
-//    }
-
-
-    // ================= end: CVThread and subclasses =================
-
-
-
 
 }

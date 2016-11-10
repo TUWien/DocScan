@@ -32,8 +32,8 @@ import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -52,6 +52,7 @@ import at.ac.tuwien.caa.docscan.cv.Patch;
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
 
+    private static final String TAG = "PaintView";
     private DrawerThread mDrawerThread;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
 
@@ -59,13 +60,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean mDrawFocusText;
     private boolean mDrawGuideLines = false;
     private SurfaceHolder mHolder;
-    private static Spinner mSpinner;
     private static Flicker mFlicker;
-    private static Counter mCounter;
     private CVResult mCVResult;
-
-
-    private static final String TAG = "PaintView";
 
     /**
      * Creates the PaintView, the timerCallback and the thread responsible for the drawing.
@@ -93,9 +89,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         mDrawFocusText = false;
 
-//        mSpinner = new Spinner();
         mFlicker = new Flicker();
-        mCounter = new Counter();
 
     }
 
@@ -132,7 +126,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Called after the surface is created.
-     * @param holder
+     * @param holder owner of the surface
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder)
@@ -148,18 +142,16 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Called after the surface is changed.
-     * @param holder
-     * @param format
-     * @param width
-     * @param height
+     * @param holder owner of the surface
+     * @param format format
+     * @param width width of the surface
+     * @param height height of the surface
      */
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
         mHolder = holder;
 
-//        if (mDrawerThread != null)
-//            mDrawerThread.setSurfaceSize(width, height);
     }
 
     /**
@@ -178,6 +170,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 mDrawerThread.join();
                 retry = false;
             } catch (InterruptedException e) {
+                Log.d(TAG, e.toString());
             }
         }
 
@@ -254,23 +247,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
-    public void showCounter() {
-
-        // This is necessary, since we do not want to wait for the next update from the mCVResult:
-        synchronized (mCVResult) {
-            mCVResult.notify();
-        }
-
-        mCounter.mVisible = true;
-
-    }
-
-
     /**
      * Class responsible for the actual drawing.
      */
     class DrawerThread extends Thread {
 
+        private static final String TAG = "DrawerThread";
         private SurfaceHolder mSurfaceHolder;
         private boolean mIsRunning;
 
@@ -282,17 +264,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private Path mFocusPath;
         private Paint mGuidePaint;
 
-        private static final float RECT_HALF_SIZE = 30;
         private final float FOCUS_RECT_HEIGHT = getResources().getDimension(R.dimen.focus_height);
         private final float FOCUS_RECT_HALF_HEIGHT = FOCUS_RECT_HEIGHT / 2;
         private final float FOCUS_RECT_SHORT_LENGTH = getResources().getDimension(R.dimen.focus_short_length);
         private final float FOCUS_RECT_OFFSET = (float) (FOCUS_RECT_SHORT_LENGTH * 1.5);
-        private static final float RECT_HALF_HALF_SIZE = 15;
         private static final String TEXT_FORMAT = "%.2f";
 
         private final int STATE_TEXT_BG_COLOR = getResources().getColor(R.color.hud_state_rect_color);
-        private final int GOOD_TEXT_COLOR = getResources().getColor(R.color.hud_bad_text_color);
-        private final int BAD_TEXT_COLOR = getResources().getColor(R.color.hud_good_text_color);
         private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
         private final int FOCUS_SHARP_RECT_COLOR = getResources().getColor(R.color.hud_focus_sharp_rect_color);
         private final int FOCUS_UNSHARP_RECT_COLOR = getResources().getColor(R.color.hud_focus_unssharp_rect_color);
@@ -368,12 +346,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 if (mFlicker.mVisible)
                     mFlicker.draw();
 
-//                else if (mCounter.mVisible) {
-//                    mCounter.draw();
-//                    return;
-//                }
-
-
                 else {
 
                     // This wait is used to assure that the drawing function is just called after an update
@@ -383,7 +355,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         try {
                             mCVResult.wait();
                         } catch (InterruptedException e) {
-
+                            Log.d(TAG, e.toString());
                         }
 
                         if (mFlicker.mVisible)
@@ -408,20 +380,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-
-//        /* Callback invoked when the surface dimensions change. */
-//        public void setSurfaceSize(int width, int height) {
-//            // synchronized to make sure these all change atomically
-//            synchronized (mSurfaceHolder) {
-//                mCanvasWidth = width;
-//                mCanvasHeight = height;
-//
-//            }
-//        }
-
         /**
          * Used for pausing and resuming the drawer thread.
-         * @param b
+         * @param b boolean indicating if the thread is running
          */
         public void setRunning(boolean b) {
 
@@ -437,7 +398,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         /**
          * Method used for the drawing of the CV result.
-         * @param canvas
+         * @param canvas canvas
          */
         private void draw(Canvas canvas) {
 
@@ -478,7 +439,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         /**
          * Draws the output of the page segmentation task.
-         * @param canvas
+         * @param canvas canvas
          */
         private void drawPageSegmentation(Canvas canvas) {
 
@@ -516,7 +477,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         /**
          * Draws the output of the focus measurement task.
-         * @param canvas
+         * @param canvas canvas
          */
         private void drawFocusMeasure(Canvas canvas) {
 
@@ -524,7 +485,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             float textWidth = -1;
 
             mFocusPath.reset();
-//            float textHeight = -1;
 
             for (Patch patch : mCVResult.getPatches()) {
 
@@ -585,149 +545,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             canvas.drawPath(mFocusPath, paint);
 
-
-//            canvas.drawLine(x - FOCUS_RECT_OFFSET, y - FOCUS_RECT_HALF_HEIGHT,
-//                    x - FOCUS_RECT_OFFSET, y + FOCUS_RECT_HALF_HEIGHT, paint);
-//
-//            // left horizontal upper line:
-//            canvas.drawLine(x - FOCUS_RECT_OFFSET, y - FOCUS_RECT_HALF_HEIGHT,
-//                    x - FOCUS_RECT_OFFSET + FOCUS_RECT_SHORT_LENGTH, y - FOCUS_RECT_HALF_HEIGHT, paint);
-//
-//            // left horizontal lower line:
-//            canvas.drawLine(x - FOCUS_RECT_OFFSET, y + FOCUS_RECT_HALF_HEIGHT,
-//                    x - FOCUS_RECT_OFFSET + FOCUS_RECT_SHORT_LENGTH, y + FOCUS_RECT_HALF_HEIGHT, paint);
-
         }
-
-//        private void drawSavingAnimation(Canvas canvas) {
-//
-//            Paint arcPaint = new Paint();
-//            arcPaint = new Paint();
-//            arcPaint.setColor(Color.GREEN);
-//            arcPaint.setStyle(Paint.Style.STROKE);
-//            arcPaint.setStrokeWidth(7);
-//            RectF r = new RectF(0, 0, 200, 200);
-//            canvas.drawArc(r, angle, angle + 45, false, arcPaint);
-//            angle = angle + 45;
-//            angle = angle % 360;
-//
-//        }
-
-
-
-    }
-
-
-    protected abstract class Drawer {
-
-        protected boolean mVisible;
-
-        protected Drawer() {
-            mVisible = false;
-
-        }
-
-        protected abstract void execute(Canvas canvas);
-
-        protected void draw() {
-
-            Canvas canvas = mHolder.lockCanvas();
-//            Clear the screen from previous drawings:
-//            canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
-
-            execute(canvas);
-
-            if (canvas != null)
-                mHolder.unlockCanvasAndPost(canvas);
-
-            mVisible = false;
-
-
-
-        }
-
-    }
-
-    private class Counter extends Drawer {
-
-        private Paint mCounterPaint;
-
-        private Counter() {
-
-            super();
-
-            mCounterPaint = new Paint();
-            // Get device independent screen units:
-            // Taken from here: http://stackoverflow.com/questions/3061930/how-to-set-unit-for-paint-settextsize
-            int scaledFontSize = getResources().getDimensionPixelSize(R.dimen.draw_view_focus_font_size);
-            mCounterPaint.setTextSize(scaledFontSize);
-
-
-
-        }
-
-        protected void execute(Canvas canvas) {
-
-//            long startTime = System.currentTimeMillis();
-//            long currentTime = -1;
-//
-//
-//
-//            long waitTime = (long) getResources().getInteger(R.integer.counter_time);
-//            int counterTime = Math.round(waitTime / 1000);
-//
-//            int lastTimeLeft = -1;
-//            long timePast = -1;
-//
-//            while(timePast < waitTime) {
-//
-//                canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
-//                timePast = System.currentTimeMillis() - startTime;
-//                long timeLeft = waitTime - timePast;
-//
-//                drawText(canvas, Integer.toString(Math.round(timeLeft / 1000)));
-//
-//            }
-
-
-
-            long lastTime = -1;
-            long startTime = System.currentTimeMillis();
-            long currentTime = -1;
-            long waitTime = (long) getResources().getInteger(R.integer.counter_time);
-
-            while(currentTime - startTime <  waitTime) {
-
-                if (lastTime == -1 || (currentTime - lastTime) > 100) {
-
-                    //            Clear the screen from previous drawings:
-//                    canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
-                    drawText(canvas, "fabian");
-                    canvas.drawText("fabian", 200,200, mCounterPaint);
-
-                    lastTime = currentTime;
-
-                }
-            }
-
-
-
-
-        }
-
-        private void drawText(Canvas canvas, String text) {
-
-            Rect textRect = new Rect();
-
-            mCounterPaint.getTextBounds(text, 0, text.length(), textRect);
-            float offsetX = (float) textRect.width() / 2;
-            float offsetY = (float) textRect.height() / 2;
-
-            canvas.drawText(text, getWidth() / 2 - offsetX, getHeight() / 2 - offsetY, mCounterPaint);
-
-
-        }
-
     }
 
     /**
@@ -754,8 +572,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             Rect rect = new Rect(0,0, getWidth(), getHeight());
             canvas.drawRect(rect, mFlickerPaint);
 
-            if (canvas != null)
-                mHolder.unlockCanvasAndPost(canvas);
+            mHolder.unlockCanvasAndPost(canvas);
 
             // After the painting wait some time:
             long startTime = System.currentTimeMillis();
@@ -768,113 +585,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             canvas = mHolder.lockCanvas();
             canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
 
-            if (canvas != null)
-                mHolder.unlockCanvasAndPost(canvas);
+            mHolder.unlockCanvasAndPost(canvas);
 
             mVisible = false;
 
         }
 
-//        protected void draw() {
-//
-//            Canvas canvas = mHolder.lockCanvas();
-////            Clear the screen from previous drawings:
-//            canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
-//            Rect rect = new Rect(0,0, getWidth(), mCVResult.getViewHeight());
-//            canvas.drawRect(rect, mFlickerPaint);
-//
-//            long startTime = System.currentTimeMillis();
-//            long currentTime = -1;
-//
-//            while(currentTime - startTime < getResources().getInteger(R.integer.flicker_time))
-//                currentTime = System.currentTimeMillis();
-//
-//
-//            if (canvas != null)
-//                mHolder.unlockCanvasAndPost(canvas);
-//
-//            mVisible = false;
-//
-//        }
-
     }
-
-    private class Spinner {
-
-        private boolean mVisible;
-        private int angle;
-        private long lastTime;
-        private static final int CIRCLE_RADIUS = 200;
-        private RectF rect;
-        private int nextAngle;
-
-        private Spinner() {
-
-            angle = 0;
-            mVisible = false;
-
-
-        }
-
-        private void setVisible(boolean visible) {
-
-            mVisible = visible;
-            if (visible) {
-                angle = 0;
-                lastTime = -1;
-                nextAngle = 45;
-            }
-
-        }
-
-        private void draw() {
-
-            int startX = getWidth() / 2 - CIRCLE_RADIUS / 2;
-            int startY = getHeight() / 2 - CIRCLE_RADIUS / 2;
-            rect = new RectF(startX, startY, startX + CIRCLE_RADIUS, startY + CIRCLE_RADIUS);
-            angle = 0;
-
-
-            long currentTime = System.currentTimeMillis();
-//            canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
-
-            if (lastTime == -1 || (currentTime - lastTime) > 100) {
-
-//            Clear the screen from previous drawings:
-
-                Canvas canvas = mHolder.lockCanvas();
-
-                canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
-
-                Paint arcPaint = new Paint();
-                arcPaint.setColor(Color.CYAN);
-                arcPaint.setStyle(Paint.Style.STROKE);
-                arcPaint.setStrokeWidth(10);
-
-                canvas.drawArc(rect, angle, nextAngle, false, arcPaint);
-                nextAngle = nextAngle + 45;
-
-                if (nextAngle > 360)
-                    nextAngle = 45;
-
-                lastTime = currentTime;
-
-                if (canvas != null)
-                    mHolder.unlockCanvasAndPost(canvas);
-
-            }
-
-        }
-    }
-
-//    @Override
-//    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-//
-//        if (changed)
-//            this.layout(0,0,100,100);
-//
-//    }
-
-
 
  }
