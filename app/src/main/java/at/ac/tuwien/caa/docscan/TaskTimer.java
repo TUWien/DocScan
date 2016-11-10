@@ -46,7 +46,7 @@ public class TaskTimer {
      */
     public TaskTimer() {
 
-        mTasks = new ArrayList<Task>();
+        mTasks = new ArrayList<>();
         mTasks.add(new Task(FOCUS_MEASURE_ID));
         mTasks.add(new Task(PAGE_SEGMENTATION_ID));
         mTasks.add(new Task(DRAW_VIEW_ID));
