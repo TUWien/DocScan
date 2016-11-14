@@ -91,6 +91,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener {
 
     private static final String TAG = "CameraActivity";
+    private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
     private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 0;
@@ -218,6 +219,18 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+
+        // Save the current flash mode
+//        if (mCameraPreview != null)
+//            savedInstanceState.putString(FLASH_MODE_KEY, mCameraPreview.getFlashMode());
+
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+
 
     // ================= end: methods from the Activity lifecyle =================
 
@@ -274,6 +287,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+
     /**
      * Initializes the buttons that are used in the camera_controls_layout. These layouts are
      * recreated on orientation changes, so we need to assign the callbacks again.
@@ -295,6 +309,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         mModeMenuItem = menu.findItem(R.id.shoot_mode_item);
 
         mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
+
+        // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
+        if (mFlashModes != null)
+            mFlashMenuItem.setVisible(true);
 
         return true;
     }
@@ -951,8 +969,14 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     public void onFlashModesFound(List<String> modes) {
 
         mFlashModes = modes;
-        if (mFlashPopupMenu != null)
-            setupFlashPopup();
+
+        if (mFlashPopupMenu != null) // Menu is not created yet
+            setupFlashUI();
+
+        // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
+        if (mFlashModes != null && mFlashMenuItem != null)
+            mFlashMenuItem.setVisible(true);
+
 
     }
 
@@ -962,41 +986,36 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         if (menuItemView == null)
             return;
 
-        mFlashPopupMenu = new PopupMenu(this, menuItemView);
-        if (mFlashPopupMenu == null)
-            return;
+        // Create the menu for the first time:
+        if (mFlashPopupMenu == null) {
+            mFlashPopupMenu = new PopupMenu(this, menuItemView);
+            mFlashPopupMenu.setOnMenuItemClickListener(this);
+            mFlashPopupMenu.inflate(R.menu.flash_mode_menu);
 
-        mFlashPopupMenu.setOnMenuItemClickListener(this);
-        mFlashPopupMenu.inflate(R.menu.flash_mode_menu);
+            setupFlashUI();
+        }
+
+
+
         mFlashPopupMenu.show();
 
     }
 
     @SuppressWarnings("deprecation")
-    private void setupFlashPopup() {
+    private void setupFlashUI() {
 
-        if (mFlashPopupMenu == null)
-            return;
 
-        // TODO: Test this on Moto E:
-        if (mFlashModes == null)
-            mFlashMenuItem.setVisible(false);
+        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO))
+            mFlashPopupMenu.getMenu().findItem(R.id.flash_auto_item).setVisible(false);
 
-        else {
+        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_ON))
+            mFlashPopupMenu.getMenu().findItem(R.id.flash_on_item).setVisible(false);
 
-            if (mFlashModes.size() == 1)
-                mFlashMenuItem.setVisible(false);
+        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_OFF))
+            mFlashPopupMenu.getMenu().findItem(R.id.flash_off_item).setVisible(false);
 
-            if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO))
-                mFlashPopupMenu.getMenu().findItem(R.id.flash_auto_item).setVisible(false);
-
-            if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_ON))
-                mFlashPopupMenu.getMenu().findItem(R.id.flash_on_item).setVisible(false);
-
-            if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_OFF))
-                mFlashPopupMenu.getMenu().findItem(R.id.flash_off_item).setVisible(false);
-
-        }
+        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_TORCH))
+            mFlashPopupMenu.getMenu().findItem(R.id.flash_torch_item).setVisible(false);
 
     }
 
