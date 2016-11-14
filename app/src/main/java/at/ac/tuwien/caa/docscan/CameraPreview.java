@@ -88,6 +88,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private boolean isCameraInitialized;
     private DkPolyRect mIlluminationRect;
+    private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
 
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
@@ -106,6 +107,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         // used for debugging:
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
+
+        mFlashMode = null;
 
     }
 
@@ -338,6 +341,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         List<String> flashModes = params.getSupportedFlashModes();
         mCameraPreviewCallback.onFlashModesFound(flashModes);
+
+        // Restore the last used flash mode - if available:
+        if (mFlashMode != null)
+            params.setFlashMode(mFlashMode);
 
         mCamera.setParameters(params);
 
@@ -620,7 +627,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         params.setFlashMode(flashMode);
         mCamera.setParameters(params);
 
+        mFlashMode = flashMode;
+
     }
+
 
     private void openCameraThread() {
 

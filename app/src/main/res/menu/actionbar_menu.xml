@@ -6,6 +6,7 @@
         android:id="@+id/flash_mode_item"
         android:icon="@drawable/ic_flash_off"
         android:title="@string/flash_mode"
+        android:visible="false"
         app:showAsAction="always"
         android:onClick="showFlashPopup"
         />
