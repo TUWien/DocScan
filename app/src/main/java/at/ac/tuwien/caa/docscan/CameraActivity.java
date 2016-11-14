@@ -113,7 +113,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private boolean mIsPictureSafe;
     private TextView mTextView;
     private MenuItem mModeMenuItem, mFlashMenuItem;
-    private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable;
+    private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
+            mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsAutoMode = false;
     private long mStartTime;
     private boolean mIsWaitingForCapture = false;
@@ -177,6 +178,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         if (mCameraPreview != null)
             mCameraPreview.pause();
 
+//        MovementDetector.getInstance(this.getApplicationContext()).stop();
+
         super.onPause();
 
     }
@@ -210,6 +213,8 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         // Resume drawing thread:
         if (mPaintView != null)
             mPaintView.resume();
+
+//        MovementDetector.getInstance(this.getApplicationContext()).start();
 
     }
 
@@ -255,6 +260,18 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         initPictureCallback();
         initButtons();
 
+//        MovementDetector.getInstance(this.getApplicationContext()).addListener(new MovementDetector.Listener() {
+//
+//            @Override
+//            public void onMotionDetected(SensorEvent event, float acceleration) {
+//
+//                Log.d(TAG, "Acceleration: " + acceleration);
+//                if (mCameraPreview != null)
+//                    mCameraPreview.cancelAutoFocus();
+//
+//            }
+//        });
+
     }
 
     /**
@@ -287,9 +304,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         mAutoShootDrawable = getResources().getDrawable(R.drawable.auto_shoot);
         mManualShootDrawable = getResources().getDrawable(R.drawable.manual_auto);
+
         mFlashAutoDrawable = getResources().getDrawable(R.drawable.ic_flash_auto);
         mFlashOffDrawable = getResources().getDrawable(R.drawable.ic_flash_off);
         mFlashOnDrawable = getResources().getDrawable(R.drawable.ic_flash_on);
+        mFlashTorchDrawable = getResources().getDrawable(R.drawable.ic_torch);
 
     }
 
@@ -842,6 +861,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
     }
 
+
     /**
      * Returns true if the debug view is visible. Mainly used before TaskTimer events are triggered.
      *
@@ -1020,6 +1040,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             case R.id.flash_on_item:
                 mFlashMenuItem.setIcon(mFlashOnDrawable);
                 mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+//                mFlashMode = Camera.Parameters.FLASH_MODE_ON;
+                return true;
+            case R.id.flash_torch_item:
+                mFlashMenuItem.setIcon(mFlashTorchDrawable);
+                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
 //                mFlashMode = Camera.Parameters.FLASH_MODE_ON;
                 return true;
 
