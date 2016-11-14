@@ -1120,10 +1120,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         } else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
             mCameraPreview.startIllumination(false);
             mCVResult.setIsIlluminationComputed(false);
-            if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
-                mCameraPreview.startFocusMeasurement(false);
-                mCVResult.setPatches(null);
-            }
+//            if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
+//                mCameraPreview.startFocusMeasurement(false);
+//                mCVResult.setPatches(null);
+//            }
         }
 
         // Check if we need the counter text view:
