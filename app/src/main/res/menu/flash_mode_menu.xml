@@ -15,5 +15,9 @@
         android:id="@+id/flash_on_item"
         android:title="@string/flash_on_mode"
         />
+    <item
+        android:id="@+id/flash_torch_item"
+        android:title="@string/flash_torch_mode"
+        />
 
 </menu>

@@ -58,4 +58,5 @@
     <string name="flash_off_mode">Flash off</string>
     <string name="flash_auto_mode">Flash auto</string>
     <string name="flash_on_mode">Flash on</string>
+    <string name="flash_torch_mode">Torch</string>
 </resources>

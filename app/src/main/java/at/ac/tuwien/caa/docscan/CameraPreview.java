@@ -360,6 +360,45 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.startPreview();
 
             if (params.getFocusMode() == Camera.Parameters.FOCUS_MODE_AUTO) {
+
+                float centerX = getMeasuredWidth() / 2;
+                float centerY = getMeasuredHeight() / 2;
+                PointF centerScreen = new PointF(centerX, centerY);
+
+                float touchX = centerX;
+                float touchY = centerY;
+                PointF touchScreen = new PointF(touchX, touchY);
+
+                // The camera field of view is normalized so that -1000,-1000 is top left and 1000, 1000 is
+                // bottom right. Not that multiple areas are possible, but currently only one is used.
+
+                float focusRectHalfSize = .2f;
+
+                // Normalize the coordinates of the touch event:
+                Point upperLeft = transformPoint(centerScreen, touchScreen, -focusRectHalfSize, -focusRectHalfSize);
+                Point lowerRight = transformPoint(centerScreen, touchScreen, focusRectHalfSize, focusRectHalfSize);
+
+                Rect focusRect = new Rect(upperLeft.x, upperLeft.y, lowerRight.x, lowerRight.y);
+
+                Camera.Area focusArea = new Camera.Area(focusRect, 750);
+                List<Camera.Area> focusAreas = new ArrayList<>();
+                focusAreas.add(focusArea);
+
+                mCamera.cancelAutoFocus();
+
+                if (params.getMaxNumFocusAreas() > 0) {
+
+//                    params.setFocusAreas(focusAreas);
+//                    params.setMeteringAreas(focusAreas);
+                    params.setFocusAreas(focusAreas);
+                    params.setMeteringAreas(focusAreas);
+
+//            mCamera.setParameters(parameters);
+                }
+
+
+                mCamera.setParameters(params);
+
                 mCamera.autoFocus(new Camera.AutoFocusCallback() {
                     @Override
                     public void onAutoFocus(boolean success, Camera camera) {
@@ -368,9 +407,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                 });
             }
-
-
             Log.d(TAG, "Camera preview started.");
+
         } catch (Exception e) {
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
@@ -378,6 +416,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // Tell the dependent Activity that the frame dimension (might have) change:
         mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
 
+
+    }
+
+    public void cancelAutoFocus() {
+
+        mCamera.cancelAutoFocus();
 
     }
 
