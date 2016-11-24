@@ -39,7 +39,7 @@
 #include <iostream>
 
 
-JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPageSegmentationTest(JNIEnv* env, jobject thiz, jint width, jint height, jbyteArray yuv, jintArray bgra)
+JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetPageSegmentationTest(JNIEnv* env, jobject thiz, jint width, jint height, jbyteArray yuv, jintArray bgra)
 {
 
 
@@ -134,7 +134,7 @@ JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPage
 
 }
 
-JNIEXPORT jdouble JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetIllumination(JNIEnv * env, jclass cls, jlong src, jobject polyRect) {
+JNIEXPORT jdouble JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetIllumination(JNIEnv * env, jclass cls, jlong src, jobject polyRect) {
 
     //dsc::DkIllumination::apply(*((cv::Mat*)src), (DkPolyRect) polyRect);
 
@@ -176,7 +176,7 @@ JNIEXPORT jdouble JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetI
 
 }
 
-JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPageSegmentation(JNIEnv * env, jclass cls, jlong src) {
+JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetPageSegmentation(JNIEnv * env, jclass cls, jlong src) {
 
 
 
@@ -184,7 +184,7 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
     // call the main function:
     std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(*((cv::Mat*)src));
 
-    jclass polyRectClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/DkPolyRect");
+    jclass polyRectClass = env->FindClass("at/ac/tuwien/caa/docscan/camera/cv/DkPolyRect");
 
     // JNI type signatures: http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
 
@@ -249,14 +249,14 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativ
 
 }
 
-JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetFocusMeasures(JNIEnv * env, jclass cls, jlong src) {
+JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetFocusMeasures(JNIEnv * env, jclass cls, jlong src) {
 
 
     // call the main function:
     std::vector<dsc::Patch> patches = dsc::FocusEstimation::apply(*((cv::Mat*)src));
 
     // find the Java Patch class and its constructor:
-    jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/Patch");
+    jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/camera/cv/Patch");
 
     // JNI type signatures: http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
     // "(FFIIDZZ)V" -> (float float int int double boolean boolean) return void

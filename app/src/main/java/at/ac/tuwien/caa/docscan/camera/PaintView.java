@@ -21,7 +21,7 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.camera;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -40,9 +40,10 @@ import android.view.SurfaceView;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import at.ac.tuwien.caa.docscan.cv.CVResult;
-import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
-import at.ac.tuwien.caa.docscan.cv.Patch;
+import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
+import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 
 /**
  * Class responsible for drawing the results of the page segmentation and focus measurement tasks.

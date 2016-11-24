@@ -33,6 +33,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import at.ac.tuwien.caa.docscan.camera.CameraActivity;
+
 /**
  * Activity called after the app is started. This activity is responsible for requesting the camera
  * permission. If the permission is given the CameraActivity is started via an intent.
@@ -42,15 +44,13 @@ import android.view.View;
 public class StartActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final int PERMISSION_CAMERA = 0;
-
-
     private View mLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_container_view);
-
         mLayout = findViewById(R.id.main_layout);
         showCameraPreview();
 
@@ -110,11 +110,11 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     private void startCamera() {
 
         Intent intent = new Intent(this, CameraActivity.class);
-//        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
 
         finish();
+
     }
 
 

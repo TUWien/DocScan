@@ -20,10 +20,15 @@
         </activity>
 
         <activity
-            android:name=".CameraActivity"
+            android:name=".camera.CameraActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize"
             />
+        <activity
+            android:name=".transkribus.TranskribusActivity"
+            android:exported="false"
+            />
+
         <!--android:configChanges="keyboardHidden|orientation|screenSize"-->
 
     </application>

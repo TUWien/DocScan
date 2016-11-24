@@ -20,4 +20,10 @@
             android:title="@string/show_guide_text" />
     </group>
 
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/action_login_transkribus"
+            android:title="@string/login_text" />
+    </group>
+
 </menu>

@@ -21,7 +21,7 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.camera;
 
 import java.util.ArrayList;
 

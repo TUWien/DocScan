@@ -21,12 +21,12 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.camera;
 
 import org.opencv.core.Mat;
 
-import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
-import at.ac.tuwien.caa.docscan.cv.Patch;
+import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 
 /**
  * Class responsible for calling native methods (for page segmentation and focus measurement).

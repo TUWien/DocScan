@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.cv;
+package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.graphics.PointF;
 
