@@ -28,6 +28,7 @@
 *.exe
 *.out
 *.app
+*.apk
 
 # Android
 *.iml
@@ -47,6 +48,7 @@ gradlew.bat
 app/build
 openCVLibrary310
 import-summary.txt
+camera_view.xml
 
 # msvc
 build2015*
@@ -59,3 +61,4 @@ testimg.jpg
 /testimg-g.jpg
 /test.png
 /result.tif
+bin/

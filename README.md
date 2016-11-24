@@ -1,4 +1,4 @@
-# DocScan
+# Transkribus DocScan
 App for document scanning.
 
 
