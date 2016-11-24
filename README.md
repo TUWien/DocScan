@@ -37,7 +37,10 @@ it points to your opencv installation (contains the folders: apk, sample, sdk)
  - In `.\app\src\main\jni\Application.mk` set: `APP_ABI := x86`
  - Note: By using the x86 the Genymotion emulation is much faster (compared to the standard ADB emulator which emulates arm processors)
 
-
+## Authors
+Fabian Hollaus
+Florian Kleber
+Markus Diem
 
 ## Links
 - [1] https://sourceforge.net/projects/opencvlibrary/files/opencv-android/3.1.0/OpenCV-3.1.0-android-sdk.zip/download
