@@ -142,7 +142,7 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 
 		if (looseDetection) {
 			std::vector<std::vector<cv::Point> > hull;
-			for (int i = 0; i < (int)contours.size(); i++) { 
+			for (int i = 0; i < (int)contours.size(); i++) {
 
 				double cArea = contourArea(cv::Mat(contours[i]));
 
@@ -184,7 +184,7 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 			// contour orientation
 			if (approx.size() == 4 &&
 				fabs(cArea) > mMinArea*scale*scale &&
-				(!mMaxArea || fabs(cArea) < mMaxArea*scale*scale) && 
+				(!mMaxArea || fabs(cArea) < mMaxArea*scale*scale) &&
 				isContourConvex(cv::Mat(approx))) {
 
 				DkPolyRect cr(approx);
@@ -193,7 +193,7 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 				// if cosines of all angles are small
 				// (all angles are ~90 degree)
 				if(/*cr.maxSide() < std::max(tImg.rows, tImg.cols)*maxSideFactor && */
-					(!maxSide || cr.maxSide() < maxSide*scale) && 
+					(!maxSide || cr.maxSide() < maxSide*scale) &&
 					cr.getMaxCosine() < 0.3 ) {
 
 					rects.push_back(cr);
@@ -222,10 +222,9 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 		}
 	}
 
-	cv::normalize(dbgImg, dbgImg, 255, 0, cv::NORM_MINMAX);
+	//cv::normalize(dbgImg, dbgImg, 255, 0, cv::NORM_MINMAX);
 
 	rects = noLargeRects;
-
 }
 
 //QImage DkPageSegmentation::cropToRect(const QImage & img, const nmc::DkRotatingRect & rect, const QColor & bgCol) const {
