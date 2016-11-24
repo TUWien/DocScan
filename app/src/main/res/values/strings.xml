@@ -11,6 +11,7 @@
     <string name="hide_guide_text">Hide guide lines</string>
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
+    <string name="login_text">Login</string>
 
     <!-- Use in the MainActivity: end -->
 

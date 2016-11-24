@@ -21,7 +21,7 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan.cv;
+package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.content.Context;
 import android.graphics.PointF;

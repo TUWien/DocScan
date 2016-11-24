@@ -21,7 +21,7 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.camera;
 
 import android.content.Context;
 import android.graphics.Point;
@@ -44,8 +44,8 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
-import at.ac.tuwien.caa.docscan.cv.Patch;
+import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 
 /**
  * Class for showing the camera preview. This class is extending SurfaceView and making use of the

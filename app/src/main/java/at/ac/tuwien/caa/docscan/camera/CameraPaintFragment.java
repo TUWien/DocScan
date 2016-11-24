@@ -21,13 +21,15 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.camera;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import at.ac.tuwien.caa.docscan.R;
 
 /**
  * Class holding the paint view and the camera preview.

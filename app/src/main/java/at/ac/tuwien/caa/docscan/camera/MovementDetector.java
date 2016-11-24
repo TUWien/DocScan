@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.camera;
 
 import android.content.Context;
 import android.hardware.Sensor;

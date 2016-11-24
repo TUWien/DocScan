@@ -21,7 +21,7 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.camera;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -77,9 +77,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import at.ac.tuwien.caa.docscan.cv.CVResult;
-import at.ac.tuwien.caa.docscan.cv.DkPolyRect;
-import at.ac.tuwien.caa.docscan.cv.Patch;
+import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
+import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.transkribus.TranskribusActivity;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -794,7 +796,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
                 break;
 
-            // Text for focus measurement:
+            // Focus measurement:
             case R.id.action_show_fm_values:
 
                 if (mPaintView.isFocusTextVisible()) {
@@ -807,7 +809,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
                 break;
 
-            // Text for focus measurement:
+            // Guide lines:
             case R.id.action_show_guide:
 
                 if (mPaintView.areGuideLinesDrawn()) {
@@ -817,6 +819,13 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
                     mPaintView.drawGuideLines(true);
                     menuItem.setTitle(R.string.hide_guide_text);
                 }
+
+                break;
+
+            // Text for focus measurement:
+            case R.id.action_login_transkribus:
+
+                startTranskribusLoginActivity();
 
                 break;
 
@@ -1331,6 +1340,16 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
         }
 
         return -1;
+
+    }
+
+    private void startTranskribusLoginActivity() {
+
+        Intent intent = new Intent(this, TranskribusActivity.class);
+//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+
+        finish();
 
     }
 
