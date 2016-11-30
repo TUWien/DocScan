@@ -36,5 +36,11 @@
         <item name="windowActionBarOverlay">true</item>
     </style>
 
+    <style name="ActionBarPopupThemeOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="ActionBarThemeOverlay" parent="ThemeOverlay.AppCompat.ActionBar">
+        <!--<item name="android:textColorPrimary">@color/text_on_primary</item>-->
+        <!--<item name="android:textColorSecondary">@color/subtitle_on_primary</item>-->
+    </style>
+
 
 </resources>

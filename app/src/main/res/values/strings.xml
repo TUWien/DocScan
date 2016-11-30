@@ -1,6 +1,11 @@
 <resources>
 
-    <string name="app_name">DocScan</string>
+    <string name="app_name">Transkribus DocScan</string>
+
+    <!-- Used in the navigation drawer: -->
+    <string name="collections_item_text">Collections</string>
+    <string name="about_item_text">About</string>
+    <string name="camera_item_text">Camera</string>
 
     <!-- Use in the MainActivity: start -->
 
