@@ -51,9 +51,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -77,6 +75,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import at.ac.tuwien.caa.docscan.BaseActivity;
+import at.ac.tuwien.caa.docscan.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
@@ -88,7 +88,7 @@ import at.ac.tuwien.caa.docscan.transkribus.TranskribusActivity;
  * callbacks from the created views as well as user input.
  */
 
-public class CameraActivity extends AppCompatActivity implements TaskTimer.TimerCallbacks,
+public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallbacks,
         NativeWrapper.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
         MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener {
 
@@ -254,10 +254,10 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         mCounterView = (TextView) findViewById(R.id.counter_view);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
 
-        setupNavigationDrawer();
+//        setupNavigationDrawer();
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
         mTextView = (TextView) findViewById(R.id.instruction_view);
@@ -669,7 +669,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         // Change the layout dynamically: Remove the current camera_controls_layout and add a new
         // one, which is appropriate for the orientation (portrait or landscape xml's).
-        ViewGroup appRoot = (ViewGroup) findViewById(R.id.main_layout);
+        ViewGroup appRoot = (ViewGroup) findViewById(R.id.main_frame_layout);
         if (appRoot == null)
             return;
 
@@ -1351,6 +1351,11 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
         finish();
 
+    }
+
+    @Override
+    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
+        return NavigationDrawer.NavigationItemEnum.CAMERA;
     }
 
     /**

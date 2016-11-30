@@ -51,7 +51,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_container_view);
-        mLayout = findViewById(R.id.main_layout);
+        mLayout = findViewById(R.id.main_frame_layout);
         showCameraPreview();
 
     }
