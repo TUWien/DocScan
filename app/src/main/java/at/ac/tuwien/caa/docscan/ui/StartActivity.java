@@ -21,7 +21,7 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.ui;
 
 import android.Manifest;
 import android.content.Intent;
@@ -33,7 +33,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import at.ac.tuwien.caa.docscan.camera.CameraActivity;
+import at.ac.tuwien.caa.docscan.R;
 
 /**
  * Activity called after the app is started. This activity is responsible for requesting the camera

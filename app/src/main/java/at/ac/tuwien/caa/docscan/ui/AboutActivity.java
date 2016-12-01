@@ -1,6 +1,8 @@
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.ui;
 
 import android.os.Bundle;
+
+import at.ac.tuwien.caa.docscan.R;
 
 /**
  * Created by fabian on 30.11.2016.

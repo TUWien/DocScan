@@ -21,7 +21,7 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan.camera;
+package at.ac.tuwien.caa.docscan.ui;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -52,6 +52,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -75,9 +76,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import at.ac.tuwien.caa.docscan.BaseActivity;
-import at.ac.tuwien.caa.docscan.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
+import at.ac.tuwien.caa.docscan.camera.CameraPreview;
+import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
+import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
+import at.ac.tuwien.caa.docscan.camera.PaintView;
+import at.ac.tuwien.caa.docscan.camera.TaskTimer;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
@@ -232,8 +237,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         super.onSaveInstanceState(savedInstanceState);
     }
 
-
-
     // ================= end: methods from the Activity lifecyle =================
 
     /**
@@ -254,10 +257,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         mCounterView = (TextView) findViewById(R.id.counter_view);
 
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-//        setupNavigationDrawer();
+        setupNavigationDrawer();
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
         mTextView = (TextView) findViewById(R.id.instruction_view);
@@ -905,7 +908,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     public static int getOrientation() {
 
-        WindowManager w = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        WindowManager w = (WindowManager) mContext.getSystemService(WINDOW_SERVICE);
 
         return w.getDefaultDisplay().getRotation();
 
