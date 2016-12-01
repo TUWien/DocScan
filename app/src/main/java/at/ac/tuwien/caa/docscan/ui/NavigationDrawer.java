@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.ui;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,7 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import at.ac.tuwien.caa.docscan.camera.CameraActivity;
+import at.ac.tuwien.caa.docscan.ActivityUtils;
+import at.ac.tuwien.caa.docscan.R;
 
 /**
  * This file contains parts of this source file:
@@ -44,6 +45,10 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         NavigationItemEnum item = NavigationItemEnum.getById(menuItem.getItemId());
         onNavDrawerItemClicked(item);
         return true;
+    }
+
+    public void showNavigation() {
+        mDrawerLayout.openDrawer(GravityCompat.START);
     }
 
     private void setupNavigationDrawer() {

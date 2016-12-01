@@ -44,6 +44,7 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 /**
  * Class responsible for drawing the results of the page segmentation and focus measurement tasks.

@@ -46,6 +46,7 @@ import java.util.List;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 /**
  * Class for showing the camera preview. This class is extending SurfaceView and making use of the

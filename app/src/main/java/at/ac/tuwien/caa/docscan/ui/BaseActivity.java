@@ -1,8 +1,11 @@
-package at.ac.tuwien.caa.docscan;
+package at.ac.tuwien.caa.docscan.ui;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
+
+import at.ac.tuwien.caa.docscan.R;
 
 /**
  * Created by fabian on 30.11.2016.
@@ -23,19 +26,37 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     public void setContentView(int layoutResID) {
         super.setContentView(layoutResID);
-        getToolbar();
+        mToolbar = getToolbar();
+        setToolbarForNavigation();
     }
 
     public Toolbar getToolbar() {
+
         if (mToolbar == null) {
-            mToolbar = (Toolbar) findViewById(R.id.toolbar);
+            mToolbar = (Toolbar) findViewById(R.id.main_toolbar);
             if (mToolbar != null) {
 //                mToolbar.setNavigationContentDescription(getResources().getString(R.string
 //                        .navdrawer_description_a11y));
                 setSupportActionBar(mToolbar);
+                getSupportActionBar().setTitle(getSelfNavDrawerItem().getTitleResource());
             }
         }
         return mToolbar;
+
+    }
+
+    private void setToolbarForNavigation() {
+
+        if (mToolbar != null) {
+            mToolbar.setNavigationIcon(R.drawable.ic_menu);
+            mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mNavigationDrawer.showNavigation();
+                }
+            });
+        }
+
     }
 
     @Override
