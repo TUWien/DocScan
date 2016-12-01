@@ -74,7 +74,7 @@ namespace dsc {
                     double diffH = ptrSrc[colIdx + 2] - ptrSrc[colIdx];
                     double diffV = ptrSrc2[colIdx] - ptrSrc[colIdx];
 
-                    ptrFm[colIdx] = cv::max(cv::abs(diffH), cv::abs(diffV));
+                    ptrFm[colIdx] = (float)cv::max(cv::abs(diffH), cv::abs(diffV));
                     ptrFm[colIdx] *= ptrFm[colIdx];
                 }
             }

@@ -29,6 +29,10 @@
 
 #pragma warning(push, 0)	// no warnings from includes - begin
 #include <opencv2/imgproc/imgproc.hpp>
+//#ifdef _DEBUG
+//#include <opencv2/highgui/highgui.hpp>
+//#endif
+
 #pragma warning(pop)		// no warnings from includes - end
 
 namespace dsc {
@@ -122,19 +126,19 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 	cv::Mat gray;
 
 	// try several threshold levels
-	for (int thr = threshStep; thr < 255; thr += threshStep) {
+	for (int thr = 0; thr < 255; thr += threshStep) {
 
-		//if (thr == 0) {
+		if (thr == 0) {
 
-		//	int thresh = 80;
-		//	Canny(imgL, gray, thresh, thresh*3, 5);
-		//	// dilate canny output to remove potential
-		//	// holes between edge segments
-		//	dilate(gray, gray, cv::Mat(), cv::Point(-1,-1));
+			int thresh = 80;
+			Canny(imgL, gray, thresh, thresh*3, 5);
+			// dilate canny output to remove potential
+			// holes between edge segments
+			dilate(gray, gray, cv::Mat(), cv::Point(-1,-1));
 
 		//	//DkIP::imwrite("edgeImg.png", gray);
-		//}
-		//else
+		}
+		else
 			gray = imgL >= thr;
 
 		// find contours and store them all as a list
@@ -404,6 +408,8 @@ std::vector<DkPolyRect> DkPageSegmentation::apply(const cv::Mat& src) {
 	DkPageSegmentation segM(src);
 	segM.compute();
 	segM.filterDuplicates();
+
+	//pageRects = segM.getRects();
 
 	DkPolyRect r = segM.getDocumentRect();
 
