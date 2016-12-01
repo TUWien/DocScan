@@ -134,9 +134,9 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 			Canny(imgL, gray, thresh, thresh*3, 5);
 			// dilate canny output to remove potential
 			// holes between edge segments
-			dilate(gray, gray, cv::Mat(), cv::Point(-1,-1));
+			//dilate(gray, gray, cv::Mat(), cv::Point(-1,-1));
 
-		//	//DkIP::imwrite("edgeImg.png", gray);
+			//cv::imwrite("C:/VSProjects/DocScan/img/tests/edge.png", gray);
 		}
 		else
 			gray = imgL >= thr;
@@ -163,10 +163,10 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 		std::vector<cv::Point> approx;
 
 		// DEBUG ------------------------
-		//cv::Mat pImg = image.clone();
-		//cv::cvtColor(pImg, pImg, CV_Lab2RGB);
+		//cv::Mat pImg = imgL.clone();
+		//cv::cvtColor(pImg, pImg, CV_GRAY2BGR);
 		// DEBUG ------------------------
-
+		
 		// test each contour
 		for (size_t i = 0; i < contours.size(); i++) {
 			// approxicv::Mate contour with accuracy proportional
@@ -177,7 +177,7 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 
 			// DEBUG ------------------------
 			//if (fabs(cArea) < mMaxArea)
-			//	fillConvexPoly(pImg, &approx[0], (int)approx.size(), DkUtils::blue);
+				//fillConvexPoly(pImg, &approx[0], (int)approx.size(), cv::Scalar(255,0,0));
 			// DEBUG ------------------------
 
 			// square contours should have 4 vertices after approxicv::Mation
@@ -206,7 +206,7 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 		}
 		// DEBUG ------------------------
 		//cv::cvtColor(pImg, pImg, CV_RGB2BGR);
-		//DkIP::imwrite("polyImg" + DkUtils::stringify(c) + "-" + DkUtils::stringify(l) + ".png", pImg);
+		//cv::imwrite("C:/VSProjects/DocScan/img/tests/poly" + Utils::num2str(thr) + ".png", pImg);
 		// DEBUG ------------------------
 	}
 
