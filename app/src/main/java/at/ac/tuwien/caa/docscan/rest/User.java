@@ -26,21 +26,31 @@ public class User {
     }
 
     private User() {
+//        mUserName = "llu53232@noicd.com";
+//        mPassword = "testuserpwd";
 
-        mUserName = "llu53232@noicd.com";
-        mPassword = "testuserpwd";
+        mUserName = "holl@caa.tuwien.ac.at";
+        mPassword = "keinpwd";
 
     }
 
     public String getUserName() {
-
         return mUserName;
-
     }
 
     public String getPassword() {
-
         return mPassword;
+    }
 
+    public void setLoggedIn(boolean loggedIn) {
+        mIsLoggedin = loggedIn;
+    }
+
+    public void setSessionID(String sessionID) {
+        mSessionID = sessionID;
+    }
+
+    public String getSessionID() {
+        return mSessionID;
     }
 }
