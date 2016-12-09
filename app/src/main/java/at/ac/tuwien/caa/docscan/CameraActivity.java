@@ -558,14 +558,20 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     }
 
 
-    /**
+    /**e
      * Tells the camera to take a picture.
      */
     private void takePicture() {
 
         mIsPictureSafe = false;
-        mPaintView.showFlicker();
-        mCameraPreview.getCamera().takePicture(null, null, mPictureCallback);
+//        mPaintView.showFlicker();
+        Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
+            @Override
+            public void onShutter() {
+                mPaintView.showFlicker();
+            }
+        };
+        mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
 
     }
 
