@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
 	}
 
 	std::string path = argv[1];
+	path = "C:/VSProjects/DocScan/img/tests/test.png";
 
 	// test the focus measure module
 	if (!testFocusMeasure(path))
@@ -56,6 +57,7 @@ int main(int argc, char** argv) {
 		std::cout << "[SUCCESS] focus measure succesfull..." << std::endl;
 
 	std::string oPath = argc > 2 ? argv[2] : "";
+	oPath = "C:/VSProjects/DocScan/img/tests/test-res.png";
 
 	// test the page segmentation module
 	if (!testPageSegmentation(path, oPath))
@@ -136,8 +138,8 @@ bool testPageSegmentation(const std::string& filePath, const std::string& output
 		cv::imwrite(outputPath, dstImg);
 	}
 
-	double illVal = dsc::DkIllumination::apply(img, pageRects[0]);
-	std::cout << "illumination value: " << illVal << std::endl;
+	//double illVal = dsc::DkIllumination::apply(img, pageRects[0]);
+	//std::cout << "illumination value: " << illVal << std::endl;
 
 	//std::cout << "test page segmentation not implemented..." << std::endl;
 	return true;

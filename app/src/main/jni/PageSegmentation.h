@@ -77,6 +77,7 @@ protected:
 
 	std::vector<DkPolyRect> mRects;
 
+	virtual void findRectanglesLab(const cv::Mat& img, std::vector<DkPolyRect>& squares) const;
 	virtual void findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& squares) const;
 	//QImage cropToRect(const QImage& mImg, const nmc::DkRotatingRect& rect, const QColor& bgCol = QColor(0,0,0)) const;
 	//void drawRects(QPainter* p, const std::vector<DkPolyRect>& mRects, const QColor& col = QColor(100, 100, 100)) const;
