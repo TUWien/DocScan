@@ -29,6 +29,10 @@
 
 #pragma warning(push, 0)	// no warnings from includes - begin
 #include <opencv2/imgproc/imgproc.hpp>
+//#ifdef _DEBUG
+//#include <opencv2/highgui/highgui.hpp>
+//#endif
+
 #pragma warning(pop)		// no warnings from includes - end
 
 namespace dsc {
@@ -93,22 +97,34 @@ void DkPageSegmentation::compute() {
 	if (scale > 0.8f || scale <= 0.0f)
 		scale = 1.0f;
 
-	findRectangles(mImg, mRects);
+	findRectanglesLab(mImg, mRects);
 
 
 	std::cout << "[DkPageSegmentation] " << mRects.size() << " rectangles found resize factor: " << scale << std::endl;
 }
 
-void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& rects) const {
+void DkPageSegmentation::findRectanglesLab(const cv::Mat & img, std::vector<DkPolyRect>& rects) const {
+
 
 	cv::Mat imgLab;
 	cv::cvtColor(img, imgLab, CV_RGB2Lab);	// luminance channel is better than grayscale
 
-	int ch[] = {0, 0};
-	cv::Mat imgL(img.size(), CV_8UC1);
-	mixChannels(&imgLab, 1, &imgL, 1, ch, 1);
-	cv::normalize(imgL, imgL, 255, 0, cv::NORM_MINMAX);
-	imgLab.release();	// early release
+	for (int idx = 0; idx < img.channels(); idx++) {
+
+		int ch[] = {idx, 0};
+		cv::Mat imgL(img.size(), CV_8UC1);
+		cv::mixChannels(&imgLab, 1, &imgL, 1, ch, 1);
+		std::vector<DkPolyRect> cr;
+		findRectangles(imgL, rects);
+		std::cout << rects.size() << " after channel " << idx << std::endl;
+	}
+
+}
+
+void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& rects) const {
+
+	cv::Mat imgL;
+	cv::normalize(img, imgL, 255, 0, cv::NORM_MINMAX);
 
 	// downscale
 	if (scale != 1.0f)
@@ -120,21 +136,22 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 	//std::cout << "thresh step: " << threshStep << std::endl;
 
 	cv::Mat gray;
+	std::vector<DkPolyRect> rectsL;
 
 	// try several threshold levels
-	for (int thr = threshStep; thr < 255; thr += threshStep) {
+	for (int thr = 0; thr < 255; thr += threshStep) {
 
-		//if (thr == 0) {
+		if (thr == 0) {
 
-		//	int thresh = 80;
-		//	Canny(imgL, gray, thresh, thresh*3, 5);
-		//	// dilate canny output to remove potential
-		//	// holes between edge segments
-		//	dilate(gray, gray, cv::Mat(), cv::Point(-1,-1));
+			int thresh = 80;
+			Canny(imgL, gray, thresh, thresh*3, 5);
+			// dilate canny output to remove potential
+			// holes between edge segments
+			//dilate(gray, gray, cv::Mat(), cv::Point(-1,-1));
 
-		//	//DkIP::imwrite("edgeImg.png", gray);
-		//}
-		//else
+			//cv::imwrite("C:/VSProjects/DocScan/img/tests/edge.png", gray);
+		}
+		else
 			gray = imgL >= thr;
 
 		// find contours and store them all as a list
@@ -159,8 +176,8 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 		std::vector<cv::Point> approx;
 
 		// DEBUG ------------------------
-		//cv::Mat pImg = image.clone();
-		//cv::cvtColor(pImg, pImg, CV_Lab2RGB);
+		//cv::Mat pImg = imgL.clone();
+		//cv::cvtColor(pImg, pImg, CV_GRAY2BGR);
 		// DEBUG ------------------------
 
 		// test each contour
@@ -173,7 +190,7 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 
 			// DEBUG ------------------------
 			//if (fabs(cArea) < mMaxArea)
-			//	fillConvexPoly(pImg, &approx[0], (int)approx.size(), DkUtils::blue);
+				//fillConvexPoly(pImg, &approx[0], (int)approx.size(), cv::Scalar(255,0,0));
 			// DEBUG ------------------------
 
 			// square contours should have 4 vertices after approxicv::Mation
@@ -196,35 +213,33 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 					(!maxSide || cr.maxSide() < maxSide*scale) &&
 					cr.getMaxCosine() < 0.3 ) {
 
-					rects.push_back(cr);
+					rectsL.push_back(cr);
 				}
 			}
 		}
 		// DEBUG ------------------------
 		//cv::cvtColor(pImg, pImg, CV_RGB2BGR);
-		//DkIP::imwrite("polyImg" + DkUtils::stringify(c) + "-" + DkUtils::stringify(l) + ".png", pImg);
+		//cv::imwrite("C:/VSProjects/DocScan/img/tests/poly" + Utils::num2str(thr) + ".png", pImg);
 		// DEBUG ------------------------
 	}
 
-	for (size_t idx = 0; idx < rects.size(); idx++)
-		rects[idx].scale(1.0f/scale);
+	for (size_t idx = 0; idx < rectsL.size(); idx++)
+		rectsL[idx].scale(1.0f/scale);
 
 
 	// filter rectangles which are found because of the image border
-	std::vector<DkPolyRect> noLargeRects;
-	for (const DkPolyRect& p : rects) {
+	for (const DkPolyRect& p : rectsL) {
 
 		DkBox b = p.getBBox();
 
 		if (b.size().height < img.rows*maxSideFactor &&
 			b.size().width < img.cols*maxSideFactor) {
-			noLargeRects.push_back(p);
+			rects.push_back(p);
 		}
 	}
 
 	//cv::normalize(dbgImg, dbgImg, 255, 0, cv::NORM_MINMAX);
 
-	rects = noLargeRects;
 }
 
 //QImage DkPageSegmentation::cropToRect(const QImage & img, const nmc::DkRotatingRect & rect, const QColor & bgCol) const {
@@ -404,6 +419,8 @@ std::vector<DkPolyRect> DkPageSegmentation::apply(const cv::Mat& src) {
 	DkPageSegmentation segM(src);
 	segM.compute();
 	segM.filterDuplicates();
+
+	//pageRects = segM.getRects();
 
 	DkPolyRect r = segM.getDocumentRect();
 
