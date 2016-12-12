@@ -62,6 +62,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.opencv.android.OpenCVLoader;
@@ -302,6 +303,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         setupPhotoShootButtonCallback();
         initGalleryCallback();
         loadThumbnail();
+        initSpinners();
 
     }
 
@@ -562,6 +564,24 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
+    private void initSpinners() {
+        
+        // TODO: define the text and the icons in an enum, to ensure that they have the same order.
+        // Spinner for shoot mode:
+        Spinner shootModeSpinner = (Spinner) findViewById(R.id.shoot_mode_spinner);
+        String[] shootModeText = getResources().getStringArray(R.array.shoot_mode_array);
+        Integer[] shootModeIcons = new Integer[]{R.drawable.ic_photo_vector, R.drawable.ic_burst_mode_vector};
+        shootModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, shootModeText, shootModeIcons));
+
+        // Spinner for flash mode:
+        Spinner flashModeSpinner = (Spinner) findViewById(R.id.flash_mode_spinner);
+        String[] flashModeText = getResources().getStringArray(R.array.flash_mode_array);
+        Integer[] flashModeIcons = new Integer[]{R.drawable.ic_flash_off_32dp, R.drawable.ic_flash_auto_32dp,
+                R.drawable.ic_flash_on_32dp, R.drawable.ic_lightbulb_outline_32dp};
+        flashModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, flashModeText, flashModeIcons));
+
+    }
+
 
     /**e
      * Tells the camera to take a picture.
@@ -569,7 +589,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private void takePicture() {
 
         mIsPictureSafe = false;
-//        mPaintView.showFlicker();
         Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
             @Override
             public void onShutter() {
