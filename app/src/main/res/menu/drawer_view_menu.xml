@@ -20,4 +20,10 @@
             android:title="@string/show_guide_text" />
     </group>
 
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/action_precise_page_seg"
+            android:title="@string/fast_page_seg_text" />
+    </group>
+
 </menu>
