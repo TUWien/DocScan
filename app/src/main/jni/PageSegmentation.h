@@ -47,7 +47,7 @@ class DllCoreExport DkPageSegmentation {
 public:
 	DkPageSegmentation(const cv::Mat& colImg = cv::Mat());
 
-	virtual void compute();
+	virtual void compute(bool useLab);
 	virtual void filterDuplicates(float overlap = 0.6f, float areaRatio = 0.5f);
 	virtual void filterDuplicates(std::vector<DkPolyRect>& rects, float overlap = 0.6f, float areaRatio = 0.1f) const;
 
@@ -60,7 +60,7 @@ public:
 	DkPolyRect getMaxRect() const;
 	DkPolyRect getDocumentRect() const;
 
-    static std::vector<DkPolyRect> apply(const cv::Mat& src);
+    static std::vector<DkPolyRect> apply(const cv::Mat& src, bool useLab = true);
 
 protected:
 	cv::Mat mImg;

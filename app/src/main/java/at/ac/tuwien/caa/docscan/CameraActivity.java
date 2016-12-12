@@ -826,6 +826,18 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
 
                 break;
 
+            // Switch between the two page segmentation methods:
+            case R.id.action_precise_page_seg:
+
+                if (NativeWrapper.useLab()) {
+                    NativeWrapper.setUseLab(false);
+                    menuItem.setTitle(R.string.precise_page_seg_text);
+                }
+                else {
+                    NativeWrapper.setUseLab(true);
+                    menuItem.setTitle(R.string.fast_page_seg_text);
+                }
+
 
         }
 
