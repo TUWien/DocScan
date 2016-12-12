@@ -24,4 +24,6 @@
     <color name="flicker_color">#bb636363</color>
 
     <color name="photo_button_view_bg_color">#333</color>
+
+    <color name="spinner_dropdown_color">#444</color>
 </resources>

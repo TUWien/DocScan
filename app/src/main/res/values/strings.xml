@@ -65,4 +65,18 @@
     <string name="flash_auto_mode">Flash auto</string>
     <string name="flash_on_mode">Flash on</string>
     <string name="flash_torch_mode">Torch</string>
+
+    <string-array name="shoot_mode_array">
+        <item>Single</item>
+        <item>Series</item>
+    </string-array>
+
+    <string-array name="flash_mode_array">
+        <item>Off</item>
+        <item>Auto</item>
+        <item>On</item>
+        <item>Torch</item>
+    </string-array>
+
+
 </resources>

@@ -9,7 +9,7 @@
     <dimen name="focus_stroke_width">3dp</dimen>
     <dimen name="focus_height">30dp</dimen>
     <dimen name="focus_short_length">14dp</dimen>
-
     <dimen name="page_stroke_width">4dp</dimen>
+    <dimen name="spinner_dropdown_width">70dp</dimen>
 
 </resources>
