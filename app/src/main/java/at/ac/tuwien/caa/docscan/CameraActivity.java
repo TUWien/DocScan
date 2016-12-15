@@ -126,7 +126,7 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
     private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
 
-    private final int DOCUMENT_STEADY_TIME = 3000;
+//    private final int DOCUMENT_STEADY_TIME = mContext.getResources().getInteger(R.integer.min_page_area_percentage);
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -1177,8 +1177,9 @@ public class CameraActivity extends AppCompatActivity implements TaskTimer.Timer
             else {
                 // Count down:
                 long timePast = System.currentTimeMillis() - mStartTime;
-                if (timePast < DOCUMENT_STEADY_TIME) {
-                    final long timeLeft = DOCUMENT_STEADY_TIME - timePast;
+                int steadyTime = getResources().getInteger(R.integer.counter_time);
+                if (timePast < steadyTime) {
+                    final long timeLeft = steadyTime - timePast;
                     msg = getResources().getString(R.string.dont_move_text);
 
                     final int counter = Math.round(timeLeft / 1000);

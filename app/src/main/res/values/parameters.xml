@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--=================== PAGE SEGMENTATION ===================-->
+
+    <!-- The minimum ratio between page segmentation area and the overall area (i.e. entire frame) - in percent. -->
+    <integer name="min_page_area_percentage">30</integer>
+    <!-- The maximum angle within a page segmentation result that is valid. This is used to detect perspective distortions - in degrees. -->
+    <integer name="max_page_angle">97</integer>
+    <!-- The maximum rotation angle of the page segmentation result - in degrees. -->
+    <integer name="max_rotation">4</integer>
+
+
+    <!--=================== FOCUS MEASUREMENT ===================-->
+
+    <!-- The minimum ratio between sharp focus measures and unsharp focus measures - in percent.-->
+    <integer name="min_focus_ratio">50</integer>
+
+
+    <!--=================== ILLUMINATION ===================-->
+
+    <!-- Maximum illumination value. -->
+    <string name="illumination_threshold">0.3</string>
+
+
+    <!--=================== TIME CONSTRAINTS ===================-->
+
+    <!-- Time necessary for automatic capturing - in milli-seconds. -->
+    <integer name="counter_time">3000</integer>
+    <!-- Time that the flicker after taking an image is shown - in milli-seconds. -->
+    <integer name="flicker_time">200</integer>
+
+
+
+</resources>
