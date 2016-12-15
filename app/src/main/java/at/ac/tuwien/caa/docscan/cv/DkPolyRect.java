@@ -92,6 +92,11 @@ public class DkPolyRect {
 
     }
 
+    /**
+     * Returns the largest angle within a polyrect.
+     * @return
+     */
+
     public double getLargestAngle() {
 
         double maxAngle = 0;
@@ -110,6 +115,12 @@ public class DkPolyRect {
         return maxAngle;
     }
 
+    /**
+     * Returns the overall rotation of the page segmentation result. The rotation is measured
+     * by taking the angle between the 'main' vector x=0, y=1 and the side of the document that has
+     * the smallest enclosing angle.
+     * @return
+     */
     public double getDocumentRotation() {
 
         double minAngle = 360;
