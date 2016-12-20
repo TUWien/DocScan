@@ -7,25 +7,18 @@
     android:layout_alignParentBottom="true"
     android:layout_marginBottom="@dimen/activity_vertical_margin">
 
-        <LinearLayout
+        <Spinner
+            android:id="@+id/shoot_mode_spinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_centerVertical="true"
-            android:paddingLeft="@dimen/activity_horizontal_margin">
-
-                <include layout="@layout/shoot_mode_spinner"
-                    android:id="@+id/shoot_mode_spinner" />
-
-                <LinearLayout
-                    android:layout_width="@dimen/activity_horizontal_margin"
-                    android:layout_height="match_parent"/>
-
-                <include layout="@layout/flash_mode_spinner"
-                    android:id="@+id/flash_mode_spinner" />
-
-        </LinearLayout>
-
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="@dimen/activity_vertical_margin"
+            android:popupBackground="@color/button_view_bg_color"
+            android:theme="@style/customSpinnerTheme"
+            android:background="@drawable/spinner_selector"
+            android:dropDownWidth="@dimen/spinner_dropdown_width"
+            />
 
         <ImageButton
             android:layout_centerInParent="true"
