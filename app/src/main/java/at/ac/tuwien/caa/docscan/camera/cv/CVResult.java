@@ -25,7 +25,6 @@ package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.content.Context;
 import android.graphics.PointF;
-import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -279,7 +278,6 @@ public class CVResult {
         // check if the current CV state should be corrected - this is mainly used to remove small outliers:
         if (currentCVState < mCVState) {
             mCorrectedStatesCnt++;
-            Log.d(TAG, "correcting cv state: " + mCorrectedStatesCnt);
             if (mCorrectedStatesCnt > MAX_STATE_CORRECTION_CNT) {
                 mCVState = currentCVState;
                 mCorrectedStatesCnt = 0;
@@ -354,15 +352,11 @@ public class CVResult {
     private boolean isRotationCorrect(DkPolyRect polyRect) {
 
         double minAngle = polyRect.getDocumentRotation();
-        Log.d(TAG, "angle: " + minAngle);
-
         return minAngle <= mContext.getResources().getInteger(R.integer.max_rotation);
 
     }
 
     private boolean isSharp() {
-
-        Log.d(TAG, "sharp ratio: " + mRatioSharpUnsharp);
 
         return mRatioSharpUnsharp >= mContext.getResources().getInteger(R.integer.min_focus_ratio);
 
@@ -371,7 +365,7 @@ public class CVResult {
 
     private boolean isIlluminationOK() {
 
-        return mIllumination <= .3;
+        return mIllumination <= Double.parseDouble(mContext.getResources().getString(R.string.illumination_threshold));
 
     }
 

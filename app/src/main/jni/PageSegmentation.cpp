@@ -84,7 +84,7 @@ DkPolyRect DkPageSegmentation::getMaxRect() const {
 //	return mImg;	// no document page found
 //}
 
-void DkPageSegmentation::compute() {
+void DkPageSegmentation::compute(bool useLab) {
 
 	// compute scale factor
 	int maxImgSide = std::max(mImg.rows, mImg.cols);
@@ -97,7 +97,20 @@ void DkPageSegmentation::compute() {
 	if (scale > 0.8f || scale <= 0.0f)
 		scale = 1.0f;
 
-	findRectanglesLab(mImg, mRects);
+    if (useLab)
+	    findRectanglesLab(mImg, mRects);
+    else {
+        cv::Mat imgLab;
+        cv::cvtColor(mImg, imgLab, CV_RGB2Lab);	// luminance channel is better than grayscale
+
+        int ch[] = {0, 0};
+        cv::Mat imgL(mImg.size(), CV_8UC1);
+        mixChannels(&imgLab, 1, &imgL, 1, ch, 1);
+        cv::normalize(imgL, imgL, 255, 0, cv::NORM_MINMAX);
+        imgLab.release();	// early release
+
+        findRectangles(imgL, mRects);
+    }
 
 
 	std::cout << "[DkPageSegmentation] " << mRects.size() << " rectangles found resize factor: " << scale << std::endl;
@@ -123,8 +136,8 @@ void DkPageSegmentation::findRectanglesLab(const cv::Mat & img, std::vector<DkPo
 
 void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& rects) const {
 
-	cv::Mat imgL;
-	cv::normalize(img, imgL, 255, 0, cv::NORM_MINMAX);
+    cv::Mat imgL;
+    cv::normalize(img, imgL, 255, 0, cv::NORM_MINMAX);
 
 	// downscale
 	if (scale != 1.0f)
@@ -411,13 +424,13 @@ void DkPageSegmentation::draw(cv::Mat& img, const std::vector<DkPolyRect>& rects
 	}
 }
 
-std::vector<DkPolyRect> DkPageSegmentation::apply(const cv::Mat& src) {
+std::vector<DkPolyRect> DkPageSegmentation::apply(const cv::Mat& src, bool useLab) {
 
 	std::vector<DkPolyRect> pageRects;
 
 	// run the page segmentation
 	DkPageSegmentation segM(src);
-	segM.compute();
+	segM.compute(useLab);
 	segM.filterDuplicates();
 
 	//pageRects = segM.getRects();

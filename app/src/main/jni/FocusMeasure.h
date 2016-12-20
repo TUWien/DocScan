@@ -74,41 +74,9 @@ namespace dsc {
 		cv::Mat mSrcImg;
 
 		// parameters
-		double mVal = -1.0;
-		int mWindowSize = 15;
+		double mVal = -1.0;  //focus value for the image
+		int mWindowSize = 15; //filter size (only for particular contrast measures, not necessary for Brenner)
 
-	};
-
-
-	/// <summary>
-	/// Basic Contrast class.
-	/// Calculates Weber, Michelson and Root-Mean-Square (RMS) contrast for an image.
-	/// Experimentally!!!
-	/// </summary>
-	class BasicContrast {
-
-	public:
-		BasicContrast();
-		BasicContrast(const cv::Mat& img);
-
-		double computeWeber();
-		double computeMichelson();
-		double computeRMS();
-
-		void setImg(const cv::Mat& img);
-		void setLum(bool l);
-		double val() const;
-		void setWindowSize(int s);
-		int windowSize() const;
-
-	protected:
-
-		cv::Mat mSrcImg;
-
-		// parameters
-		double mVal = -1.0;
-		int mWindowSize = 15;
-		bool mLuminance = false;
 	};
 
 
@@ -158,10 +126,11 @@ namespace dsc {
 		bool mIsSharp = false;
 		bool mForeground = false;
 
-		double mFm = -1;
-		double mFmReference = -1;
-		double mWeight = -1;
-		double mArea = -1;
+		double mFm = -1;                //focus value of the patch
+		double mFmReference = -1;       //focus value of the reference patch
+		double mWeight = -1;            //normalized area -> area/windowArea * 10
+		                                // -> 10% foreground (text) is appr. a patch fully written with text
+		double mArea = -1;              //area (%) of the foreground (based on the binarization)
 	};
 
 	/// <summary>
@@ -170,6 +139,7 @@ namespace dsc {
 	/// is calculated. The fm method can be chosen (see enum FocusMeasure and BasicFM class).
 	/// To normalize the fm value, the foreground for each patch is estimated using Otsu, and the
 	/// fm value for the binary foreground image is calculated as reference.
+	/// standard focus measure is BREN (Brenner)
 	/// </summary>
 	class DllCoreExport FocusEstimation {
 
@@ -203,11 +173,18 @@ namespace dsc {
 		std::vector<Patch> mFmPatches;
 
 		// parameters
-		int mWindowSize = 40;
-		int mSplitSize = 0;
+		int mWindowSize = 40;   //window size of the patch, a smaller value means more focus points but also a more inaccurate value (less foreground)
+		int mSplitSize = 0;     //defines if a gap is between two patches (can be used to fasten the calculation - not every pixel is used)
 
-		double mGlobalFMThresh = 0.15;
-		double mTextThreshold = 0.5;
+		double mGlobalFMThresh = 0.15;  //threshold value if a patch is 'sharp', range is ~ [0 1] where 0 is no contrast and 1 is the best contrast
+		                                //focus value is normalized with respect to the estimated foreground with ideal contrast
+		                                //a higher value means the image must be more focused
+		                                //a lower value means also more unsharp images are accepted
+		                                //must be changed in static std::vector<dsc::Patch> apply(const cv::Mat& src, const double globalFMThr = 0.15)
+		double mTextThreshold = 0.5;    //determine if enough foreground is detected
+		                                //a higher value means more foreground (text/edges) must be present to take the focus value into account
+		                                //a lower value accepts less foreground
+
 	};
 
 

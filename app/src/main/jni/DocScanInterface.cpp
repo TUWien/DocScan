@@ -182,7 +182,7 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrappe
 
 
     // call the main function:
-    std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(*((cv::Mat*)src));
+    std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(*((cv::Mat*)src), useLab);
 
     jclass polyRectClass = env->FindClass("at/ac/tuwien/caa/docscan/camera/cv/DkPolyRect");
 
@@ -205,45 +205,15 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrappe
 
         std::vector<cv::Point> points = polyRects[i].toCvPoints();
 
-         if (points.empty()) {
-
-            std::stringstream strs;
-            strs << i;
-            std::string temp_str = strs.str();
-            char* char_type = (char*) temp_str.c_str();
-
-            __android_log_write(ANDROID_LOG_INFO, "DocScanInterfaceEmpty", char_type);
-
+         if (points.empty())
             continue;
-
-
-        }
-        else {
-
-            std::stringstream strs;
-            strs << i;
-            std::string temp_str = strs.str();
-            char* char_type = (char*) temp_str.c_str();
-        }
 
         polyRect = env->NewObject(polyRectClass, cnstrctr,
             (float) points[0].x, (float)  points[0].y, (float) points[1].x, (float) points[1].y, (float) points[2].x, (float) points[2].y, (float) points[3].x, (float) points[3].y);
 
         env->SetObjectArrayElement(outJNIArray, i, polyRect);
 
-
     }
-
-    /*
-    std::stringstream strs;
-    strs << polyRects.size();
-    std::string temp_str = strs.str();
-    char* char_type = (char*) temp_str.c_str();
-
-    __android_log_write(ANDROID_LOG_INFO, "DocScanInterface", char_type);
-    */
-
-
 
     return outJNIArray;
 
