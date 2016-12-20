@@ -14,6 +14,8 @@
     <string name="show_fm_values_text">Show focus values</string>
     <string name="show_guide_text">Show guide lines</string>
     <string name="hide_guide_text">Hide guide lines</string>
+    <string name="fast_page_seg_text">Use fast page segmentation</string>
+    <string name="precise_page_seg_text">Use precise page segmentation</string>
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
     <string name="login_text">Login</string>

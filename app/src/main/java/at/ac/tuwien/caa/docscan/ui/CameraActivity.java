@@ -137,7 +137,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
 
-    private final int DOCUMENT_STEADY_TIME = 3000;
+//    private final int DOCUMENT_STEADY_TIME = mContext.getResources().getInteger(R.integer.min_page_area_percentage);
     private final static int SERIES_POS = 1;
 
     /**
@@ -896,12 +896,17 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
                 break;
 
-            // Text for focus measurement:
-            case R.id.action_login_transkribus:
+            // Switch between the two page segmentation methods:
+            case R.id.action_precise_page_seg:
 
-                startTranskribusLoginActivity();
-
-                break;
+                if (NativeWrapper.useLab()) {
+                    NativeWrapper.setUseLab(false);
+                    menuItem.setTitle(R.string.precise_page_seg_text);
+                }
+                else {
+                    NativeWrapper.setUseLab(true);
+                    menuItem.setTitle(R.string.fast_page_seg_text);
+                }
 
 
         }
@@ -1242,8 +1247,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             else {
                 // Count down:
                 long timePast = System.currentTimeMillis() - mStartTime;
-                if (timePast < DOCUMENT_STEADY_TIME) {
-                    final long timeLeft = DOCUMENT_STEADY_TIME - timePast;
+                int steadyTime = getResources().getInteger(R.integer.counter_time);
+                if (timePast < steadyTime) {
+                    final long timeLeft = steadyTime - timePast;
                     msg = getResources().getString(R.string.dont_move_text);
 
                     final int counter = Math.round(timeLeft / 1000);
