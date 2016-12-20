@@ -42,24 +42,17 @@
         android:visibility="invisible"
         />
 
-    <LinearLayout
+    <Spinner
+        android:id="@+id/shoot_mode_spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"
-        >
-
-        <include layout="@layout/flash_mode_spinner"
-            android:id="@+id/flash_mode_spinner" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/activity_horizontal_margin"/>
-
-        <include layout="@layout/shoot_mode_spinner"
-            android:id="@+id/shoot_mode_spinner" />
-
-    </LinearLayout>
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:popupBackground="@color/button_view_bg_color"
+        android:theme="@style/customSpinnerTheme"
+        android:background="@drawable/spinner_selector"
+        android:dropDownWidth="@dimen/spinner_dropdown_width"
+        />
 
 </RelativeLayout>

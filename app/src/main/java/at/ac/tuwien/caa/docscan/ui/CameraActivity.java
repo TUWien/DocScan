@@ -60,6 +60,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -96,7 +97,7 @@ import at.ac.tuwien.caa.docscan.transkribus.TranskribusActivity;
 
 public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallbacks,
         NativeWrapper.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
-        MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener {
+        MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener, AdapterView.OnItemSelectedListener {
 
     private static final String TAG = "CameraActivity";
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
@@ -110,6 +111,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private CameraPreview mCameraPreview;
     private PaintView mPaintView;
     private TextView mCounterView;
+    private boolean mShowCounter = true;
     private CVResult mCVResult;
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
@@ -124,7 +126,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private MenuItem mModeMenuItem, mFlashMenuItem;
     private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
             mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
-    private boolean mIsAutoMode = false;
+    private boolean mIsSeriesMode = false;
+    private boolean mIsSeriesModePaused = false;
     private long mStartTime;
     private boolean mIsWaitingForCapture = false;
     // We hold here a reference to the popupmenu and the list, because we are not shure what is first initialized:
@@ -135,6 +138,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private ProgressBar mProgressBar;
 
     private final int DOCUMENT_STEADY_TIME = 3000;
+    private final static int SERIES_POS = 1;
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -290,20 +294,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 //
 //            }
 //        });
-
-    }
-
-
-    /**
-     * Initializes the buttons that are used in the camera_controls_layout. These layouts are
-     * recreated on orientation changes, so we need to assign the callbacks again.
-     */
-    private void initButtons() {
-
-        setupPhotoShootButtonCallback();
-        initGalleryCallback();
-        loadThumbnail();
-        initSpinners();
 
     }
 
@@ -555,7 +545,11 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (mIsPictureSafe) {
+                        if (mIsSeriesMode) {
+                            mIsSeriesModePaused = !mIsSeriesModePaused;
+                            updateShootButton();
+                        }
+                        else if (mIsPictureSafe) {
                             // get an image from the camera
                             takePicture();
                         }
@@ -564,7 +558,21 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
-    private void initSpinners() {
+    /**
+     * Initializes the buttons that are used in the camera_controls_layout. These layouts are
+     * recreated on orientation changes, so we need to assign the callbacks again.
+     */
+    private void initButtons() {
+
+        setupPhotoShootButtonCallback();
+        initGalleryCallback();
+        loadThumbnail();
+        initShootModeSpinner();
+        updateShootButton();
+
+    }
+
+    private void initShootModeSpinner() {
         
         // TODO: define the text and the icons in an enum, to ensure that they have the same order.
         // Spinner for shoot mode:
@@ -572,13 +580,51 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         String[] shootModeText = getResources().getStringArray(R.array.shoot_mode_array);
         Integer[] shootModeIcons = new Integer[]{R.drawable.ic_photo_vector, R.drawable.ic_burst_mode_vector};
         shootModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, shootModeText, shootModeIcons));
+        shootModeSpinner.setOnItemSelectedListener(this);
 
-        // Spinner for flash mode:
-        Spinner flashModeSpinner = (Spinner) findViewById(R.id.flash_mode_spinner);
-        String[] flashModeText = getResources().getStringArray(R.array.flash_mode_array);
-        Integer[] flashModeIcons = new Integer[]{R.drawable.ic_flash_off_32dp, R.drawable.ic_flash_auto_32dp,
-                R.drawable.ic_flash_on_32dp, R.drawable.ic_lightbulb_outline_32dp};
-        flashModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, flashModeText, flashModeIcons));
+        if (mIsSeriesMode)
+            shootModeSpinner.setSelection(SERIES_POS);
+
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+        if ((position == SERIES_POS) && !mIsSeriesMode) {
+            mIsSeriesMode = true;
+            mIsSeriesModePaused = false;
+        }
+        else if (position != SERIES_POS && mIsSeriesMode)
+            mIsSeriesMode = false;
+
+        updateShootButton();
+
+    }
+
+
+    private void updateShootButton() {
+
+        ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
+        if (photoButton == null)
+            return;
+
+        int drawable;
+
+        if (mIsSeriesMode) {
+            if (mIsSeriesModePaused)
+                drawable = R.drawable.ic_play_arrow_24dp;
+            else
+                drawable = R.drawable.ic_pause_24dp;
+        }
+        else
+            drawable = R.drawable.ic_photo_camera;
+
+        photoButton.setImageResource(drawable);
+
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
 
     }
 
@@ -1078,11 +1124,11 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         switch (item.getItemId()) {
             case R.id.manual_mode_item:
                 mModeMenuItem.setIcon(mManualShootDrawable);
-                mIsAutoMode = false;
+                mIsSeriesMode = false;
                 return true;
             case R.id.auto_mode_item:
                 mModeMenuItem.setIcon(mAutoShootDrawable);
-                mIsAutoMode = true;
+                mIsSeriesMode = true;
                 return true;
             case R.id.flash_auto_item:
                 mFlashMenuItem.setIcon(mFlashAutoDrawable);
@@ -1163,15 +1209,15 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 //            }
         }
 
-        // Check if we need the counter text view:
-        if (!mIsAutoMode || state != CVResult.DOCUMENT_STATE_OK) {
-            runOnUiThread(new Runnable() {
-            @Override
-                public void run() {
-                    mCounterView.setVisibility(View.INVISIBLE);
-                }
-            });
-        }
+//        // Check if we need the counter text view:
+//        if (!mIsSeriesMode || state != CVResult.DOCUMENT_STATE_OK) {
+//            runOnUiThread(new Runnable() {
+//            @Override
+//                public void run() {
+//                    mCounterView.setVisibility(View.INVISIBLE);
+//                }
+//            });
+//        }
 
         final String msg;
 
@@ -1181,12 +1227,12 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             msg = getResources().getString(R.string.taking_picture_text);
         }
 
-        else if (!mIsAutoMode || state != CVResult.DOCUMENT_STATE_OK) {
+        else if (!mIsSeriesMode || (mIsSeriesMode && mIsSeriesModePaused) || state != CVResult.DOCUMENT_STATE_OK) {
             mIsWaitingForCapture = false;
             msg = getInstructionMessage(state);
         }
 
-        else {
+        else if (mShowCounter){
             if (!mIsWaitingForCapture) {
                 mStartTime = System.currentTimeMillis();
                 mIsWaitingForCapture = true;
@@ -1226,6 +1272,12 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 }
 
             }
+        }
+        else {
+            msg = getResources().getString(R.string.taking_picture_text);
+            mIsWaitingForCapture = false;
+            if (mIsPictureSafe)
+                takePicture();
         }
 
         runOnUiThread(new Runnable() {
@@ -1385,6 +1437,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
         return NavigationDrawer.NavigationItemEnum.CAMERA;
     }
+
 
     /**
      * Class responsible for loading thumbnails from images. This is time intense and hence it is
