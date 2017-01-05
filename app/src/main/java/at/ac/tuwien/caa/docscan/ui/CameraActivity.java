@@ -122,8 +122,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private ActionBarDrawerToggle mDrawerToggle;
     private MediaScannerConnection mMediaScannerConnection;
     private boolean mIsPictureSafe;
+    private boolean mIsSaving = false;
+    private boolean mCheckPageSegChanges = true;
     private TextView mTextView;
-    private MenuItem mModeMenuItem, mFlashMenuItem;
+    private MenuItem mFlashMenuItem;
     private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
             mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
@@ -136,8 +138,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private byte[] mPictureData;
     private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
-
-//    private final int DOCUMENT_STEADY_TIME = mContext.getResources().getInteger(R.integer.min_page_area_percentage);
     private final static int SERIES_POS = 1;
 
     /**
@@ -276,6 +276,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         else
             mIsDebugViewEnabled = true;
 
+        mDebugViewFragment = new DebugViewFragment();
+        getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+        mIsDebugViewEnabled = true;
+
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
@@ -303,7 +307,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.actionbar_menu, menu);
-        mModeMenuItem = menu.findItem(R.id.shoot_mode_item);
 
         mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
 
@@ -634,6 +637,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
      */
     private void takePicture() {
 
+        if (mCheckPageSegChanges)
+            mCVResult.storePageState();
+
         mIsPictureSafe = false;
         Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
             @Override
@@ -896,17 +902,17 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
                 break;
 
-            // Switch between the two page segmentation methods:
-            case R.id.action_precise_page_seg:
-
-                if (NativeWrapper.useLab()) {
-                    NativeWrapper.setUseLab(false);
-                    menuItem.setTitle(R.string.precise_page_seg_text);
-                }
-                else {
-                    NativeWrapper.setUseLab(true);
-                    menuItem.setTitle(R.string.fast_page_seg_text);
-                }
+//            // Switch between the two page segmentation methods:
+//            case R.id.action_precise_page_seg:
+//
+//                if (NativeWrapper.useLab()) {
+//                    NativeWrapper.setUseLab(false);
+//                    menuItem.setTitle(R.string.precise_page_seg_text);
+//                }
+//                else {
+//                    NativeWrapper.setUseLab(true);
+//                    menuItem.setTitle(R.string.fast_page_seg_text);
+//                }
 
 
         }
@@ -1014,8 +1020,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @Override
     public void onPageSegmented(DkPolyRect[] dkPolyRects) {
 
-        if (mCVResult != null)
+        if (mCVResult != null) {
+            mCVResult.setPatches(null);
             mCVResult.setDKPolyRects(dkPolyRects);
+        }
 
 
     }
@@ -1107,34 +1115,11 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
-    public void showShootPopup(MenuItem item) {
-
-        View menuItemView = findViewById(R.id.shoot_mode_item);
-        if (menuItemView == null)
-            return;
-        PopupMenu popupMenu = new PopupMenu(this, menuItemView);
-        if (popupMenu == null)
-            return;
-        popupMenu.setOnMenuItemClickListener(this);
-        popupMenu.inflate(R.menu.shoot_mode_menu);
-        popupMenu.show();
-
-
-    }
-
     @Override
     @SuppressWarnings("deprecation")
     public boolean onMenuItemClick(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.manual_mode_item:
-                mModeMenuItem.setIcon(mManualShootDrawable);
-                mIsSeriesMode = false;
-                return true;
-            case R.id.auto_mode_item:
-                mModeMenuItem.setIcon(mAutoShootDrawable);
-                mIsSeriesMode = true;
-                return true;
             case R.id.flash_auto_item:
                 mFlashMenuItem.setIcon(mFlashAutoDrawable);
                 mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
@@ -1189,8 +1174,15 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @Override
     public void onStatusChange(final int state) {
 
+        // Check if we listen just for page segmentation changes:
+
+        if (state == CVResult.DOCUMENT_STATE_NO_PAGE_CHANGES) {
+                // Do nothing at this point.
+            mCameraPreview.startFocusMeasurement(false);
+            mCameraPreview.startIllumination(false);
+        }
         // Check if we need the focus measurement at this point:
-        if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+        else if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
             mCameraPreview.startFocusMeasurement(true);
         }
         // Check if we need the illumination measurement at this point:
@@ -1205,7 +1197,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             mCameraPreview.startIllumination(true);
             mCVResult.setIsIlluminationComputed(true);
 
-        } else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
+        }
+
+        else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
             mCameraPreview.startIllumination(false);
             mCVResult.setIsIlluminationComputed(false);
 //            if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
@@ -1213,16 +1207,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 //                mCVResult.setPatches(null);
 //            }
         }
-
-//        // Check if we need the counter text view:
-//        if (!mIsSeriesMode || state != CVResult.DOCUMENT_STATE_OK) {
-//            runOnUiThread(new Runnable() {
-//            @Override
-//                public void run() {
-//                    mCounterView.setVisibility(View.INVISIBLE);
-//                }
-//            });
-//        }
 
         final String msg;
 
@@ -1333,6 +1317,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
             case CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED:
                 return getResources().getString(R.string.instruction_no_illumination_measured);
+
+            case CVResult.DOCUMENT_STATE_NO_PAGE_CHANGES:
+                return getResources().getString(R.string.instruction_no_page_changes);
 
         }
 
@@ -1509,6 +1496,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         @Override
         protected Void doInBackground(Uri... uris) {
 
+            mIsSaving = true;
+
             final File outFile = new File(uris[0].getPath());
 
             try {
@@ -1581,6 +1570,13 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
 
         }
+
+        protected void onPostExecute(Void v) {
+
+            mIsSaving = false;
+
+        }
+
 
 
     }

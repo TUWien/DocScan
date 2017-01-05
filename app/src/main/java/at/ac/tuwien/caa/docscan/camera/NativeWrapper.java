@@ -27,13 +27,12 @@ import org.opencv.core.Mat;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.logic.Settings;
 
 /**
  * Class responsible for calling native methods (for page segmentation and focus measurement).
  */
 public class NativeWrapper {
-
-    private static boolean mUseLab = true;
 
 
     /**
@@ -56,8 +55,8 @@ public class NativeWrapper {
      */
     public static DkPolyRect[] getPageSegmentation(Mat src) {
 
-        return nativeGetPageSegmentation(src.getNativeObjAddr(), mUseLab);
-
+        return nativeGetPageSegmentation(src.getNativeObjAddr(), !Settings.getInstance().getUseFastPageSegmentation());
+//        return nativeGetPageSegmentation(src.getNativeObjAddr(), true);
     }
 
     public static double getIllumination(Mat src, DkPolyRect polyRect) {
@@ -90,13 +89,13 @@ public class NativeWrapper {
     @SuppressWarnings("JniMissingFunction")
     private static native double nativeGetIllumination(long src, DkPolyRect polyRect);
 
-    public static void setUseLab(boolean useLab) {
-        mUseLab = useLab;
-    }
-
-    public static boolean useLab() {
-        return mUseLab;
-    }
+//    public static void setUseLab(boolean useLab) {
+//        mUseLab = useLab;
+//    }
+//
+//    public static boolean useLab() {
+//        return mUseLab;
+//    }
 
 
     // Callbacks:

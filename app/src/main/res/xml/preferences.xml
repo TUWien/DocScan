@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListView
+        android:id="@+id/list_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></ListView>
+    <CheckBoxPreference
+        android:key="pref_sync"
+        android:title="@string/pref_precise_page_detection"
+        android:summary="@string/pref_precise_page_detection_summary"
+        android:defaultValue="true" />
+ </PreferenceScreen>

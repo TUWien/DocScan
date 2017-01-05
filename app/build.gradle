@@ -36,14 +36,22 @@ android {
         commandLine getNdkBuildCmd()
     }
 
+    task cleanNative(type: Exec, description: 'Clean JNI object files') {
+        commandLine getNdkBuildCmd(),
+                '-C', file('src/main/jni').absolutePath, // Change src/main/jni the relative path to your jni source
+                'clean'
+    }
+
+    clean.dependsOn 'cleanNative'
+
     tasks.withType(JavaCompile) {
         compileTask -> compileTask.dependsOn ndkBuild
     }
 
-    task cleanNative(type: Exec) {
-        workingDir file('src/main')
-        commandLine getNdkBuildCmd(), 'clean'
-    }
+//    task cleanNative(type: Exec) {
+//        workingDir file('src/main')
+//        commandLine getNdkBuildCmd(), 'clean'
+//    }
 
     clean.dependsOn cleanNative
 
@@ -94,6 +102,7 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'com.android.support:preference-v7:23.0.1'
     compile 'com.android.support:design:23.3.0'
     compile 'com.android.volley:volley:1.0.0'
     compile project(':openCVLibrary310')

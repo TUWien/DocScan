@@ -16,6 +16,13 @@ public class DkVector {
 
     }
 
+    public double length() {
+
+        double l = Math.sqrt(x * x + y * y);
+        return l;
+
+    }
+
     public float scalarProduct(DkVector vector) {
 
         return x * vector.x + y * vector.y;

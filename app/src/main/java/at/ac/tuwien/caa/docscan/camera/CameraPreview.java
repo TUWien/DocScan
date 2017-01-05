@@ -786,6 +786,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
             mIsRunning = running;
 
+            if (!mIsRunning)
+                mCVCallback.onFocusMeasured(null);
+
         }
 
 

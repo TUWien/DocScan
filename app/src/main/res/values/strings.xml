@@ -6,6 +6,7 @@
     <string name="collections_item_text">Collections</string>
     <string name="about_item_text">About</string>
     <string name="camera_item_text">Camera</string>
+    <string name="setttings_item_text">Settings</string>
 
     <!-- Use in the MainActivity: start -->
 
@@ -53,6 +54,7 @@
     <string name="instruction_no_focus_measured">calculating focus</string>
     <string name="instruction_unsharp">not focused</string>
     <string name="instruction_no_illumination_measured">calculating illumination</string>
+    <string name="instruction_no_page_changes">waiting for new document</string>
     <string name="instruction_bad_illumination">change illumination</string>
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>
@@ -67,6 +69,10 @@
     <string name="flash_auto_mode">Flash auto</string>
     <string name="flash_on_mode">Flash on</string>
     <string name="flash_torch_mode">Torch</string>
+
+    <!-- Preferences -->
+    <string name="pref_precise_page_detection">Use precise page detection</string>
+    <string name="pref_precise_page_detection_summary">Use precise page detection</string>
 
     <string-array name="shoot_mode_array">
         <item>Single</item>

@@ -138,8 +138,6 @@ JNIEXPORT jdouble JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nat
 
     //dsc::DkIllumination::apply(*((cv::Mat*)src), (DkPolyRect) polyRect);
 
-    dsc::Utils::print("Illumination", "DocScanInterface");
-
     jclass polyRectClass = env->GetObjectClass(polyRect);
 
     //dsc::Utils::print(dsc::Utils::num2str(x1), "DocScanInterface");
@@ -176,7 +174,7 @@ JNIEXPORT jdouble JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nat
 
 }
 
-JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetPageSegmentation(JNIEnv * env, jclass cls, jlong src) {
+JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetPageSegmentation(JNIEnv * env, jclass cls, jlong src, jboolean useLab) {
 
 
 
