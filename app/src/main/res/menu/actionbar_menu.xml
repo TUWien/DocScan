@@ -11,12 +11,4 @@
         android:onClick="showFlashPopup"
         />
 
-    <item
-        android:id="@+id/shoot_mode_item"
-        android:icon="@drawable/manual_auto"
-        android:title="@string/shoot_mode"
-        app:showAsAction="always"
-        android:onClick="showShootPopup"
-        />
-
 </menu>

@@ -38,6 +38,12 @@
             android:exported="false"
             android:configChanges="orientation|screenSize"
             />
+
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false"
+            />
+
         <activity
             android:name=".transkribus.TranskribusActivity"
             android:exported="false"

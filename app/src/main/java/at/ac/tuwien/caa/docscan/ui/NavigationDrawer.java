@@ -28,7 +28,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
     private NavigationItemEnum mSelfItem;
     private Handler mHandler;
     private static final int NAVDRAWER_LAUNCH_DELAY = 250; // Delay to launch nav drawer item, to allow close animation to play
-    private static final int MAIN_CONTENT_FADEOUT_DURATION = 150; // Fade in and fade out durations for the main content when switching between different Activities of the app through the Nav Drawer
+    private static final int MAIN_CONTENT_FADEOUT_DURATION = 50; // Fade in and fade out durations for the main content when switching between different Activities of the app through the Nav Drawer
 
     public NavigationDrawer(Activity activity, NavigationItemEnum selfItem) {
 
@@ -155,6 +155,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_camera, CollectionsActivity.class),
         ABOUT(R.id.about_item, R.string.about_item_text,
                 R.drawable.ic_camera, AboutActivity.class),
+        SETTINGS(R.id.settings_item, R.string.setttings_item_text,
+                R.drawable.ic_camera, SettingsActivity.class),
         INVALID(12, 0, 0, null);
 
         private int id;

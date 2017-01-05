@@ -92,6 +92,54 @@ public class DkPolyRect {
 
     }
 
+
+
+    public double getLargestDistance(DkPolyRect polyRect) {
+
+        // Unfortunately the corners are not ordered (just in a counter-clockwise order), meaning we cannot calculate the distance directly.
+        // Instead we find the corner that is closest to the first corner and then use the following corners.
+
+        int closestIdx = getClosestPoint(polyRect.getPoints().get(0));
+
+        double maxDist = 0;
+
+        for (int i = 0; i < mPoints.size(); i++) {
+
+            PointF p1 = mPoints.get(i);
+            PointF p2 = polyRect.getPoints().get((i + closestIdx) % mPoints.size());
+            DkVector v = new DkVector(p1, p2);
+            double dist = v.length();
+
+            if (dist > maxDist)
+                maxDist = dist;
+
+        }
+
+        return maxDist;
+
+    }
+
+    private int getClosestPoint(PointF point) {
+
+        double minDist = Double.POSITIVE_INFINITY;
+        int minIdx = 0;
+        int idx = 0;
+
+        for (PointF corner : mPoints) {
+
+            DkVector v = new DkVector(corner, point);
+            double dist = v.length();
+            if (dist < minDist) {
+                minDist = dist;
+                minIdx = idx;
+            }
+
+            idx++;
+        }
+
+        return minIdx;
+    }
+
     /**
      * Returns the largest angle within a polyrect.
      * @return

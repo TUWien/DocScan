@@ -448,13 +448,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             for (DkPolyRect dkPolyRect : mCVResult.getDKPolyRects()) {
 
                 mSegmentationPath.reset();
-
                 ArrayList<PointF> screenPoints = dkPolyRect.getScreenPoints();
-
                 boolean isStartSet = false;
 
-
-
+                int idx = 0;
                 for (PointF point : screenPoints) {
 
                     if (!isStartSet) {
@@ -467,6 +464,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         canvas.drawLine(0, point.y, getWidth(), point.y, mGuidePaint);
                         canvas.drawLine(point.x, 0, point.x, getHeight(), mGuidePaint);
                     }
+
+//                    Draw the corner number:
+                    String cornerNum = String.format(Locale.ENGLISH, "%d", idx);
+                    canvas.drawText(cornerNum, point.x, point.y, mTextPaint);
+                    idx++;
                 }
 
                 mSegmentationPath.close();

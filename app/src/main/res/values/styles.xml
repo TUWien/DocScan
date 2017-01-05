@@ -18,6 +18,7 @@
         <item name="windowActionBarOverlay">true</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
+        <item name="preferenceTheme">@style/Preference</item>
 
 
     </style>

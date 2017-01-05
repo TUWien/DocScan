@@ -25,6 +25,7 @@ package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.content.Context;
 import android.graphics.PointF;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -38,6 +39,8 @@ import at.ac.tuwien.caa.docscan.R;
  */
 public class CVResult {
 
+    // TODO: use an enum instead:
+
     // Take care this must be ordered!
     public static final int DOCUMENT_STATE_EMPTY = 1;
     public static final int DOCUMENT_STATE_SMALL = 2;
@@ -47,6 +50,7 @@ public class CVResult {
     public static final int DOCUMENT_STATE_UNSHARP = 6;
     public static final int DOCUMENT_STATE_NO_ILLUMINATION_MEASURED = 7;
     public static final int DOCUMENT_STATE_BAD_ILLUMINATION = 8;
+    public static final int DOCUMENT_STATE_NO_PAGE_CHANGES = 9;
 
     public static final int DOCUMENT_STATE_OK = 10;
 
@@ -60,6 +64,7 @@ public class CVResult {
     private static final String TAG = "CVResult";
 
     private DkPolyRect[] mDKPolyRects;
+    private DkPolyRect mLastDKPolyRect;
     private Patch[] mPatches;
     private int mViewWidth, mViewHeight;
     private int mFrameHeight, mFrameWidth;
@@ -72,11 +77,22 @@ public class CVResult {
     private int mCVState = -1;
     private double mIllumination;
     private boolean mIsIlluminationComputed;
+    private boolean mCheckPageChanges = false;
 
     public CVResult(Context context) {
 
         mCallback = (CVResultCallback) context;
         mContext = context;
+
+    }
+
+    public void storePageState() {
+
+        if (mDKPolyRects.length == 0)
+            return;
+
+        mCheckPageChanges = true;
+        mLastDKPolyRect = mDKPolyRects[0];
 
     }
 
@@ -305,6 +321,16 @@ public class CVResult {
 
         DkPolyRect polyRect = mDKPolyRects[0];
 
+        if (mCheckPageChanges) {
+            if (!isPageChange(polyRect)) {
+                Log.d(TAG, "no page change!");
+                return DOCUMENT_STATE_NO_PAGE_CHANGES;
+            }
+            else
+                mCheckPageChanges = false;
+        }
+
+
         if (!isAreaCorrect(polyRect))
             return DOCUMENT_STATE_SMALL;
 
@@ -327,6 +353,14 @@ public class CVResult {
             return DOCUMENT_STATE_BAD_ILLUMINATION;
 
         return DOCUMENT_STATE_OK;
+
+    }
+
+    private boolean isPageChange(DkPolyRect polyRect) {
+
+        double largestDist = mLastDKPolyRect.getLargestDistance(polyRect);
+        Log.d(TAG, "largest distance: " + largestDist);
+        return largestDist >= mContext.getResources().getInteger(R.integer.min_page_change);
 
     }
 
