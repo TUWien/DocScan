@@ -165,7 +165,7 @@ namespace dsc {
 		void setTextThrshold(double t);
 		double textThr() const;
 
-		static std::vector<dsc::Patch> apply(const cv::Mat& src, const double globalFMThr = 0.15);
+		static std::vector<dsc::Patch> apply(const cv::Mat& src, const double globalFMThr = -1.0);
 
 	protected:
 		cv::Mat mSrcImg;
