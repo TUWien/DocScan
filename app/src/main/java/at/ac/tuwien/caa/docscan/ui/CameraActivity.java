@@ -76,7 +76,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
@@ -123,8 +122,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private MediaScannerConnection mMediaScannerConnection;
     private boolean mIsPictureSafe;
     private boolean mIsSaving = false;
-    // TODO: remove this variable when it is not needed anymore.
-    private boolean mCheckPageSegChanges = false;
     private TextView mTextView;
     private MenuItem mFlashMenuItem;
     private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
@@ -133,7 +130,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private boolean mIsSeriesModePaused = false;
     private long mStartTime;
     private boolean mIsWaitingForCapture = false;
-    // We hold here a reference to the popupmenu and the list, because we are not shure what is first initialized:
+    // We hold here a reference to the popupmenu and the list, because we are not sure what is first initialized:
     private List<String> mFlashModes;
     private PopupMenu mFlashPopupMenu;
     private byte[] mPictureData;
@@ -278,9 +275,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         else
             mIsDebugViewEnabled = true;
 
-        mDebugViewFragment = new DebugViewFragment();
-        getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
-        mIsDebugViewEnabled = true;
+//        Temporary show the debug view (until we put this opportunity back into the GUI):
+//        mDebugViewFragment = new DebugViewFragment();
+//        getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+//        mIsDebugViewEnabled = true;
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
@@ -641,9 +639,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
      * Tells the camera to take a picture.
      */
     private void takePicture() {
-
-        if (mCheckPageSegChanges)
-            mCVResult.storePageState();
 
         mCameraPreview.storeMat();
 
@@ -1206,15 +1201,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @Override
     public void onStatusChange(final int state) {
 
-        // Check if we listen just for page segmentation changes:
-
-        if (state == CVResult.DOCUMENT_STATE_NO_PAGE_CHANGES) {
-                // Do nothing at this point.
-            mCameraPreview.startFocusMeasurement(false);
-            mCameraPreview.startIllumination(false);
-        }
         // Check if we need the focus measurement at this point:
-        else if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+        if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
             mCameraPreview.startFocusMeasurement(true);
         }
         // Check if we need the illumination measurement at this point:
@@ -1261,37 +1249,44 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
             }
             else {
-                // Count down:
-                long timePast = System.currentTimeMillis() - mStartTime;
-                int steadyTime = getResources().getInteger(R.integer.counter_time);
-                if (timePast < steadyTime) {
-                    final long timeLeft = steadyTime - timePast;
-                    msg = getResources().getString(R.string.dont_move_text);
 
-                    final int counter = Math.round(timeLeft / 1000);
-//                    if (counter > 0) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mCounterView.setVisibility(View.VISIBLE);
-                                mCounterView.setText(String.format(Locale.ENGLISH, "%d", counter));
-                            }
-                        });
+                msg = getResources().getString(R.string.taking_picture_text);
+                mIsWaitingForCapture = false;
+                if (mIsPictureSafe)
+                    takePicture();
 
-                }
-                else {
-                    // Take the picture:
-                    msg = getResources().getString(R.string.taking_picture_text);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mCounterView.setVisibility(View.INVISIBLE);
-                        }
-                    });
-                    mIsWaitingForCapture = false;
-                    if (mIsPictureSafe)
-                        takePicture();
-                }
+
+//                // Count down:
+//                long timePast = System.currentTimeMillis() - mStartTime;
+//                int steadyTime = getResources().getInteger(R.integer.counter_time);
+//                if (timePast < steadyTime) {
+//                    final long timeLeft = steadyTime - timePast;
+//                    msg = getResources().getString(R.string.dont_move_text);
+//
+//                    final int counter = Math.round(timeLeft / 1000);
+////                    if (counter > 0) {
+//                        runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                mCounterView.setVisibility(View.VISIBLE);
+//                                mCounterView.setText(String.format(Locale.ENGLISH, "%d", counter));
+//                            }
+//                        });
+//
+//                }
+//                else {
+//                    // Take the picture:
+//                    msg = getResources().getString(R.string.taking_picture_text);
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            mCounterView.setVisibility(View.INVISIBLE);
+//                        }
+//                    });
+//                    mIsWaitingForCapture = false;
+//                    if (mIsPictureSafe)
+//                        takePicture();
+//                }
 
             }
         }
@@ -1351,8 +1346,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             case CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED:
                 return getResources().getString(R.string.instruction_no_illumination_measured);
 
-            case CVResult.DOCUMENT_STATE_NO_PAGE_CHANGES:
-                return getResources().getString(R.string.instruction_no_changes);
 
         }
 
