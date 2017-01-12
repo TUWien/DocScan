@@ -37,13 +37,16 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
@@ -75,9 +78,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     // Mat used by mPageSegmentationThread and mFocusMeasurementThread:
     private Mat mFrameMat;
-
+    private Mat mPrevFrameMat;
     private int mFrameWidth;
     private int mFrameHeight;
+    private boolean mAwaitFrameChanges = true;
 
     private long mLastTime;
 
@@ -90,6 +94,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean isCameraInitialized;
     private DkPolyRect mIlluminationRect;
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
+
+
+//    private BackgroundSubtractorMOG2 bgSubtractor;
 
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
@@ -110,6 +117,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
 
         mFlashMode = null;
+//        bgSubtractor = Video.createBackgroundSubtractorMOG2();
 
     }
 
@@ -462,32 +470,139 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 if (CameraActivity.isDebugViewEnabled())
                     mTimerCallbacks.onTimerStarted(TaskTimer.MAT_CONVERSION_ID);
 
-
                 // 1.5 since YUV
                 Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
                 yuv.put(0, 0, pixels);
-
 
                 if (mFrameMat != null)
                     mFrameMat.release();
 
                 mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                 Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
-
                 yuv.release();
 
-                // Measure the time if required:
                 if (CameraActivity.isDebugViewEnabled())
                     mTimerCallbacks.onTimerStopped(TaskTimer.MAT_CONVERSION_ID);
 
-
                 mLastTime = currentTime;
-                this.notify();
 
+
+//                Check if there is sufficient image change between the current frame and the last image taken:
+                boolean isFrameSteady = true;
+                boolean isFrameDifferent = true;
+
+                if (mAwaitFrameChanges) {
+//                    The ChangeDetector is only initialized after an image has been taken:
+                    if (ChangeDetector.isInitialized()) {
+                        isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
+                        if (!isFrameSteady) {
+                            mCameraPreviewCallback.onMovement();
+                            return;
+                        }
+                        isFrameDifferent = ChangeDetector.isFrameDifferent(mFrameMat);
+                        if (!isFrameDifferent) {
+                            mCameraPreviewCallback.onNoFrameDifference();
+                            return;
+                        }
+                    }
+                }
+
+//                    If the frame is steady and contains a change, do the document analysis:
+                this.notify();
 
             }
 
         }
+    }
+
+
+    private boolean frameDifferencing() {
+
+        boolean isFrameChanged = true;
+
+        if ((mFrameMat != null) && (mPrevFrameMat != null)) {
+
+            Mat tmp = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
+            Imgproc.cvtColor(mFrameMat, tmp, Imgproc.COLOR_RGB2GRAY);
+            double[] tmpVal = tmp.get(0,0);
+
+            Mat subtractResult = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
+            Core.absdiff(mPrevFrameMat, tmp, subtractResult);
+
+//                        Imgproc.threshold(subtractResult, subtractResult, )
+            double[] subVal = subtractResult.get(0,0);
+
+            Scalar sumDiff = Core.sumElems(subtractResult);
+            double[] diffArray = sumDiff.val;
+            double meanDiff = diffArray[0] / (mFrameWidth * mFrameHeight);
+
+            if (meanDiff <= 7)
+                isFrameChanged = false;
+            Log.d(TAG, "Difference: " + sumDiff);
+            Log.d(TAG, "mean difference: " + meanDiff);
+
+        }
+
+        return isFrameChanged;
+
+    }
+
+//    private boolean backgroundSubtraction() {
+//
+//        boolean isFrameChanged = true;
+//
+//        if ((mFrameMat != null)) {
+//
+//            Mat tmp = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
+//            Imgproc.cvtColor(mFrameMat, tmp, Imgproc.COLOR_RGB2GRAY);
+//            Mat fg = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
+//
+//            int w = 300;
+//            int h = 300;
+//
+//            Imgproc.resize(tmp, tmp, new Size(w, h));
+//
+//            bgSubtractor.apply(tmp, fg, 0.8);
+//            Imgproc.threshold(fg, fg, 120, 1, Imgproc.THRESH_BINARY); // 127 is a shadow, but the majority of the pixels is classified as shadow - we do not know why.
+//
+//            Scalar fgPixels = Core.sumElems(fg);
+////            double percChanged = fgPixels.val[0] / (mFrameWidth * mFrameHeight);
+//            double percChanged = fgPixels.val[0] / (w * h);
+//
+//            if (percChanged > 0.05)
+//                Log.d(TAG, "!!!! Large change: " + percChanged);
+//            else
+//                Log.d(TAG, "percChanged: " + percChanged);
+//
+//
+//        }
+//
+//        return isFrameChanged;
+//
+//    }
+
+    public void storeMat() {
+
+        mAwaitFrameChanges = true;
+
+//        if (mPrevFrameMat != null)
+//            mPrevFrameMat.release();
+//
+//        mPrevFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
+//        Imgproc.cvtColor(mFrameMat, mPrevFrameMat, Imgproc.COLOR_RGB2GRAY);
+//
+//        Mat fg = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
+////        if (bgSubtractor != null)
+////            bgSubtractor.clear();
+//
+//        Mat tmp = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
+//        Imgproc.cvtColor(mFrameMat, tmp, Imgproc.COLOR_RGB2GRAY);
+
+        ChangeDetector.init(mFrameMat);
+
+//        bgSubtractor = Video.createBackgroundSubtractorMOG2();
+//        bgSubtractor.apply(mPrevFrameMat, fg, 0);
+
     }
 
     public void startFocusMeasurement(boolean start) {
@@ -728,6 +843,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onMeasuredDimensionChange(int width, int height);
         void onFrameDimensionChange(int width, int height, int cameraOrientation);
         void onFlashModesFound(List<String> modes);
+        void onMovement();
+        void onNoFrameDifference();
+
 
     }
 

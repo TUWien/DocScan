@@ -163,6 +163,8 @@ public class CVResult {
 
     }
 
+
+
     /**
      * Sets the dimension of the view.
      * @param width
@@ -313,17 +315,20 @@ public class CVResult {
 
     private int getCVState() {
 
-        if (mDKPolyRects == null)
+        if (mDKPolyRects == null) {
+            mCheckPageChanges = false;
             return DOCUMENT_STATE_EMPTY;
+        }
 
-        if (mDKPolyRects.length == 0)
+        if (mDKPolyRects.length == 0) {
+            mCheckPageChanges = false;
             return DOCUMENT_STATE_EMPTY;
+        }
 
         DkPolyRect polyRect = mDKPolyRects[0];
 
         if (mCheckPageChanges) {
             if (!isPageChange(polyRect)) {
-                Log.d(TAG, "no page change!");
                 return DOCUMENT_STATE_NO_PAGE_CHANGES;
             }
             else
@@ -359,8 +364,11 @@ public class CVResult {
     private boolean isPageChange(DkPolyRect polyRect) {
 
         double largestDist = mLastDKPolyRect.getLargestDistance(polyRect);
-        Log.d(TAG, "largest distance: " + largestDist);
-        return largestDist >= mContext.getResources().getInteger(R.integer.min_page_change);
+        double diagLength = Math.sqrt(mFrameWidth*mFrameWidth + mFrameHeight*mFrameHeight);
+        double distPerc = largestDist / diagLength * 100;
+
+        Log.d(TAG, "dist percentage:  " + distPerc);
+        return distPerc >= mContext.getResources().getInteger(R.integer.min_page_change_percentage);
 
     }
 

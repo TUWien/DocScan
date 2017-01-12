@@ -54,10 +54,11 @@
     <string name="instruction_no_focus_measured">calculating focus</string>
     <string name="instruction_unsharp">not focused</string>
     <string name="instruction_no_illumination_measured">calculating illumination</string>
-    <string name="instruction_no_page_changes">waiting for new document</string>
+    <string name="instruction_no_changes">awaiting new document</string>
     <string name="instruction_bad_illumination">change illumination</string>
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>
+    <string name="instruction_movement">Too much movement</string>
     <string name="dont_move_text">Do not move</string>
 
     <!-- Menus -->
