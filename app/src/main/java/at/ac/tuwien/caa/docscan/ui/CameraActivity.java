@@ -123,7 +123,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private MediaScannerConnection mMediaScannerConnection;
     private boolean mIsPictureSafe;
     private boolean mIsSaving = false;
-    private boolean mCheckPageSegChanges = true;
+    // TODO: remove this variable when it is not needed anymore.
+    private boolean mCheckPageSegChanges = false;
     private TextView mTextView;
     private MenuItem mFlashMenuItem;
     private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
@@ -139,6 +140,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
     private final static int SERIES_POS = 1;
+    private boolean mIsFrameChanged = true;
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -631,14 +633,19 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
+    public void storeFrame() {
 
-    /**e
+    }
+
+    /**
      * Tells the camera to take a picture.
      */
     private void takePicture() {
 
         if (mCheckPageSegChanges)
             mCVResult.storePageState();
+
+        mCameraPreview.storeMat();
 
         mIsPictureSafe = false;
         Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
@@ -1021,7 +1028,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     public void onPageSegmented(DkPolyRect[] dkPolyRects) {
 
         if (mCVResult != null) {
-            mCVResult.setPatches(null);
+//            mCVResult.setPatches(null);
             mCVResult.setDKPolyRects(dkPolyRects);
         }
 
@@ -1074,6 +1081,31 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             mFlashMenuItem.setVisible(true);
 
 
+    }
+
+    @Override
+    public void onMovement() {
+
+        setTextViewText(R.string.instruction_movement);
+
+    }
+
+    @Override
+    public void onNoFrameDifference() {
+
+        setTextViewText(R.string.instruction_no_changes);
+
+    }
+
+    private void setTextViewText(int msg) {
+
+        final String msgText = getResources().getString(msg);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                    mTextView.setText(msgText);
+            }
+        });
     }
 
     public void showFlashPopup(MenuItem item) {
@@ -1270,6 +1302,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 takePicture();
         }
 
+//        setTextViewText(msg);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -1319,7 +1352,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 return getResources().getString(R.string.instruction_no_illumination_measured);
 
             case CVResult.DOCUMENT_STATE_NO_PAGE_CHANGES:
-                return getResources().getString(R.string.instruction_no_page_changes);
+                return getResources().getString(R.string.instruction_no_changes);
 
         }
 
