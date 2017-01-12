@@ -583,25 +583,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     public void storeMat() {
 
-        mAwaitFrameChanges = true;
-
-//        if (mPrevFrameMat != null)
-//            mPrevFrameMat.release();
-//
-//        mPrevFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
-//        Imgproc.cvtColor(mFrameMat, mPrevFrameMat, Imgproc.COLOR_RGB2GRAY);
-//
-//        Mat fg = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
-////        if (bgSubtractor != null)
-////            bgSubtractor.clear();
-//
-//        Mat tmp = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
-//        Imgproc.cvtColor(mFrameMat, tmp, Imgproc.COLOR_RGB2GRAY);
-
         ChangeDetector.init(mFrameMat);
-
-//        bgSubtractor = Video.createBackgroundSubtractorMOG2();
-//        bgSubtractor.apply(mPrevFrameMat, fg, 0);
 
     }
 

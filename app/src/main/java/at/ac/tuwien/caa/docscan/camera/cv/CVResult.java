@@ -25,7 +25,6 @@ package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.content.Context;
 import android.graphics.PointF;
-import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -50,7 +49,6 @@ public class CVResult {
     public static final int DOCUMENT_STATE_UNSHARP = 6;
     public static final int DOCUMENT_STATE_NO_ILLUMINATION_MEASURED = 7;
     public static final int DOCUMENT_STATE_BAD_ILLUMINATION = 8;
-    public static final int DOCUMENT_STATE_NO_PAGE_CHANGES = 9;
 
     public static final int DOCUMENT_STATE_OK = 10;
 
@@ -64,7 +62,6 @@ public class CVResult {
     private static final String TAG = "CVResult";
 
     private DkPolyRect[] mDKPolyRects;
-    private DkPolyRect mLastDKPolyRect;
     private Patch[] mPatches;
     private int mViewWidth, mViewHeight;
     private int mFrameHeight, mFrameWidth;
@@ -77,7 +74,6 @@ public class CVResult {
     private int mCVState = -1;
     private double mIllumination;
     private boolean mIsIlluminationComputed;
-    private boolean mCheckPageChanges = false;
 
     public CVResult(Context context) {
 
@@ -86,15 +82,6 @@ public class CVResult {
 
     }
 
-    public void storePageState() {
-
-        if (mDKPolyRects.length == 0)
-            return;
-
-        mCheckPageChanges = true;
-        mLastDKPolyRect = mDKPolyRects[0];
-
-    }
 
     /**
      * Sets the DkPolyRect array, calculated by PageSegmentation.cpp
@@ -315,26 +302,15 @@ public class CVResult {
 
     private int getCVState() {
 
-        if (mDKPolyRects == null) {
-            mCheckPageChanges = false;
+        if (mDKPolyRects == null)
             return DOCUMENT_STATE_EMPTY;
-        }
 
-        if (mDKPolyRects.length == 0) {
-            mCheckPageChanges = false;
+
+        if (mDKPolyRects.length == 0)
             return DOCUMENT_STATE_EMPTY;
-        }
+
 
         DkPolyRect polyRect = mDKPolyRects[0];
-
-        if (mCheckPageChanges) {
-            if (!isPageChange(polyRect)) {
-                return DOCUMENT_STATE_NO_PAGE_CHANGES;
-            }
-            else
-                mCheckPageChanges = false;
-        }
-
 
         if (!isAreaCorrect(polyRect))
             return DOCUMENT_STATE_SMALL;
@@ -361,16 +337,6 @@ public class CVResult {
 
     }
 
-    private boolean isPageChange(DkPolyRect polyRect) {
-
-        double largestDist = mLastDKPolyRect.getLargestDistance(polyRect);
-        double diagLength = Math.sqrt(mFrameWidth*mFrameWidth + mFrameHeight*mFrameHeight);
-        double distPerc = largestDist / diagLength * 100;
-
-        Log.d(TAG, "dist percentage:  " + distPerc);
-        return distPerc >= mContext.getResources().getInteger(R.integer.min_page_change_percentage);
-
-    }
 
     private boolean isAreaCorrect(DkPolyRect polyRect) {
 
