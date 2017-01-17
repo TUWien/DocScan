@@ -36,6 +36,7 @@ import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.location.Location;
 import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
@@ -82,6 +83,8 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
+import at.ac.tuwien.caa.docscan.camera.GPS;
+import at.ac.tuwien.caa.docscan.camera.LocationHandler;
 import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.PaintView;
 import at.ac.tuwien.caa.docscan.camera.TaskTimer;
@@ -103,8 +106,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private static final String TAG = "CameraActivity";
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
+    private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
-    private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 0;
+    private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
+
     @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
     private ImageButton mGalleryButton;
@@ -289,6 +294,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         initPictureCallback();
         initButtons();
 
+        requestLocation();
+
+
 //        MovementDetector.getInstance(this.getApplicationContext()).addListener(new MovementDetector.Listener() {
 //
 //            @Override
@@ -368,9 +376,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             case PERMISSION_WRITE_EXTERNAL_STORAGE:
                 if (isPermissionGiven && mPictureData != null)
                     savePicture(mPictureData);
-                else
-                    Log.d(TAG, "permission not given");
-
+                break;
+            case PERMISSION_ACCESS_FINE_LOCATION:
+                if (isPermissionGiven)
+                    startLocationAccess();
                 break;
         }
     }
@@ -409,6 +418,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
+
+
     /**
      * Request to read the external storage. This method is used to enable file saving in Android >= marshmallow
      * (Android 6), since in this version external file opening is not allowed without user permission.
@@ -420,7 +431,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_READ_EXTERNAL_STORAGE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_EXTERNAL_STORAGE);
         } else
             startScan();
 
@@ -528,6 +539,52 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     // ================= end: methods for opening the gallery =================
 
+    // ================= start: methods for accessing the location =================
+
+    @TargetApi(16)
+    private void requestLocation() {
+
+        // Check permission
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
+        } else {
+            startLocationAccess();
+
+//// Acquire a reference to the system Location Manager
+//            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+//
+//// Define a listener that responds to location updates
+//            LocationListener locationListener = new LocationListener() {
+//                public void onLocationChanged(Location location) {
+//                    // Called when a new location is found by the network location provider.
+////                    makeUseOfNewLocation(location);
+//                }
+//
+//                public void onStatusChanged(String provider, int status, Bundle extras) {}
+//
+//                public void onProviderEnabled(String provider) {}
+//
+//                public void onProviderDisabled(String provider) {}
+//            };
+//
+//            Location mobileLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+//// Register the listener with the Location Manager to receive location updates
+//            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+
+
+        }
+
+
+    }
+
+    private void startLocationAccess() {
+
+        LocationHandler.getInstance(this);
+
+    }
 
     // ================= start: methods for saving pictures =================
 
@@ -1562,10 +1619,23 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
 
                 if (exif != null) {
+                    // Save the orientation of the image:
                     int orientation = getExifOrientation();
                     String exifOrientation = Integer.toString(orientation);
-
                     exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+
+                    // Save the GPS coordinates if available:
+                    Location location = LocationHandler.getInstance(mContext).getLocation();
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+//                        Taken from http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android (post by fabien):
+                        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
+                        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
+                        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
+                        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
+                    }
+
                     exif.saveAttributes();
                 }
 
@@ -1615,6 +1685,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
 
         }
+
 
         protected void onPostExecute(Void v) {
 

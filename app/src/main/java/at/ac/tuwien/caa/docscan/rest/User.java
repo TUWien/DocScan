@@ -26,11 +26,10 @@ public class User {
     }
 
     private User() {
-//        mUserName = "llu53232@noicd.com";
-//        mPassword = "testuserpwd";
 
-        mUserName = "holl@caa.tuwien.ac.at";
-        mPassword = "keinpwd";
+        mUserName = "llu53232@noicd.com";
+        mPassword = "testuserpwd";
+
 
     }
 
