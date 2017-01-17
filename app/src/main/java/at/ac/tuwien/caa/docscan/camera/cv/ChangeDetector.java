@@ -23,10 +23,10 @@ public class ChangeDetector {
     private static final double CHANGE_THRESH = 0.05;       // A threshold describing a movement between successive frames.
     private static final double DIFFERENCE_THRESH = 0.1;    // Used to measure the difference between a current frame and the frame that has been written to disk
 
-    private static Mat initMat;
+    private static Mat mInitMat;
     private static boolean mLastFrameChanged = false;
     private static long mSteadyStartTime;
-    private static boolean isInit = false;
+    private static boolean mIsInit = false;
 
 //    private static final double PERC_THRESH = 0.05;
 
@@ -34,9 +34,9 @@ public class ChangeDetector {
 
     public static void init(Mat frame) {
 
-        isInit = true;
-        initMat = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
-        Imgproc.cvtColor(frame, initMat, Imgproc.COLOR_RGB2GRAY);
+        mIsInit = true;
+        mInitMat = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
+        Imgproc.cvtColor(frame, mInitMat, Imgproc.COLOR_RGB2GRAY);
 
         initFrameSize(frame);
 
@@ -60,13 +60,13 @@ public class ChangeDetector {
 
     public static boolean isInitialized() {
 
-        return isInit;
+        return mIsInit;
 
     }
 
     public static boolean isFrameSteady(Mat frame) {
 
-        if (!isInit || ((frame.rows() != initMat.rows()) || (frame.cols() != initMat.cols()))) {
+        if (!mIsInit || ((frame.rows() != mInitMat.rows()) || (frame.cols() != mInitMat.cols()))) {
             init(frame);
             return false;
         }
@@ -98,7 +98,7 @@ public class ChangeDetector {
         Imgproc.cvtColor(frame, currentFrame, Imgproc.COLOR_RGB2GRAY);
 
         Mat subtractResult = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
-        Core.absdiff(currentFrame, initMat, subtractResult);
+        Core.absdiff(currentFrame, mInitMat, subtractResult);
         Imgproc.threshold(subtractResult, subtractResult, 50, 1, Imgproc.THRESH_BINARY);
         Scalar sumDiff = Core.sumElems(subtractResult);
         double diffRatio = sumDiff.val[0] / (currentFrame.cols() * currentFrame.rows());
@@ -111,6 +111,7 @@ public class ChangeDetector {
 
         Mat tmp = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
         Imgproc.cvtColor(frame, tmp, Imgproc.COLOR_RGB2GRAY);
+        // TODO: find out why here an exception is thrown (happened after switching to other camera app and back again)
         Imgproc.resize(tmp, tmp, new Size(mFrameWidth, mFrameHeight));
         Mat fg = new Mat(frame.rows(), mFrameWidth, CvType.CV_8UC1);
 
