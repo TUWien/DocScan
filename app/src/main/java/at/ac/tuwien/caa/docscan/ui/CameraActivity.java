@@ -54,6 +54,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -96,7 +97,8 @@ import at.ac.tuwien.caa.docscan.transkribus.TranskribusActivity;
 
 public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallbacks,
         NativeWrapper.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
-        MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener, AdapterView.OnItemSelectedListener {
+        MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener,
+        AdapterView.OnItemSelectedListener {
 
     private static final String TAG = "CameraActivity";
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
@@ -299,6 +301,23 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 //            }
 //        });
 
+    }
+
+    /**
+     * This function accesses the hardware buttons (like volume buttons). We need this access,
+     * because shutter remotes emulate such a key press over bluetooth.
+     * @param keyCode
+     * @param event
+     * @return
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            takePicture();
+        }
+
+        return true;
     }
 
 
