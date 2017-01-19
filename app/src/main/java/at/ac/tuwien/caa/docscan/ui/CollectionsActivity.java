@@ -27,8 +27,9 @@ public class CollectionsActivity extends BaseActivity implements LoginRequest.Lo
     @Override
     protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
 
-        return NavigationDrawer.NavigationItemEnum.COLLECTIONS;
-
+//        TODO: remove this comment!
+//        return NavigationDrawer.NavigationItemEnum.COLLECTIONS;
+        return NavigationDrawer.NavigationItemEnum.ABOUT;
     }
 
     @Override

@@ -149,14 +149,20 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
      */
     public enum NavigationItemEnum {
 
+//        CAMERA(R.id.camera_item, R.string.camera_item_text,
+//                R.drawable.ic_camera, CameraActivity.class),
+//        COLLECTIONS(R.id.collections_item, R.string.collections_item_text,
+//                R.drawable.ic_camera, CollectionsActivity.class),
+//        ABOUT(R.id.about_item, R.string.about_item_text,
+//                R.drawable.ic_camera, AboutActivity.class),
+//        SETTINGS(R.id.settings_item, R.string.setttings_item_text,
+//                R.drawable.ic_camera, SettingsActivity.class),
+//        INVALID(12, 0, 0, null);
+
         CAMERA(R.id.camera_item, R.string.camera_item_text,
-                R.drawable.ic_camera, CameraActivity.class),
-        COLLECTIONS(R.id.collections_item, R.string.collections_item_text,
-                R.drawable.ic_camera, CollectionsActivity.class),
+                R.drawable.ic_camera_alt_black_24dp, CameraActivity.class),
         ABOUT(R.id.about_item, R.string.about_item_text,
-                R.drawable.ic_camera, AboutActivity.class),
-        SETTINGS(R.id.settings_item, R.string.setttings_item_text,
-                R.drawable.ic_camera, SettingsActivity.class),
+                R.drawable.ic_info_black_24dp, AboutActivity.class),
         INVALID(12, 0, 0, null);
 
         private int id;

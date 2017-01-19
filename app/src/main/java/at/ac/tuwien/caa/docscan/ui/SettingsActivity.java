@@ -25,8 +25,9 @@ public class SettingsActivity extends BaseActivity {
     @Override
     protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
 
-        return NavigationDrawer.NavigationItemEnum.SETTINGS;
-
+//        TODO: remove this comment!
+//        return NavigationDrawer.NavigationItemEnum.SETTINGS;
+        return NavigationDrawer.NavigationItemEnum.ABOUT;
     }
 
     /**

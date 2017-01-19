@@ -8,9 +8,11 @@
     android:layout_gravity="start"
     android:fitsSystemWindows="true"
     app:menu="@menu/drawer_menu"
-    app:headerLayout="@layout/navigation_view_header" />
+     />
+
 
 <!--TODO: use these later:-->
+    <!--app:headerLayout="@layout/navigation_view_header"-->
     <!--app:itemBackground="@drawable/navdrawer_item_background"-->
     <!--app:itemIconTint="@color/navdrawer_item_icon"-->
     <!--app:itemTextColor="@color/navdrawer_item_title"-->
