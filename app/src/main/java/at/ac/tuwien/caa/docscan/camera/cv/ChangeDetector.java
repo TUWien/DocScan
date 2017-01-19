@@ -30,7 +30,7 @@ public class ChangeDetector {
 
 //    private static final double PERC_THRESH = 0.05;
 
-    private static BackgroundSubtractorMOG2 bgSubtractor;
+    private static BackgroundSubtractorMOG2 mMovementDetector, mNewFrameDetector;
 
     public static void init(Mat frame) {
 
@@ -40,7 +40,17 @@ public class ChangeDetector {
 
         initFrameSize(frame);
 
-        bgSubtractor = Video.createBackgroundSubtractorMOG2();
+        mMovementDetector = Video.createBackgroundSubtractorMOG2();
+        mNewFrameDetector = Video.createBackgroundSubtractorMOG2();
+
+        Mat tmp = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
+        Imgproc.cvtColor(frame, tmp, Imgproc.COLOR_RGB2GRAY);
+        // TODO: find out why here an exception is thrown (happened after switching to other camera app and back again)
+        Imgproc.resize(tmp, tmp, new Size(mFrameWidth, mFrameHeight));
+        Mat fg = new Mat(frame.rows(), mFrameWidth, CvType.CV_8UC1);
+
+        mNewFrameDetector.apply(tmp, fg, 1);
+
 
     }
 
@@ -71,7 +81,7 @@ public class ChangeDetector {
             return false;
         }
 
-        double changeRatio = getChangeRatio(frame);
+        double changeRatio = getChangeRatio(frame, mMovementDetector, 0.8);
         boolean isCurrentChange = changeRatio > CHANGE_THRESH;
         boolean isFrameSteady = false;
 
@@ -92,6 +102,16 @@ public class ChangeDetector {
 
     }
 
+    public static boolean isNewFrame(Mat frame) {
+
+        double changeRatio = getChangeRatio(frame, mNewFrameDetector, 0);
+
+        if (changeRatio > .1)
+            return true;
+        else
+            return false;
+    }
+
     public static boolean isFrameDifferent(Mat frame) {
 
         Mat currentFrame = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
@@ -107,7 +127,7 @@ public class ChangeDetector {
 
     }
 
-    private static double getChangeRatio(Mat frame) {
+    private static double getChangeRatio(Mat frame, BackgroundSubtractorMOG2 subtractor, double learnRate) {
 
         Mat tmp = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
         Imgproc.cvtColor(frame, tmp, Imgproc.COLOR_RGB2GRAY);
@@ -115,7 +135,7 @@ public class ChangeDetector {
         Imgproc.resize(tmp, tmp, new Size(mFrameWidth, mFrameHeight));
         Mat fg = new Mat(frame.rows(), mFrameWidth, CvType.CV_8UC1);
 
-        bgSubtractor.apply(tmp, fg, 0.8);
+        subtractor.apply(tmp, fg, learnRate);
         Imgproc.threshold(fg, fg, 120, 1, Imgproc.THRESH_BINARY); // 127 is a shadow, but the majority of the pixels is classified as shadow - we do not know why.
 
         Scalar fgPixels = Core.sumElems(fg);

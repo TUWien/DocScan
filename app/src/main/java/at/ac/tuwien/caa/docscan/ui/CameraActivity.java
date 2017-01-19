@@ -1155,16 +1155,22 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     }
 
     @Override
-    public void onMovement() {
+    public void onMovement(boolean moved) {
 
-        setTextViewText(R.string.instruction_movement);
+        mPaintView.drawMovementIndicator(moved);
+
+        if (moved)
+            setTextViewText(R.string.instruction_movement);
 
     }
 
     @Override
-    public void onNoFrameDifference() {
+    public void onWaitingForDoc(boolean waiting) {
 
-        setTextViewText(R.string.instruction_no_changes);
+//        mPaintView.drawWaitingIndicator(waiting);
+
+        if (waiting)
+            setTextViewText(R.string.instruction_no_changes);
 
     }
 

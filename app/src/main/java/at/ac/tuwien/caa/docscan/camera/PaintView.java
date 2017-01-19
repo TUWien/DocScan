@@ -61,6 +61,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     // boolean indicating whether the values of the focus measurement should be drawn:
     private boolean mDrawFocusText;
     private boolean mDrawGuideLines = false;
+    private boolean mDrawMovementIndicator = false;
+    private boolean mDrawWaitingIndicator = false;
     private SurfaceHolder mHolder;
     private static Flicker mFlicker;
     private CVResult mCVResult;
@@ -189,9 +191,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             // It is necessary to call notify here, because otherwise there will be a deadlock in the
             // run method, which waits for the mCVResult object. The deadlock will arise after the
             // app is resumed (for example after an orientation change).
-            synchronized (mCVResult) {
-                mCVResult.notify();
-            }
+            forceDrawUpdate();
 
             if (mDrawerThread.getState() == Thread.State.TERMINATED) {
 
@@ -215,9 +215,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             // It is necessary to call notify here, because otherwise there will be a deadlock in the
             // run method, which waits for the mCVResult object. The deadlock will arise after the
             // app is resumed (for example after an orientation change).
-            synchronized (mCVResult) {
-                mCVResult.notify();
-            }
+            forceDrawUpdate();
             mDrawerThread.setRunning(false);
         }
 
@@ -239,13 +237,30 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     public void showFlicker() {
 
         mFlicker.mVisible = true;
+        forceDrawUpdate();
+
+    }
+
+    public void drawMovementIndicator(boolean drawMovementIndicator) {
+
+        mDrawMovementIndicator = drawMovementIndicator;
+        forceDrawUpdate();
+
+    }
+
+    public void drawWaitingIndicator(boolean drawWaitingIndicator) {
+
+        mDrawWaitingIndicator = drawWaitingIndicator;
+        forceDrawUpdate();
+
+    }
+
+    private void forceDrawUpdate() {
 
         // This is necessary, since we do not want to wait for the next update from the mCVResult:
         synchronized (mCVResult) {
             mCVResult.notify();
         }
-
-
 
     }
 
@@ -265,6 +280,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private Path mSegmentationPath;
         private Path mFocusPath;
         private Paint mGuidePaint;
+        private Paint mMovementPaint;
+        private Paint mWaitingFramePaint;
 
         private final float FOCUS_RECT_HEIGHT = getResources().getDimension(R.dimen.focus_height);
         private final float FOCUS_RECT_HALF_HEIGHT = FOCUS_RECT_HEIGHT / 2;
@@ -327,6 +344,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             mBGPaint = new Paint();
             mBGPaint.setColor(STATE_TEXT_BG_COLOR);
+
+            mMovementPaint = new Paint();
+            mMovementPaint.setStyle(Paint.Style.FILL);
+            mMovementPaint.setColor(getResources().getColor(R.color.movement_color));
+
+            mWaitingFramePaint = new Paint();
+            mWaitingFramePaint.setStyle(Paint.Style.FILL);
+            mWaitingFramePaint.setColor(getResources().getColor(R.color.waiting_frame_color));
 
         }
 
@@ -413,6 +438,16 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
 //            Clear the screen from previous drawings:
             canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
+
+            if (mDrawMovementIndicator) {
+                Rect rect = new Rect(0,0, getWidth(), getHeight());
+                canvas.drawRect(rect, mMovementPaint);
+            }
+
+            if (mDrawWaitingIndicator) {
+                Rect rect = new Rect(0,0, getWidth(), getHeight());
+                canvas.drawRect(rect, mWaitingFramePaint);
+            }
 
             if (mCVResult != null) {
 
