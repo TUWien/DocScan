@@ -23,6 +23,10 @@
     <color name="hud_helper_line_color">#bb636363</color>
     <color name="flicker_color">#bb636363</color>
 
+    <!--<color name="movement_color">#6fff0000</color>-->
+    <color name="movement_color">#4f630000</color>
+    <color name="waiting_frame_color">#00ffffff</color>
+
     <color name="photo_button_view_bg_color">#333</color>
 
     <color name="spinner_dropdown_color">#444</color>

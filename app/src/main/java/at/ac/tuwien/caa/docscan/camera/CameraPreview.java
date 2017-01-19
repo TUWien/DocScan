@@ -496,14 +496,21 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     if (ChangeDetector.isInitialized()) {
                         isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
                         if (!isFrameSteady) {
-                            mCameraPreviewCallback.onMovement();
+                            mCameraPreviewCallback.onMovement(true);
                             return;
                         }
-                        isFrameDifferent = ChangeDetector.isFrameDifferent(mFrameMat);
+                        else
+                            mCameraPreviewCallback.onMovement(false);
+
+                        isFrameDifferent = ChangeDetector.isNewFrame(mFrameMat);
+//                        isFrameDifferent = ChangeDetector.isFrameDifferent(mFrameMat);
                         if (!isFrameDifferent) {
-                            mCameraPreviewCallback.onNoFrameDifference();
+                            mCameraPreviewCallback.onWaitingForDoc(true);
                             return;
                         }
+                        else
+                            mCameraPreviewCallback.onWaitingForDoc(false);
+
                     }
                 }
 
@@ -825,9 +832,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onMeasuredDimensionChange(int width, int height);
         void onFrameDimensionChange(int width, int height, int cameraOrientation);
         void onFlashModesFound(List<String> modes);
-        void onMovement();
-        void onNoFrameDifference();
-
+        void onMovement(boolean moved);
+        void onWaitingForDoc(boolean waiting);
 
     }
 
