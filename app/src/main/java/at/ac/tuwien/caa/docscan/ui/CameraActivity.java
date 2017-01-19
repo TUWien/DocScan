@@ -540,7 +540,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     // ================= end: methods for opening the gallery =================
 
     // ================= start: methods for accessing the location =================
-
     @TargetApi(16)
     private void requestLocation() {
 
@@ -582,6 +581,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     private void startLocationAccess() {
 
+//        This can be used to let the user enable GPS:
+//        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//        startActivity(intent);
         LocationHandler.getInstance(this);
 
     }

@@ -45,8 +45,10 @@
     <string name="no_file_found_title">File not found</string>
     <string name="button_ok">OK</string>
 
-    <!-- Use in PaintView -->
+    <!-- Navigation Drawer -->
+    <string name="about_text">TranskribusDocScan\n2017</string>
 
+    <!-- PaintView -->
     <string name="instruction_empty">no document found</string>
     <string name="instruction_small">move closer</string>
     <string name="instruction_perspective">change perspective</string>
