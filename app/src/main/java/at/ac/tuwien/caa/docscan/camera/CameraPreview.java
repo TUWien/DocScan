@@ -342,6 +342,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         Camera.Parameters params = mCamera.getParameters();
         List<Camera.Size> cameraSizes = params.getSupportedPreviewSizes();
 
+        Camera.Size pictureSize = getLargestPictureSize();
+        params.setPictureSize(pictureSize.width, pictureSize.height);
+
         Camera.Size bestSize = getBestFittingSize(cameraSizes, orientation);
 
         mFrameWidth = bestSize.width;
@@ -440,6 +443,24 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // Tell the dependent Activity that the frame dimension (might have) change:
         mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
 
+
+    }
+
+    private Camera.Size getLargestPictureSize() {
+
+        Camera.Size size = null;
+        Camera.Parameters params = mCamera.getParameters();
+        List<Camera.Size> supportedSizes = params.getSupportedPictureSizes();
+        int width = 0;
+
+        for (Camera.Size s : supportedSizes) {
+            if (size == null)
+                size = s;
+            else if (s.width > size.width)
+                size = s;
+        }
+
+        return size;
 
     }
 
