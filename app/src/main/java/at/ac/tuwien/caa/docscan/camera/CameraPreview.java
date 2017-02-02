@@ -37,10 +37,8 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -81,7 +79,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private Mat mPrevFrameMat;
     private int mFrameWidth;
     private int mFrameHeight;
-    private boolean mAwaitFrameChanges = true;
+    private boolean mAwaitFrameChanges = false; // this is dependent on the mode: single vs. series
 
     private long mLastTime;
 
@@ -94,6 +92,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean isCameraInitialized;
     private DkPolyRect mIlluminationRect;
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
+
 
 
 //    private BackgroundSubtractorMOG2 bgSubtractor;
@@ -121,6 +120,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    /**
+     * This is used to enable a movement and change detector (currently just used in series mode).
+     * @param awaitFrameChanges
+     */
+    public void setAwaitFrameChanges(boolean awaitFrameChanges) {
+
+        mAwaitFrameChanges = awaitFrameChanges;
+
+    }
 
     public void stop() {
 
@@ -488,8 +496,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 
 //                Check if there is sufficient image change between the current frame and the last image taken:
-                boolean isFrameSteady = true;
-                boolean isFrameDifferent = true;
+                boolean isFrameSteady, isFrameDifferent;
 
                 if (mAwaitFrameChanges) {
 //                    The ChangeDetector is only initialized after an image has been taken:
@@ -523,71 +530,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
-    private boolean frameDifferencing() {
-
-        boolean isFrameChanged = true;
-
-        if ((mFrameMat != null) && (mPrevFrameMat != null)) {
-
-            Mat tmp = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
-            Imgproc.cvtColor(mFrameMat, tmp, Imgproc.COLOR_RGB2GRAY);
-            double[] tmpVal = tmp.get(0,0);
-
-            Mat subtractResult = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
-            Core.absdiff(mPrevFrameMat, tmp, subtractResult);
-
-//                        Imgproc.threshold(subtractResult, subtractResult, )
-            double[] subVal = subtractResult.get(0,0);
-
-            Scalar sumDiff = Core.sumElems(subtractResult);
-            double[] diffArray = sumDiff.val;
-            double meanDiff = diffArray[0] / (mFrameWidth * mFrameHeight);
-
-            if (meanDiff <= 7)
-                isFrameChanged = false;
-            Log.d(TAG, "Difference: " + sumDiff);
-            Log.d(TAG, "mean difference: " + meanDiff);
-
-        }
-
-        return isFrameChanged;
-
-    }
-
-//    private boolean backgroundSubtraction() {
-//
-//        boolean isFrameChanged = true;
-//
-//        if ((mFrameMat != null)) {
-//
-//            Mat tmp = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
-//            Imgproc.cvtColor(mFrameMat, tmp, Imgproc.COLOR_RGB2GRAY);
-//            Mat fg = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC1);
-//
-//            int w = 300;
-//            int h = 300;
-//
-//            Imgproc.resize(tmp, tmp, new Size(w, h));
-//
-//            bgSubtractor.apply(tmp, fg, 0.8);
-//            Imgproc.threshold(fg, fg, 120, 1, Imgproc.THRESH_BINARY); // 127 is a shadow, but the majority of the pixels is classified as shadow - we do not know why.
-//
-//            Scalar fgPixels = Core.sumElems(fg);
-////            double percChanged = fgPixels.val[0] / (mFrameWidth * mFrameHeight);
-//            double percChanged = fgPixels.val[0] / (w * h);
-//
-//            if (percChanged > 0.05)
-//                Log.d(TAG, "!!!! Large change: " + percChanged);
-//            else
-//                Log.d(TAG, "percChanged: " + percChanged);
-//
-//
-//        }
-//
-//        return isFrameChanged;
-//
-//    }
-
     public void storeMat() {
 
         ChangeDetector.init(mFrameMat);
@@ -613,6 +555,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
+
     /**
      * Returns the preview size that fits best into the surface view.
      * @param cameraSizes possible frame sizes (camera dependent)
@@ -622,11 +565,24 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     @SuppressWarnings("deprecation")
     private Camera.Size getBestFittingSize(List<Camera.Size> cameraSizes, int orientation) {
 
-
         // If the app  is paused (=in background) and the orientation is changed, the width and
         // height are not switched. So here we have to switch if necessary:
-        int width = getWidth();
-        int height = getHeight();
+//        int width = getWidth();
+
+        int width, height;
+//        Hack: Before the getWidth/getHeight was used, but on the Galaxy S6 the layout was differently initalized,
+//        so that the height returned the entire height without subtracting the height of the camera control layout.
+//        Therefore, we calculate the dimension of the preview manually.
+//        int height = getHeight();
+        Point dim = CameraActivity.getPreviewDimension();
+        if (dim != null) {
+            width = dim.x;
+            height = dim.y;
+        }
+        else {
+            width = getWidth();
+            height = getHeight();
+        }
 
         if (((orientation == 90 || orientation == 270) && (width > height)) ||
                 ((orientation == 0 || orientation == 180) && (width < height))) {
@@ -820,8 +776,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             }
         }
     }
-
-
 
     /**
      * Interfaces used to tell the activity that a dimension is changed. This is used to enable
