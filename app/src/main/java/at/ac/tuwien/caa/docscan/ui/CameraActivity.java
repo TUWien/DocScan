@@ -25,6 +25,7 @@ package at.ac.tuwien.caa.docscan.ui;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,6 +34,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
@@ -55,10 +57,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -289,6 +293,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
+
+//        initCameraControlLayout();
 
         initDrawables();
         initPictureCallback();
@@ -675,8 +681,12 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             mIsSeriesMode = true;
             mIsSeriesModePaused = false;
         }
-        else if (position != SERIES_POS && mIsSeriesMode)
+        else if (position != SERIES_POS && mIsSeriesMode) {
+            mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
             mIsSeriesMode = false;
+        }
+
+        mCameraPreview.setAwaitFrameChanges(mIsSeriesMode);
 
         updateShootButton();
 
@@ -827,7 +837,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if (mCameraPreview != null)
             mCameraPreview.displayRotated();
 
-        // Change the layout dynamically: Remove the current camera_controls_layout and add a new
+       // Change the layout dynamically: Remove the current camera_controls_layout and add a new
         // one, which is appropriate for the orientation (portrait or landscape xml's).
         ViewGroup appRoot = (ViewGroup) findViewById(R.id.main_frame_layout);
         if (appRoot == null)
@@ -843,8 +853,34 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         // Initialize the newly created buttons:
         initButtons();
 
+
     }
 
+    public static Point getPreviewDimension() {
+
+//        Taken from: http://stackoverflow.com/questions/1016896/get-screen-dimensions-in-pixels
+        View v = ((Activity) mContext).findViewById(R.id.camera_controls_layout);
+
+        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+
+        Point dim = null;
+
+        if (v != null) {
+            if (getOrientation() == Surface.ROTATION_0 || getOrientation() == Surface.ROTATION_180)
+                dim = new Point(size.x, size.y - v.getHeight());
+//                return size.y - v.getHeight();
+            else if (getOrientation() == Surface.ROTATION_90 || getOrientation() == Surface.ROTATION_270)
+                dim = new Point(size.x - v.getWidth(), size.y);
+//                return size.x - v.getWidth();
+        }
+
+        return dim;
+
+
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
