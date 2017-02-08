@@ -8,12 +8,14 @@
         android:id="@+id/username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="@string/login_email_hint"
         android:inputType="textEmailAddress"/>
 
     <EditText
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="@string/login_password_hint"
         android:inputType="textPassword"/>
 
     <Button
@@ -21,6 +23,6 @@
         android:layout_marginTop="4dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Login"/>
+        android:text="@string/login_button_text"/>
 
 </LinearLayout>

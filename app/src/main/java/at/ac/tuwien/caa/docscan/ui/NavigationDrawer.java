@@ -161,6 +161,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
         CAMERA(R.id.camera_item, R.string.camera_item_text,
                 R.drawable.ic_camera_alt_black_24dp, CameraActivity.class),
+        LOGIN(R.id.login_item, R.string.login_item_text,
+                R.drawable.ic_arrow_forward_black_24dp, LoginActivity.class),
         ABOUT(R.id.about_item, R.string.about_item_text,
                 R.drawable.ic_info_black_24dp, AboutActivity.class),
         INVALID(12, 0, 0, null);

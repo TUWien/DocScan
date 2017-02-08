@@ -26,16 +26,20 @@
     <!--</group>-->
 
     <!--This file contains just placeholder items. The real item initialization is done in NavigationDrawer.NavigationItemEnum-->
-    <group android:checkableBehavior="single">
+
+    <group>
         <item
             android:id="@+id/camera_item"
             android:title=""
             />
-    </group>
-    <group>
+        <item
+            android:id="@+id/login_item"
+            android:title=""
+            />
         <item
             android:id="@+id/about_item"
             android:title=""
             />
     </group>
+
 </menu>

@@ -47,7 +47,7 @@ public class LoginRequest extends RestRequest {
     }
 
 
-    public interface LoginCallback extends RestCallback{
+    public interface LoginCallback extends RestRequest.RestCallback{
         void onLogin(User user);
     }
 

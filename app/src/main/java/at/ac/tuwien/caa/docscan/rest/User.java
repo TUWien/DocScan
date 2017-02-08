@@ -29,17 +29,19 @@ public class User {
 
         mUserName = "llu53232@noicd.com";
         mPassword = "testuserpwd";
-
-
     }
 
     public String getUserName() {
         return mUserName;
     }
 
+    public void setUserName(String userName) { mUserName = userName; }
+
     public String getPassword() {
         return mPassword;
     }
+
+    public void setPassword(String password) { mPassword = password; }
 
     public void setLoggedIn(boolean loggedIn) {
         mIsLoggedin = loggedIn;
