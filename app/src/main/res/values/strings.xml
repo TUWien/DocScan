@@ -6,6 +6,7 @@
     <string name="collections_item_text">Collections</string>
     <string name="about_item_text">About</string>
     <string name="camera_item_text">Camera</string>
+    <string name="login_item_text">Login</string>
     <string name="setttings_item_text">Settings</string>
 
     <!-- Use in the MainActivity: start -->
@@ -62,6 +63,12 @@
     <string name="instruction_unknown">state unknown</string>
     <string name="instruction_movement">Too much movement</string>
     <string name="dont_move_text">Do not move</string>
+
+    <!-- Login -->
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_button_text">Login</string>
+    <string name="login_check_input_toast">Please check your login credentials.</string>
 
     <!-- Menus -->
     <string name="shoot_mode">Shoot mode</string>

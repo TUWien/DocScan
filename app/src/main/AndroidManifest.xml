@@ -31,6 +31,13 @@
         <activity
             android:name=".ui.AboutActivity"
             android:exported="false"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
+        <activity
+            android:name=".ui.LoginActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.CameraActivity"
             />
 
         <activity
@@ -42,6 +49,7 @@
         <activity
             android:name=".ui.SettingsActivity"
             android:exported="false"
+            android:parentActivityName=".ui.CameraActivity"
             />
 
         <activity
