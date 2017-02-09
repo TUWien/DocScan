@@ -95,7 +95,6 @@ import at.ac.tuwien.caa.docscan.camera.TaskTimer;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.transkribus.TranskribusActivity;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -1562,15 +1561,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
-    private void startTranskribusLoginActivity() {
-
-        Intent intent = new Intent(this, TranskribusActivity.class);
-//        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-
-        finish();
-
-    }
 
     @Override
     protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {

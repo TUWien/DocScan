@@ -7,10 +7,8 @@ public class User {
 
     private static User mInstance = null;
 
-    private String mUserName;
-    private String mPassword;
-    private boolean mIsLoggedin;
-    private String mSessionID;
+    private String mUserName, mPassword, mFirstName, mLastName, mSessionID;
+    private boolean mIsLoggedin, mIsAutoLogInDone;
 
     /**
      * Returns a singleton.
@@ -27,9 +25,22 @@ public class User {
 
     private User() {
 
-        mUserName = "llu53232@noicd.com";
-        mPassword = "testuserpwd";
+        mIsLoggedin = false;
+        mIsAutoLogInDone = false;
+
     }
+
+    public boolean isAutoLogInDone() { return mIsAutoLogInDone; }
+
+    public void setAutoLogInDone(boolean isAutoLogInDone) { mIsAutoLogInDone = isAutoLogInDone; }
+
+    public String getFirstName() { return mFirstName; }
+
+    public void setFirstName(String firstName) { mFirstName = firstName; }
+
+    public String getLastName() { return mLastName; }
+
+    public void setLastName(String lastName) { mLastName = lastName; }
 
     public String getUserName() {
         return mUserName;
@@ -42,6 +53,8 @@ public class User {
     }
 
     public void setPassword(String password) { mPassword = password; }
+
+    public boolean isLoggedIn() { return mIsLoggedin; }
 
     public void setLoggedIn(boolean loggedIn) {
         mIsLoggedin = loggedIn;

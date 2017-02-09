@@ -4,15 +4,13 @@ import android.os.Bundle;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
-import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.User;
 
 /**
  * Created by fabian on 30.11.2016.
  */
-public class CollectionsActivity extends BaseActivity implements LoginRequest.LoginCallback, CollectionsRequest.CollectionsCallback {
-
+public class CollectionsActivity extends BaseActivity implements CollectionsRequest.CollectionsCallback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +30,12 @@ public class CollectionsActivity extends BaseActivity implements LoginRequest.Lo
         return NavigationDrawer.NavigationItemEnum.ABOUT;
     }
 
-    @Override
-    public void onLogin(User user) {
-
-        RequestHandler.createRequest(this, RequestHandler.REQUEST_COLLECTIONS);
-
-    }
+//    @Override
+//    public void onLogin(User user) {
+//
+//        RequestHandler.createRequest(this, RequestHandler.REQUEST_COLLECTIONS);
+//
+//    }
 
     @Override
     public void onCollections(User user) {
