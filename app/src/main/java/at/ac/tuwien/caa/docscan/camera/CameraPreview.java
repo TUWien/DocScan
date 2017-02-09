@@ -736,11 +736,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 //        releaseCamera();
         // Open an instance of the first camera and retrieve its info.
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         mCamera = Camera.open(0);
         mCameraInfo = new Camera.CameraInfo();
         Camera.getCameraInfo(0, mCameraInfo);

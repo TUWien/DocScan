@@ -14,6 +14,7 @@
         android:layout_height="match_parent">
 
         <RelativeLayout
+            android:id="@+id/login_fields_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -44,6 +45,26 @@
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:text="@string/login_button_text"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/login_loading_layout"
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+            <ProgressBar
+                android:id="@+id/login_progressbar"
+                android:layout_width="@dimen/login_spinner_size"
+                android:layout_height="@dimen/login_spinner_size"
+                android:layout_centerHorizontal="true"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/login_progressbar"
+                android:layout_centerHorizontal="true"
+                android:text="@string/login_loading_text"/>
         </RelativeLayout>
 
         <android.support.design.widget.AppBarLayout

@@ -31,6 +31,20 @@ public abstract class RestRequest {
 
     }
 
+    public String findString(String response, String prefix, String postfix) {
+
+        String result = "";
+        int startIdx = response.indexOf(prefix);
+        int endIdx = response.indexOf(postfix);
+        if (startIdx != -1 && endIdx != -1) {
+            startIdx += prefix.length();
+            result = response.substring(startIdx, endIdx);
+        }
+
+        return result;
+
+    }
+
     public abstract void handleResponse(String response);
 
     public void handleResponse(JSONArray response) {

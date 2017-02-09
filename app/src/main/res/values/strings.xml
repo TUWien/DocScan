@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">Transkribus DocScan</string>
+    <string name="app_name">DocScan</string>
 
     <!-- Used in the navigation drawer: -->
     <string name="collections_item_text">Collections</string>
@@ -8,6 +8,7 @@
     <string name="camera_item_text">Camera</string>
     <string name="login_item_text">Login</string>
     <string name="setttings_item_text">Settings</string>
+    <string name="header_text">DocScan</string>
 
     <!-- Use in the MainActivity: start -->
 
@@ -21,6 +22,7 @@
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
     <string name="login_text">Login</string>
+
 
     <!-- Use in the MainActivity: end -->
 
@@ -69,6 +71,9 @@
     <string name="login_password_hint">Password</string>
     <string name="login_button_text">Login</string>
     <string name="login_check_input_toast">Please check your login credentials.</string>
+    <string name="login_welcome_text">Welcome</string>
+    <string name="login_loading_text">Loading, please wait</string>
+    <string name="login_error_text">User name or password is incorrect. Please reenter your credentials.</string>
 
     <!-- Menus -->
     <string name="shoot_mode">Shoot mode</string>

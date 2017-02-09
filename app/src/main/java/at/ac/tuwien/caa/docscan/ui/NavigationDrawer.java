@@ -11,9 +11,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import at.ac.tuwien.caa.docscan.ActivityUtils;
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.rest.User;
 
 /**
  * This file contains parts of this source file:
@@ -36,6 +38,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         mSelfItem = selfItem;
 
         setupNavigationDrawer();
+        setupDrawerHeader();
 
     }
 
@@ -69,6 +72,19 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         createNavDrawerItems(NavigationItemEnum.values());
 
         mHandler = new Handler();
+
+    }
+
+    public void setupDrawerHeader() {
+
+
+        View headerLayout = mNavigationView.getHeaderView(0);
+        TextView tv = (TextView) headerLayout.findViewById(R.id.navigation_view_header_user_textview);
+
+        if (User.getInstance().isLoggedIn())
+            tv.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
+        else
+            tv.setText(mActivity.getResources().getText(R.string.app_name));
 
     }
 

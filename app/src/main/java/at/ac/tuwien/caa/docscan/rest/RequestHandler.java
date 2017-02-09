@@ -20,19 +20,23 @@ import org.json.JSONArray;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class RequestHandler {
 
     public static final int REQUEST_LOGIN = 0;
     public static final int REQUEST_COLLECTIONS = 1;
 
-    public static void createRequest(Context context, int requestType) {
+
+    public static void createRequest(Object context, int requestType) {
+
+        Context c = (Context) context;
 
         switch (requestType) {
             case REQUEST_LOGIN:
-                new LoginRequest(context);
+                new LoginRequest(c);
                 break;
             case REQUEST_COLLECTIONS:
-                new CollectionsRequest(context);
+                new CollectionsRequest(c);
         }
 
     }
@@ -49,7 +53,7 @@ public class RequestHandler {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        //You can handle error here if you want
+                        request.handleLoginError();
                     }
                 }) {
 
@@ -144,5 +148,6 @@ public class RequestHandler {
         return method;
 
     }
+
 
 }
