@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary"> #9e9e9e</color>
+    <color name="colorPrimary"> #607d8b</color>
     <color name="colorPrimaryDark">#3fde3a3a</color>
-    <color name="colorAccent">#bdbdbd</color>
+    <color name="colorAccent">#ff9800</color>
 
-    <color name="control_background_color">#212121</color>
+    <!--<color name="control_background_color">#212121</color>-->
+    <color name="control_background_color">#37474f</color>
+
+    <color name="button_bg_color">#455a64</color>
 
     <color name="actionbar_bg_color">#aa666666</color>
     <color name="navigation_drawer_bg_color">#11111111</color>
     <color name="debug_view_bg_color">#aa666666</color>
     <color name="white">#ffffff</color>
+    <color name="black">#000</color>
     <color name="navigation_drawer_text_color">#ffffff</color>
     <!--<color name="button_view_bg_color">#333</color>-->
-    <color name="button_bg_color">#333</color>
+
     <color name="hud_good_text_color">#d666</color>
     <color name="hud_bad_text_color">#a3a3</color>
 

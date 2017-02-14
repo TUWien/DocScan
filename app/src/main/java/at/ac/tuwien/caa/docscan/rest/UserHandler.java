@@ -32,7 +32,7 @@ public class UserHandler {
 
 //        SharedPreferences sharedPref = activity.getApplicationContext().getPreferences(Context.MODE_PRIVATE);
         String name = sharedPref.getString(NAME_KEY, null);
-        String defaultPassword = "";
+        String defaultPassword = null;
         String password = sharedPref.getString(PASSWORD_KEY, defaultPassword);
 
         if (name == null)
