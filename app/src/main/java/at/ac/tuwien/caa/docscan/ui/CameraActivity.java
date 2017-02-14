@@ -633,6 +633,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                     public void onClick(View v) {
                         if (mIsSeriesMode) {
                             mIsSeriesModePaused = !mIsSeriesModePaused;
+                            mCameraPreview.pauseImageProcessing(mIsSeriesModePaused);
                             updateShootButton();
                         }
                         else if (mIsPictureSafe) {
@@ -679,6 +680,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if ((position == SERIES_POS) && !mIsSeriesMode) {
             mIsSeriesMode = true;
             mIsSeriesModePaused = false;
+//            TODO: uncomment:
+//            mCameraPreview.pauseImageProcessing(false);
             mCameraPreview.startAutoFocus();
         }
         else if (position != SERIES_POS && mIsSeriesMode) {

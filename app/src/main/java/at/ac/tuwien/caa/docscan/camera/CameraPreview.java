@@ -81,6 +81,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private int mFrameHeight;
     private boolean mAwaitFrameChanges = false; // this is dependent on the mode: single vs. series
     private boolean mManualFocus = true;
+    private boolean mIsImageProcessingPaused = false;
 
     private long mLastTime;
 
@@ -493,6 +494,25 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
+    public void pauseImageProcessing(boolean pause) {
+
+        mIsImageProcessingPaused = pause;
+        mFocusMeasurementThread.setRunning(!pause);
+        mPageSegmentationThread.setRunning(!pause);
+        mIlluminationThread.setRunning(!pause);
+
+        // Take care that no patches or pages are rendered in the PaintView:
+        if (pause) {
+            synchronized (this) {
+                DkPolyRect[] r = {};
+                mCVCallback.onPageSegmented(r);
+                Patch[] p = {};
+                mCVCallback.onFocusMeasured(p);
+            }
+        }
+
+    }
+
     /**
      * Called after the preview received a new frame (as byte array).
      * @param pixels byte array containgin the frame.
@@ -501,6 +521,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     @Override
     public void onPreviewFrame(byte[] pixels, Camera camera)
     {
+
+        if (mIsImageProcessingPaused)
+            return;
 
         if (CameraActivity.isDebugViewEnabled()) {
 
@@ -858,7 +881,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                     try {
                         mCameraView.wait();
-
 
                         if (mIsRunning) {
 
