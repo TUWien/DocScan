@@ -31,17 +31,5 @@
 
     <!-- The navigation drawer -->
     <include layout="@layout/navigation_view"/>
-    <!--<android.support.design.widget.NavigationView-->
-        <!--android:id="@+id/left_drawer"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_marginRight="-100dp"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_gravity="start"-->
-        <!--android:fitsSystemWindows="true"-->
-        <!--android:background="@color/navigation_drawer_bg_color"-->
-        <!--android:layout_marginTop="?attr/actionBarSize"-->
-        <!--app:menu="@menu/drawer_view_menu"-->
-        <!--app:itemTextColor="@color/navigation_drawer_text_color"-->
-        <!--/>-->
 
 </android.support.v4.widget.DrawerLayout>

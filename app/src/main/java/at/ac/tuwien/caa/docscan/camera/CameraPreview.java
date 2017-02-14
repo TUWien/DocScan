@@ -80,6 +80,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private int mFrameWidth;
     private int mFrameHeight;
     private boolean mAwaitFrameChanges = false; // this is dependent on the mode: single vs. series
+    private boolean mManualFocus = true;
 
     private long mLastTime;
 
@@ -220,6 +221,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public boolean onTouchEvent(MotionEvent event) {
 
         if (mCamera == null)
+            return true;
+
+        // Do nothing in the auto (series) mode:
+        if (!mManualFocus)
             return true;
 
         // We wait until the finger is up again:
@@ -467,6 +472,23 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public void cancelAutoFocus() {
 
         mCamera.cancelAutoFocus();
+
+    }
+
+    public void startAutoFocus() {
+
+        mManualFocus = false;
+
+        Camera.Parameters params = mCamera.getParameters();
+
+        // Use autofocus if available:
+        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        else if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        }
+
+        mCamera.setParameters(params);
 
     }
 

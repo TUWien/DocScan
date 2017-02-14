@@ -78,6 +78,8 @@ public class LoginActivity extends BaseActivity implements LoginRequest.LoginCal
     @Override
     public void onLoginError() {
 
+        showLoadingLayout(false);
+
         EditText pwEdit = (EditText) findViewById(R.id.password_edittext);
         pwEdit.setError(getResources().getString(R.string.login_error_text));
 

@@ -259,7 +259,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     private void initActivity() {
 
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_camera);
 
         mCVResult = new CVResult(this);
 
@@ -679,6 +679,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if ((position == SERIES_POS) && !mIsSeriesMode) {
             mIsSeriesMode = true;
             mIsSeriesModePaused = false;
+            mCameraPreview.startAutoFocus();
         }
         else if (position != SERIES_POS && mIsSeriesMode) {
             mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
