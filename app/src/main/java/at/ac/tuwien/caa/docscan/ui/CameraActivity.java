@@ -873,6 +873,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
 
+//            Show / hide the debug view
             case R.id.debug_view_item:
 
                 // Create the debug view - if it is not already created:
@@ -894,6 +895,46 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 }
 
                 return true;
+
+            // Switch between the two page segmentation methods:
+            case R.id.use_lab_item:
+
+                if (NativeWrapper.useLab()) {
+                    NativeWrapper.setUseLab(false);
+                    item.setTitle(R.string.precise_page_seg_text);
+                }
+                else {
+                    NativeWrapper.setUseLab(true);
+                    item.setTitle(R.string.fast_page_seg_text);
+                }
+
+                return true;
+
+            // Focus measurement:
+            case R.id.show_fm_values_item:
+
+                if (mPaintView.isFocusTextVisible()) {
+                    item.setTitle(R.string.show_fm_values_text);
+                    mPaintView.drawFocusText(false);
+                } else {
+                    item.setTitle(R.string.hide_fm_values_text);
+                    mPaintView.drawFocusText(true);
+                }
+
+                break;
+
+            // Guide lines:
+            case R.id.show_guide_item:
+
+                if (mPaintView.areGuideLinesDrawn()) {
+                    mPaintView.drawGuideLines(false);
+                    item.setTitle(R.string.show_guide_text);
+                } else {
+                    mPaintView.drawGuideLines(true);
+                    item.setTitle(R.string.hide_guide_text);
+                }
+
+                break;
 
         }
 

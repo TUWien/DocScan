@@ -54,7 +54,6 @@ JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_native
     //ARGB stored in java as int array becomes BGRA at native level
     cv::cvtColor(myuv, mbgra, CV_YUV420sp2BGR, 4);
 
-    dsc::Utils::print("asdf", "asf");
     // call the main function:
 
 /*
