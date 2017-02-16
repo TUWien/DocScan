@@ -1,14 +1,5 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <!--<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">-->
-        <!--&lt;!&ndash; Customize your theme here. &ndash;&gt;-->
-        <!--<item name="colorPrimary">@color/colorPrimary</item>-->
-        <!--<item name="colorPrimaryDark">@color/colorPrimaryDark</item>-->
-        <!--<item name="colorAccent">@color/colorAccent</item>-->
-    <!--</style>-->
-
-    <!--<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">-->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">#263238</item>
@@ -19,6 +10,13 @@
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="preferenceTheme">@style/Preference</item>
     </style>
+
+    <!--<item name="actionOverflowMenuStyle">@style/OverflowMenu</item>-->
+    <!--<style name="OverflowMenu" parent="Widget.AppCompat.PopupMenu.Overflow">-->
+        <!--&lt;!&ndash; Required for pre-Lollipop. &ndash;&gt;-->
+        <!--<item name="overlapAnchor">false</item>-->
+        <!--<item name="android:dropDownVerticalOffset">-4.0dip</item>-->
+    <!--</style>-->
 
     <style name="DrawerArrowStyle" parent="@style/Widget.AppCompat.DrawerArrowToggle">
         <item name="spinBars">true</item>
@@ -33,7 +31,11 @@
         <item name="android:windowActionBarOverlay">true</item>
         <!-- Support library compatibility -->
         <item name="windowActionBarOverlay">true</item>
+        <item name="android:textColorSecondary">@color/white</item>
     </style>
+
+
+
 
     <style name="ActionBarPopupThemeOverlay" parent="ThemeOverlay.AppCompat.Light" />
     <style name="ActionBarThemeOverlay" parent="ThemeOverlay.AppCompat.ActionBar">

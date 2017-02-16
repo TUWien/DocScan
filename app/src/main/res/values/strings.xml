@@ -85,6 +85,9 @@
     <string name="flash_on_mode">Flash on</string>
     <string name="flash_torch_mode">Torch</string>
 
+    <string name="debug_view_item_show">Show debug view</string>
+    <string name="debug_view_item_hide">Hide debug view</string>
+
     <!-- Preferences -->
     <string name="pref_precise_page_detection">Use precise page detection</string>
     <string name="pref_precise_page_detection_summary">Use precise page detection</string>

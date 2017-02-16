@@ -174,7 +174,7 @@ namespace dsc {
 
 		// parameters
 		int mWindowSize = 40;   //window size of the patch, a smaller value means more focus points but also a more inaccurate value (less foreground)
-		int mSplitSize = 0;     //defines if a gap is between two patches (can be used to fasten the calculation - not every pixel is used)
+		int mSplitSize = 80;     //defines if a gap is between two patches (can be used to fasten the calculation - not every pixel is used)
 
 		double mGlobalFMThresh = 0.15;  //threshold value if a patch is 'sharp', range is ~ [0 1] where 0 is no contrast and 1 is the best contrast
 		                                //focus value is normalized with respect to the estimated foreground with ideal contrast
