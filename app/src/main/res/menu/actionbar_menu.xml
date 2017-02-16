@@ -2,6 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!--<item-->
+        <!--android:id="@+id/flash_mode_item2"-->
+        <!--android:icon="@drawable/ic_flash_off"-->
+        <!--android:title="@string/flash_mode"-->
+        <!--android:visible="true"-->
+        <!--app:showAsAction="always"-->
+        <!--/>-->
+
     <item
         android:id="@+id/flash_mode_item"
         android:icon="@drawable/ic_flash_off"
@@ -9,6 +17,13 @@
         android:visible="false"
         app:showAsAction="always"
         android:onClick="showFlashPopup"
+        />
+
+    <item
+        android:id="@+id/debug_view_item"
+        android:title="@string/debug_view_item_hide"
+        android:visible="true"
+        app:showAsAction="never"
         />
 
 </menu>

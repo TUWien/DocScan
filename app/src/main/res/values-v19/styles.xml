@@ -12,6 +12,12 @@
         <item name="android:windowActionBarOverlay">true</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="preferenceTheme">@style/Preference</item>
+
     </style>
 
+    <!--<item name="actionOverflowMenuStyle">@style/OverflowMenu</item>-->
+    <!--<style name="OverflowMenu" parent="Widget.AppCompat.PopupMenu.Overflow">-->
+        <!--&lt;!&ndash; Required for Lollipop. &ndash;&gt;-->
+        <!--<item name="android:dropDownVerticalOffset">40.0dp</item>-->
+    <!--</style>-->
 </resources>

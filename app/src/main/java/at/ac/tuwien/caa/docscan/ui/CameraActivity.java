@@ -273,7 +273,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        setupToolbar();
         setupNavigationDrawer();
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
@@ -285,10 +285,11 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         else
             mIsDebugViewEnabled = true;
 
+//        TODO: remove this comment:
 //        Temporary show the debug view (until we put this opportunity back into the GUI):
-//        mDebugViewFragment = new DebugViewFragment();
-//        getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
-//        mIsDebugViewEnabled = true;
+        mDebugViewFragment = new DebugViewFragment();
+        getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+        mIsDebugViewEnabled = true;
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
@@ -549,38 +550,12 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private void requestLocation() {
 
         // Check permission
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // ask for permission:
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
         } else {
             startLocationAccess();
-
-//// Acquire a reference to the system Location Manager
-//            LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-//
-//// Define a listener that responds to location updates
-//            LocationListener locationListener = new LocationListener() {
-//                public void onLocationChanged(Location location) {
-//                    // Called when a new location is found by the network location provider.
-////                    makeUseOfNewLocation(location);
-//                }
-//
-//                public void onStatusChanged(String provider, int status, Bundle extras) {}
-//
-//                public void onProviderEnabled(String provider) {}
-//
-//                public void onProviderDisabled(String provider) {}
-//            };
-//
-//            Location mobileLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-//// Register the listener with the Location Manager to receive location updates
-//            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-//            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-
-
         }
-
 
     }
 
@@ -893,14 +868,48 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         }
 
         switch (item.getItemId()) {
-            case android.R.id.home:
+
+            case R.id.home:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
+
+            case R.id.debug_view_item:
+
+                // Create the debug view - if it is not already created:
+                if (mDebugViewFragment == null) {
+                    mDebugViewFragment = new DebugViewFragment();
+                }
+
+                // Show the debug view:
+                if (getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT) == null) {
+                    mIsDebugViewEnabled = true;
+                    item.setTitle(R.string.hide_debug_view_text);
+                    getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+                }
+                // Hide the debug view:
+                else {
+                    mIsDebugViewEnabled = false;
+                    item.setTitle(R.string.show_debug_view_text);
+                    getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
+                }
+
+                return true;
+
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    private void setupToolbar() {
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
+    }
 
     /**
      * Initializes the navigation drawer, when the app is started.
@@ -918,12 +927,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
         setupDrawerContent(mDrawer);
 
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeButtonEnabled(true);
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
-        }
+
 
         // Set the item text for the debug view in the naviation drawer:
         if (mDrawer == null)
@@ -973,27 +977,27 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         switch (menuItem.getItemId()) {
 
-            case R.id.action_show_debug_view:
-
-                // Create the debug view - if it is not already created:
-                if (mDebugViewFragment == null) {
-                    mDebugViewFragment = new DebugViewFragment();
-                }
-
-                // Show the debug view:
-                if (getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT) == null) {
-                    mIsDebugViewEnabled = true;
-                    menuItem.setTitle(R.string.hide_debug_view_text);
-                    getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
-                }
-                // Hide the debug view:
-                else {
-                    mIsDebugViewEnabled = false;
-                    menuItem.setTitle(R.string.show_debug_view_text);
-                    getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
-                }
-
-                break;
+//            case R.id.debug_view_item:
+//
+//                // Create the debug view - if it is not already created:
+//                if (mDebugViewFragment == null) {
+//                    mDebugViewFragment = new DebugViewFragment();
+//                }
+//
+//                // Show the debug view:
+//                if (getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT) == null) {
+//                    mIsDebugViewEnabled = true;
+//                    menuItem.setTitle(R.string.hide_debug_view_text);
+//                    getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+//                }
+//                // Hide the debug view:
+//                else {
+//                    mIsDebugViewEnabled = false;
+//                    menuItem.setTitle(R.string.show_debug_view_text);
+//                    getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
+//                }
+//
+//                break;
 
             // Focus measurement:
             case R.id.action_show_fm_values:
