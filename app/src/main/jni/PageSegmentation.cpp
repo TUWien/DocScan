@@ -167,6 +167,8 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 		else
 			gray = imgL >= thr;
 
+        cv::erode(gray, gray, cv::Mat(), cv::Point(-1,-1));
+
 		// find contours and store them all as a list
 		findContours(gray, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
 
