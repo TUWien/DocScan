@@ -595,8 +595,9 @@ namespace dsc {
 		fe.setWindowSize(ws);
 
 		fe.setImg(src);
-		fe.setGlobalFMThreshold(globalFMThr);
-
+		if (globalFMThr > 0) {
+		    fe.setGlobalFMThreshold(globalFMThr);
+		}
 
 		////version 1
 		//fe.compute(dsc::FocusEstimation::FocusMeasure::LAPV);
