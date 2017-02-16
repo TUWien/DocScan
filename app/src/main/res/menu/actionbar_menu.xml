@@ -26,4 +26,24 @@
         app:showAsAction="never"
         />
 
+    <item
+        android:id="@+id/use_lab_item"
+        android:title="@string/fast_page_seg_text"
+        android:visible="true"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/show_guide_item"
+        android:title="@string/show_guide_text"
+        android:visible="true"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/show_fm_values_item"
+        android:title="@string/show_fm_values_text"
+        android:visible="true"
+        app:showAsAction="never"
+        />
 </menu>
