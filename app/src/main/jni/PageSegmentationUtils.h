@@ -447,10 +447,19 @@ public:
 	DkVector center() const;
 	static bool compArea(const DkPolyRect& pl, const DkPolyRect& pr);
 
+	void setThreshold(int thr);
+	int threshold() const;
+
+	void setChannel(int chl);
+	int channel() const;
+
 protected:
 	std::vector<DkVector> mPts;
 	double maxCosine;
 	double area;
+
+	double mChlIndex = -1;	// last channel
+	double mThrIndex = -1;	// last threshold
 
 	void toDkVectors(const std::vector<cv::Point>& pts, std::vector<DkVector>& dkPts) const;
 	void computeMaxCosine();

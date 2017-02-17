@@ -45,7 +45,7 @@ namespace dsc {
 class DllCoreExport DkPageSegmentation {
 
 public:
-	DkPageSegmentation(const cv::Mat& colImg = cv::Mat());
+	DkPageSegmentation(const cv::Mat& colImg = cv::Mat(), const DkPolyRect& oldRect = DkPolyRect());
 
 	virtual void compute(bool useLab);
 	virtual void filterDuplicates(float overlap = 0.6f, float areaRatio = 0.5f);
@@ -60,25 +60,26 @@ public:
 	DkPolyRect getMaxRect() const;
 	DkPolyRect getDocumentRect() const;
 
-    static std::vector<DkPolyRect> apply(const cv::Mat& src, bool useLab = true);
+    static std::vector<DkPolyRect> apply(const cv::Mat& src, bool useLab = true, const DkPolyRect& oldRect = DkPolyRect());
 
 protected:
 	cv::Mat mImg;
 	cv::Mat dbgImg;
 
-	int numThresh = 15;	// -> threshold every 17 
+	int numThresh = 10;	// -> threshold every 25
 	double mMinArea = 12000;
 	double mMaxArea = 0;
 	float maxSide = 0;   // do not find the image's border
-	float maxSideFactor = 0.97f;
+	float maxSideFactor = 0.98f;
 	float scale = 0.0f;	// is computed from maxImgWidth
-	int maxImgWidth = 1000;
+	int maxImgWidth = 600;
 	bool looseDetection = true;
 
 	std::vector<DkPolyRect> mRects;
+	DkPolyRect mOldRect;
 
-	virtual void findRectanglesLab(const cv::Mat& img, std::vector<DkPolyRect>& squares) const;
-	virtual void findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& squares) const;
+	virtual void findRectanglesLab(const cv::Mat& img, std::vector<DkPolyRect>& squares, int channel = -1, int thr = -1) const;
+	virtual void findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& squares, int channel = -1, int threshold = -1) const;
 	//QImage cropToRect(const QImage& mImg, const nmc::DkRotatingRect& rect, const QColor& bgCol = QColor(0,0,0)) const;
 	//void drawRects(QPainter* p, const std::vector<DkPolyRect>& mRects, const QColor& col = QColor(100, 100, 100)) const;
 };

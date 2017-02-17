@@ -34,6 +34,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 public class NativeWrapper {
 
     private static boolean mUseLab = true;
+    private static DkPolyRect mOldRect = new DkPolyRect();
 
     /**
      * Returns an array of Patch objects, containing focus measurement results.
@@ -55,8 +56,14 @@ public class NativeWrapper {
      */
     public static DkPolyRect[] getPageSegmentation(Mat src) {
 
-        return nativeGetPageSegmentation(src.getNativeObjAddr(), mUseLab);
-//        return nativeGetPageSegmentation(src.getNativeObjAddr(), true);
+        DkPolyRect[] rects = nativeGetPageSegmentation(src.getNativeObjAddr(), mUseLab, mOldRect);
+
+        if (rects.length > 0)
+            mOldRect = rects[0];
+        else
+            mOldRect = new DkPolyRect();
+
+        return rects;
     }
 
     public static double getIllumination(Mat src, DkPolyRect polyRect) {
@@ -78,7 +85,7 @@ public class NativeWrapper {
      * @return array of DKPolyRect objects
      */
     @SuppressWarnings("JniMissingFunction")
-    private static native DkPolyRect[] nativeGetPageSegmentation(long src, boolean useLab);
+    private static native DkPolyRect[] nativeGetPageSegmentation(long src, boolean useLab, DkPolyRect polyRect);
 
     /**
      * Native method for illumination computation.

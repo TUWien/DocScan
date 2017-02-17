@@ -38,6 +38,8 @@ public class DkPolyRect {
 
     ArrayList<PointF> mPoints;
     ArrayList<PointF> mScreenPoints;
+    int mChl = -1;
+    int mThr = -1;
 
     /**
      * Creates a polygon with four corners, marking the borders of a document.
@@ -50,7 +52,7 @@ public class DkPolyRect {
      * @param x4
      * @param y4
      */
-    public DkPolyRect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
+    public DkPolyRect(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, int chl, int thr) {
 
         mPoints = new ArrayList<PointF>();
 
@@ -59,6 +61,17 @@ public class DkPolyRect {
         mPoints.add(new PointF(x3, y3));
         mPoints.add(new PointF(x4, y4));
 
+        mChl = chl;
+        mThr = thr;
+    }
+
+    public DkPolyRect() {
+
+        mPoints = new ArrayList<PointF>();
+        mPoints.add(new PointF());
+        mPoints.add(new PointF());
+        mPoints.add(new PointF());
+        mPoints.add(new PointF());
 
     }
 
@@ -224,41 +237,19 @@ public class DkPolyRect {
 
     }
 
-    public float getX1() {
-        return mPoints.get(0).x;
-    }
+    public float getX1() { return mPoints.get(0).x; }
+    public float getY1() { return mPoints.get(0).y; }
 
-    public float getY1() {
-        return mPoints.get(0).y;
-    }
+    public float getX2() { return mPoints.get(1).x; }
+    public float getY2() { return mPoints.get(1).y; }
 
-    public float getX2() {
-        return mPoints.get(1).x;
-    }
+    public float getX3() { return mPoints.get(2).x; }
+    public float getY3() { return mPoints.get(2).y; }
 
+    public float getX4() { return mPoints.get(3).x; }
+    public float getY4() { return mPoints.get(3).y; }
 
-    public float getY2() {
-        return mPoints.get(1).y;
-    }
-
-    public float getX3() {
-        return mPoints.get(2).x;
-    }
-
-
-    public float getY3() {
-        return mPoints.get(2).y;
-    }
-
-
-    public float getX4() {
-        return mPoints.get(3).x;
-    }
-
-
-    public float getY4() {
-        return mPoints.get(3).y;
-    }
-
+    public int channel() { return mChl; }
+    public int threshold() { return mThr; }
 
 }

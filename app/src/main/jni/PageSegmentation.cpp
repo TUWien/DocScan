@@ -39,9 +39,10 @@ namespace dsc {
 
 // DkPageSegmentation --------------------------------------------------------------------
 // This code is based on OpenCV's rectangle sample (squares.cpp)
-DkPageSegmentation::DkPageSegmentation(const cv::Mat& colImg /* = cv::Mat */) {
+DkPageSegmentation::DkPageSegmentation(const cv::Mat& colImg, const DkPolyRect& oldRect) {
 
-	this->mImg = colImg;
+	mImg = colImg;
+	mOldRect = oldRect;
 }
 
 cv::Mat DkPageSegmentation::getDebugImg() const {
@@ -67,7 +68,7 @@ DkPolyRect DkPageSegmentation::getMaxRect() const {
 
 		if (ca > maxArea) {
 			maxArea = ca;
-			largeRect = p.toCvPoints();
+			largeRect = p;
 		}
 	}
 
@@ -97,44 +98,61 @@ void DkPageSegmentation::compute(bool useLab) {
 	if (scale > 0.8f || scale <= 0.0f)
 		scale = 1.0f;
 
+	if (mOldRect.channel() != -1 && mOldRect.threshold() != -1) {
+
+		findRectanglesLab(mImg, mRects, mOldRect.channel(), mOldRect.threshold());
+
+		DkPolyRect pr = getDocumentRect();
+		double oa = mOldRect.getArea();
+		double na = pr.getArea();
+
+		double ratio = std::min(oa, na) / std::max(oa, na);
+		
+		// are we done?
+		if (ratio > 0.9) {
+			std::cout << "area ratio " << ratio << " is accepted..." << std::endl;
+			return;
+		}
+		else
+			std::cout << "area ratio " << ratio << " NOT accepted - full computation will be performed..." << std::endl;
+	}
+
     if (useLab)
 	    findRectanglesLab(mImg, mRects);
-    else {
-        cv::Mat imgLab;
-        cv::cvtColor(mImg, imgLab, CV_RGB2Lab);	// luminance channel is better than grayscale
-
-        int ch[] = {0, 0};
-        cv::Mat imgL(mImg.size(), CV_8UC1);
-        mixChannels(&imgLab, 1, &imgL, 1, ch, 1);
-        cv::normalize(imgL, imgL, 255, 0, cv::NORM_MINMAX);
-        imgLab.release();	// early release
-
-        findRectangles(imgL, mRects);
-    }
-
+    else
+		findRectanglesLab(mImg, mRects, 0);
 
 	std::cout << "[DkPageSegmentation] " << mRects.size() << " rectangles found resize factor: " << scale << std::endl;
 }
 
-void DkPageSegmentation::findRectanglesLab(const cv::Mat & img, std::vector<DkPolyRect>& rects) const {
-
+void DkPageSegmentation::findRectanglesLab(const cv::Mat & img, std::vector<DkPolyRect>& rects, int channel, int thr) const {
 
 	cv::Mat imgLab;
 	cv::cvtColor(img, imgLab, CV_RGB2Lab);	// luminance channel is better than grayscale
 
-	for (int idx = 0; idx < img.channels(); idx++) {
+	std::vector<int> indexes;
+
+	// if the last channel is cached - take that one
+	if (channel == -1) {
+		for (int idx = 0; idx < img.channels(); idx++) {
+			indexes.push_back(idx);
+		}
+	}
+	else
+		indexes.push_back(channel);
+
+	for (int idx : indexes) {
 
 		int ch[] = {idx, 0};
 		cv::Mat imgL(img.size(), CV_8UC1);
 		cv::mixChannels(&imgLab, 1, &imgL, 1, ch, 1);
 		std::vector<DkPolyRect> cr;
-		findRectangles(imgL, rects);
+		findRectangles(imgL, rects, idx, thr);
 		std::cout << rects.size() << " after channel " << idx << std::endl;
 	}
-
 }
 
-void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& rects) const {
+void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRect>& rects, int channel, int threshold) const {
 
     cv::Mat imgL;
     cv::normalize(img, imgL, 255, 0, cv::NORM_MINMAX);
@@ -151,8 +169,21 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 	cv::Mat gray;
 	std::vector<DkPolyRect> rectsL;
 
+	std::vector<int> indexes;
+	if (threshold == -1) {
+
+		// use less thresholds for a/b channels
+		if (channel > 0)
+			threshStep *= 2;
+
+		for (int idx = 0; idx < 255; idx += threshStep)
+			indexes.push_back(idx);
+	}
+	else
+		indexes.push_back(threshold);
+
 	// try several threshold levels
-	for (int thr = 0; thr < 255; thr += threshStep) {
+	for (int thr : indexes) {
 
 		if (thr == 0) {
 
@@ -220,7 +251,7 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 				isContourConvex(cv::Mat(approx))) {
 
 				DkPolyRect cr(approx);
-				//moutc << mMinArea*scale*scale << " < " << fabs(cArea) << " < " << mMaxArea*scale*scale << dkendl;
+				//std::cout << mMinArea*scale*scale << " < " << fabs(cArea) << " < " << mMaxArea*scale*scale << std::endl;
 
 				// if cosines of all angles are small
 				// (all angles are ~90 degree)
@@ -228,6 +259,8 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 					(!maxSide || cr.maxSide() < maxSide*scale) &&
 					cr.getMaxCosine() < 0.3 ) {
 
+					cr.setChannel(channel);
+					cr.setThreshold(thr);
 					rectsL.push_back(cr);
 				}
 			}
@@ -236,6 +269,7 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 		//cv::cvtColor(pImg, pImg, CV_RGB2BGR);
 		//cv::imwrite("C:/VSProjects/DocScan/img/tests/poly" + Utils::num2str(thr) + ".png", pImg);
 		// DEBUG ------------------------
+		std::cout << "computing thresh: " << thr << std::endl;
 	}
 
 	for (size_t idx = 0; idx < rectsL.size(); idx++)
@@ -426,12 +460,12 @@ void DkPageSegmentation::draw(cv::Mat& img, const std::vector<DkPolyRect>& rects
 	}
 }
 
-std::vector<DkPolyRect> DkPageSegmentation::apply(const cv::Mat& src, bool useLab) {
+std::vector<DkPolyRect> DkPageSegmentation::apply(const cv::Mat& src, bool useLab, const DkPolyRect& oldRect) {
 
 	std::vector<DkPolyRect> pageRects;
 
 	// run the page segmentation
-	DkPageSegmentation segM(src);
+	DkPageSegmentation segM(src, oldRect);
 	segM.compute(useLab);
 	segM.filterDuplicates();
 

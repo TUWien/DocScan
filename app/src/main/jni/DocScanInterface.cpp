@@ -38,101 +38,6 @@
 #include <string>
 #include <iostream>
 
-
-JNIEXPORT void JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetPageSegmentationTest(JNIEnv* env, jobject thiz, jint width, jint height, jbyteArray yuv, jintArray bgra)
-{
-
-
-    jbyte* _yuv  = env->GetByteArrayElements(yuv, 0);
-    jint*  _bgra = env->GetIntArrayElements(bgra, 0);
-
-    cv::Mat myuv(height + height/2, width, CV_8UC1, (unsigned char *)_yuv);
-    cv::Mat mbgra(height, width, CV_8UC4, (unsigned char *)_bgra);
-    cv::Mat mgray(height, width, CV_8UC1, (unsigned char *)_yuv);
-
-    //Please make attention about BGRA byte order
-    //ARGB stored in java as int array becomes BGRA at native level
-    cv::cvtColor(myuv, mbgra, CV_YUV420sp2BGR, 4);
-
-    // call the main function:
-
-/*
-    std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(mbgra);
-
-    jclass polyRectClass = env->FindClass("at/ac/tuwien/caa/docscan/cv/DkPolyRect");
-
-    // JNI type signatures: http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
-
-    // "(FFFFFFFF)V" -> (8 x float) return void
-    jmethodID cnstrctr = env->GetMethodID(polyRectClass, "<init>", "(FFFFFFFF)V");
-
-    if (cnstrctr == 0)
-        __android_log_write(ANDROID_LOG_INFO, "DkPageSegmentation", "did not find constructor!");
-
-    // convert the polyRects vector to a Java array:
-    jobjectArray outJNIArray = env->NewObjectArray(polyRects.size(), polyRectClass, NULL);
-
-    //jobject patch1 = env->NewObject(patchClass, cnstrctr, 1, 42, 3, 4, 5.4);
-    jobject polyRect;
-
-
-    for (int i = 0; i < polyRects.size(); i++) {
-
-        std::vector<cv::Point> points = polyRects[i].toCvPoints();
-
-        // TODO: check why this happens:
-        if (points.empty()) {
-
-            std::stringstream strs;
-            strs << i;
-            std::string temp_str = strs.str();
-            char* char_type = (char*) temp_str.c_str();
-
-            __android_log_write(ANDROID_LOG_INFO, "DocScanInterfaceEmpty", char_type);
-
-            continue;
-
-
-        }
-        else {
-
-            std::stringstream strs;
-            strs << i;
-            std::string temp_str = strs.str();
-            char* char_type = (char*) temp_str.c_str();
-
-            __android_log_write(ANDROID_LOG_INFO, "DocScanInterfaceNotEmpty", char_type);
-
-        }
-
-        polyRect = env->NewObject(polyRectClass, cnstrctr,
-            (float) points[0].x, (float)  points[0].y, (float) points[1].x, (float) points[1].y, (float) points[2].x, (float) points[2].y, (float) points[3].x, (float) points[3].y);
-
-        env->SetObjectArrayElement(outJNIArray, i, polyRect);
-
-
-    }
-
-    /*
-    std::stringstream strs;
-    strs << polyRects.size();
-    std::string temp_str = strs.str();
-    char* char_type = (char*) temp_str.c_str();
-
-    __android_log_write(ANDROID_LOG_INFO, "DocScanInterface", char_type);
-    */
-
-
-
-    //return outJNIArray;
-
-
-
-    env->ReleaseIntArrayElements(bgra, _bgra, 0);
-    env->ReleaseByteArrayElements(yuv, _yuv, 0);
-
-}
-
 JNIEXPORT jdouble JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetIllumination(JNIEnv * env, jclass cls, jlong src, jobject polyRect) {
 
     //dsc::DkIllumination::apply(*((cv::Mat*)src), (DkPolyRect) polyRect);
@@ -173,26 +78,27 @@ JNIEXPORT jdouble JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nat
 
 }
 
-JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetPageSegmentation(JNIEnv * env, jclass cls, jlong src, jboolean useLab) {
+JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetPageSegmentation(JNIEnv * env, jclass cls, jlong src, jboolean useLab, jobject jOldRect) {
 
-
-
+    dsc::DkPolyRect oldRect = cvt::jPolyRectToC(env, jOldRect);
 
     // call the main function:
-    std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(*((cv::Mat*)src), useLab);
-
-    jclass polyRectClass = env->FindClass("at/ac/tuwien/caa/docscan/camera/cv/DkPolyRect");
+    std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(*((cv::Mat*)src), useLab, oldRect);
 
     // JNI type signatures: http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
+    jclass jPolyRectClass = env->FindClass("at/ac/tuwien/caa/docscan/camera/cv/DkPolyRect");
 
     // "(FFFFFFFF)V" -> (8 x float) return void
-    jmethodID cnstrctr = env->GetMethodID(polyRectClass, "<init>", "(FFFFFFFF)V");
+    jmethodID cnstrctr = env->GetMethodID(
+        jPolyRectClass,
+        "<init>",
+        "(FFFFFFFFII)V");
 
     if (cnstrctr == 0)
         __android_log_write(ANDROID_LOG_INFO, "DkPageSegmentation", "did not find constructor!");
 
     // convert the polyRects vector to a Java array:
-    jobjectArray outJNIArray = env->NewObjectArray(polyRects.size(), polyRectClass, NULL);
+    jobjectArray outJRects = env->NewObjectArray(polyRects.size(), jPolyRectClass, NULL);
 
     //jobject patch1 = env->NewObject(patchClass, cnstrctr, 1, 42, 3, 4, 5.4);
     jobject polyRect;
@@ -205,14 +111,24 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrappe
          if (points.empty())
             continue;
 
-        polyRect = env->NewObject(polyRectClass, cnstrctr,
-            (float) points[0].x, (float)  points[0].y, (float) points[1].x, (float) points[1].y, (float) points[2].x, (float) points[2].y, (float) points[3].x, (float) points[3].y);
+        polyRect = env->NewObject(
+            jPolyRectClass,
+            cnstrctr,
+            (float) points[0].x,
+            (float) points[0].y,
+            (float) points[1].x,
+            (float) points[1].y,
+            (float) points[2].x,
+            (float) points[2].y,
+            (float) points[3].x,
+            (float) points[3].y,
+            polyRects[i].channel(),
+            polyRects[i].threshold());
 
-        env->SetObjectArrayElement(outJNIArray, i, polyRect);
-
+        env->SetObjectArrayElement(outJRects, i, polyRect);
     }
 
-    return outJNIArray;
+    return outJRects;
 
 }
 
@@ -260,6 +176,43 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrappe
 
     //return env->NewObject(c, cnstrctr, 1, 2, 3, 4, 5.4);
     return outJNIArray;
+
+}
+
+namespace cvt {
+
+dsc::DkPolyRect jPolyRectToC(JNIEnv * env, jobject jRect) {
+
+    jclass jRectClass = env->GetObjectClass(jRect);
+
+    std::vector<cv::Point> pts = std::vector<cv::Point>();
+
+    float x1 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX1", "()F"));
+    float y1 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY1", "()F"));
+    pts.push_back(cv::Point(x1, y1));
+
+    float x2 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX2", "()F"));
+    float y2 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY2", "()F"));
+    pts.push_back(cv::Point(x2, y2));
+
+    float x3 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX3", "()F"));
+    float y3 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY3", "()F"));
+    pts.push_back(cv::Point(x3, y3));
+
+    float x4 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX4", "()F"));
+    float y4 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY4", "()F"));
+    pts.push_back(cv::Point(x4, y4));
+
+    int chl = env->CallIntMethod(jRect, env->GetMethodID(jRectClass, "channel", "()I"));
+    int thr = env->CallIntMethod(jRect, env->GetMethodID(jRectClass, "threshold", "()I"));
+
+    dsc::DkPolyRect p = dsc::DkPolyRect(pts);
+    p.setChannel(chl);
+    p.setThreshold(thr);
+
+    return p;
+
+}
 
 }
 

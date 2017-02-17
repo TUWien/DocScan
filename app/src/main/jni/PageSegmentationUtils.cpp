@@ -342,6 +342,22 @@ bool DkPolyRect::compArea(const DkPolyRect& pl, const DkPolyRect& pr) {
 	return pl.getAreaConst() < pr.getAreaConst();
 }
 
+void DkPolyRect::setThreshold(int thr) {
+	mThrIndex = thr;
+}
+
+int DkPolyRect::threshold() const {
+	return mThrIndex;
+}
+
+void DkPolyRect::setChannel(int chl) {
+	mChlIndex = chl;
+}
+
+int DkPolyRect::channel() const {
+	return mChlIndex;
+}
+
 //DkRotatingRect DkPolyRect::toRotatingRect() const {
 //
 //	if (empty())
