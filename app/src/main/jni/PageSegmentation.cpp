@@ -148,7 +148,7 @@ void DkPageSegmentation::findRectanglesLab(const cv::Mat & img, std::vector<DkPo
 		cv::mixChannels(&imgLab, 1, &imgL, 1, ch, 1);
 		std::vector<DkPolyRect> cr;
 		findRectangles(imgL, rects, idx, thr);
-		std::cout << rects.size() << " after channel " << idx << std::endl;
+		//std::cout << rects.size() << " after channel " << idx << std::endl;
 	}
 }
 
@@ -269,7 +269,6 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 		//cv::cvtColor(pImg, pImg, CV_RGB2BGR);
 		//cv::imwrite("C:/VSProjects/DocScan/img/tests/poly" + Utils::num2str(thr) + ".png", pImg);
 		// DEBUG ------------------------
-		std::cout << "computing thresh: " << thr << std::endl;
 	}
 
 	for (size_t idx = 0; idx < rectsL.size(); idx++)
