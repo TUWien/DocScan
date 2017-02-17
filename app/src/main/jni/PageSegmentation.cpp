@@ -159,7 +159,7 @@ void DkPageSegmentation::findRectangles(const cv::Mat& img, std::vector<DkPolyRe
 
 	// downscale
 	if (scale != 1.0f)
-		cv::resize(imgL, imgL, cv::Size(), scale, scale, CV_INTER_AREA);
+		cv::resize(imgL, imgL, cv::Size(), scale, scale, CV_INTER_LINEAR);
 
 	std::vector<std::vector<cv::Point> > contours;
 
