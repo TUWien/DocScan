@@ -49,6 +49,10 @@ import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.CAMERA_FRAME;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FOCUS_MEASURE;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
+
 /**
  * Class for showing the camera preview. This class is extending SurfaceView and making use of the
  * Camera API. The received frames are converted to OpenCV Mat's in a fixed time interval. The Mat
@@ -528,8 +532,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (CameraActivity.isDebugViewEnabled()) {
 
             // Take care that in this case the timer is first stopped (contrary to the other calls):
-            mTimerCallbacks.onTimerStopped(TaskTimer.CAMERA_FRAME_ID);
-            mTimerCallbacks.onTimerStarted(TaskTimer.CAMERA_FRAME_ID);
+            mTimerCallbacks.onTimerStopped(CAMERA_FRAME);
+            mTimerCallbacks.onTimerStarted(CAMERA_FRAME);
 
         }
 
@@ -540,9 +544,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             // TODO: check if the threads are still in their execution state and wait until they have finished.
             synchronized (this) {
 
-                // Measure the time if required:
-                if (CameraActivity.isDebugViewEnabled())
-                    mTimerCallbacks.onTimerStarted(TaskTimer.MAT_CONVERSION_ID);
+//                // Measure the time if required:
+//                if (CameraActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStarted(MAT_CONVERSION);
 
                 // 1.5 since YUV
                 Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
@@ -555,8 +559,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
                 yuv.release();
 
-                if (CameraActivity.isDebugViewEnabled())
-                    mTimerCallbacks.onTimerStopped(TaskTimer.MAT_CONVERSION_ID);
+//                if (CameraActivity.isDebugViewEnabled())
+//                    mTimerCallbacks.onTimerStopped(MAT_CONVERSION);
 
                 mLastTime = currentTime;
 
@@ -886,12 +890,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 //                // Measure the time if required:
                             if (CameraActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStarted(TaskTimer.FOCUS_MEASURE_ID);
+                                mTimerCallbacks.onTimerStarted(FOCUS_MEASURE);
 
                             Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
+//                            Patch[] patches = {new Patch()};
 
                             if (CameraActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStopped(TaskTimer.FOCUS_MEASURE_ID);
+                                mTimerCallbacks.onTimerStopped(FOCUS_MEASURE);
 
                             mCVCallback.onFocusMeasured(patches);
 
@@ -951,14 +956,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                             // Measure the time if required:
                             if (CameraActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStarted(TaskTimer.PAGE_SEGMENTATION_ID);
+                                mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
 
 
 
                             DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
+//                            DkPolyRect[] polyRects = {new DkPolyRect()};
 
                             if (CameraActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStopped(TaskTimer.PAGE_SEGMENTATION_ID);
+                                mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
 
                             mCVCallback.onPageSegmented(polyRects);
 
@@ -1012,16 +1018,16 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                         if (mIsRunning) {
 
-                            // Measure the time if required:
-                            if (CameraActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStarted(TaskTimer.ILLUMINATION_ID);
+//                            // Measure the time if required:
+//                            if (CameraActivity.isDebugViewEnabled())
+//                                mTimerCallbacks.onTimerStarted(ILLUMINATION);
 
                             double illuminationValue = -1;
                             if (mIlluminationRect != null)
                                 illuminationValue = NativeWrapper.getIllumination(mFrameMat, mIlluminationRect);
 
-                            if (CameraActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStopped(TaskTimer.ILLUMINATION_ID);
+//                            if (CameraActivity.isDebugViewEnabled())
+//                                mTimerCallbacks.onTimerStopped(ILLUMINATION);
 
                             mCVCallback.onIluminationComputed(illuminationValue);
 

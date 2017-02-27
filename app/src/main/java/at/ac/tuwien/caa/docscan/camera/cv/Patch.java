@@ -81,6 +81,10 @@ public class Patch {
 
     }
 
+    public Patch() {
+
+    }
+
     /**
      * Returns the x coordinate of the center in frame coordinates
      * @return the x coordinate in frame coordinates

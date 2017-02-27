@@ -25,19 +25,20 @@ package at.ac.tuwien.caa.docscan.camera;
 
 import java.util.ArrayList;
 
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.CAMERA_FRAME;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FOCUS_MEASURE;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
+
 /**
  * Class used to measure the execution time of time intensive tasks. Each task has an ID and a an
  * assigned execution time.
  */
 public class TaskTimer {
 
-
-    public static final int FOCUS_MEASURE_ID = 0;
-    public static final int PAGE_SEGMENTATION_ID = 1;
-    public static final int DRAW_VIEW_ID = 2;
-    public static final int CAMERA_FRAME_ID = 3;
-    public static final int MAT_CONVERSION_ID = 4;
-    public static final int ILLUMINATION_ID = 5;
+    public enum TaskType {
+        FOCUS_MEASURE, PAGE_SEGMENTATION, DRAW_VIEW, CAMERA_FRAME, SHOT_TIME
+    }
 
     private ArrayList<Task> mTasks;
 
@@ -47,21 +48,21 @@ public class TaskTimer {
     public TaskTimer() {
 
         mTasks = new ArrayList<>();
-        mTasks.add(new Task(FOCUS_MEASURE_ID));
-        mTasks.add(new Task(PAGE_SEGMENTATION_ID));
-        mTasks.add(new Task(DRAW_VIEW_ID));
-        mTasks.add(new Task(CAMERA_FRAME_ID));
-        mTasks.add(new Task(MAT_CONVERSION_ID));
+        mTasks.add(new Task(FOCUS_MEASURE));
+        mTasks.add(new Task(PAGE_SEGMENTATION));
+        mTasks.add(new Task(CAMERA_FRAME));
+        mTasks.add(new Task(SHOT_TIME));
 
     }
 
+
     /**
      * Starts a timer.
-     * @param taskId ID of the task
+     * @param type
      */
-    public void startTaskTimer(int taskId) {
+    public void startTaskTimer(TaskType type) {
 
-        Task task = getTask(taskId);
+        Task task = getTask(type);
         if (task != null)
             task.startTimer();
 
@@ -69,12 +70,12 @@ public class TaskTimer {
 
     /**
      * Stops the timer and returns the execution time.
-     * @param taskId ID of the task
+     * @param type
      * @return time in milliseconds
      */
-    public long getTaskTime(int taskId) {
+    public long getTaskTime(TaskType type) {
 
-        Task task = getTask(taskId);
+        Task task = getTask(type);
         if (task != null)
             return task.stopTimer();
         else
@@ -82,15 +83,16 @@ public class TaskTimer {
 
     }
 
+
     /**
      * Finds a task by ID in the task list.
-     * @param taskId ID of the task
+     * @param type
      * @return Task
      */
-    private Task getTask(int taskId) {
+    private Task getTask(TaskType type) {
 
         for (Task task : mTasks) {
-            if (task.getId() == taskId)
+            if (task.getType() == type)
                 return task;
         }
 
@@ -98,11 +100,10 @@ public class TaskTimer {
 
     }
 
-
     public interface TimerCallbacks {
 
-        void onTimerStarted(int senderId);
-        void onTimerStopped(int senderId);
+        void onTimerStarted(TaskType type);
+        void onTimerStopped(TaskType type);
 
     }
 
@@ -112,18 +113,15 @@ public class TaskTimer {
     private class Task {
 
         private long mStartTime;
-        private int mId;
+        private TaskType mType;
 
-        private Task(int id) {
 
-            mId = id;
-
+        private Task(TaskType type) {
+            mType = type;
         }
 
-        private int getId() {
-
-            return mId;
-
+        private TaskType getType() {
+            return mType;
         }
 
         private void startTimer() {
