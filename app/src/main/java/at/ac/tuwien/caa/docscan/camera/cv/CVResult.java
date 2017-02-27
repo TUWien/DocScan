@@ -302,6 +302,8 @@ public class CVResult {
 
     private int getCVState() {
 
+//        return DOCUMENT_STATE_OK;
+
         if (mDKPolyRects == null)
             return DOCUMENT_STATE_EMPTY;
 
@@ -327,11 +329,11 @@ public class CVResult {
         if (!isSharp())
             return DOCUMENT_STATE_UNSHARP;
 
-        if (!mIsIlluminationComputed)
-            return DOCUMENT_STATE_NO_ILLUMINATION_MEASURED;
-
-        if (!isIlluminationOK())
-            return DOCUMENT_STATE_BAD_ILLUMINATION;
+//        if (!mIsIlluminationComputed)
+//            return DOCUMENT_STATE_NO_ILLUMINATION_MEASURED;
+//
+//        if (!isIlluminationOK())
+//            return DOCUMENT_STATE_BAD_ILLUMINATION;
 
         return DOCUMENT_STATE_OK;
 

@@ -22,7 +22,6 @@ public class CameraPaintLayout extends FrameLayout {
         mFrameWidth = frameWidth;
         mFrameHeight = frameHeight;
 
-
     }
 
     @Override
@@ -41,7 +40,6 @@ public class CameraPaintLayout extends FrameLayout {
 
             // Portrait mode:
             if (width < height) {
-
                 double resizeFac = (double) width / mFrameHeight;
                 int scaledHeight = (int) Math.round(mFrameWidth * resizeFac);
                 if (scaledHeight > height)
@@ -51,7 +49,6 @@ public class CameraPaintLayout extends FrameLayout {
 
             // Landscape mode:
             else {
-
                 double resizeFac = (double) height / mFrameHeight;
                 int scaledWidth = (int) Math.round(mFrameWidth * resizeFac);
                 if (scaledWidth > width)

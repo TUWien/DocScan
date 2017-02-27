@@ -147,7 +147,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
     private final static int SERIES_POS = 1;
-    private boolean mIsFrameChanged = true;
+    private TaskTimer.TimerCallbacks mTimerCallbacks;
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -277,6 +277,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         setupNavigationDrawer();
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
+        mTimerCallbacks = this;
         mTextView = (TextView) findViewById(R.id.instruction_view);
 
         mIsDebugViewEnabled = (mDebugViewFragment == null);
@@ -338,6 +339,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.actionbar_menu, menu);
 
@@ -348,6 +350,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             mFlashMenuItem.setVisible(true);
 
         return true;
+
     }
 
     @SuppressWarnings("deprecation")
@@ -584,6 +587,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
 
+                mTimerCallbacks.onTimerStopped(TaskTimer.TaskType.SHOT_TIME);
+                mTimerCallbacks.onTimerStarted(TaskTimer.TaskType.SHOT_TIME);
+
                 // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
                 mCameraPreview.getCamera().startPreview();
                 requestPictureSave(data);
@@ -706,8 +712,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
      */
     private void takePicture() {
 
-        mCameraPreview.storeMat();
-
         mIsPictureSafe = false;
         Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
             @Override
@@ -716,6 +720,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             }
         };
         mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
+
+        mCameraPreview.storeMat();
 
     }
 
@@ -950,6 +956,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
+
     }
 
     /**
@@ -1093,15 +1100,15 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     /**
      * Called before a task is executed. This is used to measure the time of the task execution.
      *
-     * @param senderId ID of the sender, as defined in TaskTimer.
+     * @param type TaskType of the sender, as defined in TaskTimer.
      */
     @Override
-    public void onTimerStarted(int senderId) {
+    public void onTimerStarted(TaskTimer.TaskType type) {
 
         if (mTaskTimer == null)
             return;
 
-        mTaskTimer.startTaskTimer(senderId);
+        mTaskTimer.startTaskTimer(type);
 
 
     }
@@ -1109,15 +1116,15 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     /**
      * Called after a task is executed. This is used to measure the time of the task execution.
      *
-     * @param senderId ID of the sender, as defined in TaskTimer.
+     * @param type
      */
     @Override
-    public void onTimerStopped(final int senderId) {
+    public void onTimerStopped(final TaskTimer.TaskType type) {
 
         if (mTaskTimer == null)
             return;
 
-        final long timePast = mTaskTimer.getTaskTime(senderId);
+        final long timePast = mTaskTimer.getTaskTime(type);
 
         // Normally the timer callback should just be called if the debug view is visible:
         if (mIsDebugViewEnabled) {
@@ -1127,7 +1134,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        mDebugViewFragment.setTimeText(senderId, timePast);
+                        mDebugViewFragment.setTimeText(type, timePast);
                     }
                 });
             }
@@ -1247,6 +1254,12 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         if (moved)
             setTextViewText(R.string.instruction_movement);
+        else {
+            // This forces an update of the textview if it is still showing the R.string.instruction_movement text
+            if (mTextView.getText() == getResources().getString(R.string.instruction_movement))
+                setTextViewText(R.string.instruction_none);
+        }
+
 
     }
 
@@ -1373,28 +1386,31 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
             mCameraPreview.startFocusMeasurement(true);
         }
-        // Check if we need the illumination measurement at this point:
-        else if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
 
-            if (mCVResult.getDKPolyRects() == null)
-                return;
-            if (mCVResult.getDKPolyRects().length == 0)
-                return;
+//        This is used for the computation of the illumination:
 
-            mCameraPreview.setIlluminationRect(mCVResult.getDKPolyRects()[0]);
-            mCameraPreview.startIllumination(true);
-            mCVResult.setIsIlluminationComputed(true);
-
-        }
-
-        else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
-            mCameraPreview.startIllumination(false);
-            mCVResult.setIsIlluminationComputed(false);
-//            if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
-//                mCameraPreview.startFocusMeasurement(false);
-//                mCVResult.setPatches(null);
-//            }
-        }
+//        // Check if we need the illumination measurement at this point:
+//        else if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
+//
+//            if (mCVResult.getDKPolyRects() == null)
+//                return;
+//            if (mCVResult.getDKPolyRects().length == 0)
+//                return;
+//
+//            mCameraPreview.setIlluminationRect(mCVResult.getDKPolyRects()[0]);
+//            mCameraPreview.startIllumination(true);
+//            mCVResult.setIsIlluminationComputed(true);
+//
+//        }
+//
+//        else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
+//            mCameraPreview.startIllumination(false);
+//            mCVResult.setIsIlluminationComputed(false);
+////            if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
+////                mCameraPreview.startFocusMeasurement(false);
+////                mCVResult.setPatches(null);
+////            }
+//        }
 
         final String msg;
 

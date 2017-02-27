@@ -36,9 +36,8 @@
     <string name="table_head_time_text">time (ms)</string>
     <string name="focus_measure_debug_text">Focus measure:</string>
     <string name="page_segmentation_debug_text">Page segmentation:</string>
-    <string name="camera_frame_debug_text">Camera frame:</string>
-    <string name="mat_conversion_debug_text">Mat conversion:</string>
-    <string name="draw_view_debug_text">Draw view:</string>
+    <string name="fps_debug_text">FPS:</string>
+    <string name="inter_shot_text">Time between shots:</string>
 
     <!-- Use in the debug view: end -->
 
@@ -64,6 +63,7 @@
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>
     <string name="instruction_movement">Too much movement</string>
+    <string name="instruction_none"></string>
     <string name="dont_move_text">Do not move</string>
 
     <!-- Login -->

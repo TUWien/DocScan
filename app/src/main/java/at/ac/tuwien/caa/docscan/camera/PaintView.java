@@ -44,7 +44,6 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 /**
  * Class responsible for drawing the results of the page segmentation and focus measurement tasks.
@@ -433,8 +432,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 return;
             }
 
-            if (CameraActivity.isDebugViewEnabled())
-                mTimerCallbacks.onTimerStarted(TaskTimer.DRAW_VIEW_ID);
+//            if (CameraActivity.isDebugViewEnabled())
+//                mTimerCallbacks.onTimerStarted(DRAW_VIEW);
 
 //            Clear the screen from previous drawings:
             canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
@@ -466,8 +465,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             }
 
-            if (CameraActivity.isDebugViewEnabled())
-                mTimerCallbacks.onTimerStopped(TaskTimer.DRAW_VIEW_ID);
+//            if (CameraActivity.isDebugViewEnabled())
+//                mTimerCallbacks.onTimerStopped(DRAW_VIEW);
 
         }
 
