@@ -145,6 +145,10 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
             for (int i = 0; i < items.length; i++) {
                 MenuItem item = menu.findItem(items[i].getId());
                 if (item != null) {
+                    // TODO: this removes the login item temporary:
+                    if (item.getItemId() == R.id.login_item)
+                        continue;
+
                     item.setVisible(true);
                     item.setIcon(items[i].getIconResource());
                     item.setTitle(items[i].getTitleResource());
