@@ -103,6 +103,16 @@ public class CVResult {
 
     }
 
+    public void flushResults() {
+
+        synchronized (this) {
+            mDKPolyRects  = new DkPolyRect[0];
+            mPatches = new Patch[0];
+//            mDKPolyRects[0] = new DkPolyRect();
+        }
+
+    }
+
     public DkPolyRect[] getDKPolyRects() {
 
         return mDKPolyRects;
@@ -395,8 +405,6 @@ public class CVResult {
 
         float drawViewPX = -1;
         float drawViewPY = -1;
-
-        // TODO: check out coordination conversation with tablets
 
         switch (orientation) {
 

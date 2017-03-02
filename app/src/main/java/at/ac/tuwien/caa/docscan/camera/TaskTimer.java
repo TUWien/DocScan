@@ -26,7 +26,10 @@ package at.ac.tuwien.caa.docscan.camera;
 import java.util.ArrayList;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.CAMERA_FRAME;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FOCUS_MEASURE;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.MOVEMENT_CHECK;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.NEW_DOC;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 
@@ -37,7 +40,8 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 public class TaskTimer {
 
     public enum TaskType {
-        FOCUS_MEASURE, PAGE_SEGMENTATION, DRAW_VIEW, CAMERA_FRAME, SHOT_TIME
+        FOCUS_MEASURE, PAGE_SEGMENTATION, DRAW_VIEW, CAMERA_FRAME, SHOT_TIME, FLIP_SHOT_TIME,
+        MOVEMENT_CHECK, NEW_DOC
     }
 
     private ArrayList<Task> mTasks;
@@ -52,6 +56,9 @@ public class TaskTimer {
         mTasks.add(new Task(PAGE_SEGMENTATION));
         mTasks.add(new Task(CAMERA_FRAME));
         mTasks.add(new Task(SHOT_TIME));
+        mTasks.add(new Task(FLIP_SHOT_TIME));
+        mTasks.add(new Task(MOVEMENT_CHECK));
+        mTasks.add(new Task(NEW_DOC));
 
     }
 

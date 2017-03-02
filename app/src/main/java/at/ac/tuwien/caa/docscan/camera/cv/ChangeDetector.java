@@ -19,7 +19,7 @@ public class ChangeDetector {
 
     private static int FRAME_SIZE = 300;
     private static final String TAG = "ChangeDetector";
-    private static final long MIN_STEADY_TIME = 100;        // The time in which there must be no movement.
+    private static final long MIN_STEADY_TIME = 300;        // The time in which there must be no movement.
     private static final double CHANGE_THRESH = 0.05;       // A threshold describing a movement between successive frames.
     private static final double DIFFERENCE_THRESH = 0.1;    // Used to measure the difference between a current frame and the frame that has been written to disk
 
@@ -51,7 +51,6 @@ public class ChangeDetector {
 
         mNewFrameDetector.apply(tmp, fg, 1);
 
-
     }
 
     private static void initFrameSize(Mat frame) {
@@ -63,7 +62,6 @@ public class ChangeDetector {
 
         mFrameWidth = (int) Math.round(frame.cols() * resizeFac);
         mFrameHeight = (int) Math.round(frame.rows() * resizeFac);
-
 
     }
 

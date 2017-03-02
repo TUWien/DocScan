@@ -96,6 +96,9 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
+
 /**
  * The main class of the app. It is responsible for creating the other views and handling
  * callbacks from the created views as well as user input.
@@ -587,8 +590,11 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
 
-                mTimerCallbacks.onTimerStopped(TaskTimer.TaskType.SHOT_TIME);
-                mTimerCallbacks.onTimerStarted(TaskTimer.TaskType.SHOT_TIME);
+                Log.d(TAG, "taking picture");
+
+                mTimerCallbacks.onTimerStopped(SHOT_TIME);
+                mTimerCallbacks.onTimerStarted(SHOT_TIME);
+                mTimerCallbacks.onTimerStopped(FLIP_SHOT_TIME);
 
                 // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
                 mCameraPreview.getCamera().startPreview();
@@ -1105,6 +1111,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @Override
     public void onTimerStarted(TaskTimer.TaskType type) {
 
+        // Do nothing if the debug view is not visible:
+        if (!mIsDebugViewEnabled)
+            return;
+
         if (mTaskTimer == null)
             return;
 
@@ -1145,16 +1155,16 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     }
 
 
-    /**
-     * Returns true if the debug view is visible. Mainly used before TaskTimer events are triggered.
-     *
-     * @return boolean
-     */
-    public static boolean isDebugViewEnabled() {
-
-        return mIsDebugViewEnabled;
-
-    }
+//    /**
+//     * Returns true if the debug view is visible. Mainly used before TaskTimer events are triggered.
+//     *
+//     * @return boolean
+//     */
+//    public static boolean isDebugViewEnabled() {
+//
+//        return mIsDebugViewEnabled;
+//
+//    }
 
     // ================= stop: CALLBACKS invoking TaskTimer =================
 
@@ -1252,8 +1262,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         mPaintView.drawMovementIndicator(moved);
 
-        if (moved)
+        if (moved) {
+            mCVResult.flushResults();
             setTextViewText(R.string.instruction_movement);
+        }
         else {
             // This forces an update of the textview if it is still showing the R.string.instruction_movement text
             if (mTextView.getText() == getResources().getString(R.string.instruction_movement))

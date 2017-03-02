@@ -4,7 +4,7 @@
     <!--=================== PAGE SEGMENTATION ===================-->
 
     <!-- The minimum ratio between page segmentation area and the overall area (i.e. entire frame) - in percent. -->
-    <integer name="min_page_area_percentage">30</integer>
+    <integer name="min_page_area_percentage">10</integer>
     <!-- The maximum angle within a page segmentation result that is valid. This is used to detect perspective distortions - in degrees. -->
     <integer name="max_page_angle">97</integer>
     <!-- The maximum rotation angle of the page segmentation result - in degrees. -->

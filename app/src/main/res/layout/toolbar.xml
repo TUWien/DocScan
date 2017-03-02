@@ -6,8 +6,8 @@
     android:layout_height="?attr/actionBarSize"
     android:background="@color/navigation_drawer_bg_color"
     android:elevation="4dp"
-    app:theme="@style/CustomActionBar"/>
-
+/>
+    <!--app:theme="@style/CustomActionBar"-->
     <!--xmlns:app="http://schemas.android.com/tools"-->
     <!--android:background="?attr/colorPrimary"-->
     <!--android:theme="@style/ThemeOverlay.AppCompat.ActionBar"-->

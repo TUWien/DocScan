@@ -50,7 +50,10 @@ import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.CAMERA_FRAME;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FOCUS_MEASURE;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.MOVEMENT_CHECK;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.NEW_DOC;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 
 /**
@@ -90,7 +93,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private long mLastTime;
 
     // Used for generating mFrameMat at a 'fixed' frequency:
-    private static long FRAME_TIME_DIFF = 200;
+    private static long FRAME_TIME_DIFF = 10;
 
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
@@ -529,24 +532,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mIsImageProcessingPaused)
             return;
 
-        if (CameraActivity.isDebugViewEnabled()) {
-
-            // Take care that in this case the timer is first stopped (contrary to the other calls):
-            mTimerCallbacks.onTimerStopped(CAMERA_FRAME);
-            mTimerCallbacks.onTimerStarted(CAMERA_FRAME);
-
-        }
+        updateFPS();
 
         long currentTime = System.currentTimeMillis();
 
         if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
 
-            // TODO: check if the threads are still in their execution state and wait until they have finished.
             synchronized (this) {
-
-//                // Measure the time if required:
-//                if (CameraActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStarted(MAT_CONVERSION);
 
                 // 1.5 since YUV
                 Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
@@ -559,37 +551,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
                 yuv.release();
 
-//                if (CameraActivity.isDebugViewEnabled())
-//                    mTimerCallbacks.onTimerStopped(MAT_CONVERSION);
-
                 mLastTime = currentTime;
 
-
-//                Check if there is sufficient image change between the current frame and the last image taken:
-                boolean isFrameSteady, isFrameDifferent;
-
-                if (mAwaitFrameChanges) {
-//                    The ChangeDetector is only initialized after an image has been taken:
-                    if (ChangeDetector.isInitialized()) {
-                        isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
-                        if (!isFrameSteady) {
-                            mCameraPreviewCallback.onMovement(true);
-                            return;
-                        }
-                        else
-                            mCameraPreviewCallback.onMovement(false);
-
-                        isFrameDifferent = ChangeDetector.isNewFrame(mFrameMat);
-//                        isFrameDifferent = ChangeDetector.isFrameDifferent(mFrameMat);
-                        if (!isFrameDifferent) {
-                            mCameraPreviewCallback.onWaitingForDoc(true);
-                            return;
-                        }
-                        else
-                            mCameraPreviewCallback.onWaitingForDoc(false);
-
-                    }
-                }
+                // This is done in series mode:
+                if (mAwaitFrameChanges)
+                    checkFrameChanges();
 
 //                    If the frame is steady and contains a change, do the document analysis:
                 this.notify();
@@ -597,6 +563,101 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             }
 
         }
+
+        /*
+        //                Check if there is sufficient image change between the current frame and the last image taken:
+                if (!mAwaitFrameChanges)
+                    startCVTasks();
+
+                else {
+
+                    boolean isFrameSteady, isFrameDifferent;
+//                    The ChangeDetector is only initialized after an image has been taken:
+                    if (ChangeDetector.isInitialized()) {
+
+                        // Check for movements:
+                        isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
+                        if (!isFrameSteady) {
+                            mCameraPreviewCallback.onMovement(true);
+                            mFrameDiffRequired = true; // We need to check after a movement if the frame content has changed.
+                            return;
+                        }
+                        else {
+                            mCameraPreviewCallback.onMovement(false);
+                        }
+
+                        if (mFrameDiffRequired) {
+
+                            mFrameDiffRequired = false;
+
+                            isFrameDifferent = ChangeDetector.isNewFrame(mFrameMat);
+                            //                        isFrameDifferent = ChangeDetector.isFrameDifferent(mFrameMat);
+                            if (!isFrameDifferent) {
+                                mCameraPreviewCallback.onWaitingForDoc(true);
+                                return;
+                            } else {
+                                mCameraPreviewCallback.onWaitingForDoc(false);
+                                mTimerCallbacks.onTimerStarted(FLIP_SHOT_TIME);
+                                Log.d(TAG, "new document found");
+
+//                                If the frame is steady and contains a change, do the document analysis:
+                                startCVTasks();
+                            }
+                        }
+
+                    }
+                    else
+                        startCVTasks();
+                }
+
+         */
+    }
+
+    private void checkFrameChanges() {
+
+//                Check if there is sufficient image change between the current frame and the last image taken:
+        boolean isFrameSteady;
+        boolean isFrameDifferent = false;
+
+//                    The ChangeDetector is only initialized after an image has been taken:
+        if (ChangeDetector.isInitialized()) {
+            mTimerCallbacks.onTimerStarted(MOVEMENT_CHECK);
+            isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
+            mTimerCallbacks.onTimerStopped(MOVEMENT_CHECK);
+
+            if (!isFrameSteady) {
+                mCameraPreviewCallback.onMovement(true);
+                return;
+            }
+            else {
+                mCameraPreviewCallback.onMovement(false);
+            }
+
+            if (!isFrameDifferent) {
+                mTimerCallbacks.onTimerStarted(NEW_DOC);
+                isFrameDifferent = ChangeDetector.isNewFrame(mFrameMat);
+                mTimerCallbacks.onTimerStopped(NEW_DOC);
+                //                        isFrameDifferent = ChangeDetector.isFrameDifferent(mFrameMat);
+                if (!isFrameDifferent) {
+                    mCameraPreviewCallback.onWaitingForDoc(true);
+                    return;
+                } else {
+                    mCameraPreviewCallback.onWaitingForDoc(false);
+                    mTimerCallbacks.onTimerStarted(FLIP_SHOT_TIME);
+                    Log.d(TAG, "new document found");
+                }
+            }
+
+        }
+
+    }
+
+    private void updateFPS() {
+
+        // Take care that in this case the timer is first stopped (contrary to the other calls):
+        mTimerCallbacks.onTimerStopped(CAMERA_FRAME);
+        mTimerCallbacks.onTimerStarted(CAMERA_FRAME);
+
     }
 
 
@@ -888,15 +949,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                         if (mIsRunning) {
 
-//                // Measure the time if required:
-                            if (CameraActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStarted(FOCUS_MEASURE);
+                            mTimerCallbacks.onTimerStarted(FOCUS_MEASURE);
 
                             Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
-//                            Patch[] patches = {new Patch()};
-
-                            if (CameraActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStopped(FOCUS_MEASURE);
+                            mTimerCallbacks.onTimerStopped(FOCUS_MEASURE);
 
                             mCVCallback.onFocusMeasured(patches);
 
@@ -954,17 +1010,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                         if (mIsRunning) {
 
-                            // Measure the time if required:
-                            if (CameraActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
-
-
+                            mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
 
                             DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
 //                            DkPolyRect[] polyRects = {new DkPolyRect()};
-
-                            if (CameraActivity.isDebugViewEnabled())
-                                mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
+                            mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
 
                             mCVCallback.onPageSegmented(polyRects);
 

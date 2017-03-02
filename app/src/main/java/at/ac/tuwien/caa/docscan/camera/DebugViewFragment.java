@@ -25,6 +25,7 @@ package at.ac.tuwien.caa.docscan.camera;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +39,8 @@ import at.ac.tuwien.caa.docscan.R;
 public class DebugViewFragment extends Fragment {
 
 
-    private TextView mFocusMeasureTextView, mPageSegmentationTextView, mCameraFrameTextView, mShotTextView;
+    private TextView mFocusMeasureTextView, mPageSegmentationTextView, mCameraFrameTextView,
+            mShotTextView, mFlipShotTextView, mMovementCheckTextView, mNewDocTextView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,6 +53,9 @@ public class DebugViewFragment extends Fragment {
         mPageSegmentationTextView = (TextView) debugView.findViewById(R.id.page_segmentation_time_view);
         mCameraFrameTextView = (TextView) debugView.findViewById(R.id.camera_frame_time_view);
         mShotTextView = (TextView) debugView.findViewById(R.id.inter_shot_time_view);
+        mFlipShotTextView = (TextView) debugView.findViewById(R.id.flip_shot_time_view);
+        mMovementCheckTextView = (TextView) debugView.findViewById(R.id.movement_check_time_view);
+        mNewDocTextView = (TextView) debugView.findViewById(R.id.new_doc_time_view);
 
         return debugView;
 
@@ -85,6 +90,17 @@ public class DebugViewFragment extends Fragment {
                 break;
             case SHOT_TIME:
                 textView = mShotTextView;
+                break;
+            case FLIP_SHOT_TIME:
+                textView = mFlipShotTextView;
+                break;
+            case MOVEMENT_CHECK:
+                textView = mMovementCheckTextView;
+                Log.d(this.getTag(), "time: " + time);
+                break;
+            case NEW_DOC:
+                textView = mNewDocTextView;
+                Log.d(this.getTag(), "new doc time: " + time);
                 break;
         }
 
