@@ -91,6 +91,53 @@
         android:textColor="@color/white"
         />
 
+    <TextView
+        android:id="@+id/flip_shot_label_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/flip_shot_text"
+        android:textColor="@color/white"
+        />
+
+    <TextView
+        android:id="@+id/flip_shot_time_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        />
+
+    <TextView
+        android:id="@+id/movement_check_label_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/movement_check_text"
+        android:textColor="@color/white"
+        />
+
+    <TextView
+        android:id="@+id/movement_check_time_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        />
+
+    <TextView
+        android:id="@+id/new_doc_label_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/new_doc_text"
+        android:textColor="@color/white"
+        />
+
+    <TextView
+        android:id="@+id/new_doc_time_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        />
+
+
+
 
     <!--&lt;!&ndash; Mat conversion &ndash;&gt;-->
     <!--<TextView-->
