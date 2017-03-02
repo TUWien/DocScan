@@ -33,11 +33,12 @@
             android:title=""
             />
         <item
-            android:id="@+id/login_item"
+            android:id="@+id/about_item"
             android:title=""
             />
+
         <item
-            android:id="@+id/about_item"
+            android:id="@+id/login_item"
             android:title=""
             />
     </group>

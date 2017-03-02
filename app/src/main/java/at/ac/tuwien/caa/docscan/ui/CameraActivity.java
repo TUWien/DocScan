@@ -29,6 +29,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -149,8 +150,11 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private byte[] mPictureData;
     private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
+    private final static int SINGLE_POS = 0;
     private final static int SERIES_POS = 1;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
+
+
 
     /**
      * Static initialization of the OpenCV and docscan-native modules.
@@ -204,6 +208,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             mCameraPreview.pause();
 
 //        MovementDetector.getInstance(this.getApplicationContext()).stop();
+
+        savePreferences();
 
         super.onPause();
 
@@ -306,18 +312,28 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         requestLocation();
 
+        loadPreferences();
 
-//        MovementDetector.getInstance(this.getApplicationContext()).addListener(new MovementDetector.Listener() {
-//
-//            @Override
-//            public void onMotionDetected(SensorEvent event, float acceleration) {
-//
-//                Log.d(TAG, "Acceleration: " + acceleration);
-//                if (mCameraPreview != null)
-//                    mCameraPreview.cancelAutoFocus();
-//
-//            }
-//        });
+    }
+
+    private void loadPreferences() {
+
+        // Concerning series mode:
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        boolean seriesModeDefault = getResources().getBoolean(R.bool.series_mode_default);
+        mIsSeriesMode = sharedPref.getBoolean(getString(R.string.series_mode_key), seriesModeDefault);
+        updateShootButton();
+        updateShootModeSpinner();
+
+    }
+
+    private void savePreferences() {
+
+        // Concerning series mode:
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(getString(R.string.series_mode_key), mIsSeriesMode);
+        editor.commit();
 
     }
 
@@ -682,6 +698,15 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
+    private void updateShootModeSpinner() {
+
+        Spinner shootModeSpinner = (Spinner) findViewById(R.id.shoot_mode_spinner);
+        if (mIsSeriesMode)
+            shootModeSpinner.setSelection(SERIES_POS);
+        else
+            shootModeSpinner.setSelection(SINGLE_POS);
+
+    }
 
     private void updateShootButton() {
 
