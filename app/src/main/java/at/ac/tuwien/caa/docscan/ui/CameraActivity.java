@@ -322,6 +322,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         boolean seriesModeDefault = getResources().getBoolean(R.bool.series_mode_default);
         mIsSeriesMode = sharedPref.getBoolean(getString(R.string.series_mode_key), seriesModeDefault);
+        boolean seriesModePausedDefault = getResources().getBoolean(R.bool.series_mode_paused_default);
+        mIsSeriesModePaused = sharedPref.getBoolean(getString(R.string.series_mode_paused_key), seriesModePausedDefault);
         updateShootButton();
         updateShootModeSpinner();
 
@@ -332,7 +334,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         // Concerning series mode:
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
+
         editor.putBoolean(getString(R.string.series_mode_key), mIsSeriesMode);
+        editor.putBoolean(getString(R.string.series_mode_paused_key), mIsSeriesModePaused);
+
         editor.commit();
 
     }
@@ -710,6 +715,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     private void updateShootButton() {
 
+
+
         ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
         if (photoButton == null)
             return;
@@ -726,6 +733,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             drawable = R.drawable.ic_photo_camera;
 
         photoButton.setImageResource(drawable);
+
+        // TODO: put this into a method used for restoring generic states:
+        if (mIsSeriesMode)
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
     }
 
