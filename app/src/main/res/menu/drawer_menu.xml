@@ -36,6 +36,10 @@
             android:id="@+id/about_item"
             android:title=""
             />
+        <item
+            android:id="@+id/share_log_item"
+            android:title=""
+            />
 
         <item
             android:id="@+id/login_item"

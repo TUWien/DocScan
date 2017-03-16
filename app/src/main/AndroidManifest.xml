@@ -53,6 +53,12 @@
             />
 
         <activity
+            android:name=".ui.LogActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
+        <activity
             android:name=".transkribus.TranskribusActivity"
             android:exported="false"
             />

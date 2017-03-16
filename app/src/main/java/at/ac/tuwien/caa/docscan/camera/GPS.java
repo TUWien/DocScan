@@ -1,5 +1,7 @@
 package at.ac.tuwien.caa.docscan.camera;
 
+import android.location.Location;
+
 /**
  * Taken from:
  * @see <a href="http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android">http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android</a>
@@ -7,6 +9,29 @@ package at.ac.tuwien.caa.docscan.camera;
  */
 public class GPS {
     private static StringBuilder sb = new StringBuilder(20);
+    private String mLongitude, mLatitude;
+
+    public GPS(Location location) {
+        if (location != null) {
+            mLongitude = convert(location.getLongitude());
+            mLatitude = convert(location.getLatitude());
+        }
+    }
+
+    public GPS(double longitudeVal, double latitudeVal) {
+
+        mLongitude = convert(longitudeVal);
+        mLatitude = convert(latitudeVal);
+
+    }
+
+    public String getLongitude() {
+        return mLongitude;
+    }
+
+    public String getLatitude() {
+        return mLatitude;
+    }
 
     /**
      * returns ref for latitude which is S or N.
