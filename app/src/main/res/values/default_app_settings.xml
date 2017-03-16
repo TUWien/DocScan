@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <bool name="series_mode_default">true</bool>
+    <string name="series_mode_key">SERIES_MODE_KEY</string>
+
+    <bool name="series_mode_paused_default">true</bool>
+    <string name="series_mode_paused_key">SERIES_MODE_PAUSED_KEY</string>
+
+</resources>

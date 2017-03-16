@@ -96,6 +96,8 @@ import at.ac.tuwien.caa.docscan.camera.TaskTimer;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.logic.AppState;
+import at.ac.tuwien.caa.docscan.logic.DataLog;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
@@ -153,6 +155,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private final static int SINGLE_POS = 0;
     private final static int SERIES_POS = 1;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
+    private static Date mLastTimeStamp;
 
 
 
@@ -509,7 +512,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         //	    Opens the most recent image:
         Arrays.sort(files);
-        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1];
+        String fileName = mediaStorageDir.toString() + File.separator + files[files.length - 1];
         mMediaScannerConnection.scanFile(fileName, null);
 
     }
@@ -806,8 +809,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             return null;
 
         // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile = new File(mediaStorageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+        mLastTimeStamp = new Date();
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(mLastTimeStamp);
+        File mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                mContext.getString(R.string.img_prefix) + timeStamp + mContext.getString(R.string.img_extension));
 
         return Uri.fromFile(mediaFile);
     }
@@ -818,7 +823,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
      * @param appName name of the app, this is used for gathering the directory string.
      * @return the path where the images are stored.
      */
-    private static File getMediaStorageDir(String appName) {
+    public static File getMediaStorageDir(String appName) {
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), appName);
@@ -1782,6 +1787,14 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                         exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
                         exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
                     }
+
+                    //                    Log the shot:
+                    if (AppState.isDataLogged()) {
+                        GPS gps = new GPS(location);
+                        DataLog.getInstance().logShot(gps, mLastTimeStamp);
+                    }
+
+
 
                     exif.saveAttributes();
                 }

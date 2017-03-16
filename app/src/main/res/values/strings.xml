@@ -5,6 +5,7 @@
     <!-- Used in the navigation drawer: -->
     <string name="collections_item_text">Collections</string>
     <string name="about_item_text">About</string>
+    <string name="share_log_item_text">Share log</string>
     <string name="camera_item_text">Camera</string>
     <string name="login_item_text">Login</string>
     <string name="setttings_item_text">Settings</string>
@@ -94,6 +95,14 @@
     <!-- Preferences -->
     <string name="pref_precise_page_detection">Use precise page detection</string>
     <string name="pref_precise_page_detection_summary">Use precise page detection</string>
+
+    <!-- Image naming -->
+    <string name="img_prefix">IMG_</string>
+    <string name="img_extension">.jpg</string>
+
+    <!-- Log naming -->
+    <string name="log_prefix">LOG_</string>
+    <string name="log_extension">.json</string>
 
     <string-array name="shoot_mode_array">
         <item>Single</item>

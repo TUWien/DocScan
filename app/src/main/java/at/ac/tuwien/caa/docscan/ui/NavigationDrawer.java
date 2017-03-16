@@ -185,6 +185,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_arrow_forward_black_24dp, LoginActivity.class),
         ABOUT(R.id.about_item, R.string.about_item_text,
                 R.drawable.ic_info_black_24dp, AboutActivity.class),
+        SHARE_LOG(R.id.share_log_item, R.string.share_log_item_text,
+                R.drawable.ic_share_black_24dp, LogActivity.class),
         INVALID(12, 0, 0, null);
 
         private int id;
