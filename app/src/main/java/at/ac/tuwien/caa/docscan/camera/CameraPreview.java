@@ -89,6 +89,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean mAwaitFrameChanges = false; // this is dependent on the mode: single vs. series
     private boolean mManualFocus = true;
     private boolean mIsImageProcessingPaused = false;
+    private boolean mStoreMat = false;
 
     private long mLastTime;
 
@@ -540,6 +541,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
             synchronized (this) {
 
+                Log.d(TAG, "frame height: " + mFrameHeight);
+                Log.d(TAG, "pixels length: " + pixels.length);
                 // 1.5 since YUV
                 Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
                 yuv.put(0, 0, pixels);
@@ -548,6 +551,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     mFrameMat.release();
 
                 mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
+
+                if (mStoreMat)
+                    storeMatThreadSafe();
+
+                Log.d(TAG, "frame conversion done");
                 Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
                 yuv.release();
 
@@ -663,7 +671,24 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     public void storeMat() {
 
+//        synchronized (this) {
+//            try {
+//                this.wait();
+//                Log.d(TAG, "mFrameMat height: " + mFrameMat.height());
+//                ChangeDetector.init(mFrameMat);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        ChangeDetector.init(mFrameMat);
+
+        mStoreMat = true;
+    }
+
+    private void storeMatThreadSafe() {
+
         ChangeDetector.init(mFrameMat);
+        mStoreMat = false;
 
     }
 

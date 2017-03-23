@@ -96,8 +96,6 @@ import at.ac.tuwien.caa.docscan.camera.TaskTimer;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.logic.AppState;
-import at.ac.tuwien.caa.docscan.logic.DataLog;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
@@ -191,6 +189,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+        //        Open the log file at app startup:
+//        DataLog.getInstance().readLog(this);
+
         initActivity();
 
         mContext = this;
@@ -213,6 +214,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 //        MovementDetector.getInstance(this.getApplicationContext()).stop();
 
         savePreferences();
+
+//        //        Save the log file:
+//        DataLog.getInstance().writeLog(this);
 
         super.onPause();
 
@@ -764,9 +768,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 mPaintView.showFlicker();
             }
         };
+        mCameraPreview.storeMat();
         mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
 
-        mCameraPreview.storeMat();
+
 
     }
 
@@ -1787,12 +1792,12 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                         exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
                         exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
                     }
-
-                    //                    Log the shot:
-                    if (AppState.isDataLogged()) {
-                        GPS gps = new GPS(location);
-                        DataLog.getInstance().logShot(gps, mLastTimeStamp);
-                    }
+//
+//                    //                    Log the shot:
+//                    if (AppState.isDataLogged()) {
+//                        GPS gps = new GPS(location);
+//                        DataLog.getInstance().logShot(gps, mLastTimeStamp);
+//                    }
 
 
 
