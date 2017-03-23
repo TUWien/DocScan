@@ -18,6 +18,12 @@ public class GPS {
         }
     }
 
+    public GPS(String longitude, String latitude) {
+
+        mLongitude = longitude;
+        mLatitude = latitude;
+
+    }
     public GPS(double longitudeVal, double latitudeVal) {
 
         mLongitude = convert(longitudeVal);

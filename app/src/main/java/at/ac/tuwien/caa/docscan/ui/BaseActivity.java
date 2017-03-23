@@ -27,6 +27,7 @@ public abstract class BaseActivity extends AppCompatActivity implements LoginReq
 //        The FLAG_KEEP_SCREEN_ON is set if the CameraActivity is in the series mode state. Turn it off, for the other activities:
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+
     }
 
     @Override

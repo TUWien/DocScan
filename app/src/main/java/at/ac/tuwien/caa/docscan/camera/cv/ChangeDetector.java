@@ -1,5 +1,7 @@
 package at.ac.tuwien.caa.docscan.camera.cv;
 
+import android.util.Log;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -46,6 +48,8 @@ public class ChangeDetector {
         Mat tmp = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
         Imgproc.cvtColor(frame, tmp, Imgproc.COLOR_RGB2GRAY);
         // TODO: find out why here an exception is thrown (happened after switching to other camera app and back again)
+        Log.d(TAG, "frame rows: " + frame.rows() + " frame cols: " + frame.cols());
+        Log.d(TAG, "mFrameWidth: " + mFrameWidth + " mFrameHeight " + mFrameHeight);
         Imgproc.resize(tmp, tmp, new Size(mFrameWidth, mFrameHeight));
         Mat fg = new Mat(frame.rows(), mFrameWidth, CvType.CV_8UC1);
 
@@ -129,8 +133,12 @@ public class ChangeDetector {
 
         Mat tmp = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
         Imgproc.cvtColor(frame, tmp, Imgproc.COLOR_RGB2GRAY);
+
         // TODO: find out why here an exception is thrown (happened after switching to other camera app and back again)
+        Log.d(TAG, "frame rows: " + frame.rows() + " frame cols: " + frame.cols());
+        Log.d(TAG, "mFrameWidth: " + mFrameWidth + " mFrameHeight " + mFrameHeight);
         Imgproc.resize(tmp, tmp, new Size(mFrameWidth, mFrameHeight));
+
         Mat fg = new Mat(frame.rows(), mFrameWidth, CvType.CV_8UC1);
 
         subtractor.apply(tmp, fg, learnRate);

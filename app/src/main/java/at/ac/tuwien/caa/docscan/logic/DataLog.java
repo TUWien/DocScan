@@ -1,16 +1,21 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
-import android.net.Uri;
-import android.os.Environment;
+import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,6 +33,8 @@ public class DataLog {
 
     private ArrayList<ShotLog> mShotLog;
 
+    private static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
+
     private static final String DATE_NAME = "date";
     private static final String GPS_NAME = "gps";
     private static final String GPS_LONGITUDE_NAME = "longitude";
@@ -44,7 +51,7 @@ public class DataLog {
 
     private DataLog() {
 
-        mShotLog = new ArrayList();
+
 
     }
 
@@ -55,11 +62,37 @@ public class DataLog {
 
     }
 
+    public void readLog(Context context) {
+
+        try {
+            String fileName = getLogFileName(context);
+//            InputStream out = new FileInputStream(fileName);
+
+//            String fileName = context.getString(R.string.log_filename);
+
+            InputStream in = new FileInputStream(new File(fileName));
+            mShotLog = readJsonStream(in);
+
+        }
+        catch (FileNotFoundException e) {
+//            There is no log existing, create a new one:
+            mShotLog = new ArrayList();
+        }
+        catch(Exception e) {
+            Log.d(getClass().getName(), e.toString());
+        }
+    }
+
     public void writeLog(Context context) {
 
         try {
-            Uri fileName = getLogFileName(context);
-            OutputStream out = new FileOutputStream(fileName.toString());
+            String fileName = getLogFileName(context);
+//            OutputStream out = context.openFileOutput(fileName, Context.MODE_PRIVATE);
+            boolean b = (new File(fileName)).createNewFile();
+            OutputStream out = new FileOutputStream(fileName);
+//
+//            String fileName = getLogFileName(context);
+//            OutputStream out = new FileOutputStream(fileName);
             writeJsonStream(out, mShotLog);
         }
         catch(IOException e) {
@@ -68,24 +101,23 @@ public class DataLog {
 
     }
 
-    private Uri getLogFileName(Context context) {
+    private String getLogFileName(Context context) throws IOException {
+//        File logPath = new File(context.getFilesDir(), "logs");
+//        logPath.mkdirs();
+        File logPath = context.getFilesDir();
+        String fileName = context.getString(R.string.log_filename);
+        File logFile = new File(logPath, fileName);
 
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), context.getString(R.string.app_name));
+        return logFile.getAbsolutePath().toString();
+    }
 
-        // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-                return null;
-            }
-        }
-        // Create a log file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        File mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                context.getString(R.string.log_prefix) + timeStamp + context.getString(R.string.log_extension));
+    private ArrayList<ShotLog> readJsonStream(InputStream in) throws IOException, ParseException {
 
-        return Uri.fromFile(mediaFile);
+        JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
+        ArrayList<ShotLog> shotLog = readList(reader);
+        reader.close();
 
+        return shotLog;
 
     }
 
@@ -96,22 +128,89 @@ public class DataLog {
         writer.close();
     }
 
+    private ArrayList<ShotLog> readList(JsonReader reader) throws IOException, ParseException {
+
+        ArrayList<ShotLog> shotLogs = new ArrayList<>();
+
+        reader.beginArray();
+        while (reader.hasNext()) {
+            shotLogs.add(readShotLog(reader));
+        }
+        reader.endArray();
+
+        return shotLogs;
+
+    }
+
     private void writeList(JsonWriter writer, ArrayList<ShotLog> shotLogs) throws IOException {
 
         writer.beginArray();
         for (ShotLog shotLog : shotLogs) {
-            writeLog(writer, shotLog);
+            writeShotLog(writer, shotLog);
         }
         writer.endArray();
 
     }
 
-    private void writeLog(JsonWriter writer, ShotLog shotLog) throws IOException{
+    private ShotLog readShotLog(JsonReader reader) throws IOException, ParseException {
+
+        GPS gps = null;
+        String dateString;
+        Date date = null;
+
+        reader.beginObject();
+        while (reader.hasNext()){
+            String name = reader.nextName();
+            if (name.equals(DATE_NAME)) {
+                dateString = reader.nextString();
+                if (dateString != null)
+                    date = string2Date(dateString);
+            }
+            else if (name.equals(GPS_NAME)) {
+                gps = readGPS(reader);
+            }
+
+        }
+        reader.endObject();
+
+        ShotLog shotLog = new ShotLog(gps, date);
+        return shotLog;
+
+    }
+
+    private GPS readGPS(JsonReader reader) throws IOException {
+
+        String longitude = null;
+        String latitude = null;
+
+        reader.beginObject();
+//        reader.beginArray();
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            if (name.equals(GPS_LONGITUDE_NAME))
+                longitude = reader.nextString();
+            else if (name.equals(GPS_LATITUDE_NAME))
+                latitude = reader.nextString();
+            else
+                reader.skipValue();
+        }
+//        reader.endArray();
+        reader.endObject();
+
+        GPS gps = null;
+        if (longitude!= null && latitude != null)
+            gps = new GPS(longitude, latitude);
+
+        return gps;
+
+    }
+
+    private void writeShotLog(JsonWriter writer, ShotLog shotLog) throws IOException{
 
         writer.beginObject();
 
 //        time stamp:
-        String date = formatDate(shotLog.getDate());
+        String date = date2String(shotLog.getDate());
         writer.name(DATE_NAME).value(date);
 
 //        location:
@@ -126,8 +225,14 @@ public class DataLog {
 
     }
 
-    private String formatDate(Date date) {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(date);
+    private Date string2Date(String dateString) throws ParseException {
+        DateFormat df = new SimpleDateFormat(DATE_FORMAT);
+        Date date = df.parse(dateString);
+        return date;
+    }
+
+    private String date2String(Date date) {
+        String timeStamp = new SimpleDateFormat(DATE_FORMAT).format(date);
         return timeStamp;
     }
 
