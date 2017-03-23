@@ -128,7 +128,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private CVResult mCVResult;
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
-    private static boolean mIsDebugViewEnabled;
+    private boolean mIsDebugViewEnabled;
     private static Context mContext;
     private int mCameraOrientation;
     private DrawerLayout mDrawerLayout;
@@ -291,22 +291,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         setSupportActionBar(toolbar);
         setupToolbar();
         setupNavigationDrawer();
-
-        mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
-        mTimerCallbacks = this;
-        mTextView = (TextView) findViewById(R.id.instruction_view);
-
-        mIsDebugViewEnabled = (mDebugViewFragment == null);
-        if (mDebugViewFragment == null)
-            mIsDebugViewEnabled = false;
-        else
-            mIsDebugViewEnabled = true;
-
-//        TODO: remove this comment:
-//        Temporary show the debug view (until we put this opportunity back into the GUI):
-        mDebugViewFragment = new DebugViewFragment();
-        getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
-        mIsDebugViewEnabled = true;
+        setupDebugView();
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
@@ -324,6 +309,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     }
 
     private void loadPreferences() {
+
+//        Debug view:
+
 
         // Concerning series mode:
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
@@ -752,9 +740,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
-    public void storeFrame() {
-
-    }
 
     /**
      * Tells the camera to take a picture.
@@ -770,8 +755,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         };
         mCameraPreview.storeMat();
         mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
-
-
 
     }
 
@@ -1008,6 +991,20 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
+
+    }
+
+    private void setupDebugView() {
+
+        mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
+        mTimerCallbacks = this;
+        mTextView = (TextView) findViewById(R.id.instruction_view);
+
+        mIsDebugViewEnabled = (mDebugViewFragment == null);
+        if (mDebugViewFragment == null)
+            mIsDebugViewEnabled = false;
+        else
+            mIsDebugViewEnabled = true;
 
     }
 
