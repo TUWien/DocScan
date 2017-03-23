@@ -6,6 +6,8 @@
     android:layout_height="?attr/actionBarSize"
     android:background="@color/navigation_drawer_bg_color"
     android:elevation="4dp"
+    android:theme="@style/GalaxyZooThemeToolbarDarkOverflow"
+    app:popupTheme="@style/Theme.AppCompat.Light"
 />
     <!--app:theme="@style/CustomActionBar"-->
     <!--xmlns:app="http://schemas.android.com/tools"-->
