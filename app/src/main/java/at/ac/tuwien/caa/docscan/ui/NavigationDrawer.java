@@ -146,8 +146,13 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 MenuItem item = menu.findItem(items[i].getId());
                 if (item != null) {
                     // TODO: this removes the login item and the share log item temporary:
-                    if (item.getItemId() == R.id.login_item || item.getItemId() == R.id.share_log_item)
+//                    if (item.getItemId() == R.id.login_item || item.getItemId() == R.id.share_log_item)
+//                        continue;
+
+                    if (item.getItemId() == R.id.login_item)
                         continue;
+//                    if (item.getItemId() == R.id.share_log_item)
+//                        continue;
 
                     item.setVisible(true);
                     item.setIcon(items[i].getIconResource());

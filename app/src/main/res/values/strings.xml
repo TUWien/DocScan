@@ -100,8 +100,15 @@
     <string name="img_prefix">IMG_</string>
     <string name="img_extension">.jpg</string>
 
-    <!-- Log naming -->
-    <string name="log_filename">docscanlog2.json</string>
+    <!-- Log  -->
+    <string name="log_activity_text">Improve DocScan by sending us a log file via your mail client.
+        Please note that we do not log personal data.
+        Do you want to share your log file now?</string>
+    <string name="share_log_button_text">OK</string>
+    <string name="log_email_subject">DocScan - Log</string>
+    <string name="log_email_to">holl@caa.tuwien.ac.at</string>
+    <string name="log_email_text">We highly appreciate your feedback! If you want you can leave us an additional text message here:</string>
+
 
     <string-array name="shoot_mode_array">
         <item>Single</item>

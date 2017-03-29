@@ -1,6 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui;
 
-import android.content.Context;
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -21,11 +21,11 @@ public class LogActivity extends BaseActivity {
         setContentView(R.layout.activity_share_log);
 
         Button sendButton = (Button) findViewById(R.id.share_log_button);
-        final Context context = this;
+        final Activity activity = this;
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DataLog.getInstance().writeLog(context);
+                DataLog.getInstance().shareLog(activity);
             }
         });
 
