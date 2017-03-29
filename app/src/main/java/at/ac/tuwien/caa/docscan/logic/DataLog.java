@@ -1,6 +1,34 @@
+/*********************************************************************************
+ *  DocScan is a Android app for document scanning.
+ *
+ *  Author:         Fabian Hollaus, Florian Kleber, Markus Diem
+ *  Organization:   TU Wien, Computer Vision Lab
+ *  Date created:   09. March 2017
+ *
+ *  This file is part of DocScan.
+ *
+ *  DocScan is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  DocScan is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
+ *********************************************************************************/
+
 package at.ac.tuwien.caa.docscan.logic;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.support.v4.app.ShareCompat;
+import android.support.v4.content.FileProvider;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
@@ -23,9 +51,6 @@ import java.util.Date;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.GPS;
 
-/**
- * Created by fabian on 09.03.2017.
- */
 
 public class DataLog {
 
@@ -35,8 +60,10 @@ public class DataLog {
 
     private static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
 
+    private static final String LOG_FILE_NAME = "logxy.json";
     private static final String DATE_NAME = "date";
     private static final String GPS_NAME = "gps";
+    private static final String SERIES_MODE_NAME = "series mode";
     private static final String GPS_LONGITUDE_NAME = "longitude";
     private static final String GPS_LATITUDE_NAME = "latitude";
 
@@ -51,13 +78,33 @@ public class DataLog {
 
     private DataLog() {
 
+    }
 
+    public void shareLog(Activity activity) {
+
+        File logPath = new File(activity.getBaseContext().getFilesDir(), LOG_FILE_NAME);
+        Uri contentUri = FileProvider.getUriForFile(activity.getBaseContext(), "at.ac.tuwien.caa.fileprovider", logPath);
+
+        String emailSubject =   activity.getBaseContext().getString(R.string.log_email_subject);
+        String[] emailTo =      new String[]{activity.getBaseContext().getString(R.string.log_email_to)};
+        String text =           activity.getBaseContext().getString(R.string.log_email_text);
+
+        Intent intent = ShareCompat.IntentBuilder.from(activity)
+                .setType("text/plain")
+                .setSubject(emailSubject)
+                .setEmailTo(emailTo)
+                .setStream(contentUri)
+                .setText(text)
+                .getIntent()
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        activity.startActivity(intent);
 
     }
 
-    public void logShot(GPS gps, Date date) {
+    public void logShot(GPS gps, Date date, boolean seriesMode) {
 
-        ShotLog shotLog = new ShotLog(gps, date);
+        ShotLog shotLog = new ShotLog(gps, date, seriesMode);
         mShotLog.add(shotLog);
 
     }
@@ -66,10 +113,6 @@ public class DataLog {
 
         try {
             String fileName = getLogFileName(context);
-//            InputStream out = new FileInputStream(fileName);
-
-//            String fileName = context.getString(R.string.log_filename);
-
             InputStream in = new FileInputStream(new File(fileName));
             mShotLog = readJsonStream(in);
 
@@ -87,12 +130,8 @@ public class DataLog {
 
         try {
             String fileName = getLogFileName(context);
-//            OutputStream out = context.openFileOutput(fileName, Context.MODE_PRIVATE);
             boolean b = (new File(fileName)).createNewFile();
             OutputStream out = new FileOutputStream(fileName);
-//
-//            String fileName = getLogFileName(context);
-//            OutputStream out = new FileOutputStream(fileName);
             writeJsonStream(out, mShotLog);
         }
         catch(IOException e) {
@@ -102,13 +141,21 @@ public class DataLog {
     }
 
     private String getLogFileName(Context context) throws IOException {
-//        File logPath = new File(context.getFilesDir(), "logs");
-//        logPath.mkdirs();
-        File logPath = context.getFilesDir();
-        String fileName = context.getString(R.string.log_filename);
-        File logFile = new File(logPath, fileName);
 
+
+//        File logPath = new File(context.getFilesDir(), "logs");
+//        File newFile = new File(logPath, context.getString(R.string.log_filename));
+//        Uri contentUri = FileProvider.getUriForFile(context, "at.ac.tuwien.caa.fileprovider", newFile);
+//        String fileName = contentUri.toString();
+//        return fileName;
+
+
+//        Uri contentUri = getUriForFile(getContext(), "com.mydomain.fileprovider", newFile);
+
+        File logPath = context.getFilesDir();
+        File logFile = new File(logPath, LOG_FILE_NAME);
         return logFile.getAbsolutePath().toString();
+
     }
 
     private ArrayList<ShotLog> readJsonStream(InputStream in) throws IOException, ParseException {
@@ -157,6 +204,7 @@ public class DataLog {
         GPS gps = null;
         String dateString;
         Date date = null;
+        boolean seriesMode = false;
 
         reader.beginObject();
         while (reader.hasNext()){
@@ -169,11 +217,14 @@ public class DataLog {
             else if (name.equals(GPS_NAME)) {
                 gps = readGPS(reader);
             }
+            else if (name.equals(SERIES_MODE_NAME)) {
+                seriesMode = reader.nextBoolean();
+            }
 
         }
         reader.endObject();
 
-        ShotLog shotLog = new ShotLog(gps, date);
+        ShotLog shotLog = new ShotLog(gps, date, seriesMode);
         return shotLog;
 
     }
@@ -221,6 +272,9 @@ public class DataLog {
         else
             writer.name(GPS_NAME).nullValue();
 
+//        series mode:
+        writer.name(SERIES_MODE_NAME).value(shotLog.isSeriesMode());
+
         writer.endObject();
 
     }
@@ -249,10 +303,12 @@ public class DataLog {
 
         private GPS mGPS;
         private Date mDate;
+        private boolean mSeriesMode;
 
-        private ShotLog(GPS gps, Date date) {
+        private ShotLog(GPS gps, Date date, boolean seriesMode) {
             mGPS = gps;
             mDate = date;
+            mSeriesMode = seriesMode;
         }
 
         private Date getDate() {
@@ -262,6 +318,8 @@ public class DataLog {
         private GPS getGPS() {
             return mGPS;
         }
+
+        private boolean isSeriesMode() { return mSeriesMode; }
     }
 
 
