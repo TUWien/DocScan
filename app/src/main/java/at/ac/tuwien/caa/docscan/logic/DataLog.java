@@ -142,16 +142,6 @@ public class DataLog {
 
     private String getLogFileName(Context context) throws IOException {
 
-
-//        File logPath = new File(context.getFilesDir(), "logs");
-//        File newFile = new File(logPath, context.getString(R.string.log_filename));
-//        Uri contentUri = FileProvider.getUriForFile(context, "at.ac.tuwien.caa.fileprovider", newFile);
-//        String fileName = contentUri.toString();
-//        return fileName;
-
-
-//        Uri contentUri = getUriForFile(getContext(), "com.mydomain.fileprovider", newFile);
-
         File logPath = context.getFilesDir();
         File logFile = new File(logPath, LOG_FILE_NAME);
         return logFile.getAbsolutePath().toString();
@@ -169,10 +159,12 @@ public class DataLog {
     }
 
     private void writeJsonStream(OutputStream out, ArrayList<ShotLog> shotLogs) throws IOException {
+
         JsonWriter writer = new JsonWriter(new OutputStreamWriter(out, "UTF-8"));
         writer.setIndent("  ");
         writeList(writer, shotLogs);
         writer.close();
+
     }
 
     private ArrayList<ShotLog> readList(JsonReader reader) throws IOException, ParseException {
