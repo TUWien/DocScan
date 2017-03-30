@@ -39,6 +39,9 @@ public class ActivityUtils {
             activity.startActivity(intent);
             activity.finish();
         }
+
+//        Use our own animation - instead of the default scaling animation:
+        activity.overridePendingTransition(R.anim.translate_in, R.anim.translate_out);
     }
 
 

@@ -107,10 +107,10 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 //        TODO: uncomment this:
 //        setSelectedNavDrawerItem(item);
         // Fade out the main content
-        View mainContent = mActivity.findViewById(R.id.main_frame_layout);
-        if (mainContent != null) {
-            mainContent.animate().alpha(0).setDuration(MAIN_CONTENT_FADEOUT_DURATION);
-        }
+//        View mainContent = mActivity.findViewById(R.id.main_frame_layout);
+//        if (mainContent != null) {
+//            mainContent.animate().alpha(0).setDuration(MAIN_CONTENT_FADEOUT_DURATION);
+//        }
 
 
         // The navigation menu is accessible from some screens, via swiping, without a drawer
