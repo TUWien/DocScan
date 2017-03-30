@@ -28,7 +28,6 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.Camera;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
@@ -40,10 +39,8 @@ import android.view.SurfaceView;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -575,7 +572,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     this.notify();
 
             }
+
         }
+
     }
 
     private boolean isFrameSteadyAndNew() {
@@ -645,12 +644,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private void storeMatThreadSafe() {
 
-        String dirName = Environment.getExternalStorageDirectory().getAbsolutePath();
-
-        File mediaStorageDir = CameraActivity.getMediaStorageDir("DocScan");
-        File mediaFile = new File(mediaStorageDir.getPath() + File.separator + "debug.png");
-
-        Imgcodecs.imwrite(mediaFile.getPath(), mFrameMat);
+//        String dirName = Environment.getExternalStorageDirectory().getAbsolutePath();
+//
+//        File mediaStorageDir = CameraActivity.getMediaStorageDir("DocScan");
+//        File mediaFile = new File(mediaStorageDir.getPath() + File.separator + "debug.png");
+//
+//        Imgcodecs.imwrite(mediaFile.getPath(), mFrameMat);
 
         ChangeDetector.init(mFrameMat);
         mStoreMat = false;

@@ -101,13 +101,13 @@
     <string name="img_extension">.jpg</string>
 
     <!-- Log  -->
-    <string name="log_activity_text">Improve DocScan by sending us a log file via your mail client.
+    <string name="log_activity_text">Improve DocScan by sending us a log.
         Please note that we do not log personal data.
         Do you want to share your log file now?</string>
     <string name="share_log_button_text">OK</string>
     <string name="log_email_subject">DocScan - Log</string>
     <string name="log_email_to">holl@caa.tuwien.ac.at</string>
-    <string name="log_email_text">We highly appreciate your feedback! If you want you can leave us an additional text message here:</string>
+    <string name="log_email_text">We highly appreciate your feedback! You can leave us a comment here:</string>
 
 
     <string-array name="shoot_mode_array">
