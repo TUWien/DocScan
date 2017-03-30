@@ -530,6 +530,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public void onPreviewFrame(byte[] pixels, Camera camera)
     {
 
+//        if (pixels == null)
+//            return;
+
         if (mIsImageProcessingPaused)
             return;
 
@@ -561,67 +564,23 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                 mLastTime = currentTime;
 
+                boolean processFrame = true;
+
                 // This is done in series mode:
                 if (mAwaitFrameChanges)
-                    checkFrameChanges();
+                    processFrame = isFrameSteadyAndNew();
 
-//                    If the frame is steady and contains a change, do the document analysis:
-                this.notify();
+//                If in single mode - or the frame is steady and contains a change, do the document analysis:
+                if (processFrame)
+                    this.notify();
 
             }
 
         }
 
-        /*
-        //                Check if there is sufficient image change between the current frame and the last image taken:
-                if (!mAwaitFrameChanges)
-                    startCVTasks();
-
-                else {
-
-                    boolean isFrameSteady, isFrameDifferent;
-//                    The ChangeDetector is only initialized after an image has been taken:
-                    if (ChangeDetector.isInitialized()) {
-
-                        // Check for movements:
-                        isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
-                        if (!isFrameSteady) {
-                            mCameraPreviewCallback.onMovement(true);
-                            mFrameDiffRequired = true; // We need to check after a movement if the frame content has changed.
-                            return;
-                        }
-                        else {
-                            mCameraPreviewCallback.onMovement(false);
-                        }
-
-                        if (mFrameDiffRequired) {
-
-                            mFrameDiffRequired = false;
-
-                            isFrameDifferent = ChangeDetector.isNewFrame(mFrameMat);
-                            //                        isFrameDifferent = ChangeDetector.isFrameDifferent(mFrameMat);
-                            if (!isFrameDifferent) {
-                                mCameraPreviewCallback.onWaitingForDoc(true);
-                                return;
-                            } else {
-                                mCameraPreviewCallback.onWaitingForDoc(false);
-                                mTimerCallbacks.onTimerStarted(FLIP_SHOT_TIME);
-                                Log.d(TAG, "new document found");
-
-//                                If the frame is steady and contains a change, do the document analysis:
-                                startCVTasks();
-                            }
-                        }
-
-                    }
-                    else
-                        startCVTasks();
-                }
-
-         */
     }
 
-    private void checkFrameChanges() {
+    private boolean isFrameSteadyAndNew() {
 
 //                Check if there is sufficient image change between the current frame and the last image taken:
         boolean isFrameSteady;
@@ -629,13 +588,14 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 //                    The ChangeDetector is only initialized after an image has been taken:
         if (ChangeDetector.isInitialized()) {
+
             mTimerCallbacks.onTimerStarted(MOVEMENT_CHECK);
             isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
             mTimerCallbacks.onTimerStopped(MOVEMENT_CHECK);
 
             if (!isFrameSteady) {
                 mCameraPreviewCallback.onMovement(true);
-                return;
+                return false;
             }
             else {
                 mCameraPreviewCallback.onMovement(false);
@@ -648,15 +608,16 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 //                        isFrameDifferent = ChangeDetector.isFrameDifferent(mFrameMat);
                 if (!isFrameDifferent) {
                     mCameraPreviewCallback.onWaitingForDoc(true);
-                    return;
+                    return false;
                 } else {
                     mCameraPreviewCallback.onWaitingForDoc(false);
                     mTimerCallbacks.onTimerStarted(FLIP_SHOT_TIME);
                     Log.d(TAG, "new document found");
                 }
             }
-
         }
+
+        return true;
 
     }
 
