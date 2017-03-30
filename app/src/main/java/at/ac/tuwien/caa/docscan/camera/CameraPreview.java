@@ -28,6 +28,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
@@ -39,8 +40,10 @@ import android.view.SurfaceView;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -530,13 +533,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public void onPreviewFrame(byte[] pixels, Camera camera)
     {
 
-//        if (pixels == null)
-//            return;
+        updateFPS();
+
+        if (pixels == null)
+            return;
 
         if (mIsImageProcessingPaused)
             return;
-
-        updateFPS();
 
         long currentTime = System.currentTimeMillis();
 
@@ -544,8 +547,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
             synchronized (this) {
 
-                Log.d(TAG, "frame height: " + mFrameHeight);
-                Log.d(TAG, "pixels length: " + pixels.length);
                 // 1.5 since YUV
                 Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
                 yuv.put(0, 0, pixels);
@@ -554,12 +555,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     mFrameMat.release();
 
                 mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
+                Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
 
                 if (mStoreMat)
                     storeMatThreadSafe();
 
-                Log.d(TAG, "frame conversion done");
-                Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
                 yuv.release();
 
                 mLastTime = currentTime;
@@ -575,9 +575,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     this.notify();
 
             }
-
         }
-
     }
 
     private boolean isFrameSteadyAndNew() {
@@ -605,14 +603,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 mTimerCallbacks.onTimerStarted(NEW_DOC);
                 isFrameDifferent = ChangeDetector.isNewFrame(mFrameMat);
                 mTimerCallbacks.onTimerStopped(NEW_DOC);
-                //                        isFrameDifferent = ChangeDetector.isFrameDifferent(mFrameMat);
+
                 if (!isFrameDifferent) {
                     mCameraPreviewCallback.onWaitingForDoc(true);
                     return false;
                 } else {
                     mCameraPreviewCallback.onWaitingForDoc(false);
                     mTimerCallbacks.onTimerStarted(FLIP_SHOT_TIME);
-                    Log.d(TAG, "new document found");
                 }
             }
         }
@@ -647,6 +644,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     private void storeMatThreadSafe() {
+
+        String dirName = Environment.getExternalStorageDirectory().getAbsolutePath();
+
+        File mediaStorageDir = CameraActivity.getMediaStorageDir("DocScan");
+        File mediaFile = new File(mediaStorageDir.getPath() + File.separator + "debug.png");
+
+        Imgcodecs.imwrite(mediaFile.getPath(), mFrameMat);
 
         ChangeDetector.init(mFrameMat);
         mStoreMat = false;
