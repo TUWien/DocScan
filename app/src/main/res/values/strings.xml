@@ -106,7 +106,7 @@
         Do you want to share your log file now?</string>
     <string name="share_log_button_text">OK</string>
     <string name="log_email_subject">DocScan - Log</string>
-    <string name="log_email_to">holl@caa.tuwien.ac.at</string>
+    <string name="log_email_to">docscan@caa.tuwien.ac.at</string>
     <string name="log_email_text">We highly appreciate your feedback! You can leave us a comment here:</string>
 
 

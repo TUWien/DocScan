@@ -60,8 +60,9 @@ public class DataLog {
 
     private static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
 
-    private static final String LOG_FILE_NAME = "logxy.json";
+    private static final String LOG_FILE_NAME = "docscanlog.json";
     private static final String DATE_NAME = "date";
+    private static final String FILE_NAME = "filename";
     private static final String GPS_NAME = "gps";
     private static final String SERIES_MODE_NAME = "series mode";
     private static final String GPS_LONGITUDE_NAME = "longitude";
@@ -102,9 +103,9 @@ public class DataLog {
 
     }
 
-    public void logShot(GPS gps, Date date, boolean seriesMode) {
+    public void logShot(String fileName, GPS gps, Date date, boolean seriesMode) {
 
-        ShotLog shotLog = new ShotLog(gps, date, seriesMode);
+        ShotLog shotLog = new ShotLog(fileName, gps, date, seriesMode);
         mShotLog.add(shotLog);
 
     }
@@ -194,14 +195,17 @@ public class DataLog {
     private ShotLog readShotLog(JsonReader reader) throws IOException, ParseException {
 
         GPS gps = null;
-        String dateString;
+        String dateString, fileName = null;
         Date date = null;
         boolean seriesMode = false;
 
         reader.beginObject();
         while (reader.hasNext()){
             String name = reader.nextName();
-            if (name.equals(DATE_NAME)) {
+            if (name.equals(FILE_NAME)) {
+                fileName = reader.nextString();
+            }
+            else if (name.equals(DATE_NAME)) {
                 dateString = reader.nextString();
                 if (dateString != null)
                     date = string2Date(dateString);
@@ -216,7 +220,7 @@ public class DataLog {
         }
         reader.endObject();
 
-        ShotLog shotLog = new ShotLog(gps, date, seriesMode);
+        ShotLog shotLog = new ShotLog(fileName, gps, date, seriesMode);
         return shotLog;
 
     }
@@ -251,6 +255,10 @@ public class DataLog {
     private void writeShotLog(JsonWriter writer, ShotLog shotLog) throws IOException{
 
         writer.beginObject();
+
+//        file naem:
+        String fileName = shotLog.getFileName();
+        writer.name(FILE_NAME).value(fileName);
 
 //        time stamp:
         String date = date2String(shotLog.getDate());
@@ -296,8 +304,10 @@ public class DataLog {
         private GPS mGPS;
         private Date mDate;
         private boolean mSeriesMode;
+        private String mFileName;
 
-        private ShotLog(GPS gps, Date date, boolean seriesMode) {
+        private ShotLog(String fileName, GPS gps, Date date, boolean seriesMode) {
+            mFileName = fileName;
             mGPS = gps;
             mDate = date;
             mSeriesMode = seriesMode;
@@ -312,6 +322,8 @@ public class DataLog {
         }
 
         private boolean isSeriesMode() { return mSeriesMode; }
+
+        public String getFileName() { return mFileName; }
     }
 
 
