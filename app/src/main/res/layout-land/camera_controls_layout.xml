@@ -5,6 +5,7 @@
     android:id="@+id/camera_controls_layout"
     android:layout_height="match_parent"
     android:background="@color/control_background_color"
+    android:layout_marginTop="?actionBarSize"
     >
 
     <ImageButton

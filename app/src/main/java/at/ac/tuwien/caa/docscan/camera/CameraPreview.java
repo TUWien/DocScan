@@ -90,6 +90,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean mManualFocus = true;
     private boolean mIsImageProcessingPaused = false;
     private boolean mStoreMat = false;
+    private boolean mPreviewSizeSet = false;
 
     private long mLastTime;
 
@@ -99,9 +100,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
+    private static final int MIN_RESOLUTION_AREA = 1000000;
+
     private boolean isCameraInitialized;
     private DkPolyRect mIlluminationRect;
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
+    private boolean mIsPreviewFitting = false;
 
 
 
@@ -333,6 +337,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    public boolean isPreviewFitting() {
+        return mIsPreviewFitting;
+    }
+
     @SuppressWarnings("deprecation")
     private void initPreview() {
 
@@ -359,10 +367,18 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         Camera.Size pictureSize = getLargestPictureSize();
         params.setPictureSize(pictureSize.width, pictureSize.height);
 
-        Camera.Size bestSize = getBestFittingSize(cameraSizes, orientation);
+//        if (!mPreviewSizeSet) {
+//            Camera.Size bestSize = getBestFittingSize(cameraSizes, orientation);
+//
+//            mFrameWidth = bestSize.width;
+//            mFrameHeight = bestSize.height;
+//            mPreviewSizeSet = true;
+//        }
+        Camera.Size previewSize = getPreviewSize(cameraSizes, pictureSize);
+        mFrameWidth = previewSize.width;
+        mFrameHeight = previewSize.height;
 
-        mFrameWidth = bestSize.width;
-        mFrameHeight = bestSize.height;
+        mIsPreviewFitting = isPreviewFitting(previewSize);
 
         // Use autofocus if available:
         if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
@@ -465,13 +481,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         Camera.Size size = null;
         Camera.Parameters params = mCamera.getParameters();
         List<Camera.Size> supportedSizes = params.getSupportedPictureSizes();
-        int width = 0;
+        int bestArea = 0;
+        int area;
 
         for (Camera.Size s : supportedSizes) {
-            if (size == null)
+            area = s.width * s.height;
+            if (area > bestArea) {
+                bestArea = area;
                 size = s;
-            else if (s.width > size.width)
-                size = s;
+            }
         }
 
         return size;
@@ -674,7 +692,89 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         
     }
 
+    @SuppressWarnings("deprecation")
+    private boolean isPreviewFitting(Camera.Size previewSize) {
+        int width, height;
+//        Hack: Before the getWidth/getHeight was used, but on the Galaxy S6 the layout was differently initalized,
+//        so that the height returned the entire height without subtracting the height of the camera control layout.
+//        Therefore, we calculate the dimension of the preview manually.
+//        int height = getHeight();
+        Point dim = CameraActivity.getPreviewDimension();
+        if (dim != null) {
+            width = dim.x;
+            height = dim.y;
+        }
+        else {
+            width = getWidth();
+            height = getHeight();
+        }
 
+        if (width < height) {
+            int tmp = width;
+            width = height;
+            height = tmp;
+        }
+
+        float previewRatio = (float) previewSize.width / previewSize.height;
+        float spaceRatio = (float) width / height;
+
+        return (spaceRatio >= previewRatio);
+
+    }
+
+    @SuppressWarnings("deprecation")
+    private Camera.Size getPreviewSize(List<Camera.Size> previewSizes, Camera.Size pictureSize) {
+
+        float optRatio = (float) pictureSize.width / pictureSize.height;
+        float ratio;
+        int bestResArea = 0;
+        int resArea;
+        Camera.Size bestSize = null;
+        boolean optRatioFound = false;
+
+//        First try to find an optimal ratio:
+        for (Camera.Size size : previewSizes) {
+            ratio = (float) size.width / size.height;
+            resArea = size.width * size.height;
+
+            if ((ratio == optRatio) && (resArea >= bestResArea)) {
+                bestResArea = resArea;
+                bestSize = size;
+            }
+        }
+
+        if ((bestSize != null) && (bestResArea >= MIN_RESOLUTION_AREA))
+            return bestSize;
+
+        float bestRatio = 0;
+//        Second find the closest ratio:
+        for (Camera.Size size : previewSizes) {
+            ratio = (float) size.width / size.height;
+            resArea = size.width * size.height;
+
+            if ((Math.abs(ratio - optRatio) <= Math.abs(bestRatio - optRatio))) {
+                bestResArea = resArea;
+                bestRatio = ratio;
+                bestSize = size;
+            }
+        }
+
+        if ((bestSize != null) && (bestResArea >= MIN_RESOLUTION_AREA))
+            return bestSize;
+
+//        Third find the largest resolution:
+        for (Camera.Size size : previewSizes) {
+            resArea = size.width * size.height;
+
+            if (resArea >= bestResArea) {
+                bestResArea = resArea;
+                bestSize = size;
+            }
+        }
+
+        return bestSize;
+
+    }
 
     /**
      * Returns the preview size that fits best into the surface view.

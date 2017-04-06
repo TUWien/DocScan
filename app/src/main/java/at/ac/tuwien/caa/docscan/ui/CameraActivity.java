@@ -871,7 +871,12 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             return;
 
         appRoot.removeView(f);
-        getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
+        View v = getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
+//        if (!mCameraPreview.isPreviewFitting())
+//            v.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
+        View view = findViewById(R.id.camera_controls_layout);
+        if ((view != null) && (!mCameraPreview.isPreviewFitting()))
+            view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
 
         // Initialize the newly created buttons:
         initButtons();
@@ -1432,6 +1437,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if (l != null)
             l.setFrameDimensions(width, height);
 
+        View v = findViewById(R.id.camera_controls_layout);
+        if ((v != null) && (!mCameraPreview.isPreviewFitting()))
+            v.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
+
     }
 
     /**
@@ -1797,7 +1806,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                     //                    Log the shot:
                     if (AppState.isDataLogged()) {
                         GPS gps = new GPS(location);
-                        DataLog.getInstance().logShot(gps, mLastTimeStamp, mIsSeriesMode);
+                        DataLog.getInstance().logShot(outFile.getAbsolutePath(), gps, mLastTimeStamp, mIsSeriesMode);
                     }
 
 

@@ -4,10 +4,9 @@
     <color name="colorPrimaryDark">#3fde3a3a</color>
     <color name="colorAccent">#ff9800</color>
 
-    <!--<color name="control_background_color">#212121</color>-->
     <color name="control_background_color">#37474f</color>
-
-    <color name="button_bg_color">#455a64</color>
+    <color name="control_background_color_transparent">#4f37474f</color>
+    <color name="button_bg_color">#c8455a64</color>
 
     <color name="actionbar_bg_color">#aa666666</color>
     <color name="navigation_drawer_bg_color">#11111111</color>
