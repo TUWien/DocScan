@@ -607,6 +607,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             Canvas canvas = mHolder.lockCanvas();
 
+            if (canvas == null)
+                return;
+
             Rect rect = new Rect(0,0, getWidth(), getHeight());
             canvas.drawRect(rect, mFlickerPaint);
 

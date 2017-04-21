@@ -584,6 +584,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 // This is done in series mode:
                 if (mAwaitFrameChanges)
                     processFrame = isFrameSteadyAndNew();
+//                processFrame = true;
 
 //                If in single mode - or the frame is steady and contains a change, do the document analysis:
                 if (processFrame)
@@ -743,7 +744,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             }
         }
 
-        if ((bestSize != null) && (bestResArea >= MIN_RESOLUTION_AREA))
+        if (bestSize != null)
             return bestSize;
 
         float bestRatio = 0;
@@ -759,20 +760,22 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             }
         }
 
-        if ((bestSize != null) && (bestResArea >= MIN_RESOLUTION_AREA))
-            return bestSize;
-
-//        Third find the largest resolution:
-        for (Camera.Size size : previewSizes) {
-            resArea = size.width * size.height;
-
-            if (resArea >= bestResArea) {
-                bestResArea = resArea;
-                bestSize = size;
-            }
-        }
-
         return bestSize;
+
+//        if ((bestSize != null) && (bestResArea >= MIN_RESOLUTION_AREA))
+//            return bestSize;
+//
+////        Third find the largest resolution:
+//        for (Camera.Size size : previewSizes) {
+//            resArea = size.width * size.height;
+//
+//            if (resArea >= bestResArea) {
+//                bestResArea = resArea;
+//                bestSize = size;
+//            }
+//        }
+//
+//        return bestSize;
 
     }
 

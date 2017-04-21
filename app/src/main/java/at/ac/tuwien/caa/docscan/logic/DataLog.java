@@ -168,15 +168,21 @@ public class DataLog {
 
     }
 
-    private ArrayList<ShotLog> readList(JsonReader reader) throws IOException, ParseException {
+    private ArrayList<ShotLog> readList(JsonReader reader) throws ParseException {
 
         ArrayList<ShotLog> shotLogs = new ArrayList<>();
 
-        reader.beginArray();
-        while (reader.hasNext()) {
-            shotLogs.add(readShotLog(reader));
+        try {
+            reader.beginArray();
+            while (reader.hasNext()) {
+                shotLogs.add(readShotLog(reader));
+            }
+            reader.endArray();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        reader.endArray();
+
 
         return shotLogs;
 
