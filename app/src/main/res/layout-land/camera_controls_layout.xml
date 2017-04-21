@@ -8,6 +8,10 @@
     android:layout_marginTop="?actionBarSize"
     >
 
+    <!-- Note that android:layout_marginTop="?actionBarSize" is used for the transparent layout
+    (where the camera preview is under the camera_controls_layout). In this case the ActionBar must
+     be below the camera_controls_layout. -->
+
     <ImageButton
         android:id="@+id/gallery_button"
         android:layout_alignParentTop="true"

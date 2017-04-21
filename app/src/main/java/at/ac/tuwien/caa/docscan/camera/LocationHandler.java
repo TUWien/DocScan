@@ -32,6 +32,8 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 
+import java.util.List;
+
 /**
  * Created by fabian on 17.01.2017.
  */
@@ -96,8 +98,11 @@ public class LocationHandler implements LocationListener {
         };
 
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, UPDATE_TIME, UPDATE_DISTANCE, locationListener);
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, UPDATE_TIME, UPDATE_DISTANCE, locationListener);
+            List<String> providers = mLocationManager.getProviders(true);
+            if (providers.contains(LocationManager.NETWORK_PROVIDER))
+                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, UPDATE_TIME, UPDATE_DISTANCE, locationListener);
+            if (providers.contains(LocationManager.GPS_PROVIDER))
+                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, UPDATE_TIME, UPDATE_DISTANCE, locationListener);
 
             mStartTime = System.currentTimeMillis();
         }
