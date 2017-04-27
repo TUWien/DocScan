@@ -39,6 +39,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.location.Location;
 import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
@@ -75,6 +76,9 @@ import android.widget.TextView;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -85,6 +89,7 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
+import at.ac.tuwien.caa.docscan.camera.GPS;
 import at.ac.tuwien.caa.docscan.camera.LocationHandler;
 import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.PaintView;
@@ -619,13 +624,16 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 mTimerCallbacks.onTimerStopped(FLIP_SHOT_TIME);
 
                 // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
-                mCameraPreview.getCamera().startPreview();
+                if (mCameraPreview.getCamera() != null)
+                    mCameraPreview.getCamera().startPreview();
 //                try {
 //                    Thread.sleep(1000);
 //                } catch (InterruptedException e) {
 //                    e.printStackTrace();
 //                }
                 requestPictureSave(data);
+
+                Log.d(TAG, "took picture");
 
             }
         };
@@ -756,6 +764,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
      * Tells the camera to take a picture.
      */
     private void takePicture() {
+
+//        if (!mIsPictureSafe)
+//            return;
 
         mIsPictureSafe = false;
         Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
@@ -1458,108 +1469,109 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @Override
     public void onStatusChange(final int state) {
 
-        takePicture();
+//        if (mIsPictureSafe)
+//            takePicture();
 
-//        // Check if we need the focus measurement at this point:
-//        if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-//            mCameraPreview.startFocusMeasurement(true);
+        // Check if we need the focus measurement at this point:
+        if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+            mCameraPreview.startFocusMeasurement(true);
+        }
+
+//        This is used for the computation of the illumination:
+
+//        // Check if we need the illumination measurement at this point:
+//        else if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
+//
+//            if (mCVResult.getDKPolyRects() == null)
+//                return;
+//            if (mCVResult.getDKPolyRects().length == 0)
+//                return;
+//
+//            mCameraPreview.setIlluminationRect(mCVResult.getDKPolyRects()[0]);
+//            mCameraPreview.startIllumination(true);
+//            mCVResult.setIsIlluminationComputed(true);
+//
 //        }
 //
-////        This is used for the computation of the illumination:
-//
-////        // Check if we need the illumination measurement at this point:
-////        else if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
-////
-////            if (mCVResult.getDKPolyRects() == null)
-////                return;
-////            if (mCVResult.getDKPolyRects().length == 0)
-////                return;
-////
-////            mCameraPreview.setIlluminationRect(mCVResult.getDKPolyRects()[0]);
-////            mCameraPreview.startIllumination(true);
-////            mCVResult.setIsIlluminationComputed(true);
-////
-////        }
-////
-////        else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
-////            mCameraPreview.startIllumination(false);
-////            mCVResult.setIsIlluminationComputed(false);
-//////            if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
-//////                mCameraPreview.startFocusMeasurement(false);
-//////                mCVResult.setPatches(null);
-//////            }
-////        }
-//
-//        final String msg;
-//
-////        mCameraPreview.startFocusMeasurement(true);
-//
-//        if (!mIsPictureSafe) {
-//            msg = getResources().getString(R.string.taking_picture_text);
-//        }
-//
-//        else if (!mIsSeriesMode || (mIsSeriesMode && mIsSeriesModePaused) || state != CVResult.DOCUMENT_STATE_OK) {
-//            mIsWaitingForCapture = false;
-//            msg = getInstructionMessage(state);
-//        }
-//
-//        else if (mShowCounter){
-//            if (!mIsWaitingForCapture) {
-//                mStartTime = System.currentTimeMillis();
-//                mIsWaitingForCapture = true;
-//                msg = "";
-//
-//            }
-//            else {
-//
-//                msg = getResources().getString(R.string.taking_picture_text);
-//                mIsWaitingForCapture = false;
-//                if (mIsPictureSafe)
-//                    takePicture();
-//
-//
-////                // Count down:
-////                long timePast = System.currentTimeMillis() - mStartTime;
-////                int steadyTime = getResources().getInteger(R.integer.counter_time);
-////                if (timePast < steadyTime) {
-////                    final long timeLeft = steadyTime - timePast;
-////                    msg = getResources().getString(R.string.dont_move_text);
-////
-////                    final int counter = Math.round(timeLeft / 1000);
-//////                    if (counter > 0) {
-////                        runOnUiThread(new Runnable() {
-////                            @Override
-////                            public void run() {
-////                                mCounterView.setVisibility(View.VISIBLE);
-////                                mCounterView.setText(String.format(Locale.ENGLISH, "%d", counter));
-////                            }
-////                        });
-////
-////                }
-////                else {
-////                    // Take the picture:
-////                    msg = getResources().getString(R.string.taking_picture_text);
-////                    runOnUiThread(new Runnable() {
-////                        @Override
-////                        public void run() {
-////                            mCounterView.setVisibility(View.INVISIBLE);
-////                        }
-////                    });
-////                    mIsWaitingForCapture = false;
-////                    if (mIsPictureSafe)
-////                        takePicture();
-////                }
-//
-//            }
-//        }
-//        else {
-//            msg = getResources().getString(R.string.taking_picture_text);
-//            mIsWaitingForCapture = false;
-//            if (mIsPictureSafe)
-//                takePicture();
+//        else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
+//            mCameraPreview.startIllumination(false);
+//            mCVResult.setIsIlluminationComputed(false);
+////            if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
+////                mCameraPreview.startFocusMeasurement(false);
+////                mCVResult.setPatches(null);
+////            }
 //        }
 
-        final String msg = "debug";
+        final String msg;
+
+//        mCameraPreview.startFocusMeasurement(true);
+
+        if (!mIsPictureSafe) {
+            msg = getResources().getString(R.string.taking_picture_text);
+        }
+
+        else if (!mIsSeriesMode || (mIsSeriesMode && mIsSeriesModePaused) || state != CVResult.DOCUMENT_STATE_OK) {
+            mIsWaitingForCapture = false;
+            msg = getInstructionMessage(state);
+        }
+
+        else if (mShowCounter){
+            if (!mIsWaitingForCapture) {
+                mStartTime = System.currentTimeMillis();
+                mIsWaitingForCapture = true;
+                msg = "";
+
+            }
+            else {
+
+                msg = getResources().getString(R.string.taking_picture_text);
+                mIsWaitingForCapture = false;
+                if (mIsPictureSafe)
+                    takePicture();
+
+
+//                // Count down:
+//                long timePast = System.currentTimeMillis() - mStartTime;
+//                int steadyTime = getResources().getInteger(R.integer.counter_time);
+//                if (timePast < steadyTime) {
+//                    final long timeLeft = steadyTime - timePast;
+//                    msg = getResources().getString(R.string.dont_move_text);
+//
+//                    final int counter = Math.round(timeLeft / 1000);
+////                    if (counter > 0) {
+//                        runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                mCounterView.setVisibility(View.VISIBLE);
+//                                mCounterView.setText(String.format(Locale.ENGLISH, "%d", counter));
+//                            }
+//                        });
+//
+//                }
+//                else {
+//                    // Take the picture:
+//                    msg = getResources().getString(R.string.taking_picture_text);
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            mCounterView.setVisibility(View.INVISIBLE);
+//                        }
+//                    });
+//                    mIsWaitingForCapture = false;
+//                    if (mIsPictureSafe)
+//                        takePicture();
+//                }
+
+            }
+        }
+        else {
+            msg = getResources().getString(R.string.taking_picture_text);
+            mIsWaitingForCapture = false;
+            if (mIsPictureSafe)
+                takePicture();
+        }
+
+//        final String msg = "debug";
 //        setTextViewText(msg);
         runOnUiThread(new Runnable() {
             @Override
@@ -1778,93 +1790,96 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
             mIsSaving = true;
 
-//            final File outFile = new File(uris[0].getPath());
+            final File outFile = new File(uris[0].getPath());
+
+            try {
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mGalleryButton.setVisibility(View.INVISIBLE);
+                        mProgressBar.setVisibility(View.VISIBLE);
+                    }
+                });
+
+                FileOutputStream fos = new FileOutputStream(outFile);
+                fos.write(mData);
+
+                fos.close();
+                final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+
+                if (exif != null) {
+                    // Save the orientation of the image:
+                    int orientation = getExifOrientation();
+                    String exifOrientation = Integer.toString(orientation);
+                    exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+
+                    // Save the GPS coordinates if available:
+                    Location location = LocationHandler.getInstance(mContext).getLocation();
+                    if (location != null) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+//                        Taken from http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android (post by fabien):
+                        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
+                        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
+                        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
+                        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
+                    }
 //
-//            try {
-//
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        mGalleryButton.setVisibility(View.INVISIBLE);
-//                        mProgressBar.setVisibility(View.VISIBLE);
-//                    }
-//                });
-//
-//                FileOutputStream fos = new FileOutputStream(outFile);
-//                fos.write(mData);
-//
-//                fos.close();
-//                final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
-//
-//                if (exif != null) {
-//                    // Save the orientation of the image:
-//                    int orientation = getExifOrientation();
-//                    String exifOrientation = Integer.toString(orientation);
-//                    exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
-//
-//                    // Save the GPS coordinates if available:
-//                    Location location = LocationHandler.getInstance(mContext).getLocation();
-//                    if (location != null) {
-//                        double latitude = location.getLatitude();
-//                        double longitude = location.getLongitude();
-////                        Taken from http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android (post by fabien):
-//                        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
-//                        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
-//                        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
-//                        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
-//                    }
-////
-//                    //                    Log the shot:
-//                    if (AppState.isDataLogged()) {
-//                        GPS gps = new GPS(location);
-//                        DataLog.getInstance().logShot(outFile.getAbsolutePath(), gps, mLastTimeStamp, mIsSeriesMode);
-//                    }
-//
-//
-//
-//                    exif.saveAttributes();
-//                }
-//
-////    Set the thumbnail on the gallery button, this must be done one the UI thread:
-//
-//                MediaScannerConnection.scanFile(getApplicationContext(), new String[]{outFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
-//
-//                    public void onScanCompleted(String path, Uri uri) {
-//
-//
+                    //                    Log the shot:
+                    if (AppState.isDataLogged()) {
+                        GPS gps = new GPS(location);
+                        DataLog.getInstance().logShot(outFile.getAbsolutePath(), gps, mLastTimeStamp, mIsSeriesMode);
+                    }
+
+
+
+                    exif.saveAttributes();
+                }
+
+//    Set the thumbnail on the gallery button, this must be done one the UI thread:
+
+                MediaScannerConnection.scanFile(getApplicationContext(), new String[]{outFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
+
+                    public void onScanCompleted(String path, Uri uri) {
+
+//                        Before ThumbnailUtils.extractThumbnail was used which causes OOM's:
 //                        Bitmap resized = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(outFile.toString()), 200, 200);
-//
-//                        Matrix mtx = new Matrix();
-//                        mtx.setRotate(mCameraOrientation);
-//
-//                        resized = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), mtx, true);
-//
-//                        final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), resized);
-//
-//                        runOnUiThread(new Runnable() {
-//
-//                            @Override
-//                            public void run() {
-//                                mProgressBar.setVisibility(View.INVISIBLE);
-//                                setGalleryButtonDrawable(thumbDrawable);
-//                            }
-//
-//                        });
-//
+
+//                        Instead use this method to avoid loading large images into memory:
+                        Bitmap resized = decodeFile(outFile, 200, 200);
+
+                        Matrix mtx = new Matrix();
+                        mtx.setRotate(mCameraOrientation);
+
+                        resized = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), mtx, true);
+
+                        final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), resized);
+
+                        runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                mProgressBar.setVisibility(View.INVISIBLE);
+                                setGalleryButtonDrawable(thumbDrawable);
+                            }
+
+                        });
+
+                    }
+
 //                    }
-//
-////                    }
-//                });
-//
-//                mIsPictureSafe = true;
-//
-//            }
-//            catch (FileNotFoundException e) {
-//                Log.d(TAG, "Could not find file: " + outFile);
-//            }
-//            catch (IOException e) {
-//                Log.d(TAG, "Could not save file: " + outFile);
-//            }
+                });
+
+                mIsPictureSafe = true;
+
+            }
+            catch (FileNotFoundException e) {
+                Log.d(TAG, "Could not find file: " + outFile);
+            }
+            catch (IOException e) {
+                Log.d(TAG, "Could not save file: " + outFile);
+            }
 
 
             return null;
@@ -1881,6 +1896,46 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
 
 
+    }
+
+
+    private static Bitmap decodeFile(File f,int width,int height){
+        try {
+            //Decode image size
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+            options.inSampleSize = calculateInSampleSize(options, width, height);
+
+            // Decode bitmap with inSampleSize set
+            options.inJustDecodeBounds = false;
+            return BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+
+        } catch (FileNotFoundException e) {}
+        return null;
+    }
+
+    private static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
     }
 
 
