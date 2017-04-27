@@ -106,6 +106,8 @@ public class DataLog {
     public void logShot(String fileName, GPS gps, Date date, boolean seriesMode) {
 
         ShotLog shotLog = new ShotLog(fileName, gps, date, seriesMode);
+        if (mShotLog == null)
+            mShotLog = new ArrayList<>();
         mShotLog.add(shotLog);
 
     }
