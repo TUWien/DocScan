@@ -76,6 +76,12 @@ public class ChangeDetector {
 
     }
 
+    public static void reset() {
+
+        mIsInit = false;
+
+    }
+
     public static boolean isFrameSteady(Mat frame) {
 
         if (!mIsInit || ((frame.rows() != mInitMat.rows()) || (frame.cols() != mInitMat.cols()))) {

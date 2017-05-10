@@ -95,6 +95,7 @@ import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.PaintView;
 import at.ac.tuwien.caa.docscan.camera.TaskTimer;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
+import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.logic.AppState;
@@ -775,7 +776,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 mPaintView.showFlicker();
             }
         };
-        mCameraPreview.storeMat();
+
+        mCameraPreview.storeMat(mIsSeriesMode);
         if (mCameraPreview.getCamera() != null)
             mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
 
@@ -804,6 +806,23 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
         FileSaver fileSaver = new FileSaver(data);
         fileSaver.execute(uri);
+
+    }
+
+    private void showSaveErrorDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.picture_save_error_text).setTitle(R.string.picture_save_error_title);
+
+        builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                ChangeDetector.reset();
+                mIsPictureSafe = true;
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
 
     }
 
@@ -1476,6 +1495,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
             mCameraPreview.startFocusMeasurement(true);
         }
+        // TODO: I do not know why this is happening, once the CameraActivity is resumed:
+        else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
+            mCameraPreview.startFocusMeasurement(true);
+        }
 
 //        This is used for the computation of the illumination:
 
@@ -1874,11 +1897,25 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 mIsPictureSafe = true;
 
             }
-            catch (FileNotFoundException e) {
-                Log.d(TAG, "Could not find file: " + outFile);
-            }
-            catch (IOException e) {
-                Log.d(TAG, "Could not save file: " + outFile);
+//            catch (FileNotFoundException e) {
+//                Log.d(TAG, "Could not find file: " + outFile);
+//            }
+            catch (Exception e) {
+
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        mProgressBar.setVisibility(View.INVISIBLE);
+                        mGalleryButton.setVisibility(View.VISIBLE);
+                        mIsPictureSafe = false;
+                        showSaveErrorDialog();
+                    }
+
+                });
+
+
+//                Log.d(TAG, "Could not save file: " + outFile);
             }
 
 

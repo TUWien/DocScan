@@ -83,20 +83,23 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     // Mat used by mPageSegmentationThread and mFocusMeasurementThread:
     private Mat mFrameMat;
-    private Mat mPrevFrameMat;
     private int mFrameWidth;
     private int mFrameHeight;
     private boolean mAwaitFrameChanges = false; // this is dependent on the mode: single vs. series
     private boolean mManualFocus = true;
     private boolean mIsImageProcessingPaused = false;
     private boolean mStoreMat = false;
-    private boolean mPreviewSizeSet = false;
+
+    // This is used to pause the CV tasks for a short time after an image has been taken in series mode.
+    // Prevents a shooting within a very short time range:
+    private static final int LAST_SHOT_TIME_NOT_INIT = -1;
+    private long mLastShotTime = LAST_SHOT_TIME_NOT_INIT;
+    private boolean mIsSeriesMode;
+    private static final int MIN_TIME_BETWEEN_SHOTS = 2000; // in milli-seconds
 
     private long mLastTime;
-
     // Used for generating mFrameMat at a 'fixed' frequency:
     private static long FRAME_TIME_DIFF = 10;
-
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
@@ -106,10 +109,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private DkPolyRect mIlluminationRect;
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
     private boolean mIsPreviewFitting = false;
-
-
-
-//    private BackgroundSubtractorMOG2 bgSubtractor;
 
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
@@ -584,7 +583,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 // This is done in series mode:
                 if (mAwaitFrameChanges)
                     processFrame = isFrameSteadyAndNew();
-//                processFrame = true;
+
+                // Check if there should be short break between two successive shots in series mode:
+                boolean paused = pauseBetweenShots(currentTime);
+                processFrame &= !paused;
 
 //                If in single mode - or the frame is steady and contains a change, do the document analysis:
                 if (processFrame)
@@ -593,6 +595,27 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             }
 
         }
+
+    }
+
+    /**
+     * Returns if enough time has past after the last shot in series mode. The function should prevent
+     * that a shot is taken in series mode, just because of small changes of the image content
+     * (e.g. a finger is laid on a manuscript).
+     * @param time The current time.
+     * @return boolean indicating if more time has to pass.
+     */
+    private boolean pauseBetweenShots(long time) {
+
+        boolean pause = false;
+
+        if (mIsSeriesMode && mLastShotTime != LAST_SHOT_TIME_NOT_INIT) {
+            if (time - mLastShotTime <= MIN_TIME_BETWEEN_SHOTS) {
+                pause = true;
+            }
+        }
+
+        return pause;
 
     }
 
@@ -645,30 +668,21 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
-    public void storeMat() {
-
-//        synchronized (this) {
-//            try {
-//                this.wait();
-//                Log.d(TAG, "mFrameMat height: " + mFrameMat.height());
-//                ChangeDetector.init(mFrameMat);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        ChangeDetector.init(mFrameMat);
+    public void storeMat(boolean isSeriesMode) {
 
         mStoreMat = true;
+
+        // If the user switched just to series mode do not make a break:
+        if (!mIsSeriesMode && isSeriesMode)
+            mLastShotTime = LAST_SHOT_TIME_NOT_INIT;
+        else
+            mLastShotTime = System.currentTimeMillis();
+
+        mIsSeriesMode = isSeriesMode;
+
     }
 
     private void storeMatThreadSafe() {
-
-//        String dirName = Environment.getExternalStorageDirectory().getAbsolutePath();
-//
-//        File mediaStorageDir = CameraActivity.getMediaStorageDir("DocScan");
-//        File mediaFile = new File(mediaStorageDir.getPath() + File.separator + "debug.png");
-//
-//        Imgcodecs.imwrite(mediaFile.getPath(), mFrameMat);
 
         ChangeDetector.init(mFrameMat);
         mStoreMat = false;
@@ -678,6 +692,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public void startFocusMeasurement(boolean start) {
 
         mFocusMeasurementThread.setRunning(start);
+
+    }
+
+    public boolean isFocusMeasured() {
+
+        return mFocusMeasurementThread.isRunning();
 
     }
 
@@ -1067,6 +1087,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             if (!mIsRunning)
                 mCVCallback.onFocusMeasured(null);
 
+        }
+
+        public boolean isRunning() {
+            return mIsRunning;
         }
 
 
