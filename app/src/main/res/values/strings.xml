@@ -122,5 +122,8 @@
         <item>Torch</item>
     </string-array>
 
+    <string name="picture_save_error_text">Unfortunately, the image was not saved. Please take care that it is captured.</string>
+    <string name="picture_save_error_title">Image saving error</string>
+
 
 </resources>

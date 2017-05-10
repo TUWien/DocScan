@@ -56,7 +56,7 @@ public class DataLog {
 
     private static DataLog mDataLog = null;
 
-    private ArrayList<ShotLog> mShotLog;
+    private ArrayList<ShotLog> mShotLogs;
 
     private static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
 
@@ -106,9 +106,9 @@ public class DataLog {
     public void logShot(String fileName, GPS gps, Date date, boolean seriesMode) {
 
         ShotLog shotLog = new ShotLog(fileName, gps, date, seriesMode);
-        if (mShotLog == null)
-            mShotLog = new ArrayList<>();
-        mShotLog.add(shotLog);
+        if (mShotLogs == null)
+            mShotLogs = new ArrayList<>();
+        mShotLogs.add(shotLog);
 
     }
 
@@ -117,25 +117,28 @@ public class DataLog {
         try {
             String fileName = getLogFileName(context);
             InputStream in = new FileInputStream(new File(fileName));
-            mShotLog = readJsonStream(in);
+            mShotLogs = readJsonStream(in);
 
         }
         catch (FileNotFoundException e) {
 //            There is no log existing, create a new one:
-            mShotLog = new ArrayList();
         }
         catch(Exception e) {
             Log.d(getClass().getName(), e.toString());
         }
+
+        if (mShotLogs == null)
+            mShotLogs = new ArrayList();
     }
 
     public void writeLog(Context context) {
 
         try {
             String fileName = getLogFileName(context);
-            boolean b = (new File(fileName)).createNewFile();
+            File file = new File(fileName);
+            file.createNewFile();
             OutputStream out = new FileOutputStream(fileName);
-            writeJsonStream(out, mShotLog);
+            writeJsonStream(out, mShotLogs);
         }
         catch(IOException e) {
             Log.d(getClass().getName(), e.toString());
@@ -193,6 +196,10 @@ public class DataLog {
     private void writeList(JsonWriter writer, ArrayList<ShotLog> shotLogs) throws IOException {
 
         writer.beginArray();
+
+        if (shotLogs == null)
+            shotLogs = new ArrayList<>();
+
         for (ShotLog shotLog : shotLogs) {
             writeShotLog(writer, shotLog);
         }
