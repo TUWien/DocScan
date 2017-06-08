@@ -125,7 +125,7 @@ public class CVResult {
 
             mPatches = patches;
             updatePatches();
-//            stateUpdated();
+            stateUpdated();
             // notify is necessary, because the PaintView is waiting for updates on the CVResult
             // object. If notify is not called no update would be drawn.
             this.notify();
@@ -303,7 +303,6 @@ public class CVResult {
             mCorrectedStatesCnt = 0;
         }
 
-
         mCallback.onStatusChange(mCVState);
 
     }
@@ -317,10 +316,8 @@ public class CVResult {
         if (mDKPolyRects == null)
             return DOCUMENT_STATE_EMPTY;
 
-
         if (mDKPolyRects.length == 0)
             return DOCUMENT_STATE_EMPTY;
-
 
         DkPolyRect polyRect = mDKPolyRects[0];
 
