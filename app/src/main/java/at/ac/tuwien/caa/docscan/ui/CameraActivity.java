@@ -103,6 +103,8 @@ import at.ac.tuwien.caa.docscan.logic.DataLog;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
+import static at.ac.tuwien.caa.docscan.camera.cv.CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED;
+import static at.ac.tuwien.caa.docscan.camera.cv.CVResult.DOCUMENT_STATE_OK;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -158,7 +160,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private final static int SERIES_POS = 1;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private static Date mLastTimeStamp;
-
+    private boolean mVerifyCVResult = true;
 
 
     /**
@@ -708,6 +710,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             mCameraPreview.startAutoFocus();
         }
         else if (position != SERIES_POS && mIsSeriesMode) {
+            mCameraPreview.changeCVTask(CameraPreview.PAGE_TASK);
             mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
             mIsSeriesMode = false;
         }
@@ -768,6 +771,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
 //        if (!mIsPictureSafe)
 //            return;
+
+//        mCameraPreview.changeCVTask(CameraPreview.PAGE_TASK);
 
         mIsPictureSafe = false;
         Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
@@ -1268,53 +1273,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     }
 
 
-    // ================= start: CALLBACKS called from native files =================
-
-    /**
-     * Called after focus measurement is finished.
-     *
-     * @param patches Patches array
-     */
-    @Override
-    public void onFocusMeasured(Patch[] patches) {
-
-        if (mCVResult != null)
-            mCVResult.setPatches(patches);
-
-    }
-
-    /**
-     * Called after page segmentation is finished.
-     *
-     * @param dkPolyRects Array of polyRects
-     */
-    @Override
-    public void onPageSegmented(DkPolyRect[] dkPolyRects) {
-
-        if (mCVResult != null) {
-//            mCVResult.setPatches(null);
-            mCVResult.setDKPolyRects(dkPolyRects);
-        }
-
-
-    }
-
-    /**
-     * Called after page segmentation is finished.
-     *
-     * @param value illumination value
-     */
-    @Override
-    public void onIluminationComputed(double value) {
-
-        if (mCVResult != null)
-            mCVResult.setIllumination(value);
-
-
-    }
-
-    // ================= end: CALLBACKS called from native files =================
-
 
     // =================  start: CameraPreview.CameraPreviewCallback CALLBACK =================
 
@@ -1347,20 +1305,342 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
+    /**
+     * Called after the the status of the CVResult object is changed.
+     * @param state state of the CVResult
+     */
+    @Override
+    public void onStatusChange(final int state) {
+
+        final String msg;
+
+//        if (!mIsSeriesMode) {
+
+//            if (state < DOCUMENT_STATE_NO_FOCUS_MEASURED)
+//                mCVResult.setPatches(null);
+
+            if (state >= DOCUMENT_STATE_NO_FOCUS_MEASURED)
+                mCameraPreview.switchCVTask();
+            else {
+                mCameraPreview.changeCVTask(CameraPreview.PAGE_TASK);
+//                Check if we need to remove patches, since the page detection is not sufficient:
+                if (mCVResult.getPatches() != null)
+                    mCVResult.setPatches(null);
+            }
+
+
+//            switch (state) {
+//                case DOCUMENT_STATE_NO_FOCUS_MEASURED:
+//                    mCameraPreview.changeCVTask(CameraPreview.FOCUS_TASK);
+//                    break;
+//                case CVResult.DOCUMENT_STATE_OK:
+//                    mCameraPreview.changeCVTask(CameraPreview.PAGE_TASK);
+//            }
+
+//        if (!mIsSeriesMode) {
+
+            msg = getInstructionMessage(state);
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                    mTextView.setText(msg);
+                }
+            });
+
+//        }
+
+        if (mIsSeriesMode && !mIsSeriesModePaused && state == DOCUMENT_STATE_OK) {
+
+            final String msg2 = "Take picture";
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                    mTextView.setText(msg2);
+                }
+            });
+//            mCameraPreview.setVerifyCVResult(true);
+            mCameraPreview.changeCVTask(CameraPreview.PAGE_TASK);
+            takePicture();
+        }
+
+
+//            return;
+//
+//        }
+
+/*
+
+//        if (!mIsPictureSafe) {
+//            msg = getResources().getString(R.string.taking_picture_text);
+//        }
+
+//        if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+//            mCameraPreview.changeCVTask(CameraPreview.FOCUS_TASK);
+//            msg = getInstructionMessage(state);
+////            mCameraPreview.startFocusMeasurement(true);
+//        }
+//        // TODO: I do not know why this is happening, once the CameraActivity is resumed:
+//        else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
+//            mCameraPreview.changeCVTask(CameraPreview.FOCUS_TASK);
+//            msg = getInstructionMessage(state);
+//        }
+////            mCameraPreview.startFocusMeasurement(true)
+/// ;
+//
+
+//        mCameraPreview.changeCVTask(CameraPreview.FOCUS_TASK);
+
+//        else if (!mIsSeriesMode || (mIsSeriesMode && mIsSeriesModePaused) || state != CVResult.DOCUMENT_STATE_OK) {
+        if (!mIsSeriesMode || (mIsSeriesMode && mIsSeriesModePaused) || state != CVResult.DOCUMENT_STATE_OK) {
+            mIsWaitingForCapture = false;
+            msg = getInstructionMessage(state);
+        }
+        else if (state == CVResult.DOCUMENT_STATE_OK) {
+            if (mIsSeriesMode && !mIsSeriesModePaused) {
+
+                if (mVerifyCVResult) {
+                    msg = "verifying";
+                    mCameraPreview.setVerifyCVResult(true);
+                }
+                else {
+                    msg = getResources().getString(R.string.taking_picture_text);
+                    mIsWaitingForCapture = false;
+                    if (mIsPictureSafe)
+                        takePicture();
+                }
+            }
+            else
+                msg = getResources().getString(R.string.instruction_ok);
+        }
+        else
+            msg = "unknown state";
+
+
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                mTextView.setText(msg);
+            }
+        });
+
+
+
+////        if (mIsPictureSafe)
+////            takePicture();
+//
+//        // Check if we need the focus measurement at this point:
+//        if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+//            mCameraPreview.changeCVTask(CameraPreview.FOCUS_TASK);
+////            mCameraPreview.startFocusMeasurement(true);
+//        }
+////        // TODO: I do not know why this is happening, once the CameraActivity is resumed:
+////        else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
+////            mCameraPreview.changeCVTask(CameraPreview.FOCUS_TASK);
+//////            mCameraPreview.startFocusMeasurement(true);
+////        }
+//
+////        This is used for the computation of the illumination:
+//
+////        // Check if we need the illumination measurement at this point:
+////        else if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
+////
+////            if (mCVResult.getDKPolyRects() == null)
+////                return;
+////            if (mCVResult.getDKPolyRects().length == 0)
+////                return;
+////
+////            mCameraPreview.setIlluminationRect(mCVResult.getDKPolyRects()[0]);
+////            mCameraPreview.startIllumination(true);
+////            mCVResult.setIsIlluminationComputed(true);
+////
+////        }
+////
+////        else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
+////            mCameraPreview.startIllumination(false);
+////            mCVResult.setIsIlluminationComputed(false);
+//////            if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
+//////                mCameraPreview.startFocusMeasurement(false);
+//////                mCVResult.setPatches(null);
+//////            }
+////        }
+//
+//        final String msg;
+//
+////        mCameraPreview.startFocusMeasurement(true);
+//
+//        if (!mIsPictureSafe) {
+//            msg = getResources().getString(R.string.taking_picture_text);
+//        }
+//
+//        else if (!mIsSeriesMode || (mIsSeriesMode && mIsSeriesModePaused) || state != CVResult.DOCUMENT_STATE_OK) {
+//            mIsWaitingForCapture = false;
+//            msg = getInstructionMessage(state);
+//        }
+//
+//        else if (mShowCounter){
+//            if (!mIsWaitingForCapture) {
+//                mStartTime = System.currentTimeMillis();
+//                mIsWaitingForCapture = true;
+//                msg = "";
+//
+//            }
+//            else {
+//
+//                msg = getResources().getString(R.string.taking_picture_text);
+//                mIsWaitingForCapture = false;
+//
+//                if (mIsPictureSafe)
+//                    takePicture();
+//
+//
+////                // Count down:
+////                long timePast = System.currentTimeMillis() - mStartTime;
+////                int steadyTime = getResources().getInteger(R.integer.counter_time);
+////                if (timePast < steadyTime) {
+////                    final long timeLeft = steadyTime - timePast;
+////                    msg = getResources().getString(R.string.dont_move_text);
+////
+////                    final int counter = Math.round(timeLeft / 1000);
+//////                    if (counter > 0) {
+////                        runOnUiThread(new Runnable() {
+////                            @Override
+////                            public void run() {
+////                                mCounterView.setVisibility(View.VISIBLE);
+////                                mCounterView.setText(String.format(Locale.ENGLISH, "%d", counter));
+////                            }
+////                        });
+////
+////                }
+////                else {
+////                    // Take the picture:
+////                    msg = getResources().getString(R.string.taking_picture_text);
+////                    runOnUiThread(new Runnable() {
+////                        @Override
+////                        public void run() {
+////                            mCounterView.setVisibility(View.INVISIBLE);
+////                        }
+////                    });
+////                    mIsWaitingForCapture = false;
+////                    if (mIsPictureSafe)
+////                        takePicture();
+////                }
+//
+//            }
+//        }
+//        else {
+//            msg = getResources().getString(R.string.taking_picture_text);
+//            mIsWaitingForCapture = false;
+//            if (mIsPictureSafe)
+//                takePicture();
+//        }
+//
+////        final String msg = "debug";
+////        setTextViewText(msg);
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+//                mTextView.setText(msg);
+//            }
+//        });
+//
+*/
+
+    }
+
+
+    // ================= start: CALLBACKS called from native files =================
+
+    /**
+     * Called after focus measurement is finished.
+     *
+     * @param patches Patches array
+     */
+    @Override
+    public void onFocusMeasured(Patch[] patches) {
+
+        if (mCVResult != null)
+            mCVResult.setPatches(patches);
+
+//        if (!mIsSeriesMode)
+//            mCameraPreview.changeCVTask(CameraPreview.PAGE_TASK);
+
+    }
+
+    /**
+     * Called after page segmentation is finished.
+     *
+     * @param dkPolyRects Array of polyRects
+     */
+    @Override
+    public void onPageSegmented(DkPolyRect[] dkPolyRects) {
+
+        if (mCVResult != null) {
+//            mCVResult.setPatches(null);
+            mCVResult.setDKPolyRects(dkPolyRects);
+//            if (dkPolyRects.length == 0)
+//                mCVResult.setPatches(null);
+
+        }
+
+
+    }
+
+    /**
+     * Called after page segmentation is finished.
+     *
+     * @param value illumination value
+     */
+    @Override
+    public void onIluminationComputed(double value) {
+
+        if (mCVResult != null)
+            mCVResult.setIllumination(value);
+
+
+    }
+
+    // ================= end: CALLBACKS called from native files =================
+
     @Override
     public void onMovement(boolean moved) {
+
+        Log.d(TAG, "onmovement");
 
         mPaintView.drawMovementIndicator(moved);
 
         if (moved) {
             mCVResult.flushResults();
             setTextViewText(R.string.instruction_movement);
+//            mCameraPreview.changeCVTask(CameraPreview.MOVE_THREAD);
         }
         else {
             // This forces an update of the textview if it is still showing the R.string.instruction_movement text
             if (mTextView.getText() == getResources().getString(R.string.instruction_movement))
                 setTextViewText(R.string.instruction_none);
+//            mCameraPreview.changeCVTask(CameraPreview.PAGE_TASK);
+
+////            onMovement should be just called in series mode, but we assure it here:
+//            if (mIsSeriesMode)
+//                mCameraPreview.changeCVTask(CameraPreview.PAGE_TASK);
+
         }
+    }
+
+    @Override
+    public void onCVResultVerified() {
+
+        Log.d(TAG, "onCVResultVerified");
+        mCameraPreview.changeCVTask(CameraPreview.PAGE_TASK);
+        mCameraPreview.setVerifyCVResult(false);
+
+        if (mIsSeriesMode && !mIsSeriesModePaused)
+            takePicture();
 
 
     }
@@ -1368,10 +1648,15 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @Override
     public void onWaitingForDoc(boolean waiting) {
 
+        Log.d(TAG, "onwaitingfordoc");
+
 //        mPaintView.drawWaitingIndicator(waiting);
 
         if (waiting)
             setTextViewText(R.string.instruction_no_changes);
+//        else
+////            The waiting is over: The document is ready for analysis:
+//            mCameraPreview.changeCVTask(CameraPreview.PAGE_TASK);
 
     }
 
@@ -1481,132 +1766,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
-    /**
-     * Called after the the status of the CVResult object is changed.
-     * @param state state of the CVResult
-     */
-    @Override
-    public void onStatusChange(final int state) {
-
-//        if (mIsPictureSafe)
-//            takePicture();
-
-        // Check if we need the focus measurement at this point:
-        if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-            mCameraPreview.startFocusMeasurement(true);
-        }
-        // TODO: I do not know why this is happening, once the CameraActivity is resumed:
-        else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
-            mCameraPreview.startFocusMeasurement(true);
-        }
-
-//        This is used for the computation of the illumination:
-
-//        // Check if we need the illumination measurement at this point:
-//        else if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
-//
-//            if (mCVResult.getDKPolyRects() == null)
-//                return;
-//            if (mCVResult.getDKPolyRects().length == 0)
-//                return;
-//
-//            mCameraPreview.setIlluminationRect(mCVResult.getDKPolyRects()[0]);
-//            mCameraPreview.startIllumination(true);
-//            mCVResult.setIsIlluminationComputed(true);
-//
-//        }
-//
-//        else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
-//            mCameraPreview.startIllumination(false);
-//            mCVResult.setIsIlluminationComputed(false);
-////            if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
-////                mCameraPreview.startFocusMeasurement(false);
-////                mCVResult.setPatches(null);
-////            }
-//        }
-
-        final String msg;
-
-//        mCameraPreview.startFocusMeasurement(true);
-
-        if (!mIsPictureSafe) {
-            msg = getResources().getString(R.string.taking_picture_text);
-        }
-
-        else if (!mIsSeriesMode || (mIsSeriesMode && mIsSeriesModePaused) || state != CVResult.DOCUMENT_STATE_OK) {
-            mIsWaitingForCapture = false;
-            msg = getInstructionMessage(state);
-        }
-
-        else if (mShowCounter){
-            if (!mIsWaitingForCapture) {
-                mStartTime = System.currentTimeMillis();
-                mIsWaitingForCapture = true;
-                msg = "";
-
-            }
-            else {
-
-                msg = getResources().getString(R.string.taking_picture_text);
-                mIsWaitingForCapture = false;
-                if (mIsPictureSafe)
-                    takePicture();
-
-
-//                // Count down:
-//                long timePast = System.currentTimeMillis() - mStartTime;
-//                int steadyTime = getResources().getInteger(R.integer.counter_time);
-//                if (timePast < steadyTime) {
-//                    final long timeLeft = steadyTime - timePast;
-//                    msg = getResources().getString(R.string.dont_move_text);
-//
-//                    final int counter = Math.round(timeLeft / 1000);
-////                    if (counter > 0) {
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                mCounterView.setVisibility(View.VISIBLE);
-//                                mCounterView.setText(String.format(Locale.ENGLISH, "%d", counter));
-//                            }
-//                        });
-//
-//                }
-//                else {
-//                    // Take the picture:
-//                    msg = getResources().getString(R.string.taking_picture_text);
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            mCounterView.setVisibility(View.INVISIBLE);
-//                        }
-//                    });
-//                    mIsWaitingForCapture = false;
-//                    if (mIsPictureSafe)
-//                        takePicture();
-//                }
-
-            }
-        }
-        else {
-            msg = getResources().getString(R.string.taking_picture_text);
-            mIsWaitingForCapture = false;
-            if (mIsPictureSafe)
-                takePicture();
-        }
-
-//        final String msg = "debug";
-//        setTextViewText(msg);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                mTextView.setText(msg);
-            }
-        });
-
-
-
-    }
 
     /**
      * Returns instruction messages, depending on the current state of the CVResult object.
@@ -1638,7 +1797,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             case CVResult.DOCUMENT_STATE_ROTATION:
                 return getResources().getString(R.string.instruction_rotation);
 
-            case CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED:
+            case DOCUMENT_STATE_NO_FOCUS_MEASURED:
                 return getResources().getString(R.string.instruction_no_focus_measured);
 
             case CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED:
