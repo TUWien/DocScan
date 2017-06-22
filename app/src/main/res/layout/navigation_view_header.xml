@@ -3,12 +3,12 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/colorAccent">
+    android:background="@color/white">
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="@dimen/navigation_view_header_height"
-        android:src="@drawable/docscan_header_cropped"
+        android:src="@drawable/doc_scan_header_cropped"
         android:scaleType="centerCrop"/>
 
     <TextView
