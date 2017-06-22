@@ -21,7 +21,7 @@ public class ChangeDetector {
 
     private static int FRAME_SIZE = 300;
     private static final String TAG = "ChangeDetector";
-    private static final long MIN_STEADY_TIME = 700;        // The time in which there must be no movement.
+    private static final long MIN_STEADY_TIME = 300;        // The time in which there must be no movement.
     private static final double CHANGE_THRESH = 0.05;       // A threshold describing a movement between successive frames.
     private static final double DIFFERENCE_THRESH = 0.1;    // Used to measure the difference between a current frame and the frame that has been written to disk
 
@@ -120,19 +120,16 @@ public class ChangeDetector {
             return false;
     }
 
-    public static boolean isFrameDifferent(Mat frame1, Mat frame2) {
+    public static boolean isFrameDifferent(Mat frame) {
 
-        Mat f1 = new Mat(frame1.rows(), frame1.cols(), CvType.CV_8UC1);
-        Imgproc.cvtColor(frame1, f1, Imgproc.COLOR_RGB2GRAY);
+        Mat currentFrame = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
+        Imgproc.cvtColor(frame, currentFrame, Imgproc.COLOR_RGB2GRAY);
 
-        Mat f2 = new Mat(frame2.rows(), frame2.cols(), CvType.CV_8UC1);
-        Imgproc.cvtColor(frame2, f2, Imgproc.COLOR_RGB2GRAY);
-
-        Mat subtractResult = new Mat(f1.rows(), f1.cols(), CvType.CV_8UC1);
-        Core.absdiff(f1, f2, subtractResult);
+        Mat subtractResult = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
+        Core.absdiff(currentFrame, mInitMat, subtractResult);
         Imgproc.threshold(subtractResult, subtractResult, 50, 1, Imgproc.THRESH_BINARY);
         Scalar sumDiff = Core.sumElems(subtractResult);
-        double diffRatio = sumDiff.val[0] / (f1.cols() * f1.rows());
+        double diffRatio = sumDiff.val[0] / (currentFrame.cols() * currentFrame.rows());
 
         return diffRatio > DIFFERENCE_THRESH;
 
