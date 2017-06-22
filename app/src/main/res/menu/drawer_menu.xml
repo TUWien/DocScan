@@ -45,6 +45,10 @@
             android:id="@+id/login_item"
             android:title=""
             />
+        <item
+            android:id="@+id/rest_item"
+            android:title=""
+            />
     </group>
 
 </menu>

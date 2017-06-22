@@ -8,8 +8,10 @@
     <string name="share_log_item_text">Share log</string>
     <string name="camera_item_text">Camera</string>
     <string name="login_item_text">Login</string>
+    <string name="rest_item_text">Rest Test</string>
     <string name="setttings_item_text">Settings</string>
     <string name="header_text">DocScan</string>
+
 
     <!-- Use in the MainActivity: start -->
 
@@ -62,7 +64,7 @@
     <string name="instruction_no_focus_measured">calculating focus</string>
     <string name="instruction_unsharp">not focused</string>
     <string name="instruction_no_illumination_measured">calculating illumination</string>
-    <string name="instruction_no_changes">awaiting new document</string>
+    <string name="instruction_no_changes">page already scanned</string>
     <string name="instruction_bad_illumination">change illumination</string>
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>
