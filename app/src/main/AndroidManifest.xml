@@ -2,9 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="at.ac.tuwien.caa.docscan">
 
+    <!--
+    Settings for launcher icons in Image Asset Studio:
+    Trim: No
+    Shape: None
+
+    -->
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/docscan_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
@@ -65,6 +71,12 @@
 
         <activity
             android:name=".ui.LogActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
+        <activity
+            android:name=".ui.RestTestActivity"
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
             />
