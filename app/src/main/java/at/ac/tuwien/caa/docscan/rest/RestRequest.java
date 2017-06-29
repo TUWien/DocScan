@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.rest;
 import android.content.Context;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  * Created by fabian on 01.12.2016.
@@ -10,8 +11,9 @@ import org.json.JSONArray;
 public abstract class RestRequest {
 
     private Context mContext;
-    protected String mUrl;
+//    protected String mUrl;
     protected RestCallback mRestCallback;
+    protected int mMethod;
 
     public RestRequest(Context context) {
 
@@ -19,16 +21,17 @@ public abstract class RestRequest {
         mRestCallback = (RestCallback) context;
     }
 
-    public String getUrl() {
-
-        return mUrl;
-
-    }
+//    public String getUrl() {
+//        return mUrl;
+//    }
+    public abstract String getUrl();
 
     public Context getContext() {
-
         return mContext;
+    }
 
+    public int getMethod() {
+        return mMethod;
     }
 
     public String findString(String response, String prefix, String postfix) {
@@ -45,11 +48,7 @@ public abstract class RestRequest {
 
     }
 
-    public abstract void handleResponse(String response);
-
-    public void handleResponse(JSONArray response) {
-
-    }
+//    public abstract void handleResponse(String response);
 
     /**
      * Callback interface. This interface is used to hold a generic reference to the callback.
@@ -57,5 +56,40 @@ public abstract class RestRequest {
      */
     public interface RestCallback {
 
+    }
+
+//      We do not need implicit reference from the inner class to the enclosing class, hence use static.
+//      Otherwise we get an an enclosing instance that contains X.Y.Z is required error:
+
+    public static abstract class XMLRequest extends RestRequest {
+
+        public XMLRequest(Context context) {
+            super(context);
+        }
+
+        public abstract void handleResponse(String response);
+
+    }
+
+//      We do not need implicit reference from the inner class to the enclosing class, hence use static.
+//      Otherwise we get an an enclosing instance that contains X.Y.Z is required error:
+    public static abstract class JSONArrayRestRequest extends RestRequest {
+
+        public JSONArrayRestRequest(Context context) {
+            super(context);
+        }
+
+        public abstract void handleResponse(JSONArray response);
+    }
+
+    //      We do not need implicit reference from the inner class to the enclosing class, hence use static.
+//      Otherwise we get an an enclosing instance that contains X.Y.Z is required error:
+    public static abstract class JSONObjectRestRequest extends RestRequest {
+
+        public JSONObjectRestRequest(Context context) {
+            super(context);
+        }
+
+        public abstract void handleResponse(JSONObject response);
     }
 }

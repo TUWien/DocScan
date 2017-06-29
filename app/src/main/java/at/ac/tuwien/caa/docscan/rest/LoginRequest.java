@@ -2,10 +2,12 @@ package at.ac.tuwien.caa.docscan.rest;
 
 import android.content.Context;
 
+import com.android.volley.Request;
+
 /**
  * Created by fabian on 01.12.2016.
  */
-public class LoginRequest extends RestRequest {
+public class LoginRequest extends RestRequest.XMLRequest {
 
     private static final String SESSION_ID_START = "<sessionId>";
     private static final String SESSION_ID_END = "</sessionId>";
@@ -13,15 +15,21 @@ public class LoginRequest extends RestRequest {
     private static final String FIRST_NAME_ID_END = "</firstname>";
     private static final String LAST_NAME_ID_START = "<lastname>";
     private static final String LAST_NAME_ID_END = "</lastname>";
+    private static final String URL = "https://transkribus.eu/TrpServer/rest/auth/login";
 
 
     public LoginRequest(Context context) {
 
         super(context);
-        mUrl = "https://transkribus.eu/TrpServer/rest/auth/login";
+        mMethod = Request.Method.POST;
 
         RequestHandler.processLoginRequest(this);
 
+    }
+
+    @Override
+    public String getUrl() {
+        return URL;
     }
 
     public void handleResponse(String response) {
@@ -42,6 +50,7 @@ public class LoginRequest extends RestRequest {
             User.getInstance().setLoggedIn(false);
 
     }
+
 
     public void handleLoginError() {
 

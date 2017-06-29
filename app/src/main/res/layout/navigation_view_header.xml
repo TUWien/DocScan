@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/navigation_view_header_height"
         android:src="@drawable/doc_scan_header_cropped"
-        android:scaleType="centerCrop"/>
+        android:scaleType="centerInside"/>
 
     <TextView
         android:id="@+id/navigation_view_header_user_textview"
