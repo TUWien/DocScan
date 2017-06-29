@@ -2,43 +2,59 @@ package at.ac.tuwien.caa.docscan.rest;
 
 import android.content.Context;
 
+import com.android.volley.Request;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by fabian on 05.12.2016.
  */
-public class CollectionsRequest extends RestRequest {
+public class CollectionsRequest extends RestRequest.JSONArrayRestRequest {
 
 //    private CollectionsCallback mCollectionsCallback;
+    private static final String ID_ID = "colId";
+    private static final String NAME_ID = "colName";
+    private static final String ROLE_ID = "role";
+
+    private static final String URL = "https://transkribus.eu/TrpServer/rest/collections/list";
 
     public CollectionsRequest(Context context) {
 
         super(context);
-        mUrl = "https://transkribus.eu/TrpServer/rest/collections/list";
+        mMethod = Request.Method.GET;
 
-//        RequestHandler.processRequest(this);
         RequestHandler.processJsonRequest(this);
     }
 
     @Override
-    public void handleResponse(String response) {
-
-        ((CollectionsCallback) mRestCallback).onCollections(User.getInstance());
-
+    public String getUrl() {
+        return URL;
     }
+
 
     @Override
     public void handleResponse(JSONArray response) {
 
-        ((CollectionsCallback) mRestCallback).onCollections(User.getInstance());
 
         try {
-            JSONObject o = response.getJSONObject(0);
-            String s = o.getString("colName");
+            List<Collection> collections = new ArrayList<Collection>();
 
-            int b = 0;
+            for (int i = 0; i < response.length(); i++) {
+                JSONObject o = response.getJSONObject(i);
+                int id = o.getInt(ID_ID);
+                String name = o.getString(NAME_ID);
+                String role = o.getString(ROLE_ID);
+
+                Collection collection = new Collection(id, name, role);
+                collections.add(collection);
+            }
+
+            ((CollectionsCallback) mRestCallback).onCollections(collections);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -47,7 +63,7 @@ public class CollectionsRequest extends RestRequest {
 
     public interface CollectionsCallback extends RestRequest.RestCallback{
 
-        void onCollections(User user);
+        void onCollections(List<Collection> collections);
 
     }
 }

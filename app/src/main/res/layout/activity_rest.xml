@@ -9,10 +9,11 @@
     android:fitsSystemWindows="true"
     >
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/main_frame_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <!--<RelativeLayout-->
             <!--android:id="@+id/login_fields_layout"-->
@@ -76,7 +77,14 @@
             <include layout="@layout/toolbar_autohide" />
         </android.support.design.widget.AppBarLayout>
 
-    </FrameLayout>
+        <Button
+            android:id="@+id/debug_collections_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/debug_collections_button_text"
+            />
+
+    </LinearLayout>
 
     <!-- The navigation drawer -->
     <include layout="@layout/navigation_view"/>
