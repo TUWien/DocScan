@@ -66,3 +66,4 @@ img/
 /app/src/main/java/at/ac/tuwien/caa/docscan/camera/MediaSaver.java
 /app/src/main/java/at/ac/tuwien/caa/docscan/camera/Storage.java
 /projectFilesBackup/.idea/workspace.xml
+/app/src/main/java/at/ac/tuwien/caa/docscan/camera/Util.java
