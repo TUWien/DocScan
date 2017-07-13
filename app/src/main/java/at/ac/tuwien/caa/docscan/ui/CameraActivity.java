@@ -816,7 +816,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                ChangeDetector.reset();
+                ChangeDetector.resetNewFrameDetector();
                 mIsPictureSafe = true;
             }
         });

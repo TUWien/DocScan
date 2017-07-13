@@ -21,40 +21,65 @@ public class ChangeDetector {
 
     private static int FRAME_SIZE = 300;
     private static final String TAG = "ChangeDetector";
-    private static final long MIN_STEADY_TIME = 300;        // The time in which there must be no movement.
+    private static final long MIN_STEADY_TIME = 500;        // The time in which there must be no movement.
     private static final double CHANGE_THRESH = 0.05;       // A threshold describing a movement between successive frames.
     private static final double DIFFERENCE_THRESH = 0.1;    // Used to measure the difference between a current frame and the frame that has been written to disk
 
     private static Mat mInitMat;
     private static boolean mLastFrameChanged = false;
     private static long mSteadyStartTime;
-    private static boolean mIsInit = false;
+    private static boolean mIsMovementDetectorInit = false;
+    private static boolean mIsNewFrameDetectorInit = false;
 
 //    private static final double PERC_THRESH = 0.05;
 
     private static BackgroundSubtractorMOG2 mMovementDetector, mNewFrameDetector;
 
-    public static void init(Mat frame) {
+    /**
+     * This is just called after the camera is started and no picture has been taken yet. With this function
+     * @param frame
+     */
+    public static void firstTimeInit(Mat frame) {
 
-        mIsInit = true;
+    }
+
+    public static void initMovementDetector(Mat frame) {
+
+        mIsMovementDetectorInit = true;
         mInitMat = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
         Imgproc.cvtColor(frame, mInitMat, Imgproc.COLOR_RGB2GRAY);
 
         initFrameSize(frame);
 
         mMovementDetector = Video.createBackgroundSubtractorMOG2();
+
+
+    }
+
+    public static void initNewFrameDetector(Mat frame) {
+
+        mIsNewFrameDetectorInit = true;
+        mInitMat = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
+        Imgproc.cvtColor(frame, mInitMat, Imgproc.COLOR_RGB2GRAY);
+
         mNewFrameDetector = Video.createBackgroundSubtractorMOG2();
 
         Mat tmp = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
         Imgproc.cvtColor(frame, tmp, Imgproc.COLOR_RGB2GRAY);
-        // TODO: find out why here an exception is thrown (happened after switching to other camera app and back again)
-        Log.d(TAG, "frame rows: " + frame.rows() + " frame cols: " + frame.cols());
-        Log.d(TAG, "mFrameWidth: " + mFrameWidth + " mFrameHeight " + mFrameHeight);
         Imgproc.resize(tmp, tmp, new Size(mFrameWidth, mFrameHeight));
         Mat fg = new Mat(frame.rows(), mFrameWidth, CvType.CV_8UC1);
 
         mNewFrameDetector.apply(tmp, fg, 1);
 
+
+    }
+
+    public static boolean isMovementDetectorInitialized() {
+        return mIsMovementDetectorInit;
+    }
+
+    public static boolean isNewFrameDetectorInitialized() {
+        return mIsNewFrameDetectorInit;
     }
 
     private static void initFrameSize(Mat frame) {
@@ -69,23 +94,16 @@ public class ChangeDetector {
 
     }
 
+    public static void resetNewFrameDetector() {
 
-    public static boolean isInitialized() {
-
-        return mIsInit;
-
-    }
-
-    public static void reset() {
-
-        mIsInit = false;
+        mIsNewFrameDetectorInit = false;
 
     }
 
     public static boolean isFrameSteady(Mat frame) {
 
-        if (!mIsInit || ((frame.rows() != mInitMat.rows()) || (frame.cols() != mInitMat.cols()))) {
-            init(frame);
+        if (!mIsNewFrameDetectorInit || ((frame.rows() != mInitMat.rows()) || (frame.cols() != mInitMat.cols()))) {
+            initNewFrameDetector(frame);
             return false;
         }
 
@@ -119,20 +137,6 @@ public class ChangeDetector {
             return false;
     }
 
-    public static boolean isFrameDifferent(Mat frame) {
-
-        Mat currentFrame = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
-        Imgproc.cvtColor(frame, currentFrame, Imgproc.COLOR_RGB2GRAY);
-
-        Mat subtractResult = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
-        Core.absdiff(currentFrame, mInitMat, subtractResult);
-        Imgproc.threshold(subtractResult, subtractResult, 50, 1, Imgproc.THRESH_BINARY);
-        Scalar sumDiff = Core.sumElems(subtractResult);
-        double diffRatio = sumDiff.val[0] / (currentFrame.cols() * currentFrame.rows());
-
-        return diffRatio > DIFFERENCE_THRESH;
-
-    }
 
     private static double getChangeRatio(Mat frame, BackgroundSubtractorMOG2 subtractor, double learnRate) {
 

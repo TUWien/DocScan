@@ -47,6 +47,10 @@ import java.util.List;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.camera.threads.CVThreadManager;
+import at.ac.tuwien.caa.docscan.camera.threads.ChangeCallable;
+import at.ac.tuwien.caa.docscan.camera.threads.FocusCallable;
+import at.ac.tuwien.caa.docscan.camera.threads.PageCallable;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.CAMERA_FRAME;
@@ -89,7 +93,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean mManualFocus = true;
     private boolean mIsImageProcessingPaused = false;
     private boolean mStoreMat = false;
-
     private boolean mUseThreading = true;
 
     // This is used to pause the CV tasks for a short time after an image has been taken in series mode.
@@ -112,7 +115,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
     private boolean mIsPreviewFitting = false;
 
-    private CustomThreadPoolManager mCustomThreadPoolManager;
+    private CVThreadManager mCVThreadManager;
 
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
@@ -134,9 +137,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         mFlashMode = null;
 
-        mCustomThreadPoolManager = CustomThreadPoolManager.getsInstance();
-        // CustomThreadPoolManager stores activity as a weak reference. No need to unregister.
-//        mCustomThreadPoolManager.setUiThreadCallback(this);
+        mCVThreadManager = CVThreadManager.getsInstance();
+        // CVThreadManager stores activity as a weak reference. No need to unregister.
+//        mCVThreadManager.setUiThreadCallback(this);
 
 //        bgSubtractor = Video.createBackgroundSubtractorMOG2();
 
@@ -575,27 +578,34 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 Mat mat = byte2Mat(pixels);
 
                 if (mStoreMat) {
-                    ChangeDetector.init(mat);
+                    ChangeDetector.initMovementDetector(mat);
+                    ChangeDetector.initNewFrameDetector(mat);
                     mStoreMat = false;
                 }
+                else if (!ChangeDetector.isMovementDetectorInitialized()) {
+                    ChangeDetector.initMovementDetector(mat);
+                }
 
-                boolean processFrame = false;
-                if (!mCustomThreadPoolManager.isRunning(CustomThreadPoolManager.TASK_CHANGE)) {
-                    ChangeCallable cCallable = new ChangeCallable(mat.clone(), mCVCallback, mTimerCallbacks);
-                    mCustomThreadPoolManager.addCallable(cCallable, CustomThreadPoolManager.TASK_CHANGE);
-                    processFrame = mCustomThreadPoolManager.isFrameSteadyAndNew();
+                boolean processFrame = true;
+                // In serial mode the document analysis is just performed if no movement occurred:
+                if (mAwaitFrameChanges) {
+                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_CHANGE)) {
+                        ChangeCallable cCallable = new ChangeCallable(mat.clone(), mCVCallback, mTimerCallbacks);
+                        mCVThreadManager.addCallable(cCallable, CVThreadManager.TASK_CHANGE);
+                        processFrame = mCVThreadManager.isFrameSteadyAndNew();
+                    }
                 }
 
                 if (processFrame) {
 
-                    if (!mCustomThreadPoolManager.isRunning(CustomThreadPoolManager.TASK_PAGE)) {
+                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_PAGE)) {
                         PageCallable pCallable = new PageCallable(mat.clone(), mCVCallback, mTimerCallbacks);
-                        mCustomThreadPoolManager.addCallable(pCallable, CustomThreadPoolManager.TASK_PAGE);
+                        mCVThreadManager.addCallable(pCallable, CVThreadManager.TASK_PAGE);
                     }
 
-                    if (!mCustomThreadPoolManager.isRunning(CustomThreadPoolManager.TASK_FOCUS)) {
+                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_FOCUS)) {
                         FocusCallable fCallable = new FocusCallable(mat.clone(), mCVCallback, mTimerCallbacks);
-                        mCustomThreadPoolManager.addCallable(fCallable, CustomThreadPoolManager.TASK_FOCUS);
+                        mCVThreadManager.addCallable(fCallable, CVThreadManager.TASK_FOCUS);
                     }
 
                 }
@@ -603,12 +613,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 mat.release();
 
 //                FocusCallable fCallable = new FocusCallable(mFrameMat.clone(), mCVCallback, mTimerCallbacks);
-//                fCallable.setCustomThreadPoolManager(mCustomThreadPoolManager);
-//                mCustomThreadPoolManager.addCallable(fCallable);
+//                fCallable.setCustomThreadPoolManager(mCVThreadManager);
+//                mCVThreadManager.addCallable(fCallable);
 
-//                CustomCallable callable2 = new CustomCallable(mFrameMat.clone(), mCVCallback, CustomCallable.TYPE_FOCUS);
-//                callable2.setCustomThreadPoolManager(mCustomThreadPoolManager);
-//                mCustomThreadPoolManager.addCallable(callable2);
+//                CVCallable callable2 = new CVCallable(mFrameMat.clone(), mCVCallback, CVCallable.TYPE_FOCUS);
+//                callable2.setCustomThreadPoolManager(mCVThreadManager);
+//                mCVThreadManager.addCallable(callable2);
             }
             else {
 
@@ -691,7 +701,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         boolean isFrameDifferent = false;
 
 //                    The ChangeDetector is only initialized after an image has been taken:
-        if (ChangeDetector.isInitialized()) {
+        if (ChangeDetector.isNewFrameDetectorInitialized()) {
 
             mTimerCallbacks.onTimerStarted(MOVEMENT_CHECK);
             isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
@@ -749,7 +759,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private void storeMatThreadSafe() {
 
-        ChangeDetector.init(mFrameMat);
+        ChangeDetector.initNewFrameDetector(mFrameMat);
         mStoreMat = false;
 
     }
