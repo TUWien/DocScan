@@ -105,12 +105,5 @@ public class NativeWrapper {
     }
 
 
-    // Callbacks:
-    public interface CVCallback {
 
-        void onFocusMeasured(Patch[] patches);
-        void onPageSegmented(DkPolyRect[] polyRects);
-        void onIluminationComputed(double value);
-
-    }
 }

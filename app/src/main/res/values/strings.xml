@@ -54,7 +54,7 @@
     <string name="button_ok">OK</string>
 
     <!-- Navigation Drawer -->
-    <string name="about_text">TranskribusDocScan\n2017</string>
+    <string name="about_text">DocScan\n2017</string>
 
     <!-- PaintView -->
     <string name="instruction_empty">no document found</string>
@@ -68,7 +68,7 @@
     <string name="instruction_bad_illumination">change illumination</string>
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>
-    <string name="instruction_movement">Too much movement</string>
+    <string name="instruction_movement">Movement detected</string>
     <string name="instruction_none"></string>
     <string name="dont_move_text">Do not move</string>
 
@@ -128,6 +128,7 @@
     <string name="picture_save_error_title">Image saving error</string>
 
     <string name="debug_collections_button_text">Collections</string>
+    <string name="debug_upload_button_text">Upload</string>
 
 
 </resources>

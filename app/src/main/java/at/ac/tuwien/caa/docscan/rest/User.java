@@ -9,6 +9,7 @@ public class User {
 
     private String mUserName, mPassword, mFirstName, mLastName, mSessionID;
     private boolean mIsLoggedin, mIsAutoLogInDone;
+    private Collection mCollection;
 
     /**
      * Returns a singleton.
@@ -27,6 +28,12 @@ public class User {
 
         mIsLoggedin = false;
         mIsAutoLogInDone = false;
+
+    }
+
+    public void setCollection(Collection collection) {
+
+        mCollection = collection;
 
     }
 

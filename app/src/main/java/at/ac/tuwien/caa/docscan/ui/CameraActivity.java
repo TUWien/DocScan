@@ -110,7 +110,7 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
  */
 
 public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallbacks,
-        NativeWrapper.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
+        CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
         MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener,
         AdapterView.OnItemSelectedListener {
 
@@ -1238,10 +1238,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                     }
                 });
             }
-
         }
-
-
     }
 
 
