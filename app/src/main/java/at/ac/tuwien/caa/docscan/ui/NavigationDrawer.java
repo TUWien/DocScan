@@ -21,6 +21,7 @@ import at.ac.tuwien.caa.docscan.rest.User;
  * This file contains parts of this source file:
  * https://github.com/google/iosched/blob/e8c61e7e23f74aa6786696dad22e5136b423a334/android/src/main/java/com/google/samples/apps/iosched/navigation/AppNavigationViewAsDrawerImpl.java
  * Created by fabian on 30.11.2016.
+ *
  */
 public class NavigationDrawer implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -171,6 +172,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
     /**
      * Taken from: https://github.com/google/iosched
      * List of all possible navigation items.
+     * Howto remove menu items: Comment the item below and change the return value in the
+     * corresponding getSelfNavDrawerItem() function.
      */
     public enum NavigationItemEnum {
 
@@ -192,8 +195,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_info_black_24dp, AboutActivity.class),
         SHARE_LOG(R.id.share_log_item, R.string.share_log_item_text,
                 R.drawable.ic_share_black_24dp, LogActivity.class),
-        REST_TEST(R.id.rest_item, R.string.rest_item_text,
-                R.drawable.ic_weekend_black_24dp, RestTestActivity.class),
+//        REST_TEST(R.id.rest_item, R.string.rest_item_text,
+//                R.drawable.ic_weekend_black_24dp, RestTestActivity.class),
         INVALID(12, 0, 0, null);
 
         private int id;

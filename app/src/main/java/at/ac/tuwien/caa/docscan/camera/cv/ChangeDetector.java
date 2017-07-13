@@ -104,7 +104,6 @@ public class ChangeDetector {
             }
         }
 
-
         mLastFrameChanged = isCurrentChange;
         return isFrameSteady;
 

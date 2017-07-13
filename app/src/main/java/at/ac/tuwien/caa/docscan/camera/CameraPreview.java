@@ -73,7 +73,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private Camera mCamera;
     private Camera.CameraInfo mCameraInfo;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
-    private NativeWrapper.CVCallback mCVCallback;
+    private CVCallback mCVCallback;
     private CameraPreviewCallback mCameraPreviewCallback;
 
     private PageSegmentationThread mPageSegmentationThread;
@@ -89,6 +89,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean mManualFocus = true;
     private boolean mIsImageProcessingPaused = false;
     private boolean mStoreMat = false;
+
+    private boolean mUseThreading = true;
 
     // This is used to pause the CV tasks for a short time after an image has been taken in series mode.
     // Prevents a shooting within a very short time range:
@@ -110,6 +112,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
     private boolean mIsPreviewFitting = false;
 
+    private CustomThreadPoolManager mCustomThreadPoolManager;
+
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
      * @param context context
@@ -122,13 +126,18 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mHolder = getHolder();
         mHolder.addCallback(this);
 
-        mCVCallback = (NativeWrapper.CVCallback) context;
+        mCVCallback = (CVCallback) context;
         mCameraPreviewCallback = (CameraPreviewCallback) context;
 
         // used for debugging:
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
 
         mFlashMode = null;
+
+        mCustomThreadPoolManager = CustomThreadPoolManager.getsInstance();
+        // CustomThreadPoolManager stores activity as a weak reference. No need to unregister.
+//        mCustomThreadPoolManager.setUiThreadCallback(this);
+
 //        bgSubtractor = Video.createBackgroundSubtractorMOG2();
 
     }
@@ -559,43 +568,99 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
 
-            synchronized (this) {
+            if (mUseThreading) {
 
-                // 1.5 since YUV
-                Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
-                yuv.put(0, 0, pixels);
+                // TODO: check here if at least one task type is done, before creating the mat:
 
-                if (mFrameMat != null)
-                    mFrameMat.release();
+                Mat mat = byte2Mat(pixels);
 
-                mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
-                Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
+                if (mStoreMat) {
+                    ChangeDetector.init(mat);
+                    mStoreMat = false;
+                }
 
-                if (mStoreMat)
-                    storeMatThreadSafe();
+                boolean processFrame = false;
+                if (!mCustomThreadPoolManager.isRunning(CustomThreadPoolManager.TASK_CHANGE)) {
+                    ChangeCallable cCallable = new ChangeCallable(mat.clone(), mCVCallback, mTimerCallbacks);
+                    mCustomThreadPoolManager.addCallable(cCallable, CustomThreadPoolManager.TASK_CHANGE);
+                    processFrame = mCustomThreadPoolManager.isFrameSteadyAndNew();
+                }
 
-                yuv.release();
+                if (processFrame) {
 
-                mLastTime = currentTime;
+                    if (!mCustomThreadPoolManager.isRunning(CustomThreadPoolManager.TASK_PAGE)) {
+                        PageCallable pCallable = new PageCallable(mat.clone(), mCVCallback, mTimerCallbacks);
+                        mCustomThreadPoolManager.addCallable(pCallable, CustomThreadPoolManager.TASK_PAGE);
+                    }
 
-                boolean processFrame = true;
+                    if (!mCustomThreadPoolManager.isRunning(CustomThreadPoolManager.TASK_FOCUS)) {
+                        FocusCallable fCallable = new FocusCallable(mat.clone(), mCVCallback, mTimerCallbacks);
+                        mCustomThreadPoolManager.addCallable(fCallable, CustomThreadPoolManager.TASK_FOCUS);
+                    }
 
-                // This is done in series mode:
-                if (mAwaitFrameChanges)
-                    processFrame = isFrameSteadyAndNew();
+                }
 
-                // Check if there should be short break between two successive shots in series mode:
-                boolean paused = pauseBetweenShots(currentTime);
-                processFrame &= !paused;
+                mat.release();
 
-//                If in single mode - or the frame is steady and contains a change, do the document analysis:
-                if (processFrame)
-                    this.notify();
+//                FocusCallable fCallable = new FocusCallable(mFrameMat.clone(), mCVCallback, mTimerCallbacks);
+//                fCallable.setCustomThreadPoolManager(mCustomThreadPoolManager);
+//                mCustomThreadPoolManager.addCallable(fCallable);
 
+//                CustomCallable callable2 = new CustomCallable(mFrameMat.clone(), mCVCallback, CustomCallable.TYPE_FOCUS);
+//                callable2.setCustomThreadPoolManager(mCustomThreadPoolManager);
+//                mCustomThreadPoolManager.addCallable(callable2);
+            }
+            else {
+
+                synchronized (this) {
+
+                    // 1.5 since YUV
+                    Mat yuv = new Mat((int) (mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
+                    yuv.put(0, 0, pixels);
+
+                    if (mFrameMat != null)
+                        mFrameMat.release();
+
+                    mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
+                    Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
+
+                    if (mStoreMat)
+                        storeMatThreadSafe();
+
+                    yuv.release();
+
+                    mLastTime = currentTime;
+
+                    boolean processFrame = true;
+
+                    // This is done in series mode:
+                    if (mAwaitFrameChanges)
+                        processFrame = isFrameSteadyAndNew();
+
+                    // Check if there should be short break between two successive shots in series mode:
+                    boolean paused = pauseBetweenShots(currentTime);
+                    processFrame &= !paused;
+
+                    //                If in single mode - or the frame is steady and contains a change, do the document analysis:
+                    if (processFrame)
+                        this.notify();
+
+                }
             }
 
         }
 
+    }
+
+    private Mat byte2Mat(byte[] pixels) {
+
+        Mat yuv = new Mat((int) (mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
+        yuv.put(0, 0, pixels);
+
+        Mat result = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
+        Imgproc.cvtColor(yuv, result, Imgproc.COLOR_YUV2RGB_NV21);
+
+        return result;
     }
 
     /**
@@ -633,11 +698,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mTimerCallbacks.onTimerStopped(MOVEMENT_CHECK);
 
             if (!isFrameSteady) {
-                mCameraPreviewCallback.onMovement(true);
+                mCVCallback.onMovement(true);
                 return false;
             }
             else {
-                mCameraPreviewCallback.onMovement(false);
+                mCVCallback.onMovement(false);
             }
 
             if (!isFrameDifferent) {
@@ -646,10 +711,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 mTimerCallbacks.onTimerStopped(NEW_DOC);
 
                 if (!isFrameDifferent) {
-                    mCameraPreviewCallback.onWaitingForDoc(true);
+                    mCVCallback.onWaitingForDoc(true);
                     return false;
                 } else {
-                    mCameraPreviewCallback.onWaitingForDoc(false);
+                    mCVCallback.onWaitingForDoc(false);
                     mTimerCallbacks.onTimerStarted(FLIP_SHOT_TIME);
                 }
             }
@@ -1020,6 +1085,17 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         }
     }
 
+    // Callbacks:
+    public interface CVCallback {
+
+        void onFocusMeasured(Patch[] patches);
+        void onPageSegmented(DkPolyRect[] polyRects);
+        void onIluminationComputed(double value);
+        void onMovement(boolean moved);
+        void onWaitingForDoc(boolean waiting);
+
+    }
+
     /**
      * Interfaces used to tell the activity that a dimension is changed. This is used to enable
      * a conversion between frame and screen coordinates (necessary for drawing in PaintView).
@@ -1029,8 +1105,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onMeasuredDimensionChange(int width, int height);
         void onFrameDimensionChange(int width, int height, int cameraOrientation);
         void onFlashModesFound(List<String> modes);
-        void onMovement(boolean moved);
-        void onWaitingForDoc(boolean waiting);
 
     }
 

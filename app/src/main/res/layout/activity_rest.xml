@@ -84,6 +84,13 @@
             android:text="@string/debug_collections_button_text"
             />
 
+        <Button
+            android:id="@+id/debug_upload_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/debug_upload_button_text"
+            />
+
     </LinearLayout>
 
     <!-- The navigation drawer -->
