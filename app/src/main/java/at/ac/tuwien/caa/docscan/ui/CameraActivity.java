@@ -778,8 +778,12 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         };
 
         mCameraPreview.storeMat(mIsSeriesMode);
-        if (mCameraPreview.getCamera() != null)
+        if (mCameraPreview.getCamera() != null) {
             mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
+//            if (mCameraPreview.isFrameSteady())
+//                mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
+        }
+
 
     }
 
