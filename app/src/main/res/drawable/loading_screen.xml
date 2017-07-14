@@ -2,11 +2,11 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <!--Taken from: https://www.bignerdranch.com/blog/splash-screens-the-right-way/  -->
     <item
-        android:drawable="@color/actionbar_bg_color"/>
+        android:drawable="@color/colorPrimary"/>
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@mipmap/docscan_launcher"/>
+            android:src="@drawable/icon_splash_screen"/>
     </item>
 
 </layer-list>
