@@ -102,8 +102,8 @@ public class ChangeDetector {
 
     public static boolean isFrameSteady(Mat frame) {
 
-        if (!mIsNewFrameDetectorInit || ((frame.rows() != mInitMat.rows()) || (frame.cols() != mInitMat.cols()))) {
-            initNewFrameDetector(frame);
+        if (!mIsMovementDetectorInit|| ((frame.rows() != mInitMat.rows()) || (frame.cols() != mInitMat.cols()))) {
+            initMovementDetector(frame);
             return false;
         }
 

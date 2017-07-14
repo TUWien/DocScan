@@ -103,8 +103,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private static final int MIN_TIME_BETWEEN_SHOTS = 2000; // in milli-seconds
 
     private long mLastTime;
-    // Used for generating mFrameMat at a 'fixed' frequency:
-    private static long FRAME_TIME_DIFF = 10;
+    // Used for generating the mat (for CV tasks) at a fixed frequency:
+    private static long FRAME_TIME_DIFF = 200;
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
@@ -634,12 +634,16 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
                     Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
 
-                    if (mStoreMat)
-                        storeMatThreadSafe();
+                    if (mStoreMat) {
+                        ChangeDetector.initMovementDetector(mFrameMat);
+                        ChangeDetector.initNewFrameDetector(mFrameMat);
+                        mStoreMat = false;
+                    }
+                    else if (!ChangeDetector.isMovementDetectorInitialized()) {
+                        ChangeDetector.initMovementDetector(mFrameMat);
+                    }
 
                     yuv.release();
-
-                    mLastTime = currentTime;
 
                     boolean processFrame = true;
 
@@ -658,8 +662,19 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 }
             }
 
+            mLastTime = currentTime;
+
         }
 
+    }
+
+    public boolean isFrameSteady() {
+
+        if (!mAwaitFrameChanges)
+            return true;
+        else {
+            return mCVThreadManager.isFrameSteadyAndNew();
+        }
     }
 
     private Mat byte2Mat(byte[] pixels) {
@@ -754,13 +769,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mLastShotTime = System.currentTimeMillis();
 
         mIsSeriesMode = isSeriesMode;
-
-    }
-
-    private void storeMatThreadSafe() {
-
-        ChangeDetector.initNewFrameDetector(mFrameMat);
-        mStoreMat = false;
 
     }
 

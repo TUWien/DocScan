@@ -3,10 +3,6 @@ package at.ac.tuwien.caa.docscan.camera.threads;
 import android.os.Process;
 import android.util.Log;
 
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -17,13 +13,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-
-import at.ac.tuwien.caa.docscan.camera.CameraPreview;
-import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
-import at.ac.tuwien.caa.docscan.camera.TaskTimer;
-import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
-
-import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 
 /**
  * Created by Frank Tan on 11/04/2016.
@@ -143,49 +132,6 @@ public class CVThreadManager {
 //            mRunningTaskList.clear();
 //        }
 //        sendMessageToUiThread(Util.createMessage(Util.MESSAGE_ID, "All tasks in the thread pool are cancelled"));
-    }
-
-    private class PageHandler implements Runnable {
-
-        protected Mat mMat;
-        protected CameraPreview.CVCallback mCVCallback;
-        protected TaskTimer.TimerCallbacks mTimerCallbacks;
-        protected  byte[] mPixels;
-        private int mFrameWidth, mFrameHeight;
-
-
-        public PageHandler(byte[] pixels, int frameWidth, int frameHeight, CameraPreview.CVCallback cvCallback, TaskTimer.TimerCallbacks timerCallbacks) {
-
-            mPixels = pixels;
-            mFrameWidth = frameWidth;
-            mFrameHeight = frameHeight;
-            mCVCallback = cvCallback;
-            mTimerCallbacks = timerCallbacks;
-
-        }
-
-        @Override
-        public void run() {
-
-
-            mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
-
-            Mat yuv = new Mat((int) (mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
-            yuv.put(0, 0, mPixels);
-            mMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
-            Imgproc.cvtColor(yuv, mMat, Imgproc.COLOR_YUV2RGB_NV21);
-            yuv.release();
-            mPixels = null;
-
-            DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mMat);
-            mCVCallback.onPageSegmented(polyRects);
-            mMat.release();
-//            }
-
-            mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
-
-
-        }
     }
 
     /* A ThreadFactory implementation which create new threads for the thread pool.
