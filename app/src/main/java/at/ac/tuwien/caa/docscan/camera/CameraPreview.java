@@ -37,8 +37,10 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -117,6 +119,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private CVThreadManager mCVThreadManager;
 
+    private boolean mVerifyCapture = false;
+    private Mat mVerifyMat = null;
+    private long mVerificationTime;
+    private static long VERIFICATION_TIME_DIFF = 500;
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
      * @param context context
@@ -146,6 +152,162 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     /**
+     * Called after the preview received a new frame (as byte array).
+     * @param pixels byte array containgin the frame.
+     * @param camera camera
+     */
+    @Override
+    public void onPreviewFrame(byte[] pixels, Camera camera)
+    {
+
+        updateFPS();
+
+        if (pixels == null)
+            return;
+
+        if (mIsImageProcessingPaused)
+            return;
+
+        // The verification is done in series mode after an automatic capture is requested:
+        if (mVerifyCapture && mVerifyMat != null) {
+//            if (mVerifyMat == null) {
+//                mVerifyMat = byte2Mat(pixels);
+//                mVerificationTime = System.currentTimeMillis();
+//            }
+            if (System.currentTimeMillis() - mVerificationTime >= VERIFICATION_TIME_DIFF) {
+                mVerifyCapture = false;
+                Mat currentMat = byte2Mat(pixels);
+                boolean isVerified = isFrameSame(mVerifyMat, currentMat);
+                mVerifyMat.release();
+                mVerifyMat = null;
+                currentMat.release();
+
+                if (isVerified)
+                    mCVCallback.onCaptureVerified();
+                else
+                    Log.d(TAG, "Prevented a capture!");
+            }
+
+
+            return;
+
+        }
+
+        long currentTime = System.currentTimeMillis();
+
+        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
+
+            if (mUseThreading) {
+
+                // TODO: check here if at least one task type is done, before creating the mat:
+
+                Mat mat = byte2Mat(pixels);
+
+                if (mStoreMat) {
+                    ChangeDetector.initMovementDetector(mat);
+                    ChangeDetector.initNewFrameDetector(mat);
+                    mStoreMat = false;
+                }
+                else if (!ChangeDetector.isMovementDetectorInitialized()) {
+                    ChangeDetector.initMovementDetector(mat);
+                }
+
+                boolean processFrame = true;
+                // In serial mode the document analysis is just performed if no movement occurred:
+                if (mAwaitFrameChanges) {
+                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_CHANGE)) {
+                        ChangeCallable cCallable = new ChangeCallable(mat.clone(), mCVCallback, mTimerCallbacks);
+                        mCVThreadManager.addCallable(cCallable, CVThreadManager.TASK_CHANGE);
+                        processFrame = mCVThreadManager.isFrameSteadyAndNew();
+
+//                        if (mVerifyCapture) {
+//                            if (mCVThreadManager.isFrameSteadyAndNew()) {
+//                                mCVCallback.onCaptureVerified();
+//                                processFrame = false;
+//                            }
+//                            else
+//                                processFrame = true;
+//
+//                            mVerifyCapture = false;
+//                        }
+//                        else
+//                            processFrame = mCVThreadManager.isFrameSteadyAndNew();
+                    }
+                }
+
+                if (processFrame) {
+
+                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_PAGE)) {
+                        PageCallable pCallable = new PageCallable(mat.clone(), mCVCallback, mTimerCallbacks);
+                        mCVThreadManager.addCallable(pCallable, CVThreadManager.TASK_PAGE);
+                    }
+
+                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_FOCUS)) {
+                        FocusCallable fCallable = new FocusCallable(mat.clone(), mCVCallback, mTimerCallbacks);
+                        mCVThreadManager.addCallable(fCallable, CVThreadManager.TASK_FOCUS);
+                    }
+
+                    if (mAwaitFrameChanges) {
+                        if (mVerifyMat != null)
+                            mVerifyMat.release();
+                        mVerifyMat = mat.clone();
+                        mVerificationTime = System.currentTimeMillis();
+                    }
+
+                }
+
+                mat.release();
+            }
+            else {
+
+                synchronized (this) {
+
+                    // 1.5 since YUV
+                    Mat yuv = new Mat((int) (mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
+                    yuv.put(0, 0, pixels);
+
+                    if (mFrameMat != null)
+                        mFrameMat.release();
+
+                    mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
+                    Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
+
+                    if (mStoreMat) {
+                        ChangeDetector.initMovementDetector(mFrameMat);
+                        ChangeDetector.initNewFrameDetector(mFrameMat);
+                        mStoreMat = false;
+                    }
+                    else if (!ChangeDetector.isMovementDetectorInitialized()) {
+                        ChangeDetector.initMovementDetector(mFrameMat);
+                    }
+
+                    yuv.release();
+
+                    boolean processFrame = true;
+
+                    // This is done in series mode:
+                    if (mAwaitFrameChanges)
+                        processFrame = isFrameSteadyAndNew();
+
+                    // Check if there should be short break between two successive shots in series mode:
+                    boolean paused = pauseBetweenShots(currentTime);
+                    processFrame &= !paused;
+
+                    //                If in single mode - or the frame is steady and contains a change, do the document analysis:
+                    if (processFrame)
+                        this.notify();
+
+                }
+            }
+
+            mLastTime = currentTime;
+
+        }
+
+    }
+
+
+    /**
      * This is used to enable a movement and change detector (currently just used in series mode).
      * @param awaitFrameChanges
      */
@@ -155,9 +317,31 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    public void verifyCapture() {
+        mVerifyCapture = true;
+    }
+
     public void stop() {
 
         isCameraInitialized = false;
+
+    }
+
+    public boolean isFrameSame(Mat frame1, Mat frame2) {
+
+        Mat tmp1 = new Mat(frame1.rows(), frame1.cols(), CvType.CV_8UC1);
+        Imgproc.cvtColor(frame1, tmp1, Imgproc.COLOR_RGB2GRAY);
+
+        Mat tmp2 = new Mat(frame2.rows(), frame2.cols(), CvType.CV_8UC1);
+        Imgproc.cvtColor(frame2, tmp2, Imgproc.COLOR_RGB2GRAY);
+
+        Mat subtractResult = new Mat(frame2.rows(), frame2.cols(), CvType.CV_8UC1);
+        Core.absdiff(frame1, frame2, subtractResult);
+        Imgproc.threshold(subtractResult, subtractResult, 50, 1, Imgproc.THRESH_BINARY);
+        Scalar sumDiff = Core.sumElems(subtractResult);
+        double diffRatio = sumDiff.val[0] / (frame1.cols() * frame2.rows());
+
+        return diffRatio < .05;
 
     }
 
@@ -546,124 +730,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 Patch[] p = {};
                 mCVCallback.onFocusMeasured(p);
             }
-        }
-
-    }
-
-    /**
-     * Called after the preview received a new frame (as byte array).
-     * @param pixels byte array containgin the frame.
-     * @param camera camera
-     */
-    @Override
-    public void onPreviewFrame(byte[] pixels, Camera camera)
-    {
-
-        updateFPS();
-
-        if (pixels == null)
-            return;
-
-        if (mIsImageProcessingPaused)
-            return;
-
-        long currentTime = System.currentTimeMillis();
-
-        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
-
-            if (mUseThreading) {
-
-                // TODO: check here if at least one task type is done, before creating the mat:
-
-                Mat mat = byte2Mat(pixels);
-
-                if (mStoreMat) {
-                    ChangeDetector.initMovementDetector(mat);
-                    ChangeDetector.initNewFrameDetector(mat);
-                    mStoreMat = false;
-                }
-                else if (!ChangeDetector.isMovementDetectorInitialized()) {
-                    ChangeDetector.initMovementDetector(mat);
-                }
-
-                boolean processFrame = true;
-                // In serial mode the document analysis is just performed if no movement occurred:
-                if (mAwaitFrameChanges) {
-                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_CHANGE)) {
-                        ChangeCallable cCallable = new ChangeCallable(mat.clone(), mCVCallback, mTimerCallbacks);
-                        mCVThreadManager.addCallable(cCallable, CVThreadManager.TASK_CHANGE);
-                        processFrame = mCVThreadManager.isFrameSteadyAndNew();
-                    }
-                }
-
-                if (processFrame) {
-
-                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_PAGE)) {
-                        PageCallable pCallable = new PageCallable(mat.clone(), mCVCallback, mTimerCallbacks);
-                        mCVThreadManager.addCallable(pCallable, CVThreadManager.TASK_PAGE);
-                    }
-
-                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_FOCUS)) {
-                        FocusCallable fCallable = new FocusCallable(mat.clone(), mCVCallback, mTimerCallbacks);
-                        mCVThreadManager.addCallable(fCallable, CVThreadManager.TASK_FOCUS);
-                    }
-
-                }
-
-                mat.release();
-
-//                FocusCallable fCallable = new FocusCallable(mFrameMat.clone(), mCVCallback, mTimerCallbacks);
-//                fCallable.setCustomThreadPoolManager(mCVThreadManager);
-//                mCVThreadManager.addCallable(fCallable);
-
-//                CVCallable callable2 = new CVCallable(mFrameMat.clone(), mCVCallback, CVCallable.TYPE_FOCUS);
-//                callable2.setCustomThreadPoolManager(mCVThreadManager);
-//                mCVThreadManager.addCallable(callable2);
-            }
-            else {
-
-                synchronized (this) {
-
-                    // 1.5 since YUV
-                    Mat yuv = new Mat((int) (mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
-                    yuv.put(0, 0, pixels);
-
-                    if (mFrameMat != null)
-                        mFrameMat.release();
-
-                    mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
-                    Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
-
-                    if (mStoreMat) {
-                        ChangeDetector.initMovementDetector(mFrameMat);
-                        ChangeDetector.initNewFrameDetector(mFrameMat);
-                        mStoreMat = false;
-                    }
-                    else if (!ChangeDetector.isMovementDetectorInitialized()) {
-                        ChangeDetector.initMovementDetector(mFrameMat);
-                    }
-
-                    yuv.release();
-
-                    boolean processFrame = true;
-
-                    // This is done in series mode:
-                    if (mAwaitFrameChanges)
-                        processFrame = isFrameSteadyAndNew();
-
-                    // Check if there should be short break between two successive shots in series mode:
-                    boolean paused = pauseBetweenShots(currentTime);
-                    processFrame &= !paused;
-
-                    //                If in single mode - or the frame is steady and contains a change, do the document analysis:
-                    if (processFrame)
-                        this.notify();
-
-                }
-            }
-
-            mLastTime = currentTime;
-
         }
 
     }
@@ -1111,6 +1177,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onIluminationComputed(double value);
         void onMovement(boolean moved);
         void onWaitingForDoc(boolean waiting);
+        void onCaptureVerified();
 
     }
 
