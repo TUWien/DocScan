@@ -708,8 +708,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             mCameraPreview.startAutoFocus();
         }
         else if (position != SERIES_POS && mIsSeriesMode) {
-            mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
             mIsSeriesMode = false;
+            mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
         }
 
         mCameraPreview.setAwaitFrameChanges(mIsSeriesMode);
@@ -1350,6 +1350,13 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     @Override
     public void onMovement(boolean moved) {
+
+        // This happens if the user has just switched to single mode and the event occurs later than the touch event.
+        // TODO: implement a proper handling of the events.
+        if (!mIsSeriesMode) {
+            mPaintView.drawMovementIndicator(false);
+            return;
+        }
 
         mPaintView.drawMovementIndicator(moved);
 
