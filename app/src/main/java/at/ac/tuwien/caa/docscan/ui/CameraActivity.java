@@ -147,7 +147,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private boolean mIsSeriesMode = false;
     private boolean mIsSeriesModePaused = false;
     private long mStartTime;
-    private boolean mIsWaitingForCapture = false;
     // We hold here a reference to the popupmenu and the list, because we are not sure what is first initialized:
     private List<String> mFlashModes;
     private PopupMenu mFlashPopupMenu;
@@ -1345,7 +1344,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if (mFlashModes != null && mFlashMenuItem != null)
             mFlashMenuItem.setVisible(true);
 
-
     }
 
     @Override
@@ -1370,16 +1368,33 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 setTextViewText(R.string.instruction_none);
         }
 
-
     }
 
     @Override
     public void onWaitingForDoc(boolean waiting) {
 
-//        mPaintView.drawWaitingIndicator(waiting);
-
         if (waiting)
             setTextViewText(R.string.instruction_no_changes);
+
+    }
+
+    @Override
+    public void onCaptureVerified() {
+
+        if (!mIsPictureSafe)
+            return;
+
+        //  Tell the user that a picture will be taken:
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                mTextView.setText(getResources().getString(R.string.taking_picture_text));
+            }
+        });
+
+        takePicture();
+
 
     }
 
@@ -1496,9 +1511,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @Override
     public void onStatusChange(final int state) {
 
-//        if (mIsPictureSafe)
-//            takePicture();
-
         // Check if we need the focus measurement at this point:
         if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
             mCameraPreview.startFocusMeasurement(true);
@@ -1508,102 +1520,29 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             mCameraPreview.startFocusMeasurement(true);
         }
 
-//        This is used for the computation of the illumination:
-
-//        // Check if we need the illumination measurement at this point:
-//        else if (state == CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED) {
-//
-//            if (mCVResult.getDKPolyRects() == null)
-//                return;
-//            if (mCVResult.getDKPolyRects().length == 0)
-//                return;
-//
-//            mCameraPreview.setIlluminationRect(mCVResult.getDKPolyRects()[0]);
-//            mCameraPreview.startIllumination(true);
-//            mCVResult.setIsIlluminationComputed(true);
-//
-//        }
-//
-//        else if (state != CVResult.DOCUMENT_STATE_OK && state != CVResult.DOCUMENT_STATE_BAD_ILLUMINATION) {
-//            mCameraPreview.startIllumination(false);
-//            mCVResult.setIsIlluminationComputed(false);
-////            if (state != CVResult.DOCUMENT_STATE_UNSHARP) {
-////                mCameraPreview.startFocusMeasurement(false);
-////                mCVResult.setPatches(null);
-////            }
-//        }
-
         final String msg;
-
-//        mCameraPreview.startFocusMeasurement(true);
 
         if (!mIsPictureSafe) {
             msg = getResources().getString(R.string.taking_picture_text);
         }
 
         else if (!mIsSeriesMode || (mIsSeriesMode && mIsSeriesModePaused) || state != CVResult.DOCUMENT_STATE_OK) {
-            mIsWaitingForCapture = false;
             msg = getInstructionMessage(state);
         }
 
-        else if (mShowCounter){
-            if (!mIsWaitingForCapture) {
-                mStartTime = System.currentTimeMillis();
-                mIsWaitingForCapture = true;
-                msg = "";
+        else {
 
+            if (mIsSeriesMode) {
+                mCameraPreview.verifyCapture();
+                return;
             }
             else {
-
                 msg = getResources().getString(R.string.taking_picture_text);
-                mIsWaitingForCapture = false;
                 if (mIsPictureSafe)
                     takePicture();
-
-
-//                // Count down:
-//                long timePast = System.currentTimeMillis() - mStartTime;
-//                int steadyTime = getResources().getInteger(R.integer.counter_time);
-//                if (timePast < steadyTime) {
-//                    final long timeLeft = steadyTime - timePast;
-//                    msg = getResources().getString(R.string.dont_move_text);
-//
-//                    final int counter = Math.round(timeLeft / 1000);
-////                    if (counter > 0) {
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                mCounterView.setVisibility(View.VISIBLE);
-//                                mCounterView.setText(String.format(Locale.ENGLISH, "%d", counter));
-//                            }
-//                        });
-//
-//                }
-//                else {
-//                    // Take the picture:
-//                    msg = getResources().getString(R.string.taking_picture_text);
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            mCounterView.setVisibility(View.INVISIBLE);
-//                        }
-//                    });
-//                    mIsWaitingForCapture = false;
-//                    if (mIsPictureSafe)
-//                        takePicture();
-//                }
-
             }
         }
-        else {
-            msg = getResources().getString(R.string.taking_picture_text);
-            mIsWaitingForCapture = false;
-            if (mIsPictureSafe)
-                takePicture();
-        }
 
-//        final String msg = "debug";
-//        setTextViewText(msg);
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
