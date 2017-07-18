@@ -912,6 +912,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             return;
 
         appRoot.removeView(f);
+        
         View v = getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
 //        if (!mCameraPreview.isPreviewFitting())
 //            v.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
@@ -1823,7 +1824,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                         mtx.setRotate(mCameraOrientation);
 
                         resized = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), mtx, true);
-
                         final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), resized);
 
                         runOnUiThread(new Runnable() {
@@ -1875,6 +1875,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         protected void onPostExecute(Void v) {
 
             mIsSaving = false;
+            // Release the memory. Note this is essential, because otherwise allocated memory will increase.
+            mData = null;
 
         }
 
