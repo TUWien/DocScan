@@ -912,13 +912,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             return;
 
         appRoot.removeView(f);
-        
-        View v = getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
-//        if (!mCameraPreview.isPreviewFitting())
-//            v.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
-        View view = findViewById(R.id.camera_controls_layout);
-        if ((view != null) && (!mCameraPreview.isPreviewFitting()))
-            view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
+
+        View view = getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
+        view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
 
         // Initialize the newly created buttons:
         initButtons();
@@ -1639,12 +1635,14 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private void setGalleryButtonDrawable(Drawable drawable) {
 
         mGalleryButton.setVisibility(View.VISIBLE);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-            mGalleryButton.setBackground(drawable);
-        else
-            mGalleryButton.setBackgroundDrawable(drawable);
-
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+//            mGalleryButton.setBackground(drawable);
+//        else
+//            mGalleryButton.setBackgroundDrawable(drawable);
+//
+        mGalleryButton.setImageDrawable(drawable);
+//        mGalleryButton.setAdjustViewBounds(true);
+//        mGalleryButton.setScaleType(ImageView.ScaleType.CENTER_CROP);
         // Keep a reference to the drawable, because we need it if the orientation is changed:
         mGalleryButtonDrawable = drawable;
 
@@ -1891,6 +1889,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
             BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+            if (options.outWidth > options.outHeight)
+                height = (int) (height * (float) width / options.outWidth);
+            else
+                width = (int) (width * (float) height / options.outHeight);
             options.inSampleSize = calculateInSampleSize(options, width, height);
 
             // Decode bitmap with inSampleSize set
