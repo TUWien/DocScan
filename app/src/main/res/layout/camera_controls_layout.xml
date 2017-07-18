@@ -35,9 +35,9 @@
             android:layout_centerVertical="true"
             android:layout_width="@dimen/gallery_button_size"
             android:layout_height="@dimen/gallery_button_size"
-            android:scaleType="centerInside"
+            android:scaleType="centerCrop"
             android:adjustViewBounds="true"
-            android:padding="@dimen/activity_horizontal_margin"
+            android:background="#0000"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             />
 
