@@ -365,6 +365,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         @Override
         public void run() {
 
+            long mLastTime = 0;
+
             while (mIsRunning) {
 
                 Canvas canvas = null;
@@ -378,11 +380,29 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     // from the native package:
                     synchronized (mCVResult) {
 
+//                        try {
+//                            mCVResult.wait();
+//                        } catch (InterruptedException e) {
+//                            Log.d(TAG, e.toString());
+//                        }
+
                         try {
-                            mCVResult.wait();
+                            mCVResult.wait(30);
                         } catch (InterruptedException e) {
                             Log.d(TAG, e.toString());
                         }
+                        if (!mCVResult.isRedrawNecessary()) {
+                            if (mSegmentationPaint.getAlpha() >= 170)
+                                mSegmentationPaint.setAlpha(mSegmentationPaint.getAlpha() - 20);
+//                            mFocusSharpRectPaint.setAlpha(mFocusSharpRectPaint.getAlpha() - 20);
+//                            mFocusUnsharpRectPaint.setAlpha(mFocusUnsharpRectPaint.getAlpha() - 20);
+                        }
+                        else {
+                            mSegmentationPaint.setAlpha(221);
+                            mFocusSharpRectPaint.setAlpha(170);
+                            mFocusUnsharpRectPaint.setAlpha(170);
+                        }
+
 
                         if (mFlicker.mVisible)
                             continue;
@@ -450,13 +470,17 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             if (mCVResult != null) {
 
-                // Focus measure:
-                if (mCVResult.getPatches() != null)
-                    drawFocusMeasure(canvas);
-
                 // Page segmentation:
-                if (mCVResult.getDKPolyRects() != null)
+                if (mCVResult.getDKPolyRects() != null) {
                     drawPageSegmentation(canvas);
+
+//                    This prevents that the focus patches are drawn, although there is no polyRect found:
+                    if (mCVResult.getDKPolyRects().length > 0) {
+                        // Focus measure:
+                        if (mCVResult.getPatches() != null)
+                            drawFocusMeasure(canvas);
+                    }
+                }
 
 //                drawSavingAnimation(canvas);
 

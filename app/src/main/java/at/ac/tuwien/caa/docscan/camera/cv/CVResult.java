@@ -25,6 +25,7 @@ package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.content.Context;
 import android.graphics.PointF;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -62,6 +63,7 @@ public class CVResult {
     private static final String TAG = "CVResult";
 
     private DkPolyRect[] mDKPolyRects;
+    private DkPolyRect[] mLastDKPolyRects;
     private Patch[] mPatches;
     private int mViewWidth, mViewHeight;
     private int mFrameHeight, mFrameWidth;
@@ -74,6 +76,8 @@ public class CVResult {
     private int mCVState = -1;
     private double mIllumination;
     private boolean mIsIlluminationComputed;
+    private boolean mIsRedrawNecessary;
+    private boolean mIsStable = true;
 
     public CVResult(Context context) {
 
@@ -97,18 +101,47 @@ public class CVResult {
 
             // notify is necessary, because the PaintView is waiting for updates on the CVResult
             // object. If notify is not called no update would be drawn.
+            mIsStable = isRectStable(dkPolyRects);
+
+            Log.d(TAG, "stable: " + mIsStable);
+            mIsRedrawNecessary = true;
+            mLastDKPolyRects = dkPolyRects;
             this.notify();
 
         }
 
     }
 
+    public boolean isStable() {
+        return mIsStable;
+    }
+
+    boolean isRectStable(DkPolyRect[] dkPolyRects){
+
+        boolean isStable = true;
+
+        if (dkPolyRects != null && mLastDKPolyRects != null) {
+
+            if (dkPolyRects.length == 1 && mLastDKPolyRects.length == 1) {
+                PointF distVec = mLastDKPolyRects[0].getLargestDistVector(dkPolyRects[0]);
+                if (distVec != null) {
+                    PointF normedPoint = normPoint(distVec);
+                    if (normedPoint.length() >= .2) {
+                        isStable = false;
+                    }
+                }
+            }
+        }
+
+        return isStable;
+    }
+
+
     public void flushResults() {
 
         synchronized (this) {
             mDKPolyRects  = new DkPolyRect[0];
             mPatches = new Patch[0];
-//            mDKPolyRects[0] = new DkPolyRect();
         }
 
     }
@@ -123,13 +156,26 @@ public class CVResult {
 
         synchronized (this) {
 
-            mPatches = patches;
+            if (!mIsStable)
+                mPatches = new Patch[0];
+            else
+                mPatches = patches;
+
             updatePatches();
 //            stateUpdated();
             // notify is necessary, because the PaintView is waiting for updates on the CVResult
             // object. If notify is not called no update would be drawn.
+            mIsRedrawNecessary = true;
             this.notify();
         }
+
+    }
+
+    public boolean isRedrawNecessary() {
+
+        boolean result = mIsRedrawNecessary;
+        mIsRedrawNecessary = false;
+        return result;
 
     }
 
@@ -282,8 +328,15 @@ public class CVResult {
 
 
         }
+    }
 
+    public PointF normPoint(PointF point) {
 
+        PointF normedPoint = new PointF();
+        normedPoint.x = point.x / mFrameWidth;
+        normedPoint.y = point.y / mFrameHeight;
+
+        return normedPoint;
     }
 
     private void stateUpdated() {
@@ -335,6 +388,10 @@ public class CVResult {
 
         if (mPatches == null)
             return DOCUMENT_STATE_NO_FOCUS_MEASURED;
+
+        if (mPatches.length == 0)
+            return DOCUMENT_STATE_NO_FOCUS_MEASURED;
+
 
         if (!isSharp())
             return DOCUMENT_STATE_UNSHARP;

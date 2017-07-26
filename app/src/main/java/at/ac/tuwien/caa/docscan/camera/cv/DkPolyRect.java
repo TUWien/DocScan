@@ -40,6 +40,7 @@ public class DkPolyRect {
     ArrayList<PointF> mScreenPoints;
     int mChl = -1;
     int mThr = -1;
+    private int mFrameID;
 
     /**
      * Creates a polygon with four corners, marking the borders of a document.
@@ -73,6 +74,14 @@ public class DkPolyRect {
         mPoints.add(new PointF());
         mPoints.add(new PointF());
 
+    }
+
+    public void setFrameID(int frameID) {
+        mFrameID = frameID;
+    }
+
+    public int getFrameID() {
+        return mFrameID;
     }
 
     /**
@@ -129,6 +138,34 @@ public class DkPolyRect {
         }
 
         return maxDist;
+
+    }
+
+    public PointF getLargestDistVector(DkPolyRect polyRect) {
+
+        // Unfortunately the corners are not ordered (just in a counter-clockwise order), meaning we cannot calculate the distance directly.
+        // Instead we find the corner that is closest to the first corner and then use the following corners.
+
+        int closestIdx = getClosestPoint(polyRect.getPoints().get(0));
+
+        double maxDist = 0;
+        PointF result = null;
+
+        for (int i = 0; i < mPoints.size(); i++) {
+
+            PointF p1 = mPoints.get(i);
+            PointF p2 = polyRect.getPoints().get((i + closestIdx) % mPoints.size());
+            DkVector v = new DkVector(p1, p2);
+            double dist = v.length();
+
+            if (dist > maxDist) {
+                maxDist = dist;
+                result = new PointF(v.x, v.y);
+            }
+
+        }
+
+        return result;
 
     }
 

@@ -95,7 +95,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean mManualFocus = true;
     private boolean mIsImageProcessingPaused = false;
     private boolean mStoreMat = false;
-    private boolean mUseThreading = true;
+    private boolean mUseThreading = false;
 
     // This is used to pause the CV tasks for a short time after an image has been taken in series mode.
     // Prevents a shooting within a very short time range:
@@ -106,7 +106,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private long mLastTime;
     // Used for generating the mat (for CV tasks) at a fixed frequency:
-    private static long FRAME_TIME_DIFF = 200;
+    private static long FRAME_TIME_DIFF = 1;
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
@@ -118,10 +118,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean mIsPreviewFitting = false;
 
     private CVThreadManager mCVThreadManager;
+    private int mFrameCnt = 0;
 
     private boolean mVerifyCapture = false;
     private long mVerificationTime;
     private static long VERIFICATION_TIME_DIFF = 800;
+    private boolean mMeasureFocus = false;
+
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
      * @param context context
@@ -156,10 +159,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
      * @param camera camera
      */
     @Override
-    public void onPreviewFrame(byte[] pixels, Camera camera)
-    {
+    public void onPreviewFrame(byte[] pixels, Camera camera) {
 
         updateFPS();
+
+        // TODO: handle an overflow:
+        mFrameCnt++;
 
         if (pixels == null)
             return;
@@ -170,11 +175,127 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // The verification is done in series mode after an automatic capture is requested:
         if (mAwaitFrameChanges && mVerifyCapture) {
             checkMovementAfterCapture(pixels);
+        } else {
+            if (mUseThreading)
+                performCVTasks(pixels);
+            else
+                singleThreadCV(pixels);
         }
-        else {
-            performCVTasks(pixels);
+//        oldSingleThread(pixels);
+
+    }
+
+    private void oldSingleThread(byte[] pixels) {
+
+        long currentTime = System.currentTimeMillis();
+
+        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
+
+            synchronized (this) {
+
+                // 1.5 since YUV
+                Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
+                yuv.put(0, 0, pixels);
+
+                if (mFrameMat != null)
+                    mFrameMat.release();
+
+                mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
+                Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
+
+                if (mStoreMat) {
+                    ChangeDetector.initNewFrameDetector(mFrameMat);
+                    mStoreMat = false;
+                }
+
+                yuv.release();
+
+                mLastTime = currentTime;
+
+                boolean processFrame = true;
+
+                // This is done in series mode:
+                if (mAwaitFrameChanges)
+                    processFrame = isFrameSteadyAndNew();
+
+                // Check if there should be short break between two successive shots in series mode:
+                boolean paused = pauseBetweenShots(currentTime);
+                processFrame &= !paused;
+
+//                If in single mode - or the frame is steady and contains a change, do the document analysis:
+                if (processFrame)
+                    this.notify();
+
+            }
+
         }
 
+    }
+
+
+    private void singleThreadCV(byte[] pixels) {
+
+        long currentTime = System.currentTimeMillis();
+
+        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
+
+            synchronized (this) {
+
+
+
+                if (mFrameMat != null)
+                    mFrameMat.release();
+
+                mFrameMat = byte2Mat(pixels);
+
+                if (mStoreMat) {
+                    ChangeDetector.initMovementDetector(mFrameMat);
+                    ChangeDetector.initNewFrameDetector(mFrameMat);
+                    mStoreMat = false;
+                } else if (!ChangeDetector.isMovementDetectorInitialized()) {
+                    ChangeDetector.initMovementDetector(mFrameMat);
+                }
+
+
+//                boolean processFrame = true;
+//
+//                // This is done in series mode:
+//                if (mAwaitFrameChanges)
+//                    processFrame = isFrameSteadyAndNew();
+//
+//                // Check if there should be short break between two successive shots in series mode:
+//                boolean paused = pauseBetweenShots(currentTime);
+//                processFrame &= !paused;
+
+                boolean processFrame = true;
+                // In serial mode the document analysis is just performed if no movement occurred:
+                if (mAwaitFrameChanges) {
+                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_CHANGE)) {
+                        ChangeCallable cCallable = new ChangeCallable(mFrameMat.clone(), mCVCallback, mTimerCallbacks);
+                        mCVThreadManager.addCallable(cCallable, CVThreadManager.TASK_CHANGE);
+                        processFrame = mCVThreadManager.isFrameSteadyAndNew();
+                    }
+                }
+
+                //                If in single mode - or the frame is steady and contains a change, do the document analysis:
+                if (processFrame)
+                    this.notify();
+
+                if (mAwaitFrameChanges)
+                    mVerificationTime = System.currentTimeMillis();
+
+            }
+
+            mLastTime = currentTime;
+        }
+    }
+
+    public boolean isMultiThreading() {
+        return mUseThreading;
+    }
+
+    public void setThreading(boolean multiThreading) {
+        mUseThreading = multiThreading;
     }
 
 
@@ -222,6 +343,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
 
+//        if (true) {
             Mat mat = byte2Mat(pixels);
 
             if (mStoreMat) {
@@ -246,11 +368,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             if (processFrame) {
 
                 if (!mCVThreadManager.isRunning(CVThreadManager.TASK_PAGE)) {
-                    PageCallable pCallable = new PageCallable(mat.clone(), mCVCallback, mTimerCallbacks);
+                    PageCallable pCallable = new PageCallable(mat.clone(), mCVCallback, mTimerCallbacks, mFrameCnt);
                     mCVThreadManager.addCallable(pCallable, CVThreadManager.TASK_PAGE);
                 }
 
-                if (!mCVThreadManager.isRunning(CVThreadManager.TASK_FOCUS)) {
+                if (mMeasureFocus && !mCVThreadManager.isRunning(CVThreadManager.TASK_FOCUS)) {
                     FocusCallable fCallable = new FocusCallable(mat.clone(), mCVCallback, mTimerCallbacks);
                     mCVThreadManager.addCallable(fCallable, CVThreadManager.TASK_FOCUS);
                 }
@@ -675,7 +797,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (pause) {
             synchronized (this) {
                 DkPolyRect[] r = {};
-                mCVCallback.onPageSegmented(r);
+                mCVCallback.onPageSegmented(r, mFrameCnt);
                 Patch[] p = {};
                 mCVCallback.onFocusMeasured(p);
             }
@@ -790,6 +912,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public void startFocusMeasurement(boolean start) {
 
         mFocusMeasurementThread.setRunning(start);
+        mMeasureFocus = start;
 
     }
 
@@ -1122,7 +1245,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public interface CVCallback {
 
         void onFocusMeasured(Patch[] patches);
-        void onPageSegmented(DkPolyRect[] polyRects);
+        void onPageSegmented(DkPolyRect[] polyRects, int frameID);
         void onIluminationComputed(double value);
         void onMovement(boolean moved);
         void onWaitingForDoc(boolean waiting);
@@ -1176,9 +1299,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                             mCVCallback.onFocusMeasured(patches);
 
-
                         }
-//                        execute();
 
                     } catch (InterruptedException e) {
                     }
@@ -1240,7 +1361,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //                            DkPolyRect[] polyRects = {new DkPolyRect()};
                             mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
 
-                            mCVCallback.onPageSegmented(polyRects);
+                            mCVCallback.onPageSegmented(polyRects, mFrameCnt);
 
 
                         }
@@ -1283,37 +1404,37 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         @Override
         public void run() {
 
-            synchronized (mCameraView) {
-
-                while (true) {
-
-                    try {
-                        mCameraView.wait();
-
-                        if (mIsRunning) {
-
-//                            // Measure the time if required:
-//                            if (CameraActivity.isDebugViewEnabled())
-//                                mTimerCallbacks.onTimerStarted(ILLUMINATION);
-
-                            double illuminationValue = -1;
-                            if (mIlluminationRect != null)
-                                illuminationValue = NativeWrapper.getIllumination(mFrameMat, mIlluminationRect);
-
-//                            if (CameraActivity.isDebugViewEnabled())
-//                                mTimerCallbacks.onTimerStopped(ILLUMINATION);
-
-                            mCVCallback.onIluminationComputed(illuminationValue);
-
-
-                        }
-
-                    } catch (InterruptedException e) {
-                    }
-
-                }
-
-            }
+//            synchronized (mCameraView) {
+//
+//                while (true) {
+//
+//                    try {
+//                        mCameraView.wait();
+//
+//                        if (mIsRunning) {
+//
+////                            // Measure the time if required:
+////                            if (CameraActivity.isDebugViewEnabled())
+////                                mTimerCallbacks.onTimerStarted(ILLUMINATION);
+//
+//                            double illuminationValue = -1;
+//                            if (mIlluminationRect != null)
+//                                illuminationValue = NativeWrapper.getIllumination(mFrameMat, mIlluminationRect);
+//
+////                            if (CameraActivity.isDebugViewEnabled())
+////                                mTimerCallbacks.onTimerStopped(ILLUMINATION);
+//
+//                            mCVCallback.onIluminationComputed(illuminationValue);
+//
+//
+//                        }
+//
+//                    } catch (InterruptedException e) {
+//                    }
+//
+//                }
+//
+//            }
         }
 
         public void setRunning(boolean running) {
