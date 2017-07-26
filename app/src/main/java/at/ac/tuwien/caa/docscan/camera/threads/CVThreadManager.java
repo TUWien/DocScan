@@ -25,6 +25,7 @@ public class CVThreadManager {
     private final ExecutorService mExecutorService;
     private final BlockingQueue<Runnable> mTaskQueue;
     private List<Future> mPageList, mFocusList, mChangeList;
+    private List<PageCallable> mPageCallabeList;
 
     public static final int TASK_PAGE   = 0;
     public static final int TASK_FOCUS  = 1;
@@ -44,6 +45,7 @@ public class CVThreadManager {
         mTaskQueue = new LinkedBlockingQueue<Runnable>();
 
         mPageList = new ArrayList<>();
+        mPageCallabeList = new ArrayList<>();
         mFocusList = new ArrayList<>();
         mChangeList = new ArrayList<>();
 
@@ -64,6 +66,7 @@ public class CVThreadManager {
         switch (type) {
             case TASK_PAGE:
                 mList = mPageList;
+                mPageCallabeList.add((PageCallable) callable);
                 break;
             case TASK_FOCUS:
                 mList = mFocusList;
@@ -73,6 +76,7 @@ public class CVThreadManager {
                 break;
         }
         mList.add(future);
+
     }
 
     public boolean isFrameSteadyAndNew() {
@@ -92,6 +96,26 @@ public class CVThreadManager {
         return false;
     }
 
+    public synchronized boolean isLastTask(int id) {
+
+        Log.d(this.getClass().getName(), "current id: " + id);
+
+        int maxCnt = 0;
+        for (int i = 0; i < mPageList.size(); i++) {
+            if (mPageList.get(i).isDone()) {
+                int cnt = mPageCallabeList.get(i).getFrameID();
+                if (cnt > maxCnt)
+                    maxCnt = cnt;
+            }
+
+        }
+
+        Log.d(this.getClass().getName(), "max id: " + id);
+
+        return maxCnt <= id;
+
+    }
+
     public boolean isRunning(int type) {
 
         // Determine which task list should be used:
@@ -108,14 +132,19 @@ public class CVThreadManager {
                 break;
         }
 
+        int cnt = 0;
         for (Future task : mList) {
             if (!task.isDone()) {
-                return true;
+                cnt++;
             }
         }
 
-        return false;
+        if (type == TASK_PAGE)
+            return cnt >= 4;
+        else
+            return cnt > 0;
 
+//        return cnt >= 4;
     }
 
     /* Remove all tasks in the queue and stop all running threads

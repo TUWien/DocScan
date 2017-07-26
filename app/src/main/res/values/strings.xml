@@ -24,7 +24,10 @@
     <string name="precise_page_seg_text">Use precise page segmentation</string>
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
-    <string name="login_text">Login</string>
+
+    <!-- Just used for debugging: -->
+    <string name="multi_thread_text">Multi threading</string>
+    <string name="single_thread_text">Single threading</string>
 
 
     <!-- Use in the MainActivity: end -->

@@ -36,6 +36,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
@@ -102,6 +103,7 @@ import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 
 /**
@@ -157,7 +159,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private final static int SERIES_POS = 1;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private static Date mLastTimeStamp;
-
+    private int mMaxFrameCnt = 0;
+    private DkPolyRect[] mLastDkPolyRects;
 
 
     /**
@@ -175,6 +178,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         }
 
     }
+
+    private long mLastTime;
 
 
     // ================= start: methods from the Activity lifecycle =================
@@ -297,6 +302,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         setupToolbar();
         setupNavigationDrawer();
         setupDebugView();
+
+        // Show the debug view: (TODO: This should be not the case for releases)
+        showDebugView();
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
@@ -948,6 +956,19 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
+    private void showDebugView() {
+
+        // Create the debug view - if it is not already created:
+        if (mDebugViewFragment == null) {
+            mDebugViewFragment = new DebugViewFragment();
+        }
+
+        getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+
+        mIsDebugViewEnabled = true;
+
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -1023,6 +1044,18 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 }
 
                 break;
+
+            // Threading:
+            case R.id.threading_item:
+                if (mCameraPreview.isMultiThreading()) {
+                    mCameraPreview.setThreading(false);
+                    item.setTitle(R.string.multi_thread_text);
+                }
+                else {
+                    mCameraPreview.setThreading(true);
+                    item.setTitle(R.string.single_thread_text);
+                }
+
 
         }
 
@@ -1286,14 +1319,65 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
      * @param dkPolyRects Array of polyRects
      */
     @Override
-    public void onPageSegmented(DkPolyRect[] dkPolyRects) {
+    public void onPageSegmented(DkPolyRect[] dkPolyRects, int frameCnt) {
+
+        // Check if the result is returned from a thread that is already outdated
+        // (an up-to-date result is already computed):
+        if (frameCnt <= mMaxFrameCnt) {
+            Log.d(TAG, "skipped frame id: " + frameCnt);
+            return;
+        }
+
+        mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
+
+        long currentTime = System.currentTimeMillis();
+        long timeDiff = currentTime - mLastTime;
+        Log.d(TAG, "time difference: " + timeDiff);
+
+        mLastTime = currentTime;
 
         if (mCVResult != null) {
 //            mCVResult.setPatches(null);
             mCVResult.setDKPolyRects(dkPolyRects);
         }
 
+//        if (isRectJumping(dkPolyRects))
+//            mCameraPreview.startFocusMeasurement(false);
+//        else
+//            mCameraPreview.startFocusMeasurement(true);
 
+        mLastDkPolyRects = dkPolyRects;
+
+        mMaxFrameCnt = frameCnt;
+
+
+        mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
+
+
+    }
+
+    boolean isRectJumping(DkPolyRect[] dkPolyRects){
+
+        boolean isJumping = false;
+
+        Log.d(TAG, "jumping?");
+
+        if (dkPolyRects != null && mLastDkPolyRects != null) {
+            Log.d(TAG, "check 1");
+            if (dkPolyRects.length == 1 && mLastDkPolyRects.length == 1) {
+                Log.d(TAG, "check 2");
+                PointF distVec = mLastDkPolyRects[0].getLargestDistVector(dkPolyRects[0]);
+                PointF normedPoint = mCVResult.normPoint(distVec);
+
+                if (normedPoint.length() >= .05) {
+                    isJumping = true;
+                }
+
+                Log.d(TAG, "distance: " + normedPoint.length());
+            }
+        }
+
+        return isJumping;
     }
 
     /**
@@ -1510,11 +1594,20 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         // Check if we need the focus measurement at this point:
         if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-            mCameraPreview.startFocusMeasurement(true);
+            if (mCVResult.isStable())
+                mCameraPreview.startFocusMeasurement(true);
+            else
+                mCameraPreview.startFocusMeasurement(false);
         }
         // TODO: I do not know why this is happening, once the CameraActivity is resumed:
         else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
-            mCameraPreview.startFocusMeasurement(true);
+            if (mCVResult.isStable())
+                mCameraPreview.startFocusMeasurement(true);
+            else
+                mCameraPreview.startFocusMeasurement(false);
+        }
+        else if (state < CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+            mCameraPreview.startFocusMeasurement(false);
         }
 
         final String msg;
