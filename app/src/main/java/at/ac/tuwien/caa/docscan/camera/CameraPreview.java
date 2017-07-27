@@ -513,10 +513,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         float touchX = event.getX();
         float touchY = event.getY();
-        PointF touchScreen = new PointF(touchX, touchY);
+
+        final PointF touchScreen = new PointF(touchX, touchY);
+        mCameraPreviewCallback.onFocusTouch(touchScreen);
 
         // The camera field of view is normalized so that -1000,-1000 is top left and 1000, 1000 is
-        // bottom right. Not that multiple areas are possible, but currently only one is used.
+        // bottom right. Note that multiple areas are possible, but currently only one is used.
 
         float focusRectHalfSize = .2f;
 
@@ -553,7 +555,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mCamera.autoFocus(new Camera.AutoFocusCallback() {
             @Override
             public void onAutoFocus(boolean success, Camera camera) {
-
+                // Stop the drawing of the auto focus circle anyhow, do not care if the auto focus
+                // was successful:
+                mCameraPreviewCallback.onFocusTouchSuccess();
             }
 
         });
@@ -1262,6 +1266,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onMeasuredDimensionChange(int width, int height);
         void onFrameDimensionChange(int width, int height, int cameraOrientation);
         void onFlashModesFound(List<String> modes);
+        void onFocusTouch(PointF point);
+        void onFocusTouchSuccess();
 
     }
 

@@ -1428,6 +1428,21 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     }
 
     @Override
+    public void onFocusTouch(PointF point) {
+
+        if (mPaintView != null)
+            mPaintView.drawFocusTouch(point);
+
+    }
+
+    @Override
+    public void onFocusTouchSuccess() {
+
+        if (mPaintView != null)
+            mPaintView.drawFocusTouchSuccess();
+    }
+
+    @Override
     public void onMovement(boolean moved) {
 
         // This happens if the user has just switched to single mode and the event occurs later than the touch event.
