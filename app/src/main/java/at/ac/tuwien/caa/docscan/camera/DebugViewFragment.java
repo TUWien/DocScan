@@ -73,7 +73,7 @@ public class DebugViewFragment extends Fragment {
         String text = "-";
         if (type == TaskTimer.TaskType.CAMERA_FRAME) {
             //        Compute the FPS:
-            if (time == 0)
+            if (time != 0)
                 time = 1000 / time;
         }
 
