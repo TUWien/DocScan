@@ -266,6 +266,22 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    public void drawFocusTouch(PointF point) {
+
+        mDrawFocusTouch = true;
+        mFocusTouchPoint = point;
+        mFocusTouchStart = System.nanoTime();
+
+        Log.d(TAG, "focus tocuhed");
+    }
+
+    public void drawFocusTouchSuccess() {
+
+        mDrawFocusTouch = false;
+
+    }
+
+
     /**
      * Class responsible for the actual drawing.
      */
@@ -280,6 +296,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private Paint mBGPaint;
         private Paint mSegmentationPaint;
         private Path mSegmentationPath;
+        private Path mFocusTouchPath;
         private Path mFocusPath;
         private Paint mGuidePaint;
         private Paint mMovementPaint;
@@ -332,12 +349,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             // Used to paint the page segmentation boundaries:
             mSegmentationPaint = new Paint();
-            mSegmentationPaint = new Paint();
             mSegmentationPaint.setColor(PAGE_RECT_COLOR);
             mSegmentationPaint.setStyle(Paint.Style.STROKE);
             mSegmentationPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_stroke_width));
+            mSegmentationPaint.setAntiAlias(true);
             mSegmentationPath = new Path();
-
 
             mFocusSharpRectPaint = new Paint();
             mFocusSharpRectPaint.setStrokeWidth(getResources().getDimension(R.dimen.focus_stroke_width));
@@ -350,6 +366,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mFocusUnsharpRectPaint.setStyle(Paint.Style.STROKE);
             mFocusUnsharpRectPaint.setColor(FOCUS_UNSHARP_RECT_COLOR);
             mFocusPath = new Path();
+
+            mFocusTouchPath = new Path();
 
             mGuidePaint = new Paint();
             mGuidePaint.setStrokeWidth(2);
