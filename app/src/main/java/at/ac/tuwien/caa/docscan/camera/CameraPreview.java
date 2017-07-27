@@ -106,7 +106,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private long mLastTime;
     // Used for generating the mat (for CV tasks) at a fixed frequency:
-    private static long FRAME_TIME_DIFF = 1;
+    private static long FRAME_TIME_DIFF = 50;
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
@@ -367,6 +367,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
             if (processFrame) {
 
+                mTimerCallbacks.onTimerStarted(TaskTimer.TaskType.MOVEMENT_CHECK);
+                Mat mat2 = mat.clone();
+                mTimerCallbacks.onTimerStopped(TaskTimer.TaskType.MOVEMENT_CHECK);
+
                 if (!mCVThreadManager.isRunning(CVThreadManager.TASK_PAGE)) {
                     PageCallable pCallable = new PageCallable(mat.clone(), mCVCallback, mTimerCallbacks, mFrameCnt);
                     mCVThreadManager.addCallable(pCallable, CVThreadManager.TASK_PAGE);
@@ -510,28 +514,17 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (event.getAction() != MotionEvent.ACTION_UP)
             return true;
 
-
         float touchX = event.getX();
         float touchY = event.getY();
 
-        final PointF touchScreen = new PointF(touchX, touchY);
-        mCameraPreviewCallback.onFocusTouch(touchScreen);
+        final PointF screenPoint = new PointF(touchX, touchY);
+        mCameraPreviewCallback.onFocusTouch(screenPoint);
 
-        // The camera field of view is normalized so that -1000,-1000 is top left and 1000, 1000 is
-        // bottom right. Note that multiple areas are possible, but currently only one is used.
-
-        float focusRectHalfSize = .2f;
-
-        // Normalize the coordinates of the touch event:
-        float centerX = getMeasuredWidth() / 2;
-        float centerY = getMeasuredHeight() / 2;
-        PointF centerScreen = new PointF(centerX, centerY);
-
-
-        Point upperLeft = transformPoint(centerScreen, touchScreen, -focusRectHalfSize, -focusRectHalfSize);
-        Point lowerRight = transformPoint(centerScreen, touchScreen, focusRectHalfSize, focusRectHalfSize);
-
-        Rect focusRect = new Rect(upperLeft.x, upperLeft.y, lowerRight.x, lowerRight.y);
+        Rect focusRect = getFocusRect(screenPoint);
+        if (focusRect == null) {
+            Log.d(TAG, "focus rectangle is not valid!");
+            return true;
+        }
 
         Camera.Area focusArea = new Camera.Area(focusRect, 750);
         List<Camera.Area> focusAreas = new ArrayList<>();
@@ -545,8 +538,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         }
         if (parameters.getMaxNumFocusAreas() > 0) {
 
-            parameters.setFocusAreas(focusAreas);
-//            mCamera.setParameters(parameters);
+            if (mCamera.getParameters().getMaxNumFocusAreas() > 0)
+                parameters.setFocusAreas(focusAreas);
+
+            if (mCamera.getParameters().getMaxNumMeteringAreas() > 0)
+                parameters.setMeteringAreas(focusAreas);
+
         }
 
         mCamera.setParameters(parameters);
@@ -563,6 +560,110 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         });
 
         return true; //processed
+
+    }
+
+    private Rect getFocusRect(PointF touchScreen) {
+
+        // The camera field of view is normalized so that -1000,-1000 is top left and 1000, 1000 is
+        // bottom right. Note that multiple areas are possible, but currently only one is used.
+
+        // Get the rotation of the screen to adjust the preview image accordingly.
+        int displayOrientation = CameraActivity.getOrientation();
+        int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
+
+        // Transform the point:
+        PointF rotatedPoint = rotatePoint(touchScreen, orientation);
+        PointF scaledPoint = scalePoint(rotatedPoint, orientation);
+        return rectFromPoint(scaledPoint, 50);
+    }
+
+    private PointF rotatePoint(PointF point, int orientation) {
+
+        PointF result = new PointF();
+
+        Log.d(TAG, "orientation: " + orientation);
+
+        switch(orientation) {
+            case 0:
+                result.x = point.x;
+                result.y = point.y;
+                break;
+            case 90:
+                result.x = point.y;
+                result.y = getMeasuredWidth() - point.x;
+                break;
+            case 180:
+                result.x = getMeasuredWidth() - point.x;
+                result.y = getMeasuredHeight() - point.y;
+                break;
+            case 270:
+                result.x = getMeasuredHeight() - point.y;
+                result.y = point.x;
+                break;
+        }
+
+        return result;
+
+    }
+
+    private PointF scalePoint(PointF point, int orientation) {
+
+
+        float halfScreenWidth, halfScreenHeight;
+
+        if (orientation == 0 || orientation == 180) {
+            halfScreenWidth = (float) getMeasuredWidth() / 2;
+            halfScreenHeight = (float) getMeasuredHeight() / 2;
+        }
+        else {
+            halfScreenHeight = (float) getMeasuredWidth() / 2;
+            halfScreenWidth = (float) getMeasuredHeight() / 2;
+        }
+
+        // Translate the point:
+        PointF translatedPoint = new PointF(point.x, point.y);
+        translatedPoint.offset(-halfScreenWidth, -halfScreenHeight);
+
+        // Norm the point between -1 and 1:
+        PointF normedPoint = new PointF(translatedPoint.x, translatedPoint.y);
+        normedPoint.x /= halfScreenWidth;
+        normedPoint.y /= halfScreenHeight;
+
+        // Scale the point between -FOCUS_HALF_AREA and +FOCUS_HALF_AREA:
+        PointF scaledPoint = new PointF(normedPoint.x, normedPoint.y);
+        scaledPoint.x *= FOCUS_HALF_AREA;
+        scaledPoint.y *= FOCUS_HALF_AREA;
+
+        return scaledPoint;
+
+    }
+
+    private Rect rectFromPoint(PointF point, int halfSideLength) {
+
+        Rect result = null;
+
+        int startX = Math.round(point.x - halfSideLength);
+        int startY = Math.round(point.y - halfSideLength);
+        int endX = Math.round(point.x + halfSideLength);
+        int endY = Math.round(point.y + halfSideLength);
+
+        if (startX < -FOCUS_HALF_AREA)
+            startX = -FOCUS_HALF_AREA;
+        if (endX > FOCUS_HALF_AREA)
+            endX = FOCUS_HALF_AREA;
+        if (startY < -FOCUS_HALF_AREA)
+            startY = -FOCUS_HALF_AREA;
+        if (endY > FOCUS_HALF_AREA)
+            endY = FOCUS_HALF_AREA;
+
+        int width = endX - startX;
+        int height = endY - startY;
+        // Just return an initialized rect if it is valid (otherwise an exception is thrown by Camera.setParameters.setFocusAreas
+        if (width > 0 && height > 0)
+            result = new Rect(startX, startY, endX, endY);
+
+        return result;
 
     }
 
@@ -592,18 +693,20 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         normalizedPoint.x = normalizedPoint.x * FOCUS_HALF_AREA;
         normalizedPoint.y = normalizedPoint.y * FOCUS_HALF_AREA;
 
+        Point result = new Point(Math.round(normalizedPoint.x), Math.round(normalizedPoint.y));
+
         // Clamp the values if necessary:
-        if (normalizedPoint.x < -FOCUS_HALF_AREA)
-            normalizedPoint.x = -FOCUS_HALF_AREA;
-        else if (normalizedPoint.x > FOCUS_HALF_AREA)
-            normalizedPoint.x = FOCUS_HALF_AREA;
+        if (result.x < -FOCUS_HALF_AREA)
+            result.x = -FOCUS_HALF_AREA;
+        else if (result.x > FOCUS_HALF_AREA)
+            result.x = FOCUS_HALF_AREA;
 
-        if (normalizedPoint.y < -FOCUS_HALF_AREA)
-            normalizedPoint.y = -FOCUS_HALF_AREA;
-        else if (normalizedPoint.y > FOCUS_HALF_AREA)
-            normalizedPoint.y = FOCUS_HALF_AREA;
+        if (result.y < -FOCUS_HALF_AREA)
+            result.y = -FOCUS_HALF_AREA;
+        else if (result.y > FOCUS_HALF_AREA)
+            result.y = FOCUS_HALF_AREA;
 
-        return new Point(Math.round(normalizedPoint.x), Math.round(normalizedPoint.y));
+        return result;
 
     }
 

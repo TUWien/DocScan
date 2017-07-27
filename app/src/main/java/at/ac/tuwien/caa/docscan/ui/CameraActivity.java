@@ -304,7 +304,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         setupDebugView();
 
         // Show the debug view: (TODO: This should be not the case for releases)
-        showDebugView();
+//        showDebugView();
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
@@ -921,7 +921,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         appRoot.removeView(f);
 
-        View view = getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
+        getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
+        View view = findViewById(R.id.camera_controls_layout);
         view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
 
         // Initialize the newly created buttons:
