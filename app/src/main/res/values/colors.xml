@@ -18,6 +18,7 @@
 
     <color name="hud_good_text_color">#d666</color>
     <color name="hud_bad_text_color">#a3a3</color>
+
     <color name="hud_page_rect_color">#dfa0</color>
 
     <color name="hud_focus_sharp_rect_color">#a3a3</color>
