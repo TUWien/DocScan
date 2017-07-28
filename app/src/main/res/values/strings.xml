@@ -77,7 +77,7 @@
     <string name="instruction_series_paused">series mode paused</string>
 
     <!-- Toasts -->
-    <string name="toast_series_paused">Paused automated imaging</string>
+    <string name="toast_series_paused">Automated imaging paused</string>
     <string name="toast_series_started">Images are now taken automatically</string>
     <string name="toast_single">Images are taken manually</string>
 
