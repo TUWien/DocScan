@@ -421,19 +421,19 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
                     // This wait is used to assure that the drawing function is just called after an update
                     // from the native package:
-                    synchronized (mCVResult) {
-
+//                    synchronized (mCVResult) {
+//
+////                        try {
+////                            mCVResult.wait();
+////                        } catch (InterruptedException e) {
+////                            Log.d(TAG, e.toString());
+////                        }
+//
 //                        try {
-//                            mCVResult.wait();
+//                            mCVResult.wait(30);
 //                        } catch (InterruptedException e) {
 //                            Log.d(TAG, e.toString());
 //                        }
-
-                        try {
-                            mCVResult.wait(30);
-                        } catch (InterruptedException e) {
-                            Log.d(TAG, e.toString());
-                        }
                         if (!mCVResult.isRedrawNecessary()) {
                             if (mSegmentationPaint.getAlpha() >= 170)
                                 mSegmentationPaint.setAlpha(mSegmentationPaint.getAlpha() - 20);
@@ -463,7 +463,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         }
 
                     }
-                }
+//                }
 
 
             }
@@ -587,6 +587,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 mSegmentationPath.reset();
                 ArrayList<PointF> screenPoints = dkPolyRect.getScreenPoints();
                 boolean isStartSet = false;
+
+                if (screenPoints == null)
+                    return;
 
 //                int idx = 0; // used for the drawing of the corner numbers
                 for (PointF point : screenPoints) {
