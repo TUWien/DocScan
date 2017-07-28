@@ -363,6 +363,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             takePicture();
         }
+        else if (keyCode == KeyEvent.KEYCODE_BACK) {
+            super.onBackPressed();
+        }
 
         return true;
     }
@@ -931,6 +934,15 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "onbackpressed");
+        super.onBackPressed();
+        finish();
+    }
+
+
+
     public static Point getPreviewDimension() {
 
 //        Taken from: http://stackoverflow.com/questions/1016896/get-screen-dimensions-in-pixels
@@ -1430,6 +1442,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     @Override
     public void onFocusTouch(PointF point) {
+
+        Log.d(TAG, "onFocusTouch");
 
         if (mPaintView != null)
             mPaintView.drawFocusTouch(point);
