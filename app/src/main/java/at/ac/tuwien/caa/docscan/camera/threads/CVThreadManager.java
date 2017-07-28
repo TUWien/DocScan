@@ -140,7 +140,7 @@ public class CVThreadManager {
         }
 
         if (type == TASK_PAGE)
-            return cnt >= 4;
+            return cnt >= 5;
         else
             return cnt > 0;
 

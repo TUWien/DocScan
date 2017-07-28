@@ -243,6 +243,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    public void clearScreen() {
+
+        mFlicker.mVisible = false;
+        mDrawMovementIndicator = false;
+        forceDrawUpdate();
+
+    }
+
     public void drawMovementIndicator(boolean drawMovementIndicator) {
 
         mDrawMovementIndicator = drawMovementIndicator;
@@ -421,7 +429,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
                     // This wait is used to assure that the drawing function is just called after an update
                     // from the native package:
-//                    synchronized (mCVResult) {
+                    synchronized (mCVResult) {
 //
 ////                        try {
 ////                            mCVResult.wait();
@@ -429,11 +437,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 ////                            Log.d(TAG, e.toString());
 ////                        }
 //
-//                        try {
-//                            mCVResult.wait(30);
-//                        } catch (InterruptedException e) {
-//                            Log.d(TAG, e.toString());
-//                        }
+                        try {
+                            mCVResult.wait(50);
+                        } catch (InterruptedException e) {
+                            Log.d(TAG, e.toString());
+                        }
+
                         if (!mCVResult.isRedrawNecessary()) {
                             if (mSegmentationPaint.getAlpha() >= 170)
                                 mSegmentationPaint.setAlpha(mSegmentationPaint.getAlpha() - 20);
@@ -463,7 +472,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         }
 
                     }
-//                }
+                }
 
 
             }

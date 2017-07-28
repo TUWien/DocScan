@@ -137,7 +137,7 @@ public class CVResult {
     }
 
 
-    public void flushResults() {
+    public void clearResults() {
 
         synchronized (this) {
             mDKPolyRects  = new DkPolyRect[0];

@@ -84,7 +84,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private PageSegmentationThread mPageSegmentationThread;
     private FocusMeasurementThread mFocusMeasurementThread;
-    private IlluminationThread mIlluminationThread;
+//    private IlluminationThread mIlluminationThread;
     private CameraHandlerThread mThread = null;
 
     // Mat used by mPageSegmentationThread and mFocusMeasurementThread:
@@ -782,10 +782,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mFocusMeasurementThread.getState() == Thread.State.NEW)
             mFocusMeasurementThread.start();
 
-        mIlluminationThread = new IlluminationThread(this);
-        if (mIlluminationThread.getState() == Thread.State.NEW)
-            mIlluminationThread.start();
-
         try {
 
             mCamera.setPreviewDisplay(mHolder);
@@ -895,13 +891,19 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    public boolean isImageProcessingPaused() {
+
+        return mIsImageProcessingPaused;
+
+    }
 
     public void pauseImageProcessing(boolean pause) {
 
         mIsImageProcessingPaused = pause;
-        mFocusMeasurementThread.setRunning(!pause);
-        mPageSegmentationThread.setRunning(!pause);
-        mIlluminationThread.setRunning(!pause);
+        if (mFocusMeasurementThread != null)
+            mFocusMeasurementThread.setRunning(!pause);
+        if (mPageSegmentationThread != null)
+            mPageSegmentationThread.setRunning(!pause);
 
         // Take care that no patches or pages are rendered in the PaintView:
         if (pause) {
@@ -1030,18 +1032,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         return mFocusMeasurementThread.isRunning();
 
-    }
-
-    public void startIllumination(boolean start) {
-
-        mIlluminationThread.setRunning(start);
-
-    }
-
-    public void setIlluminationRect(DkPolyRect illuminationRect) {
-
-        mIlluminationRect = illuminationRect;
-        
     }
 
     @SuppressWarnings("deprecation")
@@ -1470,12 +1460,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                             mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
 
                             DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
-//                            DkPolyRect[] polyRects = {new DkPolyRect()};
                             mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
-
-//                            mCVCallback.onFocusMeasured(new Patch[0]);
                             mCVCallback.onPageSegmented(polyRects, mFrameCnt);
-
 
                         }
 //                        execute();
