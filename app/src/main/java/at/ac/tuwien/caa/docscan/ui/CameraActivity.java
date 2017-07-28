@@ -60,6 +60,7 @@ import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -73,6 +74,7 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -161,6 +163,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private static Date mLastTimeStamp;
     private int mMaxFrameCnt = 0;
     private DkPolyRect[] mLastDkPolyRects;
+    private Toast mToast;
 
 
     /**
@@ -332,7 +335,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         mIsSeriesMode = sharedPref.getBoolean(getString(R.string.series_mode_key), seriesModeDefault);
         boolean seriesModePausedDefault = getResources().getBoolean(R.bool.series_mode_paused_default);
         mIsSeriesModePaused = sharedPref.getBoolean(getString(R.string.series_mode_paused_key), seriesModePausedDefault);
-        updateShootButton();
+
+        showShootModeToast();
+        updateMode();
         updateShootModeSpinner();
 
     }
@@ -626,7 +631,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 //                    Thread.sleep(1000);
 //                } catch (InterruptedException e) {
 //                    e.printStackTrace();
-//                }
+//                }screenPoints
 
                 Log.d(TAG, "taking picture");
 
@@ -635,8 +640,13 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 mTimerCallbacks.onTimerStopped(FLIP_SHOT_TIME);
 
                 // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
-                if (mCameraPreview.getCamera() != null)
+                if (mCameraPreview.getCamera() != null) {
                     mCameraPreview.getCamera().startPreview();
+                    mCameraPreview.startAutoFocus();
+                }
+
+
+
 //                try {
 //                    Thread.sleep(1000);
 //                } catch (InterruptedException e) {
@@ -666,8 +676,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                     public void onClick(View v) {
                         if (mIsSeriesMode) {
                             mIsSeriesModePaused = !mIsSeriesModePaused;
-                            mCameraPreview.pauseImageProcessing(mIsSeriesModePaused);
-                            updateShootButton();
+                            showShootModeToast();
+                            updateMode();
                         }
                         else if (mIsPictureSafe) {
                             // get an image from the camera
@@ -688,7 +698,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         initGalleryCallback();
         loadThumbnail();
         initShootModeSpinner();
-        updateShootButton();
+        updateMode();
 
     }
 
@@ -724,8 +734,24 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         mCameraPreview.setAwaitFrameChanges(mIsSeriesMode);
 
-        updateShootButton();
+        showShootModeToast();
+        updateMode();
 
+    }
+
+    private void showShootModeToast() {
+
+        int msg;
+        if (mIsSeriesMode) {
+            if (mIsSeriesModePaused)
+                msg = R.string.toast_series_paused;
+            else
+                msg = R.string.toast_series_started;
+        }
+        else
+            msg = R.string.toast_single;
+
+        showToastText(msg);
     }
 
     private void updateShootModeSpinner() {
@@ -738,9 +764,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
-    private void updateShootButton() {
-
-
+    private void updateMode() {
 
         ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
         if (photoButton == null)
@@ -749,13 +773,23 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         int drawable;
 
         if (mIsSeriesMode) {
-            if (mIsSeriesModePaused)
+            if (mIsSeriesModePaused) {
                 drawable = R.drawable.ic_play_arrow_24dp;
-            else
+                displaySeriesModePaused(); // shows a text in the text view and removes any CVResults shown.
+            }
+            else {
                 drawable = R.drawable.ic_pause_24dp;
+                setTextViewText(R.string.instruction_series_started);
+            }
         }
-        else
+        else {
+            showToastText(R.string.toast_single);
             drawable = R.drawable.ic_photo_camera;
+            mIsSeriesModePaused = false;
+        }
+
+        if (mCameraPreview != null)
+            mCameraPreview.pauseImageProcessing(mIsSeriesModePaused);
 
         photoButton.setImageResource(drawable);
 
@@ -933,15 +967,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
 
     }
-
-    @Override
-    public void onBackPressed() {
-        Log.d(TAG, "onbackpressed");
-        super.onBackPressed();
-        finish();
-    }
-
-
 
     public static Point getPreviewDimension() {
 
@@ -1469,11 +1494,15 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             mPaintView.drawMovementIndicator(false);
             return;
         }
+        else if (mIsSeriesModePaused) {
+            displaySeriesModePaused();
+            return;
+        }
 
         mPaintView.drawMovementIndicator(moved);
 
         if (moved) {
-            mCVResult.flushResults();
+            mCVResult.clearResults();
             setTextViewText(R.string.instruction_movement);
         }
         else {
@@ -1486,6 +1515,11 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     @Override
     public void onWaitingForDoc(boolean waiting) {
+
+        if (mIsSeriesModePaused) {
+            displaySeriesModePaused();
+            return;
+        }
 
         if (waiting)
             setTextViewText(R.string.instruction_no_changes);
@@ -1625,23 +1659,28 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @Override
     public void onStatusChange(final int state) {
 
+        if (mIsSeriesModePaused) {
+            displaySeriesModePaused();
+            return;
+        }
+
         // Check if we need the focus measurement at this point:
         if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-//            if (mCVResult.isStable())
-                mCameraPreview.startFocusMeasurement(true);
-//            else
-//                mCameraPreview.startFocusMeasurement(false);
+            //            if (mCVResult.isStable())
+            mCameraPreview.startFocusMeasurement(true);
+            //            else
+            //                mCameraPreview.startFocusMeasurement(false);
         }
         // TODO: I do not know why this is happening, once the CameraActivity is resumed:
         else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
-//            if (mCVResult.isStable())
-                mCameraPreview.startFocusMeasurement(true);
-//            else
-//                mCameraPreview.startFocusMeasurement(false);
-        }
-        else if (state < CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+            //            if (mCVResult.isStable())
+            mCameraPreview.startFocusMeasurement(true);
+            //            else
+            //                mCameraPreview.startFocusMeasurement(false);
+        } else if (state < CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
             mCameraPreview.startFocusMeasurement(false);
         }
+
 
         final String msg;
 
@@ -1649,7 +1688,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             msg = getResources().getString(R.string.taking_picture_text);
         }
 
-        else if (!mIsSeriesMode || (mIsSeriesMode && mIsSeriesModePaused) || state != CVResult.DOCUMENT_STATE_OK) {
+        else if (!mIsSeriesMode || state != CVResult.DOCUMENT_STATE_OK) {
             msg = getInstructionMessage(state);
         }
 
@@ -1676,6 +1715,28 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
 
 
+    }
+
+    private void displaySeriesModePaused() {
+        if (mCVResult != null)
+            mCVResult.clearResults();
+
+        if (mPaintView != null)
+            mPaintView.clearScreen();
+
+        setTextViewText(R.string.instruction_series_paused);
+    }
+
+    private void showToastText(int id) {
+
+        String msg = getResources().getString(id);
+
+        if (mToast != null)
+            mToast.cancel();
+
+        mToast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
+        mToast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+        mToast.show();
     }
 
     /**
