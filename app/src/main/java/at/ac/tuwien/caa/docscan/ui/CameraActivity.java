@@ -1351,6 +1351,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         if (mCVResult != null) {
 //            mCVResult.setPatches(null);
+            if (!mCVResult.isStable())
+                mCVResult.setPatches(new Patch[0]);
+
             mCVResult.setDKPolyRects(dkPolyRects);
         }
 
@@ -1624,17 +1627,17 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         // Check if we need the focus measurement at this point:
         if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-            if (mCVResult.isStable())
+//            if (mCVResult.isStable())
                 mCameraPreview.startFocusMeasurement(true);
-            else
-                mCameraPreview.startFocusMeasurement(false);
+//            else
+//                mCameraPreview.startFocusMeasurement(false);
         }
         // TODO: I do not know why this is happening, once the CameraActivity is resumed:
         else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
-            if (mCVResult.isStable())
+//            if (mCVResult.isStable())
                 mCameraPreview.startFocusMeasurement(true);
-            else
-                mCameraPreview.startFocusMeasurement(false);
+//            else
+//                mCameraPreview.startFocusMeasurement(false);
         }
         else if (state < CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
             mCameraPreview.startFocusMeasurement(false);

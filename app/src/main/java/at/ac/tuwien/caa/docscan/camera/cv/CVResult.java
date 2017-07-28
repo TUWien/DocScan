@@ -126,7 +126,7 @@ public class CVResult {
                 PointF distVec = mLastDKPolyRects[0].getLargestDistVector(dkPolyRects[0]);
                 if (distVec != null) {
                     PointF normedPoint = normPoint(distVec);
-                    if (normedPoint.length() >= .2) {
+                    if (normedPoint.length() >= .1) {
                         isStable = false;
                     }
                 }

@@ -503,12 +503,14 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     @SuppressWarnings("deprecation")
     public boolean onTouchEvent(MotionEvent event) {
 
+        Log.d(TAG, "onTouchEvent");
+
         if (mCamera == null)
             return true;
 
         // Do nothing in the auto (series) mode:
-        if (!mManualFocus)
-            return true;
+//        if (!mManualFocus)
+//            return true;
 
         // We wait until the finger is up again:
         if (event.getAction() != MotionEvent.ACTION_UP)
@@ -541,19 +543,20 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             if (mCamera.getParameters().getMaxNumFocusAreas() > 0)
                 parameters.setFocusAreas(focusAreas);
 
+//            Tested devices supporting metering areas:         Nexus 5X
+//            Tested devices that do no support metering areas: Samsung S6
             if (mCamera.getParameters().getMaxNumMeteringAreas() > 0)
                 parameters.setMeteringAreas(focusAreas);
 
         }
 
         mCamera.setParameters(parameters);
-//        mCamera.startPreview();
 
         mCamera.autoFocus(new Camera.AutoFocusCallback() {
             @Override
             public void onAutoFocus(boolean success, Camera camera) {
                 // Stop the drawing of the auto focus circle anyhow, do not care if the auto focus
-                // was successful:
+                // was successful -> do not use value of success.
                 mCameraPreviewCallback.onFocusTouchSuccess();
             }
 
@@ -1470,6 +1473,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //                            DkPolyRect[] polyRects = {new DkPolyRect()};
                             mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
 
+//                            mCVCallback.onFocusMeasured(new Patch[0]);
                             mCVCallback.onPageSegmented(polyRects, mFrameCnt);
 
 
