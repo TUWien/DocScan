@@ -285,7 +285,7 @@ public class CVResult {
         if (foreGroundCnt > 0)
             mRatioSharpUnsharp = (int) Math.round(((float) sharpCnt / foreGroundCnt) * 100);
         else
-            mRatioSharpUnsharp = 0;
+            mRatioSharpUnsharp = -1;
 
     }
 
@@ -392,6 +392,8 @@ public class CVResult {
         if (mPatches.length == 0)
             return DOCUMENT_STATE_NO_FOCUS_MEASURED;
 
+        if (mRatioSharpUnsharp == -1)
+            return DOCUMENT_STATE_NO_FOCUS_MEASURED;
 
         if (!isSharp())
             return DOCUMENT_STATE_UNSHARP;

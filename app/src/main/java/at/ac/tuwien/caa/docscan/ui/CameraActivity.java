@@ -183,6 +183,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     }
 
     private long mLastTime;
+    private boolean mItemSelectedAutomatically = false;
 
 
     // ================= start: methods from the Activity lifecycle =================
@@ -671,6 +672,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             return;
 
         photoButton.setOnClickListener(
+
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -712,6 +714,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         shootModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, shootModeText, shootModeIcons));
         shootModeSpinner.setOnItemSelectedListener(this);
 
+//        Used to prevent firing the onItemSelected method:
+        mItemSelectedAutomatically = true;
         if (mIsSeriesMode)
             shootModeSpinner.setSelection(SERIES_POS);
 
@@ -734,10 +738,15 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         mCameraPreview.setAwaitFrameChanges(mIsSeriesMode);
 
-        showShootModeToast();
+        // Show a toast to the user, but just if he selected the spinner manually:
+        if (!mItemSelectedAutomatically)
+            showShootModeToast();
+        mItemSelectedAutomatically = false;
+
         updateMode();
 
     }
+
 
     private void showShootModeToast() {
 
@@ -783,7 +792,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             }
         }
         else {
-            showToastText(R.string.toast_single);
+//            showToastText(R.string.toast_single);
             drawable = R.drawable.ic_photo_camera;
             mIsSeriesModePaused = false;
         }
@@ -1083,16 +1092,16 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
                 break;
 
-            // Threading:
-            case R.id.threading_item:
-                if (mCameraPreview.isMultiThreading()) {
-                    mCameraPreview.setThreading(false);
-                    item.setTitle(R.string.multi_thread_text);
-                }
-                else {
-                    mCameraPreview.setThreading(true);
-                    item.setTitle(R.string.single_thread_text);
-                }
+//            // Threading:
+//            case R.id.threading_item:
+//                if (mCameraPreview.isMultiThreading()) {
+//                    mCameraPreview.setThreading(false);
+//                    item.setTitle(R.string.multi_thread_text);
+//                }
+//                else {
+//                    mCameraPreview.setThreading(true);
+//                    item.setTitle(R.string.single_thread_text);
+//                }
 
 
         }
