@@ -11,7 +11,7 @@ App for document scanning.
 ## Configuration
 - copy`.\app\src\main\jni\local\AndroidSkel.mk` to `.\app\src\main\jni\local\Android.mk`
 - open `.\app\src\main\jni\local\Android.mk` in a text editor
-- uncomment and change the line `MY_OPENCVROOT:= C:/cvl/dmrz/code/opencv_sdk/OpenCV-android-sdk` such that
+- uncomment and change the line `MY_OPENCVROOT:= C:/somepath/OpenCV-android-sdk` such that
 it points to your opencv installation (contains the folders: apk, sample, sdk)
 - Open Project from Android Studio
 - You will see a dialog "Gradle settings for this project are not configured yet. Would you like the project to use the Gradle wrapper? ..." - click Ok

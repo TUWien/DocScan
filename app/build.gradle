@@ -33,7 +33,7 @@ android {
     // call regular ndk-build(.cmd) script from app directory
     task ndkBuild(type: Exec) {
         workingDir file('src/main')
-        commandLine getNdkBuildCmd()
+        commandLine getNdkBuildCmd(), 'NDK_LIBS_OUT=./jniLibs'
     }
 
     task cleanNative(type: Exec, description: 'Clean JNI object files') {
