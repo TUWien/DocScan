@@ -1,29 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!--&lt;!&ndash;This file contains just placeholder items. The real item initialization is done in NavigationDrawer.NavigationItemEnum&ndash;&gt;-->
-    <!--<group android:checkableBehavior="single">-->
-        <!--<item-->
-            <!--android:id="@+id/camera_item"-->
-            <!--android:title=""-->
-            <!--/>-->
-        <!--<item-->
-            <!--android:id="@+id/collections_item"-->
-            <!--android:title=""-->
-            <!--/>-->
-    <!--</group>-->
-    <!--<group>-->
-        <!--<item-->
-            <!--android:id="@+id/about_item"-->
-            <!--android:title=""-->
-            <!--/>-->
-    <!--</group>-->
-    <!--<group>-->
-        <!--<item-->
-            <!--android:id="@+id/settings_item"-->
-            <!--android:title=""-->
-            <!--/>-->
-    <!--</group>-->
 
     <!--This file contains just placeholder items. The real item initialization is done in NavigationDrawer.NavigationItemEnum-->
 
@@ -40,9 +17,12 @@
             android:id="@+id/share_log_item"
             android:title=""
             />
-
         <item
             android:id="@+id/login_item"
+            android:title=""
+            />
+        <item
+            android:id="@+id/sync_item"
             android:title=""
             />
         <item

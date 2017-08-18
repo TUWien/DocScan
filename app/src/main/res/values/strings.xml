@@ -6,6 +6,7 @@
     <string name="collections_item_text">Collections</string>
     <string name="about_item_text">About</string>
     <string name="share_log_item_text">Share log</string>
+    <string name="sync_item_text">Sync</string>
     <string name="camera_item_text">Camera</string>
     <string name="login_item_text">Login</string>
     <string name="rest_item_text">Rest Test</string>
@@ -139,6 +140,9 @@
 
     <string name="debug_collections_button_text">Collections</string>
     <string name="debug_upload_button_text">Upload</string>
+
+    <string name="sync_start_service_button_text">Start sync</string>
+    <string name="sync_connect_dropbox_button_text">Connect dropbox</string>
 
 
 </resources>

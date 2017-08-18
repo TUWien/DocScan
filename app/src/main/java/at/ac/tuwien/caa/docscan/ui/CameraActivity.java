@@ -103,6 +103,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
@@ -627,12 +628,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
-
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }screenPoints
 
                 Log.d(TAG, "taking picture");
 
@@ -1957,6 +1952,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
             final File outFile = new File(uris[0].getPath());
 
+            if (outFile == null)
+                return null;
+
             try {
 
                 runOnUiThread(new Runnable() {
@@ -1971,76 +1969,20 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 fos.write(mData);
 
                 fos.close();
-                final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
 
-                if (exif != null) {
-                    // Save the orientation of the image:
-                    int orientation = getExifOrientation();
-                    String exifOrientation = Integer.toString(orientation);
-                    exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+                // Save exif information (especially the orientation):
+                saveExif(outFile);
 
-                    // Save the GPS coordinates if available:
-                    Location location = LocationHandler.getInstance(mContext).getLocation();
-                    if (location != null) {
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-//                        Taken from http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android (post by fabien):
-                        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
-                        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
-                        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
-                        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
-                    }
-//
-                    //                    Log the shot:
-                    if (AppState.isDataLogged()) {
-                        GPS gps = new GPS(location);
-                        DataLog.getInstance().logShot(outFile.getAbsolutePath(), gps, mLastTimeStamp, mIsSeriesMode);
-                    }
+                // Set the thumbnail on the gallery button, this must be done one the UI thread:
+                updateThumbnail(outFile);
 
-
-
-                    exif.saveAttributes();
-                }
-
-//    Set the thumbnail on the gallery button, this must be done one the UI thread:
-
-                MediaScannerConnection.scanFile(getApplicationContext(), new String[]{outFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
-
-                    public void onScanCompleted(String path, Uri uri) {
-
-//                        Before ThumbnailUtils.extractThumbnail was used which causes OOM's:
-//                        Bitmap resized = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(outFile.toString()), 200, 200);
-
-//                        Instead use this method to avoid loading large images into memory:
-                        Bitmap resized = decodeFile(outFile, 200, 200);
-
-                        Matrix mtx = new Matrix();
-                        mtx.setRotate(mCameraOrientation);
-
-                        resized = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), mtx, true);
-                        final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), resized);
-
-                        runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                mProgressBar.setVisibility(View.INVISIBLE);
-                                setGalleryButtonDrawable(thumbDrawable);
-                            }
-
-                        });
-
-                    }
-
-//                    }
-                });
+                // Add the file to the sync list:
+                addToSyncList(outFile);
 
                 mIsPictureSafe = true;
 
             }
-//            catch (FileNotFoundException e) {
-//                Log.d(TAG, "Could not find file: " + outFile);
-//            }
+
             catch (Exception e) {
 
                 runOnUiThread(new Runnable() {
@@ -2063,6 +2005,76 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             return null;
 
 
+        }
+
+        private void updateThumbnail(final File outFile) {
+            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{outFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
+
+                public void onScanCompleted(String path, Uri uri) {
+
+//                        Before ThumbnailUtils.extractThumbnail was used which causes OOM's:
+//                        Bitmap resized = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(outFile.toString()), 200, 200);
+
+//                        Instead use this method to avoid loading large images into memory:
+                    Bitmap resized = decodeFile(outFile, 200, 200);
+
+                    Matrix mtx = new Matrix();
+                    mtx.setRotate(mCameraOrientation);
+
+                    resized = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), mtx, true);
+                    final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), resized);
+
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mProgressBar.setVisibility(View.INVISIBLE);
+                            setGalleryButtonDrawable(thumbDrawable);
+                        }
+
+                    });
+
+                }
+
+//                    }
+            });
+        }
+
+        private void addToSyncList(File outFile) {
+
+            SyncInfo.getInstance().addFile(outFile);
+
+        }
+
+        private void saveExif(File outFile) throws IOException {
+            final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+            if (exif != null) {
+                // Save the orientation of the image:
+                int orientation = getExifOrientation();
+                String exifOrientation = Integer.toString(orientation);
+                exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+
+                // Save the GPS coordinates if available:
+                Location location = LocationHandler.getInstance(mContext).getLocation();
+                if (location != null) {
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+//                        Taken from http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android (post by fabien):
+                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
+                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
+                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
+                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
+                }
+//
+                //                    Log the shot:
+                if (AppState.isDataLogged()) {
+                    GPS gps = new GPS(location);
+                    DataLog.getInstance().logShot(outFile.getAbsolutePath(), gps, mLastTimeStamp, mIsSeriesMode);
+                }
+
+                exif.saveAttributes();
+
+            }
         }
 
 
