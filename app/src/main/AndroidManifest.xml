@@ -28,6 +28,14 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <service
+            android:exported="false"
+            android:name=".sync.SyncService">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".ui.StartActivity"
             android:theme="@style/SplashTheme"
@@ -47,6 +55,12 @@
 
         <activity
             android:name=".ui.AboutActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
+        <activity
+            android:name=".ui.SyncActivity"
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
             />

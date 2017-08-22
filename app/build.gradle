@@ -13,8 +13,8 @@ android {
         applicationId "at.ac.tuwien.caa.docscan"
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 5
-        versionName "1.0.4"
+        versionCode 6
+        versionName "1.0.5"
     }
 
     buildTypes {
@@ -33,7 +33,7 @@ android {
     // call regular ndk-build(.cmd) script from app directory
     task ndkBuild(type: Exec) {
         workingDir file('src/main')
-        commandLine getNdkBuildCmd()
+        commandLine getNdkBuildCmd(), 'NDK_LIBS_OUT=./jniLibs'
     }
 
     task cleanNative(type: Exec, description: 'Clean JNI object files') {
@@ -79,8 +79,10 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'com.dropbox.core:dropbox-core-sdk:3.0.3'
     compile 'com.android.support:preference-v7:23.3.0'
     compile 'com.android.support:design:23.3.0'
     compile 'com.android.volley:volley:1.0.0'
+    compile 'com.firebase:firebase-jobdispatcher:0.7.0'
     compile project(':openCVLibrary310')
 }

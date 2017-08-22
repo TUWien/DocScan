@@ -6,6 +6,7 @@
     <string name="collections_item_text">Collections</string>
     <string name="about_item_text">About</string>
     <string name="share_log_item_text">Share log</string>
+    <string name="sync_item_text">Sync</string>
     <string name="camera_item_text">Camera</string>
     <string name="login_item_text">Login</string>
     <string name="rest_item_text">Rest Test</string>
@@ -24,7 +25,10 @@
     <string name="precise_page_seg_text">Use precise page segmentation</string>
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
-    <string name="login_text">Login</string>
+
+    <!-- Just used for debugging: -->
+    <string name="multi_thread_text">Multi threading</string>
+    <string name="single_thread_text">Single threading</string>
 
 
     <!-- Use in the MainActivity: end -->
@@ -68,9 +72,16 @@
     <string name="instruction_bad_illumination">change illumination</string>
     <string name="instruction_ok">OK</string>
     <string name="instruction_unknown">state unknown</string>
-    <string name="instruction_movement">Movement detected</string>
+    <string name="instruction_movement">movement detected</string>
     <string name="instruction_none"></string>
-    <string name="dont_move_text">Do not move</string>
+    <string name="instruction_series_started">series mode started</string>
+    <string name="instruction_series_paused">series mode paused</string>
+
+    <!-- Toasts -->
+    <string name="toast_series_paused">Automated imaging paused</string>
+    <string name="toast_series_started">Images are now taken automatically</string>
+    <string name="toast_single">Images are taken manually</string>
+
 
     <!-- Login -->
     <string name="login_email_hint">Email</string>
@@ -129,6 +140,9 @@
 
     <string name="debug_collections_button_text">Collections</string>
     <string name="debug_upload_button_text">Upload</string>
+
+    <string name="sync_start_service_button_text">Start sync</string>
+    <string name="sync_connect_dropbox_button_text">Connect dropbox</string>
 
 
 </resources>
