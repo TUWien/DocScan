@@ -62,6 +62,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     private boolean mDrawGuideLines = false;
     private boolean mDrawMovementIndicator = false;
     private boolean mDrawWaitingIndicator = false;
+    private boolean mDrawFocusTouch = false;
+    private PointF mFocusTouchPoint;
+    private long mFocusTouchStart;
     private SurfaceHolder mHolder;
     private static Flicker mFlicker;
     private CVResult mCVResult;
@@ -240,6 +243,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    public void clearScreen() {
+
+        mFlicker.mVisible = false;
+        mDrawMovementIndicator = false;
+        forceDrawUpdate();
+
+    }
+
     public void drawMovementIndicator(boolean drawMovementIndicator) {
 
         mDrawMovementIndicator = drawMovementIndicator;
@@ -263,6 +274,22 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    public void drawFocusTouch(PointF point) {
+
+        mDrawFocusTouch = true;
+        mFocusTouchPoint = point;
+        mFocusTouchStart = System.nanoTime();
+
+        Log.d(TAG, "focus tocuhed");
+    }
+
+    public void drawFocusTouchSuccess() {
+
+        mDrawFocusTouch = false;
+
+    }
+
+
     /**
      * Class responsible for the actual drawing.
      */
@@ -277,6 +304,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private Paint mBGPaint;
         private Paint mSegmentationPaint;
         private Path mSegmentationPath;
+        private Path mFocusTouchPath;
         private Path mFocusPath;
         private Paint mGuidePaint;
         private Paint mMovementPaint;
@@ -287,6 +315,18 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private final float FOCUS_RECT_SHORT_LENGTH = getResources().getDimension(R.dimen.focus_short_length);
         private final float FOCUS_RECT_OFFSET = (float) (FOCUS_RECT_SHORT_LENGTH * 1.5);
         private static final String TEXT_FORMAT = "%.2f";
+
+        // Focus touch:
+        private final long FOCUS_TOUCH_ANIMATION_DURATION =     200000000; // in nano seconds
+        private final long FOCUS_TOUCH_MAX_DURATION =           15000000000L; // in nano seconds
+        private final float FOCUS_TOUCH_CIRCLE_RADIUS_START =
+                getResources().getDimension(R.dimen.focus_touch_circle_radius_start);
+        private final float FOCUS_TOUCH_CIRCLE_RADIUS_END =
+                getResources().getDimension(R.dimen.focus_touch_circle_radius_end);
+        private Paint mFocusTouchCirclePaint;
+        private Paint mFocusTouchOutlinePaint;
+
+
 
         private final int STATE_TEXT_BG_COLOR = getResources().getColor(R.color.hud_state_rect_color);
         private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
@@ -317,12 +357,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             // Used to paint the page segmentation boundaries:
             mSegmentationPaint = new Paint();
-            mSegmentationPaint = new Paint();
             mSegmentationPaint.setColor(PAGE_RECT_COLOR);
             mSegmentationPaint.setStyle(Paint.Style.STROKE);
             mSegmentationPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_stroke_width));
+            mSegmentationPaint.setAntiAlias(true);
             mSegmentationPath = new Path();
-
 
             mFocusSharpRectPaint = new Paint();
             mFocusSharpRectPaint.setStrokeWidth(getResources().getDimension(R.dimen.focus_stroke_width));
@@ -335,6 +374,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mFocusUnsharpRectPaint.setStyle(Paint.Style.STROKE);
             mFocusUnsharpRectPaint.setColor(FOCUS_UNSHARP_RECT_COLOR);
             mFocusPath = new Path();
+
+            mFocusTouchPath = new Path();
 
             mGuidePaint = new Paint();
             mGuidePaint.setStrokeWidth(2);
@@ -352,6 +393,16 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mWaitingFramePaint.setStyle(Paint.Style.FILL);
             mWaitingFramePaint.setColor(getResources().getColor(R.color.waiting_frame_color));
 
+            mFocusTouchCirclePaint = new Paint();
+            mFocusTouchCirclePaint.setColor(getResources().getColor(R.color.focus_touch_circle_fill));
+            mFocusTouchCirclePaint.setStyle(Paint.Style.FILL);
+            mFocusTouchCirclePaint.setStrokeWidth(getResources().getDimension(R.dimen.focus_circle_stroke_width));
+
+            mFocusTouchOutlinePaint = new Paint();
+            mFocusTouchOutlinePaint.setColor(getResources().getColor(R.color.focus_touch_circle_outline));
+            mFocusTouchOutlinePaint.setStyle(Paint.Style.STROKE);
+            mFocusTouchOutlinePaint.setStrokeWidth(getResources().getDimension(R.dimen.focus_circle_stroke_width));
+            mFocusTouchOutlinePaint.setAntiAlias(true);
         }
 
 
@@ -365,6 +416,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         @Override
         public void run() {
 
+            long mLastTime = 0;
+
             while (mIsRunning) {
 
                 Canvas canvas = null;
@@ -377,12 +430,31 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     // This wait is used to assure that the drawing function is just called after an update
                     // from the native package:
                     synchronized (mCVResult) {
-
+//
+////                        try {
+////                            mCVResult.wait();
+////                        } catch (InterruptedException e) {
+////                            Log.d(TAG, e.toString());
+////                        }
+//
                         try {
-                            mCVResult.wait();
+                            mCVResult.wait(50);
                         } catch (InterruptedException e) {
                             Log.d(TAG, e.toString());
                         }
+
+                        if (!mCVResult.isRedrawNecessary()) {
+                            if (mSegmentationPaint.getAlpha() >= 170)
+                                mSegmentationPaint.setAlpha(mSegmentationPaint.getAlpha() - 20);
+//                            mFocusSharpRectPaint.setAlpha(mFocusSharpRectPaint.getAlpha() - 20);
+//                            mFocusUnsharpRectPaint.setAlpha(mFocusUnsharpRectPaint.getAlpha() - 20);
+                        }
+                        else {
+                            mSegmentationPaint.setAlpha(221);
+                            mFocusSharpRectPaint.setAlpha(170);
+                            mFocusUnsharpRectPaint.setAlpha(170);
+                        }
+
 
                         if (mFlicker.mVisible)
                             continue;
@@ -448,15 +520,22 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 canvas.drawRect(rect, mWaitingFramePaint);
             }
 
+            if (mDrawFocusTouch)
+                drawFocusCircle(canvas);
+
             if (mCVResult != null) {
 
-                // Focus measure:
-                if (mCVResult.getPatches() != null)
-                    drawFocusMeasure(canvas);
-
                 // Page segmentation:
-                if (mCVResult.getDKPolyRects() != null)
+                if (mCVResult.getDKPolyRects() != null) {
                     drawPageSegmentation(canvas);
+
+//                    This prevents that the focus patches are drawn, although there is no polyRect found:
+                    if (mCVResult.getDKPolyRects().length > 0) {
+                        // Focus measure:
+                        if (mCVResult.getPatches() != null)
+                            drawFocusMeasure(canvas);
+                    }
+                }
 
 //                drawSavingAnimation(canvas);
 
@@ -470,7 +549,40 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         }
 
+        private void drawFocusCircle(Canvas canvas) {
 
+            long timeDiff = System.nanoTime() - mFocusTouchStart;
+
+            // Just draw the circle if the duration has not passed:
+            if (timeDiff <= FOCUS_TOUCH_MAX_DURATION) {
+
+                float radius = FOCUS_TOUCH_CIRCLE_RADIUS_END; // used for static display
+                // Animate:
+                if (timeDiff <= FOCUS_TOUCH_ANIMATION_DURATION) {
+                    mFocusTouchCirclePaint.setAlpha(150);
+                    Log.d(TAG, "focus animation");
+                    radius = (int) (FOCUS_TOUCH_CIRCLE_RADIUS_END +
+                            Math.round(FOCUS_TOUCH_CIRCLE_RADIUS_START - FOCUS_TOUCH_CIRCLE_RADIUS_END)
+                                    * (1 - (float) timeDiff / FOCUS_TOUCH_ANIMATION_DURATION));
+                }
+                else {
+                    Log.d(TAG, "focus stopped animation");
+                    int alpha = mFocusTouchCirclePaint.getAlpha() - 20;
+                    if (alpha < 0)
+                        alpha = 0;
+                    mFocusTouchCirclePaint.setAlpha(alpha);
+                }
+
+
+
+                canvas.drawCircle(mFocusTouchPoint.x, mFocusTouchPoint.y, radius, mFocusTouchCirclePaint); // Filling
+                canvas.drawCircle(mFocusTouchPoint.x, mFocusTouchPoint.y, radius, mFocusTouchOutlinePaint); // Outline
+
+            }
+            else
+                mDrawFocusTouch = false;
+
+        }
 
 
         /**
@@ -484,6 +596,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 mSegmentationPath.reset();
                 ArrayList<PointF> screenPoints = dkPolyRect.getScreenPoints();
                 boolean isStartSet = false;
+
+                if (screenPoints == null)
+                    return;
 
 //                int idx = 0; // used for the drawing of the corner numbers
                 for (PointF point : screenPoints) {

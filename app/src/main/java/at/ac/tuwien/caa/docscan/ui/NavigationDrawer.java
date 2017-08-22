@@ -195,6 +195,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_info_black_24dp, AboutActivity.class),
         SHARE_LOG(R.id.share_log_item, R.string.share_log_item_text,
                 R.drawable.ic_share_black_24dp, LogActivity.class),
+        SYNC(R.id.sync_item, R.string.sync_item_text,
+                R.drawable.ic_sync_black_24dp, SyncActivity.class),
 //        REST_TEST(R.id.rest_item, R.string.rest_item_text,
 //                R.drawable.ic_weekend_black_24dp, RestTestActivity.class),
         INVALID(12, 0, 0, null);

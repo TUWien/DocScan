@@ -36,6 +36,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
@@ -59,6 +60,7 @@ import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -72,6 +74,7 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -100,8 +103,10 @@ import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
+import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 
 /**
@@ -157,7 +162,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     private final static int SERIES_POS = 1;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private static Date mLastTimeStamp;
-
+    private int mMaxFrameCnt = 0;
+    private DkPolyRect[] mLastDkPolyRects;
+    private Toast mToast;
 
 
     /**
@@ -175,6 +182,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         }
 
     }
+
+    private long mLastTime;
+    private boolean mItemSelectedAutomatically = false;
 
 
     // ================= start: methods from the Activity lifecycle =================
@@ -298,6 +308,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         setupNavigationDrawer();
         setupDebugView();
 
+        // Show the debug view: (TODO: This should be not the case for releases)
+//        showDebugView();
+
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
@@ -324,7 +337,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         mIsSeriesMode = sharedPref.getBoolean(getString(R.string.series_mode_key), seriesModeDefault);
         boolean seriesModePausedDefault = getResources().getBoolean(R.bool.series_mode_paused_default);
         mIsSeriesModePaused = sharedPref.getBoolean(getString(R.string.series_mode_paused_key), seriesModePausedDefault);
-        updateShootButton();
+
+        showShootModeToast();
+        updateMode();
         updateShootModeSpinner();
 
     }
@@ -354,6 +369,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             takePicture();
+        }
+        else if (keyCode == KeyEvent.KEYCODE_BACK) {
+            super.onBackPressed();
         }
 
         return true;
@@ -611,12 +629,6 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
 
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-
                 Log.d(TAG, "taking picture");
 
                 mTimerCallbacks.onTimerStopped(SHOT_TIME);
@@ -624,8 +636,13 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 mTimerCallbacks.onTimerStopped(FLIP_SHOT_TIME);
 
                 // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
-                if (mCameraPreview.getCamera() != null)
+                if (mCameraPreview.getCamera() != null) {
                     mCameraPreview.getCamera().startPreview();
+                    mCameraPreview.startAutoFocus();
+                }
+
+
+
 //                try {
 //                    Thread.sleep(1000);
 //                } catch (InterruptedException e) {
@@ -650,13 +667,14 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             return;
 
         photoButton.setOnClickListener(
+
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (mIsSeriesMode) {
                             mIsSeriesModePaused = !mIsSeriesModePaused;
-                            mCameraPreview.pauseImageProcessing(mIsSeriesModePaused);
-                            updateShootButton();
+                            showShootModeToast();
+                            updateMode();
                         }
                         else if (mIsPictureSafe) {
                             // get an image from the camera
@@ -677,7 +695,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         initGalleryCallback();
         loadThumbnail();
         initShootModeSpinner();
-        updateShootButton();
+        updateMode();
 
     }
 
@@ -691,6 +709,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         shootModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, shootModeText, shootModeIcons));
         shootModeSpinner.setOnItemSelectedListener(this);
 
+//        Used to prevent firing the onItemSelected method:
+        mItemSelectedAutomatically = true;
         if (mIsSeriesMode)
             shootModeSpinner.setSelection(SERIES_POS);
 
@@ -713,8 +733,29 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         mCameraPreview.setAwaitFrameChanges(mIsSeriesMode);
 
-        updateShootButton();
+        // Show a toast to the user, but just if he selected the spinner manually:
+        if (!mItemSelectedAutomatically)
+            showShootModeToast();
+        mItemSelectedAutomatically = false;
 
+        updateMode();
+
+    }
+
+
+    private void showShootModeToast() {
+
+        int msg;
+        if (mIsSeriesMode) {
+            if (mIsSeriesModePaused)
+                msg = R.string.toast_series_paused;
+            else
+                msg = R.string.toast_series_started;
+        }
+        else
+            msg = R.string.toast_single;
+
+        showToastText(msg);
     }
 
     private void updateShootModeSpinner() {
@@ -727,9 +768,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     }
 
-    private void updateShootButton() {
-
-
+    private void updateMode() {
 
         ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
         if (photoButton == null)
@@ -738,13 +777,23 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         int drawable;
 
         if (mIsSeriesMode) {
-            if (mIsSeriesModePaused)
+            if (mIsSeriesModePaused) {
                 drawable = R.drawable.ic_play_arrow_24dp;
-            else
+                displaySeriesModePaused(); // shows a text in the text view and removes any CVResults shown.
+            }
+            else {
                 drawable = R.drawable.ic_pause_24dp;
+                setTextViewText(R.string.instruction_series_started);
+            }
         }
-        else
+        else {
+//            showToastText(R.string.toast_single);
             drawable = R.drawable.ic_photo_camera;
+            mIsSeriesModePaused = false;
+        }
+
+        if (mCameraPreview != null)
+            mCameraPreview.pauseImageProcessing(mIsSeriesModePaused);
 
         photoButton.setImageResource(drawable);
 
@@ -913,7 +962,8 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         appRoot.removeView(f);
 
-        View view = getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
+        getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
+        View view = findViewById(R.id.camera_controls_layout);
         view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
 
         // Initialize the newly created buttons:
@@ -945,6 +995,19 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         return dim;
 
+
+    }
+
+    private void showDebugView() {
+
+        // Create the debug view - if it is not already created:
+        if (mDebugViewFragment == null) {
+            mDebugViewFragment = new DebugViewFragment();
+        }
+
+        getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+
+        mIsDebugViewEnabled = true;
 
     }
 
@@ -1023,6 +1086,18 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 }
 
                 break;
+
+//            // Threading:
+//            case R.id.threading_item:
+//                if (mCameraPreview.isMultiThreading()) {
+//                    mCameraPreview.setThreading(false);
+//                    item.setTitle(R.string.multi_thread_text);
+//                }
+//                else {
+//                    mCameraPreview.setThreading(true);
+//                    item.setTitle(R.string.single_thread_text);
+//                }
+
 
         }
 
@@ -1286,14 +1361,68 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
      * @param dkPolyRects Array of polyRects
      */
     @Override
-    public void onPageSegmented(DkPolyRect[] dkPolyRects) {
+    public void onPageSegmented(DkPolyRect[] dkPolyRects, int frameCnt) {
+
+        // Check if the result is returned from a thread that is already outdated
+        // (an up-to-date result is already computed):
+        if (frameCnt <= mMaxFrameCnt) {
+            Log.d(TAG, "skipped frame id: " + frameCnt);
+            return;
+        }
+
+        mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
+
+        long currentTime = System.currentTimeMillis();
+        long timeDiff = currentTime - mLastTime;
+        Log.d(TAG, "time difference: " + timeDiff);
+
+        mLastTime = currentTime;
 
         if (mCVResult != null) {
 //            mCVResult.setPatches(null);
+            if (!mCVResult.isStable())
+                mCVResult.setPatches(new Patch[0]);
+
             mCVResult.setDKPolyRects(dkPolyRects);
         }
 
+//        if (isRectJumping(dkPolyRects))
+//            mCameraPreview.startFocusMeasurement(false);
+//        else
+//            mCameraPreview.startFocusMeasurement(true);
 
+        mLastDkPolyRects = dkPolyRects;
+
+        mMaxFrameCnt = frameCnt;
+
+
+        mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
+
+
+    }
+
+    boolean isRectJumping(DkPolyRect[] dkPolyRects){
+
+        boolean isJumping = false;
+
+        Log.d(TAG, "jumping?");
+
+        if (dkPolyRects != null && mLastDkPolyRects != null) {
+            Log.d(TAG, "check 1");
+            if (dkPolyRects.length == 1 && mLastDkPolyRects.length == 1) {
+                Log.d(TAG, "check 2");
+                PointF distVec = mLastDkPolyRects[0].getLargestDistVector(dkPolyRects[0]);
+                PointF normedPoint = mCVResult.normPoint(distVec);
+
+                if (normedPoint.length() >= .05) {
+                    isJumping = true;
+                }
+
+                Log.d(TAG, "distance: " + normedPoint.length());
+            }
+        }
+
+        return isJumping;
     }
 
     /**
@@ -1344,6 +1473,23 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     }
 
     @Override
+    public void onFocusTouch(PointF point) {
+
+        Log.d(TAG, "onFocusTouch");
+
+        if (mPaintView != null)
+            mPaintView.drawFocusTouch(point);
+
+    }
+
+    @Override
+    public void onFocusTouchSuccess() {
+
+        if (mPaintView != null)
+            mPaintView.drawFocusTouchSuccess();
+    }
+
+    @Override
     public void onMovement(boolean moved) {
 
         // This happens if the user has just switched to single mode and the event occurs later than the touch event.
@@ -1352,11 +1498,15 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             mPaintView.drawMovementIndicator(false);
             return;
         }
+        else if (mIsSeriesModePaused) {
+            displaySeriesModePaused();
+            return;
+        }
 
         mPaintView.drawMovementIndicator(moved);
 
         if (moved) {
-            mCVResult.flushResults();
+            mCVResult.clearResults();
             setTextViewText(R.string.instruction_movement);
         }
         else {
@@ -1369,6 +1519,11 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
     @Override
     public void onWaitingForDoc(boolean waiting) {
+
+        if (mIsSeriesModePaused) {
+            displaySeriesModePaused();
+            return;
+        }
 
         if (waiting)
             setTextViewText(R.string.instruction_no_changes);
@@ -1508,14 +1663,28 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @Override
     public void onStatusChange(final int state) {
 
+        if (mIsSeriesModePaused) {
+            displaySeriesModePaused();
+            return;
+        }
+
         // Check if we need the focus measurement at this point:
         if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+            //            if (mCVResult.isStable())
             mCameraPreview.startFocusMeasurement(true);
+            //            else
+            //                mCameraPreview.startFocusMeasurement(false);
         }
         // TODO: I do not know why this is happening, once the CameraActivity is resumed:
         else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
+            //            if (mCVResult.isStable())
             mCameraPreview.startFocusMeasurement(true);
+            //            else
+            //                mCameraPreview.startFocusMeasurement(false);
+        } else if (state < CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+            mCameraPreview.startFocusMeasurement(false);
         }
+
 
         final String msg;
 
@@ -1523,7 +1692,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             msg = getResources().getString(R.string.taking_picture_text);
         }
 
-        else if (!mIsSeriesMode || (mIsSeriesMode && mIsSeriesModePaused) || state != CVResult.DOCUMENT_STATE_OK) {
+        else if (!mIsSeriesMode || state != CVResult.DOCUMENT_STATE_OK) {
             msg = getInstructionMessage(state);
         }
 
@@ -1550,6 +1719,28 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
 
 
+    }
+
+    private void displaySeriesModePaused() {
+        if (mCVResult != null)
+            mCVResult.clearResults();
+
+        if (mPaintView != null)
+            mPaintView.clearScreen();
+
+        setTextViewText(R.string.instruction_series_paused);
+    }
+
+    private void showToastText(int id) {
+
+        String msg = getResources().getString(id);
+
+        if (mToast != null)
+            mToast.cancel();
+
+        mToast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
+        mToast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+        mToast.show();
     }
 
     /**
@@ -1761,6 +1952,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
             final File outFile = new File(uris[0].getPath());
 
+            if (outFile == null)
+                return null;
+
             try {
 
                 runOnUiThread(new Runnable() {
@@ -1775,76 +1969,20 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 fos.write(mData);
 
                 fos.close();
-                final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
 
-                if (exif != null) {
-                    // Save the orientation of the image:
-                    int orientation = getExifOrientation();
-                    String exifOrientation = Integer.toString(orientation);
-                    exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+                // Save exif information (especially the orientation):
+                saveExif(outFile);
 
-                    // Save the GPS coordinates if available:
-                    Location location = LocationHandler.getInstance(mContext).getLocation();
-                    if (location != null) {
-                        double latitude = location.getLatitude();
-                        double longitude = location.getLongitude();
-//                        Taken from http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android (post by fabien):
-                        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
-                        exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
-                        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
-                        exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
-                    }
-//
-                    //                    Log the shot:
-                    if (AppState.isDataLogged()) {
-                        GPS gps = new GPS(location);
-                        DataLog.getInstance().logShot(outFile.getAbsolutePath(), gps, mLastTimeStamp, mIsSeriesMode);
-                    }
+                // Set the thumbnail on the gallery button, this must be done one the UI thread:
+                updateThumbnail(outFile);
 
-
-
-                    exif.saveAttributes();
-                }
-
-//    Set the thumbnail on the gallery button, this must be done one the UI thread:
-
-                MediaScannerConnection.scanFile(getApplicationContext(), new String[]{outFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
-
-                    public void onScanCompleted(String path, Uri uri) {
-
-//                        Before ThumbnailUtils.extractThumbnail was used which causes OOM's:
-//                        Bitmap resized = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(outFile.toString()), 200, 200);
-
-//                        Instead use this method to avoid loading large images into memory:
-                        Bitmap resized = decodeFile(outFile, 200, 200);
-
-                        Matrix mtx = new Matrix();
-                        mtx.setRotate(mCameraOrientation);
-
-                        resized = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), mtx, true);
-                        final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), resized);
-
-                        runOnUiThread(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                mProgressBar.setVisibility(View.INVISIBLE);
-                                setGalleryButtonDrawable(thumbDrawable);
-                            }
-
-                        });
-
-                    }
-
-//                    }
-                });
+                // Add the file to the sync list:
+                addToSyncList(outFile);
 
                 mIsPictureSafe = true;
 
             }
-//            catch (FileNotFoundException e) {
-//                Log.d(TAG, "Could not find file: " + outFile);
-//            }
+
             catch (Exception e) {
 
                 runOnUiThread(new Runnable() {
@@ -1867,6 +2005,76 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             return null;
 
 
+        }
+
+        private void updateThumbnail(final File outFile) {
+            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{outFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
+
+                public void onScanCompleted(String path, Uri uri) {
+
+//                        Before ThumbnailUtils.extractThumbnail was used which causes OOM's:
+//                        Bitmap resized = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(outFile.toString()), 200, 200);
+
+//                        Instead use this method to avoid loading large images into memory:
+                    Bitmap resized = decodeFile(outFile, 200, 200);
+
+                    Matrix mtx = new Matrix();
+                    mtx.setRotate(mCameraOrientation);
+
+                    resized = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), mtx, true);
+                    final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), resized);
+
+                    runOnUiThread(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            mProgressBar.setVisibility(View.INVISIBLE);
+                            setGalleryButtonDrawable(thumbDrawable);
+                        }
+
+                    });
+
+                }
+
+//                    }
+            });
+        }
+
+        private void addToSyncList(File outFile) {
+
+            SyncInfo.getInstance().addFile(outFile);
+
+        }
+
+        private void saveExif(File outFile) throws IOException {
+            final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+            if (exif != null) {
+                // Save the orientation of the image:
+                int orientation = getExifOrientation();
+                String exifOrientation = Integer.toString(orientation);
+                exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+
+                // Save the GPS coordinates if available:
+                Location location = LocationHandler.getInstance(mContext).getLocation();
+                if (location != null) {
+                    double latitude = location.getLatitude();
+                    double longitude = location.getLongitude();
+//                        Taken from http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android (post by fabien):
+                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
+                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
+                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
+                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
+                }
+//
+                //                    Log the shot:
+                if (AppState.isDataLogged()) {
+                    GPS gps = new GPS(location);
+                    DataLog.getInstance().logShot(outFile.getAbsolutePath(), gps, mLastTimeStamp, mIsSeriesMode);
+                }
+
+                exif.saveAttributes();
+
+            }
         }
 
 
