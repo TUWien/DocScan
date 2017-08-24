@@ -1156,7 +1156,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if (menu == null)
             return;
 
-        MenuItem item = menu.findItem(R.id.action_show_debug_view);
+        MenuItem item = menu.findItem(R.id.debug_view_item);
         if (item == null)
             return;
 
@@ -1219,7 +1219,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 //                break;
 
             // Focus measurement:
-            case R.id.action_show_fm_values:
+            case R.id.show_fm_values_item:
 
                 if (mPaintView.isFocusTextVisible()) {
                     menuItem.setTitle(R.string.show_fm_values_text);
@@ -1232,7 +1232,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 break;
 
             // Guide lines:
-            case R.id.action_show_guide:
+            case R.id.show_guide_item:
 
                 if (mPaintView.areGuideLinesDrawn()) {
                     mPaintView.drawGuideLines(false);
