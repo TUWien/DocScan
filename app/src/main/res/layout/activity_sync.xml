@@ -24,6 +24,13 @@
         </android.support.design.widget.AppBarLayout>
 
         <Button
+            android:id="@+id/sync_connect_dropbox_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sync_connect_dropbox_button_text"
+            />
+
+        <Button
             android:id="@+id/sync_start_service_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -31,12 +38,11 @@
             />
 
         <Button
-            android:id="@+id/sync_connect_dropbox_button"
+            android:id="@+id/sync_auth_dropbox_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/sync_connect_dropbox_button_text"
+            android:text="@string/sync_auth_dropbox_button_text"
             />
-
 
     </LinearLayout>
 

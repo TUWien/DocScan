@@ -19,8 +19,6 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
 import at.ac.tuwien.caa.docscan.sync.SyncService;
 
-import static at.ac.tuwien.caa.docscan.rest.User.SYNC_DROPBOX;
-
 /**
  * Created by fabian on 17.08.2017.
  */
@@ -52,11 +50,26 @@ public class SyncActivity extends BaseActivity implements DropboxUtils.DropboxCo
 
         });
 
+        Button authButton = (Button) findViewById(R.id.sync_auth_dropbox_button);
+        authButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                authenticateDropbox();
+            }
+
+        });
+
+    }
+
+    private void authenticateDropbox() {
+
+        DropboxUtils.getInstance().startAuthentication(this);
+//        DropboxUtils.getInstance().authenticate(this, this);
     }
 
     private void connectDropbox() {
 
-        DropboxUtils.getInstance().connectToDropbox(this);
+//        DropboxUtils.getInstance().connectToDropbox(this);
 
     }
 
@@ -120,12 +133,10 @@ public class SyncActivity extends BaseActivity implements DropboxUtils.DropboxCo
 
 
     @Override
-    public void onDropboxConnected(boolean success) {
+    public void onDropboxConnected(User user) {
 
-        if (success) {
-            User.getInstance().setConnection(SYNC_DROPBOX);
-//            DropboxUtils.getInstance().uploadFile(this, SyncInfo.getInstance().getSyncList().get(0).getFile());
-        }
+        super.onLogin(user);
+//        User.getInstance().setConnection(SYNC_DROPBOX);
 
     }
 

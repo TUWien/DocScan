@@ -64,23 +64,13 @@ public class SyncService extends JobService {
                     fileSync.setState(SyncInfo.FileSync.STATE_AWAITING_UPLOAD);
 
                     if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
-                        DropboxUtils.getInstance().uploadFile(this, fileSync.getFile());
+                        DropboxUtils.getInstance().uploadFile(this, fileSync);
                 }
+                else if (fileSync.getState() == SyncInfo.FileSync.STATE_UPLOADED)
+                    Log.d(this.getClass().getName(), "already uploaded: " + fileSync.getFile().getName());
 
             }
 
-//            // Normally we would do some work here, like download a file.
-//            // For our sample, we just sleep for 5 seconds.
-//            try {
-////                TODO: perform here the upload
-//                Thread.sleep(5000);
-//            } catch (InterruptedException e) {
-//                // Restore interrupt status.
-//                Thread.currentThread().interrupt();
-//            }
-//            // Stop the service using the startId, so that we don't stop
-//            // the service in the middle of handling another job
-//            stopSelf(msg.arg1);
         }
 
         @Override

@@ -3,16 +3,15 @@
     <string name="app_name">DocScan</string>
 
     <!-- Used in the navigation drawer: -->
-    <string name="collections_item_text">Collections</string>
     <string name="about_item_text">About</string>
     <string name="share_log_item_text">Share log</string>
     <string name="sync_item_text">Sync</string>
     <string name="camera_item_text">Camera</string>
     <string name="login_item_text">Login</string>
-    <string name="rest_item_text">Rest Test</string>
-    <string name="setttings_item_text">Settings</string>
     <string name="header_text">DocScan</string>
-
+    <string name="account_edit_text">Set up account</string>
+    <string name="account_not_logged_in">Anonymous user</string>
+    <string name="account_logout">Logout</string>
 
     <!-- Use in the MainActivity: start -->
 
@@ -27,15 +26,11 @@
     <string name="taking_picture_text">Taking picture</string>
 
     <!-- Just used for debugging: -->
-    <string name="multi_thread_text">Multi threading</string>
-    <string name="single_thread_text">Single threading</string>
 
 
     <!-- Use in the MainActivity: end -->
 
     <!-- Use in the camera_unavailable_view: -->
-
-    <string name="camera_not_available_text">The camera is unfortunately not available.</string>
 
     <!-- Use in the debug view: start -->
 
@@ -93,17 +88,13 @@
     <string name="login_error_text">User name or password is incorrect. Please reenter your credentials.</string>
 
     <!-- Menus -->
-    <string name="shoot_mode">Shoot mode</string>
     <string name="flash_mode">Flash mode</string>
-    <string name="manual_mode">Manual shoot</string>
-    <string name="auto_mode">Auto shoot</string>
     <string name="flash_off_mode">Flash off</string>
     <string name="flash_auto_mode">Flash auto</string>
     <string name="flash_on_mode">Flash on</string>
     <string name="flash_torch_mode">Torch</string>
 
     <string name="debug_view_item_show">Show debug view</string>
-    <string name="debug_view_item_hide">Hide debug view</string>
 
     <!-- Preferences -->
     <string name="pref_precise_page_detection">Use precise page detection</string>
@@ -128,21 +119,39 @@
         <item>Series</item>
     </string-array>
 
-    <string-array name="flash_mode_array">
-        <item>Off</item>
-        <item>Auto</item>
-        <item>On</item>
-        <item>Torch</item>
-    </string-array>
-
     <string name="picture_save_error_text">Unfortunately, the image was not saved. Please take care that it is captured.</string>
     <string name="picture_save_error_title">Image saving error</string>
 
     <string name="debug_collections_button_text">Collections</string>
     <string name="debug_upload_button_text">Upload</string>
 
+    <!-- Sync: -->
     <string name="sync_start_service_button_text">Start sync</string>
-    <string name="sync_connect_dropbox_button_text">Connect dropbox</string>
+    <string name="sync_connect_dropbox_button_text">Dropbox</string>
+    <string name="sync_connect_transkribus_button_text">Transkribus</string>
+    <string name="sync_auth_dropbox_button_text">Authenticate dropbox</string>
+    <string name="sync_dropbox_app_key">p2393aiyn7jdr54</string>
+    <string name="sync_no_dropbox_access">Sorry your dropbox account is not accessible.</string>
+    <string name="sync_dropbox_text">Dropbox</string>
+    <string name="sync_transkribus_text">Transkribus</string>
+
+    <!-- DropboxAuthActivity: -->
+    <string name="dropbox_authenticate_text">It is necessary to allow DocScan to access your Dropbox
+        account. This authentication will be done in your browser.</string>
+    <string name="dropbox_authenticate_title">Dropbox Authentication</string>
+    <string name="dropbox_authenticate_button_text">Start authentication</string>
+
+    <!-- LogoutActivity -->
+    <string name="logout_text">Do you really want to logout? You will have to login again if you want
+        to automatically upload your images.</string>
+    <string name="logout_confirm_button_text">Logout</string>
+    <string name="logout_cancel_button_text">Cancel</string>
+    
+    <!-- AccountActivity -->
+    <string name="account_heading_text">Your current account:</string>
+    <string name="account_user_textview_text">Name:</string>
+    <string name="account_cloud_textview_text">Cloud service:</string>
+    <string name="account_setup_text">Set up an account:</string>
 
 
 </resources>

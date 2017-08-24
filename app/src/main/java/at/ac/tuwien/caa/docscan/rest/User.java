@@ -14,6 +14,7 @@ public class User {
     private boolean mIsLoggedin, mIsAutoLogInDone;
     private int mConnection;
     private Collection mCollection;
+    private String mDropboxToken;
 
     /**
      * Returns a singleton.
@@ -82,4 +83,12 @@ public class User {
     public void setConnection(int connection) { mConnection = connection; }
 
     public int getConnection() { return mConnection; }
+
+    public void setDropboxToken(String token) {
+        mDropboxToken = token;
+    }
+    
+    public String getDropboxToken() {
+        return mDropboxToken;
+    }
 }
