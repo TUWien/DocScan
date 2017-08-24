@@ -11,11 +11,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.ActivityUtils;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
+
+import static at.ac.tuwien.caa.docscan.ui.NavigationDrawer.NavigationItemEnum.ACCOUNT_EDIT;
 
 /**
  * This file contains parts of this source file:
@@ -30,17 +36,28 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
     private NavigationView mNavigationView;
     private NavigationItemEnum mSelfItem;
     private Handler mHandler;
+    private ArrayList<NavigationItemEnum> mAccountItems;
     private static final int NAVDRAWER_LAUNCH_DELAY = 250; // Delay to launch nav drawer item, to allow close animation to play
     private static final int MAIN_CONTENT_FADEOUT_DURATION = 50; // Fade in and fade out durations for the main content when switching between different Activities of the app through the Nav Drawer
+    private boolean mAccountGroupVisible = false;
 
     public NavigationDrawer(Activity activity, NavigationItemEnum selfItem) {
 
         mActivity = activity;
         mSelfItem = selfItem;
 
+        initAccountItems();
         setupNavigationDrawer();
         setupDrawerHeader();
 
+
+
+
+    }
+
+    private void initAccountItems() {
+        mAccountItems = new ArrayList<>();
+        mAccountItems.add(ACCOUNT_EDIT);
     }
 
     @Override
@@ -63,6 +80,17 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         }
 
         ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(mActivity, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
+
+            /** Called when a drawer has settled in a completely closed state. */
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                // Rotate the button to its initial state:
+                View headerLayout = mNavigationView.getHeaderView(0);
+                ImageButton button = (ImageButton) headerLayout.findViewById(R.id.navigation_view_header_account_setting);
+                button.setRotation(0);
+                // Hide the account items:
+                setAccountGroupVisible(false);
+            }
         };
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(drawerToggle);
@@ -80,12 +108,40 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
 
         View headerLayout = mNavigationView.getHeaderView(0);
-        TextView tv = (TextView) headerLayout.findViewById(R.id.navigation_view_header_user_textview);
+        TextView userTextView = (TextView) headerLayout.findViewById(R.id.navigation_view_header_user_textview);
+        TextView connectionTextView = (TextView) headerLayout.findViewById(R.id.navigation_view_header_sync_textview);
 
-        if (User.getInstance().isLoggedIn())
-            tv.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
-        else
-            tv.setText(mActivity.getResources().getText(R.string.app_name));
+        // Set up the account name field:
+
+        if (User.getInstance().isLoggedIn()) {
+            userTextView.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
+            if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
+                connectionTextView.setText(mActivity.getResources().getText(R.string.sync_dropbox_text));
+            else if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS)
+                connectionTextView.setText(mActivity.getResources().getText(R.string.sync_transkribus_text));
+        }
+
+        else {
+            userTextView.setText(mActivity.getResources().getText(R.string.account_not_logged_in));
+            connectionTextView.setText("");
+        }
+
+        // Add a callback to the account settings layout:
+        final ImageButton button = (ImageButton) headerLayout.findViewById(R.id.navigation_view_header_account_setting);
+        RelativeLayout layout = (RelativeLayout) headerLayout.findViewById(R.id.account_layout);
+        layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!mAccountGroupVisible) {
+                    setAccountGroupVisible(true);
+                    button.setRotation(180);
+                }
+                else {
+                    setAccountGroupVisible(false);
+                    button.setRotation(0);
+                }
+            }
+        });
 
     }
 
@@ -95,6 +151,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
             mDrawerLayout.closeDrawer(GravityCompat.START);
             return;
         }
+
 
         // Launch the target Activity after a short delay, to allow the close animation to play
         mHandler.postDelayed(new Runnable() {
@@ -140,21 +197,38 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
     }
 
 
+    private void setAccountGroupVisible(boolean isVisible) {
+
+        mAccountGroupVisible = isVisible;
+        showAccountGroup();
+
+    }
+
+    private void showAccountGroup() {
+
+        if (mNavigationView != null) {
+
+            Menu menu = mNavigationView.getMenu();
+            if (menu != null) {
+                menu.setGroupVisible(R.id.navigation_group, !mAccountGroupVisible);
+                menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
+                MenuItem item = menu.findItem(R.id.account_logout_item);
+                if (item != null) {
+                    item.setVisible(User.getInstance().isLoggedIn());
+                }
+
+            }
+        }
+
+    }
+
     private void createNavDrawerItems(NavigationItemEnum[] items) {
+
         if (mNavigationView != null) {
             Menu menu = mNavigationView.getMenu();
             for (int i = 0; i < items.length; i++) {
                 MenuItem item = menu.findItem(items[i].getId());
                 if (item != null) {
-                    // TODO: this removes the login item and the share log item temporary:
-//                    if (item.getItemId() == R.id.login_item || item.getItemId() == R.id.share_log_item)
-//                        continue;
-
-//                    if (item.getItemId() == R.id.login_item)
-//                        continue;
-//                    if (item.getItemId() == R.id.share_log_item)
-//                        continue;
-
                     item.setVisible(true);
                     item.setIcon(items[i].getIconResource());
                     item.setTitle(items[i].getTitleResource());
@@ -166,9 +240,11 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
             }
 
             mNavigationView.setNavigationItemSelectedListener(this);
+
+            menu.setGroupVisible(R.id.navigation_group, !mAccountGroupVisible);
+            menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
         }
     }
-
     /**
      * Taken from: https://github.com/google/iosched
      * List of all possible navigation items.
@@ -177,15 +253,6 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
      */
     public enum NavigationItemEnum {
 
-//        CAMERA(R.id.camera_item, R.string.camera_item_text,
-//                R.drawable.ic_camera, CameraActivity.class),
-//        COLLECTIONS(R.id.collections_item, R.string.collections_item_text,
-//                R.drawable.ic_camera, CollectionsActivity.class),
-//        ABOUT(R.id.about_item, R.string.about_item_text,
-//                R.drawable.ic_camera, AboutActivity.class),
-//        SETTINGS(R.id.settings_item, R.string.setttings_item_text,
-//                R.drawable.ic_camera, SettingsActivity.class),
-//        INVALID(12, 0, 0, null);
 
         CAMERA(R.id.camera_item, R.string.camera_item_text,
                 R.drawable.ic_camera_alt_black_24dp, CameraActivity.class),
@@ -197,9 +264,13 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_share_black_24dp, LogActivity.class),
         SYNC(R.id.sync_item, R.string.sync_item_text,
                 R.drawable.ic_sync_black_24dp, SyncActivity.class),
+        ACCOUNT_EDIT(R.id.account_edit_item, R.string.account_edit_text,
+                R.drawable.ic_account_box_black_24dp, AccountActivity.class),
+        ACCOUNT_LOGOUT(R.id.account_logout_item, R.string.account_logout,
+                R.drawable.ic_remove_circle_outline_black_24dp, LogoutActivity.class),
 //        REST_TEST(R.id.rest_item, R.string.rest_item_text,
 //                R.drawable.ic_weekend_black_24dp, RestTestActivity.class),
-        INVALID(12, 0, 0, null);
+        INVALID(-1, 0, 0, null);
 
         private int id;
 

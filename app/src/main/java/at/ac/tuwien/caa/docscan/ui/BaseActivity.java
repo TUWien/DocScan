@@ -66,6 +66,10 @@ public abstract class BaseActivity extends AppCompatActivity implements LoginReq
 
     }
 
+
+
+
+
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
 
@@ -75,8 +79,14 @@ public abstract class BaseActivity extends AppCompatActivity implements LoginReq
         //        Check if a user has logged in in a previous session and use the credentials for login:
         boolean isUserSaved = UserHandler.loadCredentials(this);
         if (isUserSaved && !User.getInstance().isAutoLogInDone()) {
-            RequestHandler.createRequest(this, RequestHandler.REQUEST_LOGIN);
-            User.getInstance().setAutoLogInDone(true);
+
+            if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS) {
+                RequestHandler.createRequest(this, RequestHandler.REQUEST_LOGIN);
+                User.getInstance().setAutoLogInDone(true);
+            }
+            else if (User.getInstance().getConnection() == User.SYNC_DROPBOX) {
+//                TODO: auto login to dropbox
+            }
         }
 
 
@@ -94,7 +104,14 @@ public abstract class BaseActivity extends AppCompatActivity implements LoginReq
     @Override
     public void onLogin(User user) {
 
-        mNavigationDrawer.setupDrawerHeader();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mNavigationDrawer.setupDrawerHeader();
+            }
+        });
+
+
 
 //        String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
 //        Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();

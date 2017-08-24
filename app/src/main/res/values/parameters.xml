@@ -10,7 +10,6 @@
     <!-- The maximum rotation angle of the page segmentation result - in degrees. -->
     <integer name="max_rotation">4</integer>
     <!-- The minimum distance between corner points that indicates a page segmentation change. -->
-    <integer name="min_page_change_percentage">2</integer>
 
 
     <!--=================== FOCUS MEASUREMENT ===================-->
@@ -28,7 +27,6 @@
     <!--=================== TIME CONSTRAINTS ===================-->
 
     <!-- Time necessary for automatic capturing - in milli-seconds. -->
-    <integer name="counter_time">1000</integer>
     <!-- Time that the flicker after taking an image is shown - in milli-seconds. -->
     <integer name="flicker_time">200</integer>
 
