@@ -96,8 +96,8 @@
             />
 
         <activity
-            android:name=".ui.DropboxAuthActivity"
-            android:exported="false"
+            android:name=".ui.DropboxActivity"
+            android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
 
