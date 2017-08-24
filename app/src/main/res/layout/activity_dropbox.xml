@@ -15,9 +15,10 @@
         >
 
         <LinearLayout
+            android:id="@+id/dropbox_authentication_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
+            android:visibility="visible"
             android:orientation="vertical"
             android:layout_gravity="center" >
 
@@ -30,7 +31,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/dropbox_authenticate_text"
+                android:text="@string/dropbox_text"
                 android:layout_margin="@dimen/activity_horizontal_margin"
                 android:layout_marginBottom="@dimen/activity_horizontal_margin"/>
 
@@ -47,6 +48,26 @@
 
 
         </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/dropbox_loading_layout"
+            android:visibility="invisible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+            <ProgressBar
+                android:id="@+id/login_progressbar"
+                android:layout_width="@dimen/login_spinner_size"
+                android:layout_height="@dimen/login_spinner_size"
+                android:layout_centerHorizontal="true"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/login_progressbar"
+                android:layout_centerHorizontal="true"
+                android:text="@string/dropbox_loading_text"/>
+        </RelativeLayout>
 
         <android.support.design.widget.AppBarLayout
             android:id="@+id/appbar"

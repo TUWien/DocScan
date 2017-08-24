@@ -135,11 +135,12 @@
     <string name="sync_dropbox_text">Dropbox</string>
     <string name="sync_transkribus_text">Transkribus</string>
 
-    <!-- DropboxAuthActivity: -->
-    <string name="dropbox_authenticate_text">It is necessary to allow DocScan to access your Dropbox
+    <!-- DropboxActivity: -->
+    <string name="dropbox_text">It is necessary to allow DocScan to access your Dropbox
         account. This authentication will be done in your browser.</string>
-    <string name="dropbox_authenticate_title">Dropbox Authentication</string>
+    <string name="dropbox_title">Dropbox Authentication</string>
     <string name="dropbox_authenticate_button_text">Start authentication</string>
+    <string name="dropbox_loading_text">Authenticating...</string>
 
     <!-- LogoutActivity -->
     <string name="logout_text">Do you really want to logout? You will have to login again if you want

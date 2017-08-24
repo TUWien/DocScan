@@ -19,7 +19,7 @@ import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
  * Created by fabian on 23.08.2017.
  */
 
-public class DropboxAuthActivity extends AppCompatActivity implements LoginRequest.LoginCallback{
+public class DropboxActivity extends AppCompatActivity implements LoginRequest.LoginCallback{
 
     private boolean mIsActitivyJustCreated;
 
@@ -27,11 +27,11 @@ public class DropboxAuthActivity extends AppCompatActivity implements LoginReque
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_dropbox_authenticate);
+        setContentView(R.layout.activity_dropbox);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(getString(R.string.dropbox_authenticate_title));
+        getSupportActionBar().setTitle(getString(R.string.dropbox_title));
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mIsActitivyJustCreated = true;
@@ -60,24 +60,9 @@ public class DropboxAuthActivity extends AppCompatActivity implements LoginReque
 
     }
 
-    private void loginToDropbox() {
-
-        String accessToken = Auth.getOAuth2Token();
-//            Save the access token:
-        if (accessToken != null) {
-            User.getInstance().setDropboxToken(accessToken);
-            UserHandler.saveDropboxToken(this);
-            DropboxUtils.getInstance().loginToDropbox(this, accessToken);
-        }
-
-
-
-    }
-
     @Override
     public void onLogin(User user) {
 
-//        finish();
         Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
         startActivity(intent);
 
@@ -85,6 +70,40 @@ public class DropboxAuthActivity extends AppCompatActivity implements LoginReque
 
     @Override
     public void onLoginError() {
+        showLoadingLayout(false);
+    }
+
+    private void loginToDropbox() {
+
+        String accessToken = Auth.getOAuth2Token();
+//            Save the access token:
+        if (accessToken != null) {
+            showLoadingLayout(true);
+            User.getInstance().setDropboxToken(accessToken);
+            UserHandler.saveDropboxToken(this);
+            DropboxUtils.getInstance().loginToDropbox(this, accessToken);
+        }
+
+//        showLoadingLayout(false);
 
     }
+
+    private void showLoadingLayout(boolean showLoading) {
+
+        View authenticationLayout = findViewById(R.id.dropbox_authentication_layout);
+        View loadingLayout = findViewById(R.id.dropbox_loading_layout);
+
+
+        if (showLoading) {
+            authenticationLayout.setVisibility(View.INVISIBLE);
+            loadingLayout.setVisibility(View.VISIBLE);
+        }
+        else {
+            authenticationLayout.setVisibility(View.VISIBLE);
+            loadingLayout.setVisibility(View.INVISIBLE);
+        }
+
+    }
+
+
 }

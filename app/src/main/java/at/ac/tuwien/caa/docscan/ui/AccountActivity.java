@@ -41,7 +41,7 @@ public class AccountActivity extends BaseActivity {
         dropboxButon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), DropboxAuthActivity.class);
+                Intent intent = new Intent(getApplicationContext(), DropboxActivity.class);
                 intent.putExtra("test", "withinapp");
                 startActivity(intent);
             }
@@ -50,6 +50,7 @@ public class AccountActivity extends BaseActivity {
     }
 
     private void showAccountDetails() {
+
         // Show the first and last name of the user:
         TextView userTextView = (TextView) findViewById(R.id.account_user_textview);
         String userText = getString(R.string.account_user_textview_text) + " " +
@@ -64,6 +65,7 @@ public class AccountActivity extends BaseActivity {
         else if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS)
             cloudText += getString(R.string.sync_transkribus_text);
         cloudTextView.setText(cloudText);
+
     }
 
     private void hideAccountDetails() {
