@@ -216,27 +216,12 @@ public class DropboxUtils {
 
 
                 User.getInstance().setLoggedIn(true);
-//                User.getInstance().setSessionID(id);
                 User.getInstance().setFirstName(account.getName().getGivenName());
                 User.getInstance().setLastName(account.getName().getSurname());
+                User.getInstance().setConnection(User.SYNC_DROPBOX);
+
 ////            Now update the GUI with the user data:
                 mCallback.onLogin(User.getInstance());
-//                ((LoginCallback) mRestCallback).onLogin(User.getInstance());
-//
-//                // Get files and folder metadata from Dropbox root directory
-//                ListFolderResult result = mClient.files().listFolder("");
-//                while (true) {
-//                    for (Metadata metadata : result.getEntries()) {
-//                        Log.d(this.getClass().getName(), "path: " + metadata.getPathLower());
-//                    }
-//
-//                    if (!result.getHasMore()) {
-//                        break;
-//                    }
-//
-//                    result = mClient.files().listFolderContinue(result.getCursor());
-//                }
-
 
             } catch (DbxException e) {
                 e.printStackTrace();

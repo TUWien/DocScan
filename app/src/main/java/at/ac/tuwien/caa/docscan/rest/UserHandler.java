@@ -12,7 +12,8 @@ public class UserHandler {
 
     private static final String NAME_KEY =          "userName";
     private static final String PASSWORD_KEY =      "userPassword";
-    private static final String DROPBOX_TOKEN_KEY =  "dropboxToken";
+    private static final String DROPBOX_TOKEN_KEY = "dropboxToken";
+    private static final String CONNECTION_KEY =    "connection";
 
     public static void saveDropboxToken(Context context) {
 
@@ -39,7 +40,7 @@ public class UserHandler {
 
     }
 
-    public static void saveCredentials(Activity activity) {
+    public static void saveTranskribusCredentials(Activity activity) {
 
         //        TODO: use here encryption
 //        SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
@@ -47,6 +48,7 @@ public class UserHandler {
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(NAME_KEY, User.getInstance().getUserName());
         editor.putString(PASSWORD_KEY, User.getInstance().getPassword());
+        editor.putInt(CONNECTION_KEY, User.getInstance().getConnection());
         editor.apply();
         editor.commit();
 

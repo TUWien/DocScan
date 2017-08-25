@@ -117,7 +117,7 @@ public abstract class BaseActivity extends AppCompatActivity implements LoginReq
 //        Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
 //
 ////        Save the credentials:
-//        UserHandler.saveCredentials(this);
+//        UserHandler.saveTranskribusCredentials(this);
 //
 ////        Finally close the LoginActivity and go back to the CameraActivity:
 //        finish();

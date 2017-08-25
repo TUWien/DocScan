@@ -43,6 +43,7 @@ public class LoginRequest extends RestRequest.XMLRequest {
             User.getInstance().setSessionID(id);
             User.getInstance().setFirstName(firstName);
             User.getInstance().setLastName(lastName);
+            User.getInstance().setConnection(User.SYNC_TRANSKRIBUS);
 //            Now update the GUI with the user data:
             ((LoginCallback) mRestCallback).onLogin(User.getInstance());
         }

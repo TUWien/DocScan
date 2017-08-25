@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -69,10 +70,10 @@ public class LoginActivity extends BaseActivity implements LoginRequest.LoginCal
         Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
 
 //        Save the credentials:
-        UserHandler.saveCredentials(this);
+        UserHandler.saveTranskribusCredentials(this);
 
-//        Finally close the LoginActivity and go back to the CameraActivity:
-        finish();
+        Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
+        startActivity(intent);
     }
 
     @Override
