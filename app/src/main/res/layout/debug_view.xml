@@ -58,83 +58,83 @@
         android:textColor="@color/white"
         />
 
-    <!-- Camera frame -->
-    <TextView
-        android:id="@+id/camera_frame_label_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/fps_debug_text"
-        android:textColor="@color/white"
-        />
+    <!--&lt;!&ndash; Camera frame &ndash;&gt;-->
+    <!--<TextView-->
+        <!--android:id="@+id/camera_frame_label_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/fps_debug_text"-->
+        <!--android:textColor="@color/white"-->
+        <!--/>-->
 
-    <TextView
-        android:id="@+id/camera_frame_time_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        />
+    <!--<TextView-->
+        <!--android:id="@+id/camera_frame_time_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textColor="@color/white"-->
+        <!--/>-->
 
     <!-- Time between two shots -->
 
-    <TextView
-        android:id="@+id/inter_shot_label_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/inter_shot_text"
-        android:textColor="@color/white"
-        />
+    <!--<TextView-->
+        <!--android:id="@+id/inter_shot_label_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/inter_shot_text"-->
+        <!--android:textColor="@color/white"-->
+        <!--/>-->
 
-    <TextView
-        android:id="@+id/inter_shot_time_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        />
+    <!--<TextView-->
+        <!--android:id="@+id/inter_shot_time_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textColor="@color/white"-->
+        <!--/>-->
 
-    <TextView
-        android:id="@+id/flip_shot_label_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/flip_shot_text"
-        android:textColor="@color/white"
-        />
+    <!--<TextView-->
+        <!--android:id="@+id/flip_shot_label_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/flip_shot_text"-->
+        <!--android:textColor="@color/white"-->
+        <!--/>-->
 
-    <TextView
-        android:id="@+id/flip_shot_time_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        />
+    <!--<TextView-->
+        <!--android:id="@+id/flip_shot_time_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textColor="@color/white"-->
+        <!--/>-->
 
-    <TextView
-        android:id="@+id/movement_check_label_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/movement_check_text"
-        android:textColor="@color/white"
-        />
+    <!--<TextView-->
+        <!--android:id="@+id/movement_check_label_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/movement_check_text"-->
+        <!--android:textColor="@color/white"-->
+        <!--/>-->
 
-    <TextView
-        android:id="@+id/movement_check_time_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        />
+    <!--<TextView-->
+        <!--android:id="@+id/movement_check_time_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textColor="@color/white"-->
+        <!--/>-->
 
-    <TextView
-        android:id="@+id/new_doc_label_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/new_doc_text"
-        android:textColor="@color/white"
-        />
+    <!--<TextView-->
+        <!--android:id="@+id/new_doc_label_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="@string/new_doc_text"-->
+        <!--android:textColor="@color/white"-->
+        <!--/>-->
 
-    <TextView
-        android:id="@+id/new_doc_time_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        />
+    <!--<TextView-->
+        <!--android:id="@+id/new_doc_time_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textColor="@color/white"-->
+        <!--/>-->
 
 
 

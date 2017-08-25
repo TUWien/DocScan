@@ -161,7 +161,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     @Override
     public void onPreviewFrame(byte[] pixels, Camera camera) {
 
-        updateFPS();
+//        updateFPS();
 
         // TODO: handle an overflow:
         mFrameCnt++;
