@@ -114,7 +114,7 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
  * callbacks from the created views as well as user input.
  */
 
-public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallbacks,
+public class CameraActivity extends BaseNavigationActivity implements TaskTimer.TimerCallbacks,
         CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
         MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener,
         AdapterView.OnItemSelectedListener {

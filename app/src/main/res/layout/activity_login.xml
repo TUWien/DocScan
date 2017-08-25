@@ -90,5 +90,5 @@
     </FrameLayout>
 
     <!-- The navigation drawer -->
-    <include layout="@layout/navigation_view"/>
+    <!--<include layout="@layout/navigation_view"/>-->
 </android.support.v4.widget.DrawerLayout>
