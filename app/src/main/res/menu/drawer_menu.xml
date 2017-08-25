@@ -20,22 +20,22 @@
             android:id="@+id/share_log_item"
             android:title=""
             />
-        <item
-            android:id="@+id/login_item"
-            android:title=""
-            />
-        <item
-            android:id="@+id/sync_switch_item"
-            android:title=""
-            />
-        <item
-            android:id="@+id/sync_item"
-            android:title=""
-            />
-        <item
-            android:id="@+id/rest_item"
-            android:title=""
-            />
+        <!--<item-->
+            <!--android:id="@+id/login_item"-->
+            <!--android:title=""-->
+            <!--/>-->
+        <!--<item-->
+            <!--android:id="@+id/sync_switch_item"-->
+            <!--android:title=""-->
+            <!--/>-->
+        <!--<item-->
+            <!--android:id="@+id/sync_item"-->
+            <!--android:title=""-->
+            <!--/>-->
+        <!--<item-->
+            <!--android:id="@+id/rest_item"-->
+            <!--android:title=""-->
+            <!--/>-->
 
 
     </group>

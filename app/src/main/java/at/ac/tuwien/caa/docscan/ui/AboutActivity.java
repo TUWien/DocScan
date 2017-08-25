@@ -7,7 +7,7 @@ import at.ac.tuwien.caa.docscan.R;
 /**
  * Created by fabian on 30.11.2016.
  */
-public class AboutActivity extends BaseActivity {
+public class AboutActivity extends BaseNavigationActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

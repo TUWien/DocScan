@@ -13,9 +13,16 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
 /**
- * Created by fabian on 30.11.2016.
+ * Abstract class used for inherited activities whose properties are partially defined in
+ * NavigationDrawer.NavigationItemEnum (for example title shown in the Actionbar).
+ * Steps to create a child class:
+ * 1: Create the XML layout.
+ * 2: Implement the Activity. Take care to implement getSelfNavDrawerItem properly.
+ * 3: Put the menu item in drawer_menu.xml
+ * 4: Define the NavigationItemEnum (in NavigationDrawer)
+ * 5: Define the Activity in AndroidManifest.xml
  */
-public abstract class BaseActivity extends AppCompatActivity implements LoginRequest.LoginCallback {
+public abstract class BaseNavigationActivity extends AppCompatActivity implements LoginRequest.LoginCallback {
 
     private NavigationDrawer mNavigationDrawer;
     private Toolbar mToolbar;
@@ -94,7 +101,7 @@ public abstract class BaseActivity extends AppCompatActivity implements LoginReq
 
     /**
      * Returns the navigation drawer item that corresponds to this Activity. Subclasses of
-     * BaseActivity override this to indicate what nav drawer item corresponds to them Return
+     * BaseNavigationActivity override this to indicate what nav drawer item corresponds to them Return
      * NAVDRAWER_ITEM_INVALID to mean that this Activity should not have a Nav Drawer.
      */
     protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {

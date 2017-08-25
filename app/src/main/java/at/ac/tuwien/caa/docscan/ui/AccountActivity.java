@@ -14,7 +14,7 @@ import at.ac.tuwien.caa.docscan.rest.User;
  * Created by fabian on 22.08.2017.
  */
 
-public class AccountActivity extends BaseActivity {
+public class AccountActivity extends BaseNavigationActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

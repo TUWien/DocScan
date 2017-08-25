@@ -19,7 +19,7 @@ import at.ac.tuwien.caa.docscan.rest.User;
  * Created by fabian on 22.06.2017.
  */
 
-public class RestTestActivity extends BaseActivity implements CollectionsRequest.CollectionsCallback, DocumentsMetaDataRequest.DocumentsMetaDataCallback {
+public class RestTestActivity extends BaseNavigationActivity implements CollectionsRequest.CollectionsCallback, DocumentsMetaDataRequest.DocumentsMetaDataCallback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

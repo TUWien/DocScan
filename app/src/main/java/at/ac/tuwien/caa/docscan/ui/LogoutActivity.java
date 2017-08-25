@@ -11,7 +11,7 @@ import at.ac.tuwien.caa.docscan.rest.User;
  * Created by fabian on 24.08.2017.
  */
 
-public class LogoutActivity extends BaseActivity {
+public class LogoutActivity extends BaseNavigationActivity {
 
 
     @Override

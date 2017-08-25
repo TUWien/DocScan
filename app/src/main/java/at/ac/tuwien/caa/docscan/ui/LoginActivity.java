@@ -2,6 +2,8 @@ package at.ac.tuwien.caa.docscan.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,13 +18,15 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
 /**
  * Created by fabian on 08.02.2017.
  */
-public class LoginActivity extends BaseActivity implements LoginRequest.LoginCallback {
+public class LoginActivity extends BaseNoNavigationActivity implements LoginRequest.LoginCallback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        super.initToolbarTitle(R.string.login_title);
 
         Button loginButton = (Button) findViewById(R.id.login_button);
         loginButton.setOnClickListener(
@@ -36,10 +40,10 @@ public class LoginActivity extends BaseActivity implements LoginRequest.LoginCal
 
     }
 
-    @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.LOGIN;
-    }
+//    @Override
+//    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
+//        return NavigationDrawer.NavigationItemEnum.LOGIN;
+//    }
 
     private void login() {
 

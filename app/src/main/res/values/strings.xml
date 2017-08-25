@@ -78,7 +78,7 @@
     <string name="toast_single">Images are taken manually</string>
 
 
-    <!-- Login -->
+    <!-- LoginActivity -->
     <string name="login_email_hint">Email</string>
     <string name="login_password_hint">Password</string>
     <string name="login_button_text">Login</string>
@@ -86,6 +86,7 @@
     <string name="login_welcome_text">Welcome</string>
     <string name="login_loading_text">Loading, please wait</string>
     <string name="login_error_text">User name or password is incorrect. Please reenter your credentials.</string>
+    <string name="login_title">Login to Transkribus</string>
 
     <!-- Menus -->
     <string name="flash_mode">Flash mode</string>

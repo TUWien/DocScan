@@ -23,7 +23,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncService;
  * Created by fabian on 17.08.2017.
  */
 
-public class SyncActivity extends BaseActivity implements DropboxUtils.DropboxConnectorCallback, DropboxUtils.Callback{
+public class SyncActivity extends BaseNavigationActivity implements DropboxUtils.DropboxConnectorCallback, DropboxUtils.Callback{
 
 
     @Override
@@ -126,10 +126,10 @@ public class SyncActivity extends BaseActivity implements DropboxUtils.DropboxCo
 
     }
 
-    @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.SYNC;
-    }
+//    @Override
+//    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
+//        return NavigationDrawer.NavigationItemEnum.SYNC;
+//    }
 
 
     @Override

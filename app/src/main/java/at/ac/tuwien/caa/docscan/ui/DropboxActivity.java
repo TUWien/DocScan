@@ -19,7 +19,7 @@ import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
  * Created by fabian on 23.08.2017.
  */
 
-public class DropboxActivity extends AppCompatActivity implements LoginRequest.LoginCallback{
+public class DropboxActivity extends BaseNoNavigationActivity implements LoginRequest.LoginCallback{
 
     private boolean mIsActitivyJustCreated;
 
@@ -29,10 +29,7 @@ public class DropboxActivity extends AppCompatActivity implements LoginRequest.L
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dropbox);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle(getString(R.string.dropbox_title));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        super.initToolbarTitle(R.string.dropbox_title);
 
         mIsActitivyJustCreated = true;
 
