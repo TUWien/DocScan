@@ -11,6 +11,7 @@ import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
+import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
 
 /**
  * Abstract class used for inherited activities whose properties are partially defined in
@@ -74,9 +75,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
     }
 
 
-
-
-
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
 
@@ -84,6 +82,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
         mNavigationDrawer = new NavigationDrawer(this, getSelfNavDrawerItem());
 
         //        Check if a user has logged in in a previous session and use the credentials for login:
+        // TODO: put this in the StartActivity (here it is just used for debugging purposes).
         boolean isUserSaved = UserHandler.loadCredentials(this);
         if (isUserSaved && !User.getInstance().isAutoLogInDone()) {
 
@@ -92,7 +91,10 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
                 User.getInstance().setAutoLogInDone(true);
             }
             else if (User.getInstance().getConnection() == User.SYNC_DROPBOX) {
-//                TODO: auto login to dropbox
+                if (UserHandler.loadDropboxToken(this)) {
+                    DropboxUtils.getInstance().loginToDropbox(this, User.getInstance().getDropboxToken());
+                    User.getInstance().setAutoLogInDone(true);
+                }
             }
         }
 

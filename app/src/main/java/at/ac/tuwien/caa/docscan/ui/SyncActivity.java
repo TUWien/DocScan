@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.firebase.jobdispatcher.Trigger;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
+import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.sync.SyncService;
 
 /**
@@ -41,35 +43,23 @@ public class SyncActivity extends BaseNavigationActivity implements DropboxUtils
 
         });
 
-        Button dropboxButton = (Button) findViewById(R.id.sync_connect_dropbox_button);
-        dropboxButton.setOnClickListener(new View.OnClickListener() {
+        final Context context = getApplicationContext();
+
+        Button loadSyncButton = (Button) findViewById(R.id.sync_load_info_button);
+        loadSyncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                connectDropbox();
+                SyncInfo.getInstance().readFromDisk(context);
             }
-
         });
 
-        Button authButton = (Button) findViewById(R.id.sync_auth_dropbox_button);
-        authButton.setOnClickListener(new View.OnClickListener() {
+        Button saveSyncButton = (Button) findViewById(R.id.sync_save_info_button);
+        saveSyncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                authenticateDropbox();
+                SyncInfo.getInstance().saveToDisk(context);
             }
-
         });
-
-    }
-
-    private void authenticateDropbox() {
-
-        DropboxUtils.getInstance().startAuthentication(this);
-//        DropboxUtils.getInstance().authenticate(this, this);
-    }
-
-    private void connectDropbox() {
-
-//        DropboxUtils.getInstance().connectToDropbox(this);
 
     }
 
@@ -98,11 +88,15 @@ public class SyncActivity extends BaseNavigationActivity implements DropboxUtils
                 // retry with exponential backoff
                 .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
                 // constraints that need to be satisfied for the job to run
+//                .setConstraints(
+//                        // only run on an unmetered network
+//                        Constraint.ON_UNMETERED_NETWORK,
+//                        // only run when the device is charging
+//                        Constraint.DEVICE_CHARGING
+//                )
                 .setConstraints(
                         // only run on an unmetered network
-                        Constraint.ON_UNMETERED_NETWORK,
-                        // only run when the device is charging
-                        Constraint.DEVICE_CHARGING
+                        Constraint.ON_UNMETERED_NETWORK
                 )
                 .setExtras(myExtrasBundle)
                 .build();
@@ -126,10 +120,10 @@ public class SyncActivity extends BaseNavigationActivity implements DropboxUtils
 
     }
 
-//    @Override
-//    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-//        return NavigationDrawer.NavigationItemEnum.SYNC;
-//    }
+    @Override
+    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
+        return NavigationDrawer.NavigationItemEnum.SYNC;
+    }
 
 
     @Override

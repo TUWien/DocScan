@@ -241,8 +241,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
             synchronized (this) {
 
-
-
                 if (mFrameMat != null)
                     mFrameMat.release();
 

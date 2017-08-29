@@ -23,8 +23,11 @@
 
 package at.ac.tuwien.caa.docscan.camera;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
+import static android.content.ContentValues.TAG;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.CAMERA_FRAME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FOCUS_MEASURE;
@@ -84,9 +87,10 @@ public class TaskTimer {
 
         Task task = getTask(type);
         if (task != null)
-            return task.stopTimer();
-        else
-            return -1;
+            if (task.isTimerStarted())
+                return task.stopTimer();
+
+        return -1;
 
     }
 
@@ -120,11 +124,20 @@ public class TaskTimer {
     private class Task {
 
         private long mStartTime;
+        private long mTimeSum;
+        private int mTaskCnt;
         private TaskType mType;
 
 
         private Task(TaskType type) {
             mType = type;
+            mTaskCnt = 0;
+            mTimeSum = 0;
+            mStartTime = -1;
+        }
+
+        public boolean isTimerStarted() {
+            return mStartTime != -1;
         }
 
         private TaskType getType() {
@@ -137,8 +150,32 @@ public class TaskTimer {
 
         private long stopTimer() {
 
-            return System.currentTimeMillis() - mStartTime;
+            long timePassed = System.currentTimeMillis() - mStartTime;
+            updateTimeSum(timePassed);
 
+            return timePassed;
+
+        }
+
+        private void updateTimeSum(long timePassed) {
+
+            mTaskCnt++;
+            mTimeSum += timePassed;
+
+
+            double averageTime = mTimeSum / (double) mTaskCnt;
+
+            String type = "undefined";
+            switch(mType) {
+                case PAGE_SEGMENTATION:
+                    type = "page segmentation";
+                    break;
+                case FOCUS_MEASURE:
+                    type = "focus measurement";
+                    break;
+            }
+
+            Log.d(TAG, "task: " + type + " time: " + averageTime);
         }
 
     }
