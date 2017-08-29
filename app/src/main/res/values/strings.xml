@@ -155,5 +155,11 @@
     <string name="account_cloud_textview_text">Cloud service:</string>
     <string name="account_setup_text">Set up an account:</string>
 
+    <!-- SyncService -->
+    <string name="sync_notification_title">Image upload</string>
+    <string name="sync_notification_uploading_dropbox_text">Uploading to Dropbox.</string>
+    <string name="sync_notification_uploading_transkribus_text">Uploading to Transkribus.</string>
+    <string name="sync_notification_uploading_finished_text">Finished image upload.</string>
+
 
 </resources>

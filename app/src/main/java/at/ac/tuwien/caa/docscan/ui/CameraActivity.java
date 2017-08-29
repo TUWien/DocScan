@@ -1296,6 +1296,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onTimerStopped(final TaskTimer.TaskType type) {
 
+        if (!mIsDebugViewEnabled)
+            return;
+
         if (mTaskTimer == null)
             return;
 

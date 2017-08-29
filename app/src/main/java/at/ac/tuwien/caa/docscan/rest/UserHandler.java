@@ -19,6 +19,7 @@ public class UserHandler {
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(CONNECTION_KEY, User.getInstance().getConnection());
         editor.putString(DROPBOX_TOKEN_KEY, User.getInstance().getDropboxToken());
         editor.apply();
         editor.commit();
@@ -51,6 +52,18 @@ public class UserHandler {
         editor.putInt(CONNECTION_KEY, User.getInstance().getConnection());
         editor.apply();
         editor.commit();
+
+    }
+
+
+    public static int loadConnection(Context context) {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        int noValue = -1;
+        int connection = sharedPref.getInt(CONNECTION_KEY, noValue);
+
+        return connection;
 
     }
 

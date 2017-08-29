@@ -9,42 +9,53 @@
     android:fitsSystemWindows="true"
     >
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
     <LinearLayout
         android:id="@+id/main_frame_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:orientation="vertical">
 
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
-            <include layout="@layout/toolbar_autohide" />
-        </android.support.design.widget.AppBarLayout>
 
-        <Button
-            android:id="@+id/sync_connect_dropbox_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/sync_connect_dropbox_button_text"
-            />
+
 
         <Button
             android:id="@+id/sync_start_service_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/sync_start_service_button_text"
             />
 
         <Button
-            android:id="@+id/sync_auth_dropbox_button"
-            android:layout_width="wrap_content"
+            android:id="@+id/sync_save_info_button"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/sync_auth_dropbox_button_text"
+            android:text="save sync info"
             />
 
+        <Button
+            android:id="@+id/sync_load_info_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="load sync info"
+            />
+
+
     </LinearLayout>
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+        <include layout="@layout/toolbar_autohide" />
+    </android.support.design.widget.AppBarLayout>
+    </FrameLayout>
 
     <!-- The navigation drawer -->
     <include layout="@layout/navigation_view"/>

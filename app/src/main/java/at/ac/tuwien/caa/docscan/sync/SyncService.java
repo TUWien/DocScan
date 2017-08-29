@@ -1,10 +1,16 @@
 package at.ac.tuwien.caa.docscan.sync;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -12,7 +18,10 @@ import com.dropbox.core.v2.files.FileMetadata;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 
+import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.rest.UserHandler;
+import at.ac.tuwien.caa.docscan.ui.AboutActivity;
 
 /**
  * Created by fabian on 18.08.2017.
@@ -23,6 +32,12 @@ public class SyncService extends JobService {
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
+    private NotificationCompat.Builder mBuilder;
+    private NotificationManager mNotificationManager;
+    private int mNotifyID = 68;
+
+    private int mFilesNum;
+    private int mFilesUploaded;
 
     @Override
     public boolean onStartJob(JobParameters job) {
@@ -55,7 +70,20 @@ public class SyncService extends JobService {
         @Override
         public void handleMessage(Message msg) {
 
+            showNotification();
+
             Log.d(this.getClass().getName(), "Handling message: " + msg);
+
+            if (SyncInfo.isInstanceNull())
+                SyncInfo.readFromDisk(getApplicationContext());
+
+            mFilesUploaded = 0;
+//            TODO: think about a better way to get the not uploaded images:
+            mFilesNum = 0;
+            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
+                if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED)
+                    mFilesNum++;
+            }
 
             for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
 
@@ -75,7 +103,26 @@ public class SyncService extends JobService {
 
         @Override
         public void onUploadComplete(FileMetadata result) {
-            Log.d(this.getClass().getName(), "uploaded file: " + result.getName());
+
+            mFilesUploaded++;
+            int progress = (int) Math.floor(mFilesUploaded / (double) mFilesNum * 100);
+            mBuilder.setProgress(100, progress, false);
+            mNotificationManager.notify(mNotifyID, mBuilder.build());
+
+            if (mFilesUploaded == mFilesNum) {
+                // Show the finished progressbar for a short time:
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+//                Notify that the upload is finished:
+                mBuilder.setContentText(getString(R.string.sync_notification_uploading_finished_text))
+                        // Removes the progress bar
+                        .setProgress(0,0,false);
+                mNotificationManager.notify(mNotifyID, mBuilder.build());
+            }
+
         }
 
         @Override
@@ -101,29 +148,60 @@ public class SyncService extends JobService {
         mServiceHandler = new ServiceHandler(mServiceLooper);
     }
 
-//    @Override
-//    public int onStartCommand(Intent intent, int flags, int startId) {
-//        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
-//
-//        // For each start request, send a message to start a job and deliver the
-//        // start ID so we know which request we're stopping when we finish the job
-//        Message msg = mServiceHandler.obtainMessage();
-//        msg.arg1 = startId;
-//        mServiceHandler.sendMessage(msg);
-//
-//        // If we get killed, after returning from here, restart
-//        return START_STICKY;
-//    }
-//
-//    @Override
-//    public IBinder onBind(Intent intent) {
-//        // We don't provide binding, so return null
-//        return null;
-//    }
 
     @Override
     public void onDestroy() {
         Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
+    }
+
+    private void showNotification() {
+
+        String title = getString(R.string.sync_notification_title);
+
+        String text = getConnectionText();
+
+        mBuilder = new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.drawable.ic_statusbar_icon)
+                    .setContentTitle(title)
+                    .setContentText(text);
+// Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(this, AboutActivity.class);
+
+// The stack builder object will contain an artificial back stack for the
+// started Activity.
+// This ensures that navigating backward from the Activity leads out of
+// your app to the Home screen.
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+// Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(AboutActivity.class);
+// Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(resultPendingIntent);
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+// mNotificationId is a unique integer your app uses to identify the
+// notification. For example, to cancel the notification, you can pass its ID
+// number to NotificationManager.cancel().
+
+
+    }
+
+    private String getConnectionText() {
+
+        String text = "";
+        int connection = UserHandler.loadConnection(this);
+        if (connection == User.SYNC_TRANSKRIBUS)
+            text = getString(R.string.sync_notification_uploading_transkribus_text);
+        else if (connection == User.SYNC_DROPBOX)
+            text = getString(R.string.sync_notification_uploading_dropbox_text);
+
+        return text;
+
     }
 
 }
