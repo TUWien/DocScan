@@ -1,17 +1,23 @@
 # Transkribus DocScan
 App for document scanning.
 
+## Authors
+Fabian Hollaus,
+Florian Kleber,
+Markus Diem
 
-## Dependencies
+## Build Instructions
+
+### Dependencies
 - `JDK` v7 or newer
 - Install `Android Studio`
 - `OpenCV` for Android [1]
 - Android NDK (will be installed via Android Studio)
 
-## Configuration
+### Configuration
 - copy`.\app\src\main\jni\local\AndroidSkel.mk` to `.\app\src\main\jni\local\Android.mk`
 - open `.\app\src\main\jni\local\Android.mk` in a text editor
-- uncomment and change the line `MY_OPENCVROOT:= C:/somepath/OpenCV-android-sdk` such that
+- uncomment and change the line `MY_OPENCVROOT:= C:/cvl/dmrz/code/opencv_sdk/OpenCV-android-sdk` such that
 it points to your opencv installation (contains the folders: apk, sample, sdk)
 - Open Project from Android Studio
 - You will see a dialog "Gradle settings for this project are not configured yet. Would you like the project to use the Gradle wrapper? ..." - click Ok
@@ -31,26 +37,20 @@ it points to your opencv installation (contains the folders: apk, sample, sdk)
   - right click `app > Open Module Settings > SDK Location`
   - Set the NDK path
 
-## Error messages
+### Error messages
   - 'Could not find method android() for arguments...':
 
     Maybe you have an obsolete android() block in your top-level gradle file. See:
      https://stackoverflow.com/questions/37250493/could-not-find-method-android-for-arguments for solution
 
-## Debugging
- - `Genymotion` is a nice tool for debugging the app (on your PC)
-   - If you wanna debug on PC with Genymotion you must change the architecture:
-   - In `.\app\src\main\jni\Application.mk` set: `APP_ABI := x86`
-   - Note: By using the x86 the Genymotion emulation is much faster (compared to the standard ADB emulator which emulates arm processors)
+### Exporting to apk
+- Build -> Generate Signed APK
+- The APK is now under 'DocScan\app\build\outputs\apk\app-release-unaligned.apk'
 
-## Authors
-Fabian Hollaus,
-Florian Kleber,
-Markus Diem
-
-## Links
+### Links
 - [1] https://sourceforge.net/projects/opencvlibrary/files/opencv-android/3.1.0/OpenCV-3.1.0-android-sdk.zip/download
 - [2] https://www.learn2crack.com/2016/03/setup-opencv-sdk-android-studio.html
+
 
 ## Visual Studio Project (C++ Library)
 - Optional
@@ -60,6 +60,5 @@ Markus Diem
   - binaries path e.g.: DocScan/build2015-x64
   - Specify OpenCV_DIR
 
-## Exporting to apk
-- Build -> Generate Signed APK
-- The APK is now under 'DocScan\app\build\outputs\apk\app-release-unaligned.apk'
+## App Dependencies
+Google Play services need to be installed to use Firebase Jobdispatcher (https://github.com/firebase/firebase-jobdispatcher-android)
