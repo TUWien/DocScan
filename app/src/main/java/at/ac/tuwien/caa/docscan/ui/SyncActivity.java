@@ -72,7 +72,7 @@ public class SyncActivity extends BaseNavigationActivity implements DropboxUtils
         Bundle myExtrasBundle = new Bundle();
         myExtrasBundle.putString("some_key", "some_value");
 
-        Job myJob = dispatcher.newJobBuilder()
+        Job syncJob = dispatcher.newJobBuilder()
                 // the JobService that will be called
                 .setService(SyncService.class)
                 // uniquely identifies the job
@@ -80,7 +80,7 @@ public class SyncActivity extends BaseNavigationActivity implements DropboxUtils
                 // one-off job
                 .setRecurring(false)
                 // don't persist past a device reboot
-                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
+                .setLifetime(Lifetime.FOREVER)
                 // start between 0 and 60 seconds from now
                 .setTrigger(Trigger.executionWindow(0, 5))
                 // don't overwrite an existing job with the same tag
@@ -101,7 +101,7 @@ public class SyncActivity extends BaseNavigationActivity implements DropboxUtils
                 .setExtras(myExtrasBundle)
                 .build();
 
-        dispatcher.mustSchedule(myJob);
+        dispatcher.mustSchedule(syncJob);
 
 //        ComponentName componentName = new ComponentName(this, SyncService.class);
 //        JobInfo jobInfo = new JobInfo.Builder(12, componentName)
