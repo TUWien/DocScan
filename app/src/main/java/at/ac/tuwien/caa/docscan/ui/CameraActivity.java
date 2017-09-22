@@ -225,9 +225,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mCameraPreview != null)
             mCameraPreview.pause();
 
-//        MovementDetector.getInstance(this.getApplicationContext()).stop();
 
         savePreferences();
+
+        // Save the sync info:
+        SyncInfo.getInstance().saveToDisk(this);
 
         //        Save the log file:
         if (AppState.isDataLogged())
@@ -258,6 +260,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
         super.onResume();
+
+        // Read the sync information:
+        SyncInfo.getInstance().readFromDisk(this);
 
         // Resume camera access:
         if (mCameraPreview != null)
@@ -1980,7 +1985,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 updateThumbnail(outFile);
 
                 // Add the file to the sync list:
-                addToSyncList(outFile);
+                addToSyncList(mContext, outFile);
 
                 mIsPictureSafe = true;
 
@@ -2043,9 +2048,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             });
         }
 
-        private void addToSyncList(File outFile) {
+        private void addToSyncList(Context context, File outFile) {
 
-            SyncInfo.getInstance().addFile(outFile);
+            SyncInfo.getInstance().addFile(context, outFile);
 
         }
 

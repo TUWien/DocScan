@@ -9,6 +9,7 @@
     <string name="camera_item_text">Camera</string>
     <string name="login_item_text">Login</string>
     <string name="header_text">DocScan</string>
+    <string name="rest_item_text">Rest</string>
     <string name="account_edit_text">Set up account</string>
     <string name="account_not_logged_in">Anonymous user</string>
     <string name="account_logout">Logout</string>

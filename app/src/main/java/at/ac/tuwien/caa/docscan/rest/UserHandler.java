@@ -67,10 +67,12 @@ public class UserHandler {
 
     }
 
-    public static boolean loadCredentials(Activity activity) {
+    public static boolean loadCredentials(Context context) {
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
+
+        User.getInstance().setConnection(loadConnection(context));
 //        SharedPreferences sharedPref = activity.getApplicationContext().getPreferences(Context.MODE_PRIVATE);
         String name = sharedPref.getString(NAME_KEY, null);
         String defaultPassword = null;

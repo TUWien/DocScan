@@ -60,7 +60,7 @@ public class DropboxUtils {
 
     }
 
-    public void uploadFile(Callback callback, SyncInfo.FileSync file) {
+    public void uploadFile(SyncInfo.Callback callback, SyncInfo.FileSync file) {
         new UploadFileTask(callback, file).execute();
 
     }
@@ -180,10 +180,6 @@ public class DropboxUtils {
         void onDropboxConnected(User user);
     }
 
-    public interface Callback {
-        void onUploadComplete(FileMetadata result);
-        void onError(Exception e);
-    }
 
     /**
      * Simply connects to the dropbox account. Note this must be done in an own thread cause
@@ -214,14 +210,10 @@ public class DropboxUtils {
                 account = mClient.users().getCurrentAccount();
                 Log.d(this.getClass().getName(), "dropbox account name: " + account.getName().getDisplayName());
 
-
                 User.getInstance().setLoggedIn(true);
                 User.getInstance().setFirstName(account.getName().getGivenName());
                 User.getInstance().setLastName(account.getName().getSurname());
                 User.getInstance().setConnection(User.SYNC_DROPBOX);
-
-////            Now update the GUI with the user data:
-                mCallback.onLogin(User.getInstance());
 
             } catch (DbxException e) {
                 e.printStackTrace();
@@ -312,12 +304,12 @@ public class DropboxUtils {
      */
     private class UploadFileTask extends AsyncTask<Void, Void, FileMetadata> {
 
-        private final Callback mCallback;
+        private final SyncInfo.Callback mCallback;
         private Exception mException;
         private SyncInfo.FileSync mFileSync;
 
 
-        UploadFileTask(Callback callback, SyncInfo.FileSync fileSync) {
+        UploadFileTask(SyncInfo.Callback callback, SyncInfo.FileSync fileSync) {
             mCallback = callback;
             mFileSync = fileSync;
         }
@@ -330,9 +322,7 @@ public class DropboxUtils {
             } else if (result == null) {
                 mCallback.onError(null);
             } else {
-                // TODO: this should be done in SyncService.onUploadComplete (so that we can do it in a more generic way).
-                mFileSync.setState(SyncInfo.FileSync.STATE_UPLOADED);
-                mCallback.onUploadComplete(result);
+                mCallback.onUploadComplete(mFileSync);
             }
         }
 
@@ -361,6 +351,7 @@ public class DropboxUtils {
 //                            .uploadAndFinish(inputStream);
                 } catch (DbxException | IOException e) {
                     mException = e;
+                    Log.d("DropboxUtils", "exception: " + e);
                 }
             }
 
