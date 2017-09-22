@@ -60,7 +60,7 @@
             />
 
         <activity
-            android:name=".ui.SyncActivity"
+            android:name=".ui.SyncTestActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
@@ -119,7 +119,11 @@
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
-
+        <activity
+            android:name=".ui.SyncActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.CameraActivity"
+            />
 
 
         <activity
