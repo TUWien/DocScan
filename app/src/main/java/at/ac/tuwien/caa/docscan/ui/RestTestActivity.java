@@ -48,15 +48,9 @@ import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 
-//import com.android.volley.Response;
-
-//import com.android.volley.Response;
-
-//import com.android.volley.Response;
-
 
 /**
- * Created by fabian on 22.06.2017.
+ * A simple class used for Rest API experiments.
  */
 
 public class RestTestActivity extends BaseNavigationActivity implements CollectionsRequest.CollectionsCallback,
@@ -222,7 +216,7 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
         protected Void doInBackground(Integer... params) {
 
 
-//            ==========================================================
+//            Generate a multipart request:
 
             File file = SyncInfo.getInstance().getSyncList().get(SyncInfo.getInstance().getSyncList().size()-1).getFile();
 
@@ -231,32 +225,34 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
             String descriptionString = "descriptionString";
             RequestBody description = RequestBody.create(okhttp3.MultipartBody.FORM, descriptionString);
 
-//            Version 1: Construct the body with a File:
+//            Version 1: Construct the body with a File - not working:
             RequestBody requestFile = RequestBody.create(mediaType, file);
             MultipartBody.Part partV1 = MultipartBody.Part.createFormData("img", file.getAbsolutePath(), requestFile);
 
-//            Version 2: Construct the body with a FileInputStream:
-            InputStream in = null;
-            RequestBody requestBody = null;
-            MultipartBody.Part partV2 = null;
-            try {
-                in = new FileInputStream(new File(file.getAbsolutePath()));
-                byte[] buf;
-                buf = new byte[in.available()];
-                while (in.read(buf) != -1);
-                requestBody = RequestBody.create(MediaType.parse("application/octet-stream"), buf);
-                partV2 = MultipartBody.Part.createFormData("img", file.getAbsolutePath(), requestBody);
-
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
 
             UploadTranskribus uploadService = UploadTranskribus.retrofit.create(UploadTranskribus.class);
 
             Call<ResponseBody> call = uploadService.upload(Integer.toString(params[0]), description, partV1);
+
+//            Version 2: Construct the body with a FileInputStream - not working
+//            InputStream in = null;
+//            RequestBody requestBody = null;
+//            MultipartBody.Part partV2 = null;
+//            try {
+//                in = new FileInputStream(new File(file.getAbsolutePath()));
+//                byte[] buf;
+//                buf = new byte[in.available()];
+//                while (in.read(buf) != -1);
+//                requestBody = RequestBody.create(MediaType.parse("application/octet-stream"), buf);
+//                partV2 = MultipartBody.Part.createFormData("img", file.getAbsolutePath(), requestBody);
+//
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
 //            Call<ResponseBody> call = uploadService.upload(Integer.toString(params[0]), description, partV2);
+
 
             call.enqueue(new Callback<ResponseBody>() {
 
