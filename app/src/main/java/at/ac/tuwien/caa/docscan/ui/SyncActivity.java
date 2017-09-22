@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.dropbox.core.v2.files.FileMetadata;
 import com.firebase.jobdispatcher.Constraint;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -25,7 +24,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncService;
  * Created by fabian on 17.08.2017.
  */
 
-public class SyncActivity extends BaseNavigationActivity implements DropboxUtils.DropboxConnectorCallback, DropboxUtils.Callback{
+public class SyncActivity extends BaseNavigationActivity implements DropboxUtils.DropboxConnectorCallback, SyncInfo.Callback {
 
 
     @Override
@@ -57,7 +56,20 @@ public class SyncActivity extends BaseNavigationActivity implements DropboxUtils
         saveSyncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SyncInfo.getInstance().saveToDisk(context);
+                SyncInfo.getInstance().
+                        saveToDisk(context);
+            }
+        });
+
+        Button transkribusSyncButton = (Button) findViewById(R.id.sync_transkribus_button);
+        transkribusSyncButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                new StartUploadRequest(context);
+
+
+
+
             }
         });
 
@@ -134,8 +146,9 @@ public class SyncActivity extends BaseNavigationActivity implements DropboxUtils
 
     }
 
+
     @Override
-    public void onUploadComplete(FileMetadata result) {
+    public void onUploadComplete(SyncInfo.FileSync fileSync) {
 
     }
 

@@ -24,6 +24,15 @@ android {
         }
     }
 
+    // Fixed build error : Duplicate files copied in APK META-INF/xxx
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/LICENSE.txt'
+    }
+
 // Android NDK configuration, taken from:
 //    https://www.crystax.net/en/blog/3
 
@@ -80,10 +89,18 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:25.0.0'
     compile 'com.dropbox.core:dropbox-core-sdk:3.0.3'
-    compile 'com.squareup.okhttp3:okhttp:3.5.0'
+//    compile 'com.squareup.okhttp3:okhttp:3.5.0'
     compile 'com.android.support:preference-v7:25.0.0'
     compile 'com.android.support:design:25.0.0'
     compile 'com.android.volley:volley:1.0.0'
     compile 'com.firebase:firebase-jobdispatcher:0.7.0'
+    compile 'com.github.smart-fun:XmlToJson:1.4.0'    // necessary for xmltojson
+    // retrofit - start:
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+    compile 'com.squareup.okhttp3:okhttp:3.6.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'   // necessary for retrofit
+    compile 'com.squareup.okhttp3:logging-interceptor:3.6.0'
+    // retrofit - end:
+    compile 'com.koushikdutta.ion:ion:2.+'
     compile project(':openCVLibrary310')
 }

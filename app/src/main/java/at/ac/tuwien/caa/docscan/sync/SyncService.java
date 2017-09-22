@@ -14,11 +14,11 @@ import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.dropbox.core.v2.files.FileMetadata;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.AboutActivity;
@@ -28,7 +28,7 @@ import at.ac.tuwien.caa.docscan.ui.AboutActivity;
  * Based on: @see <a href="https://developer.android.com/guide/components/services.html#ExtendingService"/>
  */
 
-public class SyncService extends JobService {
+public class SyncService extends JobService implements LoginRequest.LoginCallback {
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
@@ -36,19 +36,29 @@ public class SyncService extends JobService {
     private NotificationManager mNotificationManager;
     private int mNotifyID = 68;
 
+    private static final String TAG = "SyncService";
+
     private int mFilesNum;
     private int mFilesUploaded;
 
     @Override
     public boolean onStartJob(JobParameters job) {
 
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+        Log.d("SyncService", "================= service starting =================");
 
-        // For each start request, send a message to start a job and deliver the
-        // start ID so we know which request we're stopping when we finish the job
-        Message msg = mServiceHandler.obtainMessage();
-//        msg.arg1 = startId;
-        mServiceHandler.sendMessage(msg);
+//        First check if the User is already logged in:
+        if (!User.getInstance().isLoggedIn()) {
+//            Log in if necessary:
+            Log.d(TAG, "login...");
+            SyncUtils.login(getApplicationContext(), this);
+        }
+        else {
+            Log.d(TAG, "user is logged in");
+//            Start the upload:
+            Message msg = mServiceHandler.obtainMessage();
+            mServiceHandler.sendMessage(msg);
+        }
 
         return false; // Answers the question: "Is there still work going on?"
     }
@@ -58,10 +68,25 @@ public class SyncService extends JobService {
         return false;
     }
 
+    @Override
+    public void onLogin(User user) {
+
+        Log.d(TAG, "onlogin");
+
+//        Starts the upload:
+        Message m = mServiceHandler.obtainMessage();
+        mServiceHandler.sendMessage(m);
+
+    }
+
+    @Override
+    public void onLoginError() {
+
+    }
 
 
     // Handler that receives messages from the thread
-    private final class ServiceHandler extends Handler implements DropboxUtils.Callback {
+    private final class ServiceHandler extends Handler implements SyncInfo.Callback {
 
         public ServiceHandler(Looper looper) {
             super(looper);
@@ -70,58 +95,103 @@ public class SyncService extends JobService {
         @Override
         public void handleMessage(Message msg) {
 
+//            TODO: reset all FileSync with state AWAITING_UPLOAD to NOT_UPLOADED
+
             showNotification();
 
-            Log.d(this.getClass().getName(), "Handling message: " + msg);
+            Log.d(TAG, "handlemessage");
 
-            if (SyncInfo.isInstanceNull())
-                SyncInfo.readFromDisk(getApplicationContext());
-
-            mFilesUploaded = 0;
+                mFilesUploaded = 0;
 //            TODO: think about a better way to get the not uploaded images:
-            mFilesNum = 0;
-            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
-                if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED)
-                    mFilesNum++;
+
+            // Check if the app is active, if not read the physical file about the upload status:
+            if (SyncInfo.isInstanceNull()) {
+                SyncInfo.readFromDisk(getApplicationContext());
+                Log.d("SyncService", "loaded SyncInfo from disk");
             }
+            else
+                Log.d("SyncService", "SyncInfo is in RAM");
 
-            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
+            // Show all files:
+            printSyncInfo();
 
-                if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED) {
-                    Log.d(this.getClass().getName(), "uploading file: " + fileSync.getFile().getName());
-                    fileSync.setState(SyncInfo.FileSync.STATE_AWAITING_UPLOAD);
+            mFilesNum = getFilesNum();
 
-                    if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
-                        DropboxUtils.getInstance().uploadFile(this, fileSync);
-                }
-                else if (fileSync.getState() == SyncInfo.FileSync.STATE_UPLOADED)
-                    Log.d(this.getClass().getName(), "already uploaded: " + fileSync.getFile().getName());
+            if (mFilesNum == 0)
+                return;
 
-            }
+
+            // Start with the first file:
+            SyncInfo.FileSync fileSync = getNextUpload();
+            if (fileSync != null)
+                uploadFile(fileSync);
 
         }
 
+        private void uploadFile(SyncInfo.FileSync fileSync) {
+
+            if (fileSync == null)
+                return;
+
+            fileSync.setState(SyncInfo.FileSync.STATE_AWAITING_UPLOAD);
+
+            if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
+                DropboxUtils.getInstance().uploadFile(this, fileSync);
+//            else if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS)
+
+
+        }
+
+        private int getFilesNum() {
+
+            int result = 0;
+            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
+                if (fileSync.getState() != SyncInfo.FileSync.STATE_UPLOADED)
+                    result++;
+            }
+
+            return result;
+        }
+
         @Override
-        public void onUploadComplete(FileMetadata result) {
+        public void onUploadComplete(SyncInfo.FileSync fileSync) {
+
+            Log.d("SyncService", "uploaded file: " + fileSync.getFile().getName());
+            fileSync.setState(SyncInfo.FileSync.STATE_UPLOADED);
 
             mFilesUploaded++;
+            mFilesNum = getFilesNum(); // do this frequently, because an image might be taken if the Service is active
+            updateProgressbar();
+
+            SyncInfo.FileSync nextFileSync = getNextUpload();
+            if (nextFileSync != null)
+                uploadFile(nextFileSync);
+            else
+                uploadsFinished();
+
+        }
+
+        private void updateProgressbar() {
             int progress = (int) Math.floor(mFilesUploaded / (double) mFilesNum * 100);
             mBuilder.setProgress(100, progress, false);
             mNotificationManager.notify(mNotifyID, mBuilder.build());
+        }
 
-            if (mFilesUploaded == mFilesNum) {
-                // Show the finished progressbar for a short time:
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-//                Notify that the upload is finished:
-                mBuilder.setContentText(getString(R.string.sync_notification_uploading_finished_text))
-                        // Removes the progress bar
-                        .setProgress(0,0,false);
-                mNotificationManager.notify(mNotifyID, mBuilder.build());
+        private void uploadsFinished() {
+
+            SyncInfo.saveToDisk(getApplicationContext());
+
+            // Show the finished progressbar for a short time:
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+//                Notify that the upload is finished:
+            mBuilder.setContentText(getString(R.string.sync_notification_uploading_finished_text))
+                    // Removes the progress bar
+                    .setProgress(0,0,false);
+            mNotificationManager.notify(mNotifyID, mBuilder.build());
 
         }
 
@@ -129,12 +199,33 @@ public class SyncService extends JobService {
         public void onError(Exception e) {
 
         }
+
+        private SyncInfo.FileSync getNextUpload() {
+
+            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
+                if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED)
+                    return fileSync;
+            }
+
+            return null;
+
+        }
+
+        private void printSyncInfo() {
+
+            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList())
+                Log.d(TAG, "FileSync: " + fileSync);
+
+            }
+
     }
 
 
 
     @Override
     public void onCreate() {
+
+        Log.d(TAG, "oncreate");
         // Start up the thread running the service.  Note that we create a
         // separate thread because the service normally runs in the process's
         // main thread, which we don't want to block.  We also make it
@@ -151,7 +242,7 @@ public class SyncService extends JobService {
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "service done", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "service done", Toast.LENGTH_LONG).show();
     }
 
     private void showNotification() {
@@ -183,6 +274,10 @@ public class SyncService extends JobService {
                 );
         mBuilder.setContentIntent(resultPendingIntent);
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Show the notification every time (just for debugging purposes).
+//        TODO: remove
+//        mNotificationManager.notify(mNotifyID, mBuilder.build());
 
 // mNotificationId is a unique integer your app uses to identify the
 // notification. For example, to cancel the notification, you can pass its ID

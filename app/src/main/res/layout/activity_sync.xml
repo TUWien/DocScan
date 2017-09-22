@@ -21,9 +21,6 @@
         android:layout_gravity="center"
         android:orientation="vertical">
 
-
-
-
         <Button
             android:id="@+id/sync_start_service_button"
             android:layout_width="match_parent"
@@ -45,6 +42,12 @@
             android:text="load sync info"
             />
 
+        <Button
+            android:id="@+id/sync_transkribus_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="transkribus"
+            />
 
     </LinearLayout>
 

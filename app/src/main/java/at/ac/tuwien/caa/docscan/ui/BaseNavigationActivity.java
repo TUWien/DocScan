@@ -83,6 +83,10 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
 
         //        Check if a user has logged in in a previous session and use the credentials for login:
         // TODO: put this in the StartActivity (here it is just used for debugging purposes).
+
+        if (User.getInstance().isLoggedIn())
+            return;
+
         boolean isUserSaved = UserHandler.loadCredentials(this);
         if (isUserSaved && !User.getInstance().isAutoLogInDone()) {
 
@@ -98,7 +102,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
             }
         }
 
-
     }
 
     /**
@@ -112,6 +115,8 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
 
     @Override
     public void onLogin(User user) {
+
+        User.getInstance().setLoggedIn(true);
 
         runOnUiThread(new Runnable() {
             @Override
@@ -135,8 +140,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
     @Override
     public void onLoginError() {
 
-//        EditText pwEdit = (EditText) findViewById(R.id.password_edittext);
-//        pwEdit.setError(getResources().getString(R.string.login_error_text));
+        User.getInstance().setLoggedIn(false);
 
     }
 

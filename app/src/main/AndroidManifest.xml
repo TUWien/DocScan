@@ -107,10 +107,19 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
+        <!--Debugging activities: -->
+
         <activity
             android:name=".ui.RestTestActivity"
-            android:exported="false"
+            android:exported="true"
             android:parentActivityName=".ui.CameraActivity"/>
+
+        <activity
+            android:name=".sync.SyncStartActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
 
 
         <activity
