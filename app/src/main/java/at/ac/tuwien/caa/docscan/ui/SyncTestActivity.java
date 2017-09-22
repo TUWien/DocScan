@@ -24,14 +24,14 @@ import at.ac.tuwien.caa.docscan.sync.SyncService;
  * Created by fabian on 17.08.2017.
  */
 
-public class SyncActivity extends BaseNavigationActivity implements DropboxUtils.DropboxConnectorCallback, SyncInfo.Callback {
+public class SyncTestActivity extends BaseNavigationActivity implements DropboxUtils.DropboxConnectorCallback, SyncInfo.Callback {
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sync);
+        setContentView(R.layout.activity_test_sync);
 
         Button syncButton = (Button) findViewById(R.id.sync_start_service_button);
         syncButton.setOnClickListener(new View.OnClickListener() {
