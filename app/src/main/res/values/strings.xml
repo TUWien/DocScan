@@ -162,5 +162,8 @@
     <string name="sync_notification_uploading_transkribus_text">Uploading to Transkribus.</string>
     <string name="sync_notification_uploading_finished_text">Finished image upload.</string>
 
+    <!-- DocumentActivity -->
+    <string name="document_title">Series</string>
+
 
 </resources>

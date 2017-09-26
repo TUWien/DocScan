@@ -70,6 +70,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -129,6 +130,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
     private ImageButton mGalleryButton;
+    private Button mDocumentButton;
     private TaskTimer mTaskTimer;
     private CameraPreview mCameraPreview;
     private PaintView mPaintView;
@@ -440,6 +442,32 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
     }
 
+    /**
+     * Connects the document button with its OnClickListener.
+     */
+    private void initDocumentCallback() {
+
+        mDocumentButton = (Button) findViewById(R.id.document_button);
+
+        mDocumentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startDocumentActivity();
+            }
+        });
+
+    }
+
+    /**
+     * Start the document activity via an intent.
+     */
+    private void startDocumentActivity() {
+
+        Intent intent = new Intent(getApplicationContext(), DocumentActivity.class);
+        startActivity(intent);
+
+    }
+
     // ================= start: methods for opening the gallery =================
 
     /**
@@ -553,14 +581,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             if (uri != null) {
 
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-//                    I do not know why setData(uri) is not working with Marshmallows, it just opens one image (not the folder), with setData(Uri.fromFile) it is working:
-
-                int currentApiVersion = android.os.Build.VERSION.SDK_INT;
-                if (currentApiVersion >= Build.VERSION_CODES.M)
-                    intent.setDataAndType(Uri.fromFile(new File(path)), "image/*");
-                else
-                    intent.setData(uri);
-//
+                intent.setData(uri);
 
                 startActivity(intent);
 
@@ -698,6 +719,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         setupPhotoShootButtonCallback();
         initGalleryCallback();
+        initDocumentCallback();
         loadThumbnail();
         initShootModeSpinner();
         updateMode();
