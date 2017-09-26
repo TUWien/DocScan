@@ -209,11 +209,14 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
             if (menu != null) {
                 menu.setGroupVisible(R.id.navigation_group, !mAccountGroupVisible);
                 menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
-                MenuItem item = menu.findItem(R.id.account_logout_item);
-                if (item != null) {
-                    item.setVisible(User.getInstance().isLoggedIn());
-                }
 
+                // Show the logout button only if the user is logged in (and the menu group is visible):
+                if (mAccountGroupVisible) {
+                    MenuItem item = menu.findItem(R.id.account_logout_item);
+                    if (item != null) {
+                        item.setVisible(User.getInstance().isLoggedIn());
+                    }
+                }
             }
         }
 

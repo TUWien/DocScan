@@ -22,6 +22,7 @@ import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.AboutActivity;
+import at.ac.tuwien.caa.docscan.ui.SyncArrayAdapter;
 
 /**
  * Created by fabian on 18.08.2017.
@@ -44,7 +45,7 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
     @Override
     public boolean onStartJob(JobParameters job) {
 
-//        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         Log.d("SyncService", "================= service starting =================");
 
 //        First check if the User is already logged in:
@@ -162,6 +163,11 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
             mFilesUploaded++;
             mFilesNum = getFilesNum(); // do this frequently, because an image might be taken if the Service is active
             updateProgressbar();
+
+//            if (SyncArrayAdapter.getInstance() != null) {
+//                SyncArrayAdapter.getInstance().notifyDataSetChanged();
+//            }
+
 
             SyncInfo.FileSync nextFileSync = getNextUpload();
             if (nextFileSync != null)
