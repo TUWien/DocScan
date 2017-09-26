@@ -96,6 +96,13 @@
             />
 
         <activity
+            android:name=".ui.DocumentActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
+
+        <activity
             android:name=".ui.DropboxActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
