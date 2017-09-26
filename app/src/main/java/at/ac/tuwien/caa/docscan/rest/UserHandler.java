@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import static at.ac.tuwien.caa.docscan.rest.User.SYNC_DROPBOX;
+
 /**
  * Created by fabian on 09.02.2017.
  */
@@ -19,7 +21,7 @@ public class UserHandler {
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt(CONNECTION_KEY, User.getInstance().getConnection());
+        editor.putInt(CONNECTION_KEY, SYNC_DROPBOX);
         editor.putString(DROPBOX_TOKEN_KEY, User.getInstance().getDropboxToken());
         editor.apply();
         editor.commit();

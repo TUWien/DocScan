@@ -16,9 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.Collection;
@@ -44,7 +42,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
-import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 
@@ -134,8 +132,8 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
     public void onUploadStart(int uploadId) {
 
 //        startMultiPartUpload(uploadId);
-        testRetroFit(uploadId);
-//        testIon(uploadId);
+//        testRetroFit(uploadId);
+        testIon(uploadId);
     }
 
     private void testIon(int uploadId) {
@@ -143,8 +141,9 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
         File file = SyncInfo.getInstance().getSyncList().get(SyncInfo.getInstance().getSyncList().size()-1).getFile();
 
         Ion.with(this.getApplicationContext())
-                .load("https://transkribus.eu/TrpServerTesting/rest/uploads/" + Integer.toString(uploadId))
+                .load("PUT", "https://transkribus.eu/TrpServerTesting/rest/uploads/" + Integer.toString(uploadId))
                 .setHeader("Cookie", "JSESSIONID=" + User.getInstance().getSessionID())
+                .setMultipartContentType("multipart/form-data")
                 .setMultipartFile("img", "application/octet-stream", file)
                 .asString()
                 .setCallback(new FutureCallback<String>() {
@@ -165,7 +164,7 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
 
 
         @Multipart
-        @POST("uploads/{uploadId}")
+        @PUT("uploads/{uploadId}")
         Call<ResponseBody> upload(
                 @Path("uploadId") String id,
                 @Part("description") RequestBody description,
