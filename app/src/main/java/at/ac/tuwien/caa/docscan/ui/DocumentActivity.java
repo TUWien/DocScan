@@ -61,7 +61,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
 
                 final EditText userInput = (EditText) promptsView.findViewById(R.id.document_name_edit);
 
-//                userInput.setFilters(getInputFilters());
+                userInput.setFilters(getInputFilters());
 
                 // set dialog message
                 alertDialogBuilder
@@ -124,6 +124,10 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
 
         if (!dirCreated)
             showNoDirCreatedAlert();
+        else {
+            mAdapter = new DocumentAdapter(this);
+            mListView.setAdapter(mAdapter);
+        }
 
     }
 
@@ -172,7 +176,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
                                        Spanned dest, int dstart, int dend) {
                 for (int i = start; i < end; i++) {
                     char c = source.charAt(i);
-                    if (!Character.isLetterOrDigit(c) || !Character.isWhitespace(c)) {
+                    if (!Character.isLetterOrDigit(c) && !Character.isSpaceChar(c)) {
                         return "";
                     }
                 }
@@ -189,6 +193,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
 
     @Override
     protected void onResume() {
+
         super.onResume();
         mAdapter = new DocumentAdapter(this);
         mListView.setAdapter(mAdapter);
