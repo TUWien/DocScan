@@ -48,7 +48,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
@@ -104,11 +103,14 @@ import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
+import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageDir;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -273,6 +275,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Resume drawing thread:
         if (mPaintView != null)
             mPaintView.resume();
+
+        // Here we must update the button text after a activity resume (others are just initialized
+//        in onCreate.
+        initDocumentCallback();
 
 //        MovementDetector.getInstance(this.getApplicationContext()).start();
 
@@ -448,7 +454,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private void initDocumentCallback() {
 
         mDocumentButton = (Button) findViewById(R.id.document_button);
-
+        String documentName = User.getInstance().getDocumentName();
+        if (documentName != null)
+            mDocumentButton.setText("Series:\n" + documentName);
         mDocumentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -541,7 +549,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onMediaScannerConnected() {
 
-        File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
+        File mediaStorageDir = Helper.getMediaStorageDir(getResources().getString(R.string.app_name));
 
         if (mediaStorageDir == null) {
             showNoFileFoundDialog();
@@ -719,7 +727,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         setupPhotoShootButtonCallback();
         initGalleryCallback();
-        initDocumentCallback();
         loadThumbnail();
         initShootModeSpinner();
         updateMode();
@@ -913,7 +920,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private static Uri getOutputMediaFile(String appName) {
 
-        File mediaStorageDir = getMediaStorageDir(appName);
+        File mediaStorageDir = Helper.getMediaStorageDir(appName);
         if (mediaStorageDir == null)
             return null;
 
@@ -926,27 +933,27 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         return Uri.fromFile(mediaFile);
     }
 
-    /**
-     * Returns the path to the directory in which the images are saved.
-     *
-     * @param appName name of the app, this is used for gathering the directory string.
-     * @return the path where the images are stored.
-     */
-    public static File getMediaStorageDir(String appName) {
-
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), appName);
-
-        // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-
-                return null;
-            }
-        }
-
-        return mediaStorageDir;
-    }
+//    /**
+//     * Returns the path to the directory in which the images are saved.
+//     *
+//     * @param appName name of the app, this is used for gathering the directory string.
+//     * @return the path where the images are stored.
+//     */
+//    public static File getMediaStorageDir(String appName) {
+//
+//        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+//                Environment.DIRECTORY_PICTURES), appName);
+//
+//        // Create the storage directory if it does not exist
+//        if (!mediaStorageDir.exists()) {
+//            if (!mediaStorageDir.mkdirs()) {
+//
+//                return null;
+//            }
+//        }
+//
+//        return mediaStorageDir;
+//    }
 
 
     // ================= end: methods for saving pictures =================
@@ -995,6 +1002,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // Initialize the newly created buttons:
         initButtons();
+        initDocumentCallback();
 
 
     }

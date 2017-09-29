@@ -10,6 +10,7 @@
     <color name="navigation_drawer_bg_color">#11111111</color>
     <color name="debug_view_bg_color">#aa666666</color>
     <color name="white">#ffffff</color>
+    <color name="black">#000</color>
     <!--<color name="button_view_bg_color">#333</color>-->
 
     <color name="hud_page_rect_color">#dfa0</color>
@@ -26,6 +27,8 @@
     <!--<color name="movement_color">#6fff0000</color>-->
     <color name="movement_color">#4f630000</color>
     <color name="waiting_frame_color">#00ffffff</color>
+
+    <color name="confirm_button_color">#a3a3</color>
 
     <!--<color name="photo_button_view_bg_color">#333</color>-->
 

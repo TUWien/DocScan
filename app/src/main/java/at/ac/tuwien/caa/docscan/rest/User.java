@@ -15,6 +15,7 @@ public class User {
     private int mConnection;
     private Collection mCollection;
     private String mDropboxToken;
+    private String mDocumentName = null;
 
     /**
      * Returns a singleton.
@@ -91,4 +92,8 @@ public class User {
     public String getDropboxToken() {
         return mDropboxToken;
     }
+
+    public void setDocumentName(String documentName) { mDocumentName = documentName; }
+
+    public String getDocumentName() { return mDocumentName; }
 }
