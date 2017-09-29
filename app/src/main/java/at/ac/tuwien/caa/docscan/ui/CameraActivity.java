@@ -79,6 +79,7 @@ import android.widget.Toast;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -110,7 +111,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
-import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageDir;
+import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -549,7 +550,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onMediaScannerConnected() {
 
-        File mediaStorageDir = Helper.getMediaStorageDir(getResources().getString(R.string.app_name));
+        File mediaStorageDir = getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
 
         if (mediaStorageDir == null) {
             showNoFileFoundDialog();
@@ -920,7 +921,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private static Uri getOutputMediaFile(String appName) {
 
-        File mediaStorageDir = Helper.getMediaStorageDir(appName);
+        File mediaStorageDir = getMediaStorageUserSubDir(appName);
         if (mediaStorageDir == null)
             return null;
 
@@ -1838,11 +1839,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Load the most recent image from the folder:
         else {
 
-            File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
+//            File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
+            File mediaStorageDir = Helper.getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
             if (mediaStorageDir == null)
                 return;
 
-            String[] files = mediaStorageDir.list();
+            FileFilter filesFilter = new FileFilter() {
+                public boolean accept(File file) {
+                    return !file.isDirectory();
+                }
+            };
+
+            File[] files = mediaStorageDir.listFiles(filesFilter);
 
             if (files == null)
                 return;
@@ -1851,7 +1859,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             // Determine the most recent image:
             Arrays.sort(files);
-            String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1];
+            String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1].getName();
 
             ThumbnailLoader thumbnailLoader = new ThumbnailLoader();
             thumbnailLoader.execute(fileName);
