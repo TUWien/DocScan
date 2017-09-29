@@ -91,10 +91,17 @@
             />
 
         <Button
-            android:id="@+id/debug_upload_button"
+            android:id="@+id/debug_upload_retrofit_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/debug_upload_button_text"
+            android:text="retrofit"
+            />
+
+        <Button
+            android:id="@+id/debug_upload_ion_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ION"
             />
         </LinearLayout>
 
