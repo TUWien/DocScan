@@ -13,6 +13,7 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        maven { url "https://jitpack.io" }		// necessary for XmlToJson
     }
 }
 task clean(type: Delete) {

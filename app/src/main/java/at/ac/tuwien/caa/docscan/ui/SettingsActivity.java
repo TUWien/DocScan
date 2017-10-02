@@ -12,7 +12,7 @@ import at.ac.tuwien.caa.docscan.R;
 /**
  * Created by fabian on 20.12.2016.
  */
-public class SettingsActivity extends BaseActivity {
+public class SettingsActivity extends BaseNavigationActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

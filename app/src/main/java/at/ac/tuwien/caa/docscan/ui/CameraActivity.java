@@ -48,7 +48,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
@@ -70,6 +69,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -79,6 +79,7 @@ import android.widget.Toast;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -103,18 +104,21 @@ import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
+import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
  * callbacks from the created views as well as user input.
  */
 
-public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallbacks,
+public class CameraActivity extends BaseNavigationActivity implements TaskTimer.TimerCallbacks,
         CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
         MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener,
         AdapterView.OnItemSelectedListener {
@@ -129,6 +133,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
     private ImageButton mGalleryButton;
+    private Button mDocumentButton;
     private TaskTimer mTaskTimer;
     private CameraPreview mCameraPreview;
     private PaintView mPaintView;
@@ -225,9 +230,11 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if (mCameraPreview != null)
             mCameraPreview.pause();
 
-//        MovementDetector.getInstance(this.getApplicationContext()).stop();
 
         savePreferences();
+
+        // Save the sync info:
+        SyncInfo.getInstance().saveToDisk(this);
 
         //        Save the log file:
         if (AppState.isDataLogged())
@@ -259,6 +266,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         super.onResume();
 
+        // Read the sync information:
+        SyncInfo.getInstance().readFromDisk(this);
+
         // Resume camera access:
         if (mCameraPreview != null)
             mCameraPreview.resume();
@@ -266,6 +276,10 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         // Resume drawing thread:
         if (mPaintView != null)
             mPaintView.resume();
+
+        // Here we must update the button text after a activity resume (others are just initialized
+//        in onCreate.
+        initDocumentCallback();
 
 //        MovementDetector.getInstance(this.getApplicationContext()).start();
 
@@ -435,6 +449,34 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         }
     }
 
+    /**
+     * Connects the document button with its OnClickListener.
+     */
+    private void initDocumentCallback() {
+
+        mDocumentButton = (Button) findViewById(R.id.document_button);
+        String documentName = User.getInstance().getDocumentName();
+        if (documentName != null)
+            mDocumentButton.setText("Series:\n" + documentName);
+        mDocumentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startDocumentActivity();
+            }
+        });
+
+    }
+
+    /**
+     * Start the document activity via an intent.
+     */
+    private void startDocumentActivity() {
+
+        Intent intent = new Intent(getApplicationContext(), DocumentActivity.class);
+        startActivity(intent);
+
+    }
+
     // ================= start: methods for opening the gallery =================
 
     /**
@@ -508,7 +550,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
     @Override
     public void onMediaScannerConnected() {
 
-        File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
+        File mediaStorageDir = getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
 
         if (mediaStorageDir == null) {
             showNoFileFoundDialog();
@@ -548,14 +590,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             if (uri != null) {
 
                 Intent intent = new Intent(Intent.ACTION_VIEW);
-//                    I do not know why setData(uri) is not working with Marshmallows, it just opens one image (not the folder), with setData(Uri.fromFile) it is working:
-
-                int currentApiVersion = android.os.Build.VERSION.SDK_INT;
-                if (currentApiVersion >= Build.VERSION_CODES.M)
-                    intent.setDataAndType(Uri.fromFile(new File(path)), "image/*");
-                else
-                    intent.setData(uri);
-//
+                intent.setData(uri);
 
                 startActivity(intent);
 
@@ -886,7 +921,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
      */
     private static Uri getOutputMediaFile(String appName) {
 
-        File mediaStorageDir = getMediaStorageDir(appName);
+        File mediaStorageDir = getMediaStorageUserSubDir(appName);
         if (mediaStorageDir == null)
             return null;
 
@@ -899,27 +934,27 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         return Uri.fromFile(mediaFile);
     }
 
-    /**
-     * Returns the path to the directory in which the images are saved.
-     *
-     * @param appName name of the app, this is used for gathering the directory string.
-     * @return the path where the images are stored.
-     */
-    public static File getMediaStorageDir(String appName) {
-
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), appName);
-
-        // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-
-                return null;
-            }
-        }
-
-        return mediaStorageDir;
-    }
+//    /**
+//     * Returns the path to the directory in which the images are saved.
+//     *
+//     * @param appName name of the app, this is used for gathering the directory string.
+//     * @return the path where the images are stored.
+//     */
+//    public static File getMediaStorageDir(String appName) {
+//
+//        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+//                Environment.DIRECTORY_PICTURES), appName);
+//
+//        // Create the storage directory if it does not exist
+//        if (!mediaStorageDir.exists()) {
+//            if (!mediaStorageDir.mkdirs()) {
+//
+//                return null;
+//            }
+//        }
+//
+//        return mediaStorageDir;
+//    }
 
 
     // ================= end: methods for saving pictures =================
@@ -968,6 +1003,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
         // Initialize the newly created buttons:
         initButtons();
+        initDocumentCallback();
 
 
     }
@@ -1156,7 +1192,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         if (menu == null)
             return;
 
-        MenuItem item = menu.findItem(R.id.action_show_debug_view);
+        MenuItem item = menu.findItem(R.id.debug_view_item);
         if (item == null)
             return;
 
@@ -1219,7 +1255,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 //                break;
 
             // Focus measurement:
-            case R.id.action_show_fm_values:
+            case R.id.show_fm_values_item:
 
                 if (mPaintView.isFocusTextVisible()) {
                     menuItem.setTitle(R.string.show_fm_values_text);
@@ -1232,7 +1268,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 break;
 
             // Guide lines:
-            case R.id.action_show_guide:
+            case R.id.show_guide_item:
 
                 if (mPaintView.areGuideLinesDrawn()) {
                     mPaintView.drawGuideLines(false);
@@ -1295,6 +1331,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
      */
     @Override
     public void onTimerStopped(final TaskTimer.TaskType type) {
+
+        if (!mIsDebugViewEnabled)
+            return;
 
         if (mTaskTimer == null)
             return;
@@ -1800,11 +1839,18 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
         // Load the most recent image from the folder:
         else {
 
-            File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
+//            File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
+            File mediaStorageDir = Helper.getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
             if (mediaStorageDir == null)
                 return;
 
-            String[] files = mediaStorageDir.list();
+            FileFilter filesFilter = new FileFilter() {
+                public boolean accept(File file) {
+                    return !file.isDirectory();
+                }
+            };
+
+            File[] files = mediaStorageDir.listFiles(filesFilter);
 
             if (files == null)
                 return;
@@ -1813,7 +1859,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
 
             // Determine the most recent image:
             Arrays.sort(files);
-            String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1];
+            String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1].getName();
 
             ThumbnailLoader thumbnailLoader = new ThumbnailLoader();
             thumbnailLoader.execute(fileName);
@@ -1977,7 +2023,7 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
                 updateThumbnail(outFile);
 
                 // Add the file to the sync list:
-                addToSyncList(outFile);
+                addToSyncList(mContext, outFile);
 
                 mIsPictureSafe = true;
 
@@ -2040,9 +2086,9 @@ public class CameraActivity extends BaseActivity implements TaskTimer.TimerCallb
             });
         }
 
-        private void addToSyncList(File outFile) {
+        private void addToSyncList(Context context, File outFile) {
 
-            SyncInfo.getInstance().addFile(outFile);
+            SyncInfo.getInstance().addFile(context, outFile);
 
         }
 

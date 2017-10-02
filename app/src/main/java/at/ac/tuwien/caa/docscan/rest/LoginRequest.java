@@ -15,7 +15,7 @@ public class LoginRequest extends RestRequest.XMLRequest {
     private static final String FIRST_NAME_ID_END = "</firstname>";
     private static final String LAST_NAME_ID_START = "<lastname>";
     private static final String LAST_NAME_ID_END = "</lastname>";
-    private static final String URL = "https://transkribus.eu/TrpServer/rest/auth/login";
+    private static final String URL = "https://transkribus.eu/TrpServerTesting/rest/auth/login";
 
 
     public LoginRequest(Context context) {
@@ -43,6 +43,7 @@ public class LoginRequest extends RestRequest.XMLRequest {
             User.getInstance().setSessionID(id);
             User.getInstance().setFirstName(firstName);
             User.getInstance().setLastName(lastName);
+            User.getInstance().setConnection(User.SYNC_TRANSKRIBUS);
 //            Now update the GUI with the user data:
             ((LoginCallback) mRestCallback).onLogin(User.getInstance());
         }

@@ -75,21 +75,29 @@ public abstract class RestRequest {
 //      Otherwise we get an an enclosing instance that contains X.Y.Z is required error:
     public static abstract class JSONArrayRestRequest extends RestRequest {
 
+        protected JSONArray mJSONArray = null;
+
         public JSONArrayRestRequest(Context context) {
             super(context);
         }
 
         public abstract void handleResponse(JSONArray response);
+
+        public JSONArray getJSONArray() { return mJSONArray; }
     }
 
     //      We do not need implicit reference from the inner class to the enclosing class, hence use static.
 //      Otherwise we get an an enclosing instance that contains X.Y.Z is required error:
     public static abstract class JSONObjectRestRequest extends RestRequest {
 
+        protected JSONObject mJSONObject = null;
+
         public JSONObjectRestRequest(Context context) {
             super(context);
         }
 
         public abstract void handleResponse(JSONObject response);
+
+        public JSONObject getJSONObject() { return mJSONObject; }
     }
 }
