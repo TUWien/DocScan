@@ -48,16 +48,16 @@ int main(int argc, char** argv) {
 	}
 
 	std::string path = argv[1];
-	path = "C:/VSProjects/DocScan/img/tests/test.png";
+	//path = "C:/VSProjects/DocScan/img/tests/test.png";
 
-	// test the focus measure module
-	if (!testFocusMeasure(path))
-		std::cerr << "[FAIL] focus measure NOT succesfull... input file: " << path << std::endl;
-	else
-		std::cout << "[SUCCESS] focus measure succesfull..." << std::endl;
+	//// test the focus measure module
+	//if (!testFocusMeasure(path))
+	//	std::cerr << "[FAIL] focus measure NOT succesfull... input file: " << path << std::endl;
+	//else
+	//	std::cout << "[SUCCESS] focus measure succesfull..." << std::endl;
 
 	std::string oPath = argc > 2 ? argv[2] : "";
-	oPath = "C:/VSProjects/DocScan/img/tests/test-res.png";
+	//oPath = "C:/VSProjects/DocScan/img/tests/test-res.png";
 
 	// test the page segmentation module
 	if (!testPageSegmentation(path, oPath))
@@ -121,8 +121,8 @@ bool testPageSegmentation(const std::string& filePath, const std::string& output
 
 	if (pageRects.empty()) {
 
-		double illVal = dsc::DkIllumination::apply(img);
-		std::cout << "illumination value: " << illVal << std::endl;
+		//double illVal = dsc::DkIllumination::apply(img);
+		//std::cout << "illumination value: " << illVal << std::endl;
 
 		std::cerr << "PageSegmentation returned no page rects for: " << filePath << std::endl;
 		return false;
@@ -130,12 +130,28 @@ bool testPageSegmentation(const std::string& filePath, const std::string& output
 
 	// save results?!
 	if (!outputPath.empty()) {
-		
-		cv::Mat dstImg = img.clone();
-		for (auto rect : pageRects)
-			rect.draw(dstImg);
 
-		cv::imwrite(outputPath, dstImg);
+		cv::FileStorage fs(outputPath, cv::FileStorage::WRITE);
+		
+		//TODO write output coordinates
+		dsc::DkPolyRect rect = pageRects[0];
+		std::vector<dsc::DkVector> corners = rect.getCorners();
+		cv::Point cpt;
+		cpt = corners[0].getCvPoint();
+		fs << "cornerPoint0" << cpt;
+		cpt = corners[1].getCvPoint();
+		fs << "cornerPoint1" << cpt;
+		cpt = corners[2].getCvPoint();
+		fs << "cornerPoint2" << cpt;
+		cpt = corners[3].getCvPoint();
+		fs << "cornerPoint3" << cpt;
+		fs.release();
+
+		//cv::Mat dstImg = img.clone();
+		//for (auto rect : pageRects)
+		//	rect.draw(dstImg);
+
+		//cv::imwrite(outputPath, dstImg);
 	}
 
 	//double illVal = dsc::DkIllumination::apply(img, pageRects[0]);
