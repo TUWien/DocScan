@@ -7,13 +7,15 @@ public class User {
 
     private static User mInstance = null;
 
-    public static final int SYNC_DROPBOX = 0;
-    public static final int SYNC_TRANSKRIBUS = 1;
+    public static final int SYNC_DROPBOX        = 0;
+    public static final int SYNC_TRANSKRIBUS    = 1;
 
     private String mUserName, mPassword, mFirstName, mLastName, mSessionID;
     private boolean mIsLoggedin, mIsAutoLogInDone;
     private int mConnection;
     private Collection mCollection;
+    private String mDropboxToken;
+    private String mDocumentName = null;
 
     /**
      * Returns a singleton.
@@ -82,4 +84,16 @@ public class User {
     public void setConnection(int connection) { mConnection = connection; }
 
     public int getConnection() { return mConnection; }
+
+    public void setDropboxToken(String token) {
+        mDropboxToken = token;
+    }
+    
+    public String getDropboxToken() {
+        return mDropboxToken;
+    }
+
+    public void setDocumentName(String documentName) { mDocumentName = documentName; }
+
+    public String getDocumentName() { return mDocumentName; }
 }

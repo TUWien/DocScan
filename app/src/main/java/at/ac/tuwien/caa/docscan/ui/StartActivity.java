@@ -34,8 +34,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.rest.LoginRequest;
-import at.ac.tuwien.caa.docscan.rest.User;
 
 /**
  * Activity called after the app is started. This activity is responsible for requesting the camera
@@ -43,7 +41,7 @@ import at.ac.tuwien.caa.docscan.rest.User;
  * Based on this example: <a href="https://github.com/googlesamples/android-RuntimePermissionsBasic">android-RuntimePermissionsBasic
  </a>
  */
-public class StartActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, LoginRequest.LoginCallback {
+public class StartActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final int PERMISSION_CAMERA = 0;
     private View mLayout;
@@ -120,13 +118,4 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     }
 
 
-    @Override
-    public void onLogin(User user) {
-
-    }
-
-    @Override
-    public void onLoginError() {
-
-    }
 }

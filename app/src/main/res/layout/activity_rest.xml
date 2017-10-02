@@ -77,19 +77,33 @@
             <include layout="@layout/toolbar_autohide" />
         </android.support.design.widget.AppBarLayout>
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical">
+
         <Button
             android:id="@+id/debug_collections_button"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/debug_collections_button_text"
             />
 
         <Button
-            android:id="@+id/debug_upload_button"
-            android:layout_width="wrap_content"
+            android:id="@+id/debug_upload_retrofit_button"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/debug_upload_button_text"
+            android:text="retrofit"
             />
+
+        <Button
+            android:id="@+id/debug_upload_ion_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ION"
+            />
+        </LinearLayout>
 
     </LinearLayout>
 

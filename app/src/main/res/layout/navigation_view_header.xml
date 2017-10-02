@@ -12,14 +12,48 @@
         android:scaleType="fitCenter"
         android:adjustViewBounds="true"/>
 
-    <TextView
-        android:id="@+id/navigation_view_header_user_textview"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/account_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/header_text"
-        android:textColor="@color/black"
-        android:layout_gravity="bottom"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin"/>
+        android:layout_gravity="bottom">
+
+        <TextView
+            android:id="@+id/navigation_view_header_user_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/header_text"
+            android:textColor="@color/white"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_alignParentLeft="true"
+            />
+
+        <TextView
+            android:id="@+id/navigation_view_header_sync_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Transkribus"
+            android:textColor="@color/white"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_below="@id/navigation_view_header_user_textview"
+            android:layout_alignParentLeft="true"
+            />
+
+        <!-- Note the button is not clickable, because the OnClickListener is applied to the RelativeLayout -->
+        <ImageButton
+            android:id="@+id/navigation_view_header_account_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_centerInParent="true"
+            android:background="#00000000"
+            android:src="@drawable/ic_arrow_drop_down_white_24dp"
+            android:clickable="false"/>
+
+    </RelativeLayout>
+
 
 </FrameLayout>

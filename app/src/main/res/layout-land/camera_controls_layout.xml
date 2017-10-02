@@ -12,30 +12,52 @@
     (where the camera preview is under the camera_controls_layout). In this case the ActionBar must
      be below the camera_controls_layout. -->
 
-    <ImageButton
-        android:id="@+id/gallery_button"
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_width="@dimen/gallery_button_size"
-        android:layout_height="@dimen/gallery_button_size"
-        android:scaleType="centerCrop"
-        android:adjustViewBounds="true"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:background="@null"
-        />
+        android:layout_centerHorizontal="true">
 
-    <ProgressBar
-        android:id="@+id/saving_progressbar"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_width="@dimen/gallery_button_size"
-        android:layout_height="@dimen/gallery_button_size"
-        android:indeterminate="true"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:padding="@dimen/activity_vertical_margin"
-        style="?android:attr/progressBarStyle"
-        android:visibility="invisible"
-        />
+
+        <ImageButton
+            android:id="@+id/gallery_button"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_width="@dimen/gallery_button_size"
+            android:layout_height="@dimen/gallery_button_size"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:background="@null"
+            />
+
+        <Button
+            android:id="@+id/document_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/gallery_button"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:background="@color/button_bg_color"
+            android:textColor="@color/white"
+            android:text="Untitled"/>
+
+
+        <ProgressBar
+            android:id="@+id/saving_progressbar"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_width="@dimen/gallery_button_size"
+            android:layout_height="@dimen/gallery_button_size"
+            android:indeterminate="true"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:padding="@dimen/activity_vertical_margin"
+            style="?android:attr/progressBarStyle"
+            android:visibility="invisible"
+            />
+
+    </RelativeLayout>
 
     <ImageButton
         android:layout_centerInParent="true"
@@ -45,7 +67,6 @@
         android:src="@drawable/ic_photo_camera"
         android:background="@drawable/photo_shoot_button_selector"
         />
-
 
 
     <Spinner

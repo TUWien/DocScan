@@ -12,7 +12,7 @@ import at.ac.tuwien.caa.docscan.logic.DataLog;
  * Created by fabian on 09.03.2017.
  */
 
-public class LogActivity extends BaseActivity {
+public class LogActivity extends BaseNavigationActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
