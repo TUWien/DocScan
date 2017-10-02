@@ -104,7 +104,7 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
     private void requestUpload() {
 //        RequestHandler.upload
 //        new AddCollectionRequest(this);
-        new StartUploadRequest(this);
+//        new StartUploadRequest(this);
     }
 
 
