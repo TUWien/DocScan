@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:descendantFocusability="blocksDescendants">
+    <!-- Divider between dropdown button and checkbox -->
+    <View
+        android:layout_width="30dp"
+        android:layout_height="match_parent"
+        />
+
+    <CheckBox
+        android:id="@+id/checkboxListHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
+        android:textColor="@drawable/list_group_selector"/>
+
+</LinearLayout>
