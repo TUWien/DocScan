@@ -17,6 +17,7 @@ import java.io.File;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.ui.syncui.SeriesAdapter;
 
 /**
  * Created by fabian on 26.09.2017.
@@ -27,7 +28,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
     private ExpandableListView mListView;
     private Context mContext;
     private File mSelectedDir = null;
-    private DocumentAdapter mAdapter;
+    private SeriesAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +38,6 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
         super.initToolbarTitle(R.string.document_title);
 
         mListView = (ExpandableListView) findViewById(R.id.document_list_view);
-
         mContext = this;
 
         FloatingActionButton addFolderButton = (FloatingActionButton) findViewById(R.id.add_folder_fab);
@@ -125,7 +125,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
         if (!dirCreated)
             showNoDirCreatedAlert();
         else {
-            mAdapter = new DocumentAdapter(this);
+            mAdapter = new SeriesAdapter(this);
             mListView.setAdapter(mAdapter);
         }
 
@@ -195,7 +195,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
     protected void onResume() {
 
         super.onResume();
-        mAdapter = new DocumentAdapter(this);
+        mAdapter = new SeriesAdapter(this);
         mListView.setAdapter(mAdapter);
 
     }

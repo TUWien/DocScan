@@ -29,7 +29,7 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
             <ExpandableListView
-                android:id="@+id/document_list_view"
+                android:id="@+id/sync_list_view"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
@@ -39,34 +39,34 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="bottom|right"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            app:layout_dodgeInsetEdges="bottom">
+        <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:orientation="vertical"-->
+            <!--android:layout_gravity="bottom|right"-->
+            <!--android:layout_marginRight="@dimen/activity_horizontal_margin"-->
+            <!--android:layout_marginBottom="@dimen/activity_vertical_margin"-->
+            <!--app:layout_dodgeInsetEdges="bottom">-->
 
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/add_folder_fab"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:backgroundTint="#666"
-                android:src="@drawable/ic_add_white_24dp"
-                app:layout_anchor="@id/document_list_view"
-                app:layout_anchorGravity="bottom|right|end"
-                app:useCompatPadding="true"/>
+            <!--<android.support.design.widget.FloatingActionButton-->
+                <!--android:id="@+id/add_folder_fab"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--app:backgroundTint="#666"-->
+                <!--android:src="@drawable/ic_add_white_24dp"-->
+                <!--app:layout_anchor="@id/document_list_view"-->
+                <!--app:layout_anchorGravity="bottom|right|end"-->
+                <!--app:useCompatPadding="true"/>-->
 
             <android.support.design.widget.FloatingActionButton
                 android:id="@+id/confirm_fab"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_done_white_24dp"
-                app:layout_anchor="@id/document_list_view"
+                android:src="@drawable/ic_cloud_upload_white_24dp"
+                app:layout_anchor="@id/sync_list_view"
                 app:layout_anchorGravity="bottom|right|end"
                 app:useCompatPadding="true"/>
-        </LinearLayout>
+        <!--</LinearLayout>-->
 
     </android.support.design.widget.CoordinatorLayout>
 

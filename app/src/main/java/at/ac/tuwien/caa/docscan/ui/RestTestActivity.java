@@ -16,15 +16,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
+import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
 import at.ac.tuwien.caa.docscan.rest.DocumentMetaData;
 import at.ac.tuwien.caa.docscan.rest.DocumentRequest;
 import at.ac.tuwien.caa.docscan.rest.DocumentsMetaDataRequest;
-import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
@@ -54,6 +55,10 @@ import retrofit2.http.Path;
 public class RestTestActivity extends BaseNavigationActivity implements CollectionsRequest.CollectionsCallback,
         DocumentsMetaDataRequest.DocumentsMetaDataCallback, StartUploadRequest.StartUploadCallback {
 
+    private static final int TEST_RETROFIT = 0;
+    private static final int TEST_ION = 1;
+    private int mTestKind = TEST_ION;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -71,16 +76,20 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
             }
         });
 
-        Button uploadButton = (Button) findViewById(R.id.debug_upload_button);
-//        uploadButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                testRetroFit();
-//            }
-//        });
-        uploadButton.setOnClickListener(new View.OnClickListener() {
+        Button uploadRetrofitButton = (Button) findViewById(R.id.debug_upload_retrofit_button);
+        uploadRetrofitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mTestKind = TEST_RETROFIT;
+                requestUpload();
+            }
+        });
+
+        Button uploadIonButton = (Button) findViewById(R.id.debug_upload_ion_button);
+        uploadIonButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mTestKind = TEST_ION;
                 requestUpload();
             }
         });
@@ -88,7 +97,8 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
     }
 
     private void requestCollections() {
-        RequestHandler.createRequest(this, RequestHandler.REQUEST_COLLECTIONS);
+
+        new CreateCollectionRequest(this);
     }
 
     private void requestUpload() {
@@ -131,9 +141,15 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
     @Override
     public void onUploadStart(int uploadId) {
 
-//        startMultiPartUpload(uploadId);
-//        testRetroFit(uploadId);
-        testIon(uploadId);
+        switch (mTestKind) {
+            case TEST_ION:
+                testIon(uploadId);
+                break;
+            case TEST_RETROFIT:
+                testRetroFit(uploadId);
+                break;
+        }
+
     }
 
     private void testIon(int uploadId) {
@@ -184,8 +200,8 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
 
                                 // Request customization: add request headers
                                 okhttp3.Request.Builder requestBuilder = original.newBuilder()
-                                        .header("Cookie", "JSESSIONID=" + User.getInstance().getSessionID())
-                                        .header("Content-Type", "application/json");
+                                        .header("Cookie", "JSESSIONID=" + User.getInstance().getSessionID());
+//                                        .header("Content-Type", "application/json");
 
 
                                 okhttp3.Request request = requestBuilder.build();
@@ -231,26 +247,26 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
 
             UploadTranskribus uploadService = UploadTranskribus.retrofit.create(UploadTranskribus.class);
 
-            Call<ResponseBody> call = uploadService.upload(Integer.toString(params[0]), description, partV1);
+//            Call<ResponseBody> call = uploadService.upload(Integer.toString(params[0]), description, partV1);
 
 //            Version 2: Construct the body with a FileInputStream - not working
-//            InputStream in = null;
-//            RequestBody requestBody = null;
-//            MultipartBody.Part partV2 = null;
-//            try {
-//                in = new FileInputStream(new File(file.getAbsolutePath()));
-//                byte[] buf;
-//                buf = new byte[in.available()];
-//                while (in.read(buf) != -1);
-//                requestBody = RequestBody.create(MediaType.parse("application/octet-stream"), buf);
-//                partV2 = MultipartBody.Part.createFormData("img", file.getAbsolutePath(), requestBody);
-//
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            Call<ResponseBody> call = uploadService.upload(Integer.toString(params[0]), description, partV2);
+            InputStream in = null;
+            RequestBody requestBody = null;
+            MultipartBody.Part partV2 = null;
+            try {
+                in = new FileInputStream(new File(file.getAbsolutePath()));
+                byte[] buf;
+                buf = new byte[in.available()];
+                while (in.read(buf) != -1);
+                requestBody = RequestBody.create(MediaType.parse("application/octet-stream"), buf);
+                partV2 = MultipartBody.Part.createFormData("img", file.getAbsolutePath(), requestBody);
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Call<ResponseBody> call = uploadService.upload(Integer.toString(params[0]), description, partV2);
 
 
             call.enqueue(new Callback<ResponseBody>() {
