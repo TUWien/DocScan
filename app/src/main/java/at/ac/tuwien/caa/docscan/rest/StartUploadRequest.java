@@ -7,8 +7,6 @@ import com.android.volley.Request;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import at.ac.tuwien.caa.docscan.sync.SyncInfo;
-
 /**
  * Created by fabian on 05.09.2017.
  */
@@ -21,30 +19,33 @@ public class StartUploadRequest extends RestRequest.JSONObjectRestRequest {
     private static final String UPLOAD_ID_ID = "uploadId";
     private static final String TRPUPLOAD_ID = "trpUpload";
 
-    public StartUploadRequest(Context context) {
+    public StartUploadRequest(Context context, JSONObject jsonObject) {
 
         super(context);
         mMethod = Request.Method.POST;
+        mJSONObject = jsonObject;
 
-        try {
+        RequestHandler.processJsonRequest(this);
 
-            mJSONObject = new JSONObject(
-                    "{" +
-                            "    \"pageList\": {\"pages\": [" +
-                            "        {" +
-                            "            \"fileName\": \"" +
-                            SyncInfo.getInstance().getSyncList().get(SyncInfo.getInstance().getSyncList().size()-1).getFile().getName()
-                            + "\"," +
-                            "            \"pageNr\": 1" +
-                            "        }" +
-                            "    ]}" +
-                            "}");
-
-            RequestHandler.processJsonRequest(this);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+//        try {
+//
+//            mJSONObject = new JSONObject(
+//                    "{" +
+//                            "    \"pageList\": {\"pages\": [" +
+//                            "        {" +
+//                            "            \"fileName\": \"" +
+//                            SyncInfo.getInstance().getSyncList().get(SyncInfo.getInstance().getSyncList().size()-1).getFile().getName()
+//                            + "\"," +
+//                            "            \"pageNr\": 1" +
+//                            "        }" +
+//                            "    ]}" +
+//                            "}");
+//
+//            RequestHandler.processJsonRequest(this);
+//
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
 
     }
 

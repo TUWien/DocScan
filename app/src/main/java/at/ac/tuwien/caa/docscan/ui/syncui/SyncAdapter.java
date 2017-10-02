@@ -23,6 +23,7 @@ public class SyncAdapter extends BaseDocumentAdapter {
         super(context);
     }
 
+
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
 
