@@ -15,7 +15,7 @@ public class LoginRequest extends RestRequest.XMLRequest {
     private static final String FIRST_NAME_ID_END = "</firstname>";
     private static final String LAST_NAME_ID_START = "<lastname>";
     private static final String LAST_NAME_ID_END = "</lastname>";
-    private static final String URL = "https://transkribus.eu/TrpServerTesting/rest/auth/login";
+    private static final String URL = "auth/login";
 
 
     public LoginRequest(Context context) {
@@ -28,7 +28,7 @@ public class LoginRequest extends RestRequest.XMLRequest {
     }
 
     @Override
-    public String getUrl() {
+    public String getExtendedUrl() {
         return URL;
     }
 

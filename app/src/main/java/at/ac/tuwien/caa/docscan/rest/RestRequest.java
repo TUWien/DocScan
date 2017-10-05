@@ -15,16 +15,23 @@ public abstract class RestRequest {
     protected RestCallback mRestCallback;
     protected int mMethod;
 
+    protected static final String BASE_URL = "https://transkribus.eu/TrpServerTesting/rest/";
+
     public RestRequest(Context context) {
 
         mContext = context;
         mRestCallback = (RestCallback) context;
     }
 
-//    public String getUrl() {
+//    public String getExtendedUrl() {
 //        return mUrl;
 //    }
-    public abstract String getUrl();
+
+    public String getURL() {
+        return BASE_URL + getExtendedUrl();
+    }
+
+    public abstract String getExtendedUrl();
 
     public Context getContext() {
         return mContext;

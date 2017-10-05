@@ -14,7 +14,7 @@ public class DocumentRequest extends RestRequest.JSONObjectRestRequest {
 
     private DocumentMetaData mDocumentMetaData;
 //    JSON method for retrieving documents: https://transkribus.eu/TrpServer/rest/collections/{collection-ID}/{document-ID}/fulldoc
-    private final static String[] URL = {"https://transkribus.eu/TrpServer/rest/collections/", "/fulldoc"};
+    private final static String[] URL = {"collections/", "/fulldoc"};
 
     public DocumentRequest(Context context, DocumentMetaData documentMetaData) {
         super(context);
@@ -26,7 +26,7 @@ public class DocumentRequest extends RestRequest.JSONObjectRestRequest {
     }
 
     @Override
-    public String getUrl() {
+    public String getExtendedUrl() {
         return URL[0] + mDocumentMetaData.getCollection().getID() + "/" + mDocumentMetaData.getID() + URL[1];
     }
 

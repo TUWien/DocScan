@@ -14,7 +14,7 @@ import org.json.JSONObject;
 public class CreateCollectionRequest extends RestRequest.JSONObjectRestRequest {
 
     //    JSON method for retrieving documents: https://transkribus.eu/TrpServer/rest/collections/{collection-ID}/{document-ID}/fulldoc
-    private final static String URL = "https://transkribus.eu/TrpServerTesting/rest/collections/createCollection";
+    private final static String URL = "collections/createCollection";
 
     public CreateCollectionRequest(Context context) {
         super(context);
@@ -25,7 +25,7 @@ public class CreateCollectionRequest extends RestRequest.JSONObjectRestRequest {
     }
 
     @Override
-    public String getUrl() {
+    public String getExtendedUrl() {
         return URL;
     }
 

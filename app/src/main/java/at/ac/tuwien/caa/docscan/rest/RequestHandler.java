@@ -43,7 +43,7 @@ public class RequestHandler {
 
     public static void processLoginRequest(final LoginRequest request) {
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, request.getUrl(),
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, request.getURL(),
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -79,7 +79,7 @@ public class RequestHandler {
 
         int method = request.getMethod();
 
-        StringRequest stringRequest = new StringRequest(method, request.getUrl(),
+        StringRequest stringRequest = new StringRequest(method, request.getURL(),
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -132,7 +132,7 @@ public class RequestHandler {
     private static JsonArrayRequest getArrayRequest(final RestRequest.JSONArrayRestRequest request) {
 
 
-        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(request.getMethod(), request.getUrl(), request.getJSONArray(),
+        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(request.getMethod(), request.getURL(), request.getJSONArray(),
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
@@ -159,7 +159,7 @@ public class RequestHandler {
 
     private static JsonObjectRequest getObjectRequest(final RestRequest.JSONObjectRestRequest request) {
 
-        JsonObjectRequest jsArrayRequest = new JsonHelperRequest(request.getMethod(), request.getUrl(), request.getJSONObject(),
+        JsonObjectRequest jsArrayRequest = new JsonHelperRequest(request.getMethod(), request.getURL(), request.getJSONObject(),
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {

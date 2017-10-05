@@ -22,7 +22,7 @@ public class DocumentsMetaDataRequest extends RestRequest.JSONArrayRestRequest {
 
     private Collection mCollection;
     // GET statement for documents: https://transkribus.eu/TrpServer/rest/collections/{collection-ID}/list
-    private final static String[] URL = {"https://transkribus.eu/TrpServer/rest/collections/", "/list"};
+    private final static String[] URL = {"collections/", "/list"};
 
     public DocumentsMetaDataRequest(Context context, final Collection collection) {
         super(context);
@@ -33,7 +33,7 @@ public class DocumentsMetaDataRequest extends RestRequest.JSONArrayRestRequest {
     }
 
     @Override
-    public String getUrl() {
+    public String getExtendedUrl() {
         return URL[0] + mCollection.getID() + URL[1];
     }
 
