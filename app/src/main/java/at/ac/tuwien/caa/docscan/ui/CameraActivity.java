@@ -472,7 +472,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void startDocumentActivity() {
 
-        Intent intent = new Intent(getApplicationContext(), DocumentActivity.class);
+        Intent intent = new Intent(getApplicationContext(), SeriesGeneralActivity.class);
         startActivity(intent);
 
     }

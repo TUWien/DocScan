@@ -6,6 +6,7 @@ import android.widget.BaseExpandableListAdapter;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -52,12 +53,15 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
         };
 
         mDirs = mediaStorageDir.listFiles(directoryFilter);
+        Arrays.sort(mDirs);
         mFiles = new ArrayList<>(mDirs.length);
         int i = 0;
         for (File dir : mDirs) {
             mFiles.add(getFiles(dir));
             i++;
         }
+
+
 
     }
 
@@ -68,8 +72,8 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
                 return !file.isDirectory();
             }
         };
-
         File[] files = dir.listFiles(filesFilter);
+        Arrays.sort(files);
 
         return files;
     }

@@ -1,15 +1,13 @@
 package at.ac.tuwien.caa.docscan.ui;
 
 import android.content.Context;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.text.InputFilter;
 import android.text.Spanned;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.EditText;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 
 import java.io.File;
@@ -40,67 +38,82 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
         mListView = (ExpandableListView) findViewById(R.id.document_list_view);
         mContext = this;
 
-        FloatingActionButton addFolderButton = (FloatingActionButton) findViewById(R.id.add_folder_fab);
-        addFolderButton.setOnClickListener(new View.OnClickListener() {
+        Button selectSeries = (Button) findViewById(R.id.document_select_button);
+        selectSeries.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-//                Taken from: https://stackoverflow.com/questions/35861081/custom-popup-dialog-with-input-field
-
-                LayoutInflater li = LayoutInflater.from(mContext);
-                View promptsView = li.inflate(R.layout.create_document_view, null);
-
-                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                        mContext);
-
-                // set prompts.xml to alertdialog builder
-                alertDialogBuilder.setView(promptsView);
-
-
-
-
-                final EditText userInput = (EditText) promptsView.findViewById(R.id.document_name_edit);
-
-                userInput.setFilters(getInputFilters());
-
-                // set dialog message
-                alertDialogBuilder
-                        .setTitle(R.string.document_create_folder_title)
-                        .setCancelable(true)
-                        .setPositiveButton("OK",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        onCreateDirResult(userInput.getText().toString());
-                                    }
-                                })
-                        .setNegativeButton("Cancel",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog,int id) {
-//                                        dialog.cancel();
-                                    }
-                                });
-
-                // create alert dialog
-                AlertDialog alertDialog = alertDialogBuilder.create();
-
-                // show it
-                alertDialog.show();
-            }
-        });
-
-        FloatingActionButton confirmButton = (FloatingActionButton) findViewById(R.id.confirm_fab);
-        confirmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
                 if (mSelectedDir != null) {
                     User.getInstance().setDocumentName(mSelectedDir.getName());
-                    finish(); // Close the activity
+
+                    Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
+                    startActivity(intent);
                 }
                 else
                     showNoFileSelectedAlert();
             }
         });
+
+//        FloatingActionButton addFolderButton = (FloatingActionButton) findViewById(R.id.add_folder_fab);
+//        addFolderButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+////                Taken from: https://stackoverflow.com/questions/35861081/custom-popup-dialog-with-input-field
+//
+//                LayoutInflater li = LayoutInflater.from(mContext);
+//                View promptsView = li.inflate(R.layout.create_document_view, null);
+//
+//                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+//                        mContext);
+//
+//                // set prompts.xml to alertdialog builder
+//                alertDialogBuilder.setView(promptsView);
+//
+//
+//
+//
+//                final EditText userInput = (EditText) promptsView.findViewById(R.id.document_name_edit);
+//
+//                userInput.setFilters(getInputFilters());
+//
+//                // set dialog message
+//                alertDialogBuilder
+//                        .setTitle(R.string.document_create_folder_title)
+//                        .setCancelable(true)
+//                        .setPositiveButton("OK",
+//                                new DialogInterface.OnClickListener() {
+//                                    public void onClick(DialogInterface dialog, int id) {
+//                                        onCreateDirResult(userInput.getText().toString());
+//                                    }
+//                                })
+//                        .setNegativeButton("Cancel",
+//                                new DialogInterface.OnClickListener() {
+//                                    public void onClick(DialogInterface dialog,int id) {
+////                                        dialog.cancel();
+//                                    }
+//                                });
+//
+//                // create alert dialog
+//                AlertDialog alertDialog = alertDialogBuilder.create();
+//
+//                // show it
+//                alertDialog.show();
+//            }
+//        });
+//
+//        FloatingActionButton confirmButton = (FloatingActionButton) findViewById(R.id.confirm_fab);
+//        confirmButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                if (mSelectedDir != null) {
+//                    User.getInstance().setDocumentName(mSelectedDir.getName());
+//                    finish(); // Close the activity
+//                }
+//                else
+//                    showNoFileSelectedAlert();
+//            }
+//        });
 
         mListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
