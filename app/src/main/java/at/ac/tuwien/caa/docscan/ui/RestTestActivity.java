@@ -9,6 +9,9 @@ import android.widget.Button;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
@@ -104,7 +107,26 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
     private void requestUpload() {
 //        RequestHandler.upload
 //        new AddCollectionRequest(this);
-//        new StartUploadRequest(this);
+
+        try {
+            JSONObject o = new JSONObject(
+                    "{" +
+                            "    \"pageList\": {\"pages\": [" +
+                            "        {" +
+                            "            \"fileName\": \"" +
+                            SyncInfo.getInstance().getSyncList().get(SyncInfo.getInstance().getSyncList().size()-1).getFile().getName()
+                            + "\"," +
+                            "            \"pageNr\": 1" +
+                            "        }" +
+                            "    ]}" +
+                            "}");
+
+            new StartUploadRequest(this, o);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
 
