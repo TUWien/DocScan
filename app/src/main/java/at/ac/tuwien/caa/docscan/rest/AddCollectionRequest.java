@@ -13,7 +13,7 @@ import org.json.JSONObject;
 public class AddCollectionRequest extends RestRequest.JSONObjectRestRequest implements
         StartUploadRequest.StartUploadCallback {
 
-    private static final String URL = "https://transkribus.eu/TrpServerTesting/rest/collections/createCollection";
+    private static final String URL = "collections/createCollection";
     private Context mContext;
 
     public AddCollectionRequest(Context context) {
@@ -26,7 +26,7 @@ public class AddCollectionRequest extends RestRequest.JSONObjectRestRequest impl
     }
 
     @Override
-    public String getUrl() {
+    public String getExtendedUrl() {
         return URL;
     }
 

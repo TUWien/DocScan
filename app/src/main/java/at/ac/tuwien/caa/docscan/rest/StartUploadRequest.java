@@ -50,9 +50,9 @@ public class StartUploadRequest extends RestRequest.JSONObjectRestRequest {
     }
 
     @Override
-    public String getUrl() {
+    public String getExtendedUrl() {
 
-        return "https://transkribus.eu/TrpServerTesting/rest/uploads?collId=915";
+        return "uploads?collId=915";
 
     }
 

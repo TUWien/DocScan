@@ -21,7 +21,7 @@ public class CollectionsRequest extends RestRequest.JSONArrayRestRequest {
     private static final String NAME_ID = "colName";
     private static final String ROLE_ID = "role";
 
-    private static final String URL = "https://transkribus.eu/TrpServerTesting/rest/collections/list";
+    private static final String URL = "collections/list";
 
     public CollectionsRequest(Context context) {
 
@@ -32,7 +32,7 @@ public class CollectionsRequest extends RestRequest.JSONArrayRestRequest {
     }
 
     @Override
-    public String getUrl() {
+    public String getExtendedUrl() {
         return URL;
     }
 
