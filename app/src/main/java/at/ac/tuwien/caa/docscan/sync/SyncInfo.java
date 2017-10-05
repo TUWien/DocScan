@@ -1,7 +1,6 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
 
 import com.firebase.jobdispatcher.Constraint;
@@ -64,6 +63,7 @@ public class SyncInfo implements Serializable {
         }
 
     }
+
 
     /**
      * Starts a new sync job. Note that a current job will not be overwritten.
@@ -136,6 +136,18 @@ public class SyncInfo implements Serializable {
             mFileSyncList.add(new FileSync(file));
             startSyncJob(context);
         }
+
+    }
+
+    public void createSyncList(File[] files) {
+
+        if (mFileSyncList == null)
+            mFileSyncList = new ArrayList<>();
+        else
+            mFileSyncList.clear();
+
+        for (File file : files)
+            mFileSyncList.add(new FileSync(file));
 
     }
 

@@ -233,8 +233,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         savePreferences();
 
-        // Save the sync info:
-        SyncInfo.getInstance().saveToDisk(this);
+//        // Save the sync info:
+//        SyncInfo.getInstance().saveToDisk(this);
 
         //        Save the log file:
         if (AppState.isDataLogged())
@@ -267,7 +267,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         super.onResume();
 
         // Read the sync information:
-        SyncInfo.getInstance().readFromDisk(this);
+//        SyncInfo.getInstance().readFromDisk(this);
 
         // Resume camera access:
         if (mCameraPreview != null)
@@ -2022,8 +2022,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Set the thumbnail on the gallery button, this must be done one the UI thread:
                 updateThumbnail(outFile);
 
-                // Add the file to the sync list:
-                addToSyncList(mContext, outFile);
+//                // Add the file to the sync list:
+//                addToSyncList(mContext, outFile);
 
                 mIsPictureSafe = true;
 

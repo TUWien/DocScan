@@ -1,6 +1,5 @@
 package at.ac.tuwien.caa.docscan.sync;
 
-import android.app.Activity;
 import android.content.Context;
 
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
@@ -13,6 +12,7 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
  */
 
 public class SyncUtils {
+
 
     public static void login(Context context, LoginRequest.LoginCallback loginCallback) {
 

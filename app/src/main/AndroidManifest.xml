@@ -127,7 +127,7 @@
             android:parentActivityName=".ui.CameraActivity"
             />
         <activity
-            android:name=".ui.SyncActivity"
+            android:name=".ui.syncui.SyncActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />

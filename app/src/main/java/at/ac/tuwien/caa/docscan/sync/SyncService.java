@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.os.Process;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
@@ -22,7 +21,8 @@ import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.AboutActivity;
-import at.ac.tuwien.caa.docscan.ui.SyncArrayAdapter;
+
+import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
 /**
  * Created by fabian on 18.08.2017.
@@ -138,7 +138,8 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
 
             if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
                 DropboxUtils.getInstance().uploadFile(this, fileSync);
-//            else if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS)
+            else if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS)
+                TranskribusUtils.getInstance().uploadFile(this, getApplicationContext(), fileSync);
 
 
         }
@@ -237,7 +238,7 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
         // main thread, which we don't want to block.  We also make it
         // background priority so CPU-intensive work will not disrupt our UI.
         HandlerThread thread = new HandlerThread("ServiceStartArguments",
-                Process.THREAD_PRIORITY_BACKGROUND);
+                THREAD_PRIORITY_BACKGROUND);
         thread.start();
 
         // Get the HandlerThread's Looper and use it for our Handler

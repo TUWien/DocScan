@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui;
+package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -16,8 +16,10 @@ import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
+import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.sync.TranskribusUtils;
-import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
+import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
+import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 
 /**
  * Created by fabian on 22.09.2017.
@@ -76,7 +78,16 @@ public class SyncActivity extends BaseNavigationActivity implements StartUploadR
 
 //        TODO: do this for multiple items:
         File dir = dirs.get(0);
-        JSONObject jsonObject = TranskribusUtils.getJSONObject(dir);
+
+        File[] imgFiles = TranskribusUtils.getFiles(dir);
+        if (imgFiles == null)
+            return;
+        else if (imgFiles.length == 0)
+            return;
+
+        SyncInfo.getInstance().createSyncList(imgFiles);
+
+        JSONObject jsonObject = TranskribusUtils.getJSONObject(dir.getName(), imgFiles);
         if (jsonObject != null) {
             new StartUploadRequest(this, jsonObject);
         }
@@ -111,6 +122,9 @@ public class SyncActivity extends BaseNavigationActivity implements StartUploadR
 
     @Override
     public void onUploadStart(int uploadId) {
+
+        TranskribusUtils.getInstance().setUploadId(uploadId);
+        SyncInfo.startSyncJob(this);
 
     }
 }
