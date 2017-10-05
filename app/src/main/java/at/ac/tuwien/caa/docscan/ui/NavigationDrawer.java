@@ -264,7 +264,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         SHARE_LOG(R.id.share_log_item, R.string.share_log_item_text,
                 R.drawable.ic_share_black_24dp, LogActivity.class),
         SYNC(R.id.sync_item, R.string.sync_item_text,
-                R.drawable.ic_sync_black_24dp, SyncActivity.class),
+                R.drawable.ic_cloud_upload_black_24dp, SyncActivity.class),
         ACCOUNT_EDIT(R.id.account_edit_item, R.string.account_edit_text,
                 R.drawable.ic_account_box_black_24dp, AccountActivity.class),
         ACCOUNT_LOGOUT(R.id.account_logout_item, R.string.account_logout,

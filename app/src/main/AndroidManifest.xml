@@ -72,6 +72,12 @@
             />
 
         <activity
+            android:name=".ui.SeriesGeneralActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
+        <activity
             android:name=".ui.CameraActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize"
@@ -98,7 +104,7 @@
         <activity
             android:name=".ui.DocumentActivity"
             android:exported="false"
-            android:parentActivityName=".ui.CameraActivity"
+            android:parentActivityName=".ui.SeriesGeneralActivity"
             />
 
 
