@@ -18,14 +18,21 @@ public class StartUploadRequest extends RestRequest.JSONObjectRestRequest {
     public static final int UPLOAD_ID_UNDEFINED = -1;
     private static final String UPLOAD_ID_ID = "uploadId";
     private static final String TRPUPLOAD_ID = "trpUpload";
+    private static final String MD_ID = "md";
+    private static final String TITLE_ID = "title";
 
-    public StartUploadRequest(Context context, JSONObject jsonObject) {
+    private int mCollId;
+
+    public StartUploadRequest(Context context, JSONObject jsonObject, int collId) {
 
         super(context);
         mMethod = Request.Method.POST;
         mJSONObject = jsonObject;
+        mCollId = collId;
 
         RequestHandler.processJsonRequest(this);
+
+
 
 //        try {
 //
@@ -52,7 +59,7 @@ public class StartUploadRequest extends RestRequest.JSONObjectRestRequest {
     @Override
     public String getExtendedUrl() {
 
-        return "uploads?collId=915";
+        return "uploads?collId=" + mCollId;
 
     }
 
@@ -60,21 +67,22 @@ public class StartUploadRequest extends RestRequest.JSONObjectRestRequest {
     public void handleResponse(JSONObject response) {
 
 
-        int id = UPLOAD_ID_UNDEFINED;
         try {
             JSONObject o = response.getJSONObject(TRPUPLOAD_ID);
-            id = o.getInt(UPLOAD_ID_ID);
+            int id = o.getInt(UPLOAD_ID_ID);
+            String title = o.getJSONObject(MD_ID).getString(TITLE_ID);
+            ((StartUploadCallback) mRestCallback).onUploadStart(id, title);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        ((StartUploadCallback) mRestCallback).onUploadStart(id);
+
 
     }
 
 
     public interface StartUploadCallback extends RestRequest.RestCallback{
 
-        void onUploadStart(int uploadId);
+        void onUploadStart(int uploadId, String title);
 
     }
 }

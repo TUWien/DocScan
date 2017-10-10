@@ -21,10 +21,12 @@ import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 
 public class TranskribusUtils {
 
+    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan Uploads";
+
     // Singleton:
     private static TranskribusUtils mInstance;
 
-    private int mUploadId;
+//    private int mUploadId;
 
     public static TranskribusUtils getInstance() {
 
@@ -40,12 +42,12 @@ public class TranskribusUtils {
 
 
 
-    public void uploadFile(final SyncInfo.Callback callback, Context context, final SyncInfo.FileSync fileSync) {
+    public void uploadFile(final SyncInfo.Callback callback, Context context, final SyncInfo.TranskribusFileSync fileSync) {
 
         final File file = fileSync.getFile();
 
         Ion.with(context)
-                .load("PUT", BASE_URL + "uploads/" + Integer.toString(mUploadId))
+                .load("PUT", BASE_URL + "uploads/" + Integer.toString(fileSync.getUploadId()))
                 .setHeader("Cookie", "JSESSIONID=" + User.getInstance().getSessionID())
                 .setMultipartContentType("multipart/form-data")
                 .setMultipartFile("img", "application/octet-stream", file)
@@ -59,13 +61,13 @@ public class TranskribusUtils {
     }
 
 
-    public void setUploadId(int uploadId) {
-        mUploadId = uploadId;
-    }
-
-    public int getUploadId() {
-        return mUploadId;
-    }
+//    public void setUploadId(int uploadId) {
+//        mUploadId = uploadId;
+//    }
+//
+//    public int getUploadId() {
+//        return mUploadId;
+//    }
 
 //    ================================ static methods start here: ================================
 

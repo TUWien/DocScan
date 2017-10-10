@@ -36,7 +36,7 @@ public class AddCollectionRequest extends RestRequest.JSONObjectRestRequest impl
     }
 
     @Override
-    public void onUploadStart(int uploadId) {
+    public void onUploadStart(int uploadId, String title) {
 
     }
 }
