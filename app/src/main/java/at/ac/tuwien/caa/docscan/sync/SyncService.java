@@ -139,7 +139,8 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
             if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
                 DropboxUtils.getInstance().uploadFile(this, fileSync);
             else if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS)
-                TranskribusUtils.getInstance().uploadFile(this, getApplicationContext(), fileSync);
+                TranskribusUtils.getInstance().uploadFile(this, getApplicationContext(),
+                        (SyncInfo.TranskribusFileSync) fileSync);
 
 
         }

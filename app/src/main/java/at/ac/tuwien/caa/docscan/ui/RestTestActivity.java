@@ -101,7 +101,7 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
 
     private void requestCollections() {
 
-        new CreateCollectionRequest(this);
+        new CreateCollectionRequest(this, "test...");
     }
 
     private void requestUpload() {
@@ -121,7 +121,7 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
                             "    ]}" +
                             "}");
 
-            new StartUploadRequest(this, o);
+            new StartUploadRequest(this, o, -1);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -161,7 +161,7 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
     }
 
     @Override
-    public void onUploadStart(int uploadId) {
+    public void onUploadStart(int uploadId, String title) {
 
         switch (mTestKind) {
             case TEST_ION:

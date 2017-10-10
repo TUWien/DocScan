@@ -134,10 +134,20 @@ public class SyncInfo implements Serializable {
 
         if (mFileSyncList != null) {
             mFileSyncList.add(new FileSync(file));
-            startSyncJob(context);
+//            startSyncJob(context);
         }
 
     }
+
+    public void addTranskribusFile(Context context, File file, int uploadId) {
+
+        if (mFileSyncList != null) {
+            mFileSyncList.add(new TranskribusFileSync(file, uploadId));
+//            startSyncJob(context);
+        }
+
+    }
+
 
     public void createSyncList(File[] files) {
 
@@ -153,6 +163,23 @@ public class SyncInfo implements Serializable {
 
     public ArrayList<FileSync> getSyncList() {
         return mFileSyncList;
+    }
+
+    public class TranskribusFileSync extends FileSync {
+
+        private int mUploadId;
+
+        private TranskribusFileSync(File file, int uploadId) {
+
+            super(file);
+
+            mUploadId = uploadId;
+        }
+
+        public int getUploadId() {
+            return mUploadId;
+        }
+
     }
 
     public class FileSync implements Serializable {

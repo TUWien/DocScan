@@ -11,11 +11,12 @@ public class User {
     public static final int SYNC_TRANSKRIBUS    = 1;
 
     private String mUserName, mPassword, mFirstName, mLastName, mSessionID;
-    private boolean mIsLoggedin, mIsAutoLogInDone;
+    private boolean mIsLoggedin, mIsAutoLogInDone, mTranskribusUploadCollIdSet;
     private int mConnection;
     private Collection mCollection;
     private String mDropboxToken;
     private String mDocumentName = null;
+    private int mTranskribusUploadCollId;
 
     /**
      * Returns a singleton.
@@ -34,6 +35,7 @@ public class User {
 
         mIsLoggedin = false;
         mIsAutoLogInDone = false;
+        mTranskribusUploadCollIdSet = false;
 
     }
 
@@ -96,4 +98,19 @@ public class User {
     public void setDocumentName(String documentName) { mDocumentName = documentName; }
 
     public String getDocumentName() { return mDocumentName; }
+
+    public boolean isTranskribusUploadCollIdSet() {
+
+        return mTranskribusUploadCollIdSet;
+
+    }
+
+    public void setTranskribusUploadCollId(int id) {
+
+        mTranskribusUploadCollId = id;
+        mTranskribusUploadCollIdSet = true;
+
+    }
+
+    public int getTranskribusUploadCollId() { return mTranskribusUploadCollId; }
 }
