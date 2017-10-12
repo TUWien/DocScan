@@ -62,6 +62,8 @@ public class SyncAdapter extends BaseDocumentAdapter {
         checkBoxListHeader.setTag(groupPosition);
         checkBoxListHeader.setChecked(mSelections.get(groupPosition, false));
 
+        // Skip the animation that usually arises after CheckBox.setChecked
+        convertView.jumpDrawablesToCurrentState();
 
         return convertView;
 
