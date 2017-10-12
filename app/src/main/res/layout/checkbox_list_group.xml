@@ -14,9 +14,10 @@
     <CheckBox
         android:id="@+id/checkboxListHeader"
         android:layout_width="wrap_content"
-
+        android:drawableLeft="@drawable/ic_cloud_off_black_24dp"
+        android:drawablePadding="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_vertical_margin"
         android:layout_height="wrap_content"
-        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
         android:textColor="@drawable/list_group_selector"/>
 
 </LinearLayout>
