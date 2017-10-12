@@ -8,9 +8,11 @@
         android:id="@+id/lblListItem"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/expandable_list_view_child_color"
+        android:drawableLeft="@drawable/ic_image_black_24dp"
         android:textSize="17dip"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
-        android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft" />
+        android:paddingLeft="80dp" />
 
 </LinearLayout>
