@@ -4,10 +4,11 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp"
-    android:descendantFocusability="blocksDescendants">
+    android:descendantFocusability="blocksDescendants"
+    >
     <!-- Divider between dropdown button and checkbox -->
     <View
-        android:layout_width="30dp"
+        android:layout_width="?android:attr/expandableListPreferredChildPaddingLeft"
         android:layout_height="match_parent"
         />
 
