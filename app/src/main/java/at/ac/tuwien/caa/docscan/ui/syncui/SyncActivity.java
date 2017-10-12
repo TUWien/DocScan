@@ -52,10 +52,13 @@ public class SyncActivity extends BaseNavigationActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sync);
 
+        // Read the upload information:
+        SyncInfo.readFromDisk(this);
+
         mListView = (ExpandableListView) findViewById(R.id.sync_list_view);
         mContext = this;
 
-        mAdapter = new SyncAdapter(this);
+        mAdapter = new SyncAdapter(this, SyncInfo.getInstance().getSyncList());
         mListView.setAdapter(mAdapter);
 
         Button uploadButton = (Button) findViewById(R.id.start_upload_button);

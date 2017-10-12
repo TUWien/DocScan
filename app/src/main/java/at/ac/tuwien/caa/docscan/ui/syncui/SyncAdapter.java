@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,8 +11,10 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 
 /**
  * Created by fabian on 02.10.2017.
@@ -20,12 +23,16 @@ import at.ac.tuwien.caa.docscan.R;
 public class SyncAdapter extends BaseDocumentAdapter {
 
     private SparseBooleanArray mSelections;
+    private ArrayList<SyncInfo.FileSync> mFileSyncList;
 
 
-    public SyncAdapter(Context context) {
+    public SyncAdapter(Context context, ArrayList<SyncInfo.FileSync> fileSyncList) {
 
         super(context);
 
+        mFileSyncList = fileSyncList;
+
+        // Stores the checkbox states
         mSelections = new SparseBooleanArray();
 
     }
@@ -65,8 +72,50 @@ public class SyncAdapter extends BaseDocumentAdapter {
         // Skip the animation that usually arises after CheckBox.setChecked
         convertView.jumpDrawablesToCurrentState();
 
+        boolean isUploaded = isDirUploaded(groupPosition);
+
+        Drawable d = null;
+        if (isUploaded) {
+            d = mContext.getResources().getDrawable(R.drawable.ic_cloud_done_black_24dp);
+        }
+        else {
+            d = mContext.getResources().getDrawable(R.drawable.ic_cloud_queue_black_24dp);
+        }
+
+        checkBoxListHeader.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
+
+
         return convertView;
 
+    }
+
+    private boolean isDirUploaded(int groupPosition) {
+
+        File dir = getGroupFile(groupPosition);
+        File[] files = getFiles(dir);
+
+        if (files.length == 0)
+            return false;
+
+        // Check if every file contained in the folder is already uploaded:
+        for (File file : files) {
+            if (!isFileUploaded(file))
+                return false;
+        }
+
+        return true;
+
+    }
+
+    private boolean isFileUploaded(File file) {
+
+        for (SyncInfo.FileSync fileSync : mFileSyncList) {
+            if ((file.getAbsolutePath().compareTo(fileSync.getFile().getAbsolutePath()) == 0)
+                    && fileSync.getState() == SyncInfo.FileSync.STATE_UPLOADED)
+                return true;
+        }
+
+        return false;
     }
 
     @Override
