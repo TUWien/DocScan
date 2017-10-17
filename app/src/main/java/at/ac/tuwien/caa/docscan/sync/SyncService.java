@@ -10,26 +10,40 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 
+import java.util.List;
+
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.rest.Collection;
+import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
+import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
+import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
-import at.ac.tuwien.caa.docscan.ui.AboutActivity;
+import at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_PROGRESS_ID;
 
 /**
  * Created by fabian on 18.08.2017.
  * Based on: @see <a href="https://developer.android.com/guide/components/services.html#ExtendingService"/>
  */
 
-public class SyncService extends JobService implements LoginRequest.LoginCallback {
+public class SyncService extends JobService implements
+        LoginRequest.LoginCallback,
+        CollectionsRequest.CollectionsCallback,
+        CreateCollectionRequest.CreateCollectionCallback,
+        StartUploadRequest.StartUploadCallback,
+        TranskribusUtils.TranskribusUtilsCallback
+         {
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
@@ -37,6 +51,8 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
     private NotificationManager mNotificationManager;
     private int mNotifyID = 68;
 
+
+    public static final String SERVICE_ALONE_KEY = "SERVICE_ALONE_KEY";
     private static final String TAG = "SyncService";
 
     private int mFilesNum;
@@ -48,18 +64,35 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         Log.d("SyncService", "================= service starting =================");
 
+
+        // Check if the app is active, if not read the physical file about the upload status:
+        if (SyncInfo.isInstanceNull()) {
+            SyncInfo.readFromDisk(getApplicationContext());
+            Log.d("SyncService", "loaded SyncInfo from disk");
+        }
+        else
+            Log.d("SyncService", "SyncInfo is in RAM");
+
+
 //        First check if the User is already logged in:
         if (!User.getInstance().isLoggedIn()) {
 //            Log in if necessary:
             Log.d(TAG, "login...");
-            SyncUtils.login(getApplicationContext(), this);
+            SyncUtils.login(this, this);
         }
         else {
             Log.d(TAG, "user is logged in");
 //            Start the upload:
-            Message msg = mServiceHandler.obtainMessage();
-            mServiceHandler.sendMessage(msg);
+//            Message msg = mServiceHandler.obtainMessage();
+//            mServiceHandler.sendMessage(msg);
+
+//            new CollectionsRequest(this);
+
+            TranskribusUtils.getInstance().startUpload(this, SyncInfo.getInstance().getUploadDirs());
+
         }
+
+
 
         return false; // Answers the question: "Is there still work going on?"
     }
@@ -74,9 +107,10 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
 
         Log.d(TAG, "onlogin");
 
-//        Starts the upload:
-        Message m = mServiceHandler.obtainMessage();
-        mServiceHandler.sendMessage(m);
+////        Starts the upload:
+//        Message m = mServiceHandler.obtainMessage();
+//        mServiceHandler.sendMessage(m);
+        TranskribusUtils.getInstance().startUpload(this, SyncInfo.getInstance().getUploadDirs());
 
     }
 
@@ -85,8 +119,38 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
 
     }
 
+    @Override
+    public void onCollections(List<Collection> collections) {
 
-    // Handler that receives messages from the thread
+        TranskribusUtils.getInstance().onCollections(collections);
+
+    }
+
+    @Override
+    public void onCollectionCreated(String collName) {
+
+        TranskribusUtils.getInstance().onCollectionCreated(collName);
+
+    }
+
+     @Override
+     public void onUploadStart(int uploadId, String title) {
+
+        TranskribusUtils.getInstance().onUploadStart(uploadId, title);
+
+     }
+
+     @Override
+     public void onFilesPrepared() {
+
+//         Start the upload:
+        Message msg = mServiceHandler.obtainMessage();
+        mServiceHandler.sendMessage(msg);
+
+     }
+
+
+             // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler implements SyncInfo.Callback {
 
         public ServiceHandler(Looper looper) {
@@ -96,24 +160,13 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
         @Override
         public void handleMessage(Message msg) {
 
-//            TODO: reset all FileSync with state AWAITING_UPLOAD to NOT_UPLOADED
-
             showNotification();
 
             Log.d(TAG, "handlemessage");
 
                 mFilesUploaded = 0;
-//            TODO: think about a better way to get the not uploaded images:
 
-            // Check if the app is active, if not read the physical file about the upload status:
-            if (SyncInfo.isInstanceNull()) {
-                SyncInfo.readFromDisk(getApplicationContext());
-                Log.d("SyncService", "loaded SyncInfo from disk");
-            }
-            else
-                Log.d("SyncService", "SyncInfo is in RAM");
-
-            // Show all files:
+//            // Show all files:
             printSyncInfo();
 
             mFilesNum = getFilesNum();
@@ -121,12 +174,24 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
             if (mFilesNum == 0)
                 return;
 
+            User.getInstance().setUploadActive(true);
 
             // Start with the first file:
             SyncInfo.FileSync fileSync = getNextUpload();
             if (fileSync != null)
                 uploadFile(fileSync);
 
+        }
+
+// Send an Intent with an action named "custom-event-name". The Intent sent should
+// be received by the ReceiverActivity.
+        private void sendProgressIntent(int progress) {
+            Log.d("sender", "Broadcasting message");
+            Intent intent = new Intent("custom-event-name");
+            // You can also include some extra data.
+            intent.putExtra(UPLOAD_PROGRESS_ID, progress);
+
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
 
         private void uploadFile(SyncInfo.FileSync fileSync) {
@@ -183,6 +248,8 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
             int progress = (int) Math.floor(mFilesUploaded / (double) mFilesNum * 100);
             mBuilder.setProgress(100, progress, false);
             mNotificationManager.notify(mNotifyID, mBuilder.build());
+
+            sendProgressIntent(progress);
         }
 
         private void uploadsFinished() {
@@ -200,6 +267,8 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
                     // Removes the progress bar
                     .setProgress(0,0,false);
             mNotificationManager.notify(mNotifyID, mBuilder.build());
+
+            User.getInstance().setUploadActive(false);
 
         }
 
@@ -264,7 +333,7 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
                     .setContentTitle(title)
                     .setContentText(text);
 // Creates an explicit intent for an Activity in your app
-        Intent resultIntent = new Intent(this, AboutActivity.class);
+        Intent resultIntent = new Intent(this, UploadingActivity.class);
 
 // The stack builder object will contain an artificial back stack for the
 // started Activity.
@@ -272,7 +341,7 @@ public class SyncService extends JobService implements LoginRequest.LoginCallbac
 // your app to the Home screen.
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
 // Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(AboutActivity.class);
+        stackBuilder.addParentStack(UploadingActivity.class);
 // Adds the Intent that starts the Activity to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
         PendingIntent resultPendingIntent =

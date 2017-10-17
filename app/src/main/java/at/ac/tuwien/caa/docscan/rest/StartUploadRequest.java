@@ -32,28 +32,6 @@ public class StartUploadRequest extends RestRequest.JSONObjectRestRequest {
 
         RequestHandler.processJsonRequest(this);
 
-
-
-//        try {
-//
-//            mJSONObject = new JSONObject(
-//                    "{" +
-//                            "    \"pageList\": {\"pages\": [" +
-//                            "        {" +
-//                            "            \"fileName\": \"" +
-//                            SyncInfo.getInstance().getSyncList().get(SyncInfo.getInstance().getSyncList().size()-1).getFile().getName()
-//                            + "\"," +
-//                            "            \"pageNr\": 1" +
-//                            "        }" +
-//                            "    ]}" +
-//                            "}");
-//
-//            RequestHandler.processJsonRequest(this);
-//
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-
     }
 
     @Override

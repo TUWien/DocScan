@@ -30,6 +30,7 @@ public class SyncInfo implements Serializable {
 
     private static SyncInfo mInstance = null;
     private ArrayList<FileSync> mFileSyncList;
+    private ArrayList<File> mUploadDirs;
 
     public static SyncInfo getInstance() {
 
@@ -85,6 +86,7 @@ public class SyncInfo implements Serializable {
                 .setLifetime(Lifetime.FOREVER)
                 // start between 0 and 60 seconds from now
                 .setTrigger(Trigger.executionWindow(0, 5))
+//                .setTrigger(Trigger.NOW)
                 // don't overwrite an existing job with the same tag
                 .setReplaceCurrent(false)
                 // retry with exponential backoff
@@ -137,6 +139,17 @@ public class SyncInfo implements Serializable {
 //            startSyncJob(context);
         }
 
+    }
+
+    public void setUploadDirs(ArrayList<File> dirs) {
+
+        mUploadDirs = dirs;
+
+    }
+
+    public ArrayList<File> getUploadDirs() {
+
+        return mUploadDirs;
     }
 
     public void addTranskribusFile(Context context, File file, int uploadId) {
@@ -217,7 +230,7 @@ public class SyncInfo implements Serializable {
                     state = "undefined";
             }
 
-            return mFile.getName() + ", " + state;
+            return mFile.getAbsolutePath() + ", " + state;
         }
 
 

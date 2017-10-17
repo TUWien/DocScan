@@ -24,18 +24,35 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
     private SparseBooleanArray mSelections;
     private ArrayList<SyncInfo.FileSync> mFileSyncList;
+    // Callback to listen to selection changes:
+    private SyncAdapterCallback mCallback;
 
 
     public SyncAdapter(Context context, ArrayList<SyncInfo.FileSync> fileSyncList) {
 
         super(context);
 
+        mCallback = (SyncAdapterCallback) context;
         mFileSyncList = fileSyncList;
 
         // Stores the checkbox states
         mSelections = new SparseBooleanArray();
 
     }
+
+    public ArrayList<File> getSelectedDirs() {
+
+        ArrayList<File> selectedDirs = new ArrayList<>();
+
+        for (int i = 0; i < getGroupCount(); i++)
+            if (mSelections.get(i))
+                selectedDirs.add(getGroupFile(i));
+
+        return selectedDirs;
+
+    }
+
+
 
 
     @Override
@@ -57,6 +74,8 @@ public class SyncAdapter extends BaseDocumentAdapter {
                     int position = (int) v.getTag();
                     mSelections.put(position, !mSelections.get(position, false));
                     ((CheckBox)v).setChecked(mSelections.get(position, false));
+
+                    mCallback.onSelectionChange();
                 }
             });
 
@@ -77,9 +96,11 @@ public class SyncAdapter extends BaseDocumentAdapter {
         Drawable d = null;
         if (isUploaded) {
             d = mContext.getResources().getDrawable(R.drawable.ic_cloud_done_black_24dp);
+            checkBoxListHeader.setEnabled(false);
         }
         else {
             d = mContext.getResources().getDrawable(R.drawable.ic_cloud_queue_black_24dp);
+            checkBoxListHeader.setEnabled(true);
         }
 
         checkBoxListHeader.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
@@ -119,7 +140,7 @@ public class SyncAdapter extends BaseDocumentAdapter {
     }
 
     @Override
-    public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+    public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
 
         final String childText = ((File) getChild(groupPosition, childPosition)).getName();
 
@@ -127,13 +148,33 @@ public class SyncAdapter extends BaseDocumentAdapter {
             LayoutInflater infalInflater = (LayoutInflater) mContext
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = infalInflater.inflate(R.layout.list_item, null);
+
+//            TODO: open the file on a click. The code below is not working on targetSDK > 24
+//            Solution is here: https://stackoverflow.com/questions/38200282/android-os-fileuriexposedexception-file-storage-emulated-0-test-txt-exposed
+
+//            TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
+//            txtListChild.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//
+//                    Intent intent = new Intent(Intent.ACTION_VIEW);
+//                    File dir = getGroupFile(groupPosition);
+//                    intent.setData(Uri.fromFile(getFiles(dir)[childPosition]));
+//                    mContext.startActivity(intent);
+//
+//                }
+//            });
         }
 
-        TextView txtListChild = (TextView) convertView
-                .findViewById(R.id.lblListItem);
+        TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
 
         txtListChild.setText(childText);
+
         return convertView;
 
+    }
+
+    public interface SyncAdapterCallback {
+        public void onSelectionChange();
     }
 }

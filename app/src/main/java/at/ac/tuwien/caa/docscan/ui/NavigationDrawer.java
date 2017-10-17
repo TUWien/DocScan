@@ -150,6 +150,13 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
             return;
         }
 
+//                // Launch the target Activity after a short delay, to allow the close animation to play
+//        mHandler.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                itemSelected(item);
+//            }
+//        });
 
         // Launch the target Activity after a short delay, to allow the close animation to play
         mHandler.postDelayed(new Runnable() {

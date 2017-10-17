@@ -1837,35 +1837,35 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             setGalleryButtonDrawable(mGalleryButtonDrawable);
 
         // Load the most recent image from the folder:
-        else {
+        else
+            loadThumbnailFromDisk();
 
-//            File mediaStorageDir = getMediaStorageDir(getResources().getString(R.string.app_name));
-            File mediaStorageDir = Helper.getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
-            if (mediaStorageDir == null)
-                return;
+    }
 
-            FileFilter filesFilter = new FileFilter() {
-                public boolean accept(File file) {
-                    return !file.isDirectory();
-                }
-            };
+    private void loadThumbnailFromDisk() {
+        File mediaStorageDir = Helper.getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
+        if (mediaStorageDir == null)
+            return;
 
-            File[] files = mediaStorageDir.listFiles(filesFilter);
+        FileFilter filesFilter = new FileFilter() {
+            public boolean accept(File file) {
+                return !file.isDirectory();
+            }
+        };
 
-            if (files == null)
-                return;
-            else if (files.length == 0)
-                return;
+        File[] files = mediaStorageDir.listFiles(filesFilter);
 
-            // Determine the most recent image:
-            Arrays.sort(files);
-            String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1].getName();
+        if (files == null)
+            return;
+        else if (files.length == 0)
+            return;
 
-            ThumbnailLoader thumbnailLoader = new ThumbnailLoader();
-            thumbnailLoader.execute(fileName);
+        // Determine the most recent image:
+        Arrays.sort(files);
+        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1].getName();
 
-        }
-
+        ThumbnailLoader thumbnailLoader = new ThumbnailLoader();
+        thumbnailLoader.execute(fileName);
     }
 
     @SuppressWarnings("deprecation")
@@ -1941,7 +1941,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             String fileName = fileNames[0];
 
-            Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName), 200, 200);
+            Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName), 50, 50);
             if (thumbNailBitmap == null)
                 return null;
 

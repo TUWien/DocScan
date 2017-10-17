@@ -42,37 +42,36 @@
 
             <ImageButton
                 android:id="@+id/gallery_button"
-                android:layout_centerHorizontal="true"
+                android:layout_alignParentRight="true"
                 android:layout_alignParentTop="true"
                 android:layout_width="@dimen/gallery_button_size"
                 android:layout_height="@dimen/gallery_button_size"
                 android:scaleType="centerCrop"
                 android:adjustViewBounds="true"
                 android:background="#0000"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
                 />
 
             <Button
                 android:id="@+id/document_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:drawableRight="@drawable/ic_edit_black_24dp"
                 android:minHeight="0dp"
                 android:minWidth="0dp"
-                android:layout_centerHorizontal="true"
+                android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:layout_alignParentBottom="true"
                 android:background="@color/button_bg_color"
                 android:textColor="@color/white"
-                android:text="Untitled"/>
+                android:text="Series: Untitledasdffasdf"/>
 
             <ProgressBar
                 android:id="@+id/saving_progressbar"
                 android:layout_centerHorizontal="true"
-                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
                 android:layout_width="@dimen/gallery_button_size"
                 android:layout_height="@dimen/gallery_button_size"
                 android:indeterminate="true"
-                android:padding="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
                 style="?android:attr/progressBarStyle"
                 android:visibility="invisible"
