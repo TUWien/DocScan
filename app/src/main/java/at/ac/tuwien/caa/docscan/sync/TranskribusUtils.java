@@ -1,6 +1,8 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
@@ -10,21 +12,33 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.List;
 
+import at.ac.tuwien.caa.docscan.rest.Collection;
+import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
+import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
+import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 
+import static android.content.ContentValues.TAG;
 import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 
 /**
  * Created by fabian on 05.09.2017.
  */
 
-public class TranskribusUtils {
+public class TranskribusUtils  {
 
     public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan Uploads";
 
     // Singleton:
     private static TranskribusUtils mInstance;
+
+    private Context mContext;
+    private ArrayList<File> mSelectedDirs;
+    private int mNumUploadJobs;
+    private TranskribusUtilsCallback mCallback;
 
 //    private int mUploadId;
 
@@ -40,6 +54,140 @@ public class TranskribusUtils {
 
     }
 
+
+    /**
+     * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
+     * upload folder.
+     */
+    public void startUpload(Context context, ArrayList<File> selectedDirs) {
+
+        mContext = context;
+        mSelectedDirs = selectedDirs;
+        mCallback = (TranskribusUtilsCallback) context;
+
+        new CollectionsRequest(mContext);
+
+    }
+
+    public void onCollections(List<Collection> collections) {
+
+        for (Collection collection : collections) {
+            if (collection.getName().compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
+                docScanCollectionFound(collection);
+                return;
+            }
+        }
+        createDocScanCollection();
+
+    }
+
+//    @Override
+//    public void onCollections(List<Collection> collections) {
+//
+//        for (Collection collection : collections) {
+//            if (collection.getName().compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
+//                docScanCollectionFound(collection);
+//                return;
+//            }
+//        }
+//        createDocScanCollection();
+//    }
+
+    private void createDocScanCollection() {
+
+        if (mContext != null)
+            new CreateCollectionRequest(mContext, TRANSKRIBUS_UPLOAD_COLLECTION_NAME);
+
+    }
+
+//    @Override
+    public void onCollectionCreated(String collName) {
+        if (collName.compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0)
+            new CollectionsRequest(mContext);
+
+    }
+
+    private void docScanCollectionFound(Collection collection) {
+
+//        User.getInstance().setTranskribusUploadCollId(collection.getID());
+//        mTranskribusUploadCollId = collection.getID();
+        uploadDirs(mSelectedDirs, collection.getID());
+
+    }
+
+    private void uploadDirs(ArrayList<File> dirs, int uploadId) {
+
+        mSelectedDirs = dirs;
+        mNumUploadJobs = 0;
+
+        Log.d(TAG, "preparing file: " + dirs + " for upload");
+
+        for (File dir : mSelectedDirs) {
+
+            // Get the image files contained in the directory:
+            File[] imgFiles = TranskribusUtils.getFiles(dir);
+            if (imgFiles == null)
+                return;
+            else if (imgFiles.length == 0)
+                return;
+
+//            Create the JSON object for the directory:
+            JSONObject jsonObject = TranskribusUtils.getJSONObject(dir.getName(), imgFiles);
+//            Start the upload request:
+            if (jsonObject != null) {
+                new StartUploadRequest(mContext, jsonObject, uploadId);
+            }
+        }
+    }
+
+    /**
+     * Receives the uploadId for a document/directory and starts the upload job. Note that multiple
+     * directories can be selected and we have to take assign each directory to its correct
+     * uploadId (this is done by comparing the title).
+     * @param uploadId
+     */
+//    @Override
+    public void onUploadStart(int uploadId, String title) {
+
+        File selectedDir = getMatchingDir(title);
+
+        if (selectedDir != null) {
+            for (File file : TranskribusUtils.getFiles(selectedDir))
+                SyncInfo.getInstance().addTranskribusFile(mContext, file, uploadId);
+        }
+
+        mNumUploadJobs++;
+
+        // For each directory the upload request is finished and all files are added to the sync list.
+        // Now start the job:
+        if (mNumUploadJobs == mSelectedDirs.size())
+            mCallback.onFilesPrepared();
+//            SyncInfo.startSyncJob(mContext);
+
+//        TranskribusUtils.getInstance().setUploadId(uploadId);
+//        SyncInfo.startSyncJob(this);
+
+    }
+
+
+    /**
+     * Find the directory assigned to its title:
+     * @param title
+     * @return
+     */
+    @Nullable
+    private File getMatchingDir(String title) {
+        File selectedDir = null;
+
+        // Find the
+        for (File dir : mSelectedDirs) {
+            if (dir.getName().compareTo(title) == 0) {
+                selectedDir = dir;
+                break;
+            }
+        }
+        return selectedDir;
+    }
 
 
     public void uploadFile(final SyncInfo.Callback callback, Context context, final SyncInfo.TranskribusFileSync fileSync) {
@@ -131,6 +279,13 @@ public class TranskribusUtils {
         File[] files = dir.listFiles(filesFilter);
 
         return files;
+    }
+
+
+    public interface TranskribusUtilsCallback {
+
+        void onFilesPrepared();
+
     }
 
 

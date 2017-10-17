@@ -27,6 +27,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
     private Context mContext;
     private File mSelectedDir = null;
     private SeriesAdapter mAdapter;
+    private String DOCUMENT_DIR_CHANGED = "DOCUMENT_DIR_CHANGED";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +47,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
                     User.getInstance().setDocumentName(mSelectedDir.getName());
 
                     Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
+//                    intent.putExtra(DOCUMENT_DIR_CHANGED, true);
                     startActivity(intent);
                 }
                 else

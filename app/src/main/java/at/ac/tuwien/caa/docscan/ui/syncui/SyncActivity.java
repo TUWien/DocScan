@@ -1,14 +1,17 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ExpandableListView;
-import android.widget.LinearLayout;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
 import org.json.JSONObject;
 
@@ -21,6 +24,7 @@ import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
 import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
+import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.sync.TranskribusUtils;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
@@ -34,22 +38,30 @@ import static at.ac.tuwien.caa.docscan.sync.TranskribusUtils.TRANSKRIBUS_UPLOAD_
 
 public class SyncActivity extends BaseNavigationActivity implements
         StartUploadRequest.StartUploadCallback, CollectionsRequest.CollectionsCallback,
-        CreateCollectionRequest.CreateCollectionCallback {
+        CreateCollectionRequest.CreateCollectionCallback, SyncAdapter.SyncAdapterCallback {
 
     private ExpandableListView mListView;
     private Context mContext;
     private SyncAdapter mAdapter;
     private int mNumUploadJobs;
     private int mTranskribusUploadCollId;
-    // Describes at which index the checkbox is added in checkbox_list_group.xml to its parent layout:
-    private static int CHECK_BOX_IDX = 1;
     private ArrayList<File> mSelectedDirs;
+    private TextView mSelectionTextView;
+    private Snackbar mSnackbar;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        if (User.getInstance().isUploadActive()) {
+            Intent intent = new Intent(getApplicationContext(), UploadingActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_sync);
 
         // Read the upload information:
@@ -58,42 +70,108 @@ public class SyncActivity extends BaseNavigationActivity implements
         mListView = (ExpandableListView) findViewById(R.id.sync_list_view);
         mContext = this;
 
+        View footer = new View(this);
+        // TODO: set device independent units (DP):
+
+        int footerHeight = (int) getResources().getDimension(R.dimen.sync_footer_height);
+        footer.setMinimumHeight(footerHeight);
+
+        mListView.addFooterView(footer);
+
         mAdapter = new SyncAdapter(this, SyncInfo.getInstance().getSyncList());
         mListView.setAdapter(mAdapter);
 
-        Button uploadButton = (Button) findViewById(R.id.start_upload_button);
+        mSelectionTextView = (TextView) findViewById(R.id.sync_selection_textview);
+
+        ImageButton uploadButton = (ImageButton) findViewById(R.id.start_upload_button);
+//        Button uploadButton = (ImageButton) findViewById(R.id.start_upload_button);
+
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
 //                new CreateCollectionRequest(mContext, "DocScan");
 
-                ArrayList<File> selectedDirs = new ArrayList<File>();
+                ArrayList<File> selectedDirs = mAdapter.getSelectedDirs();
 
-//                Iterate over the group items and find the checked items. I did not find a better
-//                way to get the selected items...
-                for (int i = 0; i < mListView.getChildCount(); i++) {
-                    LinearLayout layout = (LinearLayout) mListView.getChildAt(i);
-                    CheckBox checkBox = (CheckBox) layout.getChildAt(CHECK_BOX_IDX);
-                    // If the checkBox is null a group item is expanded and the child is visited:
-                    if (checkBox == null)
-                        continue;
-
-                    if (checkBox.isChecked())
-                        selectedDirs.add(mAdapter.getGroupFile(i));
-
-                }
-
-                if (selectedDirs.size() == 0)
+                if (selectedDirs.size() == 0) {
                     showNoDirSelectedAlert();
+                }
                 else {
                     mSelectedDirs = selectedDirs;
+                    showSnackbarInfo();
                     startUpload();
                 }
-//                    uploadDirs(selectedDirs);
+
             }
         });
     }
+
+    private void showSnackbarInfo() {
+
+        if (isOnline())
+            showUploadingSnackbar();
+        else
+            showNotOnlineSnackbar();
+
+    }
+
+    /**
+     * Shows a snackbar indicating that the device is offline.
+     */
+    private void showNotOnlineSnackbar() {
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_offline_prefix_text) + " " +
+                        getSelectionText() + " " +
+                        getResources().getString(R.string.sync_snackbar_offline_postfix_text);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_selection_layout),
+                snackbarText, Snackbar.LENGTH_LONG);
+        mSnackbar.show();
+
+    }
+
+    /**
+     * Shows a snackbar indicating that the upload process starts. We need this because we have
+     * little control of the time when the upload starts really.
+     */
+    private void showUploadingSnackbar() {
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_uploading_prefix_text) + " " +
+                getSelectionText() +
+                getResources().getString(R.string.sync_snackbar_check_notifications_text);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_selection_layout),
+                snackbarText, Snackbar.LENGTH_LONG);
+        mSnackbar.show();
+
+    }
+
+    private void closeSnackbar() {
+
+        if (mSnackbar != null) {
+            if (mSnackbar.isShown())
+                mSnackbar.dismiss();
+        }
+
+    }
+
+    private boolean isOnline() {
+
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+
+        return isConnected;
+    }
+
 
     /**
      * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
@@ -101,7 +179,11 @@ public class SyncActivity extends BaseNavigationActivity implements
      */
     private void startUpload() {
 
-        new CollectionsRequest(this);
+        SyncInfo.getInstance().setUploadDirs(mSelectedDirs);
+        SyncInfo.saveToDisk(this);
+
+        SyncInfo.startSyncJob(this);
+//        new CollectionsRequest(this);
 
     }
 
@@ -253,5 +335,34 @@ public class SyncActivity extends BaseNavigationActivity implements
         if (collName.compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0)
             new CollectionsRequest(this);
 
+    }
+
+    @Override
+    public void onSelectionChange() {
+
+        if (mSelectionTextView != null) {
+            String text = getSelectionText();
+            if (text != null)
+                mSelectionTextView.setText(text);
+        }
+    }
+
+    private String getSelectionText() {
+
+        String selectionText = null;
+
+        if (mAdapter != null) {
+
+            int selCnt = mAdapter.getSelectedDirs().size();
+            String postFix;
+            if (selCnt == 1)
+                postFix = getResources().getString(R.string.sync_selection_single_document_text);
+            else
+                postFix = getResources().getString(R.string.sync_selection_many_documents_text);
+            selectionText = selCnt + " " + postFix;
+
+        }
+
+        return selectionText;
     }
 }

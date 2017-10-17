@@ -5,7 +5,7 @@
     <!-- Used in the navigation drawer: -->
     <string name="about_item_text">About</string>
     <string name="share_log_item_text">Share log</string>
-    <string name="sync_item_text">Upload documents</string>
+    <string name="sync_item_text">Upload</string>
     <string name="camera_item_text">Camera</string>
     <string name="login_item_text">Login</string>
     <string name="header_text">DocScan</string>
@@ -176,6 +176,17 @@
     <string name="sync_no_dir_selected_title">No directory selected</string>
     <string name="sync_no_dir_selected_message">Please select at least one folder.</string>
     <string name="sync_start_upload_button_text">Upload selected documents</string>
+    <string name="sync_selection_initial_text">Nothing selected</string>
+    <string name="sync_selection_many_documents_text">documents</string>
+    <string name="sync_selection_single_document_text">document</string>
+    <string name="sync_snackbar_uploading_prefix_text">Started upload of\</string>
+    <string name="sync_snackbar_check_notifications_text">.\nPlease check notifications for further details.</string>
+    <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>
+    <string name="sync_snackbar_offline_postfix_text">will be uploaded, once the device is online again.</string>
+
+    <!-- UploadingActivity -->
+    <string name="uploading_title">Uploading</string>
+    <string name="uploading_text">Uploading</string>
 
     <!-- SeriesGeneralActivity -->
     <string name="series_general_heading_text">Current series is:</string>
@@ -183,6 +194,7 @@
     <string name="series_general_start_text">Start new series</string>
     <string name="series_general_select_text">Select existing series</string>
     <string name="series_general_title">Series</string>
+
 
 
 </resources>

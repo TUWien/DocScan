@@ -17,6 +17,7 @@ public class User {
     private String mDropboxToken;
     private String mDocumentName = null;
     private int mTranskribusUploadCollId;
+    private boolean mIsUploadActive;
 
     /**
      * Returns a singleton.
@@ -36,6 +37,7 @@ public class User {
         mIsLoggedin = false;
         mIsAutoLogInDone = false;
         mTranskribusUploadCollIdSet = false;
+        mIsUploadActive = false;
 
     }
 
@@ -73,6 +75,7 @@ public class User {
 
     public void setLoggedIn(boolean loggedIn) {
         mIsLoggedin = loggedIn;
+        mIsAutoLogInDone = loggedIn;
     }
 
     public void setSessionID(String sessionID) {
@@ -113,4 +116,12 @@ public class User {
     }
 
     public int getTranskribusUploadCollId() { return mTranskribusUploadCollId; }
+
+//    TODO: find another place for this:
+
+    public boolean isUploadActive() { return mIsUploadActive; }
+
+    public void setUploadActive(boolean isUploadActive) { mIsUploadActive = isUploadActive; }
+
+
 }
