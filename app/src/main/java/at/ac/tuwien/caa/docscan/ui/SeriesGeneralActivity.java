@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.ui;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.InputFilter;
@@ -10,6 +11,8 @@ import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -38,6 +41,44 @@ public class SeriesGeneralActivity extends BaseNoNavigationActivity {
 
         showSeriesTitle();
 
+        initStartButton();
+
+        initSelectButton();
+
+        initKeepButton();
+
+        initHideDialogCheckBox();
+
+
+
+    }
+
+    private void initHideDialogCheckBox() {
+        CheckBox hideDialogCheckBox = (CheckBox) findViewById(R.id.series_general_hide_dialog_checkbox);
+
+        // Load the setting:
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        boolean hideDialogDefault = getResources().getBoolean(R.bool.hide_series_dialog_after_start_default);
+        boolean hideDialog = sharedPref.getBoolean(getString(R.string.hide_series_dialog_after_start_key), hideDialogDefault);
+        hideDialogCheckBox.setChecked(hideDialog);
+
+        hideDialogCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+
+                editor.putBoolean(getString(R.string.hide_series_dialog_after_start_key), isChecked);
+
+                editor.commit();
+
+
+            }
+        });
+    }
+
+    private void initStartButton() {
         Button startButton = (Button) findViewById(R.id.series_general_start_button);
 
         startButton.setOnClickListener(new View.OnClickListener() {
@@ -84,7 +125,9 @@ public class SeriesGeneralActivity extends BaseNoNavigationActivity {
 
             }
         });
+    }
 
+    private void initSelectButton() {
         Button selectButton = (Button) findViewById(R.id.series_general_select_button);
         selectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,7 +136,16 @@ public class SeriesGeneralActivity extends BaseNoNavigationActivity {
                 startActivity(intent);
             }
         });
+    }
 
+    private void initKeepButton() {
+        Button keepButton = (Button) findViewById(R.id.series_general_keep_series_button);
+        keepButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish(); // close the activity
+            }
+        });
     }
 
     private void showSeriesTitle() {

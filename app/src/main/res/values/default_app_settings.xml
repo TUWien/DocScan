@@ -7,4 +7,7 @@
     <bool name="series_mode_paused_default">true</bool>
     <string name="series_mode_paused_key">SERIES_MODE_PAUSED_KEY</string>
 
+    <bool name="hide_series_dialog_after_start_default">false</bool>
+    <string name="hide_series_dialog_after_start_key">SHOW_SERIES_MODE_KEY</string>
+
 </resources>

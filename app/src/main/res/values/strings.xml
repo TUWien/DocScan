@@ -190,9 +190,11 @@
 
     <!-- SeriesGeneralActivity -->
     <string name="series_general_heading_text">Current series is:</string>
+    <string name="series_general_keep_series_text">Use current series</string>
     <string name="series_general_other_series_text">Use other series:</string>
     <string name="series_general_start_text">Start new series</string>
     <string name="series_general_select_text">Select existing series</string>
+    <string name="series_general_hide_dialog_text">Do not show this dialog after starting the series mode.</string>
     <string name="series_general_title">Series</string>
 
 
