@@ -347,9 +347,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void loadPreferences() {
 
-//        Debug view:
-
-
         // Concerning series mode:
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
         boolean seriesModeDefault = getResources().getBoolean(R.bool.series_mode_default);
@@ -395,7 +392,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         return true;
     }
-
 
 
     @Override

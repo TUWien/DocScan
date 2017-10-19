@@ -13,6 +13,7 @@ public class Settings {
     private static Settings mSettings = null;
 
     private boolean mUseFastPageSegmentation;
+    private static final String SETTINGS_FILE_NAME = "settings";
 
     private Settings() {
 
@@ -47,7 +48,7 @@ public class Settings {
 
     public boolean loadKey(Activity activity, SettingEnum setting) {
 
-        SharedPreferences sharedPref = activity.getSharedPreferences("settings", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = getSharedPrefs(activity);
         boolean value = sharedPref.getBoolean(setting.mKey, setting.mBooleanValue);
         return value;
 
@@ -55,16 +56,19 @@ public class Settings {
 
     public void saveKey(Activity activity, SettingEnum setting, boolean value) {
 
-//        SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences sharedPref = activity.getSharedPreferences("settings", Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = getSharedPrefs(activity);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean(setting.mKey, value);
         editor.commit();
 
     }
 
+    private SharedPreferences getSharedPrefs(Activity activity) {
 
-//    private void saveBoolean(String key, )
+        return activity.getSharedPreferences(SETTINGS_FILE_NAME, Context.MODE_PRIVATE);
+
+    }
+
 
     public boolean getUseFastPageSegmentation() {
         return mUseFastPageSegmentation;
