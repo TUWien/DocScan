@@ -11,9 +11,13 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 
 /**
@@ -38,6 +42,8 @@ public class SyncAdapter extends BaseDocumentAdapter {
         // Stores the checkbox states
         mSelections = new SparseBooleanArray();
 
+        fillLists();
+
     }
 
     public ArrayList<File> getSelectedDirs() {
@@ -52,8 +58,87 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
     }
 
+    /**
+     * Fills the list with directories that contain at least one image.
+     */
+    @Override
+    protected void fillLists() {
+
+        File mediaStorageDir = Helper.getMediaStorageDir(mContext.getResources().getString(R.string.app_name));
+
+        if (mediaStorageDir == null)
+            return;
+
+        FileFilter directoryFilter = new FileFilter() {
+            public boolean accept(File file) {
+                return file.isDirectory();
+            }
+        };
+
+        File[] dirs = mediaStorageDir.listFiles(directoryFilter);
+        mDirs = new ArrayList<>(Arrays.asList(dirs));
+
+        // Sort it based on the upload status:
+        java.util.Collections.sort(mDirs, new FileComparator());
+
+        mFiles = new ArrayList<>(mDirs.size());
+
+        ArrayList<Integer> rmIdx = new ArrayList<>();
+
+        int idx = 0;
+        for (File dir : mDirs) {
+
+            if (getFiles(dir).length == 0)
+                rmIdx.add(idx);
+
+            else
+                mFiles.add(getFiles(dir));
+
+            idx++;
+        }
+
+        // Remove empty directories:
+        for (int i = rmIdx.size() - 1; i >= 0; i--)
+            mDirs.remove(rmIdx.get(i).intValue());
 
 
+
+    }
+
+    class FileComparator implements Comparator<File>
+    {
+        @Override public int compare(File file1, File file2)
+        {
+            int value;
+            if (isDirUploaded(file1) && !isDirUploaded(file2))
+                value = 1;
+            else if (!isDirUploaded(file1) && isDirUploaded(file2))
+                value = -1;
+            else {
+                value = file1.getName().compareToIgnoreCase(file2.getName());
+            }
+
+            return value;
+
+        }
+    }
+
+    private boolean isDirUploaded(File dir) {
+
+        File[] files = getFiles(dir);
+
+        if (files.length == 0)
+            return false;
+
+        // Check if every file contained in the folder is already uploaded:
+        for (File file : files) {
+            if (!isFileUploaded(file))
+                return false;
+        }
+
+        return true;
+
+    }
 
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {

@@ -19,8 +19,8 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 
 
     protected Context mContext;
-    private File[] mDirs;
-    private ArrayList<File[]> mFiles;
+    protected ArrayList<File> mDirs;
+    protected ArrayList<File[]> mFiles;
 
 
     public BaseDocumentAdapter(Context context) {
@@ -28,18 +28,18 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
         super();
         mContext = context;
 
-        fillLists();
+//        fillLists();
 
     }
 
     public File getGroupFile(int position) {
 
-        return mDirs[position];
+        return mDirs.get(position);
+//        return mDirs[position];
 
     }
 
-
-    private void fillLists() {
+    protected void fillLists() {
 
         File mediaStorageDir = Helper.getMediaStorageDir(mContext.getResources().getString(R.string.app_name));
 
@@ -52,18 +52,44 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
             }
         };
 
-        mDirs = mediaStorageDir.listFiles(directoryFilter);
-        Arrays.sort(mDirs);
-        mFiles = new ArrayList<>(mDirs.length);
-        int i = 0;
+        File[] dirs = mediaStorageDir.listFiles(directoryFilter);
+        mDirs = new ArrayList<>(Arrays.asList(dirs));
+
+//        TODO: sort!
+//        Arrays.sort(mDirs);
+        mFiles = new ArrayList<>(mDirs.size());
         for (File dir : mDirs) {
             mFiles.add(getFiles(dir));
-            i++;
         }
 
-
-
     }
+
+
+//    private void fillLists() {
+//
+//        File mediaStorageDir = Helper.getMediaStorageDir(mContext.getResources().getString(R.string.app_name));
+//
+//        if (mediaStorageDir == null)
+//            return;
+//
+//        FileFilter directoryFilter = new FileFilter() {
+//            public boolean accept(File file) {
+//                return file.isDirectory();
+//            }
+//        };
+//
+//        mDirs = mediaStorageDir.listFiles(directoryFilter);
+//        Arrays.sort(mDirs);
+//        mFiles = new ArrayList<>(mDirs.length);
+//        int i = 0;
+//        for (File dir : mDirs) {
+//            mFiles.add(getFiles(dir));
+//            i++;
+//        }
+//
+//
+//
+//    }
 
     protected File[] getFiles(File dir) {
 
@@ -82,7 +108,7 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getGroupCount() {
-        return mDirs.length;
+        return mDirs.size();
     }
 
     @Override
@@ -92,7 +118,7 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 
     @Override
     public Object getGroup(int groupPosition) {
-        return mDirs[groupPosition];
+        return mDirs.get(groupPosition);
     }
 
     @Override

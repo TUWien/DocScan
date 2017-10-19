@@ -27,7 +27,7 @@ public class SeriesAdapter extends BaseDocumentAdapter {
         super(context);
 //        mContext = context;
 //
-//        fillLists();
+        fillLists();
 
     }
 //
