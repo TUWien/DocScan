@@ -47,10 +47,11 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
             public void onClick(View v) {
                 if (mSelectedDir != null) {
                     User.getInstance().setDocumentName(mSelectedDir.getName());
-
+                    finish();
                     Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
 //                    intent.putExtra(DOCUMENT_DIR_CHANGED, true);
                     startActivity(intent);
+
                 }
                 else
                     showNoFileSelectedAlert();
