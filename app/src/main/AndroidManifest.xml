@@ -73,7 +73,7 @@
 
         <activity
             android:name=".ui.SeriesGeneralActivity"
-            android:exported="false"
+            android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
 
