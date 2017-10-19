@@ -70,13 +70,7 @@ public class SyncActivity extends BaseNavigationActivity implements
         mListView = (ExpandableListView) findViewById(R.id.sync_list_view);
         mContext = this;
 
-        View footer = new View(this);
-        // TODO: set device independent units (DP):
-
-        int footerHeight = (int) getResources().getDimension(R.dimen.sync_footer_height);
-        footer.setMinimumHeight(footerHeight);
-
-        mListView.addFooterView(footer);
+        addFooter();
 
         mAdapter = new SyncAdapter(this, SyncInfo.getInstance().getSyncList());
         mListView.setAdapter(mAdapter);
@@ -105,6 +99,17 @@ public class SyncActivity extends BaseNavigationActivity implements
 
             }
         });
+    }
+
+    /**
+     * Adds some space to the end of the list, so that the overlapping RelativeLayout is not
+     * overlapping in case the user scrolls to the end of the list.
+     */
+    private void addFooter() {
+        View footer = new View(this);
+        int footerHeight = (int) getResources().getDimension(R.dimen.sync_footer_height);
+        footer.setMinimumHeight(footerHeight);
+        mListView.addFooterView(footer);
     }
 
     private void showSnackbarInfo() {

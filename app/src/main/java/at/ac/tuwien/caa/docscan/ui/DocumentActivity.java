@@ -39,6 +39,8 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
         mListView = (ExpandableListView) findViewById(R.id.document_list_view);
         mContext = this;
 
+        addFooter();
+
         Button selectSeries = (Button) findViewById(R.id.document_select_button);
         selectSeries.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,6 +127,17 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
                 return false;
             }
         });
+    }
+
+    /**
+     * Adds some space to the end of the list, so that the overlapping RelativeLayout is not
+     * overlapping in case the user scrolls to the end of the list.
+     */
+    private void addFooter() {
+        View footer = new View(this);
+        int footerHeight = (int) getResources().getDimension(R.dimen.sync_footer_height);
+        footer.setMinimumHeight(footerHeight);
+        mListView.addFooterView(footer);
     }
 
     private void onCreateDirResult(String result) {

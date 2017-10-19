@@ -21,11 +21,9 @@
             <include layout="@layout/toolbar_autohide" />
         </android.support.design.widget.AppBarLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-
             >
 
 
@@ -33,7 +31,7 @@
                 android:id="@+id/document_list_view"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:choiceMode="singleChoice"
                 android:fadeScrollbars="false"
@@ -42,14 +40,15 @@
 
             <Button
                 android:id="@+id/document_select_button"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom|center_horizontal"
                 android:backgroundTint="@color/colorAccent"
                 android:textColor="@color/white"
                 android:text="@string/document_select_button_text"/>
 
-        </LinearLayout>
+        </RelativeLayout>
 
 
     </LinearLayout>

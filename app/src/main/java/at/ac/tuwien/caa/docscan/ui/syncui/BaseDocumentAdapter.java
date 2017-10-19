@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -56,12 +57,22 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
         mDirs = new ArrayList<>(Arrays.asList(dirs));
 
 //        TODO: sort!
-//        Arrays.sort(mDirs);
+        java.util.Collections.sort(mDirs, new FileComparator());
         mFiles = new ArrayList<>(mDirs.size());
         for (File dir : mDirs) {
             mFiles.add(getFiles(dir));
         }
 
+    }
+
+    class FileComparator implements Comparator<File>
+    {
+        @Override public int compare(File file1, File file2)
+        {
+
+            return file1.getName().compareToIgnoreCase(file2.getName());
+
+        }
     }
 
 
