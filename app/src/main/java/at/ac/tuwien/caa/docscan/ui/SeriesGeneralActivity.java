@@ -1,9 +1,9 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.InputFilter;
@@ -20,6 +20,7 @@ import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 
 /**
@@ -49,30 +50,22 @@ public class SeriesGeneralActivity extends BaseNoNavigationActivity {
 
         initHideDialogCheckBox();
 
-
-
     }
 
     private void initHideDialogCheckBox() {
         CheckBox hideDialogCheckBox = (CheckBox) findViewById(R.id.series_general_hide_dialog_checkbox);
 
-        // Load the setting:
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        boolean hideDialogDefault = getResources().getBoolean(R.bool.hide_series_dialog_after_start_default);
-        boolean hideDialog = sharedPref.getBoolean(getString(R.string.hide_series_dialog_after_start_key), hideDialogDefault);
+        // Load the setting and set the state of the checkbox:
+        boolean hideDialog = Settings.getInstance().loadKey(this, Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY);
         hideDialogCheckBox.setChecked(hideDialog);
+
+        final Activity a = this;
 
         hideDialogCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPref.edit();
-
-                editor.putBoolean(getString(R.string.hide_series_dialog_after_start_key), isChecked);
-
-                editor.commit();
-
+                Settings.getInstance().saveKey(a, Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY, isChecked);
 
             }
         });
