@@ -105,6 +105,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 
@@ -112,6 +113,7 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
+import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -155,7 +157,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
             mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
-    private boolean mIsSeriesModePaused = false;
+    private boolean mHideSeriesDialog;
+    private boolean mIsSeriesModePaused = true;
     private long mStartTime;
     // We hold here a reference to the popupmenu and the list, because we are not sure what is first initialized:
     private List<String> mFlashModes;
@@ -280,6 +283,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Here we must update the button text after a activity resume (others are just initialized
 //        in onCreate.
         initDocumentCallback();
+
+        mHideSeriesDialog = Settings.getInstance().loadKey(this, HIDE_SERIES_DIALOG_KEY);
 
 //        MovementDetector.getInstance(this.getApplicationContext()).start();
 
@@ -730,7 +735,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         initGalleryCallback();
         loadThumbnail();
         initShootModeSpinner();
-        updateMode();
+//        updateMode();
 
     }
 
@@ -768,12 +773,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mCameraPreview.setAwaitFrameChanges(mIsSeriesMode);
 
-        // Show a toast to the user, but just if he selected the spinner manually:
-        if (!mItemSelectedAutomatically)
+        // Show a toast and update the mode, but just if he selected the spinner manually:
+        if (!mItemSelectedAutomatically) {
             showShootModeToast();
+            updateMode();
+        }
+
         mItemSelectedAutomatically = false;
 
-        updateMode();
+
 
     }
 
@@ -835,6 +843,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // TODO: put this into a method used for restoring generic states:
         if (mIsSeriesMode)
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        // Show the SeriesGeneralActivity just if the user started the series mode and the hide
+        // dialog setting is not true:
+        if (mIsSeriesMode && !mIsSeriesModePaused && !mItemSelectedAutomatically && !mHideSeriesDialog) {
+            startDocumentActivity();
+        }
+
 
     }
 
