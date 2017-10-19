@@ -458,7 +458,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mDocumentButton = (Button) findViewById(R.id.document_button);
         String documentName = User.getInstance().getDocumentName();
         if (documentName != null)
-            mDocumentButton.setText("Series:\n" + documentName);
+            mDocumentButton.setText("Series: " + documentName);
         mDocumentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

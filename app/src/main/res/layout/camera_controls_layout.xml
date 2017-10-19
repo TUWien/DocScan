@@ -31,19 +31,21 @@
             />
 
         <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/shoot_mode_spinner_size"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/activity_vertical_margin"
             android:layout_marginRight="@dimen/activity_vertical_margin"
-            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@id/photo_button"
             android:layout_centerVertical="true"
             >
 
             <ImageButton
                 android:id="@+id/gallery_button"
                 android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="4dp"
                 android:layout_width="@dimen/gallery_button_size"
                 android:layout_height="@dimen/gallery_button_size"
                 android:scaleType="centerCrop"
@@ -54,27 +56,30 @@
             <Button
                 android:id="@+id/document_button"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableRight="@drawable/ic_edit_black_24dp"
-                android:minHeight="0dp"
-                android:minWidth="0dp"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_alignParentBottom="true"
+                android:layout_height="80dp"
+                android:layout_below="@id/gallery_button"
+                android:layout_toLeftOf="@id/gallery_button"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
                 android:background="@color/button_bg_color"
                 android:textColor="@color/white"
-                android:text="Series: Untitledasdffasdf"/>
+                android:text="Series: Default"/>
 
             <ProgressBar
                 android:id="@+id/saving_progressbar"
-                android:layout_centerHorizontal="true"
-                android:layout_alignParentRight="true"
-                android:layout_width="@dimen/gallery_button_size"
-                android:layout_height="@dimen/gallery_button_size"
-                android:indeterminate="true"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:layout_alignStart="@id/gallery_button"
+                android:layout_alignTop="@id/gallery_button"
+                android:layout_alignBottom="@id/gallery_button"
+                android:layout_alignEnd="@id/gallery_button"
+                android:layout_alignRight="@id/gallery_button"
+                android:layout_alignLeft="@id/gallery_button"
                 android:visibility="invisible"
+                android:indeterminate="true"
+                style="?android:attr/progressBarStyle"
+
                 />
         </RelativeLayout>
 
