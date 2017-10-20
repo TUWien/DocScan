@@ -102,19 +102,6 @@ public class User {
 
     public String getDocumentName() { return mDocumentName; }
 
-    public boolean isTranskribusUploadCollIdSet() {
-
-        return mTranskribusUploadCollIdSet;
-
-    }
-
-    public void setTranskribusUploadCollId(int id) {
-
-        mTranskribusUploadCollId = id;
-        mTranskribusUploadCollIdSet = true;
-
-    }
-
     public int getTranskribusUploadCollId() { return mTranskribusUploadCollId; }
 
 //    TODO: find another place for this:

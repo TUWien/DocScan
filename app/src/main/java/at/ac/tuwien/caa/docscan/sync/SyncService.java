@@ -12,7 +12,6 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
@@ -30,6 +29,7 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_PROGRESS_ID;
 
 /**
@@ -42,8 +42,7 @@ public class SyncService extends JobService implements
         CollectionsRequest.CollectionsCallback,
         CreateCollectionRequest.CreateCollectionCallback,
         StartUploadRequest.StartUploadCallback,
-        TranskribusUtils.TranskribusUtilsCallback
-         {
+        TranskribusUtils.TranskribusUtilsCallback {
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
@@ -54,6 +53,8 @@ public class SyncService extends JobService implements
 
     public static final String SERVICE_ALONE_KEY = "SERVICE_ALONE_KEY";
     private static final String TAG = "SyncService";
+    private static final String PROGRESS_INTENT_NAME = "PROGRESS_INTENT";
+
 
     private int mFilesNum;
     private int mFilesUploaded;
@@ -61,7 +62,6 @@ public class SyncService extends JobService implements
     @Override
     public boolean onStartJob(JobParameters job) {
 
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         Log.d("SyncService", "================= service starting =================");
 
 
@@ -69,8 +69,7 @@ public class SyncService extends JobService implements
         if (SyncInfo.isInstanceNull()) {
             SyncInfo.readFromDisk(getApplicationContext());
             Log.d("SyncService", "loaded SyncInfo from disk");
-        }
-        else
+        } else
             Log.d("SyncService", "SyncInfo is in RAM");
 
 
@@ -79,8 +78,7 @@ public class SyncService extends JobService implements
 //            Log in if necessary:
             Log.d(TAG, "login...");
             SyncUtils.login(this, this);
-        }
-        else {
+        } else {
             Log.d(TAG, "user is logged in");
 //            Start the upload:
 //            Message msg = mServiceHandler.obtainMessage();
@@ -91,7 +89,6 @@ public class SyncService extends JobService implements
             TranskribusUtils.getInstance().startUpload(this, SyncInfo.getInstance().getUploadDirs());
 
         }
-
 
 
         return false; // Answers the question: "Is there still work going on?"
@@ -133,24 +130,24 @@ public class SyncService extends JobService implements
 
     }
 
-     @Override
-     public void onUploadStart(int uploadId, String title) {
+    @Override
+    public void onUploadStart(int uploadId, String title) {
 
         TranskribusUtils.getInstance().onUploadStart(uploadId, title);
 
-     }
+    }
 
-     @Override
-     public void onFilesPrepared() {
+    @Override
+    public void onFilesPrepared() {
 
 //         Start the upload:
         Message msg = mServiceHandler.obtainMessage();
         mServiceHandler.sendMessage(msg);
 
-     }
+    }
 
 
-             // Handler that receives messages from the thread
+    // Handler that receives messages from the thread
     private final class ServiceHandler extends Handler implements SyncInfo.Callback {
 
         public ServiceHandler(Looper looper) {
@@ -164,7 +161,7 @@ public class SyncService extends JobService implements
 
             Log.d(TAG, "handlemessage");
 
-                mFilesUploaded = 0;
+            mFilesUploaded = 0;
 
 //            // Show all files:
             printSyncInfo();
@@ -183,13 +180,22 @@ public class SyncService extends JobService implements
 
         }
 
-// Send an Intent with an action named "custom-event-name". The Intent sent should
-// be received by the ReceiverActivity.
+        // Send an Intent with an action named "PROGRESS_INTENT_NAME".
         private void sendProgressIntent(int progress) {
+
             Log.d("sender", "Broadcasting message");
-            Intent intent = new Intent("custom-event-name");
-            // You can also include some extra data.
+            Intent intent = new Intent("PROGRESS_INTENT_NAME");
             intent.putExtra(UPLOAD_PROGRESS_ID, progress);
+
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        }
+
+        // Send an Intent with an action named "PROGRESS_INTENT_NAME".
+        private void sendFinishedIntent() {
+
+            Log.d("sender", "Broadcasting message");
+            Intent intent = new Intent("PROGRESS_INTENT_NAME");
+            intent.putExtra(UPLOAD_FINISHED_ID, true);
 
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
@@ -265,8 +271,11 @@ public class SyncService extends JobService implements
 //                Notify that the upload is finished:
             mBuilder.setContentText(getString(R.string.sync_notification_uploading_finished_text))
                     // Removes the progress bar
-                    .setProgress(0,0,false);
+                    .setProgress(0, 0, false);
             mNotificationManager.notify(mNotifyID, mBuilder.build());
+
+            // Notify the SyncActivity:
+            sendFinishedIntent();
 
             User.getInstance().setUploadActive(false);
 
@@ -293,10 +302,9 @@ public class SyncService extends JobService implements
             for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList())
                 Log.d(TAG, "FileSync: " + fileSync);
 
-            }
+        }
 
     }
-
 
 
     @Override
@@ -319,7 +327,6 @@ public class SyncService extends JobService implements
 
     @Override
     public void onDestroy() {
-        Toast.makeText(this, "service done", Toast.LENGTH_LONG).show();
     }
 
     private void showNotification() {
@@ -329,9 +336,9 @@ public class SyncService extends JobService implements
         String text = getConnectionText();
 
         mBuilder = new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.ic_statusbar_icon)
-                    .setContentTitle(title)
-                    .setContentText(text);
+                .setSmallIcon(R.drawable.ic_statusbar_icon)
+                .setContentTitle(title)
+                .setContentText(text);
 // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(this, UploadingActivity.class);
 

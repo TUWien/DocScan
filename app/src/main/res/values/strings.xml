@@ -25,6 +25,7 @@
     <string name="precise_page_seg_text">Use precise page segmentation</string>
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
+    <string name="camera_series_button_prefix">Series:</string>
 
     <!-- Just used for debugging: -->
 
@@ -180,7 +181,8 @@
     <string name="sync_selection_many_documents_text">documents</string>
     <string name="sync_selection_single_document_text">document</string>
     <string name="sync_snackbar_uploading_prefix_text">Started upload of\</string>
-    <string name="sync_snackbar_check_notifications_text">.\nPlease check notifications for further details.</string>
+    <string name="sync_snackbar_check_notifications_text">.\nPlease wait until the upload is finished.</string>
+    <string name="sync_snackbar_finished_upload_text">Finished upload of</string>
     <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>
     <string name="sync_snackbar_offline_postfix_text">will be uploaded, once the device is online again.</string>
 

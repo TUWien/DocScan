@@ -22,7 +22,7 @@
         </android.support.design.widget.AppBarLayout>
 
         <android.support.design.widget.CoordinatorLayout
-            android:id="@+id/sync_selection_layout"
+            android:id="@+id/sync_coordinatorlayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -40,6 +40,7 @@
                 />
 
             <RelativeLayout
+                android:id="@+id/sync_selection_layout"
                 android:layout_gravity="bottom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -68,6 +69,18 @@
                     android:padding="@dimen/activity_vertical_margin"/>
 
             </RelativeLayout>
+
+            <ProgressBar
+                android:id="@+id/sync_progressbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/activity_vertical_margin"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:progressDrawable="@drawable/progress_background"
+                android:progress="0"
+                android:layout_gravity="center"
+                android:visibility="invisible"
+                />
 
         </android.support.design.widget.CoordinatorLayout>
 
