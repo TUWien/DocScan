@@ -58,6 +58,7 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
     @Override
     public void onLogin(User user) {
 
+        // Start the CameraActivity and remove everything from the back stack:
         Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
