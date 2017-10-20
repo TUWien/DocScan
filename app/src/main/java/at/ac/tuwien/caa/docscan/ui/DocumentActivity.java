@@ -51,6 +51,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
                     User.getInstance().setDocumentName(mSelectedDir.getName());
                     UserHandler.saveSeriesName(c);
                     finish();
+                    // Start the CameraActivity and remove everything from the back stack:
                     Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);

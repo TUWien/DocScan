@@ -744,6 +744,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         initGalleryCallback();
         loadThumbnail();
         initShootModeSpinner();
+        updatePhotoButtonIcon();
 //        updateMode();
 
     }
@@ -818,6 +819,38 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             shootModeSpinner.setSelection(SERIES_POS);
         else
             shootModeSpinner.setSelection(SINGLE_POS);
+
+    }
+
+    private void updatePhotoButtonIcon() {
+
+        ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
+        if (photoButton == null)
+            return;
+
+        int drawable;
+
+        if (mIsSeriesMode) {
+            if (mIsSeriesModePaused) {
+                drawable = R.drawable.ic_play_arrow_24dp;
+//                displaySeriesModePaused(); // shows a text in the text view and removes any CVResults shown.
+            }
+            else {
+                drawable = R.drawable.ic_pause_24dp;
+//                setTextViewText(R.string.instruction_series_started);
+            }
+        }
+        else {
+//            showToastText(R.string.toast_single);
+            drawable = R.drawable.ic_photo_camera;
+//            mIsSeriesModePaused = false;
+        }
+
+//        if (mCameraPreview != null)
+//            mCameraPreview.pauseImageProcessing(mIsSeriesModePaused);
+
+        photoButton.setImageResource(drawable);
+
 
     }
 
