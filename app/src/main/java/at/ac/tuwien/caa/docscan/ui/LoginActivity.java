@@ -77,6 +77,7 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
         UserHandler.saveTranskribusCredentials(this);
 
         Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 

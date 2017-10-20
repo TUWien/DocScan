@@ -107,6 +107,7 @@ import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
@@ -282,9 +283,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // Here we must update the button text after a activity resume (others are just initialized
 //        in onCreate.
-        initDocumentCallback();
+        initDocumentButton();
 
         mHideSeriesDialog = Settings.getInstance().loadKey(this, HIDE_SERIES_DIALOG_KEY);
+
 
 //        MovementDetector.getInstance(this.getApplicationContext()).start();
 
@@ -310,6 +312,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private void initActivity() {
 
         setContentView(R.layout.activity_camera);
+
+        loadPreferences();
 
         mCVResult = new CVResult(this);
 
@@ -341,7 +345,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         requestLocation();
 
-        loadPreferences();
+
 
     }
 
@@ -353,6 +357,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mIsSeriesMode = sharedPref.getBoolean(getString(R.string.series_mode_key), seriesModeDefault);
         boolean seriesModePausedDefault = getResources().getBoolean(R.bool.series_mode_paused_default);
         mIsSeriesModePaused = sharedPref.getBoolean(getString(R.string.series_mode_paused_key), seriesModePausedDefault);
+
+        UserHandler.loadSeriesName(this);
 
         showShootModeToast();
         updateMode();
@@ -453,18 +459,20 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     /**
      * Connects the document button with its OnClickListener.
      */
-    private void initDocumentCallback() {
+    private void initDocumentButton() {
 
         mDocumentButton = (Button) findViewById(R.id.document_button);
         String documentName = User.getInstance().getDocumentName();
-        if (documentName != null)
-            mDocumentButton.setText("Series: " + documentName);
-        mDocumentButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startDocumentActivity();
-            }
-        });
+
+        if (documentName != null && mDocumentButton != null) {
+            mDocumentButton.setText(getString(R.string.camera_series_button_prefix) + " " + documentName);
+            mDocumentButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startDocumentActivity();
+                }
+            });
+        }
 
     }
 
@@ -696,7 +704,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     /**
      * Setup a listener for photo shoot button.
      */
-    private void setupPhotoShootButtonCallback() {
+    private void initPhotoButton() {
 
         ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
         if (photoButton == null)
@@ -711,6 +719,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                             mIsSeriesModePaused = !mIsSeriesModePaused;
                             showShootModeToast();
                             updateMode();
+
+                            // Show the SeriesGeneralActivity just if the user started the series mode and the hide
+                            // dialog setting is not true:
+                            if (mIsSeriesMode && !mIsSeriesModePaused &&  !mHideSeriesDialog)
+                                startDocumentActivity();
                         }
                         else if (mIsPictureSafe) {
                             // get an image from the camera
@@ -727,7 +740,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void initButtons() {
 
-        setupPhotoShootButtonCallback();
+        initPhotoButton();
         initGalleryCallback();
         loadThumbnail();
         initShootModeSpinner();
@@ -773,6 +786,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (!mItemSelectedAutomatically) {
             showShootModeToast();
             updateMode();
+
         }
 
         mItemSelectedAutomatically = false;
@@ -840,11 +854,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mIsSeriesMode)
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        // Show the SeriesGeneralActivity just if the user started the series mode and the hide
-        // dialog setting is not true:
-        if (mIsSeriesMode && !mIsSeriesModePaused && !mItemSelectedAutomatically && !mHideSeriesDialog) {
-            startDocumentActivity();
-        }
+//        // Show the SeriesGeneralActivity just if the user started the series mode and the hide
+//        // dialog setting is not true:
+//        if (mIsSeriesMode && !mIsSeriesModePaused && !mItemSelectedAutomatically && !mHideSeriesDialog) {
+//            startDocumentActivity();
+//        }
 
 
     }
@@ -1014,7 +1028,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // Initialize the newly created buttons:
         initButtons();
-        initDocumentCallback();
+        initDocumentButton();
 
 
     }
@@ -1606,6 +1620,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (mTextView != null)
                     mTextView.setText(msgText);
             }
         });

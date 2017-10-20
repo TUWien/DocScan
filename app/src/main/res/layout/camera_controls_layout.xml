@@ -57,6 +57,8 @@
                 android:id="@+id/document_button"
                 android:layout_width="wrap_content"
                 android:layout_height="80dp"
+                android:textAllCaps="false"
+                android:textSize="12sp"
                 android:layout_below="@id/gallery_button"
                 android:layout_toLeftOf="@id/gallery_button"
                 android:layout_alignParentTop="true"
