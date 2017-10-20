@@ -22,6 +22,7 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
 /**
  * Created by fabian on 05.10.2017.
@@ -185,6 +186,7 @@ public class SeriesGeneralActivity extends BaseNoNavigationActivity {
             showNoDirCreatedAlert();
         else {
             User.getInstance().setDocumentName(subDir.getName());
+            UserHandler.saveSeriesName(this);
             finish(); // close the activity
         }
 

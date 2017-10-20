@@ -20,6 +20,7 @@ import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 public class UploadingActivity extends BaseNoNavigationActivity {
 
     public static String UPLOAD_PROGRESS_ID = "UPLOAD_PROGRESS_ID";
+    public static String UPLOAD_FINISHED_ID = "UPLOAD_FINISHED_ID";
 
     private ProgressBar mProgressBar;
 
@@ -35,7 +36,7 @@ public class UploadingActivity extends BaseNoNavigationActivity {
         // We are registering an observer (mMessageReceiver) to receive Intents
         // with actions named "custom-event-name".
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter("custom-event-name"));
+                new IntentFilter("PROGRESS_INTENT_NAME"));
 
     }
 
@@ -47,7 +48,7 @@ public class UploadingActivity extends BaseNoNavigationActivity {
     }
 
     // Our handler for received Intents. This will be called whenever an Intent
-// with an action named "custom-event-name" is broadcasted.
+    // with an action named "custom-event-name" is broadcasted.
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

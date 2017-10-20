@@ -15,6 +15,7 @@ import java.io.File;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.syncui.SeriesAdapter;
 
 /**
@@ -41,12 +42,14 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
 
         addFooter();
 
+        final Context c = this;
         Button selectSeries = (Button) findViewById(R.id.document_select_button);
         selectSeries.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mSelectedDir != null) {
                     User.getInstance().setDocumentName(mSelectedDir.getName());
+                    UserHandler.saveSeriesName(c);
                     finish();
                     Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
 //                    intent.putExtra(DOCUMENT_DIR_CHANGED, true);

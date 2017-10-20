@@ -23,8 +23,12 @@ public class Helper {
         File mediaStorageDir = getMediaStorageDir(appName);
         File subDir = mediaStorageDir;
         if (mediaStorageDir != null)
-            if (User.getInstance().getDocumentName() != null)
+            if (User.getInstance().getDocumentName() != null) {
                 subDir = new File(mediaStorageDir, User.getInstance().getDocumentName());
+                // Check if the directory is existing:
+                if (!subDir.exists())
+                    subDir.mkdir();
+            }
 
         return subDir;
 

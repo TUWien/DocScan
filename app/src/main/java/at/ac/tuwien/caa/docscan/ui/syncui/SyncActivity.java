@@ -1,44 +1,39 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.rest.Collection;
-import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
-import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
-import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
-import at.ac.tuwien.caa.docscan.sync.TranskribusUtils;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 
-import static at.ac.tuwien.caa.docscan.sync.TranskribusUtils.TRANSKRIBUS_UPLOAD_COLLECTION_NAME;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_PROGRESS_ID;
 
 /**
  * Created by fabian on 22.09.2017.
  */
 
-public class SyncActivity extends BaseNavigationActivity implements
-        StartUploadRequest.StartUploadCallback, CollectionsRequest.CollectionsCallback,
-        CreateCollectionRequest.CreateCollectionCallback, SyncAdapter.SyncAdapterCallback {
+public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.SyncAdapterCallback {
 
     private ExpandableListView mListView;
     private Context mContext;
@@ -47,7 +42,9 @@ public class SyncActivity extends BaseNavigationActivity implements
     private int mTranskribusUploadCollId;
     private ArrayList<File> mSelectedDirs;
     private TextView mSelectionTextView;
+    private RelativeLayout mSelectionLayout;
     private Snackbar mSnackbar;
+    private ProgressBar mProgressBar;
 
 
     @Override
@@ -76,10 +73,22 @@ public class SyncActivity extends BaseNavigationActivity implements
         mListView.setAdapter(mAdapter);
 
         mSelectionTextView = (TextView) findViewById(R.id.sync_selection_textview);
+        mSelectionLayout = (RelativeLayout) findViewById(R.id.sync_selection_layout);
 
+        initUploadButton();
+
+        mProgressBar = (ProgressBar) findViewById(R.id.sync_progressbar);
+
+        // Register to receive messages.
+        // We are registering an observer (mMessageReceiver) to receive Intents
+        // with actions named "PROGRESS_INTENT_NAME".
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("PROGRESS_INTENT_NAME"));
+
+    }
+
+    private void initUploadButton() {
         ImageButton uploadButton = (ImageButton) findViewById(R.id.start_upload_button);
-//        Button uploadButton = (ImageButton) findViewById(R.id.start_upload_button);
-
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,7 +141,7 @@ public class SyncActivity extends BaseNavigationActivity implements
                         getResources().getString(R.string.sync_snackbar_offline_postfix_text);
 
         closeSnackbar();
-        mSnackbar = Snackbar.make(findViewById(R.id.sync_selection_layout),
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
                 snackbarText, Snackbar.LENGTH_LONG);
         mSnackbar.show();
 
@@ -150,9 +159,35 @@ public class SyncActivity extends BaseNavigationActivity implements
                 getResources().getString(R.string.sync_snackbar_check_notifications_text);
 
         closeSnackbar();
-        mSnackbar = Snackbar.make(findViewById(R.id.sync_selection_layout),
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_INDEFINITE);
+        mSnackbar.show();
+
+        if (mSelectionLayout != null)
+            mSelectionLayout.setVisibility(View.INVISIBLE);
+        if (mListView != null)
+            mListView.setVisibility(View.INVISIBLE);
+        if (mProgressBar != null) {
+            mProgressBar.setVisibility(View.VISIBLE);
+            mProgressBar.setProgress(0);
+        }
+    }
+
+    /**
+     * Shows a snackbar indicating that the upload process starts. We need this because we have
+     * little control of the time when the upload starts really.
+     */
+    private void showUploadFinishedSnackbar() {
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_finished_upload_text) + " " +
+                        getSelectionText() + ".";
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
                 snackbarText, Snackbar.LENGTH_LONG);
         mSnackbar.show();
+
 
     }
 
@@ -193,93 +228,6 @@ public class SyncActivity extends BaseNavigationActivity implements
     }
 
 
-
-    /**
-     * Receives the uploadId for a document/directory and starts the upload job. Note that multiple
-     * directories can be selected and we have to take assign each directory to its correct
-     * uploadId (this is done by comparing the title).
-     * @param uploadId
-     */
-    @Override
-    public void onUploadStart(int uploadId, String title) {
-
-        File selectedDir = getMatchingDir(title);
-
-        if (selectedDir != null) {
-            for (File file : TranskribusUtils.getFiles(selectedDir))
-                SyncInfo.getInstance().addTranskribusFile(mContext, file, uploadId);
-        }
-
-        mNumUploadJobs++;
-
-        // For each directory the upload request is finished and all files are added to the sync list.
-        // Now start the job:
-        if (mNumUploadJobs == mSelectedDirs.size())
-            SyncInfo.startSyncJob(this);
-
-//        TranskribusUtils.getInstance().setUploadId(uploadId);
-//        SyncInfo.startSyncJob(this);
-
-    }
-
-    /**
-     * Find the directory assigned to its title:
-     * @param title
-     * @return
-     */
-    @Nullable
-    private File getMatchingDir(String title) {
-        File selectedDir = null;
-
-        // Find the
-        for (File dir : mSelectedDirs) {
-            if (dir.getName().compareTo(title) == 0) {
-                selectedDir = dir;
-                break;
-            }
-        }
-        return selectedDir;
-    }
-
-    private void uploadDirs(ArrayList<File> dirs) {
-
-        mSelectedDirs = dirs;
-        mNumUploadJobs = 0;
-
-        for (File dir : mSelectedDirs) {
-
-            // Get the image files contained in the directory:
-            File[] imgFiles = TranskribusUtils.getFiles(dir);
-            if (imgFiles == null)
-                return;
-            else if (imgFiles.length == 0)
-                return;
-
-//            Create the JSON object for the directory:
-            JSONObject jsonObject = TranskribusUtils.getJSONObject(dir.getName(), imgFiles);
-//            Start the upload request:
-            if (jsonObject != null) {
-                new StartUploadRequest(this, jsonObject, mTranskribusUploadCollId);
-            }
-        }
-//
-//
-////        TODO: do this for multiple items:
-//        File dir = dirs.get(0);
-//
-//        File[] imgFiles = TranskribusUtils.getFiles(dir);
-//        if (imgFiles == null)
-//            return;
-//        else if (imgFiles.length == 0)
-//            return;
-//
-//        SyncInfo.getInstance().createSyncList(imgFiles);
-
-
-
-
-    }
-
     private void showNoDirSelectedAlert() {
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
@@ -305,42 +253,6 @@ public class SyncActivity extends BaseNavigationActivity implements
         return NavigationDrawer.NavigationItemEnum.SYNC;
     }
 
-
-    @Override
-    public void onCollections(List<Collection> collections) {
-
-        for (Collection collection : collections) {
-            if (collection.getName().compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
-                docScanCollectionFound(collection);
-                return;
-            }
-        }
-
-        createDocScanCollection();
-
-
-    }
-
-    private void createDocScanCollection() {
-
-        new CreateCollectionRequest(this, TRANSKRIBUS_UPLOAD_COLLECTION_NAME);
-
-    }
-
-    private void docScanCollectionFound(Collection collection) {
-
-//        User.getInstance().setTranskribusUploadCollId(collection.getID());
-        mTranskribusUploadCollId = collection.getID();
-        uploadDirs(mSelectedDirs);
-
-    }
-
-    @Override
-    public void onCollectionCreated(String collName) {
-        if (collName.compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0)
-            new CollectionsRequest(this);
-
-    }
 
     @Override
     public void onSelectionChange() {
@@ -370,4 +282,48 @@ public class SyncActivity extends BaseNavigationActivity implements
 
         return selectionText;
     }
+
+    /**
+     * Handles broadcast intents which inform about the upload progress:
+      */
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            boolean finished = intent.getBooleanExtra(UPLOAD_FINISHED_ID, false);
+
+            if (finished) {
+
+                showUploadFinishedSnackbar();
+                if (mContext != null) {
+                    mAdapter = new SyncAdapter(mContext, SyncInfo.getInstance().getSyncList());
+                    if (mListView != null) {
+                        mListView.setAdapter(mAdapter);
+                        mListView.setVisibility(View.VISIBLE);
+                    }
+                    if (mSelectionLayout != null)
+                        mSelectionLayout.setVisibility(View.VISIBLE);
+                    if (mProgressBar != null)
+                        mProgressBar.setVisibility(View.INVISIBLE);
+                }
+                // update the selection display:
+                onSelectionChange();
+            }
+            else {
+
+//                if (mListView != null)
+//                    mListView.setVisibility(View.INVISIBLE);
+//                if (mSelectionLayout != null)
+//                    mSelectionLayout.setVisibility(View.INVISIBLE);
+                if (mProgressBar != null) {
+                    mProgressBar.setVisibility(View.VISIBLE);
+                    int progress = intent.getIntExtra(UPLOAD_PROGRESS_ID, 0);
+                    mProgressBar.setProgress(progress);
+                }
+            }
+
+
+
+        }
+    };
 }

@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import at.ac.tuwien.caa.docscan.R;
+
 import static at.ac.tuwien.caa.docscan.rest.User.SYNC_DROPBOX;
 
 /**
@@ -40,6 +42,29 @@ public class UserHandler {
             User.getInstance().setDropboxToken(token);
             return true;
         }
+
+    }
+
+    public static void loadSeriesName(Context context) {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        String seriesName = sharedPref.getString(
+                context.getResources().getString(R.string.series_name_key),
+                context.getResources().getString(R.string.series_name_default));
+
+        User.getInstance().setDocumentName(seriesName);
+
+    }
+
+    public static void saveSeriesName(Context context) {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(
+                context.getResources().getString(R.string.series_name_key),
+                User.getInstance().getDocumentName());
+        editor.apply();
+        editor.commit();
 
     }
 
