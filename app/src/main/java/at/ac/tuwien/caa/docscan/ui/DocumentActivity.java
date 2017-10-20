@@ -52,7 +52,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
                     UserHandler.saveSeriesName(c);
                     finish();
                     Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
-//                    intent.putExtra(DOCUMENT_DIR_CHANGED, true);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
 
                 }
