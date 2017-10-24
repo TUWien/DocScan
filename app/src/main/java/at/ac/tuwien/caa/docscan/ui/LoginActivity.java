@@ -40,7 +40,6 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
                 });
 
         // Check what is the parent class that should be shown after the login is done:
-
         Bundle extras = getIntent().getExtras();
 
         // The string extra look something like this:

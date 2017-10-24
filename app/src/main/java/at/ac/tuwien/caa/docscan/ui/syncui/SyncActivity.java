@@ -55,13 +55,6 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
         super.onCreate(savedInstanceState);
 
-//        if (User.getInstance().isUploadActive()) {
-//            Intent intent = new Intent(getApplicationContext(), UploadingActivity.class);
-//            startActivity(intent);
-//            finish();
-//            return;
-//        }
-
         if (isOnline() && !User.getInstance().isLoggedIn()) {
 
             setContentView(R.layout.activity_not_logged_in);
