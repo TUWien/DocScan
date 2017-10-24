@@ -1,16 +1,32 @@
 package at.ac.tuwien.caa.docscan.logic;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Environment;
 
 import java.io.File;
 
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 /**
  * Created by fabian on 26.09.2017.
  */
 
 public class Helper {
+
+
+    /**
+     * Start the CameraActivity and remove everything from the back stack.
+     * @param context
+     */
+    public static void startCameraActivity(Context context) {
+
+        Intent intent = new Intent(context, CameraActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        context.startActivity(intent);
+
+    }
 
     /**
      * Returns the root path to the directory in which the images are saved.

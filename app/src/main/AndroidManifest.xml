@@ -90,6 +90,12 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
+        <activity
+            android:name=".ui.CreateSeriesActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize"
+            />
+
 
         <activity
             android:name=".ui.SettingsActivity"
