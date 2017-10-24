@@ -115,6 +115,8 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATI
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
+import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
+import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -353,10 +355,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // Concerning series mode:
         SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        boolean seriesModeDefault = getResources().getBoolean(R.bool.series_mode_default);
-        mIsSeriesMode = sharedPref.getBoolean(getString(R.string.series_mode_key), seriesModeDefault);
-        boolean seriesModePausedDefault = getResources().getBoolean(R.bool.series_mode_paused_default);
-        mIsSeriesModePaused = sharedPref.getBoolean(getString(R.string.series_mode_paused_key), seriesModePausedDefault);
+//        boolean seriesModeDefault = getResources().getBoolean(R.bool.series_mode_default);
+//        mIsSeriesMode = sharedPref.getBoolean(getString(R.string.series_mode_key), seriesModeDefault);
+        mIsSeriesMode = Settings.getInstance().loadKey(this, SERIES_MODE_ACTIVE_KEY);
+
+//        boolean seriesModePausedDefault = getResources().getBoolean(R.bool.series_mode_paused_default);
+//        mIsSeriesModePaused = sharedPref.getBoolean(getString(R.string.series_mode_paused_key), seriesModePausedDefault);
+        mIsSeriesModePaused = Settings.getInstance().loadKey(this, SERIES_MODE_PAUSED_KEY);
 
         UserHandler.loadSeriesName(this);
 
@@ -368,14 +373,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void savePreferences() {
 
-        // Concerning series mode:
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
+//        // Concerning series mode:
+//        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = sharedPref.edit();
+//
+//        editor.putBoolean(getString(R.string.series_mode_key), mIsSeriesMode);
+//        editor.putBoolean(getString(R.string.series_mode_paused_key), mIsSeriesModePaused);
+//
+//        editor.commit();
 
-        editor.putBoolean(getString(R.string.series_mode_key), mIsSeriesMode);
-        editor.putBoolean(getString(R.string.series_mode_paused_key), mIsSeriesModePaused);
-
-        editor.commit();
+        Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, mIsSeriesMode);
+        Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, mIsSeriesModePaused);
 
     }
 

@@ -10,6 +10,7 @@ import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
@@ -60,6 +61,10 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity  {
         else {
             User.getInstance().setDocumentName(subDir.getName());
             UserHandler.saveSeriesName(this);
+
+            Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, true);
+            Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, false);
+
             Helper.startCameraActivity(this);
         }
 

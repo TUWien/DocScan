@@ -1,7 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.InputFilter;
@@ -14,6 +14,7 @@ import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.syncui.SeriesAdapter;
@@ -28,7 +29,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
     private Context mContext;
     private File mSelectedDir = null;
     private SeriesAdapter mAdapter;
-    private String DOCUMENT_DIR_CHANGED = "DOCUMENT_DIR_CHANGED";
+    public static final String SERIES_CREATED = "SERIES_CREATED";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +44,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
         addFooter();
 
         final Context c = this;
+        final Activity a = this;
         Button selectSeries = (Button) findViewById(R.id.document_select_button);
         selectSeries.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,11 +52,11 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
                 if (mSelectedDir != null) {
                     User.getInstance().setDocumentName(mSelectedDir.getName());
                     UserHandler.saveSeriesName(c);
-                    finish();
-                    // Start the CameraActivity and remove everything from the back stack:
-                    Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
+
+                    Settings.getInstance().saveKey(a, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, true);
+                    Settings.getInstance().saveKey(a, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, false);
+
+                    Helper.startCameraActivity(c);
 
                 }
                 else

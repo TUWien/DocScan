@@ -32,7 +32,9 @@ public class Settings {
 
     public enum SettingEnum {
 
-        HIDE_SERIES_DIALOG_KEY("HIDE_SERIES_DIALOG_KEY", false);
+        HIDE_SERIES_DIALOG_KEY("HIDE_SERIES_DIALOG_KEY", false),
+        SERIES_MODE_ACTIVE_KEY("SERIES_MODE_ACTIVE_KEY", false),
+        SERIES_MODE_PAUSED_KEY("SERIES_MODE_PAUSED_KEY", true);
 
         private String mKey;
         private boolean mDefaultBooleanValue, mBooleanValue;

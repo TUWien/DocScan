@@ -149,11 +149,19 @@ public class SeriesGeneralActivity extends BaseNoNavigationActivity {
     }
 
     private void initKeepButton() {
+
+        final Activity activity = this;
+        final Context context = this;
+
         Button keepButton = (Button) findViewById(R.id.series_general_keep_series_button);
         keepButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish(); // close the activity
+
+                Settings.getInstance().saveKey(activity, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, true);
+                Settings.getInstance().saveKey(activity, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, false);
+
+                Helper.startCameraActivity(context);
             }
         });
     }
