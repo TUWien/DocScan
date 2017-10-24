@@ -30,7 +30,7 @@ import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 
 public class TranskribusUtils  {
 
-    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan Uploads";
+    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan Uploads - 2";
 
     // Singleton:
     private static TranskribusUtils mInstance;
@@ -48,6 +48,7 @@ public class TranskribusUtils  {
             mInstance = new TranskribusUtils();
 
         return mInstance;
+
     }
 
     private TranskribusUtils() {
@@ -158,8 +159,7 @@ public class TranskribusUtils  {
 
         mNumUploadJobs++;
 
-        // For each directory the upload request is finished and all files are added to the sync list.
-        // Now start the job:
+        // For each directory the upload request is finished and all files are added to the sync list:
         if (mNumUploadJobs == mSelectedDirs.size())
             mCallback.onFilesPrepared();
 //            SyncInfo.startSyncJob(mContext);

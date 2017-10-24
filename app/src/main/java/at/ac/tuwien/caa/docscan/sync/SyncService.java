@@ -1,7 +1,6 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -9,7 +8,6 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -26,7 +24,6 @@ import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
-import at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
@@ -220,7 +217,7 @@ public class SyncService extends JobService implements
 
             int result = 0;
             for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
-                if (fileSync.getState() != SyncInfo.FileSync.STATE_UPLOADED)
+                if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED)
                     result++;
             }
 
@@ -234,7 +231,7 @@ public class SyncService extends JobService implements
             fileSync.setState(SyncInfo.FileSync.STATE_UPLOADED);
 
             mFilesUploaded++;
-            mFilesNum = getFilesNum(); // do this frequently, because an image might be taken if the Service is active
+//            mFilesNum = getFilesNum(); // do this frequently, because an image might be taken if the Service is active
             updateProgressbar();
 
 //            if (SyncArrayAdapter.getInstance() != null) {
@@ -339,24 +336,24 @@ public class SyncService extends JobService implements
                 .setSmallIcon(R.drawable.ic_statusbar_icon)
                 .setContentTitle(title)
                 .setContentText(text);
-// Creates an explicit intent for an Activity in your app
-        Intent resultIntent = new Intent(this, UploadingActivity.class);
-
-// The stack builder object will contain an artificial back stack for the
-// started Activity.
-// This ensures that navigating backward from the Activity leads out of
-// your app to the Home screen.
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-// Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(UploadingActivity.class);
-// Adds the Intent that starts the Activity to the top of the stack
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        mBuilder.setContentIntent(resultPendingIntent);
+//// Creates an explicit intent for an Activity in your app
+//        Intent resultIntent = new Intent(this, SyncActivity.class);
+//
+//// The stack builder object will contain an artificial back stack for the
+//// started Activity.
+//// This ensures that navigating backward from the Activity leads out of
+//// your app to the Home screen.
+//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+//// Adds the back stack for the Intent (but not the Intent itself)
+//        stackBuilder.addParentStack(SyncActivity.class);
+//// Adds the Intent that starts the Activity to the top of the stack
+//        stackBuilder.addNextIntent(resultIntent);
+//        PendingIntent resultPendingIntent =
+//                stackBuilder.getPendingIntent(
+//                        0,
+//                        PendingIntent.FLAG_UPDATE_CURRENT
+//                );
+//        mBuilder.setContentIntent(resultPendingIntent);
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         // Show the notification every time (just for debugging purposes).

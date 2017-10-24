@@ -12,11 +12,15 @@ import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
+import at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity;
 
 /**
  * Created by fabian on 08.02.2017.
  */
 public class LoginActivity extends BaseNoNavigationActivity implements LoginRequest.LoginCallback {
+
+    private Class mParentClass;
+    public static final String PARENT_ACTIVITY_NAME = "PARENT_ACTIVITY_NAME";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +38,18 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
                         login();
                     }
                 });
+
+        // Check what is the parent class that should be shown after the login is done:
+
+        Bundle extras = getIntent().getExtras();
+
+        // The string extra look something like this:
+//        at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity$1
+//        So we have to use String.startsWith instead of String.compareTo
+        if (extras != null && extras.getString(PARENT_ACTIVITY_NAME, "").startsWith(SyncActivity.class.getName()))
+            mParentClass = SyncActivity.class;
+        else
+            mParentClass = CameraActivity.class;
 
 
     }
@@ -74,8 +90,8 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
 //        Save the credentials:
         UserHandler.saveTranskribusCredentials(this);
 
-        // Start the CameraActivity and remove everything from the back stack:
-        Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
+        // Start the parent activity and remove everything from the back stack:
+        Intent intent = new Intent(getApplicationContext(), mParentClass);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }

@@ -11,6 +11,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -24,8 +25,10 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
+import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 
+import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_PROGRESS_ID;
 
@@ -52,12 +55,30 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
         super.onCreate(savedInstanceState);
 
-        if (User.getInstance().isUploadActive()) {
-            Intent intent = new Intent(getApplicationContext(), UploadingActivity.class);
-            startActivity(intent);
-            finish();
+//        if (User.getInstance().isUploadActive()) {
+//            Intent intent = new Intent(getApplicationContext(), UploadingActivity.class);
+//            startActivity(intent);
+//            finish();
+//            return;
+//        }
+
+        if (isOnline() && !User.getInstance().isLoggedIn()) {
+
+            setContentView(R.layout.activity_not_logged_in);
+
+            Button loginButton = (Button) findViewById(R.id.sync_not_logged_in_button);
+            loginButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                    intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
+                    startActivity(intent);
+                }
+            });
+
             return;
         }
+
 
         setContentView(R.layout.activity_sync);
 
@@ -67,17 +88,16 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         mListView = (ExpandableListView) findViewById(R.id.sync_list_view);
         mContext = this;
 
-        addFooter();
+        // Sets the adapter, note: This fills the list.
+        updateListViewAdapter();
 
-        mAdapter = new SyncAdapter(this, SyncInfo.getInstance().getSyncList());
-        mListView.setAdapter(mAdapter);
+        addFooter();
 
         mSelectionTextView = (TextView) findViewById(R.id.sync_selection_textview);
         mSelectionLayout = (RelativeLayout) findViewById(R.id.sync_selection_layout);
+        mProgressBar = (ProgressBar) findViewById(R.id.sync_progressbar);
 
         initUploadButton();
-
-        mProgressBar = (ProgressBar) findViewById(R.id.sync_progressbar);
 
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents
@@ -102,12 +122,50 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                 }
                 else {
                     mSelectedDirs = selectedDirs;
-                    showSnackbarInfo();
-                    startUpload();
+
+                    if (!isOnline())
+                        showNotOnlineSnackbar();
+                    else {
+                        showUploadingSnackbar();
+                        mProgressBar.setProgress(0);
+                        displayUploadActive(true);
+                        startUpload();
+                    }
+
                 }
 
             }
         });
+    }
+
+    private void displayUploadActive(boolean isUploadActive) {
+
+        // Views that are not visible during upload:
+        int nonUploadViewVisibility;
+        // Views that are visible during upload:
+        int uploadViewVisibility;
+
+        if (isUploadActive) {
+            nonUploadViewVisibility = View.INVISIBLE;
+            uploadViewVisibility = View.VISIBLE;
+        }
+        else {
+            nonUploadViewVisibility = View.VISIBLE;
+            uploadViewVisibility = View.INVISIBLE;
+        }
+
+
+        // Show or hide views that are not visible during upload:
+        if (mSelectionLayout != null)
+            mSelectionLayout.setVisibility(nonUploadViewVisibility);
+        if (mListView != null)
+            mListView.setVisibility(nonUploadViewVisibility);
+
+        // Show or hide views that are visible during upload:
+        if (mProgressBar != null)
+            mProgressBar.setVisibility(uploadViewVisibility);
+//            mProgressBar.setProgress(0);
+
     }
 
     /**
@@ -119,15 +177,6 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         int footerHeight = (int) getResources().getDimension(R.dimen.sync_footer_height);
         footer.setMinimumHeight(footerHeight);
         mListView.addFooterView(footer);
-    }
-
-    private void showSnackbarInfo() {
-
-        if (isOnline())
-            showUploadingSnackbar();
-        else
-            showNotOnlineSnackbar();
-
     }
 
     /**
@@ -155,22 +204,21 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
         String snackbarText =
                 getResources().getString(R.string.sync_snackbar_uploading_prefix_text) + " " +
-                getSelectionText() +
-                getResources().getString(R.string.sync_snackbar_check_notifications_text);
+                getSelectionText() + ".";
 
         closeSnackbar();
         mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
                 snackbarText, Snackbar.LENGTH_INDEFINITE);
         mSnackbar.show();
 
-        if (mSelectionLayout != null)
-            mSelectionLayout.setVisibility(View.INVISIBLE);
-        if (mListView != null)
-            mListView.setVisibility(View.INVISIBLE);
-        if (mProgressBar != null) {
-            mProgressBar.setVisibility(View.VISIBLE);
-            mProgressBar.setProgress(0);
-        }
+//        if (mSelectionLayout != null)
+//            mSelectionLayout.setVisibility(View.INVISIBLE);
+//        if (mListView != null)
+//            mListView.setVisibility(View.INVISIBLE);
+//        if (mProgressBar != null) {
+//            mProgressBar.setVisibility(View.VISIBLE);
+//            mProgressBar.setProgress(0);
+//        }
     }
 
     /**
@@ -295,35 +343,54 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
             if (finished) {
 
                 showUploadFinishedSnackbar();
-                if (mContext != null) {
-                    mAdapter = new SyncAdapter(mContext, SyncInfo.getInstance().getSyncList());
-                    if (mListView != null) {
-                        mListView.setAdapter(mAdapter);
-                        mListView.setVisibility(View.VISIBLE);
-                    }
-                    if (mSelectionLayout != null)
-                        mSelectionLayout.setVisibility(View.VISIBLE);
-                    if (mProgressBar != null)
-                        mProgressBar.setVisibility(View.INVISIBLE);
-                }
+                updateListViewAdapter();
+                displayUploadActive(false);
+
                 // update the selection display:
                 onSelectionChange();
+
             }
             else {
+
+                displayUploadActive(true);
+                final int progress = intent.getIntExtra(UPLOAD_PROGRESS_ID, 0);
+//                mProgressBar.setProgress(progress);
+
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mProgressBar.setProgress(progress);
+                    }
+                });
+
 
 //                if (mListView != null)
 //                    mListView.setVisibility(View.INVISIBLE);
 //                if (mSelectionLayout != null)
 //                    mSelectionLayout.setVisibility(View.INVISIBLE);
-                if (mProgressBar != null) {
-                    mProgressBar.setVisibility(View.VISIBLE);
-                    int progress = intent.getIntExtra(UPLOAD_PROGRESS_ID, 0);
-                    mProgressBar.setProgress(progress);
-                }
+//                if (mProgressBar != null) {
+//                    mProgressBar.setVisibility(View.VISIBLE);
+//                    int progress = intent.getIntExtra(UPLOAD_PROGRESS_ID, 0);
+//                    mProgressBar.setProgress(progress);
+//                }
             }
 
 
 
         }
     };
+
+    /**
+     * Updates the list view adapter and causes a new filling of the list view.
+     */
+    private void updateListViewAdapter() {
+
+        if (mContext != null) {
+            mAdapter = new SyncAdapter(mContext, SyncInfo.getInstance().getSyncList());
+            if (mListView != null)
+                mListView.setAdapter(mAdapter);
+        }
+
+    }
 }

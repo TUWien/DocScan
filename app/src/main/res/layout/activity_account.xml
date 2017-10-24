@@ -80,6 +80,7 @@
 
                 <Button
                     android:id="@+id/sync_switcher_dropbox_button"
+                    android:visibility="invisible"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableLeft="@drawable/scalable_dropbox_button_image"
