@@ -8,10 +8,7 @@ import android.view.WindowManager;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
-import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.rest.UserHandler;
-import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
 
 /**
  * Abstract class used for inherited activities whose properties are partially defined in
@@ -87,20 +84,20 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
         if (User.getInstance().isLoggedIn())
             return;
 
-        boolean isUserSaved = UserHandler.loadCredentials(this);
-        if (isUserSaved && !User.getInstance().isAutoLogInDone()) {
-
-            if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS) {
-                RequestHandler.createRequest(this, RequestHandler.REQUEST_LOGIN);
-                User.getInstance().setAutoLogInDone(true);
-            }
-            else if (User.getInstance().getConnection() == User.SYNC_DROPBOX) {
-                if (UserHandler.loadDropboxToken(this)) {
-                    DropboxUtils.getInstance().loginToDropbox(this, User.getInstance().getDropboxToken());
-                    User.getInstance().setAutoLogInDone(true);
-                }
-            }
-        }
+//        boolean isUserSaved = UserHandler.loadCredentials(this);
+//        if (isUserSaved && !User.getInstance().isAutoLogInDone()) {
+//
+//            if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS) {
+//                RequestHandler.createRequest(this, RequestHandler.REQUEST_LOGIN);
+//                User.getInstance().setAutoLogInDone(true);
+//            }
+//            else if (User.getInstance().getConnection() == User.SYNC_DROPBOX) {
+//                if (UserHandler.loadDropboxToken(this)) {
+//                    DropboxUtils.getInstance().loginToDropbox(this, User.getInstance().getDropboxToken());
+//                    User.getInstance().setAutoLogInDone(true);
+//                }
+//            }
+//        }
 
     }
 

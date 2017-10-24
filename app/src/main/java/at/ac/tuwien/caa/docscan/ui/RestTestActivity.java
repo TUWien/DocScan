@@ -131,11 +131,11 @@ public class RestTestActivity extends BaseNavigationActivity implements Collecti
 
 
 
-    @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.REST_TEST;
-//        return NavigationDrawer.NavigationItemEnum.INVALID;
-    }
+//    @Override
+//    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
+//        return NavigationDrawer.NavigationItemEnum.REST_TEST;
+////        return NavigationDrawer.NavigationItemEnum.INVALID;
+//    }
 
     @Override
     public void onCollections(List<Collection> collections) {

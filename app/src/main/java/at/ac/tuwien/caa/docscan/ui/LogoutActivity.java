@@ -42,9 +42,9 @@ public class LogoutActivity extends BaseNavigationActivity {
 
     }
 
-    @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.ACCOUNT_LOGOUT;
-    }
+//    @Override
+//    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
+//        return NavigationDrawer.NavigationItemEnum.ACCOUNT_LOGOUT;
+//    }
 
 }
