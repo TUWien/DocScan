@@ -257,6 +257,8 @@ public class SyncService extends JobService implements
 
         private void uploadsFinished() {
 
+            SyncInfo.getInstance().setUploadDirs(null);
+
             SyncInfo.saveToDisk(getApplicationContext());
 
             // Show the finished progressbar for a short time:

@@ -83,7 +83,7 @@ public class SyncInfo implements Serializable {
                 // one-off job
                 .setRecurring(false)
                 // don't persist past a device reboot
-                .setLifetime(Lifetime.FOREVER)
+                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
                 // start between 0 and 60 seconds from now
                 .setTrigger(Trigger.executionWindow(0, 0))
 //                .setTrigger(Trigger.NOW)
@@ -100,7 +100,7 @@ public class SyncInfo implements Serializable {
 //                )
                 .setConstraints(
                         // only run on an unmetered network
-                        Constraint.ON_UNMETERED_NETWORK
+                        Constraint.ON_ANY_NETWORK
                 )
                 .build();
 
