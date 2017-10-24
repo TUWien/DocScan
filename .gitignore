@@ -67,3 +67,5 @@ img/
 /app/src/main/java/at/ac/tuwien/caa/docscan/camera/Storage.java
 /projectFilesBackup/.idea/workspace.xml
 /app/src/main/java/at/ac/tuwien/caa/docscan/camera/Util.java
+/app/src/main/res/drawable/ic_photo_album_black_24dp.xml
+/app/src/main/res/layout/test_activity.xml

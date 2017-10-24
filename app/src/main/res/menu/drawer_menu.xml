@@ -50,10 +50,10 @@
             android:title=""
             />
 
-        <!--<item-->
-            <!--android:id="@+id/account_logout_item"-->
-            <!--android:title=""-->
-            <!--/>-->
+        <item
+            android:id="@+id/account_logout_item"
+            android:title=""
+            />
     </group>
 
 </menu>

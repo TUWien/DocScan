@@ -75,7 +75,7 @@ public class User {
 
     public void setLoggedIn(boolean loggedIn) {
         mIsLoggedin = loggedIn;
-        mIsAutoLogInDone = loggedIn;
+//        mIsAutoLogInDone = loggedIn;
     }
 
     public void setSessionID(String sessionID) {

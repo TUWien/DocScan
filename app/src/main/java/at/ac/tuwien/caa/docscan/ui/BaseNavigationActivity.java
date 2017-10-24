@@ -8,6 +8,7 @@ import android.view.WindowManager;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
+import at.ac.tuwien.caa.docscan.rest.LogoutRequest;
 import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
@@ -23,7 +24,8 @@ import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
  * 4: Define the NavigationItemEnum (in NavigationDrawer)
  * 5: Define the Activity in AndroidManifest.xml
  */
-public abstract class BaseNavigationActivity extends AppCompatActivity implements LoginRequest.LoginCallback {
+public abstract class BaseNavigationActivity extends AppCompatActivity implements
+        LoginRequest.LoginCallback, LogoutRequest.LogoutCallback {
 
     private NavigationDrawer mNavigationDrawer;
     private Toolbar mToolbar;
@@ -144,6 +146,17 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
 
     }
 
+    @Override
+    public void onLogout() {
+
+        User.getInstance().setLoggedIn(false);
+        mNavigationDrawer.setupDrawerHeader();
+
+    }
 
 
-}
+
+
+
+
+    }

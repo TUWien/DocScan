@@ -218,13 +218,13 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 menu.setGroupVisible(R.id.navigation_group, !mAccountGroupVisible);
                 menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
 
-//                // Show the logout button only if the user is logged in (and the menu group is visible):
-//                if (mAccountGroupVisible) {
-//                    MenuItem item = menu.findItem(R.id.account_logout_item);
-//                    if (item != null) {
-//                        item.setVisible(User.getInstance().isLoggedIn());
-//                    }
-//                }
+                // Show the logout button only if the user is logged in (and the menu group is visible):
+                if (mAccountGroupVisible) {
+                    MenuItem item = menu.findItem(R.id.account_logout_item);
+                    if (item != null) {
+                        item.setVisible(User.getInstance().isLoggedIn());
+                    }
+                }
             }
         }
 
@@ -274,8 +274,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_cloud_upload_black_24dp, SyncActivity.class),
         ACCOUNT_EDIT(R.id.account_edit_item, R.string.account_edit_text,
                 R.drawable.ic_account_box_black_24dp, AccountActivity.class),
-//        ACCOUNT_LOGOUT(R.id.account_logout_item, R.string.account_logout,
-//                R.drawable.ic_remove_circle_outline_black_24dp, LogoutActivity.class),
+        ACCOUNT_LOGOUT(R.id.account_logout_item, R.string.account_logout,
+                R.drawable.ic_remove_circle_outline_black_24dp, LogoutActivity.class),
 //        REST_TEST(R.id.rest_item, R.string.rest_item_text,
 //                R.drawable.ic_weekend_black_24dp, RestTestActivity.class),
         INVALID(-1, 0, 0, null);
