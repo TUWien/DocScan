@@ -21,6 +21,7 @@ public class UploadingActivity extends BaseNoNavigationActivity {
 
     public static String UPLOAD_PROGRESS_ID = "UPLOAD_PROGRESS_ID";
     public static String UPLOAD_FINISHED_ID = "UPLOAD_FINISHED_ID";
+    public static String UPLOAD_ERROR_ID = "UPLOAD_ERROR_ID";
 
     private ProgressBar mProgressBar;
 
