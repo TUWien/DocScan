@@ -103,4 +103,6 @@ dependencies {
     // retrofit - end:
     compile 'com.koushikdutta.ion:ion:2.+'
     compile project(':openCVLibrary310')
+    compile 'com.google.android.gms:play-services-vision:11.0.4'
+
 }

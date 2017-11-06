@@ -24,6 +24,9 @@
 package at.ac.tuwien.caa.docscan.camera;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -32,20 +35,30 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.google.android.gms.vision.Frame;
+import com.google.android.gms.vision.barcode.Barcode;
+import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.android.gms.vision.text.TextBlock;
+import com.google.android.gms.vision.text.TextRecognizer;
+
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
@@ -124,6 +137,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private long mVerificationTime;
     private static long VERIFICATION_TIME_DIFF = 800;
     private boolean mMeasureFocus = false;
+    private BarcodeDetector mDetector;
 
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
@@ -146,10 +160,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mFlashMode = null;
 
         mCVThreadManager = CVThreadManager.getsInstance();
-        // CVThreadManager stores activity as a weak reference. No need to unregister.
-//        mCVThreadManager.setUiThreadCallback(this);
 
-//        bgSubtractor = Video.createBackgroundSubtractorMOG2();
+        mDetector = new BarcodeDetector.Builder(context)
+                        .setBarcodeFormats(Barcode.DATA_MATRIX | Barcode.QR_CODE)
+                        .build();
 
     }
 
@@ -160,6 +174,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
      */
     @Override
     public void onPreviewFrame(byte[] pixels, Camera camera) {
+
 
 //        updateFPS();
 
@@ -172,18 +187,95 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mIsImageProcessingPaused)
             return;
 
-        // The verification is done in series mode after an automatic capture is requested:
-        if (mAwaitFrameChanges && mVerifyCapture) {
-            checkMovementAfterCapture(pixels);
-        } else {
-            if (mUseThreading)
-                performCVTasks(pixels);
-            else
-                singleThreadCV(pixels);
-        }
-//        oldSingleThread(pixels);
+
+        readBarCodes(pixels);
+//        readText(pixels);
+
+//        // The verification is done in series mode after an automatic capture is requested:
+//        if (mAwaitFrameChanges && mVerifyCapture) {
+//            checkMovementAfterCapture(pixels);
+//        } else {
+//            if (mUseThreading)
+//                performCVTasks(pixels);
+//            else
+//                singleThreadCV(pixels);
+//        }
+
 
     }
+
+    private void readBarCodes(byte[] pixels) {
+
+        if (mCamera == null || mCamera.getParameters() == null)
+            return;
+
+        ByteBuffer buf = ByteBuffer.wrap(pixels);
+        Frame frame = new Frame.Builder().setImageData(buf, mFrameWidth, mFrameHeight,
+                mCamera.getParameters().getPreviewFormat()).build();
+        SparseArray<Barcode> barcodes = mDetector.detect(frame);
+
+
+        if (barcodes.size() > 0) {
+            Barcode barcode = barcodes.valueAt(0);
+            mCVCallback.onBarCodeFound(barcode);
+        }
+        else
+            mCVCallback.onBarCodeFound(null);
+
+    }
+
+    private void readText(byte[] pixels) {
+
+        if (mCamera == null || mCamera.getParameters() == null)
+            return;
+
+
+
+        TextRecognizer textRecognizer = new TextRecognizer.Builder(this.getContext()).build();
+
+        Bitmap textBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.cat);
+
+        ByteBuffer buf = ByteBuffer.wrap(pixels);
+        Frame frame = new Frame.Builder().setImageData(buf, mFrameWidth, mFrameHeight,
+                mCamera.getParameters().getPreviewFormat()).build();
+
+        Mat mat = byte2Mat(pixels);
+        Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(mat, bitmap);
+
+        Matrix mtx = new Matrix();
+        int displayOrientation = CameraActivity.getOrientation();
+        int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
+        mtx.setRotate(orientation);
+        Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), mtx, true);
+
+
+        Frame frame2 = new Frame.Builder().setBitmap(rotated).build();
+
+        SparseArray<TextBlock> textBlocks = textRecognizer.detect(frame2);
+
+        String result = "";
+        for (int i = 0; i < textBlocks.size(); ++i) {
+            TextBlock item = textBlocks.valueAt(i);
+            if (item != null && item.getValue() != null)
+                result += item.getValue();
+//            List<Line> lines = (List<Line>) item.getComponents();
+//            for (Line line : lines) {
+//                List<Element> elements = (List<Element>) line.getComponents();
+//                for (Element element : elements) {
+//                    String word = element.getValue();
+//                    result += word;
+//                }
+//            }
+
+        }
+
+
+//        if (result.length() > 0)
+        mCVCallback.onTextFound(result);
+
+    }
+
 
     private void oldSingleThread(byte[] pixels) {
 
@@ -1348,6 +1440,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onMovement(boolean moved);
         void onWaitingForDoc(boolean waiting);
         void onCaptureVerified();
+        void onBarCodeFound(final Barcode barcode);
+        void onTextFound(final String result);
 
     }
 
