@@ -30,7 +30,7 @@ import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 
 public class TranskribusUtils  {
 
-    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan Uploads - 2";
+    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan";
 
     // Singleton:
     private static TranskribusUtils mInstance;
@@ -203,7 +203,12 @@ public class TranskribusUtils  {
                 .setCallback(new FutureCallback<String>() {
                     @Override
                     public void onCompleted(Exception e, String result) {
-                        callback.onUploadComplete(fileSync);
+
+                        if (e == null)
+                            callback.onUploadComplete(fileSync);
+                        else
+                            callback.onError(e);
+
                     }
                 });
     }

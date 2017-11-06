@@ -26,6 +26,7 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_PROGRESS_ID;
 
@@ -197,6 +198,16 @@ public class SyncService extends JobService implements
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
 
+        // Send an Intent with an action named "PROGRESS_INTENT_NAME".
+        private void sendErrorIntent() {
+
+            Log.d("sender", "Broadcasting message");
+            Intent intent = new Intent("PROGRESS_INTENT_NAME");
+            intent.putExtra(UPLOAD_ERROR_ID, true);
+
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        }
+
         private void uploadFile(SyncInfo.FileSync fileSync) {
 
             if (fileSync == null)
@@ -282,6 +293,8 @@ public class SyncService extends JobService implements
 
         @Override
         public void onError(Exception e) {
+
+            sendErrorIntent();
 
         }
 

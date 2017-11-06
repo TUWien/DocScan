@@ -184,6 +184,7 @@
     <string name="sync_selection_single_document_text">document</string>
     <string name="sync_snackbar_uploading_prefix_text">Uploading\</string>
     <string name="sync_snackbar_check_notifications_text">.\nPlease wait until the upload is finished.</string>
+    <string name="sync_snackbar_error_upload_text">Could not upload all files. Please try again!</string>
     <string name="sync_snackbar_finished_upload_text">Finished upload of</string>
     <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>
     <string name="sync_snackbar_offline_postfix_text">will be uploaded, once the device is online again.</string>

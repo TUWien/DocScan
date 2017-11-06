@@ -29,6 +29,7 @@ import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 
 import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_PROGRESS_ID;
 
@@ -232,6 +233,19 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
     }
 
+    private void showUploadErrorSnackbar() {
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_error_upload_text);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_LONG);
+        mSnackbar.show();
+
+
+    }
+
     private void closeSnackbar() {
 
         if (mSnackbar != null) {
@@ -330,6 +344,22 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
+
+            boolean error = intent.getBooleanExtra(UPLOAD_ERROR_ID, false);
+
+            if (error) {
+
+                showUploadErrorSnackbar();
+                updateListViewAdapter();
+                displayUploadActive(false);
+
+                // update the selection display:
+                onSelectionChange();
+
+
+                return;
+            }
 
             boolean finished = intent.getBooleanExtra(UPLOAD_FINISHED_ID, false);
 
