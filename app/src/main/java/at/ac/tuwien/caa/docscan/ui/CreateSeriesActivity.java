@@ -1,6 +1,9 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
@@ -20,6 +23,10 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
 public class CreateSeriesActivity extends BaseNoNavigationActivity  {
 
+    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
+
+    // Eventually a permission is required for dir creation, hence we store this as member:
+    private File mSubDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +58,18 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity  {
             return;
         }
 
+        if (isWriteExternalStoragePermitted())
+            createSubDir(subDir);
+        else {
+            mSubDir = subDir;
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+        }
+
+    }
+
+    private void createSubDir(File subDir) {
+
         boolean dirCreated = false;
         if (subDir != null) {
             dirCreated = subDir.mkdir();
@@ -68,6 +87,40 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity  {
             Helper.startCameraActivity(this);
         }
 
+    }
+
+    /**
+     * Called after permission has been given or has been rejected. This is necessary on Android M
+     * and younger Android systems.
+     *
+     * @param requestCode Request code
+     * @param permissions Permission
+     * @param grantResults results
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+
+
+        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+        switch (requestCode) {
+            case PERMISSION_WRITE_EXTERNAL_STORAGE:
+                if (isPermissionGiven && mSubDir != null)
+                    createSubDir(mSubDir);
+                break;
+        }
+    }
+
+
+
+    /**
+     * Check if we have the permission to write to the external storage.
+     * @return
+     */
+    private boolean isWriteExternalStoragePermitted() {
+
+        boolean isPermitted =
+                (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+        return isPermitted;
     }
 
     private void showDirExistingCreatedAlert(String dirName) {
