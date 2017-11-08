@@ -76,8 +76,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.vision.barcode.Barcode;
-
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
@@ -1657,25 +1655,25 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    @Override
-    public void onBarCodeFound(final Barcode barcode) {
-
-        final String txt;
-        if (barcode != null)
-            txt = barcode.rawValue;
-        else
-            txt = "";
-
-        //  Tell the user that a barcode is found
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                mTextView.setText(txt);
-            }
-        });
-
-    }
+//    @Override
+//    public void onBarCodeFound(final Barcode barcode) {
+//
+//        final String txt;
+//        if (barcode != null)
+//            txt = barcode.rawValue;
+//        else
+//            txt = "";
+//
+//        //  Tell the user that a barcode is found
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+//                mTextView.setText(txt);
+//            }
+//        });
+//
+//    }
 
     @Override
     public void onTextFound(final String result) {
