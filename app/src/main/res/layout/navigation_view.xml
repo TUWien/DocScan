@@ -14,6 +14,9 @@
     app:itemIconTint="@color/icon_color_navigation_view"
      />
 
+<!--The color itemTextColor must be defined if background is also defined, because on Jelly Beans
+ the text color is white and the items look invisible-->
+
 
 <!--TODO: use these later:-->
 
