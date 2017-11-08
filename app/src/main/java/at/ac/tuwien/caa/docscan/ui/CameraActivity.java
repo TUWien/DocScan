@@ -1655,40 +1655,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-//    @Override
-//    public void onBarCodeFound(final Barcode barcode) {
-//
-//        final String txt;
-//        if (barcode != null)
-//            txt = barcode.rawValue;
-//        else
-//            txt = "";
-//
-//        //  Tell the user that a barcode is found
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                // This code will always run on the UI thread, therefore is safe to modify UI elements.
-//                mTextView.setText(txt);
-//            }
-//        });
-//
-//    }
-
-    @Override
-    public void onTextFound(final String result) {
-
-        //  Tell the user that a string is found
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                mTextView.setText(result);
-            }
-        });
-
-    }
-
     private void setTextViewText(int msg) {
 
         final String msgText = getResources().getString(msg);
