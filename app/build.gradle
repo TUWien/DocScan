@@ -103,6 +103,7 @@ dependencies {
     // retrofit - end:
     compile 'com.koushikdutta.ion:ion:2.+'
     compile project(':openCVLibrary310')
-    compile 'com.google.android.gms:play-services-vision:11.0.4'
+//    compile 'com.google.android.gms:play-services-vision:11.0.4'
+    compile 'me.dm7.barcodescanner:zxing:1.9.8'
 
 }

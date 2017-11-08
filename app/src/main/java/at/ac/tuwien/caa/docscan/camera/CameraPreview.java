@@ -33,6 +33,7 @@ import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
@@ -46,6 +47,16 @@ import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.DecodeHintType;
+import com.google.zxing.LuminanceSource;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.NotFoundException;
+import com.google.zxing.PlanarYUVLuminanceSource;
+import com.google.zxing.ReaderException;
+import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -56,7 +67,9 @@ import org.opencv.imgproc.Imgproc;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
@@ -104,6 +117,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private Mat mFrameMat;
     private int mFrameWidth;
     private int mFrameHeight;
+    private int mPreviewFormat;
     private boolean mAwaitFrameChanges = false; // this is dependent on the mode: single vs. series
     private boolean mManualFocus = true;
     private boolean mIsImageProcessingPaused = false;
@@ -139,6 +153,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean mMeasureFocus = false;
     private BarcodeDetector mDetector;
 
+    private MultiFormatReader mMultiFormatReader;
+
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
      * @param context context
@@ -165,6 +181,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                         .setBarcodeFormats(Barcode.DATA_MATRIX | Barcode.QR_CODE)
                         .build();
 
+        initMultiFormatReader();
+
     }
 
     /**
@@ -187,8 +205,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mIsImageProcessingPaused)
             return;
 
-
-        readBarCodes(pixels);
+        zXingBarcode(pixels);
+//        readBarCodes(pixels);
 //        readText(pixels);
 
 //        // The verification is done in series mode after an automatic capture is requested:
@@ -204,6 +222,95 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    private void initMultiFormatReader() {
+        Map<DecodeHintType,Object> hints = new EnumMap<>(DecodeHintType.class);
+        List<BarcodeFormat> formats = new ArrayList<>();
+        formats.add(BarcodeFormat.QR_CODE);
+        hints.put(DecodeHintType.POSSIBLE_FORMATS, formats);
+        mMultiFormatReader = new MultiFormatReader();
+        mMultiFormatReader.setHints(hints);
+    }
+
+
+    private void zXingBarcode(byte[] pixels) {
+
+        PlanarYUVLuminanceSource source = buildLuminanceSource(pixels);
+
+        Result rawResult = null;
+
+        if (source != null) {
+            Log.d(TAG, "source not null");
+            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+            try {
+                rawResult = mMultiFormatReader.decodeWithState(bitmap);
+                Log.d(TAG, "rawResult found");
+            } catch (ReaderException re) {
+                // continue
+            } catch (NullPointerException npe) {
+                // This is terrible
+            } catch (ArrayIndexOutOfBoundsException aoe) {
+
+            } finally {
+                mMultiFormatReader.reset();
+            }
+
+            if (rawResult == null) {
+                LuminanceSource invertedSource = source.invert();
+                bitmap = new BinaryBitmap(new HybridBinarizer(invertedSource));
+                try {
+                    rawResult = mMultiFormatReader.decodeWithState(bitmap);
+                    Log.d(TAG, "rawResult2");
+                }
+                 catch (NotFoundException e) {
+                    e.printStackTrace();
+                } finally {
+                    mMultiFormatReader.reset();
+                }
+            }
+
+            if (rawResult != null) {
+                Log.d(TAG, "rawresult output: " + rawResult.toString());
+            }
+
+            final Result finalRawResult = rawResult;
+
+            if (finalRawResult != null) {
+                Handler handler = new Handler(Looper.getMainLooper());
+//                handler.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        // Stopping the preview can take a little long.
+//                        // So we want to set result handler to null to discard subsequent calls to
+//                        // onPreviewFrame.
+//                        ZXingScannerView.ResultHandler tmpResultHandler = mResultHandler;
+//                        mResultHandler = null;
+//
+//                        stopCameraPreview();
+//                        if (tmpResultHandler != null) {
+//                            tmpResultHandler.handleResult(finalRawResult);
+//                        }
+//                    }
+//                });
+            }
+
+        }
+
+    }
+
+    public PlanarYUVLuminanceSource buildLuminanceSource(byte[] data) {
+
+        // Go ahead and assume it's YUV rather than die.
+        PlanarYUVLuminanceSource source = null;
+
+        try {
+            source = new PlanarYUVLuminanceSource(data, mFrameWidth, mFrameHeight, 0, 0,
+                    mFrameWidth, mFrameHeight, false);
+        } catch(Exception e) {
+        }
+
+        return source;
+    }
+
     private void readBarCodes(byte[] pixels) {
 
         if (mCamera == null || mCamera.getParameters() == null)
@@ -211,9 +318,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         ByteBuffer buf = ByteBuffer.wrap(pixels);
         Frame frame = new Frame.Builder().setImageData(buf, mFrameWidth, mFrameHeight,
-                mCamera.getParameters().getPreviewFormat()).build();
+                mPreviewFormat).build();
         SparseArray<Barcode> barcodes = mDetector.detect(frame);
-
 
         if (barcodes.size() > 0) {
             Barcode barcode = barcodes.valueAt(0);
@@ -843,7 +949,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         Camera.Size previewSize = getPreviewSize(cameraSizes, pictureSize);
         mFrameWidth = previewSize.width;
         mFrameHeight = previewSize.height;
-
         mIsPreviewFitting = isPreviewFitting(previewSize);
 
         // Use autofocus if available:
@@ -861,6 +966,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // Restore the last used flash mode - if available:
         if (mFlashMode != null)
             params.setFlashMode(mFlashMode);
+
+        mPreviewFormat = params.getPreviewFormat();
 
         mCamera.setParameters(params);
 
