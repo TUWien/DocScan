@@ -10,6 +10,8 @@
     android:background="@color/white"
     app:menu="@menu/drawer_menu"
     app:headerLayout="@layout/navigation_view_header"
+    app:itemTextColor="@color/black"
+    app:itemIconTint="@color/icon_color_navigation_view"
      />
 
 
