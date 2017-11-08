@@ -8,11 +8,20 @@
 
     >
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/main_frame_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
         >
+
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <include layout="@layout/toolbar_autohide" />
+        </android.support.design.widget.AppBarLayout>
 
         <LinearLayout
             android:id="@+id/account_parent_layout"
@@ -73,10 +82,11 @@
                     android:id="@+id/sync_switcher_transkribus_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/scalable_transkribus_button_image"
+
                     android:text="@string/sync_connect_transkribus_button_text"
                     android:textColor="@color/white"
                     android:backgroundTint="@color/colorAccent" />
+                <!--android:drawableLeft="@drawable/scalable_transkribus_button_image"-->
 
                 <Button
                     android:id="@+id/sync_switcher_dropbox_button"
@@ -92,15 +102,9 @@
 
         </LinearLayout>
 
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
-            <include layout="@layout/toolbar_autohide" />
-        </android.support.design.widget.AppBarLayout>
 
-    </FrameLayout>
+
+    </LinearLayout>
 
 
 
