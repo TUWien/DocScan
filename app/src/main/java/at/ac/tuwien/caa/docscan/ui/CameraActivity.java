@@ -29,7 +29,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -72,9 +71,12 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.zxing.Result;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -156,7 +158,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private boolean mIsPictureSafe;
     private boolean mIsSaving = false;
     private TextView mTextView;
-    private MenuItem mFlashMenuItem;
+    private Menu mOptionsMenu;;
+    private MenuItem mFlashMenuItem, mDocumentMenuItem;
     private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
             mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
@@ -165,7 +168,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private long mStartTime;
     // We hold here a reference to the popupmenu and the list, because we are not sure what is first initialized:
     private List<String> mFlashModes;
-    private PopupMenu mFlashPopupMenu;
+    private PopupMenu mFlashPopupMenu, mSeriesPopupMenu;
     private byte[] mPictureData;
     private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
@@ -176,6 +179,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private int mMaxFrameCnt = 0;
     private DkPolyRect[] mLastDkPolyRects;
     private Toast mToast;
+
+    private boolean mIsQRActive = true;
 
 
     /**
@@ -289,8 +294,52 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mHideSeriesDialog = Settings.getInstance().loadKey(this, HIDE_SERIES_DIALOG_KEY);
 
+        showControlsLayout(!mIsQRActive);
+
+//        if (mIsQRActive) {
+//            RelativeLayout l = (RelativeLayout) findViewById(controls_layout);
+//            l.setVisibility(View.INVISIBLE);
+//
+//            RelativeLayout qrLayout = (RelativeLayout) findViewById(R.id.qr_controls_layout);
+//            qrLayout.setVisibility(View.VISIBLE);
+//        }
+
 
 //        MovementDetector.getInstance(this.getApplicationContext()).start();
+
+    }
+
+    private void showControlsLayout(boolean showControls) {
+
+
+        int controlsVisibility, qrCodeVisibility;
+
+        if (showControls) {
+            controlsVisibility = View.VISIBLE;
+            qrCodeVisibility = View.INVISIBLE;
+
+        }
+        else {
+            controlsVisibility = View.INVISIBLE;
+            qrCodeVisibility = View.VISIBLE;
+        }
+
+        if (mDocumentMenuItem != null)
+            mDocumentMenuItem.setVisible(showControls);
+        if (mFlashMenuItem != null)
+            mFlashMenuItem.setVisible(showControls);
+
+        // Show/hide the overflow button:
+        if (mOptionsMenu != null)
+            mOptionsMenu.setGroupVisible(R.id.overflow_menu_group, showControls);
+
+        RelativeLayout l = (RelativeLayout) findViewById(R.id.controls_layout);
+        if (l != null)
+            l.setVisibility(controlsVisibility);
+
+        RelativeLayout qrLayout = (RelativeLayout) findViewById(R.id.qr_controls_layout);
+        if (qrLayout != null)
+            qrLayout.setVisibility(qrCodeVisibility);
 
     }
 
@@ -354,13 +403,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private void loadPreferences() {
 
         // Concerning series mode:
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-//        boolean seriesModeDefault = getResources().getBoolean(R.bool.series_mode_default);
-//        mIsSeriesMode = sharedPref.getBoolean(getString(R.string.series_mode_key), seriesModeDefault);
         mIsSeriesMode = Settings.getInstance().loadKey(this, SERIES_MODE_ACTIVE_KEY);
-
-//        boolean seriesModePausedDefault = getResources().getBoolean(R.bool.series_mode_paused_default);
-//        mIsSeriesModePaused = sharedPref.getBoolean(getString(R.string.series_mode_paused_key), seriesModePausedDefault);
         mIsSeriesModePaused = Settings.getInstance().loadKey(this, SERIES_MODE_PAUSED_KEY);
 
         UserHandler.loadSeriesName(this);
@@ -414,7 +457,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.actionbar_menu, menu);
 
+        mOptionsMenu = menu;
+
         mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
+        mDocumentMenuItem = menu.findItem(R.id.document_item);
 
         // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
         if (mFlashModes != null)
@@ -753,7 +799,21 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         loadThumbnail();
         initShootModeSpinner();
         updatePhotoButtonIcon();
-//        updateMode();
+        initCancelQRButton();
+
+    }
+
+    private void initCancelQRButton() {
+
+        ImageButton button = (ImageButton) findViewById(R.id.cancel_qr_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mIsQRActive = false;
+                mCameraPreview.startQrMode(false);
+                showControlsLayout(!mIsQRActive);
+            }
+        });
 
     }
 
@@ -780,8 +840,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if ((position == SERIES_POS) && !mIsSeriesMode) {
             mIsSeriesMode = true;
             mIsSeriesModePaused = false;
-//            TODO: uncomment:
-//            mCameraPreview.pauseImageProcessing(false);
             mCameraPreview.startAutoFocus();
         }
         else if (position != SERIES_POS && mIsSeriesMode) {
@@ -1067,12 +1125,23 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         View view = findViewById(R.id.camera_controls_layout);
         view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
 
-        // Initialize the newly created buttons:
-        initButtons();
-        initDocumentButton();
+        showControlsLayout(!mIsQRActive);
 
+//        // Initialize the newly created buttons:
+        initButtons();
+//        initDocumentButton();
+
+
+//        getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
+//        View view = findViewById(R.id.camera_controls_layout);
+//        view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
+//
+//        // Initialize the newly created buttons:
+//        initButtons();
+//        initDocumentButton();
 
     }
+
 
     public static Point getPreviewDimension() {
 
@@ -1212,7 +1281,25 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (actionBar != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayShowTitleEnabled(true);
+            getSupportActionBar().setTitle("Ich bin ein Österreicher");
+
+//            getToolbar().setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    showSeriesPopup(null);
+//                }
+//            });
+
+//            final int abTitleId = getResources().getIdentifier("Ich bin ein Österreicher", "id", "android");
+//            findViewById(abTitleId).setOnClickListener(new View.OnClickListener() {
+//
+//                @Override
+//                public void onClick(View v) {
+//                    showSeriesPopup(null);
+//                }
+//            });
+
         }
 
 
@@ -1247,8 +1334,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
         setupDrawerContent(mDrawer);
-
-
 
         // Set the item text for the debug view in the naviation drawer:
         if (mDrawer == null)
@@ -1655,6 +1740,46 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    @Override
+    public void onBarcode(Result result) {
+
+        final String text;
+        if (result == null)
+            text = getString(R.string.instruction_searching_qr);
+        else
+            text = result.toString();
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                mTextView.setText(text);
+            }
+        });
+
+
+    }
+
+//    @Override
+//    public void onBarCodeFound(final Barcode barcode) {
+//
+//        final String txt;
+//        if (barcode != null)
+//            txt = barcode.rawValue;
+//        else
+//            txt = "";
+//
+//        //  Tell the user that a barcode is found
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+//                mTextView.setText(txt);
+//            }
+//        });
+//
+//    }
+
     private void setTextViewText(int msg) {
 
         final String msgText = getResources().getString(msg);
@@ -1665,6 +1790,25 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     mTextView.setText(msgText);
             }
         });
+    }
+
+    public void showSeriesPopup(MenuItem item) {
+
+        View menuItemView = findViewById(R.id.document_item);
+        if (menuItemView == null)
+            return;
+
+        // Create the menu for the first time:
+        if (mSeriesPopupMenu == null) {
+            mSeriesPopupMenu = new PopupMenu(this, menuItemView);
+            mSeriesPopupMenu.setOnMenuItemClickListener(this);
+            mSeriesPopupMenu.inflate(R.menu.series_menu);
+
+            setupFlashUI();
+        }
+
+        mSeriesPopupMenu.show();
+
     }
 
     public void showFlashPopup(MenuItem item) {
@@ -1729,6 +1873,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 mFlashMenuItem.setIcon(mFlashTorchDrawable);
                 mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
 //                mFlashMode = Camera.Parameters.FLASH_MODE_ON;
+                return true;
+            case R.id.series_qr_item:
+                mIsQRActive = !mIsQRActive;
+                showControlsLayout(!mIsQRActive);
+                // TODO: set to true when the GUI is finished:
+                mCameraPreview.startQrMode(mIsQRActive);
                 return true;
 
             default:

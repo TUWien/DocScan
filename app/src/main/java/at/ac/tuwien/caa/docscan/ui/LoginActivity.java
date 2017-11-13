@@ -60,6 +60,9 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
 
     private void login() {
 
+//        Check out this for com.android.volley.NoConnectionError: javax.net.ssl.SSLHandshakeException: Handshake failed
+//        https://stackoverflow.com/questions/31269425/how-do-i-tell-the-tls-version-in-android-volley
+
         EditText emailEdit = (EditText) findViewById(R.id.username_edittext);
         EditText pwEdit = (EditText) findViewById(R.id.password_edittext);
 
