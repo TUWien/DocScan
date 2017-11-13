@@ -25,7 +25,7 @@
             />
 
         <include layout="@layout/camera_controls_layout"
-            android:id="@+id/camera_controls_layout"
+
             />
 
     </RelativeLayout>

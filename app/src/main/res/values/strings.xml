@@ -74,6 +74,8 @@
     <string name="instruction_series_started">series mode started</string>
     <string name="instruction_series_paused">series mode paused</string>
 
+    <string name="instruction_searching_qr">Searching QR code</string>
+
     <!-- Toasts -->
     <string name="toast_series_paused">Automated imaging paused</string>
     <string name="toast_series_started">Images are now taken automatically</string>
@@ -96,6 +98,10 @@
     <string name="flash_auto_mode">Flash auto</string>
     <string name="flash_on_mode">Flash on</string>
     <string name="flash_torch_mode">Torch</string>
+
+    <string name="series_create">Create new series</string>
+    <string name="series_use">Use existing series</string>
+    <string name="series_qr">Scan barcode</string>
 
     <string name="debug_view_item_show">Show debug view</string>
 
