@@ -1,13 +1,16 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
@@ -50,6 +53,8 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
     private Snackbar mSnackbar;
     private ProgressBar mProgressBar;
 
+    private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,8 +87,13 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         mListView = (ExpandableListView) findViewById(R.id.sync_list_view);
         mContext = this;
 
-        // Sets the adapter, note: This fills the list.
-        updateListViewAdapter();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_EXTERNAL_STORAGE);
+        } else {
+            // Sets the adapter, note: This fills the list.
+            updateListViewAdapter();
+        }
 
         addFooter();
 
@@ -98,6 +108,44 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         // with actions named "PROGRESS_INTENT_NAME".
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("PROGRESS_INTENT_NAME"));
+
+    }
+
+    /**
+     * Called after permission has been given or has been rejected. This is necessary on Android M
+     * and younger Android systems.
+     *
+     * @param requestCode Request code
+     * @param permissions Permission
+     * @param grantResults results
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+
+
+        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+
+        if (requestCode == PERMISSION_READ_EXTERNAL_STORAGE && isPermissionGiven) {
+            // Sets the adapter, note: This fills the list.
+            updateListViewAdapter();
+        }
+        else
+            showNoPermissionSnackbar();
+
+    }
+
+    /**
+     * Shows a snackbar indicating that the device is offline.
+     */
+    private void showNoPermissionSnackbar() {
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_no_permissions);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_LONG);
+        mSnackbar.show();
 
     }
 

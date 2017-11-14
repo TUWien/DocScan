@@ -1,8 +1,11 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.InputFilter;
 import android.text.Spanned;
@@ -29,7 +32,8 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
     private Context mContext;
     private File mSelectedDir = null;
     private SeriesAdapter mAdapter;
-    public static final String SERIES_CREATED = "SERIES_CREATED";
+
+    private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +44,14 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
 
         mListView = (ExpandableListView) findViewById(R.id.document_list_view);
         mContext = this;
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_EXTERNAL_STORAGE);
+        } else {
+            // Sets the adapter, note: This fills the list.
+            updateListViewAdapter();
+        }
 
         addFooter();
 
@@ -64,67 +76,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
             }
         });
 
-//        FloatingActionButton addFolderButton = (FloatingActionButton) findViewById(R.id.add_folder_fab);
-//        addFolderButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-////                Taken from: https://stackoverflow.com/questions/35861081/custom-popup-dialog-with-input-field
-//
-//                LayoutInflater li = LayoutInflater.from(mContext);
-//                View promptsView = li.inflate(R.layout.create_document_view, null);
-//
-//                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-//                        mContext);
-//
-//                // set prompts.xml to alertdialog builder
-//                alertDialogBuilder.setView(promptsView);
-//
-//
-//
-//
-//                final EditText userInput = (EditText) promptsView.findViewById(R.id.document_name_edit);
-//
-//                userInput.setFilters(getInputFilters());
-//
-//                // set dialog message
-//                alertDialogBuilder
-//                        .setTitle(R.string.document_create_folder_title)
-//                        .setCancelable(true)
-//                        .setPositiveButton("OK",
-//                                new DialogInterface.OnClickListener() {
-//                                    public void onClick(DialogInterface dialog, int id) {
-//                                        onCreateDirResult(userInput.getText().toString());
-//                                    }
-//                                })
-//                        .setNegativeButton("Cancel",
-//                                new DialogInterface.OnClickListener() {
-//                                    public void onClick(DialogInterface dialog,int id) {
-////                                        dialog.cancel();
-//                                    }
-//                                });
-//
-//                // create alert dialog
-//                AlertDialog alertDialog = alertDialogBuilder.create();
-//
-//                // show it
-//                alertDialog.show();
-//            }
-//        });
-//
-//        FloatingActionButton confirmButton = (FloatingActionButton) findViewById(R.id.confirm_fab);
-//        confirmButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                if (mSelectedDir != null) {
-//                    User.getInstance().setDocumentName(mSelectedDir.getName());
-//                    finish(); // Close the activity
-//                }
-//                else
-//                    showNoFileSelectedAlert();
-//            }
-//        });
+
 
         mListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
@@ -134,6 +86,48 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
                 return false;
             }
         });
+    }
+
+    /**
+     * Called after permission has been given or has been rejected. This is necessary on Android M
+     * and younger Android systems.
+     *
+     * @param requestCode Request code
+     * @param permissions Permission
+     * @param grantResults results
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+
+
+        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+
+        if (requestCode == PERMISSION_READ_EXTERNAL_STORAGE && isPermissionGiven) {
+            // Sets the adapter, note: This fills the list.
+            updateListViewAdapter();
+        }
+        else
+            showNoPermissionAlert();
+
+    }
+
+    private void showNoPermissionAlert() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.document_no_permission_title)
+                .setCancelable(true)
+                .setPositiveButton("OK", null)
+                .setMessage(R.string.document_no_permission_message);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
     }
 
     /**
@@ -225,15 +219,27 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
 
     }
 
+    /**
+     * Updates the list view adapter and causes a new filling of the list view.
+     */
+    private void updateListViewAdapter() {
 
-    @Override
-    protected void onResume() {
-
-        super.onResume();
-        mAdapter = new SeriesAdapter(this);
-        mListView.setAdapter(mAdapter);
+        if (mContext != null) {
+            mAdapter = new SeriesAdapter(this);
+            if (mListView != null)
+                mListView.setAdapter(mAdapter);
+        }
 
     }
+
+//    @Override
+//    protected void onResume() {
+//
+//        super.onResume();
+//        mAdapter = new SeriesAdapter(this);
+//        mListView.setAdapter(mAdapter);
+//
+//    }
 
 
 }

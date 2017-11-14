@@ -103,6 +103,6 @@ dependencies {
     // retrofit - end:
     compile 'com.koushikdutta.ion:ion:2.+'
     compile project(':openCVLibrary310')
-    compile 'com.google.android.gms:play-services-auth:11.6.0' // we need this for the ProviderInstaller
+    compile 'com.google.android.gms:play-services-auth:11.4.0' // we need this for the ProviderInstaller
 
 }
