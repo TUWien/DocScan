@@ -101,7 +101,7 @@
 
     <string name="series_create">Create new series</string>
     <string name="series_use">Use existing series</string>
-    <string name="series_qr">Scan barcode</string>
+    <string name="series_qr">Scan QR code</string>
 
     <string name="debug_view_item_show">Show debug view</string>
 
