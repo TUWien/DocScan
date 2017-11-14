@@ -19,10 +19,6 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.security.ProviderInstaller;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -86,7 +82,7 @@ public class RequestHandler {
 
     public static void processLoginRequest(final LoginRequest request) {
 
-        checkProviderInstaller(request);
+//        checkProviderInstaller(request);
 
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, request.getURL(),
@@ -120,29 +116,6 @@ public class RequestHandler {
 
     }
 
-    /**
-     * Checks if the ProviderInstaller is up-to-date. This is necessary to fix the SSL
-     * SSLHandshakeException on Android 4 devices.
-     * as it is stated here: https://stackoverflow.com/questions/31269425/how-do-i-tell-the-tls-version-in-android-volley
-     * Could not reproduce that this is really necessary, since TLSSocketFactory already did the trick.
-     * (Google Play Services installed on testing devices were not too old.)
-     * @param request
-     */
-    private static void checkProviderInstaller(LoginRequest request) {
-        try {
-            ProviderInstaller.installIfNeeded(request.getContext());
-        } catch (GooglePlayServicesRepairableException e) {
-
-            // Indicates that Google Play services is out of date, disabled, etc.
-            // Prompt the user to install/update/enable Google Play services.
-            GooglePlayServicesUtil.showErrorNotification(
-                    e.getConnectionStatusCode(), request.getContext());
-
-        } catch (GooglePlayServicesNotAvailableException e) {
-            // Indicates a non-recoverable error; the ProviderInstaller is not able
-            // to install an up-to-date Provider.
-        }
-    }
 
     public static void processRequest(final RestRequest.XMLRequest request) {
 
