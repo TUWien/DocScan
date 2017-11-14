@@ -76,6 +76,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.security.ProviderInstaller;
+
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
@@ -289,9 +294,34 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mHideSeriesDialog = Settings.getInstance().loadKey(this, HIDE_SERIES_DIALOG_KEY);
 
+        checkProviderInstaller();
+
 
 //        MovementDetector.getInstance(this.getApplicationContext()).start();
 
+    }
+
+    /**
+     * Checks if the ProviderInstaller is up-to-date. This is necessary to fix the SSL
+     * SSLHandshakeException on Android 4 devices.
+     * as it is stated here: https://stackoverflow.com/questions/31269425/how-do-i-tell-the-tls-version-in-android-volley
+     * Could not reproduce that this is really necessary, since TLSSocketFactory already did the trick.
+     * (Google Play Services installed on testing devices were not too old.)
+     */
+    private void checkProviderInstaller() {
+        try {
+            ProviderInstaller.installIfNeeded(this);
+        } catch (GooglePlayServicesRepairableException e) {
+
+            // Indicates that Google Play services is out of date, disabled, etc.
+            // Prompt the user to install/update/enable Google Play services.
+            GooglePlayServicesUtil.showErrorNotification(
+                    e.getConnectionStatusCode(), mContext);
+
+        } catch (GooglePlayServicesNotAvailableException e) {
+            // Indicates a non-recoverable error; the ProviderInstaller is not able
+            // to install an up-to-date Provider.
+        }
     }
 
     @Override
