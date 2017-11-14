@@ -180,7 +180,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private DkPolyRect[] mLastDkPolyRects;
     private Toast mToast;
 
-    private boolean mIsQRActive = true;
+    private boolean mIsQRActive = false;
 
 
     /**
