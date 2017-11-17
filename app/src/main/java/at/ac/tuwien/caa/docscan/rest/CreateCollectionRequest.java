@@ -35,6 +35,8 @@ public class CreateCollectionRequest extends RestRequest.JSONObjectRestRequest {
     @Override
     public void handleResponse(JSONObject response) {
 
+        ((CreateCollectionCallback) mRestCallback).onCollectionCreated(mCollName);
+
     }
 
     public interface CreateCollectionCallback extends RestRequest.RestCallback{
