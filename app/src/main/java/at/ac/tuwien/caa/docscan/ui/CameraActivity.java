@@ -1741,7 +1741,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     @Override
-    public void onBarcode(Result result) {
+    public void onQRCode(Result result) {
 
         final String text;
         if (result == null)
@@ -1874,11 +1874,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
 //                mFlashMode = Camera.Parameters.FLASH_MODE_ON;
                 return true;
+
+            case R.id.series_new_item:
+                startActivity(new Intent(getApplicationContext(), CreateSeriesActivity.class));
+                return true;
+
+            case R.id.series_use_existing_item:
+                startActivity(new Intent(getApplicationContext(), DocumentActivity.class));
+                return true;
+
             case R.id.series_qr_item:
-                mIsQRActive = !mIsQRActive;
-                showControlsLayout(!mIsQRActive);
-                // TODO: set to true when the GUI is finished:
-                mCameraPreview.startQrMode(mIsQRActive);
+                mIsQRActive = true;
+                showControlsLayout(false);
+                mCameraPreview.startQrMode(true);
                 return true;
 
             default:

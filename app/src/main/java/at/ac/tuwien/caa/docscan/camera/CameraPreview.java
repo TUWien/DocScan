@@ -287,7 +287,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 Log.d(TAG, "rawresult output: " + rawResult.toString());
             }
 
-            mCVCallback.onBarcode(rawResult);
+            mCVCallback.onQRCode(rawResult);
 
 
 //            final Result finalRawResult = rawResult;
@@ -1567,7 +1567,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onCaptureVerified();
 //        void onBarCodeFound(final Barcode barcode);
 //        void onTextFound(final String result);
-        void onBarcode(Result result);
+        void onQRCode(Result result);
 
     }
 
