@@ -82,61 +82,6 @@ public class SeriesGeneralActivity extends BaseNoNavigationActivity {
 
     }
 
-//    private void initStartButton() {
-//        Button startButton = (Button) findViewById(R.id.series_general_start_button);
-//
-//        startButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//
-//
-//
-//                //                Taken from: https://stackoverflow.com/questions/35861081/custom-popup-dialog-with-input-field
-//
-//                LayoutInflater li = LayoutInflater.from(mContext);
-//                View promptsView = li.inflate(R.layout.create_document_view, null);
-//
-//                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
-//
-//                // set prompts.xml to alertdialog builder
-//                alertDialogBuilder.setView(promptsView);
-//
-//                final EditText userInput = (EditText) promptsView.findViewById(R.id.document_name_edit);
-//
-//                userInput.setFilters(getInputFilters());
-//
-//                // set dialog message
-//                alertDialogBuilder
-//                        .setTitle(R.string.document_create_folder_title)
-//                        .setCancelable(true)
-//                        .setPositiveButton("OK",
-//                                new DialogInterface.OnClickListener() {
-//                                    public void onClick(DialogInterface dialog, int id) {
-//                                        onCreateDirResult(userInput.getText().toString());
-//                                    }
-//                                })
-//                        .setNegativeButton("Cancel",
-//                                new DialogInterface.OnClickListener() {
-//                                    public void onClick(DialogInterface dialog,int id) {
-////                                        dialog.cancel();
-//                                    }
-//                                });
-//
-//                // create alert dialog
-//                AlertDialog alertDialog = alertDialogBuilder.create();
-////                alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN | WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-//                alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-////                alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-//
-//                // show it
-//                alertDialog.show();
-//
-//
-//            }
-//        });
-//    }
-
     private void initSelectButton() {
         Button selectButton = (Button) findViewById(R.id.series_general_select_button);
         selectButton.setOnClickListener(new View.OnClickListener() {
