@@ -77,6 +77,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.Result;
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.security.ProviderInstaller;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -296,14 +300,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         showControlsLayout(!mIsQRActive);
 
-//        if (mIsQRActive) {
-//            RelativeLayout l = (RelativeLayout) findViewById(controls_layout);
-//            l.setVisibility(View.INVISIBLE);
-//
-//            RelativeLayout qrLayout = (RelativeLayout) findViewById(R.id.qr_controls_layout);
-//            qrLayout.setVisibility(View.VISIBLE);
-//        }
-
+		checkProviderInstaller();
 
 //        MovementDetector.getInstance(this.getApplicationContext()).start();
 
@@ -341,6 +338,29 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (qrLayout != null)
             qrLayout.setVisibility(qrCodeVisibility);
 
+    }
+
+    /**
+     * Checks if the ProviderInstaller is up-to-date. This is necessary to fix the SSL
+     * SSLHandshakeException on Android 4 devices.
+     * as it is stated here: https://stackoverflow.com/questions/31269425/how-do-i-tell-the-tls-version-in-android-volley
+     * Could not reproduce that this is really necessary, since TLSSocketFactory already did the trick.
+     * (Google Play Services installed on testing devices were not too old.)
+     */
+    private void checkProviderInstaller() {
+        try {
+            ProviderInstaller.installIfNeeded(this);
+        } catch (GooglePlayServicesRepairableException e) {
+
+            // Indicates that Google Play services is out of date, disabled, etc.
+            // Prompt the user to install/update/enable Google Play services.
+            GooglePlayServicesUtil.showErrorNotification(
+                    e.getConnectionStatusCode(), mContext);
+
+        } catch (GooglePlayServicesNotAvailableException e) {
+            // Indicates a non-recoverable error; the ProviderInstaller is not able
+            // to install an up-to-date Provider.
+        }
     }
 
     @Override
@@ -1282,7 +1302,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setTitle("Ich bin ein Ã–sterreicher");
+            getSupportActionBar().setTitle("Ich bin ein Österreicher");
 
 //            getToolbar().setOnClickListener(new View.OnClickListener() {
 //                @Override
@@ -1291,7 +1311,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //                }
 //            });
 
-//            final int abTitleId = getResources().getIdentifier("Ich bin ein Ã–sterreicher", "id", "android");
+//            final int abTitleId = getResources().getIdentifier("Ich bin ein Österreicher", "id", "android");
 //            findViewById(abTitleId).setOnClickListener(new View.OnClickListener() {
 //
 //                @Override

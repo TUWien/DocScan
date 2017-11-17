@@ -5,12 +5,16 @@ package at.ac.tuwien.caa.docscan.rest;
  */
 
 import android.content.Context;
+import android.os.Build;
+import android.util.Log;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpStack;
+import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
@@ -19,6 +23,8 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,7 +47,43 @@ public class RequestHandler {
 
     }
 
+    /**
+     * Creates a new request queue. If API is between JELLY_BEAN and KIT_KAT a HttpStack with
+     * TLSSocketFactory is generated. This fixes the SSLHandshakeException on Android 4 devices.
+     * Taken from: https://stackoverflow.com/questions/31269425/how-do-i-tell-the-tls-version-in-android-volley
+     * @param context
+     * @return
+     */
+    public static RequestQueue createRequestQueue(Context context) {
+
+        RequestQueue requestQueue;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
+                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+            HttpStack stack = null;
+            try {
+                stack = new HurlStack(null, new TLSSocketFactory());
+            } catch (KeyManagementException e) {
+                e.printStackTrace();
+                Log.d("Your Wrapper Class", "Could not create new stack for TLS v1.2");
+                stack = new HurlStack();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+                Log.d("Your Wrapper Class", "Could not create new stack for TLS v1.2");
+                stack = new HurlStack();
+            }
+            requestQueue = Volley.newRequestQueue(context, stack);
+        } else {
+            requestQueue = Volley.newRequestQueue(context);
+        }
+
+        return requestQueue;
+    }
+
     public static void processLoginRequest(final LoginRequest request) {
+
+//        checkProviderInstaller(request);
+
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, request.getURL(),
                 new Response.Listener<String>() {
@@ -68,12 +110,12 @@ public class RequestHandler {
             }
         };
 
-        //Adding the string request to the queue
-        RequestQueue requestQueue = Volley.newRequestQueue(request.getContext());
+        RequestQueue requestQueue = createRequestQueue(request.getContext());
         requestQueue.add(stringRequest);
 
 
     }
+
 
     public static void processRequest(final RestRequest.XMLRequest request) {
 
@@ -102,7 +144,8 @@ public class RequestHandler {
         };
 
         //Adding the string request to the queue
-        RequestQueue requestQueue = Volley.newRequestQueue(request.getContext());
+//        RequestQueue requestQueue = Volley.newRequestQueue(request.getContext());
+        RequestQueue requestQueue = createRequestQueue(request.getContext());
         requestQueue.add(stringRequest);
     }
 
@@ -116,7 +159,8 @@ public class RequestHandler {
 
 
         //Adding the string request to the queue
-        RequestQueue requestQueue = Volley.newRequestQueue(request.getContext());
+//        RequestQueue requestQueue = Volley.newRequestQueue(request.getContext());
+        RequestQueue requestQueue = createRequestQueue(request.getContext());
         requestQueue.add(r);
 
     }
@@ -124,7 +168,8 @@ public class RequestHandler {
     public static void processMultiPartRequest(Context context,  MultipartRequest multipartRequest) {
 
         //Adding the string request to the queue
-        RequestQueue requestQueue = Volley.newRequestQueue(context);
+//        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        RequestQueue requestQueue = createRequestQueue(context);
         requestQueue.add(multipartRequest);
 
     }
