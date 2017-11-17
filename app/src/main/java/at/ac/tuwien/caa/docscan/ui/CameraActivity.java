@@ -296,6 +296,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //        in onCreate.
         initDocumentButton();
 
+        // update the title of the toolbar:
+        getSupportActionBar().setTitle(User.getInstance().getDocumentName());
+
         mHideSeriesDialog = Settings.getInstance().loadKey(this, HIDE_SERIES_DIALOG_KEY);
 
         showControlsLayout(!mIsQRActive);
@@ -397,6 +400,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mCounterView = (TextView) findViewById(R.id.counter_view);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSeriesPopup(null);
+            }
+        });
         setSupportActionBar(toolbar);
         setupToolbar();
         setupNavigationDrawer();
@@ -1299,10 +1308,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeButtonEnabled(true);
-            getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setTitle("Ich bin ein Österreicher");
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setTitle("Ich bin ein Ã–sterreicher");
+
 
 //            getToolbar().setOnClickListener(new View.OnClickListener() {
 //                @Override
@@ -1311,7 +1321,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //                }
 //            });
 
-//            final int abTitleId = getResources().getIdentifier("Ich bin ein Österreicher", "id", "android");
+//            final int abTitleId = getResources().getIdentifier("Ich bin ein ï¿½sterreicher", "id", "android");
 //            findViewById(abTitleId).setOnClickListener(new View.OnClickListener() {
 //
 //                @Override
