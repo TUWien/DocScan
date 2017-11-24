@@ -97,7 +97,7 @@
             />
 
         <activity
-            android:name=".crop.CropViewActivity"
+            android:name=".ui.CropViewActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize"
             />

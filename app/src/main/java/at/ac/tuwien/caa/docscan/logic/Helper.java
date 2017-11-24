@@ -70,4 +70,29 @@ public class Helper {
 
         return mediaStorageDir;
     }
+
+    /**
+     * Returns the angle from an exif orientation
+     * @param orientation
+     * @return angle (in degrees)
+     */
+    public static int getAngleFromExif(int orientation) {
+
+        switch (orientation) {
+
+            case 1:
+                return 0;
+            case 6:
+                return 90;
+            case 3:
+                return 180;
+            case 8:
+                return 270;
+
+        }
+
+        return -1;
+
+    }
+
 }
