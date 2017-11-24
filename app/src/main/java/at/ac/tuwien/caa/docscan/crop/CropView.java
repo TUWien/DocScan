@@ -75,7 +75,9 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private float mImgWidth = 0.0f;
     private float mImgHeight = 0.0f;
     private PointF mCenter = new PointF();
+    private PointF marker1 = new PointF();
 
+    private ArrayList<PointF> mNormedPoints;
 
 
 
@@ -105,17 +107,38 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
         mFrameRect = new RectF(0,0, 200, 200);
 
-        ArrayList<PointF> points = new ArrayList<>();
-        points.add(new PointF(100,100));
-        points.add(new PointF(300,100));
-        points.add(new PointF(400,400));
-        points.add(new PointF(10, 100));
-
-        mCropQuad = new CropQuad(points);
+//        ArrayList<PointF> points = new ArrayList<>();
+//        points.add(new PointF(100,100));
+//        points.add(new PointF(300,100));
+//        points.add(new PointF(400,400));
+//        points.add(new PointF(10, 100));
+//
+//        mCropQuad = new CropQuad(points);
 
         initQuadPaint();
 
     }
+
+    public void setBitmapAndPoints(Bitmap bitmap, ArrayList<PointF> normedPoints) {
+
+        setImageBitmap(bitmap);
+        mCropQuad = new CropQuad(normedPoints, bitmap.getWidth(), bitmap.getHeight());
+
+    }
+
+//    public void setNormedPoints(ArrayList<PointF> normedPoints) {
+//
+//        mNormedPoints = normedPoints;
+//        // Check if the bitmap is already set, if so create the CropQuad:
+//        Bitmap bm = getBitmap();
+//
+//        // TODO: check what we can do against first setting points and then setting the bitmap:
+//        if (bm != null)
+//            mCropQuad = new CropQuad(normedPoints, bm.getWidth(), bm.getHeight());
+//    }
+
+
+//    public void setPoints()
 
     private void initQuadPaint() {
 
@@ -179,6 +202,8 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     }
 
     private void drawQuad(Canvas canvas) {
+
+//        canvas.drawCircle(marker1.x, marker1.y, 50, mQuadPaint);
 
         mQuadPath.reset();
         boolean isStartSet = false;
@@ -257,6 +282,39 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         mCenter = new PointF(getPaddingLeft() + viewW * 0.5f, getPaddingTop() + viewH * 0.5f);
         mScale = calcScale(viewW, viewH);
         setMatrix();
+
+        // Tell the CropQuad the transformation:
+        Bitmap bm = getBitmap();
+        if (bm != null && mCropQuad != null) {
+
+            int numPts = 8;
+            float[] points = new float[numPts];
+            float[] dstPoints = new float[numPts];
+
+            points[0] = mCropQuad.getNormedPoints().get(0).x;
+            points[1] = mCropQuad.getNormedPoints().get(0).y;
+
+            points[2] = mCropQuad.getNormedPoints().get(1).x;
+            points[3] = mCropQuad.getNormedPoints().get(1).y;
+
+            points[4] = mCropQuad.getNormedPoints().get(2).x;
+            points[5] = mCropQuad.getNormedPoints().get(2).y;
+
+            points[6] = mCropQuad.getNormedPoints().get(3).x;
+            points[7] = mCropQuad.getNormedPoints().get(3).y;
+
+            mMatrix.mapPoints(points);
+
+            ArrayList<PointF> mappedPoints = new ArrayList<>();
+            mappedPoints.add(new PointF(points[0], points[1]));
+            mappedPoints.add(new PointF(points[2], points[3]));
+            mappedPoints.add(new PointF(points[4], points[5]));
+            mappedPoints.add(new PointF(points[6], points[7]));
+
+            mCropQuad.setPoints(mappedPoints);
+
+        }
+
 //        mImageRect = calcImageRect(new RectF(0f, 0f, mImgWidth, mImgHeight), mMatrix);
 
 //        if (mInitialFrameRect != null) {
@@ -286,6 +344,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     }
 
     private void setMatrix() {
+
         mMatrix.reset();
         mMatrix.setTranslate(mCenter.x - mImgWidth * 0.5f, mCenter.y - mImgHeight * 0.5f);
         mMatrix.postScale(mScale, mScale, mCenter.x, mCenter.y);

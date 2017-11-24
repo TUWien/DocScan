@@ -76,11 +76,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.zxing.Result;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
+import com.google.zxing.Result;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -91,6 +91,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -108,6 +109,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -119,6 +121,8 @@ import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
+import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
+import static at.ac.tuwien.caa.docscan.logic.Helper.getAngleFromExif;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
@@ -182,6 +186,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private static Date mLastTimeStamp;
     private int mMaxFrameCnt = 0;
     private DkPolyRect[] mLastDkPolyRects;
+
+    private DkPolyRect mCropRect;
+
     private Toast mToast;
 
     private boolean mIsQRActive = false;
@@ -809,6 +816,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                                 startDocumentActivity();
                         }
                         else if (mIsPictureSafe) {
+                            // Store the current crop rectangle:
+                            mCropRect = null;
+                            if (mCVResult != null && mCVResult.getDKPolyRects() != null && mCVResult.getDKPolyRects().length > 0) {
+                                mCropRect = mCVResult.getDKPolyRects()[0];
+                            }
+
                             // get an image from the camera
                             takePicture();
                         }
@@ -2159,25 +2172,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    private int getAngleFromExif(int orientation) {
-
-        switch (orientation) {
-
-            case 1:
-                return 0;
-            case 6:
-                return 90;
-            case 3:
-                return 180;
-            case 8:
-                return 270;
-
-        }
-
-        return -1;
-
-    }
-
 
     @Override
     protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
@@ -2236,7 +2230,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     /**
      * Class used to save pictures in an own thread (AsyncTask).
      */
-    private class FileSaver extends AsyncTask<Uri, Void, Void> {
+    private class FileSaver extends AsyncTask<Uri, Void, String> {
 
         private byte[] mData;
 
@@ -2247,7 +2241,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
 
         @Override
-        protected Void doInBackground(Uri... uris) {
+        protected String doInBackground(Uri... uris) {
 
             mIsSaving = true;
 
@@ -2281,6 +2275,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //                addToSyncList(mContext, outFile);
 
                 mIsPictureSafe = true;
+
+                return uris[0].getPath();
 
             }
 
@@ -2379,11 +2375,28 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
 
 
-        protected void onPostExecute(Void v) {
+        protected void onPostExecute(String uri) {
 
             mIsSaving = false;
             // Release the memory. Note this is essential, because otherwise allocated memory will increase.
             mData = null;
+
+            if (!mIsSeriesMode && uri != null) {
+
+
+                if (mCropRect != null && mCVResult != null) {
+                    ArrayList<PointF> cropPoints = mCVResult.normPoints(mCropRect);
+
+                    Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+                    CropInfo r = new CropInfo(cropPoints, uri);
+                    intent.putExtra(CROP_INFO_NAME, r);
+                    startActivity(intent);
+
+                }
+
+
+
+            }
 
         }
 

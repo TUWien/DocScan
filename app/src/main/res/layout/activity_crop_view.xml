@@ -19,16 +19,17 @@
         </android.support.design.widget.AppBarLayout>
 
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="@dimen/activity_vertical_margin">
+        <!--<RelativeLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_margin="@dimen/activity_vertical_margin">-->
 
             <at.ac.tuwien.caa.docscan.crop.CropView
+                android:id="@+id/crop_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/black"
-                android:src="@drawable/transkribus"
+
                 />
 
             <!--<at.ac.tuwien.caa.docscan.crop.CropView-->
@@ -36,7 +37,7 @@
                 <!--android:layout_height="match_parent"-->
                 <!--android:src="@drawable/transkribus"-->
                 <!--android:scaleType="centerInside"/>-->
-        </RelativeLayout>
+        <!--</RelativeLayout>-->
     </LinearLayout>
 
     <include layout="@layout/navigation_view"/>
