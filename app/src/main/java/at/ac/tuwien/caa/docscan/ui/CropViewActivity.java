@@ -1,12 +1,17 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.PointF;
 import android.media.ExifInterface;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
@@ -21,6 +26,9 @@ import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
 public class CropViewActivity extends BaseNoNavigationActivity {
 
+    private CropView mCropView;
+    private String mFileName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -30,12 +38,37 @@ public class CropViewActivity extends BaseNoNavigationActivity {
         super.initToolbarTitle(R.string.crop_view_title);
 
         CropInfo cropInfo = getIntent().getParcelableExtra(CROP_INFO_NAME);
+        mCropView = (CropView) findViewById(R.id.crop_view);
+        initCropInfo(cropInfo);
 
+        ImageButton button = (ImageButton) findViewById(R.id.confirm_crop_view_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startMapView();
+            }
+        });
+
+    }
+
+    private void startMapView() {
+
+        ArrayList<PointF> cropPoints = mCropView.getCropPoints();
+
+        Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
+        CropInfo r = new CropInfo(cropPoints, mFileName);
+        intent.putExtra(CROP_INFO_NAME, r);
+        startActivity(intent);
+
+    }
+
+    private void initCropInfo(CropInfo cropInfo) {
         // Unfortunately the exif orientation is not used by BitmapFactory:
         try {
 
-            Bitmap bitmap = BitmapFactory.decodeFile(cropInfo.getFileName());
-            CropView cropView = (CropView) findViewById(R.id.crop_view);
+            mFileName = cropInfo.getFileName();
+            Bitmap bitmap = BitmapFactory.decodeFile(mFileName);
+
 
             ExifInterface exif = new ExifInterface(cropInfo.getFileName());
             int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
@@ -47,14 +80,11 @@ public class CropViewActivity extends BaseNoNavigationActivity {
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), mtx, true);
             }
 
-            cropView.setBitmapAndPoints(bitmap, cropInfo.getPoints());
+            mCropView.setBitmapAndPoints(bitmap, cropInfo.getPoints());
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
     }
 
     private void testAffineTransform() {

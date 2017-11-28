@@ -2,14 +2,20 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/series_details_item"
+        android:title="@string/series_details"
+        />
+
+    <item
         android:id="@+id/series_new_item"
         android:title="@string/series_create"
         />
 
     <item
-        android:id="@+id/series_use_existing_item"
-        android:title="@string/series_use"
+        android:id="@+id/series_switch_item"
+        android:title="@string/series_switch_text"
         />
+
 
     <item
         android:id="@+id/series_qr_item"
