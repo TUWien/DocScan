@@ -45,4 +45,7 @@
         </RelativeLayout>
     </LinearLayout>
 
+    <include layout="@layout/navigation_view"/>
+
+
 </android.support.v4.widget.DrawerLayout>

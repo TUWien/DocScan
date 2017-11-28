@@ -7,6 +7,7 @@
     android:background="@color/navigation_drawer_bg_color"
     android:theme="@style/GalaxyZooThemeToolbarDarkOverflow"
     app:popupTheme="@style/Theme.AppCompat.Light"
+    app:titleTextAppearance="@style/Toolbar.TitleText"
 />
 <!--android:elevation="4dp"-->
     <!--app:theme="@style/CustomActionBar"-->
