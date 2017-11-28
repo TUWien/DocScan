@@ -115,6 +115,8 @@ import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
+import at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity;
+import at.ac.tuwien.caa.docscan.ui.document.SeriesGeneralActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
@@ -1776,8 +1778,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         final String text;
         if (result == null)
             text = getString(R.string.instruction_searching_qr);
-        else
+        else {
             text = result.toString();
+        }
 
         runOnUiThread(new Runnable() {
             @Override

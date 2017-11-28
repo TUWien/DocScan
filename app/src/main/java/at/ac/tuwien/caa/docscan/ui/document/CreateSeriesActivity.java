@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui;
+package at.ac.tuwien.caa.docscan.ui.document;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -7,7 +7,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 
 import java.io.File;
 
@@ -16,12 +19,13 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
+import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 
 /**
  * Created by fabian on 24.10.2017.
  */
 
-public class CreateSeriesActivity extends BaseNoNavigationActivity  {
+public class CreateSeriesActivity extends BaseNoNavigationActivity {
 
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
 
@@ -43,6 +47,21 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity  {
             @Override
             public void onClick(View v) {
                 onCreateDirResult(userInput.getText().toString());
+            }
+        });
+
+        final RelativeLayout fieldsLayout = (RelativeLayout) findViewById(R.id.create_series_fields_layout);
+
+        CheckBox showFieldsCheckBox = (CheckBox) findViewById(R.id.create_series_advanced_options_checkbox);
+        showFieldsCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                if (isChecked)
+                    fieldsLayout.setVisibility(View.VISIBLE);
+                else
+                    fieldsLayout.setVisibility(View.INVISIBLE);
+
             }
         });
 
