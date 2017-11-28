@@ -138,7 +138,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 //    }
 
 
-//    public void setPoints()
+//    public void setViewPoints()
 
     private void initQuadPaint() {
 
@@ -208,7 +208,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         mQuadPath.reset();
         boolean isStartSet = false;
 
-        for (PointF point : mCropQuad.getPoints()) {
+        for (PointF point : mCropQuad.getViewPoints()) {
 
             if (!isStartSet) {
                 mQuadPath.moveTo(point.x, point.y);
@@ -287,31 +287,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         Bitmap bm = getBitmap();
         if (bm != null && mCropQuad != null) {
 
-            int numPts = 8;
-            float[] points = new float[numPts];
-            float[] dstPoints = new float[numPts];
-
-            points[0] = mCropQuad.getNormedPoints().get(0).x;
-            points[1] = mCropQuad.getNormedPoints().get(0).y;
-
-            points[2] = mCropQuad.getNormedPoints().get(1).x;
-            points[3] = mCropQuad.getNormedPoints().get(1).y;
-
-            points[4] = mCropQuad.getNormedPoints().get(2).x;
-            points[5] = mCropQuad.getNormedPoints().get(2).y;
-
-            points[6] = mCropQuad.getNormedPoints().get(3).x;
-            points[7] = mCropQuad.getNormedPoints().get(3).y;
-
-            mMatrix.mapPoints(points);
-
-            ArrayList<PointF> mappedPoints = new ArrayList<>();
-            mappedPoints.add(new PointF(points[0], points[1]));
-            mappedPoints.add(new PointF(points[2], points[3]));
-            mappedPoints.add(new PointF(points[4], points[5]));
-            mappedPoints.add(new PointF(points[6], points[7]));
-
-            mCropQuad.setPoints(mappedPoints);
+            mapCropQuadPoints();
 
         }
 
@@ -325,6 +301,75 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 //
 //        mIsInitialized = true;
         invalidate();
+    }
+
+    private void mapCropQuadPoints() {
+        int numPts = 8;
+        float[] imgPoints = new float[numPts];
+
+
+        imgPoints[0] = mCropQuad.getImgPoints().get(0).x;
+        imgPoints[1] = mCropQuad.getImgPoints().get(0).y;
+
+        imgPoints[2] = mCropQuad.getImgPoints().get(1).x;
+        imgPoints[3] = mCropQuad.getImgPoints().get(1).y;
+
+        imgPoints[4] = mCropQuad.getImgPoints().get(2).x;
+        imgPoints[5] = mCropQuad.getImgPoints().get(2).y;
+
+        imgPoints[6] = mCropQuad.getImgPoints().get(3).x;
+        imgPoints[7] = mCropQuad.getImgPoints().get(3).y;
+
+        mMatrix.mapPoints(imgPoints);
+
+        ArrayList<PointF> viewPoints = new ArrayList<>();
+        viewPoints.add(new PointF(imgPoints[0], imgPoints[1]));
+        viewPoints.add(new PointF(imgPoints[2], imgPoints[3]));
+        viewPoints.add(new PointF(imgPoints[4], imgPoints[5]));
+        viewPoints.add(new PointF(imgPoints[6], imgPoints[7]));
+
+        mCropQuad.setViewPoints(viewPoints);
+
+    }
+
+    public ArrayList<PointF> getCropPoints() {
+
+        return mapCropQuadPointsInverse();
+
+    }
+
+    private ArrayList<PointF> mapCropQuadPointsInverse() {
+
+        Matrix inv = new Matrix();
+        mMatrix.invert(inv);
+
+        int numPts = 8;
+        float[] points = new float[numPts];
+
+
+        points[0] = mCropQuad.getViewPoints().get(0).x;
+        points[1] = mCropQuad.getViewPoints().get(0).y;
+
+        points[2] = mCropQuad.getViewPoints().get(1).x;
+        points[3] = mCropQuad.getViewPoints().get(1).y;
+
+        points[4] = mCropQuad.getViewPoints().get(2).x;
+        points[5] = mCropQuad.getViewPoints().get(2).y;
+
+        points[6] = mCropQuad.getViewPoints().get(3).x;
+        points[7] = mCropQuad.getViewPoints().get(3).y;
+
+        inv.mapPoints(points);
+
+        ArrayList<PointF> mappedPoints = new ArrayList<>();
+        mappedPoints.add(new PointF(points[0], points[1]));
+        mappedPoints.add(new PointF(points[2], points[3]));
+        mappedPoints.add(new PointF(points[4], points[5]));
+        mappedPoints.add(new PointF(points[6], points[7]));
+
+        return mappedPoints;
+//        mCropQuad.setViewPoints(mappedPoints);
+
     }
 
     private float calcScale(int viewW, int viewH) {

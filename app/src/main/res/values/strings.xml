@@ -100,7 +100,8 @@
     <string name="flash_torch_mode">Torch</string>
 
     <string name="series_create">Create new series</string>
-    <string name="series_use">Use existing series</string>
+    <string name="series_switch_text">Switch series</string>
+    <string name="series_details">Series details</string>
     <string name="series_qr">Series from QR code</string>
 
     <string name="debug_view_item_show">Show debug view</string>
@@ -220,6 +221,8 @@
     <string name="create_series_done_button_text">OK</string>
 
     <string name="crop_view_title">Crop image</string>
+
+    <string name="map_crop_view_title">Warp image</string>
 
 
 

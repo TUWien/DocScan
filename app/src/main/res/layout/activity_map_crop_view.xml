@@ -26,25 +26,25 @@
             >
 
             <ImageButton
-                android:id="@+id/confirm_crop_view_button"
+                android:id="@+id/confirm_map_crop_view_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
                 android:backgroundTint="@color/colorAccent"
                 android:src="@drawable/ic_done_black_24dp"/>
 
-            <at.ac.tuwien.caa.docscan.crop.CropView
-                android:layout_above="@id/confirm_crop_view_button"
-                android:id="@+id/crop_view"
+            <ImageView
+                android:layout_above="@id/confirm_map_crop_view_button"
+                android:id="@+id/map_crop_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
 
                 />
             <!--<at.ac.tuwien.caa.docscan.crop.CropView-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:src="@drawable/transkribus"-->
-                <!--android:scaleType="centerInside"/>-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:src="@drawable/transkribus"-->
+            <!--android:scaleType="centerInside"/>-->
         </RelativeLayout>
     </LinearLayout>
 

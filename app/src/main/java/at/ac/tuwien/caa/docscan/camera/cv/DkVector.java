@@ -9,11 +9,24 @@ public class DkVector {
 
     public float x, y;
 
+    private PointF mPoint1, mPoint2;
+
     public DkVector(PointF point1, PointF point2) {
 
         x = point1.x - point2.x;
         y = point1.y - point2.y;
 
+        mPoint1 = point1;
+        mPoint2 = point2;
+
+    }
+
+    public PointF getPoint1() {
+        return mPoint1;
+    }
+
+    public PointF getPoint2() {
+        return mPoint2;
     }
 
     public double length() {

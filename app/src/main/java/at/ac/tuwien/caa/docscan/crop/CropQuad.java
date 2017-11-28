@@ -15,64 +15,23 @@ public class CropQuad {
 
     private static final int NO_ACTIVE_POINT_IDX = -1;
 
-    private ArrayList<PointF> mPoints, mNormedPoints;
+    private ArrayList<PointF> mViewPoints, mImgPoints;
     private int mActivePointIdx;
 //    private int mImgWidth, mImgHeight;
 
-    public CropQuad() {
-
-        mPoints = new ArrayList<>();
-
-    }
-
-    /**
-     * Constructs a CropQuad with [0-1] normalized points
-     * @param normedPoints
-     */
-    public CropQuad(ArrayList<PointF> normedPoints) {
-
-        mNormedPoints = normedPoints;
-
-//        mPoints = points;
-//        mPoints = convertPoints(normedPoints, imgWidth, imgHeight, scale);
-//        mImgWidth = imgWidth;
-//        mImgHeight = imgHeight;
-
-    }
 
     public CropQuad(ArrayList<PointF> points, int imgWidth, int imgHeight) {
 
-        mNormedPoints = convertPoints(points, imgWidth, imgHeight);
+        mImgPoints = convertPoints(points, imgWidth, imgHeight);
 
     }
 
-    public void setPoints(ArrayList<PointF> points) {
-        mPoints = points;
-    }
+    public void setViewPoints(ArrayList<PointF> points) {
 
-    public void transformPoints(int imgWidth, int imgHeight, float scale) {
-
-        mPoints = convertPoints(mNormedPoints, imgWidth, imgHeight, scale);
+        mViewPoints = points;
 
     }
 
-    /**
-     * Scales normalized cropping points to bitmap size.
-     * @param normedPoints
-     * @param imgWidth
-     * @param imgHeight
-     * @return
-     */
-    private ArrayList convertPoints(ArrayList<PointF> normedPoints, int imgWidth, int imgHeight, float scale) {
-
-        ArrayList points = new ArrayList<>();
-
-        for (PointF normedPoint : normedPoints)
-            points.add(new PointF(normedPoint.x * imgWidth * scale, normedPoint.y * imgHeight * scale));
-
-        return points;
-
-    }
 
     private ArrayList convertPoints(ArrayList<PointF> normedPoints, int imgWidth, int imgHeight) {
 
@@ -85,15 +44,15 @@ public class CropQuad {
 
     }
 
-    public ArrayList<PointF> getNormedPoints() {
+    public ArrayList<PointF> getImgPoints() {
 
-        return mNormedPoints;
+        return mImgPoints;
 
     }
 
-    public ArrayList<PointF> getPoints() {
+    public ArrayList<PointF> getViewPoints() {
 
-        return mPoints;
+        return mViewPoints;
 
     }
 
@@ -105,7 +64,7 @@ public class CropQuad {
         int closestPointIdx = getClosestPoint(touchPoint);
 
         // Calculate how close the touch event is to the quad point:
-        DkVector v = new DkVector(mPoints.get(closestPointIdx), touchPoint);
+        DkVector v = new DkVector(mViewPoints.get(closestPointIdx), touchPoint);
         double dist = v.length();
 
         // TODO: use a screen independent threshold here
@@ -129,7 +88,7 @@ public class CropQuad {
 
             // Check the new point position, we do not accept concavities:
             if (isLeft(mActivePointIdx, touchPoint))
-                mPoints.get(mActivePointIdx).set(touchPoint);
+                mViewPoints.get(mActivePointIdx).set(touchPoint);
 
             return true;
         }
@@ -139,15 +98,15 @@ public class CropQuad {
     private boolean isLeft(int pointIdx, PointF point) {
 
 
-        Log.d(getClass().getName(), "points length: " + mPoints.size());
+        Log.d(getClass().getName(), "points length: " + mViewPoints.size());
 
-        int startIdx = (pointIdx - 1) % mPoints.size();
+        int startIdx = (pointIdx - 1) % mViewPoints.size();
         if (startIdx < 0)
-            startIdx += mPoints.size();
-        int endIdx = (pointIdx + 1) % mPoints.size();
+            startIdx += mViewPoints.size();
+        int endIdx = (pointIdx + 1) % mViewPoints.size();
 
-        PointF p1 = mPoints.get(startIdx);
-        PointF p2 = mPoints.get(endIdx);
+        PointF p1 = mViewPoints.get(startIdx);
+        PointF p2 = mViewPoints.get(endIdx);
 
         return isLeft(p2, p1, point);
 
@@ -160,8 +119,8 @@ public class CropQuad {
 
     private double getAngle(int pointIdx) {
 
-        DkVector v1 = new DkVector(mPoints.get(pointIdx - 1), mPoints.get(pointIdx % mPoints.size()));
-        DkVector v2 = new DkVector(mPoints.get(pointIdx  % mPoints.size()), mPoints.get((pointIdx+1) % mPoints.size()));
+        DkVector v1 = new DkVector(mViewPoints.get(pointIdx - 1), mViewPoints.get(pointIdx % mViewPoints.size()));
+        DkVector v2 = new DkVector(mViewPoints.get(pointIdx  % mViewPoints.size()), mViewPoints.get((pointIdx+1) % mViewPoints.size()));
 
         double cAngle = v1.angle(v2);
 
@@ -175,7 +134,7 @@ public class CropQuad {
         int minIdx = 0;
         int idx = 0;
 
-        for (PointF corner : mPoints) {
+        for (PointF corner : mViewPoints) {
 
             DkVector v = new DkVector(corner, point);
             double dist = v.length();
