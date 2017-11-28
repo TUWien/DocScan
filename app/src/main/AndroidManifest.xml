@@ -97,12 +97,6 @@
             />
 
         <activity
-            android:name=".crop.CropViewActivity"
-            android:exported="true"
-            android:configChanges="orientation|screenSize"
-            />
-
-        <activity
             android:name=".ui.SettingsActivity"
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
