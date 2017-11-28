@@ -58,7 +58,7 @@
     <string name="about_text">DocScan\n2017</string>
 
     <!-- PaintView -->
-    <string name="instruction_empty">no document found</string>
+    <string name="instruction_empty">no page found</string>
     <string name="instruction_small">move closer</string>
     <string name="instruction_perspective">change perspective</string>
     <string name="instruction_rotation">rotate</string>
@@ -218,6 +218,7 @@
     <string name="create_series_title">Create new document</string>
     <string name="create_series_name_hint">Document name</string>
     <string name="create_series_done_button_text">OK</string>
+    <string name="create_series_advanced_options_text">Show more fields</string>
 
 
 </resources>
