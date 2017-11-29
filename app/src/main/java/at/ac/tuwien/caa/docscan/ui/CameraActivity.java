@@ -76,11 +76,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.zxing.Result;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
+import com.google.zxing.Result;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -125,6 +125,7 @@ import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
+import static at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity.DOCUMENT_QR_TEXT;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -559,6 +560,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             });
         }
 
+    }
+
+    /**
+     * Start the CreateSeriesActivity via an intent.
+     * @param qrText
+     */
+    private void startCreateSeriesActivity(String qrText) {
+
+        Intent intent = new Intent(getApplicationContext(), CreateSeriesActivity.class);
+        intent.putExtra(DOCUMENT_QR_TEXT, qrText);
+        startActivity(intent);
     }
 
     /**
@@ -1780,6 +1792,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             text = getString(R.string.instruction_searching_qr);
         else {
             text = result.toString();
+            startCreateSeriesActivity(text);
+
         }
 
         runOnUiThread(new Runnable() {

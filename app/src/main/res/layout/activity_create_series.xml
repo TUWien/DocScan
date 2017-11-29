@@ -55,51 +55,15 @@
                 android:layout_below="@id/create_series_done_button"
                 android:text="@string/create_series_advanced_options_text"/>
 
-            <!--<RelativeLayout-->
-                <!--android:id="@+id/create_series_fields_layout"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_below="@id/create_series_advanced_options_checkbox">-->
-
-                <!--<TextView-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:id="@+id/create_series_signature_textview"-->
-                    <!--android:text="Signature"/>-->
-
-                <!--<EditText-->
-                    <!--android:id="@+id/create_series_signature_editview"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_toRightOf="@id/create_series_signature_textview"-->
-                    <!--android:layout_alignBaseline="@id/create_series_signature_textview"-->
-                    <!--android:hint="asdfsadfsadfsadf"/>-->
-
-                <!--<TextView-->
-                    <!--android:id="@+id/create_series_hierarchy_textview"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_below="@id/create_series_signature_textview"-->
-                    <!--android:text="Hierarchy"/>-->
-
-                <!--<EditText-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-
-                    <!--android:layout_below="@id/create_series_signature_editview"-->
-                    <!--android:layout_alignParentRight="true"-->
-                    <!--android:layout_alignBaseline="@id/create_series_hierarchy_textview"-->
-                    <!--android:hint="asdfsadfsadfsadf"/>-->
-
-            <!--</RelativeLayout>-->
-
             <RelativeLayout
                 android:id="@+id/create_series_fields_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/create_series_advanced_options_checkbox"
                 android:layout_centerHorizontal="true"
-                android:visibility="visible">
+                android:visibility="visible"
+                android:paddingBottom="@dimen/activity_vertical_margin"
+                >
 
                 <GridLayout
                     android:id="@+id/create_series_fields_grid_layout"
@@ -115,24 +79,24 @@
                         android:text="Signature"/>
 
                     <EditText
-                        android:id="@+id/create_series_signature_editview"
+                        android:id="@+id/create_series_signature_edittext"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:inputType="text"
+                        android:layout_columnWeight="1"
                         />
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:id="@+id/create_series_authority_textview"
                         android:text="Authority"/>
 
                     <EditText
-                        android:id="@+id/create_series_authority_editview"
+                        android:id="@+id/create_series_authority_edittext"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:inputType="text"
-                        android:hint="asdfsadfsadfsadf"/>
+                        android:layout_columnWeight="1"
+                        />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -140,11 +104,12 @@
                         android:text="Description"/>
 
                     <EditText
+                        android:id="@+id/create_series_description_edittext"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/create_series_fields_grid_layout"
                         android:hint="Enter a description"
                         android:inputType="textMultiLine"
+                        android:layout_columnWeight="1"
                         />
 
                     <TextView
@@ -154,15 +119,25 @@
                         android:text="Hierarchy"/>
 
                     <EditText
+                        android:id="@+id/create_series_hierarchy_edittext"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:inputType="text"
-                        android:hint="asdfsadfsadfsadf"/>
+                        android:layout_columnWeight="1"/>
+
+                    <TextView
+                        android:id="@+id/create_series_uri_textview"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="URI"/>
 
 
-
-
-
+                    <EditText
+                        android:id="@+id/create_series_uri_edittext"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:layout_columnWeight="1"/>
 
                 </GridLayout>
 
