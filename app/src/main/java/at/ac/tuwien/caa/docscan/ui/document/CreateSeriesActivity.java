@@ -93,32 +93,32 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
             return;
 
         // Title:
-        EditText titleEditText = (EditText) findViewById(R.id.create_series_name_edittext);
+        EditText titleEditText = findViewById(R.id.create_series_name_edittext);
         if (document.getTitle() != null)
             titleEditText.setText(document.getTitle());
 
         // Description:
-        EditText descriptionEditText = (EditText) findViewById(R.id.create_series_description_edittext);
+        EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
         if (document.getTitle() != null)
             descriptionEditText.setText(document.getDescription());
 
         // Signature:
-        EditText signatureEditText = (EditText) findViewById(R.id.create_series_signature_edittext);
+        EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
         if (document.getSignature() != null)
             signatureEditText.setText(document.getSignature());
 
         // Authority:
-        EditText authorityEditText = (EditText) findViewById(R.id.create_series_authority_edittext);
+        EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
         if (document.getAuthority() != null)
             authorityEditText.setText(document.getAuthority());
 
         // Hierarchy:
-        EditText hierarchyEditText = (EditText) findViewById(R.id.create_series_hierarchy_edittext);
+        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
         if (document.getHierarchy() != null)
             hierarchyEditText.setText(document.getHierarchy());
 
         // Uri:
-        EditText uriEditText = (EditText) findViewById(R.id.create_series_uri_edittext);
+        EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
         if (document.getUri() != null)
             uriEditText.setText(document.getUri());
 
