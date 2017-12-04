@@ -422,6 +422,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void loadPreferences() {
 
+
         // Concerning series mode:
         mIsSeriesMode = Settings.getInstance().loadKey(this, SERIES_MODE_ACTIVE_KEY);
         mIsSeriesModePaused = Settings.getInstance().loadKey(this, SERIES_MODE_PAUSED_KEY);

@@ -15,7 +15,7 @@ public abstract class RestRequest {
     protected RestCallback mRestCallback;
     protected int mMethod;
 
-    public static final String BASE_URL = "https://transkribus.eu/TrpServerTesting/rest/";
+    public static final String BASE_URL = "https://transkribus.eu/TrpServer/rest/";
 
     public RestRequest(Context context) {
 

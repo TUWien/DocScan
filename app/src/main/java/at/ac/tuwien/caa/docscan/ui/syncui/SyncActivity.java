@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
@@ -108,6 +109,11 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         // with actions named "PROGRESS_INTENT_NAME".
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("PROGRESS_INTENT_NAME"));
+
+        if (!Settings.getInstance().isServerChangedShown(this)) {
+            showServerChangedAlert();
+            Settings.getInstance().serverChangedShown(this);
+        }
 
     }
 
@@ -327,6 +333,27 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
         SyncInfo.startSyncJob(this);
 //        new CollectionsRequest(this);
+
+    }
+
+    private void showServerChangedAlert() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.sync_server_changed_title)
+//                .setCancelable(true)
+                .setPositiveButton("OK", null)
+                .setMessage(R.string.sync_server_changed_text);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+
+
+        // show it
+        alertDialog.show();
 
     }
 

@@ -47,6 +47,20 @@ public class Settings {
         }
     }
 
+    public boolean isServerChangedShown(Activity activity) {
+
+        SharedPreferences sharedPref = getSharedPrefs(activity);
+        boolean value = sharedPref.getBoolean("server_changed_shown_key", false);
+        return value;
+    }
+
+    public void serverChangedShown(Activity activity) {
+
+        SharedPreferences sharedPref = getSharedPrefs(activity);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean("server_changed_shown_key", true);
+        editor.commit();
+    }
 
     public boolean loadKey(Activity activity, SettingEnum setting) {
 
