@@ -93,6 +93,7 @@
         <activity
             android:name=".ui.document.CreateSeriesActivity"
             android:exported="true"
+            android:launchMode = "singleInstance"
             android:configChanges="orientation|screenSize"
             />
 
