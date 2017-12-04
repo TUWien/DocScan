@@ -97,10 +97,10 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
         if (document.getTitle() != null)
             titleEditText.setText(document.getTitle());
 
-        // Description:
-        EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
-        if (document.getTitle() != null)
-            descriptionEditText.setText(document.getDescription());
+//        // Description:
+//        EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
+//        if (document.getTitle() != null)
+//            descriptionEditText.setText(document.getDescription());
 
         // Signature:
         EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
@@ -117,10 +117,10 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
         if (document.getHierarchy() != null)
             hierarchyEditText.setText(document.getHierarchy());
 
-        // Uri:
-        EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
-        if (document.getUri() != null)
-            uriEditText.setText(document.getUri());
+//        // Uri:
+//        EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
+//        if (document.getUri() != null)
+//            uriEditText.setText(document.getUri());
 
     }
 
