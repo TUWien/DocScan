@@ -10,14 +10,14 @@
         <!--app:showAsAction="always"-->
         <!--/>-->
 
-    <item
-        android:id="@+id/document_item"
-        android:icon="@drawable/ic_folder_special_white_24dp"
-        android:title="@string/flash_mode"
-        android:visible="true"
-        app:showAsAction="always"
-        android:onClick="showSeriesPopup"
-        />
+    <!--<item-->
+        <!--android:id="@+id/document_item"-->
+        <!--android:icon="@drawable/ic_folder_special_white_24dp"-->
+        <!--android:title="@string/flash_mode"-->
+        <!--android:visible="true"-->
+        <!--app:showAsAction="always"-->
+        <!--android:onClick="showSeriesPopup"-->
+        <!--/>-->
 
     <item
         android:id="@+id/flash_mode_item"
