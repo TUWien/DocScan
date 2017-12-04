@@ -163,7 +163,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private boolean mIsSaving = false;
     private TextView mTextView;
     private Menu mOptionsMenu;;
-    private MenuItem mFlashMenuItem, mDocumentMenuItem;
+    private MenuItem mFlashMenuItem;
     private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
             mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
@@ -320,9 +320,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             controlsVisibility = View.INVISIBLE;
             qrCodeVisibility = View.VISIBLE;
         }
-
-        if (mDocumentMenuItem != null)
-            mDocumentMenuItem.setVisible(showControls);
+//
+//        if (mDocumentMenuItem != null)
+//            mDocumentMenuItem.setVisible(showControls);
         if (mFlashMenuItem != null)
             mFlashMenuItem.setVisible(showControls);
 
@@ -480,7 +480,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mOptionsMenu = menu;
 
         mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
-        mDocumentMenuItem = menu.findItem(R.id.document_item);
+//        mDocumentMenuItem = menu.findItem(R.id.document_item);
 
         // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
         if (mFlashModes != null)
@@ -1301,9 +1301,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (actionBar != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
-            getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setTitle("Ich bin ein Österreicher");
-
+//            getSupportActionBar().setDisplayShowTitleEnabled(true);
+//            getSupportActionBar().setTitle("Ich bin ein ï¿½sterreicher");
+//
 //            getToolbar().setOnClickListener(new View.OnClickListener() {
 //                @Override
 //                public void onClick(View v) {
@@ -1311,7 +1311,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //                }
 //            });
 
-//            final int abTitleId = getResources().getIdentifier("Ich bin ein Österreicher", "id", "android");
+//            final int abTitleId = getResources().getIdentifier("Ich bin ein ï¿½sterreicher", "id", "android");
 //            findViewById(abTitleId).setOnClickListener(new View.OnClickListener() {
 //
 //                @Override
@@ -1812,24 +1812,24 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         });
     }
 
-    public void showSeriesPopup(MenuItem item) {
-
-        View menuItemView = findViewById(R.id.document_item);
-        if (menuItemView == null)
-            return;
-
-        // Create the menu for the first time:
-        if (mSeriesPopupMenu == null) {
-            mSeriesPopupMenu = new PopupMenu(this, menuItemView);
-            mSeriesPopupMenu.setOnMenuItemClickListener(this);
-            mSeriesPopupMenu.inflate(R.menu.series_menu);
-
-            setupFlashUI();
-        }
-
-        mSeriesPopupMenu.show();
-
-    }
+//    public void showSeriesPopup(MenuItem item) {
+//
+//        View menuItemView = findViewById(R.id.document_item);
+//        if (menuItemView == null)
+//            return;
+//
+//        // Create the menu for the first time:
+//        if (mSeriesPopupMenu == null) {
+//            mSeriesPopupMenu = new PopupMenu(this, menuItemView);
+//            mSeriesPopupMenu.setOnMenuItemClickListener(this);
+//            mSeriesPopupMenu.inflate(R.menu.series_menu);
+//
+//            setupFlashUI();
+//        }
+//
+//        mSeriesPopupMenu.show();
+//
+//    }
 
     public void showFlashPopup(MenuItem item) {
 
