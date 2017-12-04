@@ -219,8 +219,9 @@
     <string name="create_series_name_hint">Document name</string>
     <string name="create_series_done_button_text">Create document</string>
     <string name="create_series_advanced_options_text">Show more fields</string>
-
-
+    <string name="create_series_authority_text">Authority</string>
+    <string name="create_series_signature_text">Signature</string>
+    <string name="create_series_hierarchy_text">Hierarchy</string>
 
 
 </resources>

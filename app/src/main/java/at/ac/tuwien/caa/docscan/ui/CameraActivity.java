@@ -1845,13 +1845,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (menuItemView == null)
             return;
 
+        Log.d(TAG, " menu created!");
         // Create the menu for the first time:
         if (mSeriesPopupMenu == null) {
             mSeriesPopupMenu = new PopupMenu(this, menuItemView);
             mSeriesPopupMenu.setOnMenuItemClickListener(this);
             mSeriesPopupMenu.inflate(R.menu.series_menu);
-
-            setupFlashUI();
         }
 
         mSeriesPopupMenu.show();
