@@ -75,6 +75,7 @@
     <string name="instruction_series_paused">series mode paused</string>
 
     <string name="instruction_searching_qr">Searching QR code</string>
+    <string name="instruction_qr_found">QR code found</string>
 
     <!-- Toasts -->
     <string name="toast_series_paused">Automated imaging paused</string>

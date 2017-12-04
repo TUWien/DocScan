@@ -1788,21 +1788,30 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public void onQRCode(Result result) {
 
         final String text;
-        if (result == null)
+        // Tell the user that we are still searching for a QR code:
+        if (result == null) {
             text = getString(R.string.instruction_searching_qr);
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                    mTextView.setText(text);
+                }
+            });
+        }
+        // Start the CreateSeriesActivity:
         else {
+            // Stop searching for QR code:
+            mIsQRActive = false;
+            mCameraPreview.startQrMode(false);
+
             text = result.toString();
             startCreateSeriesActivity(text);
 
         }
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                mTextView.setText(text);
-            }
-        });
+
 
 
     }
