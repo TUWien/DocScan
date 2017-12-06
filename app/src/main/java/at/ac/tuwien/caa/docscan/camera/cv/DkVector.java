@@ -42,13 +42,15 @@ public class DkVector {
 
     }
 
+
+
     public double angle(DkVector vector) {
 
         return Math.toDegrees(Math.acos(cosv(vector)));
 
     }
 
-    private double cosv(DkVector vector) {
+    public double cosv(DkVector vector) {
 
         return (x * vector.x + y * vector.y) / (Math.sqrt(x * x + y * y) * Math.sqrt(vector.x * vector.x + vector.y * vector.y));
 
