@@ -11,7 +11,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
@@ -75,9 +74,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private float mImgWidth = 0.0f;
     private float mImgHeight = 0.0f;
     private PointF mCenter = new PointF();
-    private PointF marker1 = new PointF();
-
-    private ArrayList<PointF> mNormedPoints;
+    private boolean mIsPointDragged = false;
 
 
 
@@ -228,37 +225,64 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+//                mIsPointDragged = true;
                 onDown(event);
                 return true;
             case MotionEvent.ACTION_MOVE:
-                onMove(event);
+                if (mIsPointDragged)
+                    onMove(event);
                 return true;
 //            case MotionEvent.ACTION_CANCEL:
 //                getParent().requestDisallowInterceptTouchEvent(false);
 //                onCancel();
 //                return true;
-//            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_UP:
+
 //                getParent().requestDisallowInterceptTouchEvent(false);
-//                onUp(event);
-//                return true;
+                onUp(event);
+                return true;
         }
         return false;
 
     }
 
+    private void onUp(MotionEvent e) {
+        mIsPointDragged = false;
+    }
+
+    private void onMove(MotionEvent e) {
+
+        PointF point = getPoint(e);
+
+        // Just draw updates if a point is really moved:
+        if (isInsideFrame(point)) {
+            if (mCropQuad.moveActivePoint(point))
+                invalidate();
+        }
+    }
+
     private void onDown(MotionEvent e) {
 
-//        Check if we need this right here:
         invalidate();
 
         PointF point = getPoint(e);
         if (mCropQuad.isPointClose(point)) {
-            Log.d(this.getClass().getName(), "point is touched");
+            mIsPointDragged = true;
         }
+        else
+            mIsPointDragged = false;
 
-//        mLastX = e.getX();
-//        mLastY = e.getY();
-//        checkTouchArea(e.getX(), e.getY());
+    }
+
+    private boolean isInsideFrame(PointF point) {
+
+
+        if (mFrameRect.left <= point.x && mFrameRect.right >= point.x) {
+            if (mFrameRect.top <= point.y && mFrameRect.bottom >= point.y) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Calculations for layout size:
@@ -291,17 +315,56 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
         }
 
-//        mImageRect = calcImageRect(new RectF(0f, 0f, mImgWidth, mImgHeight), mMatrix);
+        mImageRect = calcImageRect(new RectF(0f, 0f, mImgWidth, mImgHeight), mMatrix);
 
 //        if (mInitialFrameRect != null) {
 //            mFrameRect = applyInitialFrameRect(mInitialFrameRect);
 //        } else {
-//            mFrameRect = calcFrameRect(mImageRect);
+            mFrameRect = calcFrameRect(mImageRect);
 //        }
 //
 //        mIsInitialized = true;
         invalidate();
     }
+
+    private RectF calcImageRect(RectF rect, Matrix matrix) {
+        RectF applied = new RectF();
+        matrix.mapRect(applied, rect);
+        return applied;
+    }
+
+    private RectF calcFrameRect(RectF imageRect) {
+        float frameW = imageRect.width();
+        float frameH = imageRect.height();
+        float imgRatio = imageRect.width() / imageRect.height();
+        float frameRatio = frameW / frameH;
+        float l = imageRect.left, t = imageRect.top, r = imageRect.right, b = imageRect.bottom;
+        if (frameRatio >= imgRatio) {
+            l = imageRect.left;
+            r = imageRect.right;
+            float hy = (imageRect.top + imageRect.bottom) * 0.5f;
+            float hh = (imageRect.width() / frameRatio) * 0.5f;
+            t = hy - hh;
+            b = hy + hh;
+        } else if (frameRatio < imgRatio) {
+            t = imageRect.top;
+            b = imageRect.bottom;
+            float hx = (imageRect.left + imageRect.right) * 0.5f;
+            float hw = imageRect.height() * frameRatio * 0.5f;
+            l = hx - hw;
+            r = hx + hw;
+        }
+        float w = r - l;
+        float h = b - t;
+        float cx = l + w / 2;
+        float cy = t + h / 2;
+        float sw = w * 1;
+        float sh = h * 1;
+        return new RectF(cx - sw / 2, cy - sh / 2, cx + sw / 2, cy + sh / 2);
+    }
+
+
+
 
     private void mapCropQuadPoints() {
         int numPts = 8;
@@ -396,15 +459,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 //        mMatrix.postRotate(mAngle, mCenter.x, mCenter.y);
     }
 
-    private void onMove(MotionEvent e) {
 
-        PointF point = getPoint(e);
-
-        // Just draw updates if a point is really moved:
-        if (mCropQuad.moveActivePoint(point))
-            invalidate();
-
-    }
 
     private PointF getPoint(MotionEvent e) {
 
