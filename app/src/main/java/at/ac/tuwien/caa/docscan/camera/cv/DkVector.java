@@ -11,6 +11,13 @@ public class DkVector {
 
     private PointF mPoint1, mPoint2;
 
+    public DkVector(float x, float y) {
+
+        this.x = x;
+        this.y = y;
+
+    }
+
     public DkVector(PointF point1, PointF point2) {
 
         x = point1.x - point2.x;
@@ -39,6 +46,15 @@ public class DkVector {
     public float scalarProduct(DkVector vector) {
 
         return x * vector.x + y * vector.y;
+
+    }
+
+    public DkVector multiply(float scalar) {
+
+        float nx = x * scalar;
+        float ny = y * scalar;
+
+        return new DkVector(nx, ny);
 
     }
 
