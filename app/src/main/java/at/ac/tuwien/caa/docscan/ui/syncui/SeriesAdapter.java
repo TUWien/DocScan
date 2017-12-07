@@ -144,6 +144,27 @@ public class SeriesAdapter extends BaseDocumentAdapter {
                 .findViewById(R.id.lblListItem);
 
         txtListChild.setText(childText);
+
+//        GLIDE TRYOUT
+        // Glide test:
+//        final ImageView imageView;
+//        imageView = convertView.findViewById(R.id.document_list_image_view);
+//        // TODO: look at this for the reason why we cannot use GlideApp
+//        // https://github.com/bumptech/glide/issues/1966
+//        Glide.with(mContext)
+//                .load(((File) getChild(groupPosition, childPosition)).getPath())
+//                .into(imageView);
+//
+//
+////        GlideApp
+////                .with(myFragment)
+////                .load(url)
+////                .centerCrop()
+////                .placeholder(R.drawable.loading_spinner)
+////                .into(myImageView);
+
+
+
         return convertView;
     }
 

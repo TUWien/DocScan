@@ -16,3 +16,34 @@
         android:paddingLeft="80dp" />
 
 </LinearLayout>
+
+<!-- GLIDE TRYOUT -->
+
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:orientation="vertical" >-->
+
+    <!--<ImageView-->
+        <!--android:id="@+id/document_list_image_view"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="200dp"-->
+        <!--android:layout_gravity="center_horizontal"-->
+        <!--/>-->
+
+    <!--<TextView-->
+        <!--android:id="@+id/lblListItem"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textColor="@color/expandable_list_view_child_color"-->
+        <!--android:textSize="17dip"-->
+        <!--android:paddingTop="5dp"-->
+        <!--android:paddingBottom="5dp"-->
+        <!--android:paddingLeft="80dp"-->
+        <!--android:layout_gravity="center_horizontal" />-->
+    <!--<View-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="20dp"/>-->
+
+<!--</LinearLayout>-->
