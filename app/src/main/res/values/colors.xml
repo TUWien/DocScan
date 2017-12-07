@@ -15,6 +15,7 @@
     <!--<color name="button_view_bg_color">#333</color>-->
 
     <color name="hud_page_rect_color">#dfa0</color>
+    <color name="cross_color">#96ffaa00</color>
 
     <color name="hud_focus_sharp_rect_color">#a3a3</color>
     <color name="hud_focus_unssharp_rect_color">#ad00</color>

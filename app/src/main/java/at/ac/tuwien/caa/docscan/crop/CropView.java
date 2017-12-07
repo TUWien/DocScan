@@ -52,6 +52,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private static final int TRANSLUCENT_BLACK = 0xBB000000;
     private static final int WHITE = 0x00FFFFFF;
     private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
+    private final int CROSS_COLOR = getResources().getColor(R.color.cross_color);
 
     private Matrix mMatrix = null;
     private int mBackgroundColor;
@@ -62,10 +63,10 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private Paint mPaintFrame;
     private int mFrameColor;
     // TODO: i do not believe that this is device independent!
-    private float mFrameStrokeWeight = 2.0f;
+    private float mFrameStrokeWeight = 1.5f;
     private RectF mFrameRect;
     private Path mQuadPath;
-    private Paint mQuadPaint;
+    private Paint mQuadPaint, mCrossPaint, mCirclePaint;
 
     // used for layout size calculation:
     private int mViewWidth = 0;
@@ -113,6 +114,8 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 //        mCropQuad = new CropQuad(points);
 
         initQuadPaint();
+        initCrossPaint();
+        initCirclePaint();
 
     }
 
@@ -148,6 +151,26 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     }
 
+    private void initCrossPaint() {
+
+        mCrossPaint = new Paint();
+        mCrossPaint.setColor(CROSS_COLOR);
+        mCrossPaint.setStyle(Paint.Style.STROKE);
+        mCrossPaint.setStrokeWidth(getResources().getDimension(R.dimen.cross_stroke_width));
+        mCrossPaint.setAntiAlias(true);
+
+    }
+
+    private void initCirclePaint() {
+
+        mCirclePaint = new Paint();
+        mCirclePaint.setColor(CROSS_COLOR);
+        mCirclePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        mCirclePaint.setStrokeWidth(getResources().getDimension(R.dimen.cross_stroke_width));
+        mCirclePaint.setAntiAlias(true);
+
+    }
+
     @Override public void onDraw(Canvas canvas) {
         canvas.drawColor(mBackgroundColor);
 
@@ -157,7 +180,55 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
             canvas.drawBitmap(bm, mMatrix, mPaintBitmap);
             // draw edit frame
             drawCropFrame(canvas);
+
+            // draw the detail where the finger is pointing to:
+            if (mIsPointDragged)
+                drawDetail(canvas, mCropQuad.getActivePoint());
         }
+
+    }
+
+    private void drawDetail(Canvas canvas, PointF point) {
+
+        if (point == null)
+            return;
+
+        Matrix inv = new Matrix();
+        mMatrix.invert(inv);
+
+        int offset = 50;
+        float[] mappedPoint = new float[4];
+        mappedPoint[0] = point.x - offset;
+        mappedPoint[1] = point.y - offset;
+        mappedPoint[2] = point.x + offset;
+        mappedPoint[3] = point.y + offset;
+
+        inv.mapPoints(mappedPoint);
+
+        Bitmap bitmap = getBitmap();
+        if (mappedPoint[0] < 0)
+            mappedPoint[0] = 0;
+        if (mappedPoint[1] < 0)
+            mappedPoint[1] = 0;
+        if (mappedPoint[2] > bitmap.getWidth())
+            mappedPoint[2] = bitmap.getWidth();
+        if (mappedPoint[3] > bitmap.getHeight())
+            mappedPoint[3] = bitmap.getHeight();
+
+        int w = Math.round(mappedPoint[2] - mappedPoint[0]);
+        int h = Math.round(mappedPoint[3] - mappedPoint[1]);
+
+        float offsetY = 700 * mScale;
+        Bitmap cut = Bitmap.createBitmap(bitmap, Math.round(mappedPoint[0]), Math.round(mappedPoint[1]), w, h, null, false);
+        canvas.drawBitmap(cut, point.x - w/2, point.y - h/2 - offsetY, mPaintBitmap);
+
+        // draw the cross:
+        int crossW = 50;
+        int crossH = 50;
+        canvas.drawLine(point.x - crossW, point.y -  offsetY,
+                point.x + crossW, point.y -  offsetY, mCrossPaint);
+        canvas.drawLine(point.x, point.y - offsetY - crossH,
+                point.x, point.y - offsetY + crossH, mCrossPaint);
 
     }
 
@@ -213,6 +284,9 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
             } else
                 mQuadPath.lineTo(point.x, point.y);
 
+            // draw the circle around the corner:
+            canvas.drawCircle(point.x, point.y, 30, mCirclePaint);
+
         }
 
         mQuadPath.close();
@@ -225,20 +299,15 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-//                mIsPointDragged = true;
                 onDown(event);
                 return true;
+
             case MotionEvent.ACTION_MOVE:
                 if (mIsPointDragged)
                     onMove(event);
                 return true;
-//            case MotionEvent.ACTION_CANCEL:
-//                getParent().requestDisallowInterceptTouchEvent(false);
-//                onCancel();
-//                return true;
-            case MotionEvent.ACTION_UP:
 
-//                getParent().requestDisallowInterceptTouchEvent(false);
+            case MotionEvent.ACTION_UP:
                 onUp(event);
                 return true;
         }
@@ -248,6 +317,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     private void onUp(MotionEvent e) {
         mIsPointDragged = false;
+        invalidate();
     }
 
     private void onMove(MotionEvent e) {
@@ -256,6 +326,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
         // Just draw updates if a point is really moved:
         if (isInsideFrame(point)) {
+
             if (mCropQuad.moveActivePoint(point))
                 invalidate();
         }
@@ -316,11 +387,12 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         }
 
         mImageRect = calcImageRect(new RectF(0f, 0f, mImgWidth, mImgHeight), mMatrix);
+        mFrameRect = calcFrameRect(mImageRect);
 
 //        if (mInitialFrameRect != null) {
 //            mFrameRect = applyInitialFrameRect(mInitialFrameRect);
 //        } else {
-            mFrameRect = calcFrameRect(mImageRect);
+//            mFrameRect = calcFrameRect(mImageRect);
 //        }
 //
 //        mIsInitialized = true;

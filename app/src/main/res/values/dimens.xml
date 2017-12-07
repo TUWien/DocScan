@@ -12,6 +12,7 @@
     <dimen name="focus_touch_circle_radius_start">50dp</dimen>
     <dimen name="focus_touch_circle_radius_end">30dp</dimen>
     <dimen name="page_stroke_width">4dp</dimen>
+    <dimen name="cross_stroke_width">2dp</dimen>
     <dimen name="focus_circle_stroke_width">1dp</dimen>
     <dimen name="spinner_dropdown_width">70dp</dimen>
     <dimen name="photo_button_size">80dp</dimen>

@@ -95,6 +95,12 @@ public class CropQuad {
 
     }
 
+    public PointF getActivePoint() {
+
+        return (mActivePointIdx != NO_ACTIVE_POINT_IDX) ? mViewPoints.get(mActivePointIdx) : null;
+
+    }
+
     private boolean isLeft(int pointIdx, PointF point) {
 
 
