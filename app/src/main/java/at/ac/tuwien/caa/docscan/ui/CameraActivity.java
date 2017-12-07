@@ -1922,6 +1922,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 startActivity(new Intent(getApplicationContext(), CreateSeriesActivity.class));
                 return true;
 
+            case R.id.series_switch_item:
+                startActivity(new Intent(getApplicationContext(), DocumentActivity.class));
+                return true;
+
+            // TODO: give here the ability to change the series details:
             case R.id.series_details_item:
                 startActivity(new Intent(getApplicationContext(), DocumentActivity.class));
                 return true;

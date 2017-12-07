@@ -75,7 +75,7 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
             }
 
 //            mCropView.setBitmapAndPoints(bitmap, cropInfo.getPoints());
-            mImageView.setImageBitmap(bitmap);
+//            mImageView.setImageBitmap(bitmap);
 
 //            mapTriangle(bitmap, cropInfo.getPoints());
 //            mapTest(bitmap);
@@ -85,6 +85,7 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
             Bitmap resultBitmap = matToBitmap(transformedMat);
 
             mImageView.setImageBitmap(resultBitmap);
+
 
         } catch (IOException e) {
             e.printStackTrace();
