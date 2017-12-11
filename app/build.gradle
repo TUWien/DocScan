@@ -18,6 +18,11 @@ android {
 //		References to other resources are not supported by build-time PNG generation
 		vectorDrawables.useSupportLibrary = true
 
+		// renderscript is used for image rotation (this avoids OOM exceptions):
+		renderscriptTargetApi 14
+		renderscriptSupportModeEnabled true
+
+
 	}
 
 	buildTypes {

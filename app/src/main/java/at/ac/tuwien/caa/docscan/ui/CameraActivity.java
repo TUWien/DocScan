@@ -56,6 +56,8 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
+import android.support.v8.renderscript.Allocation;
+import android.support.v8.renderscript.RenderScript;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -97,6 +99,7 @@ import java.util.Date;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.ScriptC_rotator;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
@@ -171,6 +174,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
             mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
+    private boolean mCropResult = false;
     private boolean mHideSeriesDialog;
     private boolean mIsSeriesModePaused = true;
     private long mStartTime;
@@ -2232,6 +2236,31 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+
+    public Bitmap rotateBitmap(Bitmap bitmap) {
+        RenderScript rs = RenderScript.create(mContext);
+        ScriptC_rotator script = new ScriptC_rotator(rs);
+        script.set_inWidth(bitmap.getWidth());
+        script.set_inHeight(bitmap.getHeight());
+        Allocation sourceAllocation = Allocation.createFromBitmap(rs, bitmap,
+                Allocation.MipmapControl.MIPMAP_NONE,
+                Allocation.USAGE_SCRIPT);
+        bitmap.recycle();
+        script.set_inImage(sourceAllocation);
+
+        int targetHeight = bitmap.getWidth();
+        int targetWidth = bitmap.getHeight();
+        Bitmap.Config config = bitmap.getConfig();
+        Bitmap target = Bitmap.createBitmap(targetWidth, targetHeight, config);
+        final Allocation targetAllocation = Allocation.createFromBitmap(rs, target,
+                Allocation.MipmapControl.MIPMAP_NONE,
+                Allocation.USAGE_SCRIPT);
+        script.forEach_rotate_90_clockwise(targetAllocation, targetAllocation);
+        targetAllocation.copyTo(target);
+        rs.destroy();
+        return target;
+    }
+
     /**
      * Class used to save pictures in an own thread (AsyncTask).
      */
@@ -2267,8 +2296,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
                 FileOutputStream fos = new FileOutputStream(outFile);
                 fos.write(mData);
-
                 fos.close();
+
+//                Rotate the image:
+//                FileOutputStream fos = new FileOutputStream(outFile);
+//                Bitmap bitmap = BitmapFactory.decodeByteArray(mData, 0, mData.length, null);
+//                Bitmap b = rotateBitmap(bitmap);
+//                b.compress(Bitmap.CompressFormat.JPEG, 100, fos);
 
                 // Save exif information (especially the orientation):
                 saveExif(outFile);
@@ -2386,7 +2420,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             // Release the memory. Note this is essential, because otherwise allocated memory will increase.
             mData = null;
 
-            if (!mIsSeriesMode && uri != null) {
+            if (mCropResult && !mIsSeriesMode && uri != null) {
 
 
                 if (mCropRect != null && mCVResult != null) {
@@ -2398,8 +2432,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     startActivity(intent);
 
                 }
-
-
 
             }
 
