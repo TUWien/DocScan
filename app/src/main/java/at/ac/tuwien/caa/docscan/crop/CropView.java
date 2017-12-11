@@ -52,11 +52,14 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private static final int TRANSLUCENT_BLACK = 0xBB000000;
     private static final int WHITE = 0x00FFFFFF;
     private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
+    private final int DETAIL_OUTLINE_COLOR = getResources().getColor(R.color.detail_crop_outline);
     private final int CROSS_COLOR = getResources().getColor(R.color.cross_color);
 
+    private Paint mDetailOutlinePaint;
     private Matrix mMatrix = null;
     private int mBackgroundColor;
     private Paint mPaintBitmap;
+    private Paint mDetailPaint;
     private Paint mPaintTranslucent;
     private int mOverlayColor;
     private RectF mImageRect;
@@ -98,6 +101,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         mMatrix = new Matrix();
         mPaintBitmap = new Paint();
         mPaintBitmap.setFilterBitmap(true);
+
         mPaintTranslucent = new Paint();
         mOverlayColor = TRANSLUCENT_BLACK;
         mPaintFrame = new Paint();
@@ -105,17 +109,19 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
         mFrameRect = new RectF(0,0, 200, 200);
 
-//        ArrayList<PointF> points = new ArrayList<>();
-//        points.add(new PointF(100,100));
-//        points.add(new PointF(300,100));
-//        points.add(new PointF(400,400));
-//        points.add(new PointF(10, 100));
-//
-//        mCropQuad = new CropQuad(points);
-
         initQuadPaint();
         initCrossPaint();
         initCirclePaint();
+        initDetailOutlinePaint();
+
+
+    }
+
+    private void initDetailOutlinePaint() {
+
+        mDetailOutlinePaint = new Paint();
+        mDetailOutlinePaint.setStyle(Paint.Style.FILL);
+        mDetailOutlinePaint.setColor(DETAIL_OUTLINE_COLOR);
 
     }
 
@@ -126,19 +132,6 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     }
 
-//    public void setNormedPoints(ArrayList<PointF> normedPoints) {
-//
-//        mNormedPoints = normedPoints;
-//        // Check if the bitmap is already set, if so create the CropQuad:
-//        Bitmap bm = getBitmap();
-//
-//        // TODO: check what we can do against first setting points and then setting the bitmap:
-//        if (bm != null)
-//            mCropQuad = new CropQuad(normedPoints, bm.getWidth(), bm.getHeight());
-//    }
-
-
-//    public void setViewPoints()
 
     private void initQuadPaint() {
 
@@ -219,8 +212,10 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         int h = Math.round(mappedPoint[3] - mappedPoint[1]);
 
         float offsetY = 700 * mScale;
+
+        canvas.drawRect(point.x - w/2 - 20, point.y - h/2 - offsetY - 20, point.x + w/2 + 20, point.y + h/2 - offsetY + 20, mDetailOutlinePaint);
         Bitmap cut = Bitmap.createBitmap(bitmap, Math.round(mappedPoint[0]), Math.round(mappedPoint[1]), w, h, null, false);
-        canvas.drawBitmap(cut, point.x - w/2, point.y - h/2 - offsetY, mPaintBitmap);
+        canvas.drawBitmap(cut, point.x - w/2, point.y - h/2 - offsetY, mDetailPaint);
 
         // draw the cross:
         int crossW = 50;
@@ -236,38 +231,8 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
         drawQuad(canvas);
 
-//        if (!mIsCropEnabled) return;
-//        if (mIsRotating) return;
-//        drawOverlay(canvas);
-//        drawFrame(canvas);
-//        if (mShowGuide) drawGuidelines(canvas);
-//        if (mShowHandle) drawHandles(canvas);
     }
 
-//    private void drawOverlay(Canvas canvas) {
-//        mPaintTranslucent.setAntiAlias(true);
-//        mPaintTranslucent.setFilterBitmap(true);
-//        mPaintTranslucent.setColor(mOverlayColor);
-//        mPaintTranslucent.setStyle(Paint.Style.FILL);
-//        Path path = new Path();
-//        RectF overlayRect =
-//                new RectF((float) Math.floor(mImageRect.left), (float) Math.floor(mImageRect.top),
-//                        (float) Math.ceil(mImageRect.right), (float) Math.ceil(mImageRect.bottom));
-//
-//        path.addRect(overlayRect, Path.Direction.CW);
-//        path.addRect(mFrameRect, Path.Direction.CCW);
-//        canvas.drawPath(path, mPaintTranslucent);
-//    }
-
-    private void drawFrame(Canvas canvas) {
-        mPaintFrame.setAntiAlias(true);
-        mPaintFrame.setFilterBitmap(true);
-        mPaintFrame.setStyle(Paint.Style.FILL);
-//        mPaintFrame.setStyle(Paint.Style.STROKE);
-        mPaintFrame.setColor(mFrameColor);
-        mPaintFrame.setStrokeWidth(mFrameStrokeWeight);
-        canvas.drawRect(mFrameRect, mPaintFrame);
-    }
 
     private void drawQuad(Canvas canvas) {
 
