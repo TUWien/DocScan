@@ -1,22 +1,18 @@
 package at.ac.tuwien.caa.docscan.ui;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.graphics.PointF;
-import android.media.ExifInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 
-import java.io.IOException;
+import com.bumptech.glide.Glide;
+
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.crop.CropView;
-import at.ac.tuwien.caa.docscan.logic.Helper;
 
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
@@ -63,28 +59,36 @@ public class CropViewActivity extends BaseNoNavigationActivity {
     }
 
     private void initCropInfo(CropInfo cropInfo) {
-        // Unfortunately the exif orientation is not used by BitmapFactory:
-        try {
 
-            mFileName = cropInfo.getFileName();
-            Bitmap bitmap = BitmapFactory.decodeFile(mFileName);
+//        Load image with Glide:
+        mFileName = cropInfo.getFileName();
+        Glide.with(this)
+                .load(mFileName)
+                .into(mCropView);
+        mCropView.setPoints(cropInfo.getPoints());
 
+//        // Unfortunately the exif orientation is not used by BitmapFactory:
+//        try {
+//
+//            mFileName = cropInfo.getFileName();
+//            Bitmap bitmap = BitmapFactory.decodeFile(mFileName);
+//
+//
+//            ExifInterface exif = new ExifInterface(cropInfo.getFileName());
+//            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
+//            int angle = Helper.getAngleFromExif(orientation);
+//            if (angle != -1) {
+//                //Rotate the image:
+//                Matrix mtx = new Matrix();
+//                mtx.setRotate(angle);
+//                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), mtx, true);
+//            }
+//
+//            mCropView.setBitmapAndPoints(bitmap, cropInfo.getPoints());
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
-            ExifInterface exif = new ExifInterface(cropInfo.getFileName());
-            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
-            int angle = Helper.getAngleFromExif(orientation);
-            if (angle != -1) {
-                //Rotate the image:
-                Matrix mtx = new Matrix();
-                mtx.setRotate(angle);
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), mtx, true);
-            }
-
-            mCropView.setBitmapAndPoints(bitmap, cropInfo.getPoints());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void testAffineTransform() {

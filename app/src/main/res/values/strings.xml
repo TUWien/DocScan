@@ -223,7 +223,8 @@
     <string name="crop_view_title">Crop image</string>
 
     <string name="map_crop_view_title">Warp image</string>
-
+    <string name="map_crop_view_no_transformation_title">Image not transformed</string>
+    <string name="map_crop_view_no_transformation_text">The image could not be transformed. Please try to adjust the cropping rectangle.</string>
 
 
 

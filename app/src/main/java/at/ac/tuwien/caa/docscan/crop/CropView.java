@@ -83,6 +83,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
 
     private CropQuad mCropQuad;
+    private ArrayList<PointF> mNormedPoints;
 
     public CropView(Context context) {
         this(context, null);
@@ -93,6 +94,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     }
 
     public CropView(Context context, AttributeSet attrs, int defStyle) {
+
         super(context, attrs, defStyle);
 
         setScaleType(ScaleType.FIT_CENTER);
@@ -114,7 +116,6 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         initCirclePaint();
         initDetailOutlinePaint();
 
-
     }
 
     private void initDetailOutlinePaint() {
@@ -132,6 +133,11 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     }
 
+    public void setPoints(ArrayList<PointF> normedPoints) {
+
+        mNormedPoints = normedPoints;
+//        mCropQuad = new CropQuad(normedPoints, getBitmap().getWidth(), getBitmap().getHeight());
+    }
 
     private void initQuadPaint() {
 
@@ -171,6 +177,15 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         Bitmap bm = getBitmap();
         if (bm != null) {
             canvas.drawBitmap(bm, mMatrix, mPaintBitmap);
+
+            if ((mCropQuad == null) && (mNormedPoints != null)) {
+                mCropQuad = new CropQuad(mNormedPoints, getBitmap().getWidth(), getBitmap().getHeight());
+                // Tell the CropQuad the transformation:
+                mapCropQuadPoints();
+
+            }
+
+
             // draw edit frame
             drawCropFrame(canvas);
 
@@ -229,7 +244,8 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     private void drawCropFrame(Canvas canvas) {
 
-        drawQuad(canvas);
+        if ((mCropQuad != null) && (mCropQuad.getViewPoints() != null))
+            drawQuad(canvas);
 
     }
 
@@ -299,9 +315,13 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     private void onDown(MotionEvent e) {
 
+        if (mCropQuad.getImgPoints() == null)
+            return;
+
         invalidate();
 
         PointF point = getPoint(e);
+
         if (mCropQuad.isPointClose(point)) {
             mIsPointDragged = true;
         }
@@ -440,6 +460,10 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     private ArrayList<PointF> mapCropQuadPointsInverse() {
 
+        Bitmap bm = getBitmap();
+        if (bm == null)
+            return null;
+
         Matrix inv = new Matrix();
         mMatrix.invert(inv);
 
@@ -461,11 +485,12 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
         inv.mapPoints(points);
 
+        // We norm the points, because the image is down sampled:
         ArrayList<PointF> mappedPoints = new ArrayList<>();
-        mappedPoints.add(new PointF(points[0], points[1]));
-        mappedPoints.add(new PointF(points[2], points[3]));
-        mappedPoints.add(new PointF(points[4], points[5]));
-        mappedPoints.add(new PointF(points[6], points[7]));
+        mappedPoints.add(new PointF(points[0] / bm.getWidth(), points[1] / bm.getHeight()));
+        mappedPoints.add(new PointF(points[2] / bm.getWidth(), points[3] / bm.getHeight()));
+        mappedPoints.add(new PointF(points[4] / bm.getWidth(), points[5] / bm.getHeight()));
+        mappedPoints.add(new PointF(points[6] / bm.getWidth(), points[7] / bm.getHeight()));
 
         return mappedPoints;
 //        mCropQuad.setViewPoints(mappedPoints);

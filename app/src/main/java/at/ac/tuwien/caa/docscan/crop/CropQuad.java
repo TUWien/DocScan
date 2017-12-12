@@ -140,6 +140,7 @@ public class CropQuad {
         int minIdx = 0;
         int idx = 0;
 
+
         for (PointF corner : mViewPoints) {
 
             DkVector v = new DkVector(corner, point);
