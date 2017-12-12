@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -54,6 +55,17 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
     private final int DETAIL_OUTLINE_COLOR = getResources().getColor(R.color.detail_crop_outline);
     private final int CROSS_COLOR = getResources().getColor(R.color.cross_color);
+    private final float CORNER_CIRCLE_RADIUS =
+            getResources().getDimension(R.dimen.crop_circle_radius);
+    private final float DETAIL_WIDTH =
+            getResources().getDimension(R.dimen.crop_detail_width);
+    private final float DETAIL_OUTER_WIDTH =
+            getResources().getDimension(R.dimen.crop_detail_outer_width);
+    private final float DETAIL_OFFSET =
+            getResources().getDimension(R.dimen.crop_detail_offset);
+    private final float CROSS_WIDTH =
+            getResources().getDimension(R.dimen.crop_cross_width);
+    private final int DETAIL_IMG_WIDTH = 50;
 
     private Paint mDetailOutlinePaint;
     private Matrix mMatrix = null;
@@ -182,11 +194,8 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
                 mCropQuad = new CropQuad(mNormedPoints, getBitmap().getWidth(), getBitmap().getHeight());
                 // Tell the CropQuad the transformation:
                 mapCropQuadPoints();
-
             }
-
-
-            // draw edit frame
+            // draw crop frame
             drawCropFrame(canvas);
 
             // draw the detail where the finger is pointing to:
@@ -196,23 +205,22 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     }
 
-    private void drawDetail(Canvas canvas, PointF point) {
 
-        if (point == null)
-            return;
+    private PointF[] viewToImage(PointF point) {
 
         Matrix inv = new Matrix();
         mMatrix.invert(inv);
 
-        int offset = 50;
+        // view coordinates:
         float[] mappedPoint = new float[4];
-        mappedPoint[0] = point.x - offset;
-        mappedPoint[1] = point.y - offset;
-        mappedPoint[2] = point.x + offset;
-        mappedPoint[3] = point.y + offset;
+        mappedPoint[0] = point.x - DETAIL_IMG_WIDTH;
+        mappedPoint[1] = point.y - DETAIL_IMG_WIDTH;
+        mappedPoint[2] = point.x + DETAIL_IMG_WIDTH;
+        mappedPoint[3] = point.y + DETAIL_IMG_WIDTH;
 
         inv.mapPoints(mappedPoint);
 
+        // map to image coordinates:
         Bitmap bitmap = getBitmap();
         if (mappedPoint[0] < 0)
             mappedPoint[0] = 0;
@@ -223,22 +231,50 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         if (mappedPoint[3] > bitmap.getHeight())
             mappedPoint[3] = bitmap.getHeight();
 
-        int w = Math.round(mappedPoint[2] - mappedPoint[0]);
-        int h = Math.round(mappedPoint[3] - mappedPoint[1]);
+//        Touch point in image space:
+        PointF[] results = new PointF[2];
+        results[0] = new PointF(mappedPoint[0], mappedPoint[1]);
+        results[1] = new PointF(mappedPoint[2], mappedPoint[3]);
 
-        float offsetY = 700 * mScale;
+        return results;
 
-        canvas.drawRect(point.x - w/2 - 20, point.y - h/2 - offsetY - 20, point.x + w/2 + 20, point.y + h/2 - offsetY + 20, mDetailOutlinePaint);
-        Bitmap cut = Bitmap.createBitmap(bitmap, Math.round(mappedPoint[0]), Math.round(mappedPoint[1]), w, h, null, false);
-        canvas.drawBitmap(cut, point.x - w/2, point.y - h/2 - offsetY, mDetailPaint);
+    }
+
+    private void drawDetail(Canvas canvas, PointF point) {
+
+        if (point == null)
+            return;
+
+        Bitmap bitmap = getBitmap();
+        if (bitmap == null)
+            return;
+
+        PointF[] imgPoints = viewToImage(point);
+
+//        Points in image space:
+        PointF imgTL = imgPoints[0];
+        PointF imgBR = imgPoints[1];
+
+        // draw the outline:
+        Rect outerRect = new Rect(
+                Math.round(point.x - DETAIL_OUTER_WIDTH), Math.round(point.y - DETAIL_OUTER_WIDTH - DETAIL_OFFSET),
+                Math.round(point.x + DETAIL_OUTER_WIDTH), Math.round(point.y + DETAIL_OUTER_WIDTH - DETAIL_OFFSET));
+        canvas.drawRect(outerRect, mDetailOutlinePaint);
+
+        // draw the bitmap:
+        Rect src = new Rect(Math.round(imgTL.x), Math.round(imgTL.y), Math.round(imgBR.x), Math.round(imgBR.y));
+
+        Rect dst = new Rect(
+                Math.round(point.x - DETAIL_WIDTH), Math.round(point.y - DETAIL_WIDTH - DETAIL_OFFSET),
+                Math.round(point.x + DETAIL_WIDTH), Math.round(point.y + DETAIL_WIDTH - DETAIL_OFFSET));
+
+        canvas.drawBitmap(bitmap, src, dst, mPaintBitmap);
 
         // draw the cross:
-        int crossW = 50;
-        int crossH = 50;
-        canvas.drawLine(point.x - crossW, point.y -  offsetY,
-                point.x + crossW, point.y -  offsetY, mCrossPaint);
-        canvas.drawLine(point.x, point.y - offsetY - crossH,
-                point.x, point.y - offsetY + crossH, mCrossPaint);
+        canvas.drawLine(point.x - CROSS_WIDTH, point.y -  DETAIL_OFFSET,
+                point.x + CROSS_WIDTH, point.y -  DETAIL_OFFSET, mCrossPaint);
+        canvas.drawLine(point.x, point.y - DETAIL_OFFSET - CROSS_WIDTH,
+                point.x, point.y - DETAIL_OFFSET + CROSS_WIDTH, mCrossPaint);
 
     }
 
@@ -266,7 +302,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
                 mQuadPath.lineTo(point.x, point.y);
 
             // draw the circle around the corner:
-            canvas.drawCircle(point.x, point.y, 30, mCirclePaint);
+            canvas.drawCircle(point.x, point.y, CORNER_CIRCLE_RADIUS, mCirclePaint);
 
         }
 
@@ -363,24 +399,17 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         mScale = calcScale(viewW, viewH);
         setMatrix();
 
-        // Tell the CropQuad the transformation:
-        Bitmap bm = getBitmap();
-        if (bm != null && mCropQuad != null) {
-
-            mapCropQuadPoints();
-
-        }
+//        // Tell the CropQuad the transformation:
+//        Bitmap bm = getBitmap();
+//        if (bm != null && mCropQuad != null) {
+//
+//            mapCropQuadPoints();
+//
+//        }
 
         mImageRect = calcImageRect(new RectF(0f, 0f, mImgWidth, mImgHeight), mMatrix);
         mFrameRect = calcFrameRect(mImageRect);
 
-//        if (mInitialFrameRect != null) {
-//            mFrameRect = applyInitialFrameRect(mInitialFrameRect);
-//        } else {
-//            mFrameRect = calcFrameRect(mImageRect);
-//        }
-//
-//        mIsInitialized = true;
         invalidate();
     }
 
