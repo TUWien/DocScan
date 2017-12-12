@@ -2,7 +2,6 @@ package at.ac.tuwien.caa.docscan.ui;
 
 import android.graphics.Bitmap;
 import android.graphics.PointF;
-import android.media.ExifInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -17,13 +16,11 @@ import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
-import at.ac.tuwien.caa.docscan.logic.Helper;
 
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
@@ -49,16 +46,13 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
         super.initToolbarTitle(R.string.map_crop_view_title);
 
-        Log.d(getClass().getName(), "mapview");
-
-        mImageView = (ImageView) findViewById(R.id.map_crop_view);
+        mImageView = findViewById(R.id.map_crop_view);
         CropInfo cropInfo = getIntent().getParcelableExtra(CROP_INFO_NAME);
         initCropInfo(cropInfo);
 
     }
 
     private void initCropInfo(CropInfo cropInfo) {
-        // Unfortunately the exif orientation is not used by BitmapFactory:
 
         mFileName = cropInfo.getFileName();
 
@@ -100,65 +94,42 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
     }
 
 
-    // TODO: error handling
-    private Mat cropAndTransformBitmap(Bitmap bitmap, ArrayList<PointF> cropPoints) {
-
-        PointF center = getCenter(cropPoints);
-
-        int bottomLeftIdx = getBottomLeftIdx(cropPoints, center);
-        ArrayList<PointF> srcPoints = sortSrcPoints(cropPoints, bottomLeftIdx);
-
-//        DkVector[] vectors = getVectors(cropPoints, bottomLeftIdx);
-        DkVector[] vectors = getVectors(cropPoints);
-        float height = (float) Math.max(vectors[UP].length(), vectors[DOWN].length());
-        float width = (float) Math.max(vectors[RIGHT].length(), vectors[LEFT].length());
-
-        ArrayList destPoints = getDestinationPoints(height, width);
-
-        return warpBitmap(bitmap, srcPoints, destPoints, Math.round(width), Math.round(height));
-
-    }
-
-    // TODO: error handling
-    private Mat cropAndTransform(String fileName, ArrayList<PointF> cropPoints) {
+    private Mat cropAndTransform(String fileName, ArrayList<PointF> srcPoints) {
 
         Mat inputMat = Imgcodecs.imread(fileName);
 
-        scalePointList(cropPoints, inputMat.width(), inputMat.height());
-//        printPointList(cropPoints, "scaled");
-
-        PointF center = getCenter(cropPoints);
-
-        int bottomLeftIdx = getBottomLeftIdx(cropPoints, center);
-        ArrayList<PointF> srcPoints = sortSrcPoints(cropPoints, bottomLeftIdx);
-
+        // Scale the points since they are normed:
+        scalePoints(srcPoints, inputMat.width(), inputMat.height());
+        // Sort the points so that the bottom left corner is on the first index:
+        sortPoints(srcPoints);
         printPointList(srcPoints, "sorted");
 
-        DkVector[] vectors = getVectors(srcPoints);
+//        Determine the size of the output image:
+        Size size = getRectSize(srcPoints);
+        float width = (float) size.width;
+        float height = (float) size.height;
+
+//        Get the destination points:
+        ArrayList destPoints = getDestinationPoints(width, height);
+        printPointList(destPoints, "dest points");
+
+        // Transform the image:
+        return warpMat(inputMat, srcPoints, destPoints, Math.round(width), Math.round(height));
+
+    }
+
+    private Size getRectSize(ArrayList<PointF> points) {
+
+        DkVector[] vectors = getVectors(points);
 
         float height = (float) Math.max(vectors[UP].length(), vectors[DOWN].length());
         float width = (float) Math.max(vectors[RIGHT].length(), vectors[LEFT].length());
 
-        Log.d(getClass().getName(), "w : " + width + " h: " + height);
-
-        ArrayList destPoints = getDestinationPoints(width, height);
-
-
-        printPointList(destPoints, "dest points");
-        return warpMat(inputMat, srcPoints, destPoints, Math.round(width), Math.round(height));
-//        if (orientation == 0)
-//            dstPoints = getDestinationPoints(width, height);
-//        else
-//            dstPoints = getDestinationPoints(height, width);
-
-//        dstPoints.add(dstPoints.remove(0));
-//        dstPoints.add(dstPoints.remove(0));
-//        ArrayList dstPoints = getDestinationPoints(height, width, orientation);
-//        rotatePoints(dstPoints, dstPoints, orientation);
-
-//        return warpMat(inputMat, srcPoints, dstPoints, Math.round(width), Math.round(height));
+        return new Size(width, height);
 
     }
+
+
 
     private void printPointList(ArrayList<PointF> points, String name) {
 
@@ -166,61 +137,15 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
             Log.d(getClass().getName(), name + " " + point);
     }
 
-    private void flipCoordinates(ArrayList<PointF> points, int orientation) {
-
-        switch (orientation) {
-            case 0:
-//                for (PointF point : points) {
-//                    float tmp = point.y;
-//                    point.y = point.x;
-//                    point.x = tmp;
-//                }
-//                points.add(points.remove(0));
-//                points.add(points.remove(0));
-//                points.add(points.remove(0));
-                break;
-        }
-
-    }
-
-    private void scalePointList(ArrayList<PointF> points, int width, int height) {
+    private void scalePoints(ArrayList<PointF> points, int width, int height) {
 
         float x, y;
         for (PointF point : points) {
             point.x *= width;
             point.y *= height;
         }
-
-
     }
 
-    private ArrayList<PointF> scalePoints(ArrayList<PointF> points, int width, int height) {
-
-        ArrayList<PointF> scaledPoints = new ArrayList<>();
-
-        float x, y;
-        for (PointF point : points) {
-            x = point.x * width;
-            y = point.y * height;
-            scaledPoints.add(new PointF(x, y));
-        }
-
-        return scaledPoints;
-
-    }
-
-    private int getExifOrientation(String fileName) {
-
-        try {
-            ExifInterface exif = new ExifInterface(fileName);
-            int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
-            int angle = Helper.getAngleFromExif(orientation);
-            return angle;
-        } catch (IOException e) {
-            return -1;
-        }
-
-    }
 
     @NonNull
     private ArrayList getDestinationPoints(float width, float height) {
@@ -232,72 +157,9 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
         return destPoints;
     }
 
-    private void rotatePoints(ArrayList<PointF> points1, ArrayList<PointF> points2, int orientation) {
-
-        switch(orientation) {
-            case 0:
-                points1.add(points1.remove(0));
-//                points2.add(points2.remove(0));
-//                for (PointF point : points1) {
-//                    Log.d(getClass().getName(), "point: " + point);
-//                    float t = point.y;
-//                    point.y = point.x;
-//                    point.x = t;
-//                }
-
-
-        }
-
-    }
-
-    @NonNull
-    private ArrayList getDestinationPoints(float height, float width, int orientation) {
-
-        ArrayList destPoints = new ArrayList();
-
-        Log.d(getClass().getName(), "orientation: " + orientation);
-
-        switch (orientation) {
-
-            case 90:
-                destPoints.add(new PointF(0, height));
-                destPoints.add(new PointF(0, 0));
-                destPoints.add(new PointF(width, 0));
-                destPoints.add(new PointF(width, height));
-                break;
-
-//                TODO: check what happens if no orientation is found!
-            // Handle orientation = 0 (no rotation) or orientation = -1 (no exif orientation found):
-            case 0:
-                destPoints.add(new PointF(0, height));
-                destPoints.add(new PointF(0, 0));
-                destPoints.add(new PointF(width, 0));
-                destPoints.add(new PointF(width, height));
-                break;
-
-        }
-
-        return destPoints;
-    }
-
-
     private DkVector[] getVectors(ArrayList<PointF> cropPoints) {
 
         DkVector[] result = new DkVector[4];
-
-//        result[UP] = new DkVector(
-//                cropPoints.get(bottomLeftIdx),
-//                cropPoints.get((bottomLeftIdx + 1) % cropPoints.size()));
-//        result[RIGHT] = new DkVector(
-//                cropPoints.get((bottomLeftIdx + 1) % cropPoints.size()),
-//                cropPoints.get((bottomLeftIdx + 2) % cropPoints.size()));
-//        result[DOWN] = new DkVector(
-//                cropPoints.get((bottomLeftIdx + 2) % cropPoints.size()),
-//                cropPoints.get((bottomLeftIdx + 3) % cropPoints.size()));
-//        result[LEFT] = new DkVector(
-//                cropPoints.get((bottomLeftIdx + 3) % cropPoints.size()),
-//                cropPoints.get((bottomLeftIdx + 4) % cropPoints.size()));
-
         result[UP] = new DkVector(cropPoints.get(0), cropPoints.get(1));
         result[RIGHT] = new DkVector(cropPoints.get(1), cropPoints.get(2));
         result[DOWN] = new DkVector(cropPoints.get(2), cropPoints.get(3));
@@ -307,47 +169,13 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
     }
 
-    private ArrayList sortSrcPoints(ArrayList<PointF> cropPoints, int bottomLeftIdx) {
-        ArrayList srcPoints;
-        if (bottomLeftIdx == 0)
-            srcPoints = cropPoints;
-        else {
+    private void sortPoints(ArrayList<PointF> points) {
 
-            srcPoints = new ArrayList();
+        PointF center = getCenter(points);
+        int bottomLeftIdx = getBottomLeftIdx(points, center);
 
-            for (int i = 0; i < cropPoints.size(); i++) {
-                int idx = (bottomLeftIdx + i) % cropPoints.size();
-                srcPoints.add(cropPoints.get(idx));
-            }
-
-        }
-        return srcPoints;
-    }
-
-    private Mat warpBitmap(Bitmap bitmap, ArrayList<PointF> cropPoints, ArrayList<PointF> destPoints, int width, int height) {
-
-        Bitmap bmp32 = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        Mat mat = new Mat();
-        Utils.bitmapToMat(bmp32, mat);
-        Mat result = new Mat(height, width, mat.type());
-
-        MatOfPoint2f srcPointsMat = convertToOpenCVPoints(cropPoints);
-        MatOfPoint2f dstPointsMat = convertToOpenCVPoints(destPoints);
-
-        Mat perspectiveTransform = Imgproc.getPerspectiveTransform(srcPointsMat, dstPointsMat);
-
-
-        if (perspectiveTransform.empty())
-            return null;
-
-        Imgproc.warpPerspective(mat,
-                result,
-                perspectiveTransform,
-                new Size(result.width(), result.height()),
-                Imgproc.INTER_CUBIC);
-//        Imgproc.cvtColor(result, result, Imgproc.COLOR_BGR2RGB,0);
-
-        return result;
+        for (int i = 0; i < bottomLeftIdx; i++)
+            points.add(points.remove(0));
 
     }
 
@@ -371,8 +199,6 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
         return result;
 
     }
-
-
 
     private int getBottomLeftIdx(ArrayList<PointF> points, PointF center) {
 
