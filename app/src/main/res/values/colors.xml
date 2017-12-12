@@ -26,6 +26,8 @@
     <color name="focus_touch_circle_fill">#aa666666</color>
     <color name="focus_touch_circle_outline">#96ffffff</color>
 
+    <color name="detail_crop_outline">#aa666666</color>
+
     <!--<color name="movement_color">#6fff0000</color>-->
     <color name="movement_color">#4f630000</color>
     <color name="waiting_frame_color">#00ffffff</color>

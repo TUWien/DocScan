@@ -6,6 +6,7 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.media.ExifInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -81,7 +82,8 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 //            mapTest(bitmap);
 //            simpleMap(bitmap, cropInfo.getPoints());
 
-            Mat transformedMat = cropAndTransformBitmap(bitmap, cropInfo.getPoints());
+//            Mat transformedMat = cropAndTransformBitmap(bitmap, cropInfo.getPoints());
+            Mat transformedMat = cropAndTransform(mFileName, cropInfo.getPoints());
             Bitmap resultBitmap = matToBitmap(transformedMat);
 
             mImageView.setImageBitmap(resultBitmap);
@@ -95,7 +97,10 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
     private Bitmap matToBitmap(Mat transformedMat) {
         String fileName = Helper.getMediaStorageUserSubDir(getResources().getString(R.string.app_name)).toString() + "/test4.png";
         Imgcodecs.imwrite(fileName, transformedMat);
-        return BitmapFactory.decodeFile(fileName);
+        Bitmap result = Bitmap.createBitmap(transformedMat.cols(), transformedMat.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(transformedMat, result);
+//        return BitmapFactory.decodeFile(fileName);
+        return result;
     }
 
 
@@ -105,24 +110,48 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
         PointF center = getCenter(cropPoints);
 
         int bottomLeftIdx = getBottomLeftIdx(cropPoints, center);
-        Log.d(getClass().getName(), "center point: " + center);
-        Log.d(getClass().getName(), "bottom left point: " + cropPoints.get(bottomLeftIdx));
+        ArrayList<PointF> srcPoints = sortSrcPoints(cropPoints, bottomLeftIdx);
 
         DkVector[] vectors = getVectors(cropPoints, bottomLeftIdx);
 
         float height = (float) Math.max(vectors[UP].length(), vectors[DOWN].length());
         float width = (float) Math.max(vectors[RIGHT].length(), vectors[LEFT].length());
 
+        ArrayList destPoints = getDestinationPoints(height, width);
 
+        return warpBitmap(bitmap, srcPoints, destPoints, Math.round(width), Math.round(height));
+
+    }
+
+    // TODO: error handling
+    private Mat cropAndTransform(String fileName, ArrayList<PointF> cropPoints) {
+
+        Mat inputMat = Imgcodecs.imread(fileName);
+
+        PointF center = getCenter(cropPoints);
+
+        int bottomLeftIdx = getBottomLeftIdx(cropPoints, center);
         ArrayList<PointF> srcPoints = sortSrcPoints(cropPoints, bottomLeftIdx);
+
+        DkVector[] vectors = getVectors(cropPoints, bottomLeftIdx);
+
+        float height = (float) Math.max(vectors[UP].length(), vectors[DOWN].length());
+        float width = (float) Math.max(vectors[RIGHT].length(), vectors[LEFT].length());
+
+        ArrayList destPoints = getDestinationPoints(height, width);
+
+        return warpMat(inputMat, srcPoints, destPoints, Math.round(width), Math.round(height));
+
+    }
+
+    @NonNull
+    private ArrayList getDestinationPoints(float height, float width) {
         ArrayList destPoints = new ArrayList();
         destPoints.add(new PointF(0, height));
         destPoints.add(new PointF(0, 0));
         destPoints.add(new PointF(width, 0));
         destPoints.add(new PointF(width, height));
-
-        return warpBitmap(bitmap, srcPoints, destPoints, Math.round(width), Math.round(height));
-
+        return destPoints;
     }
 
     private DkVector[] getVectors(ArrayList<PointF> cropPoints, int bottomLeftIdx) {
@@ -174,6 +203,28 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
         MatOfPoint2f dstPointsMat = convertToOpenCVPoints(destPoints);
 
         Mat perspectiveTransform = Imgproc.getPerspectiveTransform(srcPointsMat, dstPointsMat);
+
+        // TODO: handle case where not transform is found
+        Imgproc.warpPerspective(mat,
+                result,
+                perspectiveTransform,
+                new Size(result.width(), result.height()),
+                Imgproc.INTER_CUBIC);
+//        Imgproc.cvtColor(result, result, Imgproc.COLOR_BGR2RGB,0);
+
+        return result;
+
+    }
+
+    private Mat warpMat(Mat mat, ArrayList<PointF> cropPoints, ArrayList<PointF> destPoints, int width, int height) {
+
+        Mat result = new Mat(height, width, mat.type());
+
+        MatOfPoint2f srcPointsMat = convertToOpenCVPoints(cropPoints);
+        MatOfPoint2f dstPointsMat = convertToOpenCVPoints(destPoints);
+
+        Mat perspectiveTransform = Imgproc.getPerspectiveTransform(srcPointsMat, dstPointsMat);
+
         // TODO: handle case where not transform is found
         Imgproc.warpPerspective(mat,
                 result,
