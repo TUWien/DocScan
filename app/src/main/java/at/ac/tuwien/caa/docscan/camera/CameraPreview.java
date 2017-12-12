@@ -956,6 +956,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         Camera.Size pictureSize = getLargestPictureSize();
         params.setPictureSize(pictureSize.width, pictureSize.height);
+        mCVCallback.onPictureSize(pictureSize);
 
 //        if (!mPreviewSizeSet) {
 //            Camera.Size bestSize = getBestFittingSize(cameraSizes, orientation);
@@ -1568,6 +1569,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //        void onBarCodeFound(final Barcode barcode);
 //        void onTextFound(final String result);
         void onQRCode(Result result);
+        void onPictureSize(Camera.Size size);
 
     }
 

@@ -56,8 +56,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
-import android.support.v8.renderscript.Allocation;
-import android.support.v8.renderscript.RenderScript;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -85,6 +83,9 @@ import com.google.android.gms.security.ProviderInstaller;
 import com.google.zxing.Result;
 
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -99,7 +100,6 @@ import java.util.Date;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.ScriptC_rotator;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
@@ -216,6 +216,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private long mLastTime;
     private boolean mItemSelectedAutomatically = false;
+    private int mPictureWidth;
+    private int mPictureHeight;
 
 
     // ================= start: methods from the Activity lifecycle =================
@@ -1807,6 +1809,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    @Override
+    public void onPictureSize(Camera.Size size) {
+
+        mPictureWidth = size.width; 
+        mPictureHeight = size.height;
+        
+    }
+
 //    @Override
 //    public void onBarCodeFound(final Barcode barcode) {
 //
@@ -2237,29 +2247,31 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
 
-    public Bitmap rotateBitmap(Bitmap bitmap) {
-        RenderScript rs = RenderScript.create(mContext);
-        ScriptC_rotator script = new ScriptC_rotator(rs);
-        script.set_inWidth(bitmap.getWidth());
-        script.set_inHeight(bitmap.getHeight());
-        Allocation sourceAllocation = Allocation.createFromBitmap(rs, bitmap,
-                Allocation.MipmapControl.MIPMAP_NONE,
-                Allocation.USAGE_SCRIPT);
-        bitmap.recycle();
-        script.set_inImage(sourceAllocation);
 
-        int targetHeight = bitmap.getWidth();
-        int targetWidth = bitmap.getHeight();
-        Bitmap.Config config = bitmap.getConfig();
-        Bitmap target = Bitmap.createBitmap(targetWidth, targetHeight, config);
-        final Allocation targetAllocation = Allocation.createFromBitmap(rs, target,
-                Allocation.MipmapControl.MIPMAP_NONE,
-                Allocation.USAGE_SCRIPT);
-        script.forEach_rotate_90_clockwise(targetAllocation, targetAllocation);
-        targetAllocation.copyTo(target);
-        rs.destroy();
-        return target;
-    }
+//
+//    public Bitmap rotateBitmap(Bitmap bitmap) {
+//        RenderScript rs = RenderScript.create(mContext);
+//        ScriptC_rotator script = new ScriptC_rotator(rs);
+//        script.set_inWidth(bitmap.getWidth());
+//        script.set_inHeight(bitmap.getHeight());
+//        Allocation sourceAllocation = Allocation.createFromBitmap(rs, bitmap,
+//                Allocation.MipmapControl.MIPMAP_NONE,
+//                Allocation.USAGE_SCRIPT);
+//        bitmap.recycle();
+//        script.set_inImage(sourceAllocation);
+//
+//        int targetHeight = bitmap.getWidth();
+//        int targetWidth = bitmap.getHeight();
+//        Bitmap.Config config = bitmap.getConfig();
+//        Bitmap target = Bitmap.createBitmap(targetWidth, targetHeight, config);
+//        final Allocation targetAllocation = Allocation.createFromBitmap(rs, target,
+//                Allocation.MipmapControl.MIPMAP_NONE,
+//                Allocation.USAGE_SCRIPT);
+//        script.forEach_rotate_90_clockwise(targetAllocation, targetAllocation);
+//        targetAllocation.copyTo(target);
+//        rs.destroy();
+//        return target;
+//    }
 
     /**
      * Class used to save pictures in an own thread (AsyncTask).
@@ -2272,6 +2284,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             mData = data;
 
+        }
+
+
+        private Mat byte2Mat(byte[] pixels) {
+
+            Mat yuv = new Mat((int) (mPictureWidth * 1.5), mPictureHeight, CvType.CV_8UC1);
+            yuv.put(0, 0, pixels);
+
+            Mat result = new Mat(mPictureHeight, mPictureWidth, CvType.CV_8UC3);
+            Imgproc.cvtColor(yuv, result, Imgproc.COLOR_YUV2RGB_NV21);
+
+            return result;
         }
 
         @Override
@@ -2293,6 +2317,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                         mProgressBar.setVisibility(View.VISIBLE);
                     }
                 });
+
+//                Imgcodecs.imwrite(outFile.getPath(), byte2Mat(mData));
 
                 FileOutputStream fos = new FileOutputStream(outFile);
                 fos.write(mData);
