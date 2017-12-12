@@ -89,8 +89,8 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
         Bitmap result = Bitmap.createBitmap(transformedMat.cols(), transformedMat.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(transformedMat, result);
-//        return BitmapFactory.decodeFile(fileName);
         return result;
+
     }
 
 
