@@ -1846,8 +1846,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             mSeriesPopupMenu = new PopupMenu(this, menuItemView);
             mSeriesPopupMenu.setOnMenuItemClickListener(this);
             mSeriesPopupMenu.inflate(R.menu.series_menu);
-
-            setupFlashUI();
         }
 
         mSeriesPopupMenu.show();
