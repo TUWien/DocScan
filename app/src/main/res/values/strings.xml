@@ -25,7 +25,7 @@
     <string name="precise_page_seg_text">Use precise page segmentation</string>
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
-    <string name="camera_series_button_prefix">Series:</string>
+    <string name="camera_series_button_prefix">Document:</string>
 
     <!-- Just used for debugging: -->
 
@@ -58,7 +58,7 @@
     <string name="about_text">DocScan\n2017</string>
 
     <!-- PaintView -->
-    <string name="instruction_empty">no document found</string>
+    <string name="instruction_empty">no page found</string>
     <string name="instruction_small">move closer</string>
     <string name="instruction_perspective">change perspective</string>
     <string name="instruction_rotation">rotate</string>
@@ -75,6 +75,7 @@
     <string name="instruction_series_paused">series mode paused</string>
 
     <string name="instruction_searching_qr">Searching QR code</string>
+    <string name="instruction_qr_found">QR code found</string>
 
     <!-- Toasts -->
     <string name="toast_series_paused">Automated imaging paused</string>
@@ -99,10 +100,9 @@
     <string name="flash_on_mode">Flash on</string>
     <string name="flash_torch_mode">Torch</string>
 
-    <string name="series_create">Create new series</string>
-    <string name="series_switch_text">Switch series</string>
-    <string name="series_use">Use existing series</string>
-    <string name="series_qr">Series from QR code</string>
+    <string name="series_create">Create new document</string>
+    <string name="series_use">Switch document</string>
+    <string name="series_qr">Document from QR code</string>
 
     <string name="debug_view_item_show">Show debug view</string>
 
@@ -171,8 +171,8 @@
     <string name="sync_notification_uploading_finished_text">Finished image upload.</string>
 
     <!-- DocumentActivity -->
-    <string name="document_title">Select a series</string>
-    <string name="document_select_button_text">Use selected series</string>
+    <string name="document_title">Select a document</string>
+    <string name="document_select_button_text">Use selected document</string>
 
     <string name="document_create_folder_title">Enter new folder name</string>
     <string name="document_no_dir_created_title">No document created</string>
@@ -180,7 +180,7 @@
     <string name="document_dir_existing_postfix_message">is already created. Please use another name.</string>
     <string name="document_no_dir_created_message">Could not create the specified folder.</string>
     <string name="document_no_dir_selected_title">No document selected</string>
-    <string name="document_no_dir_selected_message">Please select a series first.</string>
+    <string name="document_no_dir_selected_message">Please select a document first.</string>
     <string name="document_no_permission_message">Files cannot be uploaded without permission.</string>
     <string name="document_no_permission_title">Permission required</string>
 
@@ -209,22 +209,22 @@
     <string name="uploading_text">Uploading</string>
 
     <!-- SeriesGeneralActivity -->
-    <string name="series_general_heading_text">Current series is:</string>
-    <string name="series_general_keep_series_text">Use current series</string>
-    <string name="series_general_other_series_text">Use other series:</string>
-    <string name="series_general_start_text">Start new series</string>
-    <string name="series_general_select_text">Select existing series</string>
+    <string name="series_general_heading_text">Current document:</string>
+    <string name="series_general_keep_series_text">Use current document</string>
+    <string name="series_general_other_series_text">Use other document:</string>
+    <string name="series_general_start_text">Start new document</string>
+    <string name="series_general_select_text">Select existing document</string>
     <string name="series_general_hide_dialog_text">Do not show this dialog after starting the series mode.</string>
-    <string name="series_general_title">Series</string>
+    <string name="series_general_title">Documents</string>
 
 
-    <string name="create_series_title">Create new series</string>
-    <string name="create_series_name_hint">Series name</string>
-    <string name="create_series_done_button_text">OK</string>
-
-
-
-
+    <string name="create_series_title">Create new document</string>
+    <string name="create_series_name_hint">Document name</string>
+    <string name="create_series_done_button_text">Create document</string>
+    <string name="create_series_advanced_options_text">Show more fields</string>
+    <string name="create_series_authority_text">Authority</string>
+    <string name="create_series_signature_text">Signature</string>
+    <string name="create_series_hierarchy_text">Hierarchy</string>
 
 
 </resources>

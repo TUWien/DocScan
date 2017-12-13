@@ -1,13 +1,17 @@
-package at.ac.tuwien.caa.docscan.ui;
+package at.ac.tuwien.caa.docscan.ui.document;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 
 import java.io.File;
 
@@ -16,14 +20,16 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
+import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 
 /**
  * Created by fabian on 24.10.2017.
  */
 
-public class CreateSeriesActivity extends BaseNoNavigationActivity  {
+public class CreateSeriesActivity extends BaseNoNavigationActivity {
 
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
+    public static final String DOCUMENT_QR_TEXT = "DOCUMENT_QR_TEXT";
 
     // Eventually a permission is required for dir creation, hence we store this as member:
     private File mSubDir;
@@ -36,6 +42,91 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity  {
 
         super.initToolbarTitle(R.string.create_series_title);
 
+        initOkButton();
+
+        initShowFieldsCheckBox();
+
+//        Debugging: (if you just want to launch the Activity (without CameraActivity)
+//        String qrText = "<root><authority>Universitätsarchiv Greifswald</authority><identifier type=\"hierarchy description\">Universitätsarchiv Greifswald/Altes Rektorat/01. Rechtliche Stellung der Universität - 01.01. Statuten/R 1199</identifier><identifier type=\"uri\">https://ariadne-portal.uni-greifswald.de/?arc=1&type=obj&id=5162222</identifier><title>Entwurf neuer Universitätsstatuten </title><date normal=\"1835010118421231\">1835-1842</date><callNumber>R 1199</callNumber><description>Enthält u.a.: Ausführliche rechtshistorische Begründung des Entwurfs von 1835.</description></root>";
+//        processQRCode(qrText);
+
+        // Read the information in the QR Code transmitted via the intent:
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            String initString = "";
+            String qrText = extras.getString(DOCUMENT_QR_TEXT, initString);
+            if (!qrText.equals(initString)) {
+                Log.d(getClass().getName(), qrText);
+                processQRCode(qrText);
+            }
+        }
+
+
+
+    }
+
+    private void processQRCode(String text) {
+
+        // Currently the XML has no root defined (malformed) so we add one manually:
+        String qrText = "<root>" + text + "</root>";
+
+        Log.d(getClass().getName(), "parsing document");
+        Document document = parseQRCode(qrText);
+        Log.d(getClass().getName(), "found document: " + document);
+        fillViews(document);
+
+    }
+
+    private Document parseQRCode(String text) {
+
+        return Document.parseXML(text);
+
+    }
+
+    private void fillViews(Document document) {
+
+        // Emulate a click and open up the extended layout (shows the views above):
+        CheckBox checkBox = (CheckBox) findViewById(R.id.create_series_advanced_options_checkbox);
+        checkBox.setChecked(true);
+
+        if (document == null)
+            return;
+
+        // Title:
+        EditText titleEditText = findViewById(R.id.create_series_name_edittext);
+        if (document.getTitle() != null)
+            titleEditText.setText(document.getTitle());
+
+//        // Description:
+//        EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
+//        if (document.getTitle() != null)
+//            descriptionEditText.setText(document.getDescription());
+
+        // Signature:
+        EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
+        if (document.getSignature() != null)
+            signatureEditText.setText(document.getSignature());
+
+        // Authority:
+        EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
+        if (document.getAuthority() != null)
+            authorityEditText.setText(document.getAuthority());
+
+        // Hierarchy:
+        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
+        if (document.getHierarchy() != null)
+            hierarchyEditText.setText(document.getHierarchy());
+
+//        // Uri:
+//        EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
+//        if (document.getUri() != null)
+//            uriEditText.setText(document.getUri());
+
+    }
+
+
+
+    private void initOkButton() {
         final EditText userInput = (EditText) findViewById(R.id.create_series_name_edittext);
 
         Button okButton = (Button) findViewById(R.id.create_series_done_button);
@@ -45,7 +136,23 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity  {
                 onCreateDirResult(userInput.getText().toString());
             }
         });
+    }
 
+    private void initShowFieldsCheckBox() {
+        final RelativeLayout fieldsLayout = (RelativeLayout) findViewById(R.id.create_series_fields_layout);
+
+        CheckBox showFieldsCheckBox = (CheckBox) findViewById(R.id.create_series_advanced_options_checkbox);
+        showFieldsCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                if (isChecked)
+                    fieldsLayout.setVisibility(View.VISIBLE);
+                else
+                    fieldsLayout.setVisibility(View.INVISIBLE);
+
+            }
+        });
     }
 
     private void onCreateDirResult(String result) {
