@@ -1921,9 +1921,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 startActivity(new Intent(getApplicationContext(), CreateSeriesActivity.class));
                 return true;
 
-//            case R.id.series_use_existing_item:
-//                startActivity(new Intent(getApplicationContext(), DocumentActivity.class));
-//                return true;
+            case R.id.series_switch_item:
+                startActivity(new Intent(getApplicationContext(), DocumentActivity.class));
+                return true;
 
             case R.id.series_qr_item:
                 mIsQRActive = true;

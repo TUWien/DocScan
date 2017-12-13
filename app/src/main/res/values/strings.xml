@@ -101,7 +101,7 @@
     <string name="flash_torch_mode">Torch</string>
 
     <string name="series_create">Create new document</string>
-    <string name="series_use">Switch document</string>
+    <string name="series_switch">Switch document</string>
     <string name="series_qr">Document from QR code</string>
 
     <string name="debug_view_item_show">Show debug view</string>
