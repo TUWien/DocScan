@@ -7,9 +7,7 @@
     <string name="share_log_item_text">Share log</string>
     <string name="sync_item_text">Upload</string>
     <string name="camera_item_text">Camera</string>
-    <string name="login_item_text">Login</string>
     <string name="header_text">DocScan</string>
-    <string name="rest_item_text">Rest</string>
     <string name="account_edit_text">Set up account</string>
     <string name="account_not_logged_in">Anonymous user</string>
     <string name="account_logout">Logout</string>
@@ -25,7 +23,6 @@
     <string name="precise_page_seg_text">Use precise page segmentation</string>
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
-    <string name="camera_series_button_prefix">Document:</string>
 
     <!-- Just used for debugging: -->
 
@@ -40,22 +37,17 @@
     <string name="table_head_time_text">time (ms)</string>
     <string name="focus_measure_debug_text">Focus measure:</string>
     <string name="page_segmentation_debug_text">Page segmentation:</string>
-    <string name="fps_debug_text">FPS:</string>
-    <string name="inter_shot_text">Bt. 2 shots:</string>
-    <string name="flip_shot_text">Bt. move and shot:</string>
-    <string name="movement_check_text">Move detection:</string>
-    <string name="new_doc_text">Change detection:</string>
 
     <!-- Use in the debug view: end -->
 
-    <string name="drawer_open">Open navigation drawer</string>
-    <string name="drawer_close">Close navigation drawer</string>
     <string name="no_file_found_msg">No picture file found.</string>
     <string name="no_file_found_title">File not found</string>
     <string name="button_ok">OK</string>
 
     <!-- Navigation Drawer -->
     <string name="about_text">DocScan\n2017</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 
     <!-- PaintView -->
     <string name="instruction_empty">no page found</string>
@@ -75,7 +67,6 @@
     <string name="instruction_series_paused">series mode paused</string>
 
     <string name="instruction_searching_qr">Searching QR code</string>
-    <string name="instruction_qr_found">QR code found</string>
 
     <!-- Toasts -->
     <string name="toast_series_paused">Automated imaging paused</string>
@@ -133,13 +124,11 @@
     <string name="picture_save_error_title">Image saving error</string>
 
     <string name="debug_collections_button_text">Collections</string>
-    <string name="debug_upload_button_text">Upload</string>
 
     <!-- Sync: -->
     <string name="sync_start_service_button_text">Start sync</string>
     <string name="sync_connect_dropbox_button_text">Dropbox</string>
     <string name="sync_connect_transkribus_button_text">Transkribus</string>
-    <string name="sync_auth_dropbox_button_text">Authenticate dropbox</string>
     <string name="sync_dropbox_app_key">p2393aiyn7jdr54</string>
     <string name="sync_no_dropbox_access">Sorry your dropbox account is not accessible.</string>
     <string name="sync_dropbox_text">Dropbox</string>
@@ -174,7 +163,6 @@
     <string name="document_title">Select a document</string>
     <string name="document_select_button_text">Use selected document</string>
 
-    <string name="document_create_folder_title">Enter new folder name</string>
     <string name="document_no_dir_created_title">No document created</string>
     <string name="document_dir_existing_prefix_message">The folder </string>
     <string name="document_dir_existing_postfix_message">is already created. Please use another name.</string>
@@ -187,12 +175,10 @@
     <!-- SyncActivity -->
     <string name="sync_no_dir_selected_title">No directory selected</string>
     <string name="sync_no_dir_selected_message">Please select at least one folder.</string>
-    <string name="sync_start_upload_button_text">Upload selected documents</string>
     <string name="sync_selection_initial_text">Nothing selected</string>
     <string name="sync_selection_many_documents_text">documents</string>
     <string name="sync_selection_single_document_text">document</string>
     <string name="sync_snackbar_uploading_prefix_text">Uploading\</string>
-    <string name="sync_snackbar_check_notifications_text">.\nPlease wait until the upload is finished.</string>
     <string name="sync_snackbar_error_upload_text">Could not upload all files. Please try again!</string>
     <string name="sync_snackbar_finished_upload_text">Finished upload of</string>
     <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>
@@ -205,7 +191,6 @@
     <string name="sync_not_logged_in_button_text">Log in</string>
 
     <!-- UploadingActivity -->
-    <string name="uploading_title">Uploading</string>
     <string name="uploading_text">Uploading</string>
 
     <!-- SeriesGeneralActivity -->

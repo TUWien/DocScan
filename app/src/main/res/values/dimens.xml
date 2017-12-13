@@ -21,6 +21,5 @@
     <dimen name="login_spinner_size">100dp</dimen>
     <dimen name="sync_switcher_image_size">50dp</dimen>
     <dimen name="sync_footer_height">150dp</dimen>
-    <dimen name="sync_footer_min_width">250dp</dimen>
 
 </resources>
