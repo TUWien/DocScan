@@ -7,14 +7,17 @@ android {
 			keyPassword 'pwd'
 		}
 	}
-	compileSdkVersion 25
-	buildToolsVersion '25.0.0'
+	compileSdkVersion 27
+
 	defaultConfig {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 14
-		targetSdkVersion 25
+		targetSdkVersion 27
 		versionCode 11
 		versionName "1.1.4"
+		// we need vectorDrawables.useSupportLibrary to get rid of this error:
+//		References to other resources are not supported by build-time PNG generation
+		vectorDrawables.useSupportLibrary = true
 	}
 
 	buildTypes {
