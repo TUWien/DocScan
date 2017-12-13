@@ -100,6 +100,7 @@
     <string name="flash_torch_mode">Torch</string>
 
     <string name="series_create">Create new series</string>
+    <string name="series_switch_text">Switch series</string>
     <string name="series_use">Use existing series</string>
     <string name="series_qr">Series from QR code</string>
 

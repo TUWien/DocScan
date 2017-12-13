@@ -68,7 +68,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -76,11 +75,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.zxing.Result;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
+import com.google.zxing.Result;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -144,7 +143,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
     private ImageButton mGalleryButton;
-    private Button mDocumentButton;
     private TaskTimer mTaskTimer;
     private CameraPreview mCameraPreview;
     private PaintView mPaintView;
@@ -291,10 +289,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Resume drawing thread:
         if (mPaintView != null)
             mPaintView.resume();
-
-        // Here we must update the button text after a activity resume (others are just initialized
-//        in onCreate.
-        initDocumentButton();
 
         // update the title of the toolbar:
         getSupportActionBar().setTitle(User.getInstance().getDocumentName());
@@ -540,25 +534,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
     }
 
-    /**
-     * Connects the document button with its OnClickListener.
-     */
-    private void initDocumentButton() {
-
-        mDocumentButton = (Button) findViewById(R.id.document_button);
-        String documentName = User.getInstance().getDocumentName();
-
-        if (documentName != null && mDocumentButton != null) {
-            mDocumentButton.setText(getString(R.string.camera_series_button_prefix) + " " + documentName);
-            mDocumentButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startDocumentActivity();
-                }
-            });
-        }
-
-    }
 
     /**
      * Start the document activity via an intent.
@@ -1159,16 +1134,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //        // Initialize the newly created buttons:
         initButtons();
-//        initDocumentButton();
-
-
-//        getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
-//        View view = findViewById(R.id.camera_controls_layout);
-//        view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
-//
-//        // Initialize the newly created buttons:
-//        initButtons();
-//        initDocumentButton();
 
     }
 
@@ -1842,6 +1807,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //
 //    }
 
+    public void showSeriesPopup(MenuItem item) {
+
         View menuItemView = findViewById(R.id.document_item);
         if (menuItemView == null)
             return;
@@ -1852,10 +1819,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             mSeriesPopupMenu.setOnMenuItemClickListener(this);
             mSeriesPopupMenu.inflate(R.menu.series_menu);
 
-            setupFlashUI();
         }
 
         mSeriesPopupMenu.show();
+
+    }
 
     public void showFlashPopup(MenuItem item) {
 
@@ -1925,9 +1893,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 startActivity(new Intent(getApplicationContext(), CreateSeriesActivity.class));
                 return true;
 
-            case R.id.series_use_existing_item:
-                startActivity(new Intent(getApplicationContext(), DocumentActivity.class));
-                return true;
+//            case R.id.series_use_existing_item:
+//                startActivity(new Intent(getApplicationContext(), DocumentActivity.class));
+//                return true;
 
             case R.id.series_qr_item:
                 mIsQRActive = true;

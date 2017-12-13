@@ -8,9 +8,10 @@
         />
 
     <item
-        android:id="@+id/series_use_existing_item"
-        android:title="@string/series_use"
+        android:id="@+id/series_switch_item"
+        android:title="@string/series_switch_text"
         />
+
 
     <item
         android:id="@+id/series_qr_item"

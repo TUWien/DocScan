@@ -62,15 +62,6 @@
                 android:layout_marginBottom="4dp"
                 />
 
-            <Button
-                android:id="@+id/document_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/gallery_button"
-                android:background="@color/button_bg_color"
-                android:textColor="@color/white"
-                android:text="Untitled"/>
-
             <ProgressBar
                 android:id="@+id/saving_progressbar"
                 android:layout_width="wrap_content"
