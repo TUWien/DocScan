@@ -77,8 +77,6 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private RectF mImageRect;
     private Paint mPaintFrame;
     private int mFrameColor;
-    // TODO: i do not believe that this is device independent!
-    private float mFrameStrokeWeight = 1.5f;
     private RectF mFrameRect;
     private Path mQuadPath;
     private Paint mQuadPaint, mCrossPaint, mCirclePaint;
@@ -399,13 +397,13 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         mScale = calcScale(viewW, viewH);
         setMatrix();
 
-//        // Tell the CropQuad the transformation:
-//        Bitmap bm = getBitmap();
-//        if (bm != null && mCropQuad != null) {
-//
-//            mapCropQuadPoints();
-//
-//        }
+        // setupLayout is also called on device orientation change, we need to initialize mCropQuad
+//        again, to rotate it.
+        if ((getBitmap() != null) && (mNormedPoints != null)) {
+            mCropQuad = new CropQuad(mNormedPoints, getBitmap().getWidth(), getBitmap().getHeight());
+            // Tell the CropQuad the transformation:
+            mapCropQuadPoints();
+        }
 
         mImageRect = calcImageRect(new RectF(0f, 0f, mImgWidth, mImgHeight), mMatrix);
         mFrameRect = calcFrameRect(mImageRect);

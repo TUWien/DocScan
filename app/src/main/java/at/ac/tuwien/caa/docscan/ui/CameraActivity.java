@@ -2388,6 +2388,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
                 if (mCropRect != null && mCVResult != null) {
+
+
                     ArrayList<PointF> cropPoints = mCVResult.normPoints(mCropRect);
 
                     Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
