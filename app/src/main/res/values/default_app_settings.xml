@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <bool name="series_mode_default">true</bool>
-    <string name="series_mode_key">SERIES_MODE_KEY</string>
-
-    <bool name="series_mode_paused_default">true</bool>
-    <string name="series_mode_paused_key">SERIES_MODE_PAUSED_KEY</string>
-
-    <bool name="hide_series_dialog_after_start_default">false</bool>
-    <string name="hide_series_dialog_after_start_key">SHOW_SERIES_MODE_KEY</string>
-
     <string name="series_name_default">default</string>
     <string name="series_name_key">SERIES_NAME_KEY</string>
 
