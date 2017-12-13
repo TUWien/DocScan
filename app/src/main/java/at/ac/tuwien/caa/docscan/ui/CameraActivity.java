@@ -503,10 +503,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mAutoShootDrawable = getResources().getDrawable(R.drawable.auto_shoot);
         mManualShootDrawable = getResources().getDrawable(R.drawable.manual_auto);
 
-        mFlashAutoDrawable = getResources().getDrawable(R.drawable.ic_flash_auto);
-        mFlashOffDrawable = getResources().getDrawable(R.drawable.ic_flash_off);
-        mFlashOnDrawable = getResources().getDrawable(R.drawable.ic_flash_on);
-        mFlashTorchDrawable = getResources().getDrawable(R.drawable.ic_torch);
+        mFlashAutoDrawable = getResources().getDrawable(R.drawable.ic_flash_auto_white_24dp);
+//        mFlashAutoDrawable = getResources().getDrawable(R.drawable.ic_flash_auto);
+        mFlashOffDrawable = getResources().getDrawable(R.drawable.ic_flash_off_white_24dp);
+//        mFlashOffDrawable = getResources().getDrawable(R.drawable.ic_flash_off);
+        mFlashOnDrawable = getResources().getDrawable(R.drawable.ic_flash_on_white_24dp);
+//        mFlashOnDrawable = getResources().getDrawable(R.drawable.ic_flash_on);
+        mFlashTorchDrawable = getResources().getDrawable(R.drawable.ic_lightbulb_outline_white_24dp);
+//        mFlashTorchDrawable = getResources().getDrawable(R.drawable.ic_torch);
 
     }
 
