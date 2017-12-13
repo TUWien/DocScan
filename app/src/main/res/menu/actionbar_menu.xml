@@ -10,14 +10,14 @@
         <!--app:showAsAction="always"-->
         <!--/>-->
 
-    <!--<item-->
-        <!--android:id="@+id/document_item"-->
-        <!--android:icon="@drawable/ic_folder_special_white_24dp"-->
-        <!--android:title="@string/flash_mode"-->
-        <!--android:visible="true"-->
-        <!--app:showAsAction="always"-->
-        <!--android:onClick="showSeriesPopup"-->
-        <!--/>-->
+    <item
+        android:id="@+id/document_item"
+        android:icon="@drawable/ic_folder_white_24dp"
+        android:title="@string/flash_mode"
+        android:visible="true"
+        app:showAsAction="always"
+        android:onClick="showSeriesPopup"
+        />
 
     <item
         android:id="@+id/flash_mode_item"
@@ -28,36 +28,37 @@
         android:onClick="showFlashPopup"
         />
 
+    // we put the overflow items into a group to make it easy to hide/show the items at once:
     <group
         android:id="@+id/overflow_menu_group">
 
-    <item
-        android:id="@+id/debug_view_item"
-        android:title="@string/debug_view_item_show"
-        android:visible="true"
-        app:showAsAction="never"
-        />
+        <item
+            android:id="@+id/debug_view_item"
+            android:title="@string/debug_view_item_show"
+            android:visible="true"
+            app:showAsAction="never"
+            />
 
-    <item
-        android:id="@+id/use_lab_item"
-        android:title="@string/fast_page_seg_text"
-        android:visible="true"
-        app:showAsAction="never"
-        />
+        <item
+            android:id="@+id/use_lab_item"
+            android:title="@string/fast_page_seg_text"
+            android:visible="true"
+            app:showAsAction="never"
+            />
 
-    <item
-        android:id="@+id/show_guide_item"
-        android:title="@string/show_guide_text"
-        android:visible="true"
-        app:showAsAction="never"
-        />
+        <item
+            android:id="@+id/show_guide_item"
+            android:title="@string/show_guide_text"
+            android:visible="true"
+            app:showAsAction="never"
+            />
 
-    <item
-        android:id="@+id/show_fm_values_item"
-        android:title="@string/show_fm_values_text"
-        android:visible="true"
-        app:showAsAction="never"
-        />
+        <item
+            android:id="@+id/show_fm_values_item"
+            android:title="@string/show_fm_values_text"
+            android:visible="true"
+            app:showAsAction="never"
+            />
 
     </group>
 
