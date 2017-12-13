@@ -44,7 +44,8 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
 
         initOkButton();
 
-        initShowFieldsCheckBox();
+//        Temporarily deactivate the advanced fields:
+//        initShowFieldsCheckBox();
 
 //        Debugging: (if you just want to launch the Activity (without CameraActivity)
 //        String qrText = "<root><authority>Universitätsarchiv Greifswald</authority><identifier type=\"hierarchy description\">Universitätsarchiv Greifswald/Altes Rektorat/01. Rechtliche Stellung der Universität - 01.01. Statuten/R 1199</identifier><identifier type=\"uri\">https://ariadne-portal.uni-greifswald.de/?arc=1&type=obj&id=5162222</identifier><title>Entwurf neuer Universitätsstatuten </title><date normal=\"1835010118421231\">1835-1842</date><callNumber>R 1199</callNumber><description>Enthält u.a.: Ausführliche rechtshistorische Begründung des Entwurfs von 1835.</description></root>";
@@ -83,11 +84,8 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
 
     }
 
-    private void fillViews(Document document) {
-
-        // Emulate a click and open up the extended layout (shows the views above):
-        CheckBox checkBox = (CheckBox) findViewById(R.id.create_series_advanced_options_checkbox);
-        checkBox.setChecked(true);
+//        Temporarily deactivate the advanced fields:
+   private void fillViews(Document document) {
 
         if (document == null)
             return;
@@ -101,28 +99,70 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
 //        EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
 //        if (document.getTitle() != null)
 //            descriptionEditText.setText(document.getDescription());
-
-        // Signature:
-        EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
-        if (document.getSignature() != null)
-            signatureEditText.setText(document.getSignature());
-
-        // Authority:
-        EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
-        if (document.getAuthority() != null)
-            authorityEditText.setText(document.getAuthority());
-
-        // Hierarchy:
-        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
-        if (document.getHierarchy() != null)
-            hierarchyEditText.setText(document.getHierarchy());
-
+//
+//        // Signature:
+//        EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
+//        if (document.getSignature() != null)
+//            signatureEditText.setText(document.getSignature());
+//
+//        // Authority:
+//        EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
+//        if (document.getAuthority() != null)
+//            authorityEditText.setText(document.getAuthority());
+//
+//        // Hierarchy:
+//        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
+//        if (document.getHierarchy() != null)
+//            hierarchyEditText.setText(document.getHierarchy());
+//
 //        // Uri:
 //        EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
 //        if (document.getUri() != null)
 //            uriEditText.setText(document.getUri());
 
     }
+
+
+//    private void fillViews(Document document) {
+//
+//        // Emulate a click and open up the extended layout (shows the views above):
+//        CheckBox checkBox = (CheckBox) findViewById(R.id.create_series_advanced_options_checkbox);
+//        checkBox.setChecked(true);
+//
+//        if (document == null)
+//            return;
+//
+//        // Title:
+//        EditText titleEditText = findViewById(R.id.create_series_name_edittext);
+//        if (document.getTitle() != null)
+//            titleEditText.setText(document.getTitle());
+//
+////        // Description:
+////        EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
+////        if (document.getTitle() != null)
+////            descriptionEditText.setText(document.getDescription());
+//
+//        // Signature:
+//        EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
+//        if (document.getSignature() != null)
+//            signatureEditText.setText(document.getSignature());
+//
+//        // Authority:
+//        EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
+//        if (document.getAuthority() != null)
+//            authorityEditText.setText(document.getAuthority());
+//
+//        // Hierarchy:
+//        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
+//        if (document.getHierarchy() != null)
+//            hierarchyEditText.setText(document.getHierarchy());
+//
+////        // Uri:
+////        EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
+////        if (document.getUri() != null)
+////            uriEditText.setText(document.getUri());
+//
+//    }
 
 
 
