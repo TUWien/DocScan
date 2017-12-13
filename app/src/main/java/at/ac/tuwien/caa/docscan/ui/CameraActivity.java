@@ -114,6 +114,8 @@ import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
+import at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity;
+import at.ac.tuwien.caa.docscan.ui.document.SeriesGeneralActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
@@ -122,6 +124,7 @@ import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
+import static at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity.DOCUMENT_QR_TEXT;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -534,6 +537,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
     }
 
+
+    /**
+     * Start the CreateSeriesActivity via an intent.
+     * @param qrText
+     */
+    private void startCreateSeriesActivity(String qrText) {
+
+        Intent intent = new Intent(getApplicationContext(), CreateSeriesActivity.class);
+        intent.putExtra(DOCUMENT_QR_TEXT, qrText);
+        startActivity(intent);
+    }
 
     /**
      * Start the document activity via an intent.
@@ -1740,18 +1754,30 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public void onQRCode(Result result) {
 
         final String text;
-        if (result == null)
+        // Tell the user that we are still searching for a QR code:
+        if (result == null) {
             text = getString(R.string.instruction_searching_qr);
-        else
-            text = result.toString();
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                mTextView.setText(text);
-            }
-        });
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                    mTextView.setText(text);
+                }
+            });
+        }
+        // Start the CreateSeriesActivity:
+        else {
+            // Stop searching for QR code:
+            mIsQRActive = false;
+            mCameraPreview.startQrMode(false);
+
+            text = result.toString();
+            startCreateSeriesActivity(text);
+
+        }
+
+
 
 
     }
@@ -1809,17 +1835,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     public void showSeriesPopup(MenuItem item) {
 
+        Log.d(TAG, "showSeriesPopup");
         View menuItemView = findViewById(R.id.document_item);
         if (menuItemView == null)
             return;
 
+        Log.d(TAG, " menu created!");
         // Create the menu for the first time:
-        if (mSeriesPopupMenu == null) {
+//        if (mSeriesPopupMenu == null) {
             mSeriesPopupMenu = new PopupMenu(this, menuItemView);
             mSeriesPopupMenu.setOnMenuItemClickListener(this);
+            Log.d(TAG, "setOnMenuItemClickListener created");
             mSeriesPopupMenu.inflate(R.menu.series_menu);
-
-        }
+//        }
 
         mSeriesPopupMenu.show();
 

@@ -72,7 +72,7 @@
             />
 
         <activity
-            android:name=".ui.SeriesGeneralActivity"
+            android:name=".ui.document.SeriesGeneralActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustPan"
             android:parentActivityName=".ui.CameraActivity"
@@ -91,11 +91,11 @@
             />
 
         <activity
-            android:name=".ui.CreateSeriesActivity"
+            android:name=".ui.document.CreateSeriesActivity"
             android:exported="true"
+            android:launchMode = "singleInstance"
             android:configChanges="orientation|screenSize"
             />
-
 
         <activity
             android:name=".ui.SettingsActivity"
@@ -118,7 +118,7 @@
         <activity
             android:name=".ui.DocumentActivity"
             android:exported="false"
-            android:parentActivityName=".ui.SeriesGeneralActivity"
+            android:parentActivityName=".ui.document.SeriesGeneralActivity"
             />
 
 
