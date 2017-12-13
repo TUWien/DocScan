@@ -14,6 +14,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <include layout="@layout/toolbar_autohide" />
+        </android.support.design.widget.AppBarLayout>
+
         <RelativeLayout
             android:id="@+id/login_fields_layout"
             android:layout_width="match_parent"
@@ -79,13 +87,13 @@
                 android:text="@string/login_loading_text"/>
         </RelativeLayout>
 
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
-            <include layout="@layout/toolbar_autohide" />
-        </android.support.design.widget.AppBarLayout>
+        <!--<android.support.design.widget.AppBarLayout-->
+            <!--android:id="@+id/appbar"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--&gt;-->
+            <!---->
+        <!--</android.support.design.widget.AppBarLayout>-->
 
     </FrameLayout>
 
