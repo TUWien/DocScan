@@ -57,19 +57,6 @@
                 android:background="#0000"
                 />
 
-            <Button
-                android:id="@+id/document_button"
-                android:layout_width="wrap_content"
-                android:layout_height="80dp"
-                android:textAllCaps="false"
-                android:textSize="12sp"
-                android:layout_below="@id/gallery_button"
-                android:layout_toLeftOf="@id/gallery_button"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentLeft="true"
-                android:background="@color/button_bg_color"
-                android:textColor="@color/white"
-                android:text="Series: Default"/>
 
             <ProgressBar
                 android:id="@+id/saving_progressbar"
