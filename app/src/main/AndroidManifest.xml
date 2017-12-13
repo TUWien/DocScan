@@ -90,10 +90,14 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
+
+        <!--launchMode = "singleInstance" avoids opening the intent twice -->
+        <!--nohistory = "true" creates the activity instead of just resuming it -->
         <activity
             android:name=".ui.document.CreateSeriesActivity"
             android:exported="true"
             android:launchMode = "singleInstance"
+            android:noHistory="true"
             android:configChanges="orientation|screenSize"
             />
 
