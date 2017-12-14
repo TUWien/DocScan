@@ -16,7 +16,8 @@
         android:id="@+id/controls_layout"
         android:layout_centerHorizontal="true"
         android:layout_width="@dimen/photo_button_size"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        >
 
         <ImageButton
             android:layout_centerInParent="true"
@@ -102,6 +103,7 @@
         android:id="@+id/qr_controls_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="invisible"
         >
 
         <ImageView
