@@ -1,10 +1,12 @@
 package at.ac.tuwien.caa.docscan.sync;
 
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -52,6 +54,8 @@ public class SyncService extends JobService implements
     private NotificationManager mNotificationManager;
     private int mNotifyID = 68;
 
+    private static final String CHANNEL_ID = "docscan_channel";
+    private static final CharSequence CHANNEL_NAME = "DocScan Channel";// The user-visible name of the channel.
 
     public static final String SERVICE_ALONE_KEY = "SERVICE_ALONE_KEY";
     private static final String TAG = "SyncService";
@@ -390,39 +394,22 @@ public class SyncService extends JobService implements
         String title = getString(R.string.sync_notification_title);
 
         String text = getConnectionText();
+        String CHANNEL_ID = "docscan_channel";// The id of the channel.
 
         mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
-                .setContentText(text);
-//// Creates an explicit intent for an Activity in your app
-//        Intent resultIntent = new Intent(this, SyncActivity.class);
-//
-//// The stack builder object will contain an artificial back stack for the
-//// started Activity.
-//// This ensures that navigating backward from the Activity leads out of
-//// your app to the Home screen.
-//        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-//// Adds the back stack for the Intent (but not the Intent itself)
-//        stackBuilder.addParentStack(SyncActivity.class);
-//// Adds the Intent that starts the Activity to the top of the stack
-//        stackBuilder.addNextIntent(resultIntent);
-//        PendingIntent resultPendingIntent =
-//                stackBuilder.getPendingIntent(
-//                        0,
-//                        PendingIntent.FLAG_UPDATE_CURRENT
-//                );
-//        mBuilder.setContentIntent(resultPendingIntent);
+                .setContentText(text)
+                .setChannelId(CHANNEL_ID);
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Show the notification every time (just for debugging purposes).
-//        TODO: remove
-//        mNotificationManager.notify(mNotifyID, mBuilder.build());
 
-// mNotificationId is a unique integer your app uses to identify the
-// notification. For example, to cancel the notification, you can pass its ID
-// number to NotificationManager.cancel().
-
+        // On Android O we need a NotificationChannel, otherwise the notification is not shown.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance);
+            mNotificationManager.createNotificationChannel(notificationChannel);
+        }
 
     }
 
