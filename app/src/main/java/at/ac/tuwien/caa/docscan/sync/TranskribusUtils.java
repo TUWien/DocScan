@@ -82,6 +82,43 @@ public class TranskribusUtils  {
 
     }
 
+    public void onError() {
+
+//        Collect the files that are not uploaded yet and get their paths:
+        ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
+
+        // In the case of an error this directory list should not be empty:
+        if (unfinishedDirs == null || unfinishedDirs.isEmpty())
+            return;
+
+        SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
+        SyncInfo.startSyncJob(mContext);
+
+        int b = 0;
+
+    }
+
+    /**
+     * Searches for the unfinished uploads and returns a list of unique directory paths that could
+     * not be uploaded.
+     * @return
+     */
+    private ArrayList<File> getUnfinishedUploadDirs() {
+
+        ArrayList<File> unfinishedDirs = new ArrayList<>();
+
+        for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
+            if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED) {
+                File parentPath = fileSync.getFile().getParentFile();
+                if (!unfinishedDirs.contains(parentPath))
+                    unfinishedDirs.add(parentPath);
+            }
+        }
+
+        return unfinishedDirs;
+
+    }
+
 //    @Override
 //    public void onCollections(List<Collection> collections) {
 //
