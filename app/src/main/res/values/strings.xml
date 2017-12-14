@@ -134,6 +134,7 @@
     <string name="sync_no_dropbox_access">Sorry your dropbox account is not accessible.</string>
     <string name="sync_dropbox_text">Dropbox</string>
     <string name="sync_transkribus_text">Transkribus</string>
+    <string name="sync_not_connected_text">Offline</string>
 
     <!-- DropboxActivity: -->
     <string name="dropbox_text">It is necessary to allow DocScan to access your Dropbox
@@ -180,6 +181,8 @@
     <string name="sync_selection_many_documents_text">documents</string>
     <string name="sync_selection_single_document_text">document</string>
     <string name="sync_snackbar_uploading_prefix_text">Uploading\</string>
+    <string name="sync_error_upload_title">Upload error</string>
+    <string name="sync_error_upload_text">An error happened while uploading your files. Please try to upload your files again.</string>
     <string name="sync_snackbar_error_upload_text">Could not upload all files. Please try again!</string>
     <string name="sync_snackbar_finished_upload_text">Finished upload.</string>
     <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>

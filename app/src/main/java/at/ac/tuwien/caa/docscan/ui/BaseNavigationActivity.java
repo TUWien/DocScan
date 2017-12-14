@@ -119,6 +119,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
     public void onLogin(User user) {
 
         User.getInstance().setLoggedIn(true);
+        UserHandler.saveUserName(this);
 
         runOnUiThread(new Runnable() {
             @Override
