@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.ui.syncui;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -180,11 +181,13 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
         Drawable d = null;
         if (isUploaded) {
-            d = mContext.getResources().getDrawable(R.drawable.ic_cloud_done_black_24dp);
+            //        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
+            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_done_black_24dp);
             checkBoxListHeader.setEnabled(false);
         }
         else {
-            d = mContext.getResources().getDrawable(R.drawable.ic_cloud_queue_black_24dp);
+            //        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
+            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_queue_black_24dp);
             checkBoxListHeader.setEnabled(true);
         }
 

@@ -40,12 +40,11 @@
 
             <RelativeLayout
                 android:id="@+id/sync_selection_layout"
-                android:layout_gravity="bottom"
+                android:layout_gravity="bottom|center_horizontal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@color/light_gray"
                 android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
                 android:minWidth="@dimen/sync_footer_height"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 app:layout_dodgeInsetEdges="bottom"
@@ -63,7 +62,7 @@
                     android:layout_height="wrap_content"
                     android:layout_toRightOf="@id/sync_selection_textview"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/ic_cloud_upload_white_24dp"
+                    app:srcCompat="@drawable/ic_cloud_upload_white_24dp"
                     android:background="@color/light_gray"
                     android:backgroundTint="@color/colorAccent"
                     android:padding="5dp"

@@ -392,7 +392,7 @@ public class SyncService extends JobService implements
         String text = getConnectionText();
 
         mBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_statusbar_icon)
+                .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
                 .setContentText(text);
 //// Creates an explicit intent for an Activity in your app

@@ -106,8 +106,6 @@ public class UserHandler {
 
     public static void saveTranskribusCredentials(Activity activity) {
 
-        //        TODO: use here encryption
-//        SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(NAME_KEY, User.getInstance().getUserName());

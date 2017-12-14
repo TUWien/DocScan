@@ -294,6 +294,9 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
     private void showUploadErrorDialog() {
 
+        if (mContext == null)
+            return;
+
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
 
         // set dialog message

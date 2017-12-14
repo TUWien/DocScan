@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_alignParentRight="true"
     android:layout_width="@dimen/camera_control_height_width"
     android:id="@+id/camera_controls_layout"
@@ -110,7 +111,7 @@
             android:layout_centerInParent="true"
             android:layout_width="25dp"
             android:layout_height="25dp"
-            android:src="@drawable/ic_qr_code_white"
+            app:srcCompat="@drawable/ic_qr_code_white"
             />
 
         <ProgressBar
@@ -123,7 +124,7 @@
 
         <ImageButton
             android:id="@+id/cancel_qr_button"
-            android:src="@drawable/ic_cancel_white_24dp"
+            app:srcCompat="@drawable/ic_cancel_white_24dp"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:layout_alignParentTop="true"
