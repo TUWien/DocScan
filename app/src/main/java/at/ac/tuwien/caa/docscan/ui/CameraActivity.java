@@ -54,6 +54,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -166,8 +167,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private TextView mTextView;
     private Menu mOptionsMenu;;
     private MenuItem mFlashMenuItem;
-    private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
-            mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
+    private Drawable mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
     private boolean mHideSeriesDialog;
     private boolean mIsSeriesModePaused = true;
@@ -543,17 +543,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @SuppressWarnings("deprecation")
     private void initDrawables() {
 
-        mAutoShootDrawable = getResources().getDrawable(R.drawable.auto_shoot);
-        mManualShootDrawable = getResources().getDrawable(R.drawable.manual_auto);
-
-        mFlashAutoDrawable = getResources().getDrawable(R.drawable.ic_flash_auto_white_24dp);
-//        mFlashAutoDrawable = getResources().getDrawable(R.drawable.ic_flash_auto);
-        mFlashOffDrawable = getResources().getDrawable(R.drawable.ic_flash_off_white_24dp);
-//        mFlashOffDrawable = getResources().getDrawable(R.drawable.ic_flash_off);
-        mFlashOnDrawable = getResources().getDrawable(R.drawable.ic_flash_on_white_24dp);
-//        mFlashOnDrawable = getResources().getDrawable(R.drawable.ic_flash_on);
-        mFlashTorchDrawable = getResources().getDrawable(R.drawable.ic_lightbulb_outline_white_24dp);
-//        mFlashTorchDrawable = getResources().getDrawable(R.drawable.ic_torch);
+//        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
+        mFlashAutoDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_auto_white_24dp);
+        mFlashOffDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_off_white_24dp);
+        mFlashOnDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_on_white_24dp);
+        mFlashTorchDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_lightbulb_outline_white_24dp);
 
     }
 
