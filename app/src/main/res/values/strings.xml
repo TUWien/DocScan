@@ -65,7 +65,6 @@
     <string name="instruction_none"></string>
     <string name="instruction_series_started">series mode started</string>
     <string name="instruction_series_paused">series mode paused</string>
-
     <string name="instruction_searching_qr">Searching QR code</string>
 
     <!-- Toasts -->
@@ -180,7 +179,7 @@
     <string name="sync_selection_single_document_text">document</string>
     <string name="sync_snackbar_uploading_prefix_text">Uploading\</string>
     <string name="sync_snackbar_error_upload_text">Could not upload all files. Please try again!</string>
-    <string name="sync_snackbar_finished_upload_text">Finished upload of</string>
+    <string name="sync_snackbar_finished_upload_text">Finished upload.</string>
     <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>
     <string name="sync_snackbar_offline_postfix_text">will be uploaded, once the device is online again.</string>
     <string name="sync_snackbar_no_permissions">Files cannot be uploaded without permission.</string>

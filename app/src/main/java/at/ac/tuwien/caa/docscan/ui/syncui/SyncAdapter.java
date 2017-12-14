@@ -260,6 +260,6 @@ public class SyncAdapter extends BaseDocumentAdapter {
     }
 
     public interface SyncAdapterCallback {
-        public void onSelectionChange();
+        void onSelectionChange();
     }
 }

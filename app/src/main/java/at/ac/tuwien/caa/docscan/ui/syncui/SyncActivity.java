@@ -259,14 +259,6 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                 snackbarText, Snackbar.LENGTH_INDEFINITE);
         mSnackbar.show();
 
-//        if (mSelectionLayout != null)
-//            mSelectionLayout.setVisibility(View.INVISIBLE);
-//        if (mListView != null)
-//            mListView.setVisibility(View.INVISIBLE);
-//        if (mProgressBar != null) {
-//            mProgressBar.setVisibility(View.VISIBLE);
-//            mProgressBar.setProgress(0);
-//        }
     }
 
     /**
@@ -276,8 +268,7 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
     private void showUploadFinishedSnackbar() {
 
         String snackbarText =
-                getResources().getString(R.string.sync_snackbar_finished_upload_text) + " " +
-                        getSelectionText() + ".";
+                getResources().getString(R.string.sync_snackbar_finished_upload_text);
 
         closeSnackbar();
         mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
@@ -330,9 +321,7 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
         SyncInfo.getInstance().setUploadDirs(mSelectedDirs);
         SyncInfo.saveToDisk(this);
-
         SyncInfo.startSyncJob(this);
-//        new CollectionsRequest(this);
 
     }
 
@@ -462,16 +451,6 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                     }
                 });
 
-
-//                if (mListView != null)
-//                    mListView.setVisibility(View.INVISIBLE);
-//                if (mSelectionLayout != null)
-//                    mSelectionLayout.setVisibility(View.INVISIBLE);
-//                if (mProgressBar != null) {
-//                    mProgressBar.setVisibility(View.VISIBLE);
-//                    int progress = intent.getIntExtra(UPLOAD_PROGRESS_ID, 0);
-//                    mProgressBar.setProgress(progress);
-//                }
             }
 
 

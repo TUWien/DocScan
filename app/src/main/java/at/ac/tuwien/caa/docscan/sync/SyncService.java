@@ -242,13 +242,7 @@ public class SyncService extends JobService implements
             fileSync.setState(SyncInfo.FileSync.STATE_UPLOADED);
 
             mFilesUploaded++;
-//            mFilesNum = getFilesNum(); // do this frequently, because an image might be taken if the Service is active
             updateProgressbar();
-
-//            if (SyncArrayAdapter.getInstance() != null) {
-//                SyncArrayAdapter.getInstance().notifyDataSetChanged();
-//            }
-
 
             SyncInfo.FileSync nextFileSync = getNextUpload();
             if (nextFileSync != null)
@@ -293,6 +287,8 @@ public class SyncService extends JobService implements
 
         @Override
         public void onError(Exception e) {
+
+            TranskribusUtils.getInstance().onError();
 
             sendErrorIntent();
 
