@@ -24,6 +24,8 @@
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
 
+    <string name="camera_document_hint_title">Tip for documents</string>
+    <string name="camera_document_hint_msg">The document title is shown at the top and you can manipulate documents by clicking on the folder icon next to it.</string>
     <!-- Just used for debugging: -->
 
 
