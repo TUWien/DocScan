@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import at.ac.tuwien.caa.docscan.ActivityUtils;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity;
 
 import static at.ac.tuwien.caa.docscan.ui.NavigationDrawer.NavigationItemEnum.ACCOUNT_EDIT;
@@ -111,6 +112,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
         // Set up the account name field:
 
+        // The user is logged in, show the name:
         if (User.getInstance().isLoggedIn()) {
             userTextView.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
             if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
@@ -119,6 +121,11 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 connectionTextView.setText(mActivity.getResources().getText(R.string.sync_transkribus_text));
         }
 
+        // The user is not logged in, but was logged in some time before, show the name:
+        else if (UserHandler.loadUserNames(mActivity)) {
+            userTextView.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
+            connectionTextView.setText(mActivity.getResources().getText(R.string.sync_not_connected_text));
+        }
         else {
             userTextView.setText(mActivity.getResources().getText(R.string.account_not_logged_in));
             connectionTextView.setText("");

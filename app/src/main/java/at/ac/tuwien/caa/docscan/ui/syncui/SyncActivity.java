@@ -171,8 +171,10 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                 else {
                     mSelectedDirs = selectedDirs;
 
-                    if (!isOnline())
+                    if (!isOnline()) {
                         showNotOnlineSnackbar();
+                        startUpload();
+                    }
                     else {
                         showUploadingSnackbar();
                         mProgressBar.setProgress(0);
@@ -288,6 +290,23 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                 snackbarText, Snackbar.LENGTH_LONG);
         mSnackbar.show();
 
+    }
+
+    private void showUploadErrorDialog() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.sync_error_upload_title)
+                .setPositiveButton("OK", null)
+                .setMessage(R.string.sync_error_upload_text);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
 
     }
 
@@ -414,7 +433,8 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
             if (error) {
 
-                showUploadErrorSnackbar();
+//                showUploadErrorSnackbar();
+                showUploadErrorDialog();
                 updateListViewAdapter();
                 displayUploadActive(false);
 

@@ -3,6 +3,8 @@ package at.ac.tuwien.caa.docscan.sync;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -14,6 +16,8 @@ import android.util.Log;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -288,9 +292,53 @@ public class SyncService extends JobService implements
         @Override
         public void onError(Exception e) {
 
-            TranskribusUtils.getInstance().onError();
+//            TranskribusUtils.getInstance().onError();
 
-            sendErrorIntent();
+            ConnectivityManager cm =
+                    (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            boolean isConnected = activeNetwork != null &&
+                    activeNetwork.isConnectedOrConnecting();
+
+            // We got a simple network error here, so we can try to upload the image again - the job will start, once internet is available:
+            if (!isConnected) {
+
+                //        Collect the files that are not uploaded yet and get their paths:
+                ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
+
+                // In the case of an error this directory list should not be empty:
+                if (unfinishedDirs == null || unfinishedDirs.isEmpty())
+                    return;
+
+                SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
+                SyncInfo.startSyncJob(getApplicationContext());
+            }
+            // Otherwise show an error message - the user has to upload the images manually:
+            else {
+                sendErrorIntent();
+            }
+
+        }
+
+        /**
+         * Searches for the unfinished uploads and returns a list of unique directory paths that could
+         * not be uploaded.
+         * @return
+         */
+        private ArrayList<File> getUnfinishedUploadDirs() {
+
+            ArrayList<File> unfinishedDirs = new ArrayList<>();
+
+            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
+                if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED) {
+                    File parentPath = fileSync.getFile().getParentFile();
+                    if (!unfinishedDirs.contains(parentPath))
+                        unfinishedDirs.add(parentPath);
+                }
+            }
+
+            return unfinishedDirs;
 
         }
 

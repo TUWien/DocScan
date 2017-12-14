@@ -91,6 +91,7 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
 
 //        Save the credentials:
         UserHandler.saveTranskribusCredentials(this);
+        UserHandler.saveUserName(this);
 
         // Start the parent activity and remove everything from the back stack:
         Intent intent = new Intent(getApplicationContext(), mParentClass);
