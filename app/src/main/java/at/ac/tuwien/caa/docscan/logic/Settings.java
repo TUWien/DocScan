@@ -12,6 +12,8 @@ public class Settings {
 
     private static Settings mSettings = null;
 
+    public static final int NO_ENTRY = -1;
+
     private boolean mUseFastPageSegmentation;
     private static final String SETTINGS_FILE_NAME = "settings";
 
@@ -32,18 +34,26 @@ public class Settings {
 
     public enum SettingEnum {
 
+        DOCUMENT_HINT_SHOWN_KEY("DOCUMENT_HINT_SHOWN_KEY", false),
+        INSTALLED_VERSION_KEY("INSTALLED_VERSION_KEY", NO_ENTRY),
         HIDE_SERIES_DIALOG_KEY("HIDE_SERIES_DIALOG_KEY", false),
         SERIES_MODE_ACTIVE_KEY("SERIES_MODE_ACTIVE_KEY", false),
         SERIES_MODE_PAUSED_KEY("SERIES_MODE_PAUSED_KEY", true);
 
         private String mKey;
-        private boolean mDefaultBooleanValue, mBooleanValue;
-        private int mType;
+        private boolean mDefaultBooleanValue;
+        private int mType, mDefaultIntValue;
 
         // Boolean value:
         SettingEnum(String key, boolean defaultValue) {
             mKey = key;
             mDefaultBooleanValue = defaultValue;
+        }
+
+        // Int value:
+        SettingEnum(String key, int defaultValue) {
+            mKey = key;
+            mDefaultIntValue = defaultValue;
         }
     }
 
@@ -62,10 +72,18 @@ public class Settings {
         editor.commit();
     }
 
-    public boolean loadKey(Activity activity, SettingEnum setting) {
+    public boolean loadBooleanKey(Activity activity, SettingEnum setting) {
 
         SharedPreferences sharedPref = getSharedPrefs(activity);
-        boolean value = sharedPref.getBoolean(setting.mKey, setting.mBooleanValue);
+        boolean value = sharedPref.getBoolean(setting.mKey, setting.mDefaultBooleanValue);
+        return value;
+
+    }
+
+    public int loadIntKey(Activity activity, SettingEnum setting) {
+
+        SharedPreferences sharedPref = getSharedPrefs(activity);
+        int value = sharedPref.getInt(setting.mKey, setting.mDefaultIntValue);
         return value;
 
     }
@@ -75,6 +93,15 @@ public class Settings {
         SharedPreferences sharedPref = getSharedPrefs(activity);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean(setting.mKey, value);
+        editor.commit();
+
+    }
+
+    public void saveIntKey(Activity activity, SettingEnum setting, int value) {
+
+        SharedPreferences sharedPref = getSharedPrefs(activity);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(setting.mKey, value);
         editor.commit();
 
     }

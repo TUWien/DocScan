@@ -56,7 +56,7 @@ public class SeriesGeneralActivity extends BaseNoNavigationActivity {
         CheckBox hideDialogCheckBox = (CheckBox) findViewById(R.id.series_general_hide_dialog_checkbox);
 
         // Load the setting and set the state of the checkbox:
-        boolean hideDialog = Settings.getInstance().loadKey(this, Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY);
+        boolean hideDialog = Settings.getInstance().loadBooleanKey(this, Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY);
         hideDialogCheckBox.setChecked(hideDialog);
 
         final Activity a = this;

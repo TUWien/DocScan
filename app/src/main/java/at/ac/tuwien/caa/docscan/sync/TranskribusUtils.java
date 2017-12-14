@@ -94,8 +94,6 @@ public class TranskribusUtils  {
         SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
         SyncInfo.startSyncJob(mContext);
 
-        int b = 0;
-
     }
 
     /**

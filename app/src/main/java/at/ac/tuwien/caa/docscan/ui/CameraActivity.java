@@ -94,6 +94,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
@@ -296,7 +297,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // update the title of the toolbar:
         getSupportActionBar().setTitle(User.getInstance().getDocumentName());
 
-        mHideSeriesDialog = Settings.getInstance().loadKey(this, HIDE_SERIES_DIALOG_KEY);
+        mHideSeriesDialog = Settings.getInstance().loadBooleanKey(this, HIDE_SERIES_DIALOG_KEY);
 
         showControlsLayout(!mIsQRActive);
 
@@ -408,9 +409,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         setupNavigationDrawer();
         setupDebugView();
 
-        // Show the debug view: (TODO: This should be not the case for releases)
-//        showDebugView();
-
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
@@ -422,6 +420,51 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         requestLocation();
 
+//        Check app version:
+        checkAppVersion();
+
+    }
+
+    private void checkAppVersion() {
+
+        // Load the last version number saved:
+        int lastInstalledVersion = Settings.getInstance().loadIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY);
+        int currentVersion = BuildConfig.VERSION_CODE;
+
+        // Save the current version:
+        Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
+
+        if (currentVersion == lastInstalledVersion)
+            return;
+        else if ((lastInstalledVersion == Settings.NO_ENTRY) || (lastInstalledVersion <= 11)) {
+
+            // has the user already seen that the documents can be opened in the actionbar?
+            boolean isDocumentHintShown = Settings.getInstance().loadBooleanKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY);
+            if (!isDocumentHintShown) {
+                showDocumentHint();
+                Settings.getInstance().saveKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY, true);
+            }
+
+        }
+
+    }
+
+    private void showDocumentHint() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.camera_document_hint_title)
+                .setPositiveButton("OK", null)
+                .setMessage(R.string.camera_document_hint_msg);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
 
 
     }
@@ -430,8 +473,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
         // Concerning series mode:
-        mIsSeriesMode = Settings.getInstance().loadKey(this, SERIES_MODE_ACTIVE_KEY);
-        mIsSeriesModePaused = Settings.getInstance().loadKey(this, SERIES_MODE_PAUSED_KEY);
+        mIsSeriesMode = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_ACTIVE_KEY);
+        mIsSeriesModePaused = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_PAUSED_KEY);
 
         UserHandler.loadSeriesName(this);
 
