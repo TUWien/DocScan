@@ -394,19 +394,21 @@ public class SyncService extends JobService implements
         String title = getString(R.string.sync_notification_title);
 
         String text = getConnectionText();
-        String CHANNEL_ID = "docscan_channel";// The id of the channel.
+        String CHANNEL_ID = "docscan_notification_channel";// The id of the channel.
 
         mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setChannelId(CHANNEL_ID);
+
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
 
         // On Android O we need a NotificationChannel, otherwise the notification is not shown.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            int importance = NotificationManager.IMPORTANCE_HIGH;
+            // IMPORTANCE_LOW disables the notification sound:
+            int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance);
             mNotificationManager.createNotificationChannel(notificationChannel);
         }

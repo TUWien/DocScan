@@ -1,6 +1,8 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -59,6 +61,8 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
 
         super.onCreate(savedInstanceState);
 
