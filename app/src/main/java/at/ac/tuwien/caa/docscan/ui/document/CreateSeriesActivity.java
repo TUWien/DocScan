@@ -80,6 +80,8 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
 
     private Document parseQRCode(String text) {
 
+        Log.d(getClass().getName(), "QR code text: " + text);
+
         return Document.parseXML(text);
 
     }

@@ -166,7 +166,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private boolean mIsSaving = false;
     private TextView mTextView;
     private Menu mOptionsMenu;;
-    private MenuItem mFlashMenuItem;
+    private MenuItem mFlashMenuItem, mDocumentMenuItem;
     private Drawable mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
     private boolean mHideSeriesDialog;
@@ -324,19 +324,24 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             qrCodeVisibility = View.VISIBLE;
         }
 
+        // Show/hide the flash button:
 //        Weak devices might have no flash, so check if mFlashModes is null:
         if ((mFlashModes != null) && (mFlashMenuItem != null))
             mFlashMenuItem.setVisible(showControls);
+
+        // Show/hide the document button:
+        if (mDocumentMenuItem != null)
+            mDocumentMenuItem.setVisible(showControls);
 
         // Show/hide the overflow button:
         if (mOptionsMenu != null)
             mOptionsMenu.setGroupVisible(R.id.overflow_menu_group, showControls);
 
-        RelativeLayout l = (RelativeLayout) findViewById(R.id.controls_layout);
+        RelativeLayout l = findViewById(R.id.controls_layout);
         if (l != null)
             l.setVisibility(controlsVisibility);
 
-        RelativeLayout qrLayout = (RelativeLayout) findViewById(R.id.qr_controls_layout);
+        RelativeLayout qrLayout = findViewById(R.id.qr_controls_layout);
         if (qrLayout != null)
             qrLayout.setVisibility(qrCodeVisibility);
 
@@ -531,7 +536,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mOptionsMenu = menu;
 
         mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
-//        mDocumentMenuItem = menu.findItem(R.id.document_item);
+        mDocumentMenuItem = menu.findItem(R.id.document_item);
 
         // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
         if (mFlashModes != null)
@@ -715,6 +720,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(uri);
+//                The flag FLAG_ACTIVITY_REORDER_TO_FRONT prevents that the gallery app can be
+//                launched multiple times (by multiple clicking the button before the gallery is
+//                started).
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
                 startActivity(intent);
 
