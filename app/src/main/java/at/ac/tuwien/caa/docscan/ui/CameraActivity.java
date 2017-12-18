@@ -283,6 +283,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         super.onResume();
 
+        Log.d(getClass().getName(), "onResume");
+
         // Read the sync information:
 //        SyncInfo.getInstance().readFromDisk(this);
 
@@ -321,10 +323,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             controlsVisibility = View.INVISIBLE;
             qrCodeVisibility = View.VISIBLE;
         }
-//
-//        if (mDocumentMenuItem != null)
-//            mDocumentMenuItem.setVisible(showControls);
-        if (mFlashMenuItem != null)
+
+//        Weak devices might have no flash, so check if mFlashModes is null:
+        if ((mFlashModes != null) && (mFlashMenuItem != null))
             mFlashMenuItem.setVisible(showControls);
 
         // Show/hide the overflow button:
