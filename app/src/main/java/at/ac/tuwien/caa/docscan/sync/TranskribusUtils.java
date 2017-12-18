@@ -88,17 +88,6 @@ public class TranskribusUtils  {
 
     }
 
-//    @Override
-//    public void onCollections(List<Collection> collections) {
-//
-//        for (Collection collection : collections) {
-//            if (collection.getName().compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
-//                docScanCollectionFound(collection);
-//                return;
-//            }
-//        }
-//        createDocScanCollection();
-//    }
 
     private void createDocScanCollection() {
 
@@ -116,8 +105,6 @@ public class TranskribusUtils  {
 
     private void docScanCollectionFound(Collection collection) {
 
-//        User.getInstance().setTranskribusUploadCollId(collection.getID());
-//        mTranskribusUploadCollId = collection.getID();
         uploadDirs(mSelectedDirs, collection.getID());
 
     }
@@ -153,7 +140,6 @@ public class TranskribusUtils  {
      * uploadId (this is done by comparing the title).
      * @param uploadId
      */
-//    @Override
     public void onUploadStart(int uploadId, String title) {
 
         File selectedDir = getMatchingDir(title);

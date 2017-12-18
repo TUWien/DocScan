@@ -1,8 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.Manifest;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -37,7 +35,7 @@ import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
-import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_PROGRESS_ID;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_OFFLINE_ERROR_ID;
 
 /**
  * Created by fabian on 22.09.2017.
@@ -177,12 +175,16 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
                     if (!isOnline()) {
                         showNotOnlineSnackbar();
+                        updateListViewAdapter();
+                        // update the selection display:
+                        onSelectionChange();
                         startUpload();
                     }
                     else {
                         showUploadingSnackbar();
-                        mProgressBar.setProgress(0);
-                        displayUploadActive(true);
+                        updateListViewAdapter();
+//                        mProgressBar.setProgress(0);
+//                        displayUploadActive(true);
                         startUpload();
                     }
 
@@ -233,15 +235,30 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         mListView.addFooterView(footer);
     }
 
+//    /**
+//     * Shows a snackbar indicating that the device is offline.
+//     */
+//    private void showNotOnlineSnackbar() {
+//
+//        String snackbarText =
+//                getResources().getString(R.string.sync_snackbar_offline_prefix_text) + " " +
+//                        getSelectionText() + " " +
+//                        getResources().getString(R.string.sync_snackbar_offline_postfix_text);
+//
+//        closeSnackbar();
+//        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+//                snackbarText, Snackbar.LENGTH_LONG);
+//        mSnackbar.show();
+//
+//    }
+
     /**
      * Shows a snackbar indicating that the device is offline.
      */
     private void showNotOnlineSnackbar() {
 
         String snackbarText =
-                getResources().getString(R.string.sync_snackbar_offline_prefix_text) + " " +
-                        getSelectionText() + " " +
-                        getResources().getString(R.string.sync_snackbar_offline_postfix_text);
+                getResources().getString(R.string.sync_snackbar_offline_text);
 
         closeSnackbar();
         mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
@@ -345,7 +362,9 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
      */
     private void startUpload() {
 
-        SyncInfo.getInstance().setUploadDirs(mSelectedDirs);
+//        SyncInfo.getInstance().setUploadDirs(mSelectedDirs);
+
+        SyncInfo.getInstance().addUploadDirs(mSelectedDirs);
         SyncInfo.saveToDisk(this);
         SyncInfo.startSyncJob(this);
 
@@ -452,6 +471,21 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                 return;
             }
 
+            boolean offlineError = intent.getBooleanExtra(UPLOAD_OFFLINE_ERROR_ID, false);
+
+            if (offlineError) {
+
+                showNotOnlineSnackbar();
+                updateListViewAdapter();
+                displayUploadActive(false);
+
+                // update the selection display:
+                onSelectionChange();
+
+
+                return;
+            }
+
             boolean finished = intent.getBooleanExtra(UPLOAD_FINISHED_ID, false);
 
             if (finished) {
@@ -466,17 +500,17 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
             }
             else {
 
-                displayUploadActive(true);
-                final int progress = intent.getIntExtra(UPLOAD_PROGRESS_ID, 0);
-//                mProgressBar.setProgress(progress);
-
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mProgressBar.setProgress(progress);
-                    }
-                });
+//                displayUploadActive(true);
+//                final int progress = intent.getIntExtra(UPLOAD_PROGRESS_ID, 0);
+////                mProgressBar.setProgress(progress);
+//
+//
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        mProgressBar.setProgress(progress);
+//                    }
+//                });
 
             }
 

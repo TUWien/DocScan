@@ -19,6 +19,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
+
 /**
  * Created by fabian on 18.08.2017.
  */
@@ -31,6 +33,9 @@ public class SyncInfo implements Serializable {
     private static SyncInfo mInstance = null;
     private ArrayList<FileSync> mFileSyncList;
     private ArrayList<File> mUploadDirs;
+
+    // TODO: this is a dirty workaround, think about something better useable:
+    ArrayList<File> mAwaitingUploadFiles;
 
     public static SyncInfo getInstance() {
 
@@ -75,11 +80,13 @@ public class SyncInfo implements Serializable {
         FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
 
 
+        String tag = "sync_job";
+
         Job syncJob = dispatcher.newJobBuilder()
                 // the JobService that will be called
                 .setService(SyncService.class)
                 // uniquely identifies the job
-                .setTag("my-unique-tag")
+                .setTag(tag)
                 // one-off job
                 .setRecurring(false)
                 // don't persist past a device reboot
@@ -87,8 +94,8 @@ public class SyncInfo implements Serializable {
                 // start between 0 and 60 seconds from now
                 .setTrigger(Trigger.executionWindow(0, 0))
 //                .setTrigger(Trigger.NOW)
-                // don't overwrite an existing job with the same tag
-                .setReplaceCurrent(false)
+                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
+                .setReplaceCurrent(true)
                 // retry with exponential backoff
                 .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
                 // constraints that need to be satisfied for the job to run
@@ -103,6 +110,8 @@ public class SyncInfo implements Serializable {
                         Constraint.ON_ANY_NETWORK
                 )
                 .build();
+
+
 
         dispatcher.mustSchedule(syncJob);
 
@@ -144,6 +153,36 @@ public class SyncInfo implements Serializable {
     public void setUploadDirs(ArrayList<File> dirs) {
 
         mUploadDirs = dirs;
+        createAwaitingUploadList();
+
+    }
+
+    public void addUploadDirs(ArrayList<File> dirs) {
+
+        if (mUploadDirs == null)
+            mUploadDirs = new ArrayList<>();
+
+        mUploadDirs.addAll(dirs);
+        createAwaitingUploadList();
+
+    }
+
+    private void createAwaitingUploadList() {
+
+        mAwaitingUploadFiles = new ArrayList<>();
+
+        if (mUploadDirs == null)
+            return;
+
+        for (File dir : mUploadDirs) {
+            File[] files = SyncAdapter.getFiles(dir);
+            if ((files == null) || files.length == 0)
+                continue;
+
+            for (File file : files) {
+                mAwaitingUploadFiles.add(file);
+            }
+        }
 
     }
 
@@ -176,6 +215,10 @@ public class SyncInfo implements Serializable {
 
     public ArrayList<FileSync> getSyncList() {
         return mFileSyncList;
+    }
+
+    public ArrayList<File> getAwaitingUploadFile() {
+        return mAwaitingUploadFiles;
     }
 
     public class TranskribusFileSync extends FileSync {

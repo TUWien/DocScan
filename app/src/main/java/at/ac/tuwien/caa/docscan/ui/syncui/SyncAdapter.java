@@ -169,7 +169,6 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
         CheckBox checkBoxListHeader = (CheckBox) convertView.findViewById(R.id.checkboxListHeader);
         checkBoxListHeader.setTypeface(null, Typeface.BOLD);
-        checkBoxListHeader.setText(headerTitle);
         // reassigning checkbox to its ticked state
         checkBoxListHeader.setTag(groupPosition);
         checkBoxListHeader.setChecked(mSelections.get(groupPosition, false));
@@ -179,18 +178,26 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
         boolean isUploaded = isDirUploaded(groupPosition);
 
-        Drawable d = null;
+        String headerText = headerTitle;
+        boolean isCheckBoxEnabled;
+        //        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
+        Drawable d;
         if (isUploaded) {
-            //        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
             d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_done_black_24dp);
-            checkBoxListHeader.setEnabled(false);
+            isCheckBoxEnabled = false;
+        }
+        else if (isDirAwaitingUpload(groupPosition)) {
+            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_upload_black_24dp);
+            headerText += " " + mContext.getResources().getString(R.string.sync_dir_pending_text);
+            isCheckBoxEnabled = false;
         }
         else {
-            //        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
             d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_queue_black_24dp);
-            checkBoxListHeader.setEnabled(true);
+            isCheckBoxEnabled = true;
         }
 
+        checkBoxListHeader.setText(headerText);
+        checkBoxListHeader.setEnabled(isCheckBoxEnabled);
         checkBoxListHeader.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
 
 
@@ -213,6 +220,29 @@ public class SyncAdapter extends BaseDocumentAdapter {
         }
 
         return true;
+
+    }
+
+    private boolean isDirAwaitingUpload(int groupPosition) {
+
+        File dir = getGroupFile(groupPosition);
+        File[] files = getFiles(dir);
+
+        if (files.length == 0)
+            return false;
+
+        // Is the dir already added to the upload list:
+        if ((SyncInfo.getInstance().getUploadDirs() != null) && (SyncInfo.getInstance().getUploadDirs().contains(dir))) {
+//            Check if all files in the dir are added to the awaiting upload list:
+            for (File file : files) {
+                if (!SyncInfo.getInstance().getAwaitingUploadFile().contains(file))
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
 
     }
 
