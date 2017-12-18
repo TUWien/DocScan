@@ -159,7 +159,10 @@
     <string name="sync_notification_title">Image upload</string>
     <string name="sync_notification_uploading_dropbox_text">Uploading to Dropbox.</string>
     <string name="sync_notification_uploading_transkribus_text">Uploading to Transkribus.</string>
+    <string name="sync_notification_uploading_finished_title">Upload finished</string>
     <string name="sync_notification_uploading_finished_text">Finished image upload.</string>
+    <string name="sync_notification_error_title">Upload interrupted</string>
+    <string name="sync_notification_error_text">Upload postponed.</string>
 
     <!-- DocumentActivity -->
     <string name="document_title">Select a document</string>
@@ -187,9 +190,11 @@
     <string name="sync_snackbar_finished_upload_text">Finished upload.</string>
     <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>
     <string name="sync_snackbar_offline_postfix_text">will be uploaded, once the device is online again.</string>
+    <string name="sync_snackbar_offline_text">Your device is currently offline. The selected file(s) will be uploaded, once the device is online again.</string>
     <string name="sync_snackbar_no_permissions">Files cannot be uploaded without permission.</string>
     <string name="sync_server_changed_title">Upload server changed</string>
     <string name="sync_server_changed_text">Please note that from now on, your images are uploaded to the standard Transkribus server (https://transkribus.eu/TrpServer).</string>
+    <string name="sync_dir_pending_text">(upload pending)</string>
 
     <string name="sync_not_logged_in_text">You are currently not logged in, please log in first.</string>
     <string name="sync_not_logged_in_button_text">Log in</string>

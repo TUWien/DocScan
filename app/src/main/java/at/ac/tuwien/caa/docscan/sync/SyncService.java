@@ -4,8 +4,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -34,6 +32,7 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_OFFLINE_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_PROGRESS_ID;
 
 /**
@@ -50,12 +49,17 @@ public class SyncService extends JobService implements
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
-    private NotificationCompat.Builder mBuilder;
+    private NotificationCompat.Builder mNotificationBuilder;
     private NotificationManager mNotificationManager;
     private int mNotifyID = 68;
 
     private static final String CHANNEL_ID = "docscan_channel";
     private static final CharSequence CHANNEL_NAME = "DocScan Channel";// The user-visible name of the channel.
+
+    // constants for the notifications:
+    private static final int NOTIFICATION_PROGRESS_UPDATE = 0;
+    private static final int NOTIFICATION_ERROR = 1;
+    private static final int NOTIFICATION_SUCCESS = 2;
 
     public static final String SERVICE_ALONE_KEY = "SERVICE_ALONE_KEY";
     private static final String TAG = "SyncService";
@@ -86,12 +90,6 @@ public class SyncService extends JobService implements
             SyncUtils.login(this, this);
         } else {
             Log.d(TAG, "user is logged in");
-//            Start the upload:
-//            Message msg = mServiceHandler.obtainMessage();
-//            mServiceHandler.sendMessage(msg);
-
-//            new CollectionsRequest(this);
-
             TranskribusUtils.getInstance().startUpload(this, SyncInfo.getInstance().getUploadDirs());
 
         }
@@ -110,9 +108,7 @@ public class SyncService extends JobService implements
 
         Log.d(TAG, "onlogin");
 
-////        Starts the upload:
-//        Message m = mServiceHandler.obtainMessage();
-//        mServiceHandler.sendMessage(m);
+//        Starts the upload:
         TranskribusUtils.getInstance().startUpload(this, SyncInfo.getInstance().getUploadDirs());
 
     }
@@ -207,6 +203,16 @@ public class SyncService extends JobService implements
         }
 
         // Send an Intent with an action named "PROGRESS_INTENT_NAME".
+        private void sendOfflineErrorIntent() {
+
+            Log.d("sender", "Broadcasting message");
+            Intent intent = new Intent("PROGRESS_INTENT_NAME");
+            intent.putExtra(UPLOAD_OFFLINE_ERROR_ID, true);
+
+            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        }
+
+        // Send an Intent with an action named "PROGRESS_INTENT_NAME".
         private void sendErrorIntent() {
 
             Log.d("sender", "Broadcasting message");
@@ -246,11 +252,13 @@ public class SyncService extends JobService implements
         @Override
         public void onUploadComplete(SyncInfo.FileSync fileSync) {
 
-            Log.d("SyncService", "uploaded file: " + fileSync.getFile().getName());
+            Log.d("SyncService", "uploaded file: " + fileSync.getFile().getPath());
             fileSync.setState(SyncInfo.FileSync.STATE_UPLOADED);
 
             mFilesUploaded++;
-            updateProgressbar();
+//            updateProgressbar();
+
+            updateNotification(NOTIFICATION_PROGRESS_UPDATE);
 
             SyncInfo.FileSync nextFileSync = getNextUpload();
             if (nextFileSync != null)
@@ -260,12 +268,37 @@ public class SyncService extends JobService implements
 
         }
 
-        private void updateProgressbar() {
-            int progress = (int) Math.floor(mFilesUploaded / (double) mFilesNum * 100);
-            mBuilder.setProgress(100, progress, false);
-            mNotificationManager.notify(mNotifyID, mBuilder.build());
+        private void updateNotification(int notificationID) {
 
-            sendProgressIntent(progress);
+            switch (notificationID) {
+
+                case NOTIFICATION_ERROR:
+                    mNotificationBuilder
+                            .setContentTitle(getString(R.string.sync_notification_error_title))
+                            .setContentText(getString(R.string.sync_notification_error_text))
+                            // Removes the progress bar
+                            .setProgress(0, 0, false);
+                    break;
+                case NOTIFICATION_PROGRESS_UPDATE:
+                    int progress = (int) Math.floor(mFilesUploaded / (double) mFilesNum * 100);
+                    mNotificationBuilder
+                            .setContentTitle(getString(R.string.sync_notification_title))
+                            .setContentText(getString(R.string.sync_notification_uploading_transkribus_text))
+                            .setProgress(100, progress, false);
+                    break;
+                case NOTIFICATION_SUCCESS:
+                    mNotificationBuilder
+                            .setContentTitle(getString(R.string.sync_notification_uploading_finished_title))
+                            .setContentText(getString(R.string.sync_notification_uploading_finished_text))
+                        // Removes the progress bar
+                        .setProgress(0, 0, false);
+                    break;
+
+            }
+
+            // show the new notification:
+            mNotificationManager.notify(mNotifyID, mNotificationBuilder.build());
+
         }
 
         private void uploadsFinished() {
@@ -280,11 +313,8 @@ public class SyncService extends JobService implements
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-//                Notify that the upload is finished:
-            mBuilder.setContentText(getString(R.string.sync_notification_uploading_finished_text))
-                    // Removes the progress bar
-                    .setProgress(0, 0, false);
-            mNotificationManager.notify(mNotifyID, mBuilder.build());
+
+            updateNotification(NOTIFICATION_SUCCESS);
 
             // Notify the SyncActivity:
             sendFinishedIntent();
@@ -296,34 +326,59 @@ public class SyncService extends JobService implements
         @Override
         public void onError(Exception e) {
 
+            //        Collect the files that are not uploaded yet and get their paths:
+            ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
+
+            // In the case of an error this directory list should not be empty:
+            if (unfinishedDirs == null || unfinishedDirs.isEmpty())
+                return;
+
+            SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
+            SyncInfo.startSyncJob(getApplicationContext());
+
+            updateNotification(NOTIFICATION_ERROR);
+
+            sendOfflineErrorIntent();
+
+
 //            TranskribusUtils.getInstance().onError();
 
-            ConnectivityManager cm =
-                    (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+//            ConnectivityManager cm =
+//                    (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+//
+//            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+//            boolean isConnected = activeNetwork != null &&
+//                    activeNetwork.isConnectedOrConnecting();
+//
+//            // We got a simple network error here, so we can try to upload the image again - the job will start, once internet is available:
+//            if (!isConnected) {
 
-            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-            boolean isConnected = activeNetwork != null &&
-                    activeNetwork.isConnectedOrConnecting();
+//                //        Collect the files that are not uploaded yet and get their paths:
+//                ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
+//
+//                // In the case of an error this directory list should not be empty:
+//                if (unfinishedDirs == null || unfinishedDirs.isEmpty())
+//                    return;
+//
+//                SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
+//                SyncInfo.startSyncJob(getApplicationContext());
 
-            // We got a simple network error here, so we can try to upload the image again - the job will start, once internet is available:
-            if (!isConnected) {
-
-                //        Collect the files that are not uploaded yet and get their paths:
-                ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
-
-                // In the case of an error this directory list should not be empty:
-                if (unfinishedDirs == null || unfinishedDirs.isEmpty())
-                    return;
-
-                SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
-                SyncInfo.startSyncJob(getApplicationContext());
-            }
-            // Otherwise show an error message - the user has to upload the images manually:
-            else {
-                sendErrorIntent();
-            }
+//            }
+//            // Otherwise show an error message - the user has to upload the images manually:
+//            else {
+//                sendErrorIntent();
+//            }
 
         }
+
+//        private void showErrorNotification() {
+//
+//            mNotificationBuilder.setContentText(getString(R.string.sync_notification_error_text))
+//                    // Removes the progress bar
+//                    .setProgress(0, 0, false);
+//            mNotificationManager.notify(mNotifyID, mNotificationBuilder.build());
+//
+//        }
 
         /**
          * Searches for the unfinished uploads and returns a list of unique directory paths that could
@@ -396,7 +451,7 @@ public class SyncService extends JobService implements
         String text = getConnectionText();
         String CHANNEL_ID = "docscan_notification_channel";// The id of the channel.
 
-        mBuilder = new NotificationCompat.Builder(this)
+        mNotificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
                 .setContentText(text)
