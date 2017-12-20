@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -224,40 +223,40 @@ public class SyncAdapter extends BaseDocumentAdapter {
         return false;
     }
 
-    @Override
-    public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-
-        final String childText = ((File) getChild(groupPosition, childPosition)).getName();
-
-        if (convertView == null) {
-            LayoutInflater infalInflater = (LayoutInflater) mContext
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = infalInflater.inflate(R.layout.list_item, null);
-
-//            TODO: open the file on a click. The code below is not working on targetSDK > 24
-//            Solution is here: https://stackoverflow.com/questions/38200282/android-os-fileuriexposedexception-file-storage-emulated-0-test-txt-exposed
-
-//            TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
-//            txtListChild.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
+//    @Override
+//    public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
 //
-//                    Intent intent = new Intent(Intent.ACTION_VIEW);
-//                    File dir = getGroupFile(groupPosition);
-//                    intent.setData(Uri.fromFile(getFiles(dir)[childPosition]));
-//                    mContext.startActivity(intent);
+//        final String childText = ((File) getChild(groupPosition, childPosition)).getName();
 //
-//                }
-//            });
-        }
-
-        TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
-
-        txtListChild.setText(childText);
-
-        return convertView;
-
-    }
+//        if (convertView == null) {
+//            LayoutInflater infalInflater = (LayoutInflater) mContext
+//                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//            convertView = infalInflater.inflate(R.layout.list_item, null);
+//
+////            TODO: open the file on a click. The code below is not working on targetSDK > 24
+////            Solution is here: https://stackoverflow.com/questions/38200282/android-os-fileuriexposedexception-file-storage-emulated-0-test-txt-exposed
+//
+////            TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
+////            txtListChild.setOnClickListener(new View.OnClickListener() {
+////                @Override
+////                public void onClick(View v) {
+////
+////                    Intent intent = new Intent(Intent.ACTION_VIEW);
+////                    File dir = getGroupFile(groupPosition);
+////                    intent.setData(Uri.fromFile(getFiles(dir)[childPosition]));
+////                    mContext.startActivity(intent);
+////
+////                }
+////            });
+//        }
+//
+//        TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
+//
+//        txtListChild.setText(childText);
+//
+//        return convertView;
+//
+//    }
 
     public interface SyncAdapterCallback {
         public void onSelectionChange();

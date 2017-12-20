@@ -64,7 +64,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private final float DETAIL_OFFSET =
             getResources().getDimension(R.dimen.crop_detail_offset);
     private final float CROSS_WIDTH =
-            getResources().getDimension(R.dimen.crop_cross_width);
+            getResources().getDimension(R.dimen.crop_detail_width);
     private final int DETAIL_IMG_WIDTH = 50;
 
     private Paint mDetailOutlinePaint;
