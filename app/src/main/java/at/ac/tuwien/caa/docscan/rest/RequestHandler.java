@@ -131,7 +131,7 @@ public class RequestHandler {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO: error handling
+                        request.handleRestError(error);
                     }
                 }) {
 
@@ -187,7 +187,7 @@ public class RequestHandler {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO: error handling
+                        request.handleRestError(error);
                     }
                 }) {
             @Override
@@ -214,7 +214,7 @@ public class RequestHandler {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO: error handling
+                        request.handleRestError(error);
                     }
                 }) {
             @Override

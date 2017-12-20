@@ -34,4 +34,8 @@ public abstract class BaseNoNavigationActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+
+
+
 }

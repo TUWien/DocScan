@@ -66,6 +66,7 @@ public class TranskribusUtils  {
         mSelectedDirs = selectedDirs;
         mCallback = (TranskribusUtilsCallback) context;
 
+
         new CollectionsRequest(mContext);
 
     }

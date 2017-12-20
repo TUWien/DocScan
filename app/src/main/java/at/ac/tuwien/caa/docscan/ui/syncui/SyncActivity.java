@@ -25,7 +25,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
@@ -111,11 +110,6 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         // with actions named "PROGRESS_INTENT_NAME".
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("PROGRESS_INTENT_NAME"));
-
-        if (!Settings.getInstance().isServerChangedShown(this)) {
-            showServerChangedAlert();
-            Settings.getInstance().serverChangedShown(this);
-        }
 
     }
 
