@@ -129,24 +129,24 @@ public class SeriesAdapter extends BaseDocumentAdapter {
         return convertView;
     }
 
-    @Override
-    public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-
-        final String childText = ((File) getChild(groupPosition, childPosition)).getName();
-
-        if (convertView == null) {
-            LayoutInflater infalInflater = (LayoutInflater) mContext
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = infalInflater.inflate(R.layout.list_item, null);
-        }
-
-        TextView txtListChild = (TextView) convertView
-                .findViewById(R.id.lblListItem);
-
-        txtListChild.setText(childText);
-
-//        GLIDE TRYOUT
-        // Glide test:
+//    @Override
+//    public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+//
+//        final String childText = ((File) getChild(groupPosition, childPosition)).getName();
+//
+//        if (convertView == null) {
+//            LayoutInflater infalInflater = (LayoutInflater) mContext
+//                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//            convertView = infalInflater.inflate(R.layout.list_item, null);
+//        }
+//
+//        TextView txtListChild = (TextView) convertView
+//                .findViewById(R.id.lblListItem);
+//
+//        txtListChild.setText(childText);
+//
+////        GLIDE TRYOUT
+////         Glide test:
 //        final ImageView imageView;
 //        imageView = convertView.findViewById(R.id.document_list_image_view);
 //        // TODO: look at this for the reason why we cannot use GlideApp
@@ -162,11 +162,11 @@ public class SeriesAdapter extends BaseDocumentAdapter {
 ////                .centerCrop()
 ////                .placeholder(R.drawable.loading_spinner)
 ////                .into(myImageView);
-
-
-
-        return convertView;
-    }
+//
+//
+//
+//        return convertView;
+//    }
 
 //    @Override
 //    public boolean isChildSelectable(int groupPosition, int childPosition) {
