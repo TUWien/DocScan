@@ -91,7 +91,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -186,8 +185,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private static Date mLastTimeStamp;
     private int mMaxFrameCnt = 0;
     private DkPolyRect[] mLastDkPolyRects;
-
-    private DkPolyRect mCropRect;
 
     private Toast mToast;
 
@@ -816,12 +813,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                                 startDocumentActivity();
                         }
                         else if (mIsPictureSafe) {
-                            // Store the current crop rectangle:
-                            mCropRect = null;
-                            if (mCVResult != null && mCVResult.getDKPolyRects() != null && mCVResult.getDKPolyRects().length > 0) {
-                                mCropRect = mCVResult.getDKPolyRects()[0];
-                            }
-
                             // get an image from the camera
                             takePicture();
                         }
@@ -2384,27 +2375,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             // Release the memory. Note this is essential, because otherwise allocated memory will increase.
             mData = null;
 
-            if (!mIsSeriesMode && uri != null) {
+            if (!mIsSeriesMode && uri != null)
+                startCropViewActivity(uri);
 
-
-                if (mCropRect != null && mCVResult != null) {
-
-
-                    ArrayList<PointF> cropPoints = mCVResult.normPoints(mCropRect);
-
-                    Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
-                    CropInfo r = new CropInfo(cropPoints, uri);
-                    intent.putExtra(CROP_INFO_NAME, r);
-                    startActivity(intent);
-
-                }
-
-
-
-            }
 
         }
 
+        private void startCropViewActivity(String uri) {
+            Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+            CropInfo r = new CropInfo(uri);
+            intent.putExtra(CROP_INFO_NAME, r);
+            startActivity(intent);
+        }
 
 
     }

@@ -21,6 +21,12 @@ public class CropInfo implements Parcelable {
     private ArrayList<PointF> mPoints;
     private String mFileName;
 
+    public CropInfo(String fileName) {
+
+        mFileName = fileName;
+
+    }
+
     public CropInfo(ArrayList<PointF> points, String fileName) {
 
         mPoints = points;

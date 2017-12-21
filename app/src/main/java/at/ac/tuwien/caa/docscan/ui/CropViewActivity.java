@@ -47,10 +47,10 @@ public class CropViewActivity extends BaseNoNavigationActivity {
         super.initToolbarTitle(R.string.crop_view_title);
 
         CropInfo cropInfo = getIntent().getParcelableExtra(CROP_INFO_NAME);
-        mCropView = (CropView) findViewById(R.id.crop_view);
+        mCropView = findViewById(R.id.crop_view);
         initCropInfo(cropInfo);
 
-        ImageButton button = (ImageButton) findViewById(R.id.confirm_crop_view_button);
+        ImageButton button = findViewById(R.id.confirm_crop_view_button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -108,6 +108,9 @@ public class CropViewActivity extends BaseNoNavigationActivity {
             if (polyRects.length > 0 && polyRects[0] != null) {
                 ArrayList<PointF> cropPoints = normPoints(polyRects[0], bitmap.getWidth(), bitmap.getHeight());
                 mCropView.setPoints(cropPoints);
+            }
+            else {
+                mCropView.setDefaultPoints();
             }
 
             return false;
