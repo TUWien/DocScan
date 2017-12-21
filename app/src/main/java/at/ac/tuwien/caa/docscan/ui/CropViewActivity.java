@@ -4,8 +4,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.ExifInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 
@@ -19,6 +23,8 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -50,6 +56,7 @@ public class CropViewActivity extends BaseNoNavigationActivity {
         mCropView = findViewById(R.id.crop_view);
         initCropInfo(cropInfo);
 
+
         ImageButton button = findViewById(R.id.confirm_crop_view_button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -57,6 +64,49 @@ public class CropViewActivity extends BaseNoNavigationActivity {
                 startMapView();
             }
         });
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.crop_menu, menu);
+
+//        mOptionsMenu = menu;
+//
+//        mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
+//        mDocumentMenuItem = menu.findItem(R.id.document_item);
+//
+//        // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
+//        if (mFlashModes != null)
+//            mFlashMenuItem.setVisible(true);
+
+        return true;
+
+    }
+
+    public void rotateCropView(MenuItem item) {
+
+        View menuItemView = findViewById(R.id.document_item);
+        if (menuItemView == null)
+            return;
+
+        try {
+            rotateExif(new File(mFileName));
+        }
+        catch(IOException e) {
+
+        }
+
+//        // Create the menu for the first time:
+//        if (mSeriesPopupMenu == null) {
+//            mSeriesPopupMenu = new PopupMenu(this, menuItemView);
+//            mSeriesPopupMenu.setOnMenuItemClickListener(this);
+//            mSeriesPopupMenu.inflate(R.menu.series_menu);
+//        }
+//
+//        mSeriesPopupMenu.show();
 
     }
 
@@ -133,5 +183,37 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
     }
 
+    private void rotateExif(File outFile) throws IOException {
+
+        final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+        if (exif != null) {
+            // Save the orientation of the image:
+//            int orientation = getExifOrientation();
+            String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+            String newOrientation;
+            switch (orientation) {
+                case "1":
+                    newOrientation = "6"; // 90 degrees
+                    break;
+                case "6":
+                    newOrientation = "3"; // 180 degrees
+                    break;
+                case "3":
+                    newOrientation = "8"; // 270 degrees
+                    break;
+                case "8":
+                    newOrientation = "1"; // 0 degrees
+                    break;
+                default:
+            }
+
+            String exifOrientation = Integer.toString(6);
+            exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+
+
+            exif.saveAttributes();
+
+        }
+    }
 
 }
