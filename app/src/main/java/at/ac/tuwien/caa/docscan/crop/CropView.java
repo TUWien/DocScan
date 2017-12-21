@@ -12,6 +12,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
@@ -149,6 +150,27 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 //        mCropQuad = new CropQuad(normedPoints, getBitmap().getWidth(), getBitmap().getHeight());
     }
 
+    /**
+     * Initializes the view with default points that are located at the image boundary. This function
+     * should be called if no page was found in the image.
+     */
+    public void setDefaultPoints() {
+
+        mNormedPoints = getDefaultPoints();
+
+    }
+
+    private ArrayList<PointF> getDefaultPoints() {
+
+        ArrayList<PointF> defaultPoints = new ArrayList<>();
+        defaultPoints.add(new PointF(0, 0));
+        defaultPoints.add(new PointF(1, 0));
+        defaultPoints.add(new PointF(1, 1));
+        defaultPoints.add(new PointF(0, 1));
+        return defaultPoints;
+
+    }
+
     private void initQuadPaint() {
 
         mQuadPaint = new Paint();
@@ -219,15 +241,15 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         inv.mapPoints(mappedPoint);
 
         // map to image coordinates:
-        Bitmap bitmap = getBitmap();
-        if (mappedPoint[0] < 0)
-            mappedPoint[0] = 0;
-        if (mappedPoint[1] < 0)
-            mappedPoint[1] = 0;
-        if (mappedPoint[2] > bitmap.getWidth())
-            mappedPoint[2] = bitmap.getWidth();
-        if (mappedPoint[3] > bitmap.getHeight())
-            mappedPoint[3] = bitmap.getHeight();
+//        Bitmap bitmap = getBitmap();
+//        if (mappedPoint[0] < 0)
+//            mappedPoint[0] = 0;
+//        if (mappedPoint[1] < 0)
+//            mappedPoint[1] = 0;
+//        if (mappedPoint[2] > bitmap.getWidth())
+//            mappedPoint[2] = bitmap.getWidth();
+//        if (mappedPoint[3] > bitmap.getHeight())
+//            mappedPoint[3] = bitmap.getHeight();
 
 //        Touch point in image space:
         PointF[] results = new PointF[2];
@@ -253,28 +275,162 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         PointF imgTL = imgPoints[0];
         PointF imgBR = imgPoints[1];
 
+        Log.d(getClass().getName(), "Point imgTL " + imgTL.x + " y: " + imgTL.y);
+        Log.d(getClass().getName(), "Point imgBR " + imgBR.x + " y: " + imgBR.y);
+
+        PointF offSet = getDetailOffSet(point);
+
+        float offSetX = offSet.x;
+        float offSetY = offSet.y;
+
         // draw the outline:
         Rect outerRect = new Rect(
-                Math.round(point.x - DETAIL_OUTER_WIDTH), Math.round(point.y - DETAIL_OUTER_WIDTH - DETAIL_OFFSET),
-                Math.round(point.x + DETAIL_OUTER_WIDTH), Math.round(point.y + DETAIL_OUTER_WIDTH - DETAIL_OFFSET));
+                Math.round(point.x - DETAIL_OUTER_WIDTH + offSetX),
+                Math.round(point.y - DETAIL_OUTER_WIDTH - offSetY),
+                Math.round(point.x + DETAIL_OUTER_WIDTH + offSetX),
+                Math.round(point.y + DETAIL_OUTER_WIDTH - offSetY));
         canvas.drawRect(outerRect, mDetailOutlinePaint);
 
         // draw the bitmap:
         Rect src = new Rect(Math.round(imgTL.x), Math.round(imgTL.y), Math.round(imgBR.x), Math.round(imgBR.y));
 
-        Rect dst = new Rect(
-                Math.round(point.x - DETAIL_WIDTH), Math.round(point.y - DETAIL_WIDTH - DETAIL_OFFSET),
-                Math.round(point.x + DETAIL_WIDTH), Math.round(point.y + DETAIL_WIDTH - DETAIL_OFFSET));
+        Rect dst = getDestRect(point, imgTL, imgBR, offSet);
 
         canvas.drawBitmap(bitmap, src, dst, mPaintBitmap);
 
         // draw the cross:
-        canvas.drawLine(point.x - CROSS_WIDTH, point.y -  DETAIL_OFFSET,
-                point.x + CROSS_WIDTH, point.y -  DETAIL_OFFSET, mCrossPaint);
-        canvas.drawLine(point.x, point.y - DETAIL_OFFSET - CROSS_WIDTH,
-                point.x, point.y - DETAIL_OFFSET + CROSS_WIDTH, mCrossPaint);
+        canvas.drawLine(point.x - CROSS_WIDTH + offSetX, point.y - offSetY,
+                point.x + CROSS_WIDTH + offSetX, point.y -  offSetY, mCrossPaint);
+        canvas.drawLine(point.x + offSetX, point.y - offSetY - CROSS_WIDTH,
+                point.x + offSetX, point.y - offSetY + CROSS_WIDTH, mCrossPaint);
 
     }
+
+    private Rect getDestRect(PointF viewPoint, PointF imgTL, PointF imgBR, PointF offSet) {
+
+        int bmpW = getBitmap().getWidth();
+        int bmpH = getBitmap().getHeight();
+
+        PointF tl = new PointF(viewPoint.x - DETAIL_WIDTH + offSet.x,viewPoint.y - DETAIL_WIDTH - offSet.y);
+        PointF br = new PointF(viewPoint.x + DETAIL_WIDTH + offSet.x, viewPoint.y + DETAIL_WIDTH - offSet.y);
+
+        if (imgTL.x < 0)
+            tl.x += getDetailOffSet(Math.abs(imgTL.x)); // shift the detail to the right
+        else if (imgBR.x > bmpW)
+            br.x -= getDetailOffSet(imgBR.x - bmpW); // shift the detail to the left
+        if (imgTL.y < 0)
+            tl.y += getDetailOffSet(Math.abs(imgTL.y)); // shift the detail to the bottom
+        else if (imgBR.y > bmpH)
+            br.y -= getDetailOffSet(imgBR.y - bmpH); // shift the detail to the top
+
+        Rect dst = new Rect(Math.round(tl.x), Math.round(tl.y),
+                Math.round(br.x), Math.round(br.y));
+
+        return dst;
+
+    }
+
+    /**
+     * Calculates the length of the shift for an detail that would lay partially outside the image border.
+     * @param overlapLength
+     * @return
+     */
+    private float getDetailOffSet(float overlapLength) {
+        return overlapLength / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
+    }
+
+//    private Rect getDestRect(PointF viewPoint, PointF imgTL, PointF imgBR, PointF offSet) {
+//
+//        int bmpW = getBitmap().getWidth();
+//        int bmpH = getBitmap().getHeight();
+//
+//
+//        float startX, endX;
+//        if (imgTL.x < 0) {
+//            float transX = Math.abs(imgTL.x) / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
+//            startX = viewPoint.x + transX - DETAIL_WIDTH + offSet.x;
+//            endX = viewPoint.x + DETAIL_WIDTH + offSet.x;
+//        }
+//        else if (imgBR.x > bmpW) {
+//            float transX = (imgBR.x - bmpW) / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
+//            startX = viewPoint.x - DETAIL_WIDTH + offSet.x;
+//            endX = viewPoint.x - transX + DETAIL_WIDTH + offSet.x;
+//        }
+//        else {
+//            startX = viewPoint.x - DETAIL_WIDTH + offSet.x;
+//            endX = viewPoint.x + DETAIL_WIDTH + offSet.x;
+//        }
+//
+//        float startY, endY;
+//        if (imgTL.y < 0) {
+//            float transY = Math.abs(imgTL.y) / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
+//            startY = viewPoint.y + transY - DETAIL_WIDTH - offSet.y;
+//            endY = viewPoint.y + DETAIL_WIDTH - offSet.y;
+//        }
+//        else if (imgBR.y > bmpH) {
+//            float transY = (imgBR.y - bmpH) / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
+//            startY = viewPoint.y - DETAIL_WIDTH - offSet.y;
+//            endY = viewPoint.y - transY + DETAIL_WIDTH - offSet.y;
+//        }
+//        else {
+//            startY = viewPoint.y - DETAIL_WIDTH - offSet.y;
+//            endY = viewPoint.y + DETAIL_WIDTH - offSet.y;
+//        }
+//
+//        Rect dst = new Rect(Math.round(startX), Math.round(startY),
+//                Math.round(endX), Math.round(endY));
+//
+//        return dst;
+//
+//    }
+
+
+
+    private PointF getDetailOffSet(PointF point) {
+
+        // This is the usual offset:
+        PointF offSet = new PointF(0, DETAIL_OFFSET);
+
+        if (point.y < DETAIL_OFFSET) {
+            offSet.x = isLeftOfCenter(point) ? DETAIL_OFFSET : -DETAIL_OFFSET;
+            offSet.y = 0;
+        }
+
+        return offSet;
+
+    }
+
+
+//    private PointF getDetailOffSet(PointF point) {
+//
+//        // This is the usual offset:
+//        PointF offSet = new PointF(0, DETAIL_OFFSET);
+//
+//        //        Determine if the detail is outside of the screen (with default offset):
+//        PointF checkTop = new PointF(point.x,point.y - DETAIL_OFFSET - CROSS_WIDTH);
+//        // Is the point above the top?
+//        if (!isInsideFrame(checkTop)) {
+//            offSet.x = isLeftOfCenter(point) ? DETAIL_OFFSET : -DETAIL_OFFSET;
+//            offSet.y = 0;
+//        }
+//        else {
+//            PointF checkLeft = new PointF(point.x - CROSS_WIDTH, point.y);
+//            if (!isInsideFrame(checkLeft)) {
+//                offSet.x = DETAIL_OFFSET;
+//                offSet.y = 0;
+//            }
+//            else {
+//                PointF checkRight = new PointF(point.x + CROSS_WIDTH, point.y);
+//                if (!isInsideFrame(checkRight)) {
+//                    offSet.x = -DETAIL_OFFSET;
+//                    offSet.y = 0;
+//                }
+//            }
+//        }
+//
+//        return offSet;
+//
+//    }
 
     private void drawCropFrame(Canvas canvas) {
 
@@ -373,6 +529,12 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
             }
         }
         return false;
+    }
+
+    private boolean isLeftOfCenter(PointF point) {
+
+        return point.x < mFrameRect.centerX();
+
     }
 
     // Calculations for layout size:
