@@ -15,6 +15,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
 import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
@@ -30,7 +31,7 @@ import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 
 public class TranskribusUtils  {
 
-    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan";
+    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
 
     // Singleton:
     private static TranskribusUtils mInstance;
@@ -39,6 +40,7 @@ public class TranskribusUtils  {
     private ArrayList<File> mSelectedDirs;
     private int mNumUploadJobs;
     private TranskribusUtilsCallback mCallback;
+    private boolean mIsCollectionCreated;
 
 //    private int mUploadId;
 
@@ -66,26 +68,62 @@ public class TranskribusUtils  {
         mSelectedDirs = selectedDirs;
         mCallback = (TranskribusUtilsCallback) context;
 
+        mIsCollectionCreated = false;
 
-        new CollectionsRequest(mContext);
+        if (isCollectionIDSaved())
+            new CollectionsRequest(mContext);
+        else
+            createDocScanCollection();
+
+    }
+
+    private boolean isCollectionIDSaved() {
+
+        int savedCollectionID =
+                Settings.getInstance().loadIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY);
+
+        return (savedCollectionID != Settings.NO_ENTRY);
 
     }
 
     public void onCollections(List<Collection> collections) {
 
+        int savedCollectionID =
+                Settings.getInstance().loadIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY);
+
+        int maxId = -1;
+
         for (Collection collection : collections) {
             if (collection.getName().compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
-                docScanCollectionFound(collection);
-                return;
+
+//                Is the collection id not saved yet?
+                if ((savedCollectionID == Settings.NO_ENTRY) || mIsCollectionCreated) {
+                    int id = collection.getID();
+                    if (id > maxId)
+                        maxId = id;
+//                    mIsCollectionCreated = false;
+//                    Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, collection.getID());
+//                    docScanCollectionFound(collection);
+//                    return;
+                }
+                else if ((savedCollectionID == collection.getID())) {
+                    docScanCollectionFound(collection.getID());
+                    return;
+                }
+
             }
         }
+
+        if (maxId > -1) {
+
+            mIsCollectionCreated = false;
+            Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, maxId);
+            docScanCollectionFound(maxId);
+            return;
+
+        }
+
         createDocScanCollection();
-
-    }
-
-    public void onError() {
-
-        //
 
     }
 
@@ -99,14 +137,22 @@ public class TranskribusUtils  {
 
 //    @Override
     public void onCollectionCreated(String collName) {
-        if (collName.compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0)
+        if (collName.compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
+            mIsCollectionCreated = true;
             new CollectionsRequest(mContext);
+        }
 
     }
 
-    private void docScanCollectionFound(Collection collection) {
+//    private void docScanCollectionFound(Collection collection) {
+//
+//        uploadDirs(mSelectedDirs, collection.getID());
+//
+//    }
 
-        uploadDirs(mSelectedDirs, collection.getID());
+    private void docScanCollectionFound(int id) {
+
+        uploadDirs(mSelectedDirs, id);
 
     }
 

@@ -83,7 +83,6 @@ public class SyncService extends JobService implements
         } else
             Log.d("SyncService", "SyncInfo is in RAM");
 
-
 //        First check if the User is already logged in:
         if (!User.getInstance().isLoggedIn()) {
 //            Log in if necessary:
@@ -161,7 +160,8 @@ public class SyncService extends JobService implements
     @Override
     public void handleRestError(VolleyError error) {
 
-        handleRestUploadError();
+//        Removed this because it can lead to an infinite loop of server requests (if the server is too slow answering):
+//        handleRestUploadError();
 
     }
 
