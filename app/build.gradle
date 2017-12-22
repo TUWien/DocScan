@@ -13,8 +13,8 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 14
 		targetSdkVersion 27
-		versionCode 11
-		versionName "1.1.4"
+		versionCode 14
+		versionName "1.1.6"
 		// we need vectorDrawables.useSupportLibrary to get rid of this error:
 //		References to other resources are not supported by build-time PNG generation
 		vectorDrawables.useSupportLibrary = true

@@ -34,6 +34,7 @@ public class Settings {
 
     public enum SettingEnum {
 
+        COLLECTION_ID_KEY("COLLECTION_ID_KEY", NO_ENTRY),
         DOCUMENT_HINT_SHOWN_KEY("DOCUMENT_HINT_SHOWN_KEY", false),
         INSTALLED_VERSION_KEY("INSTALLED_VERSION_KEY", NO_ENTRY),
         HIDE_SERIES_DIALOG_KEY("HIDE_SERIES_DIALOG_KEY", false),
@@ -88,11 +89,28 @@ public class Settings {
 
     }
 
+    public int loadIntKey(Context context, SettingEnum setting) {
+
+        SharedPreferences sharedPref = getSharedPrefs(context);
+        int value = sharedPref.getInt(setting.mKey, setting.mDefaultIntValue);
+        return value;
+
+    }
+
     public void saveKey(Activity activity, SettingEnum setting, boolean value) {
 
         SharedPreferences sharedPref = getSharedPrefs(activity);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putBoolean(setting.mKey, value);
+        editor.commit();
+
+    }
+
+    public void saveIntKey(Context context, SettingEnum setting, int value) {
+
+        SharedPreferences sharedPref = getSharedPrefs(context);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(setting.mKey, value);
         editor.commit();
 
     }
@@ -109,6 +127,12 @@ public class Settings {
     private SharedPreferences getSharedPrefs(Activity activity) {
 
         return activity.getSharedPreferences(SETTINGS_FILE_NAME, Context.MODE_PRIVATE);
+
+    }
+
+    private SharedPreferences getSharedPrefs(Context context) {
+
+        return context.getSharedPreferences(SETTINGS_FILE_NAME, Context.MODE_PRIVATE);
 
     }
 
