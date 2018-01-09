@@ -33,6 +33,7 @@ public class CropQuad {
     }
 
 
+
     private ArrayList convertPoints(ArrayList<PointF> normedPoints, int imgWidth, int imgHeight) {
 
         ArrayList points = new ArrayList<>();

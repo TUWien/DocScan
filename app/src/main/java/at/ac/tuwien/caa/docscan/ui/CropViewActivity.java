@@ -13,11 +13,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.signature.MediaStoreSignature;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
@@ -32,6 +32,7 @@ import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.crop.CropView;
+import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
@@ -99,15 +100,6 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
         }
 
-//        // Create the menu for the first time:
-//        if (mSeriesPopupMenu == null) {
-//            mSeriesPopupMenu = new PopupMenu(this, menuItemView);
-//            mSeriesPopupMenu.setOnMenuItemClickListener(this);
-//            mSeriesPopupMenu.inflate(R.menu.series_menu);
-//        }
-//
-//        mSeriesPopupMenu.show();
-
     }
 
     private void startMapView() {
@@ -123,15 +115,42 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
     private void initCropInfo(CropInfo cropInfo) {
 
+
+
 //        Load image with Glide:
         mFileName = cropInfo.getFileName();
-        Glide.with(this)
-                .load(mFileName)
-                .listener(imgLoadListener)
-                .into(mCropView);
+        File file = new File(mFileName);
+
+        try {
+            final ExifInterface exif = new ExifInterface(file.getAbsolutePath());
+            int orientation = Integer.valueOf(exif.getAttribute(ExifInterface.TAG_ORIENTATION));
+
+            GlideApp.with(this)
+                    .load(file)
+                    .signature(new MediaStoreSignature("", file != null ? file.lastModified() : 0L, orientation))
+                    .listener(imgLoadListener)
+                    .into(mCropView);
+
+        } catch (IOException e) {
+            GlideApp.with(this)
+                    .load(file)
+                    .listener(imgLoadListener)
+                    .into(mCropView);
+        }
+
+//        GlideApp.with(this)
+//                .load(file)
+//                .signature(new MediaStoreSignature("", file != null ? file.lastModified() : 0L, 0))
+//                .listener(imgLoadListener)
+//                .into(mCropView);
 //        mCropView.setPoints(cropInfo.getPoints());
 
 
+    }
+
+    private void rotateCropView() {
+
+        mCropView.rotate90Degrees();
     }
 
     private RequestListener imgLoadListener = new RequestListener() {
@@ -187,10 +206,11 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
         final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
         if (exif != null) {
+
             // Save the orientation of the image:
 //            int orientation = getExifOrientation();
             String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
-            String newOrientation;
+            String newOrientation = null;
             switch (orientation) {
                 case "1":
                     newOrientation = "6"; // 90 degrees
@@ -207,11 +227,12 @@ public class CropViewActivity extends BaseNoNavigationActivity {
                 default:
             }
 
-            String exifOrientation = Integer.toString(6);
-            exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
-
+            if (newOrientation != null)
+                exif.setAttribute(ExifInterface.TAG_ORIENTATION, newOrientation);
 
             exif.saveAttributes();
+
+            rotateCropView();
 
         }
     }
