@@ -95,6 +95,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     private CropQuad mCropQuad;
     private ArrayList<PointF> mNormedPoints;
+//    private int mAngle;
 
     public CropView(Context context) {
         this(context, null);
@@ -109,6 +110,8 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         super(context, attrs, defStyle);
 
         setScaleType(ScaleType.FIT_CENTER);
+
+//        mAngle = 0;
 
         mBackgroundColor = TRANSPARENT;
         mMatrix = new Matrix();
@@ -157,6 +160,15 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     public void setDefaultPoints() {
 
         mNormedPoints = getDefaultPoints();
+
+    }
+
+    public void rotate90Degrees() {
+
+//        TODO: The view is rotated, but the scaling is not performed.
+        setRotation((getRotation() + 90) % 360);
+
+        invalidate();
 
     }
 
@@ -391,12 +403,88 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         // This is the usual offset:
         PointF offSet = new PointF(0, DETAIL_OFFSET);
 
-        if (point.y < DETAIL_OFFSET) {
-            offSet.x = isLeftOfCenter(point) ? DETAIL_OFFSET : -DETAIL_OFFSET;
+        // Check if the view is rotated:
+        int angle = Math.round(getRotation());
+        boolean isPointOutside = isPointOutside(point, angle);
+
+        if (isPointOutside) {
+            offSet.x = isLeftOfCenter(point, angle) ? DETAIL_OFFSET : -DETAIL_OFFSET;
             offSet.y = 0;
         }
 
+        // Rotate the point according to the view rotation:
+        rotatePoint(offSet, angle);
+
         return offSet;
+
+    }
+
+    private boolean isPointOutside(PointF point, int angle) {
+
+        switch (angle) {
+            case 90:
+                return point.x < DETAIL_OFFSET;
+            case 180:
+                return point.y > getBitmap().getHeight() - DETAIL_OFFSET;
+            case 270:
+                return point.x > getBitmap().getWidth() - DETAIL_OFFSET;
+            default:
+                return point.y < DETAIL_OFFSET;
+        }
+    }
+
+    /**
+     * Rotates a point according to an angle.
+     * @param point
+     * @param angle discrete angle (0, 90, 180, 270)
+     */
+    private void rotatePoint(PointF point, int angle) {
+
+        switch (angle) {
+
+            case 90:
+                float tmpY = point.x;
+                point.x = -point.y;
+                point.y = tmpY;
+                break;
+            case 180:
+                point.x = -point.x;
+                point.y = -point.y;
+                break;
+            case 270:
+                float tmpX = point.y;
+                point.y = -point.x;
+                point.x = tmpX;
+                break;
+            default:
+                break; // do not alter the point here.
+        }
+
+    }
+
+    private void rotateNormedPoint(PointF point, int angle) {
+
+        switch (angle) {
+
+            case 90:
+                float tmpY = point.x;
+                point.x = 1-point.y;
+                point.y = tmpY;
+                break;
+            case 180:
+                point.x = 1-point.x;
+                point.y = 1-point.y;
+                break;
+            case 270:
+                float tmpX = point.y;
+                point.y = 1-point.x;
+                point.x = tmpX;
+                break;
+            default:
+                break; // do not alter the point here.
+
+        }
+
 
     }
 
@@ -531,9 +619,18 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         return false;
     }
 
-    private boolean isLeftOfCenter(PointF point) {
+    private boolean isLeftOfCenter(PointF point, int rotation) {
 
-        return point.x < mFrameRect.centerX();
+        switch (rotation) {
+            case 90:
+                return point.y > mFrameRect.centerY();
+            case 180:
+                return point.x > mFrameRect.centerX();
+            case 270:
+                return point.y < mFrameRect.centerY();
+            default:
+                return point.x < mFrameRect.centerX();
+        }
 
     }
 
@@ -560,7 +657,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         setMatrix();
 
         // setupLayout is also called on device orientation change, we need to initialize mCropQuad
-//        again, to rotate it.
+//        again, to rotate90Degrees it.
         if ((getBitmap() != null) && (mNormedPoints != null)) {
             mCropQuad = new CropQuad(mNormedPoints, getBitmap().getWidth(), getBitmap().getHeight());
             // Tell the CropQuad the transformation:
@@ -681,6 +778,9 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         mappedPoints.add(new PointF(points[4] / bm.getWidth(), points[5] / bm.getHeight()));
         mappedPoints.add(new PointF(points[6] / bm.getWidth(), points[7] / bm.getHeight()));
 
+        for (PointF point : mappedPoints)
+            rotateNormedPoint(point, Math.round(getRotation()));
+
         return mappedPoints;
 //        mCropQuad.setViewPoints(mappedPoints);
 
@@ -701,6 +801,11 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         }
         return scale;
     }
+
+//    public void rotate90Degrees() {
+//        mAngle = (mAngle + 90) % 360;
+//        invalidate();
+//    }
 
     private void setMatrix() {
 
