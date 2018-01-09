@@ -78,12 +78,18 @@ def getNdkDir() {
 	return ndkdir
 }
 
+/*def getNdkBuildCmd() {
+	def ndkbuild = getNdkDir() + "/ndk-build"
+//    if (Os.isFamily(Os.FAMILY_WINDOWS))
+//	ndkbuild += ".cmd"
+
+	return ndkbuild
+}*/
+
 def getNdkBuildCmd() {
 	def ndkbuild = getNdkDir() + "/ndk-build"
-	// TODO: check why we cannot include package Os:
-//    if (Os.isFamily(Os.FAMILY_WINDOWS))
-	ndkbuild += ".cmd"
-
+	if (org.gradle.internal.os.OperatingSystem.current().isWindows())
+		ndkbuild += ".cmd"
 	return ndkbuild
 }
 
