@@ -4,7 +4,7 @@ import com.bumptech.glide.annotation.GlideModule;
 import com.bumptech.glide.module.AppGlideModule;
 
 /**
- * Created by fabian on 09.01.2018.
+ * Class necessary to used GlideApp features instead of static calling.
  */
 
 @GlideModule

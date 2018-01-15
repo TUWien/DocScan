@@ -2184,7 +2184,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             String fileName = fileNames[0];
 
-            Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName), 50, 50);
+            Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName), 200, 200);
             if (thumbNailBitmap == null)
                 return null;
 
@@ -2262,7 +2262,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Save exif information (especially the orientation):
                 saveExif(outFile);
 
-                // Set the thumbnail on the gallery button, this must be done one the UI thread:
+                // Set the thumbnail on the gallery button, this must be done on the UI thread:
                 updateThumbnail(outFile);
 
 //                // Add the file to the sync list:
@@ -2382,7 +2382,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
 
         private void startCropViewActivity(String uri) {
-            Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+//            Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+            Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
             CropInfo r = new CropInfo(uri);
             intent.putExtra(CROP_INFO_NAME, r);
             startActivity(intent);

@@ -138,14 +138,6 @@ public class CropViewActivity extends BaseNoNavigationActivity {
                     .into(mCropView);
         }
 
-//        GlideApp.with(this)
-//                .load(file)
-//                .signature(new MediaStoreSignature("", file != null ? file.lastModified() : 0L, 0))
-//                .listener(imgLoadListener)
-//                .into(mCropView);
-//        mCropView.setPoints(cropInfo.getPoints());
-
-
     }
 
     private void rotateCropView() {
