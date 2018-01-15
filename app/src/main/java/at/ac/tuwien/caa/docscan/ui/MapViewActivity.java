@@ -1,11 +1,14 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import org.opencv.android.Utils;
@@ -19,6 +22,8 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
+import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 
@@ -31,6 +36,7 @@ import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 public class MapViewActivity  extends BaseNoNavigationActivity {
 
     private ImageView mImageView;
+    private CropInfo mCropInfo;
     private String mFileName;
 
     private static final int UP = 0;
@@ -48,7 +54,37 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
         mImageView = findViewById(R.id.map_crop_view);
         CropInfo cropInfo = getIntent().getParcelableExtra(CROP_INFO_NAME);
-        initCropInfo(cropInfo);
+        if (cropInfo.getPoints() == null)
+            initCropInfo(cropInfo);
+        else
+            useCropInfo(cropInfo);
+
+        ImageButton okButton = findViewById(R.id.confirm_map_crop_view_button);
+        okButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+//                CropInfo r = new CropInfo(cropPoints, mFileName);
+                intent.putExtra(CROP_INFO_NAME, mCropInfo);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void useCropInfo(CropInfo cropInfo) {
+
+        mFileName = cropInfo.getFileName();
+
+//        Mat transformedMat = findRect(mFileName);
+
+        Mat transformedMat = cropAndTransform(mFileName, cropInfo.getPoints());
+        if (transformedMat == null)
+            showNoTransformationAlert();
+
+        else {
+            Bitmap resultBitmap = matToBitmap(transformedMat);
+            mImageView.setImageBitmap(resultBitmap);
+        }
 
     }
 
@@ -56,7 +92,9 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
         mFileName = cropInfo.getFileName();
 
-        Mat transformedMat = cropAndTransform(mFileName, cropInfo.getPoints());
+        Mat transformedMat = findRect(mFileName);
+
+//        Mat transformedMat = cropAndTransform(mFileName, cropInfo.getPoints());
         if (transformedMat == null)
             showNoTransformationAlert();
 
@@ -90,6 +128,60 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
         Bitmap result = Bitmap.createBitmap(transformedMat.cols(), transformedMat.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(transformedMat, result);
         return result;
+
+    }
+
+    private Mat findRect(String fileName) {
+
+        Mat inputMat = Imgcodecs.imread(fileName);
+
+        Mat mg = new Mat();
+        Imgproc.cvtColor(inputMat, mg, Imgproc.COLOR_RGBA2RGB);
+
+//            TODO: put this into AsyncTask:
+        DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mg);
+
+        if (polyRects.length > 0 && polyRects[0] != null) {
+            ArrayList<PointF> normedPoints = normPoints(polyRects[0], inputMat.width(), inputMat.height());
+            mCropInfo = new CropInfo(normedPoints, mFileName);
+
+
+            ArrayList<PointF> srcPoints = polyRects[0].getPoints();
+
+            // Sort the points so that the bottom left corner is on the first index:
+            sortPoints(srcPoints);
+            printPointList(srcPoints, "sorted");
+
+//        Determine the size of the output image:
+            Size size = getRectSize(srcPoints);
+            float width = (float) size.width;
+            float height = (float) size.height;
+
+//        Get the destination points:
+            ArrayList destPoints = getDestinationPoints(width, height);
+            printPointList(destPoints, "dest points");
+
+            // Transform the image:
+            return warpMat(inputMat, srcPoints, destPoints, Math.round(width), Math.round(height));
+
+        }
+
+        return null;
+
+    }
+
+    private ArrayList<PointF> normPoints(DkPolyRect rect, int width, int height) {
+
+        ArrayList<PointF> normedPoints = new ArrayList<>();
+
+        for (PointF point : rect.getPoints()) {
+            PointF normedPoint = new PointF();
+            normedPoint.x = point.x / width;
+            normedPoint.y = point.y / height;
+            normedPoints.add(normedPoint);
+        }
+
+        return normedPoints;
 
     }
 
