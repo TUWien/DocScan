@@ -47,7 +47,6 @@
     <string name="button_ok">OK</string>
 
     <!-- Navigation Drawer -->
-    <string name="about_text">DocScan\n2017</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
@@ -212,6 +211,13 @@
     <string name="series_general_select_text">Select existing document</string>
     <string name="series_general_hide_dialog_text">Do not show this dialog after starting the series mode.</string>
     <string name="series_general_title">Documents</string>
+
+    <!-- AboutActivity -->
+    <string name="about_heading_text">DocScan 2018</string>
+    <string name="about_help_text">Help</string>
+    <string name="about_version_prefix_text">Version:</string>
+    <string name="about_scantent_text">DocScan is developed together with the ScanTent device. Visit our website for more information: \nhttps://scantent.cvl.tuwien.ac.at/en/</string>
+    <string name="about_transkribus_text">DocScan features image uploads to Transkribus. Visit the Transkribus website for further information: \nhttps://transkribus.eu/Transkribus/</string>
 
 
     <string name="create_series_title">Create new document</string>
