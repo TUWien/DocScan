@@ -92,6 +92,8 @@
     <string name="flash_on_mode">Flash on</string>
     <string name="flash_torch_mode">Torch</string>
 
+    <string name="upload_item">Upload</string>
+
     <string name="series_create">Create new document</string>
     <string name="series_switch">Switch document</string>
     <string name="series_qr">Document from QR code</string>
