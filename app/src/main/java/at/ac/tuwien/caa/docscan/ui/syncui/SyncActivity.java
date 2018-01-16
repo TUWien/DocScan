@@ -104,6 +104,7 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         mProgressBar = (ProgressBar) findViewById(R.id.sync_progressbar);
 
         initUploadButton();
+        initDeleteButton();
 
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents
@@ -151,8 +152,47 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
     }
 
+    private void initDeleteButton() {
+
+        ImageButton deleteButton = findViewById(R.id.sync_delete_button);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+//                new CreateCollectionRequest(mContext, "DocScan");
+
+                ArrayList<File> selectedDirs = mAdapter.getSelectedDirs();
+
+                if (selectedDirs.size() == 0) {
+                    showNoDirSelectedAlert();
+                }
+                else {
+                    // TODO: show the confirmation dialog here
+
+                    boolean isFileDeleted = true;
+                    for (File file : selectedDirs) {
+                        isFileDeleted = isFileDeleted && file.delete();
+                    }
+
+                    updateListViewAdapter();
+                    // update the selection display:
+                    onSelectionChange();
+
+                    showDocumentsDeletedSnackbar(selectedDirs.size());
+
+                    if (!isFileDeleted) {
+                        // TODO: show an error message here.
+                    }
+                }
+
+            }
+        });
+
+    }
+
     private void initUploadButton() {
-        ImageButton uploadButton = (ImageButton) findViewById(R.id.start_upload_button);
+
+        ImageButton uploadButton = findViewById(R.id.sync_upload_button);
         uploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -253,6 +293,26 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
         String snackbarText =
                 getResources().getString(R.string.sync_snackbar_offline_text);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_LONG);
+        mSnackbar.show();
+
+    }
+
+    /**
+     * Shows a snackbar indicating that documents have been deleted.
+     */
+    private void showDocumentsDeletedSnackbar(int numDoc) {
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_files_deleted_prefix);
+        snackbarText += " " + Integer.toString(numDoc) + " ";
+        if (numDoc > 1)
+            snackbarText += getResources().getString(R.string.sync_selection_many_documents_text);
+        else
+            snackbarText += getResources().getString(R.string.sync_selection_single_document_text);
 
         closeSnackbar();
         mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
