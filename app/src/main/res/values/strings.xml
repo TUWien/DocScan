@@ -193,6 +193,7 @@
     <string name="sync_snackbar_offline_postfix_text">will be uploaded, once the device is online again.</string>
     <string name="sync_snackbar_offline_text">Your device is currently offline. The selected file(s) will be uploaded, once the device is online again.</string>
     <string name="sync_snackbar_no_permissions">Files cannot be uploaded without permission.</string>
+    <string name="sync_snackbar_files_deleted_prefix">Deleted</string>
     <string name="sync_server_changed_title">Upload server changed</string>
     <string name="sync_server_changed_text">Please note that from now on, your images are uploaded to the standard Transkribus server (https://transkribus.eu/TrpServer).</string>
     <string name="sync_dir_pending_text">(upload pending)</string>
