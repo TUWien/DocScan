@@ -251,14 +251,16 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                         updateListViewAdapter();
                         // update the selection display:
                         onSelectionChange();
-                        startUpload();
+                        checkFolderOnlineStatusAndUpload(mSelectedDirs);
+//                        startUpload();
                     }
                     else {
                         showUploadingSnackbar();
                         updateListViewAdapter();
 //                        mProgressBar.setProgress(0);
 //                        displayUploadActive(true);
-                        startUpload();
+                        checkFolderOnlineStatusAndUpload(mSelectedDirs);
+//                        startUpload();
                     }
 
                 }
@@ -267,8 +269,25 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         });
     }
 
-    private void checkFolderStatusAndUpload(ArrayList<File> selectedDirs) {
+    /**
+     * Uploads a list of folders if they are not already uploaded.
+     * @param selectedDirs
+     */
+    private void checkFolderOnlineStatusAndUpload(ArrayList<File> selectedDirs) {
 
+        ArrayList<File> uploadDirs = new ArrayList<>();
+        for (File file : selectedDirs) {
+            // Just add the folder if all files contained are not uploaded:
+            File[] files = file.listFiles();
+            if (!SyncInfo.getInstance().areFilesUploaded(files))
+                uploadDirs.add(file);
+        }
+
+        if (uploadDirs.isEmpty()) {
+//          TODO: show a snackbar that all documents are already uploaded.
+        }
+        else
+            startUpload(uploadDirs);
 
 
     }
@@ -459,11 +478,11 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
      * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
      * upload folder.
      */
-    private void startUpload() {
+    private void startUpload(ArrayList<File> uploadDirs) {
 
 //        SyncInfo.getInstance().setUploadDirs(mSelectedDirs);
 
-        SyncInfo.getInstance().addUploadDirs(mSelectedDirs);
+        SyncInfo.getInstance().addUploadDirs(uploadDirs);
         SyncInfo.saveToDisk(this);
         SyncInfo.startSyncJob(this);
 
