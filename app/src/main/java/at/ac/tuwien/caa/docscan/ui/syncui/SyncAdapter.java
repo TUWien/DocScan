@@ -128,16 +128,38 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
         File[] files = getFiles(dir);
 
-        if (files.length == 0)
-            return false;
+        return SyncInfo.getInstance().areFilesUploaded(files);
 
-        // Check if every file contained in the folder is already uploaded:
-        for (File file : files) {
-            if (!isFileUploaded(file))
-                return false;
-        }
+//        if (files.length == 0)
+//            return false;
+//
+//        // Check if every file contained in the folder is already uploaded:
+//        for (File file : files) {
+//            if (!isFileUploaded(file))
+//                return false;
+//        }
+//
+//        return true;
 
-        return true;
+    }
+
+    private boolean isDirUploaded(int groupPosition) {
+
+        File dir = getGroupFile(groupPosition);
+        File[] files = getFiles(dir);
+
+        return SyncInfo.getInstance().areFilesUploaded(files);
+
+//        if (files.length == 0)
+//            return false;
+//
+//        // Check if every file contained in the folder is already uploaded:
+//        for (File file : files) {
+//            if (!isFileUploaded(file))
+//                return false;
+//        }
+//
+//        return true;
 
     }
 
@@ -184,7 +206,9 @@ public class SyncAdapter extends BaseDocumentAdapter {
         Drawable d;
         if (isUploaded) {
             d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_done_black_24dp);
-            isCheckBoxEnabled = false;
+//            isCheckBoxEnabled = false;
+//            The checkbox is now (18.01.2018) checkable after upload, because it can be deleted:
+            isCheckBoxEnabled = true;
         }
         else if (isDirAwaitingUpload(groupPosition)) {
             d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_upload_black_24dp);
@@ -205,44 +229,29 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
     }
 
-    private boolean isDirUploaded(int groupPosition) {
-
-        File dir = getGroupFile(groupPosition);
-        File[] files = getFiles(dir);
-
-        if (files.length == 0)
-            return false;
-
-        // Check if every file contained in the folder is already uploaded:
-        for (File file : files) {
-            if (!isFileUploaded(file))
-                return false;
-        }
-
-        return true;
-
-    }
 
     private boolean isDirAwaitingUpload(int groupPosition) {
 
         File dir = getGroupFile(groupPosition);
         File[] files = getFiles(dir);
 
-        if (files.length == 0)
-            return false;
+        return SyncInfo.getInstance().isDirAwaitingUpload(dir, files);
 
-        // Is the dir already added to the upload list:
-        if ((SyncInfo.getInstance().getUploadDirs() != null) && (SyncInfo.getInstance().getUploadDirs().contains(dir))) {
-//            Check if all files in the dir are added to the awaiting upload list:
-            for (File file : files) {
-                if (!SyncInfo.getInstance().getAwaitingUploadFile().contains(file))
-                    return false;
-            }
-
-            return true;
-        }
-
-        return false;
+//        if (files.length == 0)
+//            return false;
+//
+//        // Is the dir already added to the upload list:
+//        if ((SyncInfo.getInstance().getUploadDirs() != null) && (SyncInfo.getInstance().getUploadDirs().contains(dir))) {
+////            Check if all files in the dir are added to the awaiting upload list:
+//            for (File file : files) {
+//                if (!SyncInfo.getInstance().getAwaitingUploadFile().contains(file))
+//                    return false;
+//            }
+//
+//            return true;
+//        }
+//
+//        return false;
 
     }
 

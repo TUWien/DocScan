@@ -238,6 +238,53 @@ public class SyncInfo implements Serializable {
 
     }
 
+    public boolean areFilesUploaded(File[] files) {
+
+        if (files.length == 0)
+            return false;
+
+        // Check if every file contained in the folder is already uploaded:
+        for (File file : files) {
+            if (!isFileUploaded(file))
+                return false;
+        }
+
+        return true;
+
+    }
+
+    public boolean isDirAwaitingUpload(File dir, File[] files) {
+
+        if (files.length == 0)
+            return false;
+
+        // Is the dir already added to the upload list:
+        if ((mUploadDirs != null) && (mUploadDirs.contains(dir))) {
+//            Check if all files in the dir are added to the awaiting upload list:
+            for (File file : files) {
+                if (!mAwaitingUploadFiles.contains(file))
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
+
+
+    }
+
+    private boolean isFileUploaded(File file) {
+
+        for (SyncInfo.FileSync fileSync : mFileSyncList) {
+            if ((file.getAbsolutePath().compareTo(fileSync.getFile().getAbsolutePath()) == 0)
+                    && fileSync.getState() == SyncInfo.FileSync.STATE_UPLOADED)
+                return true;
+        }
+
+        return false;
+    }
+
     public class FileSync implements Serializable {
 
         public static final int STATE_NOT_UPLOADED = 0;
