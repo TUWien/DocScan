@@ -13,6 +13,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ExpandableListView;
@@ -54,6 +55,7 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
     private ProgressBar mProgressBar;
 
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
+    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
 
 
     @Override
@@ -95,6 +97,11 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         } else {
             // Sets the adapter, note: This fills the list.
             updateListViewAdapter();
+        }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_EXTERNAL_STORAGE);
         }
 
         addFooter();
@@ -155,6 +162,7 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
     private void initDeleteButton() {
 
         ImageButton deleteButton = findViewById(R.id.sync_delete_button);
+        final Context context = this;
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -167,11 +175,17 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                     showNoDirSelectedAlert();
                 }
                 else {
+
                     // TODO: show the confirmation dialog here
 
-                    boolean isFileDeleted = true;
-                    for (File file : selectedDirs) {
-                        isFileDeleted = isFileDeleted && file.delete();
+                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        // ask for permission:
+                        ActivityCompat.requestPermissions((AppCompatActivity) context, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+                    }
+
+                    boolean isFolderDeleted = true;
+                    for (File folder : selectedDirs) {
+                        isFolderDeleted = isFolderDeleted && deleteFolder(folder);
                     }
 
                     updateListViewAdapter();
@@ -180,13 +194,38 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
                     showDocumentsDeletedSnackbar(selectedDirs.size());
 
-                    if (!isFileDeleted) {
+                    if (!isFolderDeleted) {
                         // TODO: show an error message here.
                     }
                 }
 
             }
         });
+
+    }
+
+    /**
+     * Deletes a folder and the contained files. Note that File.delete does not delete non empty
+     * folder, hence the function deletes the files before deleting the folder.
+     * @param file
+     * @return
+     */
+    private static boolean deleteFolder(File file) {
+
+        if (!file.exists() || !file.isDirectory())
+            return false;
+
+        boolean isFolderDeleted = true;
+        File[] files = file.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory())
+                isFolderDeleted = isFolderDeleted && deleteFolder(files[i]);
+            else
+                isFolderDeleted = isFolderDeleted && files[i].delete();
+        }
+
+        return isFolderDeleted;
+
 
     }
 
@@ -226,6 +265,12 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
             }
         });
+    }
+
+    private void checkFolderStatusAndUpload(ArrayList<File> selectedDirs) {
+
+
+
     }
 
     private void displayUploadActive(boolean isUploadActive) {
