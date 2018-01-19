@@ -185,8 +185,17 @@
     <string name="sync_selection_many_documents_text">documents</string>
     <string name="sync_selection_single_document_text">document</string>
     <string name="sync_snackbar_uploading_prefix_text">Uploading\</string>
+    <string name="sync_snackbar_already_uploaded_prefix_text">Selected</string>
+    <string name="sync_snackbar_already_uploaded_singular_text">was</string>
+    <string name="sync_snackbar_already_uploaded_plural_text">were</string>
+    <string name="sync_snackbar_already_uploaded_postfix_text">already uploaded.</string>
     <string name="sync_error_upload_title">Upload error</string>
     <string name="sync_error_upload_text">An error happened while uploading your files. Please try to upload your files again.</string>
+    <string name="sync_confirm_delete_button_text">Delete</string>
+    <string name="sync_cancel_delete_button_text">Cancel</string>
+    <string name="sync_confirm_delete_title">Delete</string>
+    <string name="sync_confirm_delete_prefix_text">Are you sure you want to delete</string>
+    <string name="sync_confirm_delete_postfix_text">from your device?\n\nHint: Documents already uploaded are not deleted from the server, but you cannot add new images to uploaded documents.</string>
     <string name="sync_snackbar_error_upload_text">Could not upload all files. Please try again!</string>
     <string name="sync_snackbar_finished_upload_text">Finished upload.</string>
     <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>

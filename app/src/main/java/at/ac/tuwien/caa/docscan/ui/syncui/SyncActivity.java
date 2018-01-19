@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.ui.syncui;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -13,7 +14,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ExpandableListView;
@@ -55,8 +55,6 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
     private ProgressBar mProgressBar;
 
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
-    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,32 +174,33 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                 }
                 else {
 
-                    // TODO: show the confirmation dialog here
+                    mSelectedDirs = selectedDirs;
 
-                    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        // ask for permission:
-                        ActivityCompat.requestPermissions((AppCompatActivity) context, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
-                    }
+                    showDeleteConfirmationDialog();
 
-                    boolean isFolderDeleted = true;
-                    for (File folder : selectedDirs) {
-                        isFolderDeleted = isFolderDeleted && deleteFolder(folder);
-                    }
-
-                    updateListViewAdapter();
-                    // update the selection display:
-                    onSelectionChange();
-
-                    showDocumentsDeletedSnackbar(selectedDirs.size());
-
-                    if (!isFolderDeleted) {
-                        // TODO: show an error message here.
-                    }
                 }
 
             }
         });
 
+    }
+
+    private void deleteSelectedDirs() {
+
+        boolean isFolderDeleted = true;
+        for (File folder : mSelectedDirs) {
+            isFolderDeleted = isFolderDeleted && deleteFolder(folder);
+        }
+
+        updateListViewAdapter();
+        // update the selection display:
+        onSelectionChange();
+
+        showDocumentsDeletedSnackbar(mSelectedDirs.size());
+
+        if (!isFolderDeleted) {
+            // TODO: show an error message here.
+        }
     }
 
     /**
@@ -255,7 +254,6 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 //                        startUpload();
                     }
                     else {
-                        showUploadingSnackbar();
                         updateListViewAdapter();
 //                        mProgressBar.setProgress(0);
 //                        displayUploadActive(true);
@@ -284,10 +282,12 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         }
 
         if (uploadDirs.isEmpty()) {
-//          TODO: show a snackbar that all documents are already uploaded.
+            showAlreadyUploadedSnackbar();
         }
-        else
+        else {
+            showUploadingSnackbar(); // tell the user that the uploaded started
             startUpload(uploadDirs);
+        }
 
 
     }
@@ -373,14 +373,35 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         String snackbarText =
                 getResources().getString(R.string.sync_snackbar_files_deleted_prefix);
         snackbarText += " " + Integer.toString(numDoc) + " ";
-        if (numDoc > 1)
-            snackbarText += getResources().getString(R.string.sync_selection_many_documents_text);
-        else
-            snackbarText += getResources().getString(R.string.sync_selection_single_document_text);
+        snackbarText += getDocumentSingularPlural(numDoc);
+//        if (numDoc > 1)
+//            snackbarText += getResources().getString(R.string.sync_selection_many_documents_text);
+//        else
+//            snackbarText += getResources().getString(R.string.sync_selection_single_document_text);
 
         closeSnackbar();
         mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
                 snackbarText, Snackbar.LENGTH_LONG);
+        mSnackbar.show();
+
+    }
+
+    /**
+     * Shows a snackbar indicating that all selected files are already uploaded and nothing is done.
+     */
+    private void showAlreadyUploadedSnackbar() {
+
+        String snackbarText = getResources().getString(R.string.sync_snackbar_already_uploaded_prefix_text);
+        snackbarText += " " + getDocumentSingularPlural(mSelectedDirs.size());
+        if (mSelectedDirs.size() == 1)
+            snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_singular_text);
+        else
+            snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_plural_text);
+        snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_postfix_text);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_INDEFINITE);
         mSnackbar.show();
 
     }
@@ -391,9 +412,13 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
      */
     private void showUploadingSnackbar() {
 
+        String selText = getSelectionText();
+        if (selText == null)
+            return;
+
         String snackbarText =
                 getResources().getString(R.string.sync_snackbar_uploading_prefix_text) + " " +
-                getSelectionText() + ".";
+                selText + ".";
 
         closeSnackbar();
         mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
@@ -428,6 +453,39 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
                 snackbarText, Snackbar.LENGTH_LONG);
         mSnackbar.show();
+
+    }
+
+    private void showDeleteConfirmationDialog() {
+
+        if (mContext == null)
+            return;
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+
+        String deleteText = getResources().getString(R.string.sync_confirm_delete_prefix_text);
+        deleteText += " " + Integer.toString(mSelectedDirs.size());
+        deleteText += " " + getDocumentSingularPlural(mSelectedDirs.size());
+        deleteText += " " + getResources().getString(R.string.sync_confirm_delete_postfix_text);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.sync_confirm_delete_title)
+                .setPositiveButton(R.string.sync_confirm_delete_button_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)  {
+                        deleteSelectedDirs();
+                    }
+                })
+                .setNegativeButton(R.string.sync_cancel_delete_button_text, null)
+                .setCancelable(true)
+                .setMessage(deleteText);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
 
     }
 
@@ -539,6 +597,8 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
     @Override
     public void onSelectionChange() {
 
+        mSelectedDirs = mAdapter.getSelectedDirs();
+
         if (mSelectionTextView != null) {
             String text = getSelectionText();
             if (text != null)
@@ -548,23 +608,31 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
     private String getSelectionText() {
 
-        String selectionText = null;
+        String selectionText;
+        if (mSelectedDirs == null)
+            return null;
 
-        if (mAdapter != null) {
-
-            int selCnt = mAdapter.getSelectedDirs().size();
-            String postFix;
-            if (selCnt == 1)
-                postFix = getResources().getString(R.string.sync_selection_single_document_text);
-            else
-                postFix = getResources().getString(R.string.sync_selection_many_documents_text);
-            selectionText = selCnt + " " + postFix;
-
-        }
+        int selCnt = mSelectedDirs.size();
+        String postFix = getDocumentSingularPlural(selCnt);
+        selectionText = selCnt + " " + postFix;
 
         return selectionText;
     }
 
+    /**
+     * Returns the correct singular or plural form of the word documents, regarding the number of
+     * documents.
+     * @param numDoc
+     * @return
+     */
+    private String getDocumentSingularPlural(int numDoc) {
+
+        if (numDoc == 1)
+            return getResources().getString(R.string.sync_selection_single_document_text);
+        else
+            return getResources().getString(R.string.sync_selection_many_documents_text);
+
+    }
     /**
      * Handles broadcast intents which inform about the upload progress:
       */
@@ -631,8 +699,6 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 //                });
 
             }
-
-
 
         }
     };
