@@ -31,7 +31,7 @@ import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 
 public class TranskribusUtils  {
 
-    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
+    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan-test-16";
 
     // Singleton:
     private static TranskribusUtils mInstance;
@@ -75,6 +75,8 @@ public class TranskribusUtils  {
         else
             createDocScanCollection();
 
+//        new CollectionsRequest(mContext);
+
     }
 
     private boolean isCollectionIDSaved() {
@@ -95,6 +97,8 @@ public class TranskribusUtils  {
 
         for (Collection collection : collections) {
             if (collection.getName().compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
+//                docScanCollectionFound(collection);
+//                return;
 
 //                Is the collection id not saved yet?
                 if ((savedCollectionID == Settings.NO_ENTRY) || mIsCollectionCreated) {
@@ -135,7 +139,7 @@ public class TranskribusUtils  {
 
     }
 
-//    @Override
+    //    @Override
     public void onCollectionCreated(String collName) {
         if (collName.compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
             mIsCollectionCreated = true;
@@ -271,10 +275,10 @@ public class TranskribusUtils  {
                             "},";
 
         String jsonStart =  "{" +
-                            metaData +
-                            "    \"pageList\": {\"pages\": [";
+                metaData +
+                "    \"pageList\": {\"pages\": [";
         String jsonEnd =    "    ]}" +
-                            "}";
+                "}";
         String jsonMiddle = "";
 
         int idx = 0;
@@ -300,12 +304,12 @@ public class TranskribusUtils  {
     private static String getFileString(File file, int pageNr) {
 
         String result =
-                            "        {" +
-                                    "            \"fileName\": \"" +
-                                    file.getName() +
-                                    "\"," +
-                                    "            \"pageNr\": " + Integer.toString(pageNr) +
-                                    "        }";
+                "        {" +
+                        "            \"fileName\": \"" +
+                        file.getName() +
+                        "\"," +
+                        "            \"pageNr\": " + Integer.toString(pageNr) +
+                        "        }";
 
         return result;
     }
@@ -313,7 +317,7 @@ public class TranskribusUtils  {
     public static File[] getFiles(File dir) {
 
 //TODO: filter JPGS only
-        
+
         FileFilter filesFilter = new FileFilter() {
             public boolean accept(File file) {
                 return !file.isDirectory();
