@@ -13,8 +13,6 @@ import org.json.JSONObject;
 
 public class StartUploadRequest extends RestRequest.JSONObjectRestRequest {
 
-//    private static final String URL = "https://transkribus.eu/TrpServerTesting/rest/uploads?collId=";
-
     public static final int UPLOAD_ID_UNDEFINED = -1;
     private static final String UPLOAD_ID_ID = "uploadId";
     private static final String TRPUPLOAD_ID = "trpUpload";

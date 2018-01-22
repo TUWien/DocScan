@@ -37,58 +37,61 @@
                 android:choiceMode="none"
                 android:fadeScrollbars="false"
                 />
+            <!-- The selection_cardview is API dependent because for < Android L the elevation uses different dimensions -->
+            <include layout="@layout/selection_cardview"/>
 
-            <android.support.v7.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="70dp"
-                android:layout_margin="@dimen/activity_vertical_margin"
-                android:layout_gravity="bottom|center_horizontal"
-                android:layout_marginBottom="@dimen/activity_vertical_margin"
-                app:layout_dodgeInsetEdges="bottom"
-                app:cardElevation="70dp">
+            <!--<android.support.v7.widget.CardView-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="70dp"-->
+                <!--android:layout_margin="@dimen/activity_vertical_margin"-->
+                <!--android:layout_gravity="bottom|center_horizontal"-->
+                <!--android:layout_marginBottom="@dimen/activity_vertical_margin"-->
+                <!--app:layout_dodgeInsetEdges="bottom"-->
+                <!--app:cardUseCompatPadding="true"-->
+                <!--&gt;-->
+                <!--&lt;!&ndash;app:cardElevation="70dp"&ndash;&gt;-->
+            <!--<RelativeLayout-->
+                <!--android:id="@+id/sync_selection_layout"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_gravity="center_vertical"-->
+                <!--android:minWidth="@dimen/sync_footer_height"-->
+                <!--&gt;-->
+                <!--<TextView-->
+                    <!--android:id="@+id/sync_selection_textview"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:text="@string/sync_selection_initial_text"-->
+                    <!--android:layout_centerVertical="true"-->
+                    <!--android:padding="@dimen/activity_vertical_margin"/>-->
+                <!--<ImageButton-->
+                    <!--android:id="@+id/sync_upload_button"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="match_parent"-->
+                    <!--android:layout_toLeftOf="@id/sync_delete_button"-->
+                    <!--android:layout_centerVertical="true"-->
+                    <!--app:srcCompat="@drawable/ic_cloud_upload_gray_24dp"-->
+                    <!--android:backgroundTint="@color/white"-->
+                    <!--android:padding="10dp"-->
+                    <!--android:layout_marginRight="5dp"-->
+                    <!--/>-->
+                <!--<ImageButton-->
+                    <!--android:id="@+id/sync_delete_button"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="match_parent"-->
+                    <!--android:layout_alignParentRight="true"-->
+                    <!--android:layout_centerVertical="true"-->
+                    <!--android:backgroundTint="@color/white"-->
+                    <!--app:srcCompat="@drawable/ic_delete_black_24dp"-->
+                    <!--android:padding="10dp"-->
+                    <!--android:layout_marginRight="5dp"-->
+                    <!--/>-->
+                <!--&lt;!&ndash;android:padding="@dimen/activity_vertical_margin"&ndash;&gt;-->
+            <!--</RelativeLayout>-->
 
-            <RelativeLayout
-                android:id="@+id/sync_selection_layout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:minWidth="@dimen/sync_footer_height"
-                >
-                <TextView
-                    android:id="@+id/sync_selection_textview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/sync_selection_initial_text"
-                    android:layout_centerVertical="true"
-                    android:padding="@dimen/activity_vertical_margin"/>
-                <ImageButton
-                    android:id="@+id/sync_upload_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_toLeftOf="@id/sync_delete_button"
-                    android:layout_centerVertical="true"
-                    app:srcCompat="@drawable/ic_cloud_upload_gray_24dp"
-                    android:backgroundTint="@color/white"
-                    android:padding="10dp"
-                    android:layout_margin="4dp"
-                    />
-                <ImageButton
-                    android:id="@+id/sync_delete_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:backgroundTint="@color/white"
-                    app:srcCompat="@drawable/ic_delete_black_24dp"
-                    android:padding="10dp"
-                    android:layout_marginRight="5dp"
-                    />
-                <!--android:padding="@dimen/activity_vertical_margin"-->
-            </RelativeLayout>
 
-
-            >
-            </android.support.v7.widget.CardView>
+            <!--&gt;-->
+            <!--</android.support.v7.widget.CardView>-->
 
 
             <ProgressBar
