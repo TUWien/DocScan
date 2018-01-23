@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
@@ -78,23 +79,22 @@
                 android:layout_margin="@dimen/activity_horizontal_margin"
                 android:orientation="vertical" >
 
-                <Button
+                <android.support.v7.widget.AppCompatButton
                     android:id="@+id/sync_switcher_transkribus_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-
                     android:text="@string/sync_connect_transkribus_button_text"
                     android:textColor="@color/white"
-                    android:backgroundTint="@color/colorAccent" />
+                    app:backgroundTint="@color/colorAccent" />
                 <!--android:drawableLeft="@drawable/scalable_transkribus_button_image"-->
 
-                <Button
+                <android.support.v7.widget.AppCompatButton
                     android:id="@+id/sync_switcher_dropbox_button"
                     android:visibility="invisible"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableLeft="@drawable/scalable_dropbox_button_image"
-                    android:backgroundTint="@color/colorAccent"
+                    app:backgroundTint="@color/colorAccent"
                     android:textColor="@color/white"
                     android:text="@string/sync_connect_dropbox_button_text"
                     />

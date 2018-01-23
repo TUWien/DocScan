@@ -57,7 +57,6 @@ public class TranskribusUtils  {
 
     }
 
-
     /**
      * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
      * upload folder.
