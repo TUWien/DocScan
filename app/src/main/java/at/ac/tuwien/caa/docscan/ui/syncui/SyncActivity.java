@@ -94,7 +94,7 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_EXTERNAL_STORAGE);
         } else {
             // Sets the adapter, note: This fills the list.
-            updateListViewAdapter();
+            updateListAndSelectionText();
         }
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -135,7 +135,7 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
         if (requestCode == PERMISSION_READ_EXTERNAL_STORAGE && isPermissionGiven) {
             // Sets the adapter, note: This fills the list.
-            updateListViewAdapter();
+            updateListAndSelectionText();
         }
         else
             showNoPermissionSnackbar();
@@ -192,11 +192,13 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
             isFolderDeleted = isFolderDeleted && deleteFolder(folder);
         }
 
-        updateListViewAdapter();
-        // update the selection display:
-        onSelectionChange();
-
         showDocumentsDeletedSnackbar(mSelectedDirs.size());
+        
+        updateListAndSelectionText();
+        // update the selection display:
+//        onSelectionChange();
+
+
 
         if (!isFolderDeleted) {
             // TODO: show an error message here.
@@ -245,21 +247,25 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                 else {
                     mSelectedDirs = selectedDirs;
 
-                    if (!isOnline()) {
-                        showNotOnlineSnackbar();
-                        updateListViewAdapter();
-                        // update the selection display:
-                        onSelectionChange();
-                        checkFolderOnlineStatusAndUpload(mSelectedDirs);
-//                        startUpload();
-                    }
-                    else {
-                        updateListViewAdapter();
-//                        mProgressBar.setProgress(0);
-//                        displayUploadActive(true);
-                        checkFolderOnlineStatusAndUpload(mSelectedDirs);
-//                        startUpload();
-                    }
+                    checkFolderOnlineStatusAndUpload(mSelectedDirs);
+
+                    updateListAndSelectionText();
+
+//                    if (!isOnline()) {
+//                        showNotOnlineSnackbar();
+//                        updateListAndSelectionText();
+//                        // update the selection display:
+//                        checkFolderOnlineStatusAndUpload(mSelectedDirs);
+////                        onSelectionChange();
+////                        startUpload();
+//                    }
+//                    else {
+//                        updateListAndSelectionText();
+////                        mProgressBar.setProgress(0);
+////                        displayUploadActive(true);
+//                        checkFolderOnlineStatusAndUpload(mSelectedDirs);
+////                        startUpload();
+//                    }
 
                 }
 
@@ -285,8 +291,14 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
             showAlreadyUploadedSnackbar();
         }
         else {
-            showUploadingSnackbar(); // tell the user that the uploaded started
+
+            if (isOnline())
+                showUploadingSnackbar(); // tell the user that the uploaded started
+            else
+                showNotOnlineSnackbar();
+
             startUpload(uploadDirs);
+
         }
 
 
@@ -647,11 +659,11 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
 //                showUploadErrorSnackbar();
                 showUploadErrorDialog();
-                updateListViewAdapter();
+                updateListAndSelectionText();
                 displayUploadActive(false);
 
                 // update the selection display:
-                onSelectionChange();
+//                onSelectionChange();
 
 
                 return;
@@ -662,11 +674,11 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
             if (offlineError) {
 
                 showNotOnlineSnackbar();
-                updateListViewAdapter();
+                updateListAndSelectionText();
                 displayUploadActive(false);
 
                 // update the selection display:
-                onSelectionChange();
+//                onSelectionChange();
 
 
                 return;
@@ -677,7 +689,7 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
             if (finished) {
 
                 showUploadFinishedSnackbar();
-                updateListViewAdapter();
+                updateListAndSelectionText();
                 displayUploadActive(false);
 
                 // update the selection display:
@@ -706,7 +718,7 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
     /**
      * Updates the list view adapter and causes a new filling of the list view.
      */
-    private void updateListViewAdapter() {
+    private void updateListAndSelectionText() {
 
         if (mContext != null) {
             mAdapter = new SyncAdapter(mContext, SyncInfo.getInstance().getSyncList());
@@ -714,5 +726,9 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
                 mListView.setAdapter(mAdapter);
         }
 
+        onSelectionChange();
+
     }
+
+
 }
