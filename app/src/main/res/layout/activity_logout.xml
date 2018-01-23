@@ -40,23 +40,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/logout_textview">
-                <Button
+                <android.support.v7.widget.AppCompatButton
                     android:id="@+id/logout_cancel_button"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="@color/colorAccent"
+                    app:backgroundTint="@color/colorAccent"
                     android:drawablePadding="@dimen/activity_vertical_margin"
                     android:textColor="@color/white"
                     android:layout_alignParentLeft="true"
                     android:text="@string/logout_cancel_button_text"/>
 
-                <Button
+                <android.support.v7.widget.AppCompatButton
                     android:id="@+id/logout_confirm_button"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="@color/colorAccent"
+                    app:backgroundTint="@color/colorAccent"
                     android:drawablePadding="@dimen/activity_vertical_margin"
                     android:textColor="@color/white"
                     android:layout_alignParentRight="true"

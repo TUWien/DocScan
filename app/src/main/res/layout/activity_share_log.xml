@@ -33,12 +33,13 @@
                 android:layout_centerInParent="true"
                 android:textAlignment="center"
                 android:text="@string/log_activity_text"/>
-            <Button
+            <android.support.v7.widget.AppCompatButton
                 android:id="@+id/share_log_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/share_textview"
                 android:layout_centerHorizontal="true"
+                app:backgroundTint="@color/colorAccent"
                 android:text="@string/share_log_button_text"/>
         </RelativeLayout>
 

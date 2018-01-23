@@ -36,11 +36,11 @@
                 android:layout_marginBottom="@dimen/activity_horizontal_margin"/>
 
 
-            <Button
+            <android.support.v7.widget.AppCompatButton
                 android:id="@+id/dropbox_authenticate_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorAccent"
+                app:backgroundTint="@color/colorAccent"
                 android:drawablePadding="@dimen/activity_vertical_margin"
                 android:textColor="@color/white"
                 android:layout_gravity="center"

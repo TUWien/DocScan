@@ -55,14 +55,14 @@
                 android:hint="@string/login_password_hint"
                 android:inputType="textPassword"/>
 
-            <Button
+            <android.support.v7.widget.AppCompatButton
                 android:id="@+id/login_button"
                 android:layout_below="@+id/password_edittext"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:backgroundTint="@color/colorAccent"
+                app:backgroundTint="@color/colorAccent"
                 android:textColor="@color/white"
                 android:text="@string/login_button_text"/>
         </RelativeLayout>

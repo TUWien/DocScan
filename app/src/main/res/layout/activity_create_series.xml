@@ -32,14 +32,14 @@
                 android:inputType="text"
                 android:hint="@string/create_series_name_hint"
                 android:imeOptions="actionDone"/>
-            <Button
+            <android.support.v7.widget.AppCompatButton
                 android:id="@+id/create_series_done_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/create_series_name_edittext"
                 android:layout_centerInParent="true"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:backgroundTint="@color/colorAccent"
+                app:backgroundTint="@color/colorAccent"
                 android:text="@string/create_series_done_button_text"
                 android:textColor="@color/white" />
 
