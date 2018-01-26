@@ -89,7 +89,13 @@
             />
 
         <activity
-            android:name=".ui.SettingsActivity"
+            android:name=".ui.PreferenceActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
+        <activity
+            android:name=".ui.DebugPreferenceActivity"
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
             />
@@ -111,7 +117,6 @@
             android:exported="false"
             android:parentActivityName=".ui.document.SeriesGeneralActivity"
             />
-
 
         <activity
             android:name=".ui.DropboxActivity"
