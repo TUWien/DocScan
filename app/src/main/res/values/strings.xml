@@ -11,6 +11,7 @@
     <string name="account_edit_text">Set up account</string>
     <string name="account_not_logged_in">Anonymous user</string>
     <string name="account_logout">Logout</string>
+    <string name="settings_item_text">Settings</string>
 
     <!-- Use in the MainActivity: start -->
 
@@ -237,6 +238,11 @@
     <string name="create_series_authority_text">Authority</string>
     <string name="create_series_signature_text">Signature</string>
     <string name="create_series_hierarchy_text">Hierarchy</string>
+
+    <!-- SettingsFragment -->
+    <string name="settings_fast_segmentation_checkbox_title">Fast page detection</string>
+    <string name="settings_fast_segmentation_checkbox_summary">Fast page detection with a potential loss of accuracy</string>
+
 
 
 </resources>

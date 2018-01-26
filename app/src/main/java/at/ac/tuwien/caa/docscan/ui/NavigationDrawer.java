@@ -283,6 +283,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_account_box_black_24dp, AccountActivity.class),
         ACCOUNT_LOGOUT(R.id.account_logout_item, R.string.account_logout,
                 R.drawable.ic_remove_circle_outline_black_24dp, LogoutActivity.class),
+        SETTINGS(R.id.settings_item, R.string.settings_item_text,
+                R.drawable.ic_settings_black_24dp, PreferenceActivity.class),
 //        REST_TEST(R.id.rest_item, R.string.rest_item_text,
 //                R.drawable.ic_weekend_black_24dp, RestTestActivity.class),
         INVALID(-1, 0, 0, null);

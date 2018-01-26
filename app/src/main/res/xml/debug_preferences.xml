@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="asdfasdf"
+        android:title="nested setting"
+        android:summary="@string/settings_fast_segmentation_checkbox_summary"
+        android:defaultValue="true" />
+
+</PreferenceScreen>
