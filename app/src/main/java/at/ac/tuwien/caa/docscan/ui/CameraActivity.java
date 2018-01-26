@@ -29,6 +29,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -47,6 +48,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
@@ -102,6 +104,7 @@ import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
 import at.ac.tuwien.caa.docscan.camera.GPS;
 import at.ac.tuwien.caa.docscan.camera.LocationHandler;
+import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.PaintView;
 import at.ac.tuwien.caa.docscan.camera.TaskTimer;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
@@ -295,6 +298,21 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Resume drawing thread:
         if (mPaintView != null)
             mPaintView.resume();
+
+        // Read user settings:
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+        boolean showFocusValues = sharedPref.getBoolean(getResources().getString(R.string.key_show_focus_values), false);
+        mPaintView.drawFocusText(showFocusValues);
+
+        boolean useFastPageDetection = sharedPref.getBoolean(getResources().getString(R.string.key_fast_segmentation), true);
+        NativeWrapper.setUseLab(!useFastPageDetection);
+
+        boolean isDebugViewShown = sharedPref.getBoolean(getResources().getString(R.string.key_show_debug_view), false);
+        showDebugView(isDebugViewShown);
+
+
 
         // update the title of the toolbar:
         getSupportActionBar().setTitle(User.getInstance().getDocumentName());
@@ -1230,16 +1248,24 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    private void showDebugView() {
+    private void showDebugView(boolean showDebugView) {
 
-        // Create the debug view - if it is not already created:
-        if (mDebugViewFragment == null) {
-            mDebugViewFragment = new DebugViewFragment();
+
+        if (showDebugView && !mIsDebugViewEnabled) {
+            // Create the debug view - if it is not already created:
+            if (mDebugViewFragment == null) {
+                mDebugViewFragment = new DebugViewFragment();
+            }
+
+            getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+        }
+        else if (!showDebugView && mIsDebugViewEnabled && mDebugViewFragment != null) {
+
+            getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
+
         }
 
-        getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
-
-        mIsDebugViewEnabled = true;
+        mIsDebugViewEnabled = showDebugView;
 
     }
 
