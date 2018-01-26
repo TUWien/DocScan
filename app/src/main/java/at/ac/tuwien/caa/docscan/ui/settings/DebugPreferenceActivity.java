@@ -1,9 +1,10 @@
-package at.ac.tuwien.caa.docscan.ui;
+package at.ac.tuwien.caa.docscan.ui.settings;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 
 /**
  * Created by fabian on 26.01.2018.
@@ -17,7 +18,7 @@ public class DebugPreferenceActivity extends BaseNoNavigationActivity {
 
         setContentView(R.layout.activity_debug_settings);
 
-        super.initToolbarTitle(R.string.no_file_found_title);
+        super.initToolbarTitle(R.string.debug_settings_title);
 
 //        Note we use a PreferenceFragment here instead of PreferenceActivity because it is advised in the API for versions > android 3.0
         // Display the fragment as the main content.

@@ -2,15 +2,16 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <CheckBoxPreference
-        android:key="settings_fast_segmentation"
+        android:key="@string/key_fast_segmentation"
         android:title="@string/settings_fast_segmentation_checkbox_title"
         android:summary="@string/settings_fast_segmentation_checkbox_summary"
         android:defaultValue="true" />
 
     <!-- opens another nested subscreen -->
     <Preference
-        android:key="settings_debug"
-        android:title="Debug settings"
+        android:key="@string/key_debug_settings"
+        android:title="@string/settings_show_debug_settings_title"
+        android:summary="@string/settings_show_debug_settings_summary"
         android:persistent="false">
 
     </Preference>

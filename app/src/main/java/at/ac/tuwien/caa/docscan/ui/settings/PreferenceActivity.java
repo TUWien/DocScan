@@ -1,16 +1,18 @@
-package at.ac.tuwien.caa.docscan.ui;
+package at.ac.tuwien.caa.docscan.ui.settings;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
+import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 
 /**
  * Created by fabian on 26.01.2018.
  */
 
-public class PreferenceActivity extends BaseNavigationActivity  {
+public class PreferenceActivity extends BaseNavigationActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +37,8 @@ public class PreferenceActivity extends BaseNavigationActivity  {
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.preferences);
 
-            findPreference( "settings_debug" ).setOnPreferenceClickListener( new android.preference.Preference.OnPreferenceClickListener() {
+            String preferenceKey = getResources().getString(R.string.key_debug_settings);
+            findPreference(preferenceKey).setOnPreferenceClickListener( new android.preference.Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(android.preference.Preference preference) {
                     Intent intent = new Intent(getActivity().getApplicationContext(), DebugPreferenceActivity.class);

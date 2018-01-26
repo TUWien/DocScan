@@ -243,6 +243,14 @@
     <string name="settings_fast_segmentation_checkbox_title">Fast page detection</string>
     <string name="settings_fast_segmentation_checkbox_summary">Fast page detection with a potential loss of accuracy</string>
 
+    <!-- DebugSettingsFragment -->
+    <string name="debug_settings_title">Debug settings</string>
+    <string name="settings_show_focus_values_checkbox_title">Show focus values</string>
+    <string name="settings_show_debug_view_checkbox_title">Show debug view</string>
+    <string name="settings_show_debug_view_checkbox_summary">Show computation time of several tasks on top of the camera preview.</string>
+    <string name="settings_show_debug_settings_title">Debug settings</string>
+    <string name="settings_show_debug_settings_summary">Settings used mainly for development and measurement of the app performance.</string>
+
 
 
 </resources>

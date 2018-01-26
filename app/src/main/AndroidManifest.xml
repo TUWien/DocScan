@@ -89,13 +89,13 @@
             />
 
         <activity
-            android:name=".ui.PreferenceActivity"
+            android:name=".ui.settings.PreferenceActivity"
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
             />
 
         <activity
-            android:name=".ui.DebugPreferenceActivity"
+            android:name=".ui.settings.DebugPreferenceActivity"
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
             />
