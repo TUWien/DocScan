@@ -213,17 +213,18 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
     private void setAccountGroupVisible(boolean isVisible) {
 
         mAccountGroupVisible = isVisible;
-        showAccountGroup();
+        showHideNavigationGroups();
 
     }
 
-    private void showAccountGroup() {
+    private void showHideNavigationGroups() {
 
         if (mNavigationView != null) {
 
             Menu menu = mNavigationView.getMenu();
             if (menu != null) {
-                menu.setGroupVisible(R.id.navigation_group, !mAccountGroupVisible);
+                menu.setGroupVisible(R.id.navigation_main_items_group, !mAccountGroupVisible);
+                menu.setGroupVisible(R.id.navigation_settings_items_group, !mAccountGroupVisible);
                 menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
 
                 // Show the logout button only if the user is logged in (and the menu group is visible):
@@ -257,8 +258,11 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
             mNavigationView.setNavigationItemSelectedListener(this);
 
-            menu.setGroupVisible(R.id.navigation_group, !mAccountGroupVisible);
-            menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
+            showHideNavigationGroups();
+
+//            menu.setGroupVisible(R.id.navigation_main_items_group, !mAccountGroupVisible);
+//            menu.setGroupVisible(R.id.navigation_settings_items_group, !mAccountGroupVisible);
+//            menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
         }
     }
     /**

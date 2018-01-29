@@ -1,6 +1,8 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.firebase.jobdispatcher.Constraint;
@@ -19,6 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
 
 /**
@@ -82,6 +85,19 @@ public class SyncInfo implements Serializable {
 
         String tag = "sync_job";
 
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(R.string.key_upload_mobile_data), false);
+        int[] constraints;
+        if (useMobileConnection)
+            constraints = new int[]{Constraint.ON_ANY_NETWORK};
+        else
+            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
+
+
+//        if (useMobileConnection)
+
+
         Job syncJob = dispatcher.newJobBuilder()
                 // the JobService that will be called
                 .setService(SyncService.class)
@@ -106,8 +122,7 @@ public class SyncInfo implements Serializable {
 //                        Constraint.DEVICE_CHARGING
 //                )
                 .setConstraints(
-                        // only run on an unmetered network
-                        Constraint.ON_ANY_NETWORK
+                        constraints
                 )
                 .build();
 
