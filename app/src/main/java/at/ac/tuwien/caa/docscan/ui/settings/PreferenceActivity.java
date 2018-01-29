@@ -18,7 +18,7 @@ public class PreferenceActivity extends BaseNavigationActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_settings);
+        setContentView(R.layout.activity_preferences);
 
 //        Note we use a PreferenceFragment here instead of PreferenceActivity because it is advised in the API for versions > android 3.0
         // Display the fragment as the main content.
