@@ -196,6 +196,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     static {
 
+        Log.d(TAG, "initializing OpenCV");
+
 //         We need this for Android 4:
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "Error while initializing OpenCV.");
@@ -203,6 +205,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             System.loadLibrary("opencv_java3");
             System.loadLibrary("docscan-native");
+
+            Log.d(TAG, "OpenCV initialized");
         }
 
     }
@@ -1908,7 +1912,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 return true;
 
             case R.id.series_new_item:
-                startActivity(new Intent(getApplicationContext(), CreateSeriesActivity.class));
+//                startActivity(new Intent(getApplicationContext(), CreateSeriesActivity.class));
+//                startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 return true;
 
             case R.id.series_switch_item:

@@ -221,19 +221,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     singleThreadCV(pixels);
             }
         }
-//        readBarCodes(pixels);
-//        readText(pixels);
-
-//        // The verification is done in series mode after an automatic capture is requested:
-//        if (mAwaitFrameChanges && mVerifyCapture) {
-//            checkMovementAfterCapture(pixels);
-//        } else {
-//            if (mUseThreading)
-//                performCVTasks(pixels);
-//            else
-//                singleThreadCV(pixels);
-//        }
-
 
     }
 
