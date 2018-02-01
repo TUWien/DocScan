@@ -21,4 +21,10 @@
         android:layout_height="wrap_content"
         android:textColor="@drawable/list_group_selector"/>
 
+    <Button
+        android:id="@+id/show_image_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="show" />
+
 </LinearLayout>

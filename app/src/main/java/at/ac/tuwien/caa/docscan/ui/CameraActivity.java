@@ -2382,8 +2382,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             // Release the memory. Note this is essential, because otherwise allocated memory will increase.
             mData = null;
 
-            if (!mIsSeriesMode && uri != null)
-                startCropViewActivity(uri);
+//            if (!mIsSeriesMode && uri != null)
+//                startCropViewActivity(uri);
 
 
         }
@@ -2391,9 +2391,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         private void startCropViewActivity(String uri) {
 //            Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
             Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
+            startActivity(intent);
             CropInfo r = new CropInfo(uri);
             intent.putExtra(CROP_INFO_NAME, r);
-            startActivity(intent);
+
         }
 
 
