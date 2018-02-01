@@ -18,6 +18,7 @@ android {
 		// we need vectorDrawables.useSupportLibrary to get rid of this error:
 //		References to other resources are not supported by build-time PNG generation
 		vectorDrawables.useSupportLibrary = true
+		multiDexEnabled true
 	}
 
 	buildTypes {
@@ -119,5 +120,4 @@ dependencies {
 	implementation 'com.github.bumptech.glide:glide:4.5.0'
 	annotationProcessor 'com.github.bumptech.glide:compiler:4.5.0'
 	implementation project(':openCVLibrary310')
-	implementation project(path: ':simplegallery')
 }
