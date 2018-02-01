@@ -45,7 +45,6 @@ import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -602,12 +601,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void openGallery() {
 
-        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+//        startActivity();
+        startActivity(new Intent(getApplicationContext(), DocumentViewActivity.class));
 
-        if (currentApiVersion >= Build.VERSION_CODES.M)
-            requestFileOpen();
-        else
-            startScan();
+//        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+//
+//        if (currentApiVersion >= Build.VERSION_CODES.M)
+//            requestFileOpen();
+//        else
+//            startScan();
 
     }
 
@@ -1912,7 +1914,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 return true;
 
             case R.id.series_new_item:
-//                startActivity(new Intent(getApplicationContext(), CreateSeriesActivity.class));
+                startActivity(new Intent(getApplicationContext(), CreateSeriesActivity.class));
 //                startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 return true;
 

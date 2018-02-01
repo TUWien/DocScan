@@ -66,6 +66,12 @@
             />
 
         <activity
+            android:name=".ui.DocumentViewActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
+        <activity
             android:name=".ui.LoginActivity"
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
