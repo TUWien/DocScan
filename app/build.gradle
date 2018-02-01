@@ -11,7 +11,7 @@ android {
 
 	defaultConfig {
 		applicationId "at.ac.tuwien.caa.docscan"
-		minSdkVersion 16
+		minSdkVersion 14
 		targetSdkVersion 27
 		versionCode 12
 		versionName "1.1.5"
@@ -119,5 +119,5 @@ dependencies {
 	implementation 'me.dm7.barcodescanner:zxing:1.9.8'
 	implementation 'com.github.bumptech.glide:glide:4.5.0'
 	annotationProcessor 'com.github.bumptech.glide:compiler:4.5.0'
-	implementation project(':openCVLibrary340')
+	implementation project(':openCVLibrary')
 }

@@ -40,20 +40,38 @@ public class DocumentViewActivity extends BaseNoNavigationActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
 
-//        Create a dummy document:
+//        dummy document - start
+        String fileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
+
         Document document = new Document();
-        ArrayList<File> fileList = getFileList(this);
+        ArrayList<File> fileList = getFileList(fileName);
         ArrayList<Page> pages = filesToPages(fileList);
         document.setPages(pages);
-        document.setTitle("hitchhikers guide");
+        File file = new File(fileName);
+        document.setTitle(file.getName());
+//        document.setTitle("hitchhikers guide");
 
-        setTitle(document.getTitle());
+
+//        dummy document - end
+
+        initToolbarTitle(document.getTitle());
 
         ImageGalleryAdapter adapter = new ImageGalleryAdapter(this, document);
         recyclerView.setAdapter(adapter);
     }
 
 //    TODO: temporary helper methods copied from BaseDocumentAdapter. Replace them.
+
+    private ArrayList<File> getFileList(String dir) {
+
+        File[] files = getFiles(new File(dir));
+
+        ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
+
+        return fileList;
+
+    }
+
     private ArrayList<File> getFileList(Context context) {
 
         File mediaStorageDir = Helper.getMediaStorageDir(context.getResources().getString(R.string.app_name));
@@ -68,7 +86,7 @@ public class DocumentViewActivity extends BaseNoNavigationActivity {
         };
 
         File[] dirs = mediaStorageDir.listFiles(directoryFilter);
-        File[] files = getFiles(dirs[26]);
+        File[] files = getFiles(dirs[27]);
 
         ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
 

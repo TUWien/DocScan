@@ -1,12 +1,14 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 
 import java.io.File;
@@ -18,6 +20,7 @@ import java.util.Comparator;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
+import at.ac.tuwien.caa.docscan.ui.DocumentViewActivity;
 
 /**
  * Created by fabian on 02.10.2017.
@@ -188,6 +191,18 @@ public class SyncAdapter extends BaseDocumentAdapter {
         }
 
         checkBoxListHeader.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
+
+        Button showImageButton = convertView.findViewById(R.id.show_image_button);
+        final String uri = ((File) getGroup(groupPosition)).getAbsolutePath();
+        showImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, DocumentViewActivity.class);
+                intent.putExtra("DOCUMENT_FILE_NAME", uri);
+                mContext.startActivity(intent);
+//                mContext.startActivity();
+            }
+        });
 
 
         return convertView;
