@@ -14,6 +14,10 @@ public class Page {
 
     }
 
+    public Page(File file) {
+        mFile = file;
+    }
+
     public File getFile() {
         return mFile;
     }
