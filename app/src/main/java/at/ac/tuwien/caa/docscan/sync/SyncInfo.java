@@ -1,6 +1,8 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.firebase.jobdispatcher.Constraint;
@@ -19,6 +21,9 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
+
 /**
  * Created by fabian on 18.08.2017.
  */
@@ -31,6 +36,9 @@ public class SyncInfo implements Serializable {
     private static SyncInfo mInstance = null;
     private ArrayList<FileSync> mFileSyncList;
     private ArrayList<File> mUploadDirs;
+
+    // TODO: this is a dirty workaround, think about something better useable:
+    ArrayList<File> mAwaitingUploadFiles;
 
     public static SyncInfo getInstance() {
 
@@ -75,11 +83,26 @@ public class SyncInfo implements Serializable {
         FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
 
 
+        String tag = "sync_job";
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(R.string.key_upload_mobile_data), false);
+        int[] constraints;
+        if (useMobileConnection)
+            constraints = new int[]{Constraint.ON_ANY_NETWORK};
+        else
+            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
+
+
+//        if (useMobileConnection)
+
+
         Job syncJob = dispatcher.newJobBuilder()
                 // the JobService that will be called
                 .setService(SyncService.class)
                 // uniquely identifies the job
-                .setTag("my-unique-tag")
+                .setTag(tag)
                 // one-off job
                 .setRecurring(false)
                 // don't persist past a device reboot
@@ -87,8 +110,8 @@ public class SyncInfo implements Serializable {
                 // start between 0 and 60 seconds from now
                 .setTrigger(Trigger.executionWindow(0, 0))
 //                .setTrigger(Trigger.NOW)
-                // don't overwrite an existing job with the same tag
-                .setReplaceCurrent(false)
+                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
+                .setReplaceCurrent(true)
                 // retry with exponential backoff
                 .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
                 // constraints that need to be satisfied for the job to run
@@ -99,10 +122,11 @@ public class SyncInfo implements Serializable {
 //                        Constraint.DEVICE_CHARGING
 //                )
                 .setConstraints(
-                        // only run on an unmetered network
-                        Constraint.ON_ANY_NETWORK
+                        constraints
                 )
                 .build();
+
+
 
         dispatcher.mustSchedule(syncJob);
 
@@ -144,6 +168,36 @@ public class SyncInfo implements Serializable {
     public void setUploadDirs(ArrayList<File> dirs) {
 
         mUploadDirs = dirs;
+        createAwaitingUploadList();
+
+    }
+
+    public void addUploadDirs(ArrayList<File> dirs) {
+
+        if (mUploadDirs == null)
+            mUploadDirs = new ArrayList<>();
+
+        mUploadDirs.addAll(dirs);
+        createAwaitingUploadList();
+
+    }
+
+    private void createAwaitingUploadList() {
+
+        mAwaitingUploadFiles = new ArrayList<>();
+
+        if (mUploadDirs == null)
+            return;
+
+        for (File dir : mUploadDirs) {
+            File[] files = SyncAdapter.getFiles(dir);
+            if ((files == null) || files.length == 0)
+                continue;
+
+            for (File file : files) {
+                mAwaitingUploadFiles.add(file);
+            }
+        }
 
     }
 
@@ -178,6 +232,10 @@ public class SyncInfo implements Serializable {
         return mFileSyncList;
     }
 
+    public ArrayList<File> getAwaitingUploadFile() {
+        return mAwaitingUploadFiles;
+    }
+
     public class TranskribusFileSync extends FileSync {
 
         private int mUploadId;
@@ -193,6 +251,53 @@ public class SyncInfo implements Serializable {
             return mUploadId;
         }
 
+    }
+
+    public boolean areFilesUploaded(File[] files) {
+
+        if (files.length == 0)
+            return false;
+
+        // Check if every file contained in the folder is already uploaded:
+        for (File file : files) {
+            if (!isFileUploaded(file))
+                return false;
+        }
+
+        return true;
+
+    }
+
+    public boolean isDirAwaitingUpload(File dir, File[] files) {
+
+        if (files.length == 0)
+            return false;
+
+        // Is the dir already added to the upload list:
+        if ((mUploadDirs != null) && (mUploadDirs.contains(dir))) {
+//            Check if all files in the dir are added to the awaiting upload list:
+            for (File file : files) {
+                if (!mAwaitingUploadFiles.contains(file))
+                    return false;
+            }
+
+            return true;
+        }
+
+        return false;
+
+
+    }
+
+    private boolean isFileUploaded(File file) {
+
+        for (SyncInfo.FileSync fileSync : mFileSyncList) {
+            if ((file.getAbsolutePath().compareTo(fileSync.getFile().getAbsolutePath()) == 0)
+                    && fileSync.getState() == SyncInfo.FileSync.STATE_UPLOADED)
+                return true;
+        }
+
+        return false;
     }
 
     public class FileSync implements Serializable {

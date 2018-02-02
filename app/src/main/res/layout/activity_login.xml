@@ -14,6 +14,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <include layout="@layout/toolbar_autohide" />
+        </android.support.design.widget.AppBarLayout>
+
         <RelativeLayout
             android:id="@+id/login_fields_layout"
             android:layout_width="match_parent"
@@ -47,14 +55,14 @@
                 android:hint="@string/login_password_hint"
                 android:inputType="textPassword"/>
 
-            <Button
+            <android.support.v7.widget.AppCompatButton
                 android:id="@+id/login_button"
                 android:layout_below="@+id/password_edittext"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:backgroundTint="@color/colorAccent"
+                app:backgroundTint="@color/colorAccent"
                 android:textColor="@color/white"
                 android:text="@string/login_button_text"/>
         </RelativeLayout>
@@ -79,13 +87,13 @@
                 android:text="@string/login_loading_text"/>
         </RelativeLayout>
 
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
-            <include layout="@layout/toolbar_autohide" />
-        </android.support.design.widget.AppBarLayout>
+        <!--<android.support.design.widget.AppBarLayout-->
+            <!--android:id="@+id/appbar"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--&gt;-->
+            <!---->
+        <!--</android.support.design.widget.AppBarLayout>-->
 
     </FrameLayout>
 

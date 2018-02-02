@@ -115,7 +115,7 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 //
 //    }
 
-    protected File[] getFiles(File dir) {
+    public static File[] getFiles(File dir) {
 
         FileFilter filesFilter = new FileFilter() {
             public boolean accept(File file) {

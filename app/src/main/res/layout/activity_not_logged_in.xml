@@ -34,14 +34,14 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="@string/sync_not_logged_in_text"/>
-            <Button
+            <android.support.v7.widget.AppCompatButton
                 android:id="@+id/sync_not_logged_in_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/sync_not_logged_in_textview"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:layout_centerHorizontal="true"
-                android:backgroundTint="@color/colorAccent"
+                app:backgroundTint="@color/colorAccent"
                 android:textColor="@color/white"
                 android:text="@string/sync_not_logged_in_button_text"/>
         </RelativeLayout>

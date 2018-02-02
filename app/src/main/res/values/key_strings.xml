@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="series_name_default">Untitled document</string>
+    <string name="series_name_key">SERIES_NAME_KEY</string>
+
+    <string name="key_upload_mobile_data">KEY_UPLOAD_MOBILE_DATA</string>
+    <string name="key_fast_segmentation">KEY_FAST_SEGMENTATION</string>
+    <string name="key_show_focus_values">KEY_SHOW_FOCUS_VALUES</string>
+    <string name="key_debug_settings">KEY_DEBUG_SETTINGS</string>
+    <string name="key_show_debug_view">KEY_SHOW_DEBUG_VIEW</string>
+
+</resources>
