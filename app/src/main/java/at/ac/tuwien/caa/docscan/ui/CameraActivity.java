@@ -108,6 +108,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
+import at.ac.tuwien.caa.docscan.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -602,7 +603,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private void openGallery() {
 
 //        startActivity();
-        startActivity(new Intent(getApplicationContext(), DocumentViewActivity.class));
+//        startActivity(new Intent(getApplicationContext(), DocumentViewActivity.class));
+        startActivity(new Intent(getApplicationContext(), PageSlideActivity.class));
 
 //        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
 //

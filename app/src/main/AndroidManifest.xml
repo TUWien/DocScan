@@ -60,6 +60,12 @@
             />
 
         <activity
+            android:name=".gallery.PageSlideActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
+        <activity
             android:name=".ui.SyncTestActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"

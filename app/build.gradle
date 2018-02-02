@@ -15,6 +15,7 @@ android {
 		targetSdkVersion 27
 		versionCode 12
 		versionName "1.1.5"
+		multiDexEnabled true
 		// we need vectorDrawables.useSupportLibrary to get rid of this error:
 //		References to other resources are not supported by build-time PNG generation
 		vectorDrawables.useSupportLibrary = true

@@ -49,9 +49,6 @@ public class DocumentViewActivity extends BaseNoNavigationActivity {
         document.setPages(pages);
         File file = new File(fileName);
         document.setTitle(file.getName());
-//        document.setTitle("hitchhikers guide");
-
-
 //        dummy document - end
 
         initToolbarTitle(document.getTitle());
