@@ -46,13 +46,6 @@
             </intent-filter>
         </activity>
 
-        <!--<activity-->
-            <!--android:name=".ui.StartActivity"-->
-            <!--android:theme="@style/SplashTheme"-->
-            <!--android:label="@string/app_name"-->
-            <!--android:exported="false">-->
-        <!--</activity>-->
-
         <activity
             android:name=".ui.AboutActivity"
             android:exported="false"
@@ -84,7 +77,7 @@
             />
 
         <activity
-            android:name=".ui.SeriesGeneralActivity"
+            android:name=".ui.document.SeriesGeneralActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustPan"
             android:parentActivityName=".ui.CameraActivity"
@@ -102,29 +95,38 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
+
+        <!--launchMode = "singleInstance" avoids opening the intent twice -->
+        <!--nohistory = "true" creates the activity instead of just resuming it -->
         <activity
-            android:name=".ui.CreateSeriesActivity"
+            android:name=".ui.document.CreateSeriesActivity"
             android:exported="true"
+            android:launchMode = "singleInstance"
+            android:noHistory="true"
             android:configChanges="orientation|screenSize"
             />
 
         <activity
-            android:name=".ui.CropViewActivity"
-            android:exported="true"
             android:configChanges="orientation|screenSize"
-            />
-
-        <activity
-            android:name=".ui.MapViewActivity"
-            android:exported="true"
-            android:configChanges="orientation|screenSize"
-            />
-
-        <activity
-            android:name=".ui.SettingsActivity"
-            android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
             />
+
+		<activity
+            android:name=".ui.settings.PreferenceActivity"
+            android:exported="false"
+		/>
+
+		<activity
+            android:name=".ui.MapViewActivity"
+            android:exported="false"
+		/>
+
+		<activity
+            android:name=".ui.settings.DebugPreferenceActivity"
+            android:exported="false"
+		/>
+
+
 
         <activity
             android:name=".ui.LogActivity"
@@ -141,9 +143,8 @@
         <activity
             android:name=".ui.DocumentActivity"
             android:exported="false"
-            android:parentActivityName=".ui.SeriesGeneralActivity"
+            android:parentActivityName=".ui.document.SeriesGeneralActivity"
             />
-
 
         <activity
             android:name=".ui.DropboxActivity"
@@ -159,10 +160,6 @@
 
         <!--Debugging activities: -->
 
-        <activity
-            android:name=".ui.RestTestActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.CameraActivity"/>
 
         <activity
             android:name=".sync.SyncStartActivity"

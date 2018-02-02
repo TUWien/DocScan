@@ -27,6 +27,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -65,6 +66,11 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
                 Snackbar.make(mLayout, "Camera permission was granted. Starting preview.",
                         Snackbar.LENGTH_SHORT)
                         .show();
+
+//                Set the default settings if they have not been set before:
+                PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+                PreferenceManager.setDefaultValues(this, R.xml.debug_preferences, false);
+
                 startCamera();
             } else {
                 // Permission request was denied.

@@ -14,6 +14,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+            <include layout="@layout/toolbar_autohide" />
+        </android.support.design.widget.AppBarLayout>
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -24,22 +33,16 @@
                 android:layout_centerInParent="true"
                 android:textAlignment="center"
                 android:text="@string/log_activity_text"/>
-            <Button
+            <android.support.v7.widget.AppCompatButton
                 android:id="@+id/share_log_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/share_textview"
                 android:layout_centerHorizontal="true"
+                app:backgroundTint="@color/colorAccent"
                 android:text="@string/share_log_button_text"/>
         </RelativeLayout>
 
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
-            <include layout="@layout/toolbar_autohide" />
-        </android.support.design.widget.AppBarLayout>
     </FrameLayout>
 
 

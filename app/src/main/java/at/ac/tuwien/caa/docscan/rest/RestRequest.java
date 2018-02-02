@@ -2,6 +2,8 @@ package at.ac.tuwien.caa.docscan.rest;
 
 import android.content.Context;
 
+import com.android.volley.VolleyError;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -15,7 +17,7 @@ public abstract class RestRequest {
     protected RestCallback mRestCallback;
     protected int mMethod;
 
-    public static final String BASE_URL = "https://transkribus.eu/TrpServerTesting/rest/";
+    public static final String BASE_URL = "https://transkribus.eu/TrpServer/rest/";
 
     public RestRequest(Context context) {
 
@@ -41,6 +43,12 @@ public abstract class RestRequest {
         return mMethod;
     }
 
+    public void handleRestError(VolleyError error) {
+
+        mRestCallback.handleRestError(error);
+
+    }
+
     public String findString(String response, String prefix, String postfix) {
 
         String result = "";
@@ -62,6 +70,8 @@ public abstract class RestRequest {
      * The actual interface should be implemented in the child classes of RestRequest.
      */
     public interface RestCallback {
+
+        void handleRestError(VolleyError error);
 
     }
 

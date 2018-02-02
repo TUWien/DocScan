@@ -13,9 +13,8 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 14
 		targetSdkVersion 27
-		versionCode 12
-		versionName "1.1.5"
-		multiDexEnabled true
+		versionCode 16
+		versionName "1.1.8"
 		// we need vectorDrawables.useSupportLibrary to get rid of this error:
 //		References to other resources are not supported by build-time PNG generation
 		vectorDrawables.useSupportLibrary = true
@@ -96,11 +95,10 @@ dependencies {
 	implementation fileTree(include: ['*.jar'], dir: 'libs')
 	testCompile 'junit:junit:4.12'
 	implementation 'com.android.support:appcompat-v7:27.0.2'
-	implementation 'com.android.support:cardview-v7:27.0.2'
-	implementation 'com.android.support:recyclerview-v7:27.0.2'
 	implementation 'com.dropbox.core:dropbox-core-sdk:3.0.3'
 	//    compile 'com.squareup.okhttp3:okhttp:3.5.0'
 	implementation 'com.android.support:preference-v7:27.0.2'
+	implementation 'com.android.support:cardview-v7:27.0.2'
 	implementation 'com.android.support:design:27.0.2'
 	implementation 'com.android.support:gridlayout-v7:27.0.2'
 	implementation 'com.android.volley:volley:1.0.0'

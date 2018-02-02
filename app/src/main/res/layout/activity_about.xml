@@ -9,28 +9,11 @@
     android:fitsSystemWindows="true"
     >
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/main_frame_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-            <ImageView
-                android:id="@+id/logo_imageview"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:src="@mipmap/docscan_launcher"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/logo_imageview"
-                android:layout_centerHorizontal="true"
-                android:textAlignment="center"
-                android:text="@string/about_text"/>
-        </RelativeLayout>
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <android.support.design.widget.AppBarLayout
             android:id="@+id/appbar"
@@ -39,7 +22,59 @@
             >
             <include layout="@layout/toolbar_autohide" />
         </android.support.design.widget.AppBarLayout>
-    </FrameLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:layout_gravity="center">
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true">
+
+                <ImageView
+                    android:id="@+id/logo_imageview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:src="@mipmap/docscan_launcher"/>
+                <TextView
+                    android:id="@+id/about_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/logo_imageview"
+                    android:layout_centerHorizontal="true"
+                    android:textAlignment="center"
+                    android:text="@string/about_heading_text"/>
+                <TextView
+                    android:id="@+id/about_version_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/about_textview"
+                    android:layout_centerHorizontal="true"
+                    />
+                <TextView
+                    android:id="@+id/about_website_textview"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/about_version_textview"
+                    android:text="@string/about_scantent_text"
+                    android:autoLink="web"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_below="@id/about_website_textview"
+                    android:autoLink="web"
+                    android:text="@string/about_transkribus_text"/>
+
+            </RelativeLayout>
+        </RelativeLayout>
+
+
+    </LinearLayout>
 
 
 
