@@ -146,7 +146,6 @@ public class GalleryActivity extends AppCompatActivity implements GalleryAdapter
         for (int i = selections.length - 1; i >= 0; i--) {
             mDocument.getPages().get(selections[i]).getFile().delete();
             mDocument.getPages().remove(selections[i]);
-//            TODO: delete here!
         }
 
         mAdapter.clearSelection();
