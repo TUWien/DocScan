@@ -59,7 +59,7 @@
             />
 
         <activity
-            android:name=".ui.DocumentViewActivity"
+            android:name=".ui.GalleryActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
