@@ -46,6 +46,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     }
 
+
     public void setFileName(String fileName) {
         mFileName = fileName;
     }
@@ -93,6 +94,64 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     @Override
     public int getItemCount() {
         return mDocument.getPages().size();
+    }
+
+    public int[] getSelectionIndices() {
+
+        int[] selectionIndices = new int[getSelectionCount()];
+        int index = 0;
+
+        for (int i = 0; i < mDocument.getPages().size(); i++) {
+            if (mSelections.get(i)) {
+                selectionIndices[index] = i;
+                index++;
+            }
+        }
+
+        return selectionIndices;
+
+    }
+
+    public int getSelectionCount() {
+
+        return mSelections.count();
+
+    }
+
+    public void selectAllItems() {
+
+        setAllSelections(true);
+
+    }
+
+    public void deselectAllItems() {
+
+        setAllSelections(false);
+
+    }
+
+    private void setAllSelections(boolean isSelected) {
+
+        for (int i = 0; i < mDocument.getPages().size(); i++) {
+            mSelections.put(i, isSelected);
+        }
+
+//        We need to redraw the check boxes:
+        this.notifyDataSetChanged();
+
+//        We need to inform the parent activity that the selection has changed:
+        mCallback.onSelectionChange(mSelections.count());
+
+    }
+
+    public void clearSelection() {
+
+        for (int i = 0; i < mDocument.getPages().size(); i++)
+            mSelections.put(i, false);
+
+//        We need to inform the parent activity that the selection has changed:
+        mCallback.onSelectionChange(mSelections.count());
+
     }
 
     public class GalleryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
