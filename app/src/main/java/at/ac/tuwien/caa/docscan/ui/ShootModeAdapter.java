@@ -49,10 +49,7 @@ public class ShootModeAdapter  extends ArrayAdapter<String> {
         label.setText(mTexts[position]);
 
         ImageView imageView = (ImageView) row.findViewById(R.id.spinner_row_imageview);
-
-//        We need setImageResource instead of setBackgroundResource for vector drawables on pre-lollipop devices:
-        imageView.setImageResource(mIcons[position]);
-//        imageView.setBackgroundResource(mIcons[position]);
+        imageView.setBackgroundResource(mIcons[position]);
 
 //        if (DayOfWeek[position]=="Sunday"){
 //            icon.setImageResource(R.drawable.icon);

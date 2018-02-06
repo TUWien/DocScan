@@ -2,9 +2,11 @@ package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.ExifInterface;
 import android.os.Environment;
 
 import java.io.File;
+import java.io.IOException;
 
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
@@ -94,5 +96,44 @@ public class Helper {
         return -1;
 
     }
+
+
+    public static boolean rotateExif(File outFile) throws IOException {
+
+        String newOrientation = null;
+
+        final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+        if (exif != null) {
+
+            // Save the orientation of the image:
+//            int orientation = getExifOrientation();
+            String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+
+            switch (orientation) {
+                case "1":
+                    newOrientation = "6"; // 90 degrees
+                    break;
+                case "6":
+                    newOrientation = "3"; // 180 degrees
+                    break;
+                case "3":
+                    newOrientation = "8"; // 270 degrees
+                    break;
+                case "8":
+                    newOrientation = "1"; // 0 degrees
+                    break;
+                default:
+            }
+
+            if (newOrientation != null)
+                exif.setAttribute(ExifInterface.TAG_ORIENTATION, newOrientation);
+
+            exif.saveAttributes();
+        }
+
+        return newOrientation != null;
+    }
+
+
 
 }

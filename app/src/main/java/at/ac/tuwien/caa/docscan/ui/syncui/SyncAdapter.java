@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -131,38 +130,16 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
         File[] files = getFiles(dir);
 
-        return SyncInfo.getInstance().areFilesUploaded(files);
+        if (files.length == 0)
+            return false;
 
-//        if (files.length == 0)
-//            return false;
-//
-//        // Check if every file contained in the folder is already uploaded:
-//        for (File file : files) {
-//            if (!isFileUploaded(file))
-//                return false;
-//        }
-//
-//        return true;
+        // Check if every file contained in the folder is already uploaded:
+        for (File file : files) {
+            if (!isFileUploaded(file))
+                return false;
+        }
 
-    }
-
-    private boolean isDirUploaded(int groupPosition) {
-
-        File dir = getGroupFile(groupPosition);
-        File[] files = getFiles(dir);
-
-        return SyncInfo.getInstance().areFilesUploaded(files);
-
-//        if (files.length == 0)
-//            return false;
-//
-//        // Check if every file contained in the folder is already uploaded:
-//        for (File file : files) {
-//            if (!isFileUploaded(file))
-//                return false;
-//        }
-//
-//        return true;
+        return true;
 
     }
 
@@ -194,6 +171,7 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
         CheckBox checkBoxListHeader = (CheckBox) convertView.findViewById(R.id.checkboxListHeader);
         checkBoxListHeader.setTypeface(null, Typeface.BOLD);
+        checkBoxListHeader.setText(headerTitle);
         // reassigning checkbox to its ticked state
         checkBoxListHeader.setTag(groupPosition);
         checkBoxListHeader.setChecked(mSelections.get(groupPosition, false));
@@ -203,28 +181,16 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
         boolean isUploaded = isDirUploaded(groupPosition);
 
-        String headerText = headerTitle;
-        boolean isCheckBoxEnabled;
-        //        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
-        Drawable d;
+        Drawable d = null;
         if (isUploaded) {
-            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_done_black_24dp);
-//            isCheckBoxEnabled = false;
-//            The checkbox is now (18.01.2018) checkable after upload, because it can be deleted:
-            isCheckBoxEnabled = true;
-        }
-        else if (isDirAwaitingUpload(groupPosition)) {
-            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_upload_black_24dp);
-            headerText += " " + mContext.getResources().getString(R.string.sync_dir_pending_text);
-            isCheckBoxEnabled = false;
+            d = mContext.getResources().getDrawable(R.drawable.ic_cloud_done_black_24dp);
+            checkBoxListHeader.setEnabled(false);
         }
         else {
-            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_queue_black_24dp);
-            isCheckBoxEnabled = true;
+            d = mContext.getResources().getDrawable(R.drawable.ic_cloud_queue_black_24dp);
+            checkBoxListHeader.setEnabled(true);
         }
 
-        checkBoxListHeader.setText(headerText);
-        checkBoxListHeader.setEnabled(isCheckBoxEnabled);
         checkBoxListHeader.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
 
         Button showImageButton = convertView.findViewById(R.id.show_image_button);
@@ -232,7 +198,7 @@ public class SyncAdapter extends BaseDocumentAdapter {
         showImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, PageSlideActivity.class);
+                Intent intent = new Intent(mContext, DocumentViewActivity.class);
                 intent.putExtra("DOCUMENT_FILE_NAME", uri);
                 mContext.startActivity(intent);
 //                mContext.startActivity();
@@ -244,29 +210,21 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
     }
 
-
-    private boolean isDirAwaitingUpload(int groupPosition) {
+    private boolean isDirUploaded(int groupPosition) {
 
         File dir = getGroupFile(groupPosition);
         File[] files = getFiles(dir);
 
-        return SyncInfo.getInstance().isDirAwaitingUpload(dir, files);
+        if (files.length == 0)
+            return false;
 
-//        if (files.length == 0)
-//            return false;
-//
-//        // Is the dir already added to the upload list:
-//        if ((SyncInfo.getInstance().getUploadDirs() != null) && (SyncInfo.getInstance().getUploadDirs().contains(dir))) {
-////            Check if all files in the dir are added to the awaiting upload list:
-//            for (File file : files) {
-//                if (!SyncInfo.getInstance().getAwaitingUploadFile().contains(file))
-//                    return false;
-//            }
-//
-//            return true;
-//        }
-//
-//        return false;
+        // Check if every file contained in the folder is already uploaded:
+        for (File file : files) {
+            if (!isFileUploaded(file))
+                return false;
+        }
+
+        return true;
 
     }
 
@@ -317,6 +275,6 @@ public class SyncAdapter extends BaseDocumentAdapter {
 //    }
 
     public interface SyncAdapterCallback {
-        void onSelectionChange();
+        public void onSelectionChange();
     }
 }

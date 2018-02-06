@@ -28,10 +28,8 @@ public class CreateCollectionRequest extends RestRequest.JSONObjectRestRequest {
 
     @Override
     public String getExtendedUrl() {
-//        Escape whitespaces:
-        String urlColName = mCollName.replace(" ", "%20");
 
-        return URL + urlColName;
+        return URL + mCollName;
     }
 
     @Override

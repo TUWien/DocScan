@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
@@ -27,6 +29,8 @@ import at.ac.tuwien.caa.docscan.logic.Page;
 
 public class DocumentViewActivity extends BaseNoNavigationActivity {
 
+//    TODO: temporary member, delete later:
+    private String mFileName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +46,7 @@ public class DocumentViewActivity extends BaseNoNavigationActivity {
 
 //        dummy document - start
         String fileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
+        mFileName = fileName;
 
         Document document = new Document();
         ArrayList<File> fileList = getFileList(fileName);
@@ -173,14 +178,16 @@ public class DocumentViewActivity extends BaseNoNavigationActivity {
             @Override
             public void onClick(View view) {
 
-//                int position = getAdapterPosition();
-//                if(position != RecyclerView.NO_POSITION) {
-//                    SpacePhoto spacePhoto = mSpacePhotos[position];
-//
-//                    Intent intent = new Intent(mContext, SpacePhotoActivity.class);
+                int position = getAdapterPosition();
+                if(position != RecyclerView.NO_POSITION) {
+                    Intent intent = new Intent(mContext, PageSlideActivity.class);
+
+                    intent.putExtra("DOCUMENT_FILE_NAME", mFileName);
+                    intent.putExtra("PAGE_POSITION", position);
+
 //                    intent.putExtra(SpacePhotoActivity.EXTRA_SPACE_PHOTO, spacePhoto);
-//                    startActivity(intent);
-//                }
+                    startActivity(intent);
+                }
             }
         }
 

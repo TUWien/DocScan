@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import com.android.volley.VolleyError;
 import com.dropbox.core.android.Auth;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -104,8 +103,4 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
     }
 
 
-    @Override
-    public void handleRestError(VolleyError error) {
-
-    }
 }
