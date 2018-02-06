@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v4.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
@@ -53,11 +54,11 @@
                         android:textStyle="bold"
                         android:layout_marginLeft="@dimen/activity_horizontal_margin"/>
 
-                    <Button
+                    <android.support.v7.widget.AppCompatButton
                         android:id="@+id/series_general_keep_series_button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="@color/colorAccent"
+                        app:backgroundTint="@color/colorAccent"
                         android:textColor="@color/white"
                         android:text="@string/series_general_keep_series_text"
                         android:layout_margin="@dimen/activity_horizontal_margin"
@@ -86,19 +87,19 @@
                     android:layout_margin="@dimen/activity_horizontal_margin"
                     android:orientation="vertical" >
 
-                    <Button
+                    <android.support.v7.widget.AppCompatButton
                         android:id="@+id/series_general_start_button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/series_general_start_text"
                         android:textColor="@color/white"
-                        android:backgroundTint="@color/colorAccent" />
+                        app:backgroundTint="@color/colorAccent" />
 
-                    <Button
+                    <android.support.v7.widget.AppCompatButton
                         android:id="@+id/series_general_select_button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="@color/colorAccent"
+                        app:backgroundTint="@color/colorAccent"
                         android:textColor="@color/white"
                         android:text="@string/series_general_select_text"
                         />

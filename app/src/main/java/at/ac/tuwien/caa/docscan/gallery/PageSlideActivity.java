@@ -24,11 +24,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.MenuItem;
-import android.view.View;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -38,52 +33,26 @@ import java.util.Arrays;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Page;
-import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 
-public class PageSlideActivity extends AppCompatActivity {
+public class PageSlideActivity extends FragmentActivity {
 
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_page_slide);
-
 
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (ViewPager) findViewById(R.id.slide_viewpager);
 
 //        Create a dummy document based on the intent: TODO: use a real document here
-//        String fileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
-//        int position = getIntent().getIntExtra("PAGE_POSITION", -1);
-
-        String fileName = "/storage/emulated/0/Pictures/DocScan/fabian";
-        int position = 0;
-
+        String fileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
         Document document = getDummyDocument(fileName);
-
-
-//        final Toolbar toolbar = findViewById(R.id.page_slide_toolbar);
-//        setSupportActionBar(toolbar);
-//        setupToolbar();
-
-//        getWindow().getDecorView().setSystemUiVisibility(
-//                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-//                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-//                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-//                        | View.SYSTEM_UI_FLAG_IMMERSIVE);
-
-
-
 
         mPagerAdapter = new PageSlideAdapter(getSupportFragmentManager(), document);
         mPager.setAdapter(mPagerAdapter);
-
-        if (position != -1)
-            mPager.setCurrentItem(position);
-
         mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
@@ -95,39 +64,9 @@ public class PageSlideActivity extends AppCompatActivity {
             }
         });
 
-
-
-    }
-
-    private void setupToolbar() {
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeButtonEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle("ein test");
-
-
-//            getToolbar().setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    showSeriesPopup(null);
-//                }
-//            });
-
-//            final int abTitleId = getResources().getIdentifier("Ich bin ein �sterreicher", "id", "android");
-//            findViewById(abTitleId).setOnClickListener(new View.OnClickListener() {
-//
-//                @Override
-//                public void onClick(View v) {
-//                    showSeriesPopup(null);
-//                }
-//            });
-
-        }
-
-
+        int position = getIntent().getIntExtra("PAGE_POSITION", -1);
+        if (position != -1)
+            mPager.setCurrentItem(position);
     }
 
 

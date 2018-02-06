@@ -97,7 +97,6 @@ public class Helper {
 
     }
 
-
     public static boolean rotateExif(File outFile) throws IOException {
 
         String newOrientation = null;
@@ -133,7 +132,6 @@ public class Helper {
 
         return newOrientation != null;
     }
-
 
 
 }

@@ -36,13 +36,13 @@
                 android:listSelector="@drawable/list_view_selector"
                 />
 
-            <Button
+            <android.support.v7.widget.AppCompatButton
                 android:id="@+id/document_select_button"
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorAccent"
+                app:backgroundTint="@color/colorAccent"
                 android:textColor="@color/white"
                 android:text="@string/document_select_button_text"/>
 
@@ -51,7 +51,6 @@
 
     </LinearLayout>
 
-    <include layout="@layout/navigation_view"/>
 
 </android.support.v4.widget.DrawerLayout>
 

@@ -7,6 +7,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.VolleyError;
+
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.RequestHandler;
@@ -91,6 +93,7 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
 
 //        Save the credentials:
         UserHandler.saveTranskribusCredentials(this);
+        UserHandler.saveUserName(this);
 
         // Start the parent activity and remove everything from the back stack:
         Intent intent = new Intent(getApplicationContext(), mParentClass);
@@ -121,6 +124,11 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
             loginFieldsLayout.setVisibility(View.VISIBLE);
             loginLoadingLayout.setVisibility(View.INVISIBLE);
         }
+
+    }
+
+    @Override
+    public void handleRestError(VolleyError error) {
 
     }
 }

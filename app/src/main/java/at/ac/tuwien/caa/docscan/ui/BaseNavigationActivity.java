@@ -6,6 +6,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.WindowManager;
 
+import com.android.volley.VolleyError;
+
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.LogoutRequest;
@@ -119,6 +121,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
     public void onLogin(User user) {
 
         User.getInstance().setLoggedIn(true);
+        UserHandler.saveUserName(this);
 
         runOnUiThread(new Runnable() {
             @Override
@@ -127,16 +130,6 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
             }
         });
 
-
-
-//        String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
-//        Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
-//
-////        Save the credentials:
-//        UserHandler.saveTranskribusCredentials(this);
-//
-////        Finally close the LoginActivity and go back to the CameraActivity:
-//        finish();
     }
 
     @Override
@@ -151,6 +144,11 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
 
         User.getInstance().setLoggedIn(false);
         mNavigationDrawer.setupDrawerHeader();
+
+    }
+
+    @Override
+    public void handleRestError(VolleyError error) {
 
     }
 
