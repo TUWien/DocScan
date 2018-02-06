@@ -5,14 +5,26 @@
     <!--This file contains just placeholder items. The real item initialization is done in NavigationDrawer.NavigationItemEnum-->
 
     <group
-        android:id="@+id/navigation_group"
+        android:id="@+id/navigation_main_items_group"
         >
-
         <item
             android:id="@+id/camera_item"
             android:title=""
             />
+        <item
+            android:id="@+id/sync_item"
+            android:title=""
+            />
 
+    </group>
+
+    <group
+        android:id="@+id/navigation_settings_items_group"
+        >
+        <item
+            android:id="@+id/settings_item"
+            android:title=""
+            />
         <item
             android:id="@+id/share_log_item"
             android:title=""
@@ -21,25 +33,6 @@
             android:id="@+id/about_item"
             android:title=""
             />
-        <item
-        android:id="@+id/sync_item"
-        android:title=""
-        />
-        <!--<item-->
-            <!--android:id="@+id/login_item"-->
-            <!--android:title=""-->
-            <!--/>-->
-        <!--<item-->
-            <!--android:id="@+id/sync_switch_item"-->
-            <!--android:title=""-->
-            <!--/>-->
-
-        <!--<item-->
-            <!--android:id="@+id/rest_item"-->
-            <!--android:title=""-->
-            <!--/>-->
-
-
     </group>
 
     <group

@@ -126,18 +126,19 @@ public class PageSlideFragment extends Fragment {
 //                .load((mPage.getFile()).getPath())
 //                .into(imageView);
 // Use SubsamplingScaleImageView for image loading:
+
         mImageView = rootView.findViewById(R.id.page_slide_image_view);
         mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()));
         mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
 
-        Toolbar toolbar = rootView.findViewById(R.id.page_slide_toolbar);
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("ein test");
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        Toolbar toolbar = rootView.findViewById(R.id.page_slide_toolbar);
+//        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("ein test");
+//        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        initRotateButton(rootView);
-        initCropButton(rootView);
-        initDeleteButton(rootView);
+//        initRotateButton(rootView);
+//        initCropButton(rootView);
+//        initDeleteButton(rootView);
 
 
 //        // status bar height

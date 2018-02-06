@@ -1,7 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
@@ -29,7 +27,6 @@ import at.ac.tuwien.caa.docscan.logic.Page;
 
 public class DocumentViewActivity extends BaseNoNavigationActivity {
 
-//    TODO: temporary member, delete later:
 
 
     @Override

@@ -16,10 +16,7 @@
         android:background="@drawable/dark_to_transparent_gradient"
         />
 
-    <!--<include layout="@layout/toolbar"-->
-        <!--android:id="@+id/page_slide_toolbar"-->
-        <!--android:background="@drawable/dark_to_transparent_gradient"/>-->
 
-    <include layout="@layout/page_view_buttons_layout" />
+    <!--<include layout="@layout/page_view_buttons_layout" />-->
 
 </FrameLayout>
