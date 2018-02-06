@@ -10,14 +10,11 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Page;
-import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
 
 /**
  * Created by fabian on 2/6/2018.
@@ -58,7 +55,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         LayoutInflater inflater = LayoutInflater.from(context);
 
         // Inflate the layout
-        View photoView = inflater.inflate(R.layout.page_list_item, parent, false);
+        View photoView = inflater.inflate(R.layout.gallery_item, parent, false);
 
         GalleryViewHolder viewHolder = new GalleryViewHolder(photoView);
         return viewHolder;
@@ -77,6 +74,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 .into(imageView);
 
         CheckBox checkBox = holder.mCheckBox;
+        checkBox.setText(page.getFile().getName());
         final int pos = position;
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override

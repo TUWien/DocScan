@@ -267,6 +267,7 @@
 
     <!-- GalleryActivity -->
     <string name="gallery_menu_delete_item_title">Delete item</string>
+    <string name="gallery_menu_select_all_item_title">Select all items</string>
     <string name="gallery_selected">selected</string>
     <string name="gallery_menu_rotate_item_title">Rotate right</string>
     <string name="gallery_menu_document_item_title">Document</string>
