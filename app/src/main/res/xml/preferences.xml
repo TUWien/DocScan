@@ -1,39 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <PreferenceCategory
-        android:title="@string/settings_upload_title">
-        <CheckBoxPreference
-            android:key="@string/key_upload_mobile_data"
-            android:title="@string/settings_upload_mobile_data_title"
-            android:summary="@string/settings_upload_mobile_data_summary"
-            android:defaultValue="true"
-            />
-
-    </PreferenceCategory>
-
-
-
-    <PreferenceCategory
-        android:title="@string/settings_image_processing_title">
-
-        <CheckBoxPreference
-            android:key="@string/key_fast_segmentation"
-            android:title="@string/settings_fast_segmentation_checkbox_title"
-            android:summary="@string/settings_fast_segmentation_checkbox_summary"
-            android:defaultValue="true" />
-
-
-        <!-- opens another nested subscreen -->
-        <Preference
-            android:key="@string/key_debug_settings"
-            android:title="@string/settings_show_debug_settings_title"
-            android:summary="@string/settings_show_debug_settings_summary"
-            android:persistent="false">
-
-        </Preference>
-
-    </PreferenceCategory>
-
-
-</PreferenceScreen>
+    <ListView
+        android:id="@+id/list_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></ListView>
+    <CheckBoxPreference
+        android:key="pref_sync"
+        android:title="@string/pref_precise_page_detection"
+        android:summary="@string/pref_precise_page_detection_summary"
+        android:defaultValue="true" />
+ </PreferenceScreen>

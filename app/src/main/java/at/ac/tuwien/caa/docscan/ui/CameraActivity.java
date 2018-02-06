@@ -29,7 +29,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -47,7 +46,6 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
@@ -55,7 +53,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -70,6 +67,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -96,7 +94,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
@@ -119,9 +116,6 @@ import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
-import at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity;
-import at.ac.tuwien.caa.docscan.ui.document.SeriesGeneralActivity;
-import at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
@@ -132,7 +126,6 @@ import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
-import static at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity.DOCUMENT_QR_TEXT;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -154,6 +147,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
     private ImageButton mGalleryButton;
+    private Button mDocumentButton;
     private TaskTimer mTaskTimer;
     private CameraPreview mCameraPreview;
     private PaintView mPaintView;
@@ -173,7 +167,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private TextView mTextView;
     private Menu mOptionsMenu;;
     private MenuItem mFlashMenuItem, mDocumentMenuItem;
-    private Drawable mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
+    private Drawable mManualShootDrawable, mAutoShootDrawable, mFlashOffDrawable,
+            mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
     private boolean mHideSeriesDialog;
     private boolean mIsSeriesModePaused = true;
@@ -294,8 +289,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         super.onResume();
 
-        Log.d(getClass().getName(), "onResume");
-
         // Read the sync information:
 //        SyncInfo.getInstance().readFromDisk(this);
 
@@ -307,25 +300,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mPaintView != null)
             mPaintView.resume();
 
-        // Read user settings:
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
-        boolean showFocusValues = sharedPref.getBoolean(getResources().getString(R.string.key_show_focus_values), false);
-        mPaintView.drawFocusText(showFocusValues);
-
-        boolean useFastPageDetection = sharedPref.getBoolean(getResources().getString(R.string.key_fast_segmentation), true);
-        NativeWrapper.setUseLab(!useFastPageDetection);
-
-        boolean isDebugViewShown = sharedPref.getBoolean(getResources().getString(R.string.key_show_debug_view), false);
-        showDebugView(isDebugViewShown);
-
-
+        // Here we must update the button text after a activity resume (others are just initialized
+//        in onCreate.
+        initDocumentButton();
 
         // update the title of the toolbar:
         getSupportActionBar().setTitle(User.getInstance().getDocumentName());
 
-        mHideSeriesDialog = Settings.getInstance().loadBooleanKey(this, HIDE_SERIES_DIALOG_KEY);
+        mHideSeriesDialog = Settings.getInstance().loadKey(this, HIDE_SERIES_DIALOG_KEY);
 
         showControlsLayout(!mIsQRActive);
 
@@ -350,25 +332,20 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             qrCodeVisibility = View.VISIBLE;
         }
 
-        // Show/hide the flash button:
-//        Weak devices might have no flash, so check if mFlashModes is null:
-        if ((mFlashModes != null) && (mFlashMenuItem != null))
-            mFlashMenuItem.setVisible(showControls);
-
-        // Show/hide the document button:
         if (mDocumentMenuItem != null)
             mDocumentMenuItem.setVisible(showControls);
+        if (mFlashMenuItem != null)
+            mFlashMenuItem.setVisible(showControls);
 
-//        Deleted the overflow button, so I had to comment this out:
-//        // Show/hide the overflow button:
-//        if (mOptionsMenu != null)
-//            mOptionsMenu.setGroupVisible(R.id.overflow_menu_group, showControls);
+        // Show/hide the overflow button:
+        if (mOptionsMenu != null)
+            mOptionsMenu.setGroupVisible(R.id.overflow_menu_group, showControls);
 
-        RelativeLayout l = findViewById(R.id.controls_layout);
+        RelativeLayout l = (RelativeLayout) findViewById(R.id.controls_layout);
         if (l != null)
             l.setVisibility(controlsVisibility);
 
-        RelativeLayout qrLayout = findViewById(R.id.qr_controls_layout);
+        RelativeLayout qrLayout = (RelativeLayout) findViewById(R.id.qr_controls_layout);
         if (qrLayout != null)
             qrLayout.setVisibility(qrCodeVisibility);
 
@@ -442,6 +419,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         setupNavigationDrawer();
         setupDebugView();
 
+        // Show the debug view: (TODO: This should be not the case for releases)
+//        showDebugView();
+
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
@@ -453,61 +433,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         requestLocation();
 
-//        Check app version:
-        checkAppVersion();
-
-    }
-
-    private void checkAppVersion() {
-
-        // Load the last version number saved:
-        int lastInstalledVersion = Settings.getInstance().loadIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY);
-        int currentVersion = BuildConfig.VERSION_CODE;
-
-        // Save the current version:
-        Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
-
-        if (currentVersion == lastInstalledVersion)
-            return;
-        else if ((lastInstalledVersion == Settings.NO_ENTRY) || (lastInstalledVersion <= 11)) {
-
-            // has the user already seen that the documents can be opened in the actionbar?
-            boolean isDocumentHintShown = Settings.getInstance().loadBooleanKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY);
-            if (!isDocumentHintShown) {
-                showDocumentHint();
-                Settings.getInstance().saveKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY, true);
-            }
-
-        }
-
-    }
-
-    private void showDocumentHint() {
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(R.string.camera_document_hint_title)
-                .setPositiveButton("OK", null)
-                .setMessage(R.string.camera_document_hint_msg);
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
 
 
     }
 
     private void loadPreferences() {
 
-
         // Concerning series mode:
-        mIsSeriesMode = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_ACTIVE_KEY);
-        mIsSeriesModePaused = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_PAUSED_KEY);
+        mIsSeriesMode = Settings.getInstance().loadKey(this, SERIES_MODE_ACTIVE_KEY);
+        mIsSeriesModePaused = Settings.getInstance().loadKey(this, SERIES_MODE_PAUSED_KEY);
 
         UserHandler.loadSeriesName(this);
 
@@ -576,11 +510,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @SuppressWarnings("deprecation")
     private void initDrawables() {
 
-//        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
-        mFlashAutoDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_auto_white_24dp);
-        mFlashOffDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_off_white_24dp);
-        mFlashOnDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_on_white_24dp);
-        mFlashTorchDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_lightbulb_outline_white_24dp);
+        mAutoShootDrawable = getResources().getDrawable(R.drawable.auto_shoot);
+        mManualShootDrawable = getResources().getDrawable(R.drawable.manual_auto);
+
+        mFlashAutoDrawable = getResources().getDrawable(R.drawable.ic_flash_auto);
+        mFlashOffDrawable = getResources().getDrawable(R.drawable.ic_flash_off);
+        mFlashOnDrawable = getResources().getDrawable(R.drawable.ic_flash_on);
+        mFlashTorchDrawable = getResources().getDrawable(R.drawable.ic_torch);
 
     }
 
@@ -611,16 +547,24 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
     }
 
-
     /**
-     * Start the CreateSeriesActivity via an intent.
-     * @param qrText
+     * Connects the document button with its OnClickListener.
      */
-    private void startCreateSeriesActivity(String qrText) {
+    private void initDocumentButton() {
 
-        Intent intent = new Intent(getApplicationContext(), CreateSeriesActivity.class);
-        intent.putExtra(DOCUMENT_QR_TEXT, qrText);
-        startActivity(intent);
+        mDocumentButton = (Button) findViewById(R.id.document_button);
+        String documentName = User.getInstance().getDocumentName();
+
+        if (documentName != null && mDocumentButton != null) {
+            mDocumentButton.setText(getString(R.string.camera_series_button_prefix) + " " + documentName);
+            mDocumentButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startDocumentActivity();
+                }
+            });
+        }
+
     }
 
     /**
@@ -751,10 +695,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(uri);
-//                The flag FLAG_ACTIVITY_REORDER_TO_FRONT prevents that the gallery app can be
-//                launched multiple times (by multiple clicking the button before the gallery is
-//                started).
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 
                 startActivity(intent);
 
@@ -1230,6 +1170,16 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //        // Initialize the newly created buttons:
         initButtons();
+//        initDocumentButton();
+
+
+//        getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
+//        View view = findViewById(R.id.camera_controls_layout);
+//        view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
+//
+//        // Initialize the newly created buttons:
+//        initButtons();
+//        initDocumentButton();
 
     }
 
@@ -1260,24 +1210,16 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    private void showDebugView(boolean showDebugView) {
+    private void showDebugView() {
 
-
-        if (showDebugView && !mIsDebugViewEnabled) {
-            // Create the debug view - if it is not already created:
-            if (mDebugViewFragment == null) {
-                mDebugViewFragment = new DebugViewFragment();
-            }
-
-            getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
-        }
-        else if (!showDebugView && mIsDebugViewEnabled && mDebugViewFragment != null) {
-
-            getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
-
+        // Create the debug view - if it is not already created:
+        if (mDebugViewFragment == null) {
+            mDebugViewFragment = new DebugViewFragment();
         }
 
-        mIsDebugViewEnabled = showDebugView;
+        getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+
+        mIsDebugViewEnabled = true;
 
     }
 
@@ -1294,83 +1236,81 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
 
-//        Deleted the overflow button, so I had to comment this out:
+//            Show / hide the debug view
+            case R.id.debug_view_item:
 
-////            Show / hide the debug view
-//            case R.id.debug_view_item:
-//
-//                // Create the debug view - if it is not already created:
-//                if (mDebugViewFragment == null) {
-//                    mDebugViewFragment = new DebugViewFragment();
+                // Create the debug view - if it is not already created:
+                if (mDebugViewFragment == null) {
+                    mDebugViewFragment = new DebugViewFragment();
+                }
+
+                // Show the debug view:
+                if (getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT) == null) {
+                    mIsDebugViewEnabled = true;
+                    item.setTitle(R.string.hide_debug_view_text);
+                    getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
+                }
+                // Hide the debug view:
+                else {
+                    mIsDebugViewEnabled = false;
+                    item.setTitle(R.string.show_debug_view_text);
+                    getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
+                }
+
+                return true;
+
+            // Switch between the two page segmentation methods:
+            case R.id.use_lab_item:
+
+                if (NativeWrapper.useLab()) {
+                    NativeWrapper.setUseLab(false);
+                    item.setTitle(R.string.precise_page_seg_text);
+                }
+                else {
+                    NativeWrapper.setUseLab(true);
+                    item.setTitle(R.string.fast_page_seg_text);
+                }
+
+                return true;
+
+            // Focus measurement:
+            case R.id.show_fm_values_item:
+
+                if (mPaintView.isFocusTextVisible()) {
+                    item.setTitle(R.string.show_fm_values_text);
+                    mPaintView.drawFocusText(false);
+                } else {
+                    item.setTitle(R.string.hide_fm_values_text);
+                    mPaintView.drawFocusText(true);
+                }
+
+                break;
+
+            // Guide lines:
+            case R.id.show_guide_item:
+
+                if (mPaintView.areGuideLinesDrawn()) {
+                    mPaintView.drawGuideLines(false);
+                    item.setTitle(R.string.show_guide_text);
+                } else {
+                    mPaintView.drawGuideLines(true);
+                    item.setTitle(R.string.hide_guide_text);
+                }
+
+                break;
+
+//            // Threading:
+//            case R.id.threading_item:
+//                if (mCameraPreview.isMultiThreading()) {
+//                    mCameraPreview.setThreading(false);
+//                    item.setTitle(R.string.multi_thread_text);
 //                }
-//
-//                // Show the debug view:
-//                if (getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT) == null) {
-//                    mIsDebugViewEnabled = true;
-//                    item.setTitle(R.string.hide_debug_view_text);
-//                    getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
-//                }
-//                // Hide the debug view:
 //                else {
-//                    mIsDebugViewEnabled = false;
-//                    item.setTitle(R.string.show_debug_view_text);
-//                    getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
+//                    mCameraPreview.setThreading(true);
+//                    item.setTitle(R.string.single_thread_text);
 //                }
-//
-//                return true;
-//
-//            // Switch between the two page segmentation methods:
-//            case R.id.use_lab_item:
-//
-//                if (NativeWrapper.useLab()) {
-//                    NativeWrapper.setUseLab(false);
-//                    item.setTitle(R.string.precise_page_seg_text);
-//                }
-//                else {
-//                    NativeWrapper.setUseLab(true);
-//                    item.setTitle(R.string.fast_page_seg_text);
-//                }
-//
-//                return true;
-//
-//            // Focus measurement:
-//            case R.id.show_fm_values_item:
-//
-//                if (mPaintView.isFocusTextVisible()) {
-//                    item.setTitle(R.string.show_fm_values_text);
-//                    mPaintView.drawFocusText(false);
-//                } else {
-//                    item.setTitle(R.string.hide_fm_values_text);
-//                    mPaintView.drawFocusText(true);
-//                }
-//
-//                break;
-//
-//            // Guide lines:
-//            case R.id.show_guide_item:
-//
-//                if (mPaintView.areGuideLinesDrawn()) {
-//                    mPaintView.drawGuideLines(false);
-//                    item.setTitle(R.string.show_guide_text);
-//                } else {
-//                    mPaintView.drawGuideLines(true);
-//                    item.setTitle(R.string.hide_guide_text);
-//                }
-//
-//                break;
-//
-////            // Threading:
-////            case R.id.threading_item:
-////                if (mCameraPreview.isMultiThreading()) {
-////                    mCameraPreview.setThreading(false);
-////                    item.setTitle(R.string.multi_thread_text);
-////                }
-////                else {
-////                    mCameraPreview.setThreading(true);
-////                    item.setTitle(R.string.single_thread_text);
-////                }
-//
-//
+
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -1445,15 +1385,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (menu == null)
             return;
 
-        //        Deleted the overflow button, so I had to comment this out:
-//        MenuItem item = menu.findItem(R.id.debug_view_item);
-//        if (item == null)
-//            return;
-//
-//        if (mIsDebugViewEnabled)
-//            item.setTitle(R.string.hide_debug_view_text);
-//        else
-//            item.setTitle(R.string.show_debug_view_text);
+        MenuItem item = menu.findItem(R.id.debug_view_item);
+        if (item == null)
+            return;
+
+        if (mIsDebugViewEnabled)
+            item.setTitle(R.string.hide_debug_view_text);
+        else
+            item.setTitle(R.string.show_debug_view_text);
 
     }
 
@@ -1508,32 +1447,31 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //
 //                break;
 
+            // Focus measurement:
+            case R.id.show_fm_values_item:
 
-//            // Focus measurement:
-//            case R.id.show_fm_values_item:
-//
-//                if (mPaintView.isFocusTextVisible()) {
-//                    menuItem.setTitle(R.string.show_fm_values_text);
-//                    mPaintView.drawFocusText(false);
-//                } else {
-//                    menuItem.setTitle(R.string.hide_fm_values_text);
-//                    mPaintView.drawFocusText(true);
-//                }
-//
-//                break;
-//
-//            // Guide lines:
-//            case R.id.show_guide_item:
-//
-//                if (mPaintView.areGuideLinesDrawn()) {
-//                    mPaintView.drawGuideLines(false);
-//                    menuItem.setTitle(R.string.show_guide_text);
-//                } else {
-//                    mPaintView.drawGuideLines(true);
-//                    menuItem.setTitle(R.string.hide_guide_text);
-//                }
-//
-//                break;
+                if (mPaintView.isFocusTextVisible()) {
+                    menuItem.setTitle(R.string.show_fm_values_text);
+                    mPaintView.drawFocusText(false);
+                } else {
+                    menuItem.setTitle(R.string.hide_fm_values_text);
+                    mPaintView.drawFocusText(true);
+                }
+
+                break;
+
+            // Guide lines:
+            case R.id.show_guide_item:
+
+                if (mPaintView.areGuideLinesDrawn()) {
+                    mPaintView.drawGuideLines(false);
+                    menuItem.setTitle(R.string.show_guide_text);
+                } else {
+                    mPaintView.drawGuideLines(true);
+                    menuItem.setTitle(R.string.hide_guide_text);
+                }
+
+                break;
 
 //            // Switch between the two page segmentation methods:
 //            case R.id.action_precise_page_seg:
@@ -1848,30 +1786,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public void onQRCode(Result result) {
 
         final String text;
-        // Tell the user that we are still searching for a QR code:
-        if (result == null) {
+        if (result == null)
             text = getString(R.string.instruction_searching_qr);
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                    mTextView.setText(text);
-                }
-            });
-        }
-        // Start the CreateSeriesActivity:
-        else {
-            // Stop searching for QR code:
-            mIsQRActive = false;
-            mCameraPreview.startQrMode(false);
-
+        else
             text = result.toString();
-            startCreateSeriesActivity(text);
 
-        }
-
-
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                mTextView.setText(text);
+            }
+        });
 
 
     }
@@ -1908,40 +1834,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         });
     }
 
-//    public void showSeriesPopup(MenuItem item) {
-//
-//        View menuItemView = findViewById(R.id.document_item);
-//        if (menuItemView == null)
-//            return;
-//
-//        // Create the menu for the first time:
-//        if (mSeriesPopupMenu == null) {
-//            mSeriesPopupMenu = new PopupMenu(this, menuItemView);
-//            mSeriesPopupMenu.setOnMenuItemClickListener(this);
-//            mSeriesPopupMenu.inflate(R.menu.series_menu);
-//
-//            setupFlashUI();
-//        }
-//
-//        mSeriesPopupMenu.show();
-//
-//    }
-
     public void showSeriesPopup(MenuItem item) {
 
-        Log.d(TAG, "showSeriesPopup");
         View menuItemView = findViewById(R.id.document_item);
         if (menuItemView == null)
             return;
 
-        Log.d(TAG, " menu created!");
         // Create the menu for the first time:
         if (mSeriesPopupMenu == null) {
             mSeriesPopupMenu = new PopupMenu(this, menuItemView);
             mSeriesPopupMenu.setOnMenuItemClickListener(this);
-            Log.d(TAG, "setOnMenuItemClickListener created");
             mSeriesPopupMenu.inflate(R.menu.series_menu);
-}
+        }
+
         mSeriesPopupMenu.show();
 
     }
@@ -1964,13 +1869,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
         mFlashPopupMenu.show();
-
-    }
-
-    public void startSyncActivity(MenuItem item) {
-
-        Intent intent = new Intent(getApplicationContext(), SyncActivity.class);
-        startActivity(intent);
 
     }
 

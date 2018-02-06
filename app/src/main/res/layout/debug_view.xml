@@ -5,7 +5,6 @@
     android:orientation="horizontal"
     android:columnCount="2"
     android:layout_gravity="right|bottom"
-    android:layout_marginBottom="@dimen/camera_control_height_width"
     android:background="@color/debug_view_bg_color"
     android:useDefaultMargins="true"
     >

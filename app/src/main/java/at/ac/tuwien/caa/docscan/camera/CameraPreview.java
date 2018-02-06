@@ -736,8 +736,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mCamera.cancelAutoFocus();
 
         Camera.Parameters parameters = mCamera.getParameters();
-        parameters.setJpegQuality(100);
-
         if (parameters.getFocusMode() != Camera.Parameters.FOCUS_MODE_AUTO) {
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
         }

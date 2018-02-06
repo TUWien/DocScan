@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -33,6 +32,7 @@
             android:id="@+id/navigation_view_header_sync_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Transkribus"
             android:textColor="@color/white"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
@@ -41,7 +41,7 @@
             />
 
         <!-- Note the button is not clickable, because the OnClickListener is applied to the RelativeLayout -->
-        <android.support.v7.widget.AppCompatImageButton
+        <ImageButton
             android:id="@+id/navigation_view_header_account_setting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -50,7 +50,7 @@
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:layout_centerInParent="true"
             android:background="#00000000"
-            app:srcCompat="@drawable/ic_arrow_drop_down_white_24dp"
+            android:src="@drawable/ic_arrow_drop_down_white_24dp"
             android:clickable="false"/>
 
     </RelativeLayout>

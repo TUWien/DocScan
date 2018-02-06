@@ -9,7 +9,6 @@ import android.os.Build;
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -22,7 +21,6 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.KeyManagementException;
@@ -133,7 +131,7 @@ public class RequestHandler {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        request.handleRestError(error);
+                        // TODO: error handling
                     }
                 }) {
 
@@ -189,7 +187,7 @@ public class RequestHandler {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        request.handleRestError(error);
+                        // TODO: error handling
                     }
                 }) {
             @Override
@@ -216,17 +214,9 @@ public class RequestHandler {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        request.handleRestError(error);
-
-                        NetworkResponse response = error.networkResponse;
-                        if(response != null && response.data != null){
-                            String json = new String(response.data);
-                            json = trimMessage(json, "message");
-                        }
-
+                        // TODO: error handling
                     }
-                })
-        {
+                }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<String, String>();
@@ -239,12 +229,6 @@ public class RequestHandler {
                 return "application/json";
             }
         };
-
-        jsArrayRequest.setShouldCache(false);
-
-//        jsArrayRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
-//                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
-//                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
 
         return jsArrayRequest;
 
@@ -261,21 +245,6 @@ public class RequestHandler {
 //        return method;
 //
 //    }
-
-    private static String trimMessage(String json, String key){
-        String trimmedString = null;
-
-        try{
-            JSONObject obj = new JSONObject(json);
-            trimmedString = obj.getString(key);
-        } catch(JSONException e){
-            e.printStackTrace();
-            return null;
-        }
-
-        return trimmedString;
-    }
-
 
 
 }

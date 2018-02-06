@@ -15,7 +15,6 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
 import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
@@ -31,7 +30,7 @@ import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 
 public class TranskribusUtils  {
 
-    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
+    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan";
 
     // Singleton:
     private static TranskribusUtils mInstance;
@@ -40,7 +39,6 @@ public class TranskribusUtils  {
     private ArrayList<File> mSelectedDirs;
     private int mNumUploadJobs;
     private TranskribusUtilsCallback mCallback;
-    private boolean mIsCollectionCreated;
 
 //    private int mUploadId;
 
@@ -57,6 +55,7 @@ public class TranskribusUtils  {
 
     }
 
+
     /**
      * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
      * upload folder.
@@ -67,69 +66,33 @@ public class TranskribusUtils  {
         mSelectedDirs = selectedDirs;
         mCallback = (TranskribusUtilsCallback) context;
 
-        mIsCollectionCreated = false;
-
-        if (isCollectionIDSaved())
-            new CollectionsRequest(mContext);
-        else
-            createDocScanCollection();
-
-//        new CollectionsRequest(mContext);
-
-    }
-
-    private boolean isCollectionIDSaved() {
-
-        int savedCollectionID =
-                Settings.getInstance().loadIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY);
-
-        return (savedCollectionID != Settings.NO_ENTRY);
+        new CollectionsRequest(mContext);
 
     }
 
     public void onCollections(List<Collection> collections) {
 
-        int savedCollectionID =
-                Settings.getInstance().loadIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY);
-
-        int maxId = -1;
-
         for (Collection collection : collections) {
             if (collection.getName().compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
-//                docScanCollectionFound(collection);
-//                return;
-
-//                Is the collection id not saved yet?
-                if ((savedCollectionID == Settings.NO_ENTRY) || mIsCollectionCreated) {
-                    int id = collection.getID();
-                    if (id > maxId)
-                        maxId = id;
-//                    mIsCollectionCreated = false;
-//                    Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, collection.getID());
-//                    docScanCollectionFound(collection);
-//                    return;
-                }
-                else if ((savedCollectionID == collection.getID())) {
-                    docScanCollectionFound(collection.getID());
-                    return;
-                }
-
+                docScanCollectionFound(collection);
+                return;
             }
         }
-
-        if (maxId > -1) {
-
-            mIsCollectionCreated = false;
-            Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, maxId);
-            docScanCollectionFound(maxId);
-            return;
-
-        }
-
         createDocScanCollection();
 
     }
 
+//    @Override
+//    public void onCollections(List<Collection> collections) {
+//
+//        for (Collection collection : collections) {
+//            if (collection.getName().compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
+//                docScanCollectionFound(collection);
+//                return;
+//            }
+//        }
+//        createDocScanCollection();
+//    }
 
     private void createDocScanCollection() {
 
@@ -138,24 +101,18 @@ public class TranskribusUtils  {
 
     }
 
-    //    @Override
+//    @Override
     public void onCollectionCreated(String collName) {
-        if (collName.compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
-            mIsCollectionCreated = true;
+        if (collName.compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0)
             new CollectionsRequest(mContext);
-        }
 
     }
 
-//    private void docScanCollectionFound(Collection collection) {
-//
-//        uploadDirs(mSelectedDirs, collection.getID());
-//
-//    }
+    private void docScanCollectionFound(Collection collection) {
 
-    private void docScanCollectionFound(int id) {
-
-        uploadDirs(mSelectedDirs, id);
+//        User.getInstance().setTranskribusUploadCollId(collection.getID());
+//        mTranskribusUploadCollId = collection.getID();
+        uploadDirs(mSelectedDirs, collection.getID());
 
     }
 
@@ -190,6 +147,7 @@ public class TranskribusUtils  {
      * uploadId (this is done by comparing the title).
      * @param uploadId
      */
+//    @Override
     public void onUploadStart(int uploadId, String title) {
 
         File selectedDir = getMatchingDir(title);
@@ -274,10 +232,10 @@ public class TranskribusUtils  {
                             "},";
 
         String jsonStart =  "{" +
-                metaData +
-                "    \"pageList\": {\"pages\": [";
+                            metaData +
+                            "    \"pageList\": {\"pages\": [";
         String jsonEnd =    "    ]}" +
-                "}";
+                            "}";
         String jsonMiddle = "";
 
         int idx = 0;
@@ -303,12 +261,12 @@ public class TranskribusUtils  {
     private static String getFileString(File file, int pageNr) {
 
         String result =
-                "        {" +
-                        "            \"fileName\": \"" +
-                        file.getName() +
-                        "\"," +
-                        "            \"pageNr\": " + Integer.toString(pageNr) +
-                        "        }";
+                            "        {" +
+                                    "            \"fileName\": \"" +
+                                    file.getName() +
+                                    "\"," +
+                                    "            \"pageNr\": " + Integer.toString(pageNr) +
+                                    "        }";
 
         return result;
     }
@@ -316,7 +274,7 @@ public class TranskribusUtils  {
     public static File[] getFiles(File dir) {
 
 //TODO: filter JPGS only
-
+        
         FileFilter filesFilter = new FileFilter() {
             public boolean accept(File file) {
                 return !file.isDirectory();

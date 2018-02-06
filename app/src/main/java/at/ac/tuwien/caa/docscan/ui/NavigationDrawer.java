@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import at.ac.tuwien.caa.docscan.ActivityUtils;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.rest.UserHandler;
-import at.ac.tuwien.caa.docscan.ui.settings.PreferenceActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity;
 
 import static at.ac.tuwien.caa.docscan.ui.NavigationDrawer.NavigationItemEnum.ACCOUNT_EDIT;
@@ -113,7 +111,6 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
         // Set up the account name field:
 
-        // The user is logged in, show the name:
         if (User.getInstance().isLoggedIn()) {
             userTextView.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
             if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
@@ -122,11 +119,6 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 connectionTextView.setText(mActivity.getResources().getText(R.string.sync_transkribus_text));
         }
 
-        // The user is not logged in, but was logged in some time before, show the name:
-        else if (UserHandler.loadUserNames(mActivity)) {
-            userTextView.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
-            connectionTextView.setText(mActivity.getResources().getText(R.string.sync_not_connected_text));
-        }
         else {
             userTextView.setText(mActivity.getResources().getText(R.string.account_not_logged_in));
             connectionTextView.setText("");
@@ -213,18 +205,17 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
     private void setAccountGroupVisible(boolean isVisible) {
 
         mAccountGroupVisible = isVisible;
-        showHideNavigationGroups();
+        showAccountGroup();
 
     }
 
-    private void showHideNavigationGroups() {
+    private void showAccountGroup() {
 
         if (mNavigationView != null) {
 
             Menu menu = mNavigationView.getMenu();
             if (menu != null) {
-                menu.setGroupVisible(R.id.navigation_main_items_group, !mAccountGroupVisible);
-                menu.setGroupVisible(R.id.navigation_settings_items_group, !mAccountGroupVisible);
+                menu.setGroupVisible(R.id.navigation_group, !mAccountGroupVisible);
                 menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
 
                 // Show the logout button only if the user is logged in (and the menu group is visible):
@@ -258,11 +249,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
             mNavigationView.setNavigationItemSelectedListener(this);
 
-            showHideNavigationGroups();
-
-//            menu.setGroupVisible(R.id.navigation_main_items_group, !mAccountGroupVisible);
-//            menu.setGroupVisible(R.id.navigation_settings_items_group, !mAccountGroupVisible);
-//            menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
+            menu.setGroupVisible(R.id.navigation_group, !mAccountGroupVisible);
+            menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
         }
     }
     /**
@@ -288,8 +276,6 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_account_box_black_24dp, AccountActivity.class),
         ACCOUNT_LOGOUT(R.id.account_logout_item, R.string.account_logout,
                 R.drawable.ic_remove_circle_outline_black_24dp, LogoutActivity.class),
-        SETTINGS(R.id.settings_item, R.string.settings_item_text,
-                R.drawable.ic_settings_black_24dp, PreferenceActivity.class),
 //        REST_TEST(R.id.rest_item, R.string.rest_item_text,
 //                R.drawable.ic_weekend_black_24dp, RestTestActivity.class),
         INVALID(-1, 0, 0, null);

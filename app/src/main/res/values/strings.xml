@@ -7,11 +7,12 @@
     <string name="share_log_item_text">Share log</string>
     <string name="sync_item_text">Upload</string>
     <string name="camera_item_text">Camera</string>
+    <string name="login_item_text">Login</string>
     <string name="header_text">DocScan</string>
+    <string name="rest_item_text">Rest</string>
     <string name="account_edit_text">Set up account</string>
     <string name="account_not_logged_in">Anonymous user</string>
     <string name="account_logout">Logout</string>
-    <string name="settings_item_text">Settings</string>
 
     <!-- Use in the MainActivity: start -->
 
@@ -24,9 +25,8 @@
     <string name="precise_page_seg_text">Use precise page segmentation</string>
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
+    <string name="camera_series_button_prefix">Series:</string>
 
-    <string name="camera_document_hint_title">Tip for documents</string>
-    <string name="camera_document_hint_msg">The document title is shown at the top and you can manipulate documents by clicking on the folder icon next to it.</string>
     <!-- Just used for debugging: -->
 
 
@@ -40,19 +40,25 @@
     <string name="table_head_time_text">time (ms)</string>
     <string name="focus_measure_debug_text">Focus measure:</string>
     <string name="page_segmentation_debug_text">Page segmentation:</string>
+    <string name="fps_debug_text">FPS:</string>
+    <string name="inter_shot_text">Bt. 2 shots:</string>
+    <string name="flip_shot_text">Bt. move and shot:</string>
+    <string name="movement_check_text">Move detection:</string>
+    <string name="new_doc_text">Change detection:</string>
 
     <!-- Use in the debug view: end -->
 
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
     <string name="no_file_found_msg">No picture file found.</string>
     <string name="no_file_found_title">File not found</string>
     <string name="button_ok">OK</string>
 
     <!-- Navigation Drawer -->
-    <string name="drawer_open">Open navigation drawer</string>
-    <string name="drawer_close">Close navigation drawer</string>
+    <string name="about_text">DocScan\n2017</string>
 
     <!-- PaintView -->
-    <string name="instruction_empty">no page found</string>
+    <string name="instruction_empty">no document found</string>
     <string name="instruction_small">move closer</string>
     <string name="instruction_perspective">change perspective</string>
     <string name="instruction_rotation">rotate</string>
@@ -67,6 +73,7 @@
     <string name="instruction_none"></string>
     <string name="instruction_series_started">series mode started</string>
     <string name="instruction_series_paused">series mode paused</string>
+
     <string name="instruction_searching_qr">Searching QR code</string>
 
     <!-- Toasts -->
@@ -92,11 +99,10 @@
     <string name="flash_on_mode">Flash on</string>
     <string name="flash_torch_mode">Torch</string>
 
-    <string name="upload_item">Upload</string>
-
-    <string name="series_create">Create new document</string>
-    <string name="series_switch">Switch document</string>
-    <string name="series_qr">Document from QR code</string>
+    <string name="series_create">Create new series</string>
+    <string name="series_switch_text">Switch series</string>
+    <string name="series_details">Series details</string>
+    <string name="series_qr">Series from QR code</string>
 
     <string name="debug_view_item_show">Show debug view</string>
 
@@ -127,16 +133,17 @@
     <string name="picture_save_error_title">Image saving error</string>
 
     <string name="debug_collections_button_text">Collections</string>
+    <string name="debug_upload_button_text">Upload</string>
 
     <!-- Sync: -->
     <string name="sync_start_service_button_text">Start sync</string>
     <string name="sync_connect_dropbox_button_text">Dropbox</string>
     <string name="sync_connect_transkribus_button_text">Transkribus</string>
+    <string name="sync_auth_dropbox_button_text">Authenticate dropbox</string>
     <string name="sync_dropbox_app_key">p2393aiyn7jdr54</string>
     <string name="sync_no_dropbox_access">Sorry your dropbox account is not accessible.</string>
     <string name="sync_dropbox_text">Dropbox</string>
     <string name="sync_transkribus_text">Transkribus</string>
-    <string name="sync_not_connected_text">Offline</string>
 
     <!-- DropboxActivity: -->
     <string name="dropbox_text">It is necessary to allow DocScan to access your Dropbox
@@ -161,102 +168,69 @@
     <string name="sync_notification_title">Image upload</string>
     <string name="sync_notification_uploading_dropbox_text">Uploading to Dropbox.</string>
     <string name="sync_notification_uploading_transkribus_text">Uploading to Transkribus.</string>
-    <string name="sync_notification_uploading_finished_title">Upload finished</string>
     <string name="sync_notification_uploading_finished_text">Finished image upload.</string>
-    <string name="sync_notification_error_title">Upload interrupted</string>
-    <string name="sync_notification_error_text">Upload postponed.</string>
 
     <!-- DocumentActivity -->
-    <string name="document_title">Select a document</string>
-    <string name="document_select_button_text">Use selected document</string>
+    <string name="document_title">Select a series</string>
+    <string name="document_select_button_text">Use selected series</string>
 
+    <string name="document_create_folder_title">Enter new folder name</string>
     <string name="document_no_dir_created_title">No document created</string>
     <string name="document_dir_existing_prefix_message">The folder </string>
     <string name="document_dir_existing_postfix_message">is already created. Please use another name.</string>
     <string name="document_no_dir_created_message">Could not create the specified folder.</string>
     <string name="document_no_dir_selected_title">No document selected</string>
-    <string name="document_no_dir_selected_message">Please select a document first.</string>
+    <string name="document_no_dir_selected_message">Please select a series first.</string>
     <string name="document_no_permission_message">Files cannot be uploaded without permission.</string>
     <string name="document_no_permission_title">Permission required</string>
 
     <!-- SyncActivity -->
     <string name="sync_no_dir_selected_title">No directory selected</string>
     <string name="sync_no_dir_selected_message">Please select at least one folder.</string>
+    <string name="sync_start_upload_button_text">Upload selected documents</string>
     <string name="sync_selection_initial_text">Nothing selected</string>
     <string name="sync_selection_many_documents_text">documents</string>
     <string name="sync_selection_single_document_text">document</string>
     <string name="sync_snackbar_uploading_prefix_text">Uploading\</string>
-    <string name="sync_snackbar_already_uploaded_prefix_text">Selected</string>
-    <string name="sync_snackbar_already_uploaded_singular_text">was</string>
-    <string name="sync_snackbar_already_uploaded_plural_text">were</string>
-    <string name="sync_snackbar_already_uploaded_postfix_text">already uploaded.</string>
-    <string name="sync_error_upload_title">Upload error</string>
-    <string name="sync_error_upload_text">An error happened while uploading your files. Please try to upload your files again.</string>
-    <string name="sync_confirm_delete_button_text">Delete</string>
-    <string name="sync_cancel_delete_button_text">Cancel</string>
-    <string name="sync_confirm_delete_title">Delete</string>
-    <string name="sync_confirm_delete_prefix_text">Are you sure you want to delete</string>
-    <string name="sync_confirm_delete_postfix_text">from your device?\n\nHint: Documents already uploaded are not deleted from the server, but you cannot add new images to uploaded documents.</string>
+    <string name="sync_snackbar_check_notifications_text">.\nPlease wait until the upload is finished.</string>
     <string name="sync_snackbar_error_upload_text">Could not upload all files. Please try again!</string>
-    <string name="sync_snackbar_finished_upload_text">Finished upload.</string>
+    <string name="sync_snackbar_finished_upload_text">Finished upload of</string>
     <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>
     <string name="sync_snackbar_offline_postfix_text">will be uploaded, once the device is online again.</string>
-    <string name="sync_snackbar_offline_text">Your device is currently offline. The selected file(s) will be uploaded, once the device is online again.</string>
     <string name="sync_snackbar_no_permissions">Files cannot be uploaded without permission.</string>
-    <string name="sync_snackbar_files_deleted_prefix">Deleted</string>
-    <string name="sync_server_changed_title">Upload server changed</string>
-    <string name="sync_server_changed_text">Please note that from now on, your images are uploaded to the standard Transkribus server (https://transkribus.eu/TrpServer).</string>
-    <string name="sync_dir_pending_text">(upload pending)</string>
 
     <string name="sync_not_logged_in_text">You are currently not logged in, please log in first.</string>
     <string name="sync_not_logged_in_button_text">Log in</string>
 
     <!-- UploadingActivity -->
+    <string name="uploading_title">Uploading</string>
     <string name="uploading_text">Uploading</string>
 
     <!-- SeriesGeneralActivity -->
-    <string name="series_general_heading_text">Current document:</string>
-    <string name="series_general_keep_series_text">Use current document</string>
-    <string name="series_general_other_series_text">Use other document:</string>
-    <string name="series_general_start_text">Start new document</string>
-    <string name="series_general_select_text">Select existing document</string>
+    <string name="series_general_heading_text">Current series is:</string>
+    <string name="series_general_keep_series_text">Use current series</string>
+    <string name="series_general_other_series_text">Use other series:</string>
+    <string name="series_general_start_text">Start new series</string>
+    <string name="series_general_select_text">Select existing series</string>
     <string name="series_general_hide_dialog_text">Do not show this dialog after starting the series mode.</string>
-    <string name="series_general_title">Documents</string>
-
-    <!-- AboutActivity -->
-    <string name="about_heading_text">DocScan 2018</string>
-    <string name="about_help_text">Help</string>
-    <string name="about_version_prefix_text">Version:</string>
-    <string name="about_scantent_text">DocScan is developed together with the ScanTent device. Visit our website for more information: \nhttps://scantent.cvl.tuwien.ac.at/en/</string>
-    <string name="about_transkribus_text">DocScan features image uploads to Transkribus. Visit the Transkribus website for further information: \nhttps://transkribus.eu/Transkribus/</string>
+    <string name="series_general_title">Series</string>
 
 
-    <string name="create_series_title">Create new document</string>
-    <string name="create_series_name_hint">Document name</string>
-    <string name="create_series_done_button_text">Create document</string>
-    <string name="create_series_advanced_options_text">Show more fields</string>
-    <string name="create_series_authority_text">Authority</string>
-    <string name="create_series_signature_text">Signature</string>
-    <string name="create_series_hierarchy_text">Hierarchy</string>
+    <string name="create_series_title">Create new series</string>
+    <string name="create_series_name_hint">Series name</string>
+    <string name="create_series_done_button_text">OK</string>
+
+    <string name="crop_view_title">Crop image</string>
 
     <string name="map_crop_view_title">Warp image</string>
     <string name="map_crop_view_no_transformation_title">Image not transformed</string>
     <string name="map_crop_view_no_transformation_text">The image could not be transformed. Please try to adjust the cropping rectangle.</string>
-    <!-- SettingsFragment -->
-    <string name="settings_upload_title">Upload</string>
-    <string name="settings_upload_mobile_data_title">Mobile data</string>
-    <string name="settings_upload_mobile_data_summary">Enable uploads over mobile data connection. Additional charges by your provider may arise. </string>
-    <string name="settings_image_processing_title">Image processing</string>
-    <string name="settings_fast_segmentation_checkbox_title">Fast page detection</string>
-    <string name="settings_fast_segmentation_checkbox_summary">Fast page detection with a potential loss of accuracy</string>
 
-    <!-- DebugSettingsFragment -->
-    <string name="debug_settings_title">Debug settings</string>
-    <string name="settings_show_focus_values_checkbox_title">Show focus values</string>
-    <string name="settings_show_debug_view_checkbox_title">Show debug view</string>
-    <string name="settings_show_debug_view_checkbox_summary">Show computation time of several tasks on top of the camera preview.</string>
-    <string name="settings_show_debug_settings_title">Debug settings</string>
-    <string name="settings_show_debug_settings_summary">Settings used mainly for development and measurement of the app performance.</string>
+
+    <!-- PageSlideFragment -->
+    <string name="page_slide_fragment_confirm_delete_text">Delete image?</string>
+    <string name="page_slide_fragment_confirm_delete_confirm_title">Delete</string>
+    <string name="page_slide_fragment_confirm_delete_cancel_text">Cancel</string>
 
 
 

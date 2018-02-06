@@ -20,6 +20,7 @@ import java.util.Comparator;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
+import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 
@@ -115,7 +116,7 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 //
 //    }
 
-    public static File[] getFiles(File dir) {
+    protected File[] getFiles(File dir) {
 
         FileFilter filesFilter = new FileFilter() {
             public boolean accept(File file) {
@@ -152,6 +153,7 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
         imageView = convertView.findViewById(R.id.document_list_image_view);
         // TODO: look at this for the reason why we cannot use GlideApp
         // https://github.com/bumptech/glide/issues/1966
+
         Glide.with(mContext)
                 .load(((File) getChild(groupPosition, childPosition)).getPath())
                 .into(imageView);

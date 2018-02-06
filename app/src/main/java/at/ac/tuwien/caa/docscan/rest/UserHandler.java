@@ -14,9 +14,6 @@ import static at.ac.tuwien.caa.docscan.rest.User.SYNC_DROPBOX;
  */
 public class UserHandler {
 
-
-    private static final String FIRST_NAME_KEY =    "firstName";
-    private static final String LAST_NAME_KEY =     "lastName";
     private static final String NAME_KEY =          "userName";
     private static final String PASSWORD_KEY =      "userPassword";
     private static final String DROPBOX_TOKEN_KEY = "dropboxToken";
@@ -71,41 +68,10 @@ public class UserHandler {
 
     }
 
-    public static boolean loadUserNames(Context context) {
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-
-
-        User.getInstance().setConnection(loadConnection(context));
-        String firstName = sharedPref.getString(FIRST_NAME_KEY, null);
-        String lastName = sharedPref.getString(LAST_NAME_KEY, null);
-
-        if (lastName == null)
-            return false;
-        else {
-            User.getInstance().setFirstName(firstName);
-            User.getInstance().setLastName(lastName);
-            return true;
-        }
-
-    }
-
-    public static void saveUserName(Activity activity) {
+    public static void saveTranskribusCredentials(Activity activity) {
 
         //        TODO: use here encryption
 //        SharedPreferences sharedPref = activity.getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(FIRST_NAME_KEY, User.getInstance().getFirstName());
-        editor.putString(LAST_NAME_KEY, User.getInstance().getLastName());
-//        editor.putInt(CONNECTION_KEY, User.getInstance().getConnection());
-        editor.apply();
-        editor.commit();
-
-    }
-
-    public static void saveTranskribusCredentials(Activity activity) {
-
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(NAME_KEY, User.getInstance().getUserName());

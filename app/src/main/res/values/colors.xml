@@ -12,8 +12,6 @@
     <color name="white">#ffffff</color>
     <color name="black">#000</color>
     <color name="icon_color_navigation_view">#424242</color>
-
-    <color name="button_dark_gray">#90000000</color>
     <!--<color name="button_view_bg_color">#333</color>-->
 
     <color name="hud_page_rect_color">#dfa0</color>
@@ -34,7 +32,10 @@
     <color name="movement_color">#4f630000</color>
     <color name="waiting_frame_color">#00ffffff</color>
 
+    <color name="confirm_button_color">#a3a3</color>
+
     <color name="expandable_list_view_child_color">#aa464646</color>
+    <color name="expandable_list_view_parent_color_disabled">#636363</color>
     <color name="light_gray">#d6d6d6</color>
 
     <!--<color name="photo_button_view_bg_color">#333</color>-->
