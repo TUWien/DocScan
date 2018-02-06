@@ -25,12 +25,13 @@
             android:scaleType="centerInside"
             />
 
-        <TextView
-            android:id="@+id/info_text"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="bottom"
-            android:textAlignment="center"
-            android:text="here comes the title"/>
+        <CheckBox
+            android:id="@+id/page_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            android:layout_gravity="right|bottom"
+            android:text="asdf"/>
+
     </android.support.v7.widget.CardView>
 </LinearLayout>
