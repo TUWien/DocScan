@@ -14,28 +14,35 @@ import com.bumptech.glide.Glide;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.gallery.PageSlideActivity;
+import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Page;
+import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
 
 /**
  * Created by fabian on 2/6/2018.
  */
 
-public class ImageGalleryAdapter extends RecyclerView.Adapter<ImageGalleryAdapter.MyViewHolder>  {
+public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder>  {
 
     private Document mDocument;
     private Context mContext;
 
     private String mFileName;
-    private SparseBooleanArray mSelections;
+    private CountableBooleanArray mSelections;
 
-    public ImageGalleryAdapter(Context context, Document document) {
+    // Callback to listen to selection changes:
+    private GalleryAdapterCallback mCallback;
+
+    public GalleryAdapter(Context context, Document document) {
 
         mContext = context;
+
+        mCallback = (GalleryAdapterCallback) context;
         mDocument = document;
 
         // Stores the checkbox states
-        mSelections = new SparseBooleanArray();
+        mSelections = new CountableBooleanArray();
 
     }
 
@@ -44,7 +51,7 @@ public class ImageGalleryAdapter extends RecyclerView.Adapter<ImageGalleryAdapte
     }
 
     @Override
-    public ImageGalleryAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public GalleryViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -52,19 +59,19 @@ public class ImageGalleryAdapter extends RecyclerView.Adapter<ImageGalleryAdapte
         // Inflate the layout
         View photoView = inflater.inflate(R.layout.page_list_item, parent, false);
 
-        ImageGalleryAdapter.MyViewHolder viewHolder = new ImageGalleryAdapter.MyViewHolder(photoView);
+        GalleryViewHolder viewHolder = new GalleryViewHolder(photoView);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(ImageGalleryAdapter.MyViewHolder holder, int position) {
+    public void onBindViewHolder(GalleryViewHolder holder, int position) {
 
 
         Page page = mDocument.getPages().get(position);
 
 //        Show the image:
         ImageView imageView = holder.mImageView;
-        Glide.with(mContext)
+        GlideApp.with(mContext)
                 .load(page.getFile().getPath())
                 .into(imageView);
 
@@ -75,6 +82,7 @@ public class ImageGalleryAdapter extends RecyclerView.Adapter<ImageGalleryAdapte
             public void onClick(View v) {
                 mSelections.put(pos, !mSelections.get(pos, false));
                 ((CheckBox)v).setChecked(mSelections.get(pos, false));
+                mCallback.onSelectionChange(mSelections.count());
             }
         });
 
@@ -87,14 +95,12 @@ public class ImageGalleryAdapter extends RecyclerView.Adapter<ImageGalleryAdapte
         return mDocument.getPages().size();
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-
+    public class GalleryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView mImageView;
         private CheckBox mCheckBox;
 
-        public MyViewHolder(View itemView) {
+        public GalleryViewHolder(View itemView) {
 
             super(itemView);
             mImageView = itemView.findViewById(R.id.page_imageview);
@@ -115,6 +121,30 @@ public class ImageGalleryAdapter extends RecyclerView.Adapter<ImageGalleryAdapte
                 mContext.startActivity(intent);
             }
         }
+    }
+
+    public interface GalleryAdapterCallback {
+        void onSelectionChange(int selectionCount);
+    }
+
+    /**
+     * Class that extends SparseBooleanArray with a function for counting the true elements.
+     */
+    private class CountableBooleanArray extends SparseBooleanArray {
+
+        private int count() {
+
+            int sum = 0;
+
+            for (int i = 0; i < mDocument.getPages().size(); i++) {
+                if (this.get(i))
+                    sum++;
+            }
+
+            return sum;
+
+        }
+
     }
 
 

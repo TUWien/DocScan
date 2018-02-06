@@ -19,10 +19,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
-import at.ac.tuwien.caa.docscan.ui.DocumentViewActivity;
+import at.ac.tuwien.caa.docscan.ui.GalleryActivity;
 
 /**
  * Created by fabian on 02.10.2017.
@@ -232,7 +231,7 @@ public class SyncAdapter extends BaseDocumentAdapter {
         showImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, DocumentViewActivity.class);
+                Intent intent = new Intent(mContext, GalleryActivity.class);
                 intent.putExtra("DOCUMENT_FILE_NAME", uri);
                 mContext.startActivity(intent);
 //                mContext.startActivity();

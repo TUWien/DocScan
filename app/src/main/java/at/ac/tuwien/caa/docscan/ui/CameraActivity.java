@@ -659,7 +659,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private void openGallery() {
 
 //        startActivity();
-//        startActivity(new Intent(getApplicationContext(), DocumentViewActivity.class));
+//        startActivity(new Intent(getApplicationContext(), GalleryActivity.class));
         startActivity(new Intent(getApplicationContext(), PageSlideActivity.class));
 
 //        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
