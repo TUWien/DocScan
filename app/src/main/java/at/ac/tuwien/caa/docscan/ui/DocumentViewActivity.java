@@ -30,7 +30,7 @@ import at.ac.tuwien.caa.docscan.logic.Page;
 public class DocumentViewActivity extends BaseNoNavigationActivity {
 
 //    TODO: temporary member, delete later:
-    private String mFileName;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +46,6 @@ public class DocumentViewActivity extends BaseNoNavigationActivity {
 
 //        dummy document - start
         String fileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
-        mFileName = fileName;
 
         Document document = new Document();
         ArrayList<File> fileList = getFileList(fileName);
@@ -59,6 +58,7 @@ public class DocumentViewActivity extends BaseNoNavigationActivity {
         initToolbarTitle(document.getTitle());
 
         ImageGalleryAdapter adapter = new ImageGalleryAdapter(this, document);
+        adapter.setFileName(fileName);
         recyclerView.setAdapter(adapter);
     }
 
@@ -122,78 +122,5 @@ public class DocumentViewActivity extends BaseNoNavigationActivity {
     }
 
 
-    private class ImageGalleryAdapter extends RecyclerView.Adapter<ImageGalleryAdapter.MyViewHolder>  {
 
-        private Document mDocument;
-
-        public ImageGalleryAdapter(Context context, Document document) {
-
-            mContext = context;
-            mDocument = document;
-
-        }
-
-        @Override
-        public ImageGalleryAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
-            Context context = parent.getContext();
-            LayoutInflater inflater = LayoutInflater.from(context);
-
-            // Inflate the layout
-            View photoView = inflater.inflate(R.layout.page_list_item, parent, false);
-
-            ImageGalleryAdapter.MyViewHolder viewHolder = new ImageGalleryAdapter.MyViewHolder(photoView);
-            return viewHolder;
-        }
-
-        @Override
-        public void onBindViewHolder(ImageGalleryAdapter.MyViewHolder holder, int position) {
-
-
-            Page page = mDocument.getPages().get(position);
-            ImageView imageView = holder.mImageView;
-
-            Glide.with(mContext)
-                    .load(page.getFile().getPath())
-                    .into(imageView);
-        }
-
-        @Override
-        public int getItemCount() {
-            return mDocument.getPages().size();
-        }
-
-        public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-            public ImageView mImageView;
-
-            public MyViewHolder(View itemView) {
-
-                super(itemView);
-                mImageView = itemView.findViewById(R.id.page_imageview);
-                itemView.setOnClickListener(this);
-
-            }
-
-            @Override
-            public void onClick(View view) {
-
-                int position = getAdapterPosition();
-                if(position != RecyclerView.NO_POSITION) {
-                    Intent intent = new Intent(mContext, PageSlideActivity.class);
-
-                    intent.putExtra("DOCUMENT_FILE_NAME", mFileName);
-                    intent.putExtra("PAGE_POSITION", position);
-
-//                    intent.putExtra(SpacePhotoActivity.EXTRA_SPACE_PHOTO, spacePhoto);
-                    startActivity(intent);
-                }
-            }
-        }
-
-//        private SpacePhoto[] mSpacePhotos;
-        private Context mContext;
-
-
-    }
 }
