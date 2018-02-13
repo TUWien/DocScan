@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,16 +8,26 @@
     <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
         android:id="@+id/page_slide_image_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:background="@color/black"/>
+
+    <!--<com.github.chrisbanes.photoview.PhotoView-->
+        <!--android:id="@+id/page_slide_photo_view"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_width="match_parent"-->
+        <!--/>-->
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/page_slide_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/dark_to_transparent_gradient"
+        android:foregroundTint="@color/colorAccent"
+        app:titleTextColor="@color/white"
+        app:title="asdfasdfsadfasdf"
         />
 
 
-    <!--<include layout="@layout/page_view_buttons_layout" />-->
+    <include layout="@layout/page_view_buttons_layout" />
 
 </FrameLayout>

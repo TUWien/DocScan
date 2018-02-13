@@ -121,39 +121,48 @@ public class PageSlideFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater
                 .inflate(R.layout.fragment_page_slide, container, false);
 
-// Use Glide for image loading:
-//        GlideApp.with(this)
-//                .load((mPage.getFile()).getPath())
-//                .into(imageView);
-// Use SubsamplingScaleImageView for image loading:
+        initImageView(rootView);
 
-        mImageView = rootView.findViewById(R.id.page_slide_image_view);
-        mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()));
-        mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
+        initToolbar(rootView);
 
-//        Toolbar toolbar = rootView.findViewById(R.id.page_slide_toolbar);
-//        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
-//        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("ein test");
-//        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-//        initRotateButton(rootView);
-//        initCropButton(rootView);
-//        initDeleteButton(rootView);
-
-
-//        // status bar height
-//        int statusBarHeight = 0;
-//        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-//        if (resourceId > 0) {
-//            statusBarHeight = getResources().getDimensionPixelSize(resourceId);
-//        }
-
-
-
-
+        initRotateButton(rootView);
+        initDeleteButton(rootView);
+        initCropButton(rootView);
 
         return rootView;
     }
+
+    private void initImageView(ViewGroup rootView) {
+        mImageView = rootView.findViewById(R.id.page_slide_image_view);
+        mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()).tilingDisabled());
+        mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
+
+//      PhotoView by Chris Bane:
+//        PhotoView photoView = rootView.findViewById(R.id.page_slide_photo_view);
+//        photoView.setImageURI(Uri.fromFile(mPage.getFile()));
+//        photoView.setRotationBy();
+    }
+
+    private void initToolbar(ViewGroup rootView) {
+        Toolbar toolbar = rootView.findViewById(R.id.page_slide_toolbar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        String title = mPage.getFile().getName();
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(title);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setPadding(0, getStatusBarHeight(), 0, 0);
+    }
+
+
+    // A method to find height of the status bar
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
 
     private void initRotateButton(ViewGroup rootView) {
         ImageView rotateImageView = rootView.findViewById(R.id.page_view_buttons_layout_rotate_button);

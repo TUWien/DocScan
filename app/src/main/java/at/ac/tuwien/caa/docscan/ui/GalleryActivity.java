@@ -11,6 +11,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -18,10 +19,12 @@ import android.view.View;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.gallery.SimpleItemTouchHelperCallback;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
@@ -30,7 +33,8 @@ import at.ac.tuwien.caa.docscan.logic.Page;
  * Created by fabian on 01.02.2018.
  */
 
-public class GalleryActivity extends AppCompatActivity implements GalleryAdapter.GalleryAdapterCallback {
+public class GalleryActivity extends AppCompatActivity implements
+        GalleryAdapter.GalleryAdapterCallback {
 
     private Toolbar mToolbar;
     private AppBarLayout.LayoutParams mAppBarLayoutParams;
@@ -39,6 +43,9 @@ public class GalleryActivity extends AppCompatActivity implements GalleryAdapter
     private Document mDocument;
     private Menu mMenu;
     private GalleryAdapter mAdapter;
+    private RecyclerView mRecyclerView;
+    private String mFileName;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,32 +54,52 @@ public class GalleryActivity extends AppCompatActivity implements GalleryAdapter
 
         setContentView(R.layout.activity_gallery);
 
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 2);
-        RecyclerView recyclerView = findViewById(R.id.gallery_images_recyclerview);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(layoutManager);
+        //        dummy document - start
+        mFileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
+        if (mFileName == null)
+            mFileName = "/storage/emulated/0/Pictures/DocScan/default";
 
-//        dummy document - start
-//        String fileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
-        String fileName = "/storage/emulated/0/Pictures/DocScan/default";
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 2);
+        mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(layoutManager);
+
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        loadDocument();
+        initToolbar();
+        initAdapter();
+
+    }
+
+    private void initAdapter() {
+
+        mAdapter = new GalleryAdapter(this, mDocument);
+        mAdapter.setFileName(mFileName);
+        mRecyclerView.setAdapter(mAdapter);
+
+        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mAdapter);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(mRecyclerView);
+
+    }
+
+    private void loadDocument() {
         Document document = new Document();
-        ArrayList<File> fileList = getFileList(fileName);
+        ArrayList<File> fileList = getFileList(mFileName);
         ArrayList<Page> pages = filesToPages(fileList);
         document.setPages(pages);
 
-        File file = new File(fileName);
+        File file = new File(mFileName);
         document.setTitle(file.getName());
 
         mDocument = document;
-//        dummy document - end
-
-
-        initToolbar();
-
-        mAdapter = new GalleryAdapter(this, document);
-        mAdapter.setFileName(fileName);
-        recyclerView.setAdapter(mAdapter);
-
     }
 
     private void initToolbar() {
@@ -136,6 +163,24 @@ public class GalleryActivity extends AppCompatActivity implements GalleryAdapter
 
     }
 
+    public void rotateSelectedItems(MenuItem item) {
+
+        if (mDocument == null || mAdapter == null)
+            return;
+
+        int[] selections = mAdapter.getSelectionIndices();
+
+        for (int i = 0; i < selections.length; i++) {
+            try {
+                Helper.rotateExif(mDocument.getPages().get(selections[i]).getFile());
+                mAdapter.notifyItemChanged(selections[i]);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
     private void deleteSelections() {
 
         if (mDocument == null || mAdapter == null)
@@ -163,6 +208,21 @@ public class GalleryActivity extends AppCompatActivity implements GalleryAdapter
         // One or more items are selected - the toolbar stays:
         else
             scrollToolbar(selectionCount);
+
+    }
+
+    @Override
+    public void onDragStart() {
+
+//        int[] selections = mAdapter.getSelectionIndices();
+//
+//        for (int i = selections.length - 1; i >= 1; i--) {
+////            mDocument.getPages().get(selections[i]).getFile().delete();
+//            mDocument.getPages().remove(selections[i]);
+//        }
+//
+//        mAdapter.clearSelection();
+//        mAdapter.notifyDataSetChanged();
 
     }
 
