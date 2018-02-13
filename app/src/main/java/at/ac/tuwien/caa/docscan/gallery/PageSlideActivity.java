@@ -24,6 +24,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -34,7 +35,7 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
-public class PageSlideActivity extends FragmentActivity {
+public class PageSlideActivity extends AppCompatActivity {
 
     private ViewPager mPager;
     private PagerAdapter mPagerAdapter;
@@ -49,6 +50,8 @@ public class PageSlideActivity extends FragmentActivity {
 
 //        Create a dummy document based on the intent: TODO: use a real document here
         String fileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
+        if (fileName == null)
+            fileName = "/storage/emulated/0/Pictures/DocScan/default";
         Document document = getDummyDocument(fileName);
 
         mPagerAdapter = new PageSlideAdapter(getSupportFragmentManager(), document);
@@ -69,6 +72,15 @@ public class PageSlideActivity extends FragmentActivity {
             mPager.setCurrentItem(position);
     }
 
+    // A method to find height of the status bar
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
 
 //    TODO: temporary helper methods copied from BaseDocumentAdapter. Replace them.
 

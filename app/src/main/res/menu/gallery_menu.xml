@@ -18,18 +18,19 @@
         android:visible="false"
         >
         <item
-            android:icon="@drawable/ic_select_all_white_24dp"
+            android:icon="@drawable/ic_select_all_black_24dp"
             android:title="@string/gallery_menu_select_all_item_title"
             android:onClick="selectAllItems"
             app:showAsAction="always"
             />
         <item
-            android:icon="@drawable/ic_rotate_right_white_24dp"
+            android:icon="@drawable/ic_rotate_right_black_24dp"
             android:title="@string/gallery_menu_rotate_item_title"
+            android:onClick="rotateSelectedItems"
             app:showAsAction="always"
             />
         <item
-            android:icon="@drawable/ic_delete_white_24dp"
+            android:icon="@drawable/ic_delete_gray_24dp"
             android:title="@string/gallery_menu_delete_item_title"
             android:onClick="deleteSelectedItems"
             app:showAsAction="always"

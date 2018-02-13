@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -10,17 +11,27 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.signature.MediaStoreSignature;
+
+import java.io.IOException;
+
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.gallery.ItemTouchHelperAdapter;
 import at.ac.tuwien.caa.docscan.gallery.PageSlideActivity;
+import at.ac.tuwien.caa.docscan.gallery.SimpleItemTouchHelperCallback;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
 /**
  * Created by fabian on 2/6/2018.
  */
 
-public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder>  {
+public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder>
+    implements ItemTouchHelperAdapter {
 
     private Document mDocument;
     private Context mContext;
@@ -42,7 +53,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         mSelections = new CountableBooleanArray();
 
     }
-
 
     public void setFileName(String fileName) {
         mFileName = fileName;
@@ -68,11 +78,14 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         Page page = mDocument.getPages().get(position);
 
 //        Show the image:
-        ImageView imageView = holder.mImageView;
-        GlideApp.with(mContext)
-                .load(page.getFile().getPath())
-                .into(imageView);
+        initImageView(holder, position, page);
 
+//      Set the title and init the OnClickListener:
+        initCheckBox(holder, position, page);
+
+    }
+
+    private void initCheckBox(GalleryViewHolder holder, int position, Page page) {
         CheckBox checkBox = holder.mCheckBox;
         checkBox.setText(page.getFile().getName());
         final int pos = position;
@@ -86,7 +99,29 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         });
 
         checkBox.setChecked(mSelections.get(position, false));
+    }
 
+    private void initImageView(GalleryViewHolder holder, int position, Page page) {
+        ImageView imageView = holder.mImageView;
+//        Set up the caching strategy: i.e. reload the image after the orientation has changed:
+        int exifOrientation = -1;
+        try {
+            exifOrientation =  Helper.getExifOrientation(mDocument.getPages().get(position).getFile());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (exifOrientation != -1) {
+            GlideApp.with(mContext)
+                    .load(page.getFile().getPath())
+                    .signature(new MediaStoreSignature("", 0, exifOrientation))
+                    .into(imageView);
+        }
+        else {
+            GlideApp.with(mContext)
+                    .load(page.getFile().getPath())
+                    .into(imageView);
+        }
     }
 
     @Override
@@ -152,6 +187,23 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     }
 
+    @Override
+    public void onItemMove(int fromPosition, int toPosition) {
+
+    }
+
+    @Override
+    public void onItemDismiss(int position) {
+
+    }
+
+    @Override
+    public void onDragStart() {
+
+        mCallback.onDragStart();
+
+    }
+
     public class GalleryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView mImageView;
@@ -182,6 +234,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     public interface GalleryAdapterCallback {
         void onSelectionChange(int selectionCount);
+        void onDragStart();
     }
 
     /**

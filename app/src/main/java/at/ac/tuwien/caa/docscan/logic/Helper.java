@@ -97,6 +97,20 @@ public class Helper {
 
     }
 
+    public static int getExifOrientation(File outFile) throws IOException {
+        final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+        if (exif != null) {
+
+            // Save the orientation of the image:
+//            int orientation = getExifOrientation();
+            String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+            return Integer.valueOf(orientation);
+        }
+
+        return -1;
+
+    }
+
     public static boolean rotateExif(File outFile) throws IOException {
 
         String newOrientation = null;
