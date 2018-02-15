@@ -8,14 +8,19 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+
+import com.fivehundredpx.greedolayout.GreedoLayoutManager;
+import com.fivehundredpx.greedolayout.GreedoSpacingItemDecoration;
+import com.fivehundredpx.greedolayout.RowLayoutManager;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -24,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
+import at.ac.tuwien.caa.docscan.gallery.GalleryTestAdapter;
 import at.ac.tuwien.caa.docscan.gallery.SimpleItemTouchHelperCallback;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -43,6 +50,8 @@ public class GalleryActivity extends AppCompatActivity implements
     private Document mDocument;
     private Menu mMenu;
     private GalleryAdapter mAdapter;
+//    private GalleryTestAdapter mAdapter;
+
     private RecyclerView mRecyclerView;
     private String mFileName;
 
@@ -59,10 +68,15 @@ public class GalleryActivity extends AppCompatActivity implements
         if (mFileName == null)
             mFileName = "/storage/emulated/0/Pictures/DocScan/default";
 
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 2);
+//        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 2);
         mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(layoutManager);
+//        mRecyclerView.setHasFixedSize(true);
+//        mRecyclerView.setLayoutManager(layoutManager);
+
+////        RecyclerView.LayoutManager layoutManager = new RowLayoutManager();
+//        GreedoLayoutManager layoutManager = new GreedoLayoutManager(recyclerAdapter);
+//        mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
+//        mRecyclerView.setLayoutManager(layoutManager);
 
 
 
@@ -81,13 +95,45 @@ public class GalleryActivity extends AppCompatActivity implements
     private void initAdapter() {
 
         mAdapter = new GalleryAdapter(this, mDocument);
+//        mAdapter = new GalleryTestAdapter(this, mDocument);
         mAdapter.setFileName(mFileName);
         mRecyclerView.setAdapter(mAdapter);
+//        RecyclerView.LayoutManager layoutManager = new StaggeredGridLayoutManager(3, 1);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 10);
+        mRecyclerView.setLayoutManager(layoutManager);
 
-        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mAdapter);
-        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
-        touchHelper.attachToRecyclerView(mRecyclerView);
 
+
+//        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mAdapter);
+//        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+//        touchHelper.attachToRecyclerView(mRecyclerView);
+
+//        mAdapter = new GalleryTestAdapter(this, mDocument);
+////        mAdapter = new GalleryTestAdapter(this, mDocument);
+//        mAdapter.setFileName(mFileName);
+//        mRecyclerView.setAdapter(mAdapter);
+//
+//        //        RecyclerView.LayoutManager layoutManager = new RowLayoutManager();
+//        RowLayoutManager layoutManager = new RowLayoutManager(mAdapter);
+//        layoutManager.setMaxRowHeight(dpToPx(200, this));
+////        layoutManager.setFixedHeight(true);
+//        mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
+//        mRecyclerView.setLayoutManager(layoutManager);
+//        int spacing = dpToPx(1, this);
+//        mRecyclerView.addItemDecoration(new GreedoSpacingItemDecoration(spacing));
+
+
+
+    }
+
+    public static int pxToDp(int px, Context context) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, px,
+                context.getResources().getDisplayMetrics());
+    }
+
+    public static int dpToPx(float dp, Context context) {
+        return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                context.getResources().getDisplayMetrics());
     }
 
     private void loadDocument() {
@@ -120,17 +166,17 @@ public class GalleryActivity extends AppCompatActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()){
-            case android.R.id.home:
-                if (mAdapter.getSelectionCount() == 0) {
-                    onBackPressed();
-                    return true;
-                }
-                else {
-                    mAdapter.deselectAllItems();
-                    return true;
-                }
-        }
+//        switch (item.getItemId()){
+//            case android.R.id.home:
+//                if (mAdapter.getSelectionCount() == 0) {
+//                    onBackPressed();
+//                    return true;
+//                }
+//                else {
+//                    mAdapter.deselectAllItems();
+//                    return true;
+//                }
+//        }
 
         return super.onOptionsItemSelected(item);
 
@@ -153,7 +199,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
     public void selectAllItems(MenuItem item) {
 
-        mAdapter.selectAllItems();
+//        mAdapter.selectAllItems();
 
      }
 
@@ -165,36 +211,36 @@ public class GalleryActivity extends AppCompatActivity implements
 
     public void rotateSelectedItems(MenuItem item) {
 
-        if (mDocument == null || mAdapter == null)
-            return;
-
-        int[] selections = mAdapter.getSelectionIndices();
-
-        for (int i = 0; i < selections.length; i++) {
-            try {
-                Helper.rotateExif(mDocument.getPages().get(selections[i]).getFile());
-                mAdapter.notifyItemChanged(selections[i]);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+//        if (mDocument == null || mAdapter == null)
+//            return;
+//
+//        int[] selections = mAdapter.getSelectionIndices();
+//
+//        for (int i = 0; i < selections.length; i++) {
+//            try {
+//                Helper.rotateExif(mDocument.getPages().get(selections[i]).getFile());
+//                mAdapter.notifyItemChanged(selections[i]);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
     }
 
     private void deleteSelections() {
 
-        if (mDocument == null || mAdapter == null)
-            return;
-
-        int[] selections = mAdapter.getSelectionIndices();
-
-        for (int i = selections.length - 1; i >= 0; i--) {
-            mDocument.getPages().get(selections[i]).getFile().delete();
-            mDocument.getPages().remove(selections[i]);
-        }
-
-        mAdapter.clearSelection();
-        mAdapter.notifyDataSetChanged();
+//        if (mDocument == null || mAdapter == null)
+//            return;
+//
+//        int[] selections = mAdapter.getSelectionIndices();
+//
+//        for (int i = selections.length - 1; i >= 0; i--) {
+//            mDocument.getPages().get(selections[i]).getFile().delete();
+//            mDocument.getPages().remove(selections[i]);
+//        }
+//
+//        mAdapter.clearSelection();
+//        mAdapter.notifyDataSetChanged();
 
     }
 
@@ -269,34 +315,34 @@ public class GalleryActivity extends AppCompatActivity implements
     private void showDeleteConfirmationDialog() {
 
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        
-        String title = getResources().getString(R.string.gallery_confirm_delete_title_prefix);
-        title += " " + mAdapter.getSelectionCount();
-        if (mAdapter.getSelectionCount() == 1)
-            title += " " + getResources().getString(R.string.gallery_confirm_delete_title_single_postfix);
-        else
-            title += " " + getResources().getString(R.string.gallery_confirm_delete_title_multiple_postfix);
-
-        // set dialog message
-        alertDialogBuilder
-                .setMessage(R.string.gallery_confirm_delete_text)
-                .setTitle(title)
-                .setPositiveButton(R.string.gallery_confirm_delete_confirm_button_text, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)  {
-                        deleteSelections();
-                    }
-                })
-                .setNegativeButton(R.string.gallery_confirm_delete_cancel_button_text, null)
-                .setCancelable(true);
-//                .setMessage(deleteText);
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
+//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+//
+//        String title = getResources().getString(R.string.gallery_confirm_delete_title_prefix);
+//        title += " " + mAdapter.getSelectionCount();
+//        if (mAdapter.getSelectionCount() == 1)
+//            title += " " + getResources().getString(R.string.gallery_confirm_delete_title_single_postfix);
+//        else
+//            title += " " + getResources().getString(R.string.gallery_confirm_delete_title_multiple_postfix);
+//
+//        // set dialog message
+//        alertDialogBuilder
+//                .setMessage(R.string.gallery_confirm_delete_text)
+//                .setTitle(title)
+//                .setPositiveButton(R.string.gallery_confirm_delete_confirm_button_text, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialogInterface, int i)  {
+//                        deleteSelections();
+//                    }
+//                })
+//                .setNegativeButton(R.string.gallery_confirm_delete_cancel_button_text, null)
+//                .setCancelable(true);
+////                .setMessage(deleteText);
+//
+//        // create alert dialog
+//        AlertDialog alertDialog = alertDialogBuilder.create();
+//
+//        // show it
+//        alertDialog.show();
 
     }
 

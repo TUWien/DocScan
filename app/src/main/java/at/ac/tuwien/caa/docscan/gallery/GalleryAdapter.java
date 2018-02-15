@@ -1,26 +1,23 @@
-package at.ac.tuwien.caa.docscan.ui;
+package at.ac.tuwien.caa.docscan.gallery;
 
 import android.content.Context;
 import android.content.Intent;
-import android.provider.MediaStore;
+import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.signature.MediaStoreSignature;
+import com.fivehundredpx.greedolayout.GreedoLayoutSizeCalculator;
 
 import java.io.IOException;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.gallery.ItemTouchHelperAdapter;
-import at.ac.tuwien.caa.docscan.gallery.PageSlideActivity;
-import at.ac.tuwien.caa.docscan.gallery.SimpleItemTouchHelperCallback;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -74,6 +71,12 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     @Override
     public void onBindViewHolder(GalleryViewHolder holder, int position) {
 
+        GridLayout.LayoutParams params =
+                new GridLayout.LayoutParams(holder.mItemView.getLayoutParams());
+
+        params.rowSpec = GridLayout.spec(position / 2, 2);    // First cell in first row use rowSpan 2.
+        params.columnSpec = GridLayout.spec(0, 2); // First cell in first column use columnSpan 2.
+//        itemView.setLayoutParams(params);
 
         Page page = mDocument.getPages().get(position);
 
@@ -103,6 +106,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     private void initImageView(GalleryViewHolder holder, int position, Page page) {
         ImageView imageView = holder.mImageView;
+
 //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
         int exifOrientation = -1;
         try {
@@ -204,9 +208,50 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     }
 
+//    @Override
+//    public double aspectRatioForIndex(int i) {
+//
+//////        return 0.5;
+////        int v = i % 3;
+////        if (v == 0)
+////            return 2;
+////        else if (v == 1)
+////            return .5;
+////        else
+////            return 1;
+//
+//
+//        if (mDocument.getPages().size() <= i)
+//            return 1;
+//
+//        String fileName = mDocument.getPages().get(i).getFile().getAbsolutePath();
+//        BitmapFactory.Options options = new BitmapFactory.Options();
+//        options.inJustDecodeBounds = true;
+//        BitmapFactory.decodeFile(fileName, options);
+//        int width = options.outWidth;
+//        int height = options.outHeight;
+//
+//        try {
+//            int orientation = Helper.getExifOrientation(mDocument.getPages().get(i).getFile());
+//            int angle = Helper.getAngleFromExif(orientation);
+//            if ((angle == 90) || (angle == 270)) {
+//                int tmp = width;
+//                width = height;
+//                height = width;
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        double ratio = width / (double) height;
+//        return ratio;
+//
+//    }
+
     public class GalleryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView mImageView;
+        private View mItemView;
         private CheckBox mCheckBox;
 
         public GalleryViewHolder(View itemView) {
@@ -215,6 +260,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
             mImageView = itemView.findViewById(R.id.page_imageview);
             itemView.setOnClickListener(this);
             mCheckBox = itemView.findViewById(R.id.page_checkbox);
+
+
 
         }
 

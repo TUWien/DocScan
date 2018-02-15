@@ -11,7 +11,7 @@ android {
 
 	defaultConfig {
 		applicationId "at.ac.tuwien.caa.docscan"
-		minSdkVersion 14
+		minSdkVersion 15
 		targetSdkVersion 27
 		versionCode 16
 		versionName "1.1.8"
@@ -121,4 +121,5 @@ dependencies {
 	implementation project(':openCVLibrary')
 	implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.9.0'
 	implementation 'com.github.chrisbanes:PhotoView:2.0.0'
+	implementation 'com.fivehundredpx:greedo-layout:1.1.0'
 }
