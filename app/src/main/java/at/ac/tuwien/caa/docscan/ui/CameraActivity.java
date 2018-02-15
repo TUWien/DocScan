@@ -40,6 +40,7 @@ import android.graphics.PointF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
@@ -66,6 +67,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
@@ -188,6 +190,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private int mMaxFrameCnt = 0;
     private DkPolyRect[] mLastDkPolyRects;
     private Toast mToast;
+    private OrientationEventListener mOrientationListener;
 
     private boolean mIsQRActive = false;
 
@@ -210,6 +213,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private long mLastTime;
     private boolean mItemSelectedAutomatically = false;
+    private int mLastDisplayRotation = - 1;
 
 
     // ================= start: methods from the Activity lifecycle =================
@@ -223,6 +227,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -249,6 +254,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         if (mCameraPreview != null)
             mCameraPreview.pause();
+
+        if (mOrientationListener != null && mOrientationListener.canDetectOrientation())
+            mOrientationListener.disable();
 
 
         savePreferences();
@@ -286,7 +294,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         super.onResume();
 
-        Log.d(getClass().getName(), "onResume");
+//        Log.d(getClass().getName(), "onResume");
+
+//        Stop receiving orientation change events:
+        if (mOrientationListener != null && mOrientationListener.canDetectOrientation())
+            mOrientationListener.enable();
+        else
+            mOrientationListener.disable();
+
 
         // Read the sync information:
 //        SyncInfo.getInstance().readFromDisk(this);
@@ -434,6 +449,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         setupNavigationDrawer();
         setupDebugView();
 
+        initOrientationListener();
+
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
@@ -449,6 +466,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         checkAppVersion();
 
     }
+
 
     private void checkAppVersion() {
 
@@ -1191,16 +1209,52 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
 
+        Log.d(TAG, "configuration changed");
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
+
+        rotateCameraAndLayout();
+
+    }
+
+    /**
+     * Initializes an OrientEventListener that is used to detect orientation changes that are not
+     * detected by onConfigurationChanged (e.g. landscape to reverse landscape and portrait to reverse portrait).
+     */
+    private void initOrientationListener() {
+
+        mOrientationListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_NORMAL) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+
+                int displayRotation = getDisplayRotation();
+                Log.d(TAG, "device orientation: " + displayRotation);
+
+//                Catch the display rotation changes that are not covered by configuration changes
+//                (e.g. landscape to reverse landscape and portrait to reverse portrait):
+                if ((mLastDisplayRotation == Surface.ROTATION_0 && displayRotation == Surface.ROTATION_180) ||
+                        (mLastDisplayRotation == Surface.ROTATION_180 && displayRotation == Surface.ROTATION_0) ||
+                        (mLastDisplayRotation == Surface.ROTATION_90 && displayRotation == Surface.ROTATION_270) ||
+                        (mLastDisplayRotation == Surface.ROTATION_270 && displayRotation == Surface.ROTATION_90)) {
+                    if (mCameraPreview != null)
+                        mCameraPreview.displayRotated();
+                }
+
+                mLastDisplayRotation = displayRotation;
+
+            }
+        };
+    }
+
+    private void rotateCameraAndLayout() {
 
         // Tell the camera that the orientation changed, so it can adapt the preview orientation:
         if (mCameraPreview != null)
             mCameraPreview.displayRotated();
 
-       // Change the layout dynamically: Remove the current camera_controls_layout and add a new
+        // Change the layout dynamically: Remove the current camera_controls_layout and add a new
         // one, which is appropriate for the orientation (portrait or landscape xml's).
-        ViewGroup appRoot = (ViewGroup) findViewById(R.id.main_frame_layout);
+        ViewGroup appRoot = findViewById(R.id.main_frame_layout);
         if (appRoot == null)
             return;
 
@@ -1235,10 +1289,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         Point dim = null;
 
         if (v != null) {
-            if (getOrientation() == Surface.ROTATION_0 || getOrientation() == Surface.ROTATION_180)
+            if (getDisplayRotation() == Surface.ROTATION_0 || getDisplayRotation() == Surface.ROTATION_180)
                 dim = new Point(size.x, size.y - v.getHeight());
 //                return size.y - v.getHeight();
-            else if (getOrientation() == Surface.ROTATION_90 || getOrientation() == Surface.ROTATION_270)
+            else if (getDisplayRotation() == Surface.ROTATION_90 || getDisplayRotation() == Surface.ROTATION_270)
                 dim = new Point(size.x - v.getWidth(), size.y);
 //                return size.x - v.getWidth();
         }
@@ -1613,7 +1667,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     // ================= stop: CALLBACKS invoking TaskTimer =================
 
 
-    public static int getOrientation() {
+    public static int getDisplayRotation() {
 
         WindowManager w = (WindowManager) mContext.getSystemService(WINDOW_SERVICE);
 
@@ -1656,7 +1710,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         long currentTime = System.currentTimeMillis();
         long timeDiff = currentTime - mLastTime;
-        Log.d(TAG, "time difference: " + timeDiff);
 
         mLastTime = currentTime;
 

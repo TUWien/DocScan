@@ -368,7 +368,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //        Utils.matToBitmap(mat, bitmap);
 //
 //        Matrix mtx = new Matrix();
-//        int displayOrientation = CameraActivity.getOrientation();
+//        int displayOrientation = CameraActivity.getDisplayRotation();
 //        int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
 //        mtx.setRotate(orientation);
 //        Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), mtx, true);
@@ -690,6 +690,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     private void releaseCamera() {
+
+        Log.d(TAG, "releasing camera");
+
         if (mCamera != null) {
             mCamera.stopPreview();
             mCamera.setPreviewCallback(null);
@@ -788,7 +791,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // bottom right. Note that multiple areas are possible, but currently only one is used.
 
         // Get the rotation of the screen to adjust the preview image accordingly.
-        int displayOrientation = CameraActivity.getOrientation();
+        int displayOrientation = CameraActivity.getDisplayRotation();
         int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
 
         // Transform the point:
@@ -949,7 +952,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             return;
 
         // Get the rotation of the screen to adjust the preview image accordingly.
-        int displayOrientation = CameraActivity.getOrientation();
+        int displayOrientation = CameraActivity.getDisplayRotation();
         int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
         mCamera.setDisplayOrientation(orientation);
 
@@ -1518,12 +1521,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             return;
 
         // Get the rotation of the screen to adjust the preview image accordingly.
-        int displayOrientation = CameraActivity.getOrientation();
-        int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
-        mCamera.setDisplayOrientation(orientation);
+        int displayOrientation = CameraActivity.getDisplayRotation();
+        int cameraOrienation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
+        mCamera.setDisplayOrientation(cameraOrienation);
 
         // Tell the dependent Activity that the frame dimension (might have) change:
-        mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
+        mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, cameraOrienation);
+
+        Log.d(TAG, "display orientation changed: " + displayOrientation);
+        Log.d(TAG, "changed camera orientation: " + cameraOrienation);
 
     }
 
