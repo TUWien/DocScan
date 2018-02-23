@@ -32,6 +32,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -50,8 +51,10 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -73,6 +76,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -232,6 +236,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+
+        //    just for markus oneplus:
+//        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+//            colorStatusBar();
+
+
         //        Open the log file at app startup:
         if (AppState.isDataLogged())
             DataLog.getInstance().readLog(this);
@@ -241,6 +251,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mContext = this;
 
     }
+
+//    just for markus oneplus:
+//    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+//    private void colorStatusBar() {
+//
+//        getWindow().setNavigationBarColor(ContextCompat.getColor(this, R.color.black));
+//
+//    }
 
 
     /**
@@ -2094,13 +2112,38 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mCameraOrientation = cameraOrientation;
         mCVResult.setFrameDimensions(width, height, cameraOrientation);
 
-        CameraPaintLayout l = (CameraPaintLayout) findViewById(R.id.camera_paint_layout);
+        CameraPaintLayout l = findViewById(R.id.camera_paint_layout);
         if (l != null)
             l.setFrameDimensions(width, height);
+
+        if (mCameraPreview == null)
+            return;
 
         View v = findViewById(R.id.camera_controls_layout);
         if ((v != null) && (!mCameraPreview.isPreviewFitting()))
             v.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
+
+////        Make the actionbar intransparent in case the preview does not fit the entire screen
+////        Note: this is especially for markus oneplus not tested on other devices yet:
+//        if (mCameraPreview.isPreviewFitting() &&
+//                (getDisplayRotation() == Surface.ROTATION_0 || getDisplayRotation() == Surface.ROTATION_180)) {
+//            int actionBarHeight;
+//            final TypedArray styledAttributes = getTheme().obtainStyledAttributes(
+//                    new int[]{android.R.attr.actionBarSize}
+//            );
+//            actionBarHeight = (int) styledAttributes.getDimension(0, 0);
+//            styledAttributes.recycle();
+//
+//            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) l.getLayoutParams();
+//            params.setMargins(0, actionBarHeight, 0, 0);
+//        }
+//        else {
+//            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) l.getLayoutParams();
+//            params.setMargins(0, 0, 0, 0);
+//        }
+
+
+
 
     }
 
