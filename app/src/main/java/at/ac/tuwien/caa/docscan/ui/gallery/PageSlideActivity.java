@@ -72,16 +72,6 @@ public class PageSlideActivity extends AppCompatActivity {
             mPager.setCurrentItem(position);
     }
 
-    // A method to find height of the status bar
-    public int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
-    }
-
 
 //    TODO: temporary helper methods copied from BaseDocumentAdapter. Replace them.
 

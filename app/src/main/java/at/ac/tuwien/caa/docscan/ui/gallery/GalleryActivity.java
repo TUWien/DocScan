@@ -7,25 +7,15 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.fivehundredpx.greedolayout.GreedoLayoutManager;
 import com.fivehundredpx.greedolayout.GreedoSpacingItemDecoration;
-import com.fivehundredpx.greedolayout.RowLayoutManager;
-import com.google.android.flexbox.AlignItems;
-import com.google.android.flexbox.FlexDirection;
-import com.google.android.flexbox.FlexWrap;
-import com.google.android.flexbox.FlexboxLayoutManager;
-import com.google.android.flexbox.JustifyContent;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -35,8 +25,6 @@ import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
-import at.ac.tuwien.caa.docscan.gallery.GalleryTestAdapter;
-import at.ac.tuwien.caa.docscan.gallery.SimpleItemTouchHelperCallback;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
@@ -55,10 +43,14 @@ public class GalleryActivity extends AppCompatActivity implements
     private Document mDocument;
     private Menu mMenu;
     private GalleryAdapter mAdapter;
-//    private GalleryTestAdapter mAdapter;
 
     private RecyclerView mRecyclerView;
     private String mFileName;
+
+//    This is used to determine if some file changes (rotation or deletion) happened outside of the
+//    GalleryActivity (i.e. in the ImageViewerFragment). If something changed we need to reload the
+//    images in onResume.
+    private static boolean mFileDeleted, mFileRotated;
 
 
     @Override
@@ -73,22 +65,11 @@ public class GalleryActivity extends AppCompatActivity implements
         if (mFileName == null)
             mFileName = "/storage/emulated/0/Pictures/DocScan/Untitled document";
 
-//        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 2);
         mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
 
         loadDocument();
         initToolbar();
         initAdapter();
-
-//        mRecyclerView.setHasFixedSize(true);
-//        mRecyclerView.setLayoutManager(layoutManager);
-
-////        RecyclerView.LayoutManager layoutManager = new RowLayoutManager();
-//        GreedoLayoutManager layoutManager = new GreedoLayoutManager(recyclerAdapter);
-//        mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
-//        mRecyclerView.setLayoutManager(layoutManager);
-
-
 
     }
 
@@ -96,29 +77,40 @@ public class GalleryActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
 
+//        Just reload the files if some file changes happened in the meantime:
 
+        if (mFileDeleted) {
+            loadDocument(); // get the files contained in the document:
+            initAdapter();
+        }
 
+        if (mFileRotated) {
+            mAdapter.notifyDataSetChanged();
+        }
+
+    }
+
+    public static void resetFileManipulation() {
+        mFileDeleted = false;
+        mFileRotated = false;
+    }
+
+    public static void fileDeleted() {
+        mFileDeleted = true;
+    }
+
+    public static void fileRotated() {
+        mFileRotated = true;
     }
 
     private void initAdapter() {
 
         mAdapter = new GalleryAdapter(this, mDocument);
-//        mAdapter = new GalleryTestAdapter(this, mDocument);
         mAdapter.setFileName(mFileName);
         mRecyclerView.setAdapter(mAdapter);
-//        RecyclerView.LayoutManager layoutManager = new StaggeredGridLayoutManager(2, 1);
-//        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(this, 2);
-
-//        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager();
-//        layoutManager.setFlexDirection(FlexDirection.ROW);
-////        layoutManager.setJustifyContent(JustifyContent.FLEX_END);
-//        layoutManager.setFlexWrap(FlexWrap.WRAP);
-//        layoutManager.setAlignItems(AlignItems.STRETCH);
 
         GreedoLayoutManager layoutManager = new GreedoLayoutManager(mAdapter);
         layoutManager.setMaxRowHeight(1000);
-
-//        layoutManager.setMaxRowHeight();
         int spacing = dpToPx(1, this);
         mRecyclerView.addItemDecoration(new GreedoSpacingItemDecoration(spacing));
 
@@ -126,40 +118,15 @@ public class GalleryActivity extends AppCompatActivity implements
 
         mRecyclerView.setLayoutManager(layoutManager);
 
-
-
-//        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(mAdapter);
-//        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
-//        touchHelper.attachToRecyclerView(mRecyclerView);
-
-//        mAdapter = new GalleryTestAdapter(this, mDocument);
-////        mAdapter = new GalleryTestAdapter(this, mDocument);
-//        mAdapter.setFileName(mFileName);
-//        mRecyclerView.setAdapter(mAdapter);
-//
-//        //        RecyclerView.LayoutManager layoutManager = new RowLayoutManager();
-//        RowLayoutManager layoutManager = new RowLayoutManager(mAdapter);
-//        layoutManager.setMaxRowHeight(dpToPx(200, this));
-////        layoutManager.setFixedHeight(true);
-//        mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
-//        mRecyclerView.setLayoutManager(layoutManager);
-
-
-
-
     }
 
-    public static int pxToDp(int px, Context context) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_PX, px,
-                context.getResources().getDisplayMetrics());
-    }
-
-    public static int dpToPx(float dp, Context context) {
+    private static int dpToPx(float dp, Context context) {
         return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
                 context.getResources().getDisplayMetrics());
     }
 
     private void loadDocument() {
+
         Document document = new Document();
         ArrayList<File> fileList = getFileList(mFileName);
         ArrayList<Page> pages = filesToPages(fileList);
@@ -169,6 +136,7 @@ public class GalleryActivity extends AppCompatActivity implements
         document.setTitle(file.getName());
 
         mDocument = document;
+
     }
 
     private void initToolbar() {
@@ -211,9 +179,6 @@ public class GalleryActivity extends AppCompatActivity implements
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.gallery_menu, menu);
 
-//        mMenu.setGroupVisible(R.id.gallery_menu_selection, false);
-//        mMenu.setGroupVisible(R.id.gallery_menu_main, true);
-
         mMenu = menu;
 
         return true;
@@ -243,7 +208,9 @@ public class GalleryActivity extends AppCompatActivity implements
         for (int i = 0; i < selections.length; i++) {
             try {
                 Helper.rotateExif(mDocument.getPages().get(selections[i]).getFile());
-                mAdapter.notifyItemChanged(selections[i]);
+//                mAdapter.notifyItemChanged(selections[i]);
+//              We need to update ALL items because the layout of the neighboring items probably will change:
+                mAdapter.notifyDataSetChanged();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -376,28 +343,6 @@ public class GalleryActivity extends AppCompatActivity implements
     private ArrayList<File> getFileList(String dir) {
 
         File[] files = getFiles(new File(dir));
-
-        ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
-
-        return fileList;
-
-    }
-
-    private ArrayList<File> getFileList(Context context) {
-
-        File mediaStorageDir = Helper.getMediaStorageDir(context.getResources().getString(R.string.app_name));
-
-        if (mediaStorageDir == null)
-            return null;
-
-        FileFilter directoryFilter = new FileFilter() {
-            public boolean accept(File file) {
-                return file.isDirectory();
-            }
-        };
-
-        File[] dirs = mediaStorageDir.listFiles(directoryFilter);
-        File[] files = getFiles(dirs[27]);
 
         ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
 

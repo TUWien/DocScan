@@ -22,14 +22,17 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <!-- We need the following attribute because without it the toolbar will be overlapping the content: -->
+    <!--app:layout_behavior="@string/appbar_scrolling_view_behavior"-->
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/gallery_images_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         />
 
-    <!--<include layout="@layout/navigation_view"/>-->
 
 </android.support.design.widget.CoordinatorLayout>
 
