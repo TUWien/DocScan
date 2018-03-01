@@ -61,6 +61,32 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
     }
 
+    public void selectAllItems() {
+
+        setAllSelections(true);
+
+    }
+
+    public void deselectAllItems() {
+
+        setAllSelections(false);
+
+    }
+
+    private void setAllSelections(boolean isSelected) {
+
+        for (int i = 0; i < mDirs.size(); i++) {
+            mSelections.put(i, isSelected);
+        }
+
+//        We need to redraw the check boxes:
+        this.notifyDataSetChanged();
+
+//        We need to inform the parent activity that the selection has changed:
+//        mCallback.onSelectionChange(mDirs.size());
+        mCallback.onSelectionChange();
+    }
+
     /**
      * Fills the list with directories that contain at least one image.
      */

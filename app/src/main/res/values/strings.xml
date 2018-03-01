@@ -207,6 +207,9 @@
     <string name="sync_server_changed_title">Upload server changed</string>
     <string name="sync_server_changed_text">Please note that from now on, your images are uploaded to the standard Transkribus server (https://transkribus.eu/TrpServer).</string>
     <string name="sync_dir_pending_text">(upload pending)</string>
+    <string name="sync_menu_upload_item_title">Start upload</string>
+    <string name="sync_menu_delete_item_title">Delete item</string>
+    <string name="sync_menu_select_all_item_title">Select all items</string>
 
     <string name="sync_not_logged_in_text">You are currently not logged in, please log in first.</string>
     <string name="sync_not_logged_in_button_text">Log in</string>
