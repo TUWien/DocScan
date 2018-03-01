@@ -42,6 +42,7 @@ import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
+import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
@@ -50,29 +51,26 @@ public class ImageViewerFragment extends Fragment {
     private Page mPage;
     private SubsamplingScaleImageView mImageView;
 
-    /** TODO: remove this, we just need it here for debugging if the CameraActivitiy is not started before ImageViewerFragment
-     * Static initialization of the OpenCV and docscan-native modules.
-     */
-    static {
-
-//         We need this for Android 4:
-        if (!OpenCVLoader.initDebug()) {
-//            Log.d(TAG, "Error while initializing OpenCV.");
-        } else {
-            System.loadLibrary("opencv_java3");
-            System.loadLibrary("docscan-native");
-//            Log.d(TAG, "OpenCV initialized");
-        }
-
-    }
+//    /** TODO: remove this, we just need it here for debugging if the CameraActivitiy is not started before ImageViewerFragment
+//     * Static initialization of the OpenCV and docscan-native modules.
+//     */
+//    static {
+//
+////         We need this for Android 4:
+//        if (!OpenCVLoader.initDebug()) {
+////            Log.d(TAG, "Error while initializing OpenCV.");
+//        } else {
+//            System.loadLibrary("opencv_java3");
+//            System.loadLibrary("docscan-native");
+////            Log.d(TAG, "OpenCV initialized");
+//        }
+//
+//    }
 
 
     public static ImageViewerFragment create(Page page) {
 
         ImageViewerFragment fragment = new ImageViewerFragment();
-//        Bundle args = new Bundle();
-//        args.putInt("arg_int", pageNumber);
-//        fragment.setArguments(args);
         fragment.setPage(page);
 
         return fragment;
@@ -83,43 +81,21 @@ public class ImageViewerFragment extends Fragment {
 
     }
 
-    public void testClick2() {
-
-    }
-
-
-
-    public void rotateImg90Degrees() {
-
-        if (mPage != null && mImageView != null) {
-            try {
-                if (Helper.rotateExif(mPage.getFile().getAbsoluteFile())) {
-                    mImageView.invalidate();
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        }
-
-
-    }
-
     private void setPage(Page page) {
         mPage = page;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
-//        mPageNumber = getArguments().getInt("arg_int");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout containing a title and body text.
         ViewGroup rootView = (ViewGroup) inflater
                 .inflate(R.layout.fragment_image_viewer, container, false);
@@ -133,9 +109,11 @@ public class ImageViewerFragment extends Fragment {
         initCropButton(rootView);
 
         return rootView;
+
     }
 
     private void initImageView(ViewGroup rootView) {
+
         mImageView = rootView.findViewById(R.id.image_viewer_image_view);
         mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()).tilingDisabled());
         mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
@@ -144,6 +122,7 @@ public class ImageViewerFragment extends Fragment {
 //        PhotoView photoView = rootView.findViewById(R.id.page_slide_photo_view);
 //        photoView.setImageURI(Uri.fromFile(mPage.getFile()));
 //        photoView.setRotationBy();
+
     }
 
     private void initToolbar(ViewGroup rootView) {
@@ -162,21 +141,25 @@ public class ImageViewerFragment extends Fragment {
                 getActivity().onBackPressed();
             }
         });
+
     }
 
 
     // A method to find height of the status bar
     public int getStatusBarHeight() {
+
         int result = 0;
         int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
         if (resourceId > 0) {
             result = getResources().getDimensionPixelSize(resourceId);
         }
         return result;
+
     }
 
 
     private void initRotateButton(ViewGroup rootView) {
+
         ImageView rotateImageView = rootView.findViewById(R.id.page_view_buttons_layout_rotate_button);
         rotateImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -186,6 +169,8 @@ public class ImageViewerFragment extends Fragment {
 //                        Rotate the image 90 degrees and set the image again (I did not find another way to force an update of the imageview)
                         if (Helper.rotateExif(mPage.getFile().getAbsoluteFile())) {
                             mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()));
+//                            Tell the gallery viewer that the file has rotated:
+                            GalleryActivity.fileRotated();
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -194,9 +179,11 @@ public class ImageViewerFragment extends Fragment {
                 }
             }
         });
+
     }
 
     private void initCropButton(ViewGroup rootView) {
+
         ImageView cropImageView = rootView.findViewById(R.id.page_view_buttons_layout_crop_button);
         cropImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -209,9 +196,11 @@ public class ImageViewerFragment extends Fragment {
                 }
             }
         });
+
     }
 
     private void initDeleteButton(ViewGroup rootView) {
+
         ImageView deleteImageView = rootView.findViewById(R.id.page_view_buttons_layout_delete_button);
         deleteImageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -221,6 +210,7 @@ public class ImageViewerFragment extends Fragment {
                 }
             }
         });
+
     }
 
     private void showDeleteConfirmationDialog() {
@@ -237,6 +227,8 @@ public class ImageViewerFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)  {
                         mPage.getFile().delete();
+//                            Tell the gallery viewer that the file was deleted:
+                        GalleryActivity.fileDeleted();
                         getActivity().finish();
 
                     }

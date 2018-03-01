@@ -9,14 +9,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.GridLayout;
 import android.widget.ImageView;
 
 import com.bumptech.glide.signature.MediaStoreSignature;
 import com.fivehundredpx.greedolayout.GreedoLayoutSizeCalculator;
 import com.fivehundredpx.greedolayout.Size;
-import com.google.android.flexbox.AlignSelf;
-import com.google.android.flexbox.FlexboxLayoutManager;
 
 import java.io.IOException;
 import java.util.Random;
@@ -26,6 +23,7 @@ import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
+import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 
 /**
@@ -74,7 +72,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
         // Inflate the layout
         View photoView = inflater.inflate(R.layout.gallery_item, parent, false);
-        ViewGroup.LayoutParams p = photoView.getLayoutParams();
 
         GalleryViewHolder viewHolder = new GalleryViewHolder(photoView);
         return viewHolder;
@@ -82,26 +79,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     @Override
     public void onBindViewHolder(GalleryViewHolder holder, int position) {
-//
-//        GridLayout.LayoutParams params =
-//                new GridLayout.LayoutParams(holder.mItemView.getLayoutParams());
-//
-//        params.rowSpec = GridLayout.spec(position / 2, 2);    // First cell in first row use rowSpan 2.
-//        params.columnSpec = GridLayout.spec(0, 2); // First cell in first column use columnSpan 2.
-////        itemView.setLayoutParams(params);
-
-//        int r = getRandomIntInRange(200,0);
-
-
-
-//        ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) holder.mItemView.getLayoutParams();
-//
-//        if (position % 4 < 2) { // first row
-//            if (position % 2 == 1) // second column
-//                p.leftMargin = -200;
-//        }
-
-
 
         Page page = mDocument.getPages().get(position);
 
@@ -119,6 +96,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     }
 
     private void initCheckBox(GalleryViewHolder holder, int position, Page page) {
+
         CheckBox checkBox = holder.mCheckBox;
 //        checkBox.setText(page.getFile().getName());
         checkBox.setText(page.getTitle());
@@ -133,9 +111,11 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         });
 
         checkBox.setChecked(mSelections.get(position, false));
+
     }
 
     private void initImageView(GalleryViewHolder holder, int position, Page page) {
+
         ImageView imageView = holder.mImageView;
 
 //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
@@ -157,11 +137,14 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                     .load(page.getFile().getPath())
                     .into(imageView);
         }
+
     }
 
     @Override
     public int getItemCount() {
+
         return mDocument.getPages().size();
+
     }
 
     public int[] getSelectionIndices() {
@@ -239,46 +222,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     }
 
-//    @Override
-//    public double aspectRatioForIndex(int i) {
-//
-//////        return 0.5;
-////        int v = i % 3;
-////        if (v == 0)
-////            return 2;
-////        else if (v == 1)
-////            return .5;
-////        else
-////            return 1;
-//
-//
-//        if (mDocument.getPages().size() <= i)
-//            return 1;
-//
-//        String fileName = mDocument.getPages().get(i).getFile().getAbsolutePath();
-//        BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inJustDecodeBounds = true;
-//        BitmapFactory.decodeFile(fileName, options);
-//        int width = options.outWidth;
-//        int height = options.outHeight;
-//
-//        try {
-//            int orientation = Helper.getExifOrientation(mDocument.getPages().get(i).getFile());
-//            int angle = Helper.getAngleFromExif(orientation);
-//            if ((angle == 90) || (angle == 270)) {
-//                int tmp = width;
-//                width = height;
-//                height = width;
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        double ratio = width / (double) height;
-//        return ratio;
-//
-//    }
-
     public class GalleryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView mImageView;
@@ -291,42 +234,25 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
             mItemView = itemView;
 
-//            int r = getRandomIntInRange(200,0);
-//
-//            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) itemView.getLayoutParams();
-//            p.leftMargin = -r;
             mImageView = itemView.findViewById(R.id.page_imageview);
-
-//            ViewGroup.LayoutParams lp = mImageView.getLayoutParams();
-//            if (lp instanceof FlexboxLayoutManager.LayoutParams) {
-//                FlexboxLayoutManager.LayoutParams flexboxLp = (FlexboxLayoutManager.LayoutParams) lp;
-//                flexboxLp.setFlexGrow(1.0f);
-//                flexboxLp.setAlignSelf(AlignSelf.FLEX_END);
-//            }
-
-
-//
-//            flexboxLp.setFlexGrow(1.0f);
-
             itemView.setOnClickListener(this);
+
             mCheckBox = itemView.findViewById(R.id.page_checkbox);
 
-
-
         }
 
-        // Custom method to get a random number between a range
-        protected int getRandomIntInRange(int max, int min){
-            return new Random().nextInt((max-min)+min)+min;
-        }
 
         @Override
         public void onClick(View view) {
 
             int position = getAdapterPosition();
             if(position != RecyclerView.NO_POSITION) {
-                Intent intent = new Intent(mContext, PageSlideActivity.class);
 
+//                Tell the GalleryActivity that no file change has been done yet:
+                GalleryActivity.resetFileManipulation();
+
+//                Start the image viewer:
+                Intent intent = new Intent(mContext, PageSlideActivity.class);
                 intent.putExtra("DOCUMENT_FILE_NAME", mFileName);
                 intent.putExtra("PAGE_POSITION", position);
                 mContext.startActivity(intent);
@@ -334,18 +260,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         }
     }
 
+//    Needed by the GreedoLayoutManager:
     @Override
     public double aspectRatioForIndex(int i) {
-
-////        return 0.5;
-//        int v = i % 3;
-//        if (v == 0)
-//            return 2;
-//        else if (v == 1)
-//            return .5;
-//        else
-//            return 1;
-
 
         if (mDocument.getPages().size() <= i)
             return 1.0;
