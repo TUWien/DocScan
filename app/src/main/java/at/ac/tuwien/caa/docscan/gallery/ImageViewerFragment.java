@@ -45,12 +45,12 @@ import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
-public class PageSlideFragment extends Fragment {
+public class ImageViewerFragment extends Fragment {
 
     private Page mPage;
     private SubsamplingScaleImageView mImageView;
 
-    /** TODO: remove this, we just need it here for debugging if the CameraActivitiy is not started before PageSlideFragment
+    /** TODO: remove this, we just need it here for debugging if the CameraActivitiy is not started before ImageViewerFragment
      * Static initialization of the OpenCV and docscan-native modules.
      */
     static {
@@ -67,9 +67,9 @@ public class PageSlideFragment extends Fragment {
     }
 
 
-    public static PageSlideFragment create(Page page) {
+    public static ImageViewerFragment create(Page page) {
 
-        PageSlideFragment fragment = new PageSlideFragment();
+        ImageViewerFragment fragment = new ImageViewerFragment();
 //        Bundle args = new Bundle();
 //        args.putInt("arg_int", pageNumber);
 //        fragment.setArguments(args);
@@ -79,13 +79,15 @@ public class PageSlideFragment extends Fragment {
 
     }
 
-    public PageSlideFragment() {
+    public ImageViewerFragment() {
 
     }
 
     public void testClick2() {
 
     }
+
+
 
     public void rotateImg90Degrees() {
 
@@ -111,6 +113,7 @@ public class PageSlideFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 //        mPageNumber = getArguments().getInt("arg_int");
     }
 
@@ -119,7 +122,7 @@ public class PageSlideFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout containing a title and body text.
         ViewGroup rootView = (ViewGroup) inflater
-                .inflate(R.layout.fragment_page_slide, container, false);
+                .inflate(R.layout.fragment_image_viewer, container, false);
 
         initImageView(rootView);
 
@@ -133,7 +136,7 @@ public class PageSlideFragment extends Fragment {
     }
 
     private void initImageView(ViewGroup rootView) {
-        mImageView = rootView.findViewById(R.id.page_slide_image_view);
+        mImageView = rootView.findViewById(R.id.image_viewer_image_view);
         mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()).tilingDisabled());
         mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
 
@@ -144,12 +147,21 @@ public class PageSlideFragment extends Fragment {
     }
 
     private void initToolbar(ViewGroup rootView) {
-        Toolbar toolbar = rootView.findViewById(R.id.page_slide_toolbar);
+
+        Toolbar toolbar = rootView.findViewById(R.id.image_viewer_toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         String title = mPage.getFile().getName();
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(title);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         toolbar.setPadding(0, getStatusBarHeight(), 0, 0);
+
+        // Close the fragment if the user hits the back button in the toolbar:
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().onBackPressed();
+            }
+        });
     }
 
 

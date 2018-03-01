@@ -21,7 +21,7 @@ import java.util.Comparator;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
-import at.ac.tuwien.caa.docscan.ui.GalleryActivity;
+import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 
 /**
  * Created by fabian on 02.10.2017.

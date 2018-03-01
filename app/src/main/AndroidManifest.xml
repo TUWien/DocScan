@@ -53,13 +53,13 @@
             />
 
         <activity
-            android:name=".gallery.PageSlideActivity"
+            android:name=".ui.gallery.PageSlideActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
 
         <activity
-            android:name=".ui.GalleryActivity"
+            android:name=".ui.gallery.GalleryActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />

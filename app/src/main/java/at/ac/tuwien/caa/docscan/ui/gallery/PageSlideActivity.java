@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.gallery;
+package at.ac.tuwien.caa.docscan.ui.gallery;
 
 /* Based on the example provided in:
  * https://developer.android.com/training/animation/screen-slide.html
@@ -19,7 +19,6 @@ package at.ac.tuwien.caa.docscan.gallery;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
@@ -32,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
@@ -81,6 +81,7 @@ public class PageSlideActivity extends AppCompatActivity {
         }
         return result;
     }
+
 
 //    TODO: temporary helper methods copied from BaseDocumentAdapter. Replace them.
 
@@ -150,7 +151,7 @@ public class PageSlideActivity extends AppCompatActivity {
 
             Page page = mDocument.getPages().get(position);
 
-            return PageSlideFragment.create(page);
+            return ImageViewerFragment.create(page);
 
         }
 
