@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!--<group-->
+        <!--android:id="@+id/gallery_menu_main"-->
+        <!--&gt;-->
+        <!--<item-->
+            <!--android:id="@+id/gallery_menu_document_item"-->
+            <!--android:icon="@drawable/ic_folder_white_24dp"-->
+            <!--android:title="@string/gallery_menu_document_item_title"-->
+            <!--app:showAsAction="always"-->
+            <!--/>-->
+    <!--</group>-->
+
+    <group
+        android:id="@+id/sync_menu_selection"
+        android:visible="false"
+        >
+        <item
+            android:icon="@drawable/ic_select_all_black_24dp"
+            android:title="@string/sync_menu_select_all_item_title"
+            android:onClick="selectAllItems"
+            app:showAsAction="always"
+            />
+        <item
+            android:icon="@drawable/ic_cloud_upload_black_24dp"
+            android:title="@string/sync_menu_upload_item_title"
+            android:onClick="startUpload"
+            app:showAsAction="always"
+            />
+        <item
+            android:icon="@drawable/ic_delete_black_24dp"
+            android:title="@string/sync_menu_delete_item_title"
+            android:onClick="deleteSelectedItems"
+            app:showAsAction="always"
+            />
+    </group>
+
+
+
+</menu>

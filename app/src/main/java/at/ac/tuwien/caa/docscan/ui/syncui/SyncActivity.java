@@ -10,10 +10,16 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.Toolbar;
+import android.text.Selection;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ExpandableListView;
@@ -31,6 +37,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
+import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
 import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_ERROR_ID;
@@ -49,10 +56,12 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
     private int mNumUploadJobs;
     private int mTranskribusUploadCollId;
     private ArrayList<File> mSelectedDirs;
-    private TextView mSelectionTextView;
-    private RelativeLayout mSelectionLayout;
+//    private TextView mSelectionTextView;
+//    private RelativeLayout mSelectionLayout;
     private Snackbar mSnackbar;
-    private ProgressBar mProgressBar;
+//    private ProgressBar mProgressBar;
+    private SelectionToolbar mSelectionToolbar;
+    private Menu mMenu;
 
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
 
@@ -102,14 +111,15 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_EXTERNAL_STORAGE);
         }
 
-        addFooter();
+//        addFooter();
 
-        mSelectionTextView = (TextView) findViewById(R.id.sync_selection_textview);
-        mSelectionLayout = (RelativeLayout) findViewById(R.id.sync_selection_layout);
-        mProgressBar = (ProgressBar) findViewById(R.id.sync_progressbar);
+//        mSelectionTextView = (TextView) findViewById(R.id.sync_selection_textview);
+//        mSelectionLayout = (RelativeLayout) findViewById(R.id.sync_selection_layout);
+//        mProgressBar = (ProgressBar) findViewById(R.id.sync_progressbar);
 
-        initUploadButton();
-        initDeleteButton();
+//        initUploadButton();
+//        initDeleteButton();
+        initToolbar();
 
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents
@@ -142,6 +152,38 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+            case android.R.id.home:
+                if (mSelectedDirs.size() > 0) {
+                    mAdapter.deselectAllItems();
+                }
+                else {
+//                    We need to show the navigation drawer manually in this case:
+                    mNavigationDrawer.showNavigation();
+                }
+
+
+        }
+
+        return true;
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.sync_menu, menu);
+
+        mMenu = menu;
+
+        return true;
+
+    }
+
     /**
      * Shows a snackbar indicating that the device is offline.
      */
@@ -154,6 +196,19 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
                 snackbarText, Snackbar.LENGTH_LONG);
         mSnackbar.show();
+
+    }
+
+    private void initToolbar() {
+
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        AppBarLayout appBarLayout = findViewById(R.id.gallery_appbar);
+
+        mSelectionToolbar = new SelectionToolbar(this, toolbar, appBarLayout);
+
+//        Enable back navigation in action bar:
+        setSupportActionBar(toolbar);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
     }
 
@@ -230,6 +285,8 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
     }
 
+
+
     private void initUploadButton() {
 
         ImageButton uploadButton = findViewById(R.id.sync_upload_button);
@@ -239,38 +296,28 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
 //                new CreateCollectionRequest(mContext, "DocScan");
 
-                ArrayList<File> selectedDirs = mAdapter.getSelectedDirs();
-
-                if (selectedDirs.size() == 0) {
-                    showNoDirSelectedAlert();
-                }
-                else {
-                    mSelectedDirs = selectedDirs;
-
-                    checkFolderOnlineStatusAndUpload(mSelectedDirs);
-
-                    updateListAndSelectionText();
-
-//                    if (!isOnline()) {
-//                        showNotOnlineSnackbar();
-//                        updateListAndSelectionText();
-//                        // update the selection display:
-//                        checkFolderOnlineStatusAndUpload(mSelectedDirs);
-////                        onSelectionChange();
-////                        startUpload();
-//                    }
-//                    else {
-//                        updateListAndSelectionText();
-////                        mProgressBar.setProgress(0);
-////                        displayUploadActive(true);
-//                        checkFolderOnlineStatusAndUpload(mSelectedDirs);
-////                        startUpload();
-//                    }
-
-                }
+                startUpload();
 
             }
         });
+    }
+
+    private void startUpload() {
+
+        ArrayList<File> selectedDirs = mAdapter.getSelectedDirs();
+
+        if (selectedDirs.size() == 0) {
+            showNoDirSelectedAlert();
+        }
+        else {
+            mSelectedDirs = selectedDirs;
+
+            checkFolderOnlineStatusAndUpload(mSelectedDirs);
+
+            updateListAndSelectionText();
+
+
+        }
     }
 
     /**
@@ -321,16 +368,16 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
         }
 
 
-        // Show or hide views that are not visible during upload:
-        if (mSelectionLayout != null)
-            mSelectionLayout.setVisibility(nonUploadViewVisibility);
-        if (mListView != null)
-            mListView.setVisibility(nonUploadViewVisibility);
-
-        // Show or hide views that are visible during upload:
-        if (mProgressBar != null)
-            mProgressBar.setVisibility(uploadViewVisibility);
-//            mProgressBar.setProgress(0);
+//        // Show or hide views that are not visible during upload:
+//        if (mSelectionLayout != null)
+//            mSelectionLayout.setVisibility(nonUploadViewVisibility);
+//        if (mListView != null)
+//            mListView.setVisibility(nonUploadViewVisibility);
+//
+//        // Show or hide views that are visible during upload:
+//        if (mProgressBar != null)
+//            mProgressBar.setVisibility(uploadViewVisibility);
+////            mProgressBar.setProgress(0);
 
     }
 
@@ -611,11 +658,59 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
 
         mSelectedDirs = mAdapter.getSelectedDirs();
 
-        if (mSelectionTextView != null) {
-            String text = getSelectionText();
-            if (text != null)
-                mSelectionTextView.setText(text);
+//        if (mSelectionTextView != null) {
+//            String text = getSelectionText();
+//            if (text != null)
+//                mSelectionTextView.setText(text);
+//        }
+
+        if (mSelectionToolbar == null)
+            return;
+
+        if (mSelectedDirs.size() == 0) {
+            fixToolbar();
         }
+        else {
+            scrollToolbar(mSelectedDirs.size());
+        }
+
+    }
+
+    public void selectAllItems(MenuItem item) {
+
+        mAdapter.selectAllItems();
+
+
+    }
+
+    public void deleteSelectedItems(MenuItem item) {
+
+        showDeleteConfirmationDialog();
+
+    }
+
+    public void startUpload(MenuItem item) {
+
+        startUpload();
+
+    }
+
+    private void fixToolbar() {
+
+        mSelectionToolbar.fixToolbar();
+
+        //            Set the action bar title:
+        getToolbar().setTitle(R.string.sync_item_text);
+        mMenu.setGroupVisible(R.id.sync_menu_selection, false);
+
+    }
+
+    private void scrollToolbar(int selectionCount) {
+
+        mSelectionToolbar.scrollToolbar(selectionCount);
+
+        mMenu.setGroupVisible(R.id.sync_menu_selection, true);
+
     }
 
     private String getSelectionText() {

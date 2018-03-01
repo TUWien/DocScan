@@ -31,7 +31,7 @@ import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
  */
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder>
-        implements GreedoLayoutSizeCalculator.SizeCalculatorDelegate, ItemTouchHelperAdapter {
+        implements GreedoLayoutSizeCalculator.SizeCalculatorDelegate {
 
     private Document mDocument;
     private Context mContext;
@@ -205,23 +205,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     }
 
-    @Override
-    public void onItemMove(int fromPosition, int toPosition) {
-
-    }
-
-    @Override
-    public void onItemDismiss(int position) {
-
-    }
-
-    @Override
-    public void onDragStart() {
-
-        mCallback.onDragStart();
-
-    }
-
     public class GalleryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private ImageView mImageView;
@@ -294,7 +277,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     public interface GalleryAdapterCallback {
         void onSelectionChange(int selectionCount);
-        void onDragStart();
     }
 
     /**
