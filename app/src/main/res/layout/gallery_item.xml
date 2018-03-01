@@ -5,25 +5,32 @@
     <!--android:layout_height="wrap_content"-->
     <!--android:padding="20dp">-->
 
-    <android.support.v7.widget.CardView
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/card_view"
-        android:layout_gravity="center"
-        android:layout_width="160dp"
-        android:layout_height="200dp"
-        android:layout_margin="@dimen/activity_vertical_margin"
-        android:elevation="50dp"
-        app:cardBackgroundColor="#eaffffff"
-        app:cardUseCompatPadding="true">
+    <!--<android.support.v7.widget.CardView-->
+        <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+        <!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
+        <!--android:id="@+id/card_view"-->
+        <!--android:layout_gravity="center"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_margin="@dimen/activity_vertical_margin"-->
+        <!--android:elevation="50dp"-->
+        <!--app:cardBackgroundColor="#eaffffff"-->
+        <!--app:cardUseCompatPadding="true">-->
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    >
+
 
         <ImageView
             android:id="@+id/page_imageview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="30dp"
-            android:scaleType="centerInside"
+            android:background="@color/colorPrimary"
             />
 
     <!--android:src="@drawable/doc_scan_header_rotated"-->
@@ -32,9 +39,10 @@
             android:id="@+id/page_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="visible"
+            android:background="@color/gallery_checkbox_background"
             android:layout_gravity="bottom"
             />
+</FrameLayout>
 
-    </android.support.v7.widget.CardView>
+    <!--</android.support.v7.widget.CardView>-->
 <!--</LinearLayout>-->

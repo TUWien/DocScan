@@ -7,11 +7,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.ImageView;
 
 import com.bumptech.glide.signature.MediaStoreSignature;
 import com.fivehundredpx.greedolayout.GreedoLayoutSizeCalculator;
+import com.google.android.flexbox.AlignSelf;
+import com.google.android.flexbox.FlexboxLayoutManager;
 
 import java.io.IOException;
 
@@ -20,6 +21,7 @@ import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
+import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 
 /**
  * Created by fabian on 2/13/2018.
@@ -117,7 +119,7 @@ public class GalleryTestAdapter extends RecyclerView.Adapter<GalleryTestAdapter.
 
 
         if (mDocument.getPages().size() <= i)
-            return 1;
+            return 1.0;
 
         String fileName = mDocument.getPages().get(i).getFile().getAbsolutePath();
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -132,7 +134,7 @@ public class GalleryTestAdapter extends RecyclerView.Adapter<GalleryTestAdapter.
             if ((angle == 90) || (angle == 270)) {
                 int tmp = width;
                 width = height;
-                height = width;
+                height = tmp;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -154,6 +156,13 @@ public class GalleryTestAdapter extends RecyclerView.Adapter<GalleryTestAdapter.
             mImageView = itemView.findViewById(R.id.page_imageview);
             itemView.setOnClickListener(this);
 //            mCheckBox = itemView.findViewById(R.id.page_checkbox);
+
+            ViewGroup.LayoutParams lp = mImageView.getLayoutParams();
+            if (lp instanceof FlexboxLayoutManager.LayoutParams) {
+                FlexboxLayoutManager.LayoutParams flexboxLp = (FlexboxLayoutManager.LayoutParams) lp;
+                flexboxLp.setFlexGrow(1.0f);
+            }
+
 
         }
 

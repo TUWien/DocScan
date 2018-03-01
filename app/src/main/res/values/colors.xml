@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary"> #607d8b</color>
+
+    <color name="colorPrimary">#607d8b</color>
     <color name="colorAccent">#ff9800</color>
 
     <color name="control_background_color">#37474f</color>
@@ -36,6 +37,8 @@
 
     <color name="expandable_list_view_child_color">#aa464646</color>
     <color name="light_gray">#d6d6d6</color>
+
+    <color name="gallery_checkbox_background">#9dffffff</color>
 
     <!--<color name="photo_button_view_bg_color">#333</color>-->
 

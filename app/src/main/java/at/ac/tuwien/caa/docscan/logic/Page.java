@@ -9,6 +9,7 @@ import java.io.File;
 public class Page {
 
     private File mFile;
+    private String mTitle;
 
     public Page() {
 
@@ -18,6 +19,11 @@ public class Page {
         mFile = file;
     }
 
+    public Page(File file, String title) {
+        mFile = file;
+        mTitle = title;
+    }
+
     public File getFile() {
         return mFile;
     }
@@ -25,5 +31,7 @@ public class Page {
     public void setFile(File mFile) {
         this.mFile = mFile;
     }
+
+    public String getTitle() { return mTitle; }
 
 }
