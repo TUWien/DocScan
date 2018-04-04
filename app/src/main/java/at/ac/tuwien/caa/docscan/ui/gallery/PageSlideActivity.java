@@ -33,6 +33,7 @@ import java.util.Arrays;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
 public class PageSlideActivity extends AppCompatActivity {
@@ -48,10 +49,28 @@ public class PageSlideActivity extends AppCompatActivity {
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (ViewPager) findViewById(R.id.slide_viewpager);
 
+//        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+//            @Override
+//            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//
+//            }
+//
+//            @Override
+//            public void onPageSelected(int position) {
+////                mPager.setCurrentItem(mPager.getCurrentItem());
+//            }
+//
+//            @Override
+//            public void onPageScrollStateChanged(int state) {
+//
+//            }
+//        });
+
 //        Create a dummy document based on the intent: TODO: use a real document here
         String fileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
         if (fileName == null)
-            fileName = "/storage/emulated/0/Pictures/DocScan/default";
+            return;
+
         Document document = getDummyDocument(fileName);
 
         mPagerAdapter = new PageSlideAdapter(getSupportFragmentManager(), document);
@@ -73,54 +92,57 @@ public class PageSlideActivity extends AppCompatActivity {
     }
 
 
-//    TODO: temporary helper methods copied from BaseDocumentAdapter. Replace them.
-
-    private ArrayList<File> getFileList(String dir) {
-
-        File[] files = getFiles(new File(dir));
-
-        ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
-
-        return fileList;
-
-    }
-
-    private ArrayList<Page> filesToPages(ArrayList<File> files) {
-
-        ArrayList<Page> pages = new ArrayList<>(files.size());
-
-        for (File file : files) {
-            pages.add(new Page(file));
-        }
-
-        return pages;
-
-    }
-
-    private File[] getFiles(File dir) {
-
-        FileFilter filesFilter = new FileFilter() {
-            public boolean accept(File file) {
-                return !file.isDirectory();
-            }
-        };
-        File[] files = dir.listFiles(filesFilter);
-        Arrays.sort(files);
-
-        return files;
-    }
+//
+//    private ArrayList<File> getFileList(String dir) {
+//
+//        File[] files = getFiles(new File(dir));
+//
+//        ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
+//
+//        return fileList;
+//
+//    }
+//
+//    private ArrayList<Page> filesToPages(ArrayList<File> files) {
+//
+//        ArrayList<Page> pages = new ArrayList<>(files.size());
+//
+//        for (File file : files) {
+//            pages.add(new Page(file));
+//        }
+//
+//        return pages;
+//
+//    }
+//
+//    private File[] getFiles(File dir) {
+//
+//        FileFilter filesFilter = new FileFilter() {
+//            public boolean accept(File file) {
+//                return !file.isDirectory();
+//            }
+//        };
+//        File[] files = dir.listFiles(filesFilter);
+//        Arrays.sort(files);
+//
+//        return files;
+//    }
 
 
     private Document getDummyDocument(String fileName) {
 
-        Document document = new Document();
-        ArrayList<File> fileList = getFileList(fileName);
-        ArrayList<Page> pages = filesToPages(fileList);
-        document.setPages(pages);
-        File file = new File(fileName);
-        document.setTitle(file.getName());
+        Document document = Helper.getDocument(fileName);
 
         return document;
+
+//        Document document = new Document();
+//        ArrayList<File> fileList = getFileList(fileName);
+//        ArrayList<Page> pages = filesToPages(fileList);
+//        document.setPages(pages);
+//        File file = new File(fileName);
+//        document.setTitle(file.getName());
+//
+//        return document;
 
     }
 

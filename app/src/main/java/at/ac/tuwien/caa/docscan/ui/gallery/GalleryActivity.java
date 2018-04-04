@@ -61,8 +61,8 @@ public class GalleryActivity extends AppCompatActivity implements
 
         //        dummy document - start
         mFileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
-        if (mFileName == null)
-            mFileName = "/storage/emulated/0/Pictures/DocScan/Untitled document";
+//        if (mFileName == null)
+//            mFileName = "/storage/emulated/0/Pictures/DocScan/Untitled document";
 
         mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
 
@@ -127,17 +127,24 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void loadDocument() {
 
-        Document document = new Document();
-        ArrayList<File> fileList = getFileList(mFileName);
-        ArrayList<Page> pages = filesToPages(fileList);
-        document.setPages(pages);
-
-        File file = new File(mFileName);
-        document.setTitle(file.getName());
-
-        mDocument = document;
+        if (mFileName != null)
+            mDocument = Helper.getDocument(mFileName);
 
     }
+
+//    private void loadDocument() {
+//
+//        Document document = new Document();
+//        ArrayList<File> fileList = getFileList(mFileName);
+//        ArrayList<Page> pages = filesToPages(fileList);
+//        document.setPages(pages);
+//
+//        File file = new File(mFileName);
+//        document.setTitle(file.getName());
+//
+//        mDocument = document;
+//
+//    }
 
     private void initToolbar() {
 
@@ -306,44 +313,43 @@ public class GalleryActivity extends AppCompatActivity implements
     }
 
 
-//    TODO: temporary helper methods copied from BaseDocumentAdapter. Replace them.
 
-    private ArrayList<File> getFileList(String dir) {
-
-        File[] files = getFiles(new File(dir));
-
-        ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
-
-        return fileList;
-
-    }
-
-    private ArrayList<Page> filesToPages(ArrayList<File> files) {
-
-        ArrayList<Page> pages = new ArrayList<>(files.size());
-
-        int idx = 1;
-        for (File file : files) {
-            pages.add(new Page(file, Integer.toString(idx)));
-            idx++;
-        }
-
-        return pages;
-
-    }
-
-    private File[] getFiles(File dir) {
-
-        FileFilter filesFilter = new FileFilter() {
-            public boolean accept(File file) {
-                return !file.isDirectory();
-            }
-        };
-        File[] files = dir.listFiles(filesFilter);
-        Arrays.sort(files);
-
-        return files;
-    }
+//    private ArrayList<File> getFileList(String dir) {
+//
+//        File[] files = getFiles(new File(dir));
+//
+//        ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
+//
+//        return fileList;
+//
+//    }
+//
+//    private ArrayList<Page> filesToPages(ArrayList<File> files) {
+//
+//        ArrayList<Page> pages = new ArrayList<>(files.size());
+//
+//        int idx = 1;
+//        for (File file : files) {
+//            pages.add(new Page(file, Integer.toString(idx)));
+//            idx++;
+//        }
+//
+//        return pages;
+//
+//    }
+//
+//    private File[] getFiles(File dir) {
+//
+//        FileFilter filesFilter = new FileFilter() {
+//            public boolean accept(File file) {
+//                return !file.isDirectory();
+//            }
+//        };
+//        File[] files = dir.listFiles(filesFilter);
+//        Arrays.sort(files);
+//
+//        return files;
+//    }
 
     //   END of temporary helper methods copied from BaseDocumentAdapter. Replace them.
 

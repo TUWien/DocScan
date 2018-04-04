@@ -52,11 +52,11 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
-        <!--<activity-->
-            <!--android:name=".ui.settings.PreferenceActivity"-->
-            <!--android:exported="true"-->
-            <!--android:parentActivityName=".ui.CameraActivity"-->
-            <!--/>-->
+        <activity
+            android:name=".ui.settings.PreferenceActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.CameraActivity"
+            />
 
         <activity
             android:name=".ui.gallery.PageSlideActivity"
@@ -110,11 +110,6 @@
             android:configChanges="orientation|screenSize"
             />
 
-
-		<activity
-            android:name=".ui.settings.PreferenceActivity"
-            android:exported="false"
-		/>
 
 		<activity
             android:name=".ui.MapViewActivity"
