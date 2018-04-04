@@ -137,11 +137,11 @@ public class Settings {
     }
 
 
-    public boolean getUseFastPageSegmentation() {
-        return mUseFastPageSegmentation;
-    }
-
-    public void setUseFastPageSegmentation(boolean fast) {
-        mUseFastPageSegmentation = fast;
-    }
+//    public boolean getUseFastPageSegmentation() {
+//        return mUseFastPageSegmentation;
+//    }
+//
+//    public void setUseFastPageSegmentation(boolean fast) {
+//        mUseFastPageSegmentation = fast;
+//    }
 }

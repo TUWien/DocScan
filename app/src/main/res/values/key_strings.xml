@@ -9,5 +9,5 @@
     <string name="key_show_focus_values">KEY_SHOW_FOCUS_VALUES</string>
     <string name="key_debug_settings">KEY_DEBUG_SETTINGS</string>
     <string name="key_show_debug_view">KEY_SHOW_DEBUG_VIEW</string>
-
+    <string name="key_show_advanced_qr_code">KEY_SHOW_ADVANCED_QR_CODE</string>
 </resources>

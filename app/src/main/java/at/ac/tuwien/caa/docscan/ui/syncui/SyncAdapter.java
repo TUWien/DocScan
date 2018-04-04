@@ -11,6 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageView;
+
+import com.bumptech.glide.signature.MediaStoreSignature;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -19,6 +22,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
@@ -215,6 +219,9 @@ public class SyncAdapter extends BaseDocumentAdapter {
                 }
             });
 
+            ImageView imageView = convertView.findViewById(R.id.checkbox_list_group_image_view);
+
+
         }
 
         CheckBox checkBoxListHeader = (CheckBox) convertView.findViewById(R.id.checkboxListHeader);
@@ -264,6 +271,11 @@ public class SyncAdapter extends BaseDocumentAdapter {
             }
         });
 
+        ImageView imageView = convertView.findViewById(R.id.checkbox_list_group_image_view);
+
+        GlideApp.with(mContext)
+                .load(mFiles.get(groupPosition)[0].getPath())
+                .into(imageView);
 
         return convertView;
 
