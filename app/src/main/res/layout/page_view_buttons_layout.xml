@@ -7,7 +7,7 @@
     android:background="@android:color/transparent">
 
     <LinearLayout
-        android:id="@+id/bottom_bar"
+        android:id="@+id/page_view_buttons_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/transparent_to_dark_gradient"

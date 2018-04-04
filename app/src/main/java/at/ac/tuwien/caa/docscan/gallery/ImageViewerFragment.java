@@ -26,9 +26,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
@@ -47,10 +49,13 @@ import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
 
-public class ImageViewerFragment extends Fragment {
+public class ImageViewerFragment extends Fragment implements TouchImageView.SingleClickListener{
 
     private Page mPage;
-    private SubsamplingScaleImageView mImageView;
+//    private SubsamplingScaleImageView mImageView;
+    private TouchImageView mImageView;
+    private Toolbar mToolbar;
+    private LinearLayout mButtonsLayout;
 
 //    /** TODO: remove this, we just need it here for debugging if the CameraActivitiy is not started before ImageViewerFragment
 //     * Static initialization of the OpenCV and docscan-native modules.
@@ -97,13 +102,14 @@ public class ImageViewerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        // Inflate the layout containing a title and body text.
         ViewGroup rootView = (ViewGroup) inflater
                 .inflate(R.layout.fragment_image_viewer, container, false);
 
         initImageView(rootView);
 
         initToolbar(rootView);
+
+        mButtonsLayout = rootView.findViewById(R.id.page_view_buttons_layout);
 
         initRotateButton(rootView);
         initDeleteButton(rootView);
@@ -119,6 +125,34 @@ public class ImageViewerFragment extends Fragment {
         mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()).tilingDisabled());
         mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
 
+        mImageView.setClickCallBack(this);
+
+//        mImageView.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//
+//
+//                switch (event.getAction()) {
+//                    case MotionEvent.ACTION_DOWN:
+//                        onDown(event);
+//                        return true;
+//
+//                    case MotionEvent.ACTION_MOVE:
+//                        if (mIsPointDragged)
+//                            onMove(event);
+//                        return true;
+//
+//                    case MotionEvent.ACTION_UP:
+//                        onUp(event);
+//                        return true;
+//                }
+//
+//
+//            }
+//
+//
+//        });
+
 //      PhotoView by Chris Bane:
 //        PhotoView photoView = rootView.findViewById(R.id.page_slide_photo_view);
 //        photoView.setImageURI(Uri.fromFile(mPage.getFile()));
@@ -128,15 +162,15 @@ public class ImageViewerFragment extends Fragment {
 
     private void initToolbar(ViewGroup rootView) {
 
-        Toolbar toolbar = rootView.findViewById(R.id.image_viewer_toolbar);
-        ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
+        mToolbar = rootView.findViewById(R.id.image_viewer_toolbar);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         String title = mPage.getFile().getName();
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(title);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setPadding(0, getStatusBarHeight(), 0, 0);
+        mToolbar.setPadding(0, getStatusBarHeight(), 0, 0);
 
         // Close the fragment if the user hits the back button in the toolbar:
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getActivity().onBackPressed();
@@ -247,5 +281,17 @@ public class ImageViewerFragment extends Fragment {
     }
 
 
+    @Override
+    public void onSingleClick() {
 
+        if (mToolbar.getVisibility() == View.VISIBLE) {
+            mToolbar.setVisibility(View.INVISIBLE);
+            mButtonsLayout.setVisibility(View.INVISIBLE);
+        }
+        else {
+            mToolbar.setVisibility(View.VISIBLE);
+            mButtonsLayout.setVisibility(View.VISIBLE);
+        }
+
+    }
 }
