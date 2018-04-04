@@ -50,6 +50,7 @@ import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_OFFLIN
 
 public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.SyncAdapterCallback {
 
+//    private ExpandableListView mListView;
     private ExpandableListView mListView;
     private Context mContext;
     private SyncAdapter mAdapter;
