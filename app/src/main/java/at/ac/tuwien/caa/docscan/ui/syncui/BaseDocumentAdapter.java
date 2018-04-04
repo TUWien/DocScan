@@ -117,16 +117,36 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 
     public static File[] getFiles(File dir) {
 
-        FileFilter filesFilter = new FileFilter() {
-            public boolean accept(File file) {
-                return !file.isDirectory();
-            }
-        };
-        File[] files = dir.listFiles(filesFilter);
-        Arrays.sort(files);
+        return Helper.getImageList(dir);
 
-        return files;
     }
+
+//    public static File[] getFiles(File dir) {
+//
+//        FileFilter filesFilter = new FileFilter() {
+//            public boolean accept(File file) {
+//                return !file.isDirectory();
+//            }
+//        };
+//        File[] files = dir.listFiles(filesFilter);
+//        Arrays.sort(files);
+//
+//        return files;
+//    }
+
+
+//    public static File[] getFiles(File dir) {
+//
+//        FileFilter filesFilter = new FileFilter() {
+//            public boolean accept(File file) {
+//                return !file.isDirectory();
+//            }
+//        };
+//        File[] files = dir.listFiles(filesFilter);
+//        Arrays.sort(files);
+//
+//        return files;
+//    }
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {

@@ -46,6 +46,7 @@ import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
+
 public class ImageViewerFragment extends Fragment {
 
     private Page mPage;

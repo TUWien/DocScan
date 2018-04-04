@@ -6,7 +6,10 @@ import android.media.ExifInterface;
 import android.os.Environment;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
@@ -146,6 +149,56 @@ public class Helper {
 
         return newOrientation != null;
     }
+
+    public static Document getDocument(String dirName) {
+
+        Document document = new Document();
+        ArrayList<File> fileList = getImageList(dirName);
+        ArrayList<Page> pages = filesToPages(fileList);
+        document.setPages(pages);
+        File file = new File(dirName);
+        document.setTitle(file.getName());
+
+        return document;
+
+    }
+
+    private static ArrayList<File> getImageList(String dir) {
+
+        File[] files = getImageList(new File(dir));
+
+        ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
+
+        return fileList;
+
+    }
+
+    private static ArrayList<Page> filesToPages(ArrayList<File> files) {
+
+        ArrayList<Page> pages = new ArrayList<>(files.size());
+
+        for (File file : files) {
+            pages.add(new Page(file));
+        }
+
+        return pages;
+
+    }
+
+    public static File[] getImageList(File dir) {
+
+        FileFilter filesFilter = new FileFilter() {
+            public boolean accept(File file) {
+                return (file.getPath().endsWith(".jpg")||file.getPath().endsWith(".jpeg"));
+//                return !file.isDirectory();
+            }
+        };
+        File[] files = dir.listFiles(filesFilter);
+        Arrays.sort(files);
+
+        return files;
+    }
+
 
 
 }

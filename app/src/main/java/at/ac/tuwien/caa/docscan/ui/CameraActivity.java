@@ -128,6 +128,7 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATI
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getAngleFromExif;
+import static at.ac.tuwien.caa.docscan.logic.Helper.getImageList;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
@@ -660,14 +661,21 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //        startActivity();
 //        startActivity(new Intent(getApplicationContext(), GalleryActivity.class));
-        startActivity(new Intent(getApplicationContext(), PageSlideActivity.class));
+//        startActivity(new Intent(getApplicationContext(), PageSlideActivity.class));
 
-//        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
-//
-//        if (currentApiVersion >= Build.VERSION_CODES.M)
-//            requestFileOpen();
-//        else
-//            startScan();
+        File mediaStorageDir = getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
+        if (mediaStorageDir == null)
+            return;
+
+//                Start the image viewer:
+        Intent intent = new Intent(mContext, PageSlideActivity.class);
+//      Set the directory name:
+        intent.putExtra("DOCUMENT_FILE_NAME", mediaStorageDir.getAbsolutePath());
+
+//      Set the file position - it is the index of the last file in the sorted list of files:
+        File[] imgList = getImageList(mediaStorageDir);
+        intent.putExtra("PAGE_POSITION", imgList.length - 1);
+        mContext.startActivity(intent);
 
     }
 
@@ -2215,25 +2223,32 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mediaStorageDir == null)
             return;
 
-        FileFilter filesFilter = new FileFilter() {
-            public boolean accept(File file) {
-                return !file.isDirectory();
-            }
-        };
+//        FileFilter filesFilter = new FileFilter() {
+//            public boolean accept(File file) {
+//                return !file.isDirectory();
+//            }
+//        };
+//
+//        File[] files = mediaStorageDir.listFiles(filesFilter);
+//
+//        if (files == null)
+//            return;
+//        else if (files.length == 0)
+//            return;
+//
+//        // Determine the most recent image:
+//        Arrays.sort(files);
+//        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1].getName();
 
-        File[] files = mediaStorageDir.listFiles(filesFilter);
-
-        if (files == null)
+        File[] imgList = Helper.getImageList(mediaStorageDir);
+        if (imgList == null)
             return;
-        else if (files.length == 0)
+        else if (imgList.length == 0)
             return;
-
-        // Determine the most recent image:
-        Arrays.sort(files);
-        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1].getName();
 
         ThumbnailLoader thumbnailLoader = new ThumbnailLoader();
-        thumbnailLoader.execute(fileName);
+        thumbnailLoader.execute(imgList[imgList.length-1].getAbsolutePath());
+
     }
 
     @SuppressWarnings("deprecation")
