@@ -45,11 +45,12 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
+import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
 
-public class ImageViewerFragment extends Fragment implements TouchImageView.SingleClickListener{
+public class ImageViewerFragment extends Fragment {
 
     private Page mPage;
 //    private SubsamplingScaleImageView mImageView;
@@ -107,13 +108,13 @@ public class ImageViewerFragment extends Fragment implements TouchImageView.Sing
 
         initImageView(rootView);
 
-        initToolbar(rootView);
+//        initToolbar(rootView);
 
         mButtonsLayout = rootView.findViewById(R.id.page_view_buttons_layout);
 
-        initRotateButton(rootView);
-        initDeleteButton(rootView);
-        initCropButton(rootView);
+//        initRotateButton(rootView);
+//        initDeleteButton(rootView);
+//        initCropButton(rootView);
 
         return rootView;
 
@@ -125,7 +126,7 @@ public class ImageViewerFragment extends Fragment implements TouchImageView.Sing
         mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()).tilingDisabled());
         mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
 
-        mImageView.setClickCallBack(this);
+//        mImageView.setClickCallBack(this);
 
 //        mImageView.setOnTouchListener(new View.OnTouchListener() {
 //            @Override
@@ -189,6 +190,12 @@ public class ImageViewerFragment extends Fragment implements TouchImageView.Sing
             result = getResources().getDimensionPixelSize(resourceId);
         }
         return result;
+
+    }
+
+    public void refreshImageView() {
+
+        mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()));
 
     }
 
@@ -281,17 +288,18 @@ public class ImageViewerFragment extends Fragment implements TouchImageView.Sing
     }
 
 
-    @Override
-    public void onSingleClick() {
+//    @Override
+//    public void onSingleClick() {
+//
+//        if (mToolbar.getVisibility() == View.VISIBLE) {
+//            mToolbar.setVisibility(View.INVISIBLE);
+//            mButtonsLayout.setVisibility(View.INVISIBLE);
+//        }
+//        else {
+//            mToolbar.setVisibility(View.VISIBLE);
+//            mButtonsLayout.setVisibility(View.VISIBLE);
+//        }
+//
+//    }
 
-        if (mToolbar.getVisibility() == View.VISIBLE) {
-            mToolbar.setVisibility(View.INVISIBLE);
-            mButtonsLayout.setVisibility(View.INVISIBLE);
-        }
-        else {
-            mToolbar.setVisibility(View.VISIBLE);
-            mButtonsLayout.setVisibility(View.VISIBLE);
-        }
-
-    }
 }

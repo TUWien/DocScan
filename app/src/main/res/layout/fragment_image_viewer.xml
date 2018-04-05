@@ -23,16 +23,16 @@
         <!--android:layout_width="match_parent"-->
         <!--/>-->
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/image_viewer_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/dark_to_transparent_gradient"
-        android:theme="@style/AppDarkTheme"
-        app:titleTextColor="@color/white"
-        />
+    <!--<android.support.v7.widget.Toolbar-->
+        <!--android:id="@+id/image_viewer_toolbar"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:background="@drawable/dark_to_transparent_gradient"-->
+        <!--android:theme="@style/AppDarkTheme"-->
+        <!--app:titleTextColor="@color/white"-->
+        <!--/>-->
 
 
-    <include layout="@layout/page_view_buttons_layout" />
+    <!--<include layout="@layout/page_view_buttons_layout" />-->
 
 </FrameLayout>
