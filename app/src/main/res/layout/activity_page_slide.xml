@@ -1,6 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.view.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/slide_viewpager"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:theme="@style/AppDarkTheme"/>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+android:id="@+id/content"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:theme="@style/AppDarkTheme"
+    >
+    <!--<com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView-->
+    <!--android:id="@+id/image_viewer_image_view"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:background="@color/black"/>-->
+    <android.support.v4.view.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/slide_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:theme="@style/AppDarkTheme"/>
+
+    <!--<com.github.chrisbanes.photoview.PhotoView-->
+    <!--android:id="@+id/page_slide_photo_view"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_width="match_parent"-->
+    <!--/>-->
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/image_viewer_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/dark_to_transparent_gradient"
+        android:theme="@style/AppDarkTheme"
+        app:titleTextColor="@color/white"
+        />
+
+
+    <include layout="@layout/page_view_buttons_layout" />
+
+</FrameLayout>
