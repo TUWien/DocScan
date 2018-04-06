@@ -167,6 +167,12 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
+        <activity
+            android:name=".ui.syncui.UploadActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
 
         <activity
             android:name="com.dropbox.core.android.AuthActivity"

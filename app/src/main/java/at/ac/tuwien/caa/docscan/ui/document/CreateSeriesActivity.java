@@ -73,31 +73,31 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
         // Currently the XML has no root defined (malformed) so we add one manually:
         String qrText = "<root>" + text + "</root>";
 
-        Log.d(getClass().getName(), "parsing document");
-        Document document = parseQRCode(qrText);
-        Log.d(getClass().getName(), "found document: " + document);
-        fillViews(document);
+        Log.d(getClass().getName(), "parsing documentMetaData");
+        DocumentMetaData documentMetaData = parseQRCode(qrText);
+        Log.d(getClass().getName(), "found documentMetaData: " + documentMetaData);
+        fillViews(documentMetaData);
 
     }
 
-    private Document parseQRCode(String text) {
+    private DocumentMetaData parseQRCode(String text) {
 
         Log.d(getClass().getName(), "QR code text: " + text);
 
-        return Document.parseXML(text);
+        return DocumentMetaData.parseXML(text);
 
     }
 
 //        Temporarily deactivate the advanced fields:
-   private void fillViews(Document document) {
+   private void fillViews(DocumentMetaData documentMetaData) {
 
-        if (document == null)
+        if (documentMetaData == null)
             return;
 
         // Title:
         EditText titleEditText = findViewById(R.id.create_series_name_edittext);
-        if (document.getTitle() != null)
-            titleEditText.setText(document.getTitle());
+        if (documentMetaData.getTitle() != null)
+            titleEditText.setText(documentMetaData.getTitle());
 
        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -108,42 +108,42 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
        if (showAdvancedFields) {
 //           Show the advanced settings:
            layout.setVisibility(View.VISIBLE);
-           fillAdvancedFields(document);
+           fillAdvancedFields(documentMetaData);
        }
        else
            layout.setVisibility(View.INVISIBLE);
 
     }
 
-    private void fillAdvancedFields(Document document) {
+    private void fillAdvancedFields(DocumentMetaData documentMetaData) {
         //           // Description:
 //           EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
-//           if (document.getTitle() != null)
-//               descriptionEditText.setText(document.getDescription());
+//           if (documentMetaData.getTitle() != null)
+//               descriptionEditText.setText(documentMetaData.getDescription());
 
         // Signature:
         EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
-        if (document.getSignature() != null)
-            signatureEditText.setText(document.getSignature());
+        if (documentMetaData.getSignature() != null)
+            signatureEditText.setText(documentMetaData.getSignature());
 
         // Authority:
         EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
-        if (document.getAuthority() != null)
-            authorityEditText.setText(document.getAuthority());
+        if (documentMetaData.getAuthority() != null)
+            authorityEditText.setText(documentMetaData.getAuthority());
 
         // Hierarchy:
         EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
-        if (document.getHierarchy() != null)
-            hierarchyEditText.setText(document.getHierarchy());
+        if (documentMetaData.getHierarchy() != null)
+            hierarchyEditText.setText(documentMetaData.getHierarchy());
 
 //           // Uri:
 //           EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
-//           if (document.getUri() != null)
-//               uriEditText.setText(document.getUri());
+//           if (documentMetaData.getUri() != null)
+//               uriEditText.setText(documentMetaData.getUri());
     }
 
 
-//    private void fillViews(Document document) {
+//    private void fillViews(DocumentMetaData document) {
 //
 //        // Emulate a click and open up the extended layout (shows the views above):
 //        CheckBox checkBox = (CheckBox) findViewById(R.id.create_series_advanced_options_checkbox);

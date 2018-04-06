@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="series_name_default">Untitled document</string>
+    <string name="series_name_default">Untitled documentMetaData</string>
     <string name="series_name_key">SERIES_NAME_KEY</string>
 
     <string name="key_upload_mobile_data">KEY_UPLOAD_MOBILE_DATA</string>

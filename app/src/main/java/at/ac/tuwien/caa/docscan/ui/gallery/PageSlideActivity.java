@@ -321,7 +321,7 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
         return document;
 
-//        Document document = new Document();
+//        DocumentMetaData document = new DocumentMetaData();
 //        ArrayList<File> fileList = getFileList(fileName);
 //        ArrayList<Page> pages = filesToPages(fileList);
 //        document.setPages(pages);
