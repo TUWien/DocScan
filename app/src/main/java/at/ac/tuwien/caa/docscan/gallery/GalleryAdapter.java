@@ -61,7 +61,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     }
 
     public void setSizeCalculator(GreedoLayoutSizeCalculator sizeCalculator) {
-        mSizeCalculator = sizeCalculator;;
+        mSizeCalculator = sizeCalculator;
     }
 
     @Override
