@@ -3,6 +3,8 @@ package at.ac.tuwien.caa.docscan.logic;
 import android.content.Context;
 import android.content.Intent;
 import android.media.ExifInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
 
 import java.io.File;
@@ -10,7 +12,9 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
@@ -150,6 +154,30 @@ public class Helper {
         return newOrientation != null;
     }
 
+    public static List<Document> getDocuments(String appName){
+
+        List<Document> documents = new ArrayList<>();
+
+        File mediaStorageDir = getMediaStorageDir(appName);
+
+        FileFilter directoryFilter = new FileFilter() {
+            public boolean accept(File file) {
+                return file.isDirectory();
+            }
+        };
+
+        File[] folders = mediaStorageDir.listFiles(directoryFilter);
+        ArrayList<File> dirs = new ArrayList<>(Arrays.asList(folders));
+
+        for (File dir : dirs) {
+            Document document = getDocument(dir.getAbsolutePath());
+            documents.add(document);
+        }
+
+        return documents;
+
+    }
+
     public static Document getDocument(String dirName) {
 
         Document document = new Document();
@@ -197,6 +225,17 @@ public class Helper {
         Arrays.sort(files);
 
         return files;
+    }
+
+    public static boolean isOnline(Context context) {
+
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+        return isConnected;
+
     }
 
 

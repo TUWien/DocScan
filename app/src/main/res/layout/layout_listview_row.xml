@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/list_view_multi_selector"
+    android:padding="8dp">
+
+
+
+    <TextView
+        android:id="@+id/layout_listview_row_title"
+        android:text="one two three four five six seven eight nine ten eleven"
+        android:layout_toLeftOf="@id/layout_listview_row_thumbnail"
+        android:textSize="20sp"
+        android:ellipsize="end"
+        android:layout_marginTop="8dp"
+        android:maxLines="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        />
+
+    <TextView
+        android:id="@+id/layout_listview_row_description"
+        android:text="one two three four five six seven eight nine ten eleve asdfn"
+        android:layout_toLeftOf="@id/layout_listview_row_thumbnail"
+        android:textSize="14sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/layout_listview_row_title"
+        />
+
+    <ImageView
+        android:id="@+id/layout_listview_row_thumbnail"
+        android:layout_alignParentRight="true"
+        android:src="@mipmap/docscan_launcher"
+        android:scaleType="center"
+        android:layout_width="60dp"
+        android:layout_height="60dp" />
+
+
+
+</RelativeLayout>

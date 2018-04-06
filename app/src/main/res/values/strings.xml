@@ -6,6 +6,7 @@
     <string name="about_item_text">About</string>
     <string name="share_log_item_text">Share log</string>
     <string name="sync_item_text">Upload</string>
+    <string name="sync_2_item_text">Fancy Upload</string>
     <string name="camera_item_text">Camera</string>
     <string name="header_text">DocScan</string>
     <string name="account_edit_text">Set up account</string>
@@ -210,6 +211,7 @@
     <string name="sync_menu_upload_item_title">Start upload</string>
     <string name="sync_menu_delete_item_title">Delete item</string>
     <string name="sync_menu_select_all_item_title">Select all items</string>
+    <string name="sync_pages_text">Pages:</string>
 
     <string name="sync_not_logged_in_text">You are currently not logged in, please log in first.</string>
     <string name="sync_not_logged_in_button_text">Log in</string>

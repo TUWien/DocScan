@@ -134,7 +134,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
 //    private void loadDocument() {
 //
-//        Document document = new Document();
+//        DocumentMetaData document = new DocumentMetaData();
 //        ArrayList<File> fileList = getFileList(mFileName);
 //        ArrayList<Page> pages = filesToPages(fileList);
 //        document.setPages(pages);
