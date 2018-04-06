@@ -14,8 +14,7 @@ import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import com.fivehundredpx.greedolayout.GreedoLayoutManager;
-import com.fivehundredpx.greedolayout.GreedoLayoutSizeCalculator;
+
 
 public class InnerItemDecoration extends RecyclerView.ItemDecoration {
 
@@ -31,10 +30,10 @@ public class InnerItemDecoration extends RecyclerView.ItemDecoration {
     }
 
     public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-        if(!(parent.getLayoutManager() instanceof GreedoLayoutManager)) {
-            throw new IllegalArgumentException(String.format("The %s must be used with a %s", new Object[]{InnerItemDecoration.class.getSimpleName(), GreedoLayoutManager.class.getSimpleName()}));
+        if(!(parent.getLayoutManager() instanceof GalleryLayoutManager)) {
+            throw new IllegalArgumentException(String.format("The %s must be used with a %s", new Object[]{InnerItemDecoration.class.getSimpleName(), GalleryLayoutManager.class.getSimpleName()}));
         } else {
-            GreedoLayoutManager layoutManager = (GreedoLayoutManager)parent.getLayoutManager();
+            GalleryLayoutManager layoutManager = (GalleryLayoutManager)parent.getLayoutManager();
             int childIndex = parent.getChildAdapterPosition(view);
             if(childIndex != -1) {
                 outRect.top = 0;
@@ -46,16 +45,16 @@ public class InnerItemDecoration extends RecyclerView.ItemDecoration {
                 if (isRightChild(childIndex, layoutManager))
                     outRect.right = 0;
 
-//                Remove the bottom spacing if this is the last row:
-                if (isBottomChild(childIndex, layoutManager))
-                    outRect.bottom = 0;
+////                Remove the bottom spacing if this is the last row:
+//                if (isBottomChild(childIndex, layoutManager))
+//                    outRect.bottom = 0;
 
             }
         }
     }
 
 
-    private static boolean isRightChild(int position, GreedoLayoutManager layoutManager) {
+    private static boolean isRightChild(int position, GalleryLayoutManager layoutManager) {
         boolean isFirstViewHeader = layoutManager.isFirstViewHeader();
         if(isFirstViewHeader && position == 0) {
             return true;
@@ -64,21 +63,21 @@ public class InnerItemDecoration extends RecyclerView.ItemDecoration {
                 --position;
             }
 
-            GreedoLayoutSizeCalculator sizeCalculator = layoutManager.getSizeCalculator();
+            GalleryLayoutSizeCalculator sizeCalculator = layoutManager.getSizeCalculator();
             int rowForPosition = sizeCalculator.getRowForChildPosition(position);
             int rowForPositionPlus1 = sizeCalculator.getRowForChildPosition(position+1);
             return rowForPositionPlus1 == rowForPosition + 1;
         }
     }
 
-    private static boolean isBottomChild(int position, GreedoLayoutManager layoutManager) {
-
-
-        GreedoLayoutSizeCalculator sizeCalculator = layoutManager.getSizeCalculator();
-        int rowForPosition = sizeCalculator.getRowForChildPosition(position);
-        int lastRow = sizeCalculator.getRowForChildPosition(layoutManager.getItemCount());
-        return rowForPosition == lastRow;
-
-    }
+//    private static boolean isBottomChild(int position, GreedoLayoutManager layoutManager) {
+//
+//
+//        GreedoLayoutSizeCalculator sizeCalculator = layoutManager.getSizeCalculator();
+//        int rowForPosition = sizeCalculator.getRowForChildPosition(position);
+//        int lastRow = sizeCalculator.getRowForChildPosition(layoutManager.getItemCount());
+//        return rowForPosition == lastRow;
+//
+//    }
 
 }

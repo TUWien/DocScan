@@ -31,7 +31,7 @@ import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
  */
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder>
-        implements GreedoLayoutSizeCalculator.SizeCalculatorDelegate {
+        implements GalleryLayoutSizeCalculator.SizeCalculatorDelegate {
 
     private Document mDocument;
     private Context mContext;
@@ -41,7 +41,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     // Callback to listen to selection changes:
     private GalleryAdapterCallback mCallback;
-    private GreedoLayoutSizeCalculator mSizeCalculator;
+    private GalleryLayoutSizeCalculator mSizeCalculator;
 
     public GalleryAdapter(Context context, Document document) {
 
@@ -60,7 +60,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         mFileName = fileName;
     }
 
-    public void setSizeCalculator(GreedoLayoutSizeCalculator sizeCalculator) {
+    public void setSizeCalculator(GalleryLayoutSizeCalculator sizeCalculator) {
         mSizeCalculator = sizeCalculator;
     }
 
