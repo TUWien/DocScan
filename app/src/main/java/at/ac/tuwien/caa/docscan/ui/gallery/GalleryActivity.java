@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
@@ -24,10 +25,14 @@ import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
+import at.ac.tuwien.caa.docscan.gallery.InnerItemDecoration;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
+
+import static android.support.v7.widget.DividerItemDecoration.HORIZONTAL;
+import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
 /**
  * Created by fabian on 01.02.2018.
@@ -112,7 +117,14 @@ public class GalleryActivity extends AppCompatActivity implements
         GreedoLayoutManager layoutManager = new GreedoLayoutManager(mAdapter);
         layoutManager.setMaxRowHeight(1000);
         int spacing = dpToPx(1, this);
-        mRecyclerView.addItemDecoration(new GreedoSpacingItemDecoration(spacing));
+        mRecyclerView.addItemDecoration(new InnerItemDecoration(spacing));
+
+//        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
+//                HORIZONTAL);
+//        DividerItemDecoration verticalDividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
+//                VERTICAL);
+//        mRecyclerView.addItemDecoration(dividerItemDecoration);
+//        mRecyclerView.addItemDecoration(verticalDividerItemDecoration);
 
         mAdapter.setSizeCalculator(layoutManager.getSizeCalculator());
 
