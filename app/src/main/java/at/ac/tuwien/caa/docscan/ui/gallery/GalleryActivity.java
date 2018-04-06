@@ -25,6 +25,7 @@ import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
+import at.ac.tuwien.caa.docscan.gallery.GalleryLayoutManager;
 import at.ac.tuwien.caa.docscan.gallery.InnerItemDecoration;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -114,8 +115,10 @@ public class GalleryActivity extends AppCompatActivity implements
         mAdapter.setFileName(mFileName);
         mRecyclerView.setAdapter(mAdapter);
 
-        GreedoLayoutManager layoutManager = new GreedoLayoutManager(mAdapter);
-        layoutManager.setMaxRowHeight(1000);
+//        GreedoLayoutManager layoutManager = new GreedoLayoutManager(mAdapter);
+        GalleryLayoutManager layoutManager = new GalleryLayoutManager(mAdapter);
+        layoutManager.setMaxRowHeight(1200);
+
         int spacing = dpToPx(1, this);
         mRecyclerView.addItemDecoration(new InnerItemDecoration(spacing));
 
@@ -127,6 +130,8 @@ public class GalleryActivity extends AppCompatActivity implements
 //        mRecyclerView.addItemDecoration(verticalDividerItemDecoration);
 
         mAdapter.setSizeCalculator(layoutManager.getSizeCalculator());
+
+
 
         mRecyclerView.setLayoutManager(layoutManager);
 
