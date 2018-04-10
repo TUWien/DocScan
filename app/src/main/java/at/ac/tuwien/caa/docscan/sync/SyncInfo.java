@@ -108,7 +108,7 @@ public class SyncInfo implements Serializable {
                 // don't persist past a device reboot
                 .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
                 // start between 0 and 60 seconds from now
-                .setTrigger(Trigger.executionWindow(0, 0))
+                .setTrigger(Trigger.executionWindow(0, 1))
 //                .setTrigger(Trigger.NOW)
                 // overwrite an existing job with the same tag - this assures that just one job is running at a time:
                 .setReplaceCurrent(true)
