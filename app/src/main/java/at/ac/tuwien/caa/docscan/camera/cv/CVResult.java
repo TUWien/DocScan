@@ -78,6 +78,7 @@ public class CVResult {
     private boolean mIsIlluminationComputed;
     private boolean mIsRedrawNecessary;
     private boolean mIsStable = true;
+    private boolean mIsSeriesMode = false;
 
     public CVResult(Context context) {
 
@@ -284,6 +285,9 @@ public class CVResult {
         int foreGroundCnt = sharpCnt + unsharpCnt;
         if (foreGroundCnt > 0)
             mRatioSharpUnsharp = (int) Math.round(((float) sharpCnt / foreGroundCnt) * 100);
+        else if (mIsSeriesMode)
+//            TODO: take a look how we can focus very small objects:
+            mRatioSharpUnsharp = 100; // in series mode, we can have very small objects.
         else
             mRatioSharpUnsharp = -1;
 
@@ -339,6 +343,12 @@ public class CVResult {
         return normedPoint;
     }
 
+    public void setSeriesMode(boolean isSeriesMode) {
+
+        mIsSeriesMode = isSeriesMode;
+
+    }
+
     private void stateUpdated() {
 
         int currentCVState = getCVState();
@@ -377,8 +387,9 @@ public class CVResult {
 
         DkPolyRect polyRect = mDKPolyRects[0];
 
-        if (!isAreaCorrect(polyRect))
-            return DOCUMENT_STATE_SMALL;
+        if (!mIsSeriesMode)
+            if (!isAreaCorrect(polyRect))
+                return DOCUMENT_STATE_SMALL;
 
         if (!isPerspectiveCorrect(polyRect))
             return DOCUMENT_STATE_PERSPECTIVE;
