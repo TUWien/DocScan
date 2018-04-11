@@ -218,6 +218,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private long mLastTime;
     private boolean mItemSelectedAutomatically = false;
     private int mLastDisplayRotation = - 1;
+    private boolean mIsFocusMeasured;
 
 
     // ================= start: methods from the Activity lifecycle =================
@@ -341,6 +342,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         boolean useFastPageDetection = sharedPref.getBoolean(getResources().getString(R.string.key_fast_segmentation), true);
         NativeWrapper.setUseLab(!useFastPageDetection);
+
+        mIsFocusMeasured = sharedPref.getBoolean(getResources().getString(R.string.key_foocus_measure), true);
+        mCVResult.setMeasureFocus(mIsFocusMeasured);
 
         boolean isDebugViewShown = sharedPref.getBoolean(getResources().getString(R.string.key_show_debug_view), false);
         showDebugView(isDebugViewShown);
@@ -2163,21 +2167,23 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             return;
         }
 
-        // Check if we need the focus measurement at this point:
-        if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-            //            if (mCVResult.isStable())
-            mCameraPreview.startFocusMeasurement(true);
-            //            else
-            //                mCameraPreview.startFocusMeasurement(false);
-        }
-        // TODO: I do not know why this is happening, once the CameraActivity is resumed:
-        else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
-            //            if (mCVResult.isStable())
-            mCameraPreview.startFocusMeasurement(true);
-            //            else
-            //                mCameraPreview.startFocusMeasurement(false);
-        } else if (state < CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-            mCameraPreview.startFocusMeasurement(false);
+        if (mIsFocusMeasured) {
+            // Check if we need the focus measurement at this point:
+            if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+                //            if (mCVResult.isStable())
+                mCameraPreview.startFocusMeasurement(true);
+                //            else
+                //                mCameraPreview.startFocusMeasurement(false);
+            }
+            // TODO: I do not know why this is happening, once the CameraActivity is resumed:
+            else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
+                //            if (mCVResult.isStable())
+                mCameraPreview.startFocusMeasurement(true);
+                //            else
+                //                mCameraPreview.startFocusMeasurement(false);
+            } else if (state < CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+                mCameraPreview.startFocusMeasurement(false);
+            }
         }
 
 
