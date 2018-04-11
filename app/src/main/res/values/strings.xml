@@ -245,6 +245,7 @@
     <string name="settings_upload_mobile_data_summary">Enable uploads over mobile data connection. Additional charges by your provider may arise. </string>
     <string name="settings_image_processing_title">Image processing</string>
     <string name="settings_fast_segmentation_checkbox_title">Fast page detection</string>
+    <string name="settings_focus_measure_checkbox_title">Measure focus</string>
     <string name="settings_fast_segmentation_checkbox_summary">Fast page detection with a potential loss of accuracy</string>
 
     <!-- DebugSettingsFragment -->

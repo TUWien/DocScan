@@ -79,6 +79,7 @@ public class CVResult {
     private boolean mIsRedrawNecessary;
     private boolean mIsStable = true;
     private boolean mIsSeriesMode = false;
+    private boolean mIsFocusMeasured = true;
 
     public CVResult(Context context) {
 
@@ -232,6 +233,12 @@ public class CVResult {
         mFrameWidth = width;
         mFrameHeight = height;
         mCameraOrientation = cameraOrientation;
+
+    }
+
+    public void setMeasureFocus(boolean isFocusMeasured) {
+
+        mIsFocusMeasured = isFocusMeasured;
 
     }
 
@@ -397,17 +404,21 @@ public class CVResult {
         if (!isRotationCorrect(polyRect))
             return DOCUMENT_STATE_ROTATION;
 
-        if (mPatches == null)
-            return DOCUMENT_STATE_NO_FOCUS_MEASURED;
+        if (mIsFocusMeasured) {
 
-        if (mPatches.length == 0)
-            return DOCUMENT_STATE_NO_FOCUS_MEASURED;
+            if (mPatches == null)
+                return DOCUMENT_STATE_NO_FOCUS_MEASURED;
 
-        if (mRatioSharpUnsharp == -1)
-            return DOCUMENT_STATE_NO_FOCUS_MEASURED;
+            if (mPatches.length == 0)
+                return DOCUMENT_STATE_NO_FOCUS_MEASURED;
 
-        if (!isSharp())
-            return DOCUMENT_STATE_UNSHARP;
+            if (mRatioSharpUnsharp == -1)
+                return DOCUMENT_STATE_NO_FOCUS_MEASURED;
+
+            if (!isSharp())
+                return DOCUMENT_STATE_UNSHARP;
+
+        }
 
 //        if (!mIsIlluminationComputed)
 //            return DOCUMENT_STATE_NO_ILLUMINATION_MEASURED;
