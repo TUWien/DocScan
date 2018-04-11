@@ -23,6 +23,7 @@ public abstract class RestRequest {
 
         mContext = context;
         mRestCallback = (RestCallback) context;
+
     }
 
 //    public String getExtendedUrl() {
