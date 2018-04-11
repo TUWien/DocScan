@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
+import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -15,6 +16,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
@@ -179,6 +181,7 @@ public class TranskribusUtils  {
             JSONObject jsonObject = TranskribusUtils.getJSONObject(dir.getName(), imgFiles);
 //            Start the upload request:
             if (jsonObject != null) {
+                DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", jsonObject.toString());
                 new StartUploadRequest(mContext, jsonObject, uploadId);
             }
         }
@@ -193,6 +196,10 @@ public class TranskribusUtils  {
     public void onUploadStart(int uploadId, String title) {
 
         File selectedDir = getMatchingDir(title);
+
+        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "onuploadStart - info:");
+        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "id: " + uploadId);
+        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "title: " + title);
 
         if (selectedDir != null) {
             for (File file : TranskribusUtils.getFiles(selectedDir))
@@ -236,6 +243,8 @@ public class TranskribusUtils  {
 
         final File file = fileSync.getFile();
 
+        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "uploading file: " + fileSync.toString());
+
         Ion.with(context)
                 .load("PUT", BASE_URL + "uploads/" + Integer.toString(fileSync.getUploadId()))
                 .setHeader("Cookie", "JSESSIONID=" + User.getInstance().getSessionID())
@@ -246,10 +255,14 @@ public class TranskribusUtils  {
                     @Override
                     public void onCompleted(Exception e, String result) {
 
-                        if (e == null)
+                        if (e == null) {
                             callback.onUploadComplete(fileSync);
-                        else
+                            DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "uploaded file: " + fileSync.toString());
+                        }
+                        else {
                             callback.onError(e);
+                            DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "error uploading file: " + e);
+                        }
 
                     }
                 });

@@ -33,6 +33,7 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -61,6 +62,7 @@ public class DataLog {
     private static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
 
     private static final String LOG_FILE_NAME = "docscanlog.json";
+    private static final String UPLOAD_LOG_FILE_NAME = "uploadlog.txt";
     private static final String DATE_NAME = "date";
     private static final String FILE_NAME = "filename";
     private static final String GPS_NAME = "gps";
@@ -78,6 +80,28 @@ public class DataLog {
     }
 
     private DataLog() {
+
+    }
+
+    public void shareUploadLog(Activity activity) {
+
+        File logPath = new File(activity.getBaseContext().getFilesDir(), UPLOAD_LOG_FILE_NAME);
+        Uri contentUri = FileProvider.getUriForFile(activity.getBaseContext(), "at.ac.tuwien.caa.fileprovider", logPath);
+
+        String emailSubject =   activity.getBaseContext().getString(R.string.log_email_subject);
+        String[] emailTo =      new String[]{"holl@cvl.tuwien.ac.at"};
+        String text =           activity.getBaseContext().getString(R.string.log_email_text);
+
+        Intent intent = ShareCompat.IntentBuilder.from(activity)
+                .setType("text/plain")
+                .setSubject(emailSubject)
+                .setEmailTo(emailTo)
+                .setStream(contentUri)
+                .setText(text)
+                .getIntent()
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        activity.startActivity(intent);
 
     }
 
@@ -131,6 +155,34 @@ public class DataLog {
             mShotLogs = new ArrayList();
     }
 
+
+    public void writeUploadLog(Context context, String sender, String text) {
+        writeUploadLog(context, sender + ": " + text);
+    }
+
+    public void writeUploadLog(Context context, String text) {
+
+        try {
+            String fileName = getUploadLogFileName(context);
+            File file = new File(fileName);
+
+            FileOutputStream fOut = new FileOutputStream(file,true);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fOut));
+
+            bw.newLine();
+            bw.write(text);
+            bw.close();
+            fOut.close();
+
+        } catch (FileNotFoundException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+
+
+    }
+
     public void writeLog(Context context) {
 
         try {
@@ -150,6 +202,14 @@ public class DataLog {
 
         File logPath = context.getFilesDir();
         File logFile = new File(logPath, LOG_FILE_NAME);
+        return logFile.getAbsolutePath().toString();
+
+    }
+
+    private String getUploadLogFileName(Context context) throws IOException {
+
+        File logPath = context.getFilesDir();
+        File logFile = new File(logPath, UPLOAD_LOG_FILE_NAME);
         return logFile.getAbsolutePath().toString();
 
     }
