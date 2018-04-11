@@ -446,6 +446,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         loadPreferences();
 
         mCVResult = new CVResult(this);
+        mCVResult.setSeriesMode(mIsSeriesMode);
 
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_view);
 
@@ -1068,6 +1069,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             drawable = R.drawable.ic_photo_camera;
             mIsSeriesModePaused = false;
         }
+
+        if (mCVResult != null)
+            mCVResult.setSeriesMode(mIsSeriesMode);
 
         if (mCameraPreview != null)
             mCameraPreview.pauseImageProcessing(mIsSeriesModePaused);
