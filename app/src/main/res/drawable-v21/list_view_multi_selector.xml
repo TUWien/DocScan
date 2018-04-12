@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#DDDDDD"
+    >
+
+
+    <item>
+        <selector>
+            <item android:state_selected="true">
+                <color android:color="#EEEEEE" />
+            </item>
+
+            <item android:state_activated="true">
+                <color android:color="@color/colorAccentLight" />
+            </item>
+
+            <item>
+                <color android:color="#FFFFFF" />
+            </item>
+        </selector>
+    </item>
+
+
+</ripple>
+

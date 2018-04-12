@@ -222,7 +222,8 @@ public class Helper {
             }
         };
         File[] files = dir.listFiles(filesFilter);
-        Arrays.sort(files);
+        if (files != null && files.length > 0)
+            Arrays.sort(files);
 
         return files;
     }

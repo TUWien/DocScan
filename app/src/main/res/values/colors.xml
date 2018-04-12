@@ -3,6 +3,7 @@
 
     <color name="colorPrimary">#607d8b</color>
     <color name="colorAccent">#ff9800</color>
+    <color name="colorAccentLight">#ffb84d</color>
 
     <color name="control_background_color">#37474f</color>
     <color name="control_background_color_transparent">#4f37474f</color>
