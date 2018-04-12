@@ -940,7 +940,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             @Override
             public void onClick(View v) {
                 mIsQRActive = false;
-                mCameraPreview.startQrMode(false);
+                mCameraPreview.startQrMode(false, mIsFocusMeasured);
                 showControlsLayout(!mIsQRActive);
             }
         });
@@ -1078,7 +1078,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             mCVResult.setSeriesMode(mIsSeriesMode);
 
         if (mCameraPreview != null)
-            mCameraPreview.pauseImageProcessing(mIsSeriesModePaused);
+            mCameraPreview.pauseImageProcessing(mIsSeriesModePaused, mIsFocusMeasured);
 
         photoButton.setImageResource(drawable);
 
@@ -1931,7 +1931,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         else {
             // Stop searching for QR code:
             mIsQRActive = false;
-            mCameraPreview.startQrMode(false);
+            mCameraPreview.startQrMode(false, mIsFocusMeasured);
 
             text = result.toString();
             startCreateSeriesActivity(text);
@@ -2096,7 +2096,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             case R.id.series_qr_item:
                 mIsQRActive = true;
                 showControlsLayout(false);
-                mCameraPreview.startQrMode(true);
+                mCameraPreview.startQrMode(true, mIsFocusMeasured);
                 return true;
 
             default:

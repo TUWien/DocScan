@@ -24,12 +24,14 @@
 package at.ac.tuwien.caa.docscan.camera;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -59,6 +61,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
@@ -179,10 +182,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-    public void startQrMode(boolean qrMode) {
+    public void startQrMode(boolean qrMode, boolean isFocusMeasured) {
 
         mIsQRMode = qrMode;
-        pauseImageProcessing(qrMode);
+        pauseImageProcessing(qrMode, isFocusMeasured);
 
     }
 
@@ -1117,11 +1120,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-    public void pauseImageProcessing(boolean pause) {
+    public void pauseImageProcessing(boolean pause, boolean isFocusMeasured) {
 
         mIsImageProcessingPaused = pause;
-        if (mFocusMeasurementThread != null)
+        if (mFocusMeasurementThread != null && isFocusMeasured)
             mFocusMeasurementThread.setRunning(!pause);
+
         if (mPageSegmentationThread != null)
             mPageSegmentationThread.setRunning(!pause);
 

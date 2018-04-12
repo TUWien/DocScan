@@ -11,6 +11,11 @@
         android:title="@string/settings_show_debug_view_checkbox_title"
         android:summary="@string/settings_show_debug_view_checkbox_summary"
         android:defaultValue="false" />
+    <CheckBoxPreference
+        android:key="@string/key_show_advanced_qr_code"
+        android:title="@string/settings_show_advanced_qr_code_checkbox_title"
+        android:summary="@string/settings_show_advanced_qr_code_checkbox_summary"
+        android:defaultValue="false" />
 
 
 
