@@ -255,6 +255,8 @@
     <string name="settings_show_debug_view_checkbox_summary">Show computation time of several tasks on top of the camera preview.</string>
     <string name="settings_show_debug_settings_title">Debug settings</string>
     <string name="settings_show_debug_settings_summary">Settings used mainly for development and measurement of the app performance.</string>
+    <string name="settings_show_advanced_qr_code_checkbox_title">Show QR code details</string>
+    <string name="settings_show_advanced_qr_code_checkbox_summary">Show extra fields found in the QR code. Warning: These fields are not saved yet and not used in Transkribus!</string>
 
 
 

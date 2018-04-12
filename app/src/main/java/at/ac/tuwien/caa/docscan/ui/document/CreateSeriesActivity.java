@@ -1,8 +1,10 @@
 package at.ac.tuwien.caa.docscan.ui.document;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -86,8 +88,8 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
 
     }
 
-//        Temporarily deactivate the advanced fields:
-   private void fillViews(Document document) {
+    //        Temporarily deactivate the advanced fields:
+    private void fillViews(Document document) {
 
         if (document == null)
             return;
@@ -97,31 +99,47 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
         if (document.getTitle() != null)
             titleEditText.setText(document.getTitle());
 
-//        // Description:
-//        EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
-//        if (document.getTitle() != null)
-//            descriptionEditText.setText(document.getDescription());
-//
-//        // Signature:
-//        EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
-//        if (document.getSignature() != null)
-//            signatureEditText.setText(document.getSignature());
-//
-//        // Authority:
-//        EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
-//        if (document.getAuthority() != null)
-//            authorityEditText.setText(document.getAuthority());
-//
-//        // Hierarchy:
-//        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
-//        if (document.getHierarchy() != null)
-//            hierarchyEditText.setText(document.getHierarchy());
-//
-//        // Uri:
-//        EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
-//        if (document.getUri() != null)
-//            uriEditText.setText(document.getUri());
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
+        boolean showAdvancedFields = sharedPref.getBoolean(getResources().getString(R.string.key_show_advanced_qr_code), false);
+
+        RelativeLayout layout = findViewById(R.id.create_series_fields_layout);
+
+        if (showAdvancedFields) {
+//           Show the advanced settings:
+            layout.setVisibility(View.VISIBLE);
+            fillAdvancedFields(document);
+        }
+        else
+            layout.setVisibility(View.INVISIBLE);
+
+    }
+
+    private void fillAdvancedFields(Document document) {
+        //           // Description:
+//           EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
+//           if (document.getTitle() != null)
+//               descriptionEditText.setText(document.getDescription());
+
+        // Signature:
+        EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
+        if (document.getSignature() != null)
+            signatureEditText.setText(document.getSignature());
+
+        // Authority:
+        EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
+        if (document.getAuthority() != null)
+            authorityEditText.setText(document.getAuthority());
+
+        // Hierarchy:
+        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
+        if (document.getHierarchy() != null)
+            hierarchyEditText.setText(document.getHierarchy());
+
+//           // Uri:
+//           EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
+//           if (document.getUri() != null)
+//               uriEditText.setText(document.getUri());
     }
 
 
