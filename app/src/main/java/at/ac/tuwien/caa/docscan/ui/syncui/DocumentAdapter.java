@@ -11,12 +11,16 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.signature.MediaStoreSignature;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 
 /**
@@ -49,6 +53,7 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
 
 
     @Override
+
     public View getView(int position, View convertView, ViewGroup parent) {
 
 
@@ -88,9 +93,8 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
             if (mDocuments.get(position).getPages().size() >= 1) {
                 Log.d(getClass().getName(), "position: " + position);
                 final File file = mDocuments.get(position).getPages().get(0).getFile();
-                GlideApp.with(mContext)
-                        .load(file.getAbsolutePath())
-                        .into(thumbNail);
+                loadThumbnail(thumbNail, file);
+
 
                 thumbNail.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -113,6 +117,29 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
 
         return convertView;
 
+    }
+
+    private void loadThumbnail(ImageView thumbNail, File file) {
+
+        //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
+        int exifOrientation = -1;
+        try {
+            exifOrientation =  Helper.getExifOrientation(file);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (exifOrientation != -1) {
+            GlideApp.with(mContext)
+                    .load(file.getPath())
+                    .signature(new MediaStoreSignature("", 0, exifOrientation))
+                    .into(thumbNail);
+        }
+        else {
+            GlideApp.with(mContext)
+                    .load(file)
+                    .into(thumbNail);
+        }
     }
 
 

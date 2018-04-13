@@ -104,6 +104,15 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+//        TODO: check if it is really necessary to reload the documents:
+        initAdapter();
+
+    }
+
     /**
      * Called after permission has been given or has been rejected. This is necessary on Android M
      * and younger Android systems.
