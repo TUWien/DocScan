@@ -99,7 +99,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
         CheckBox checkBox = holder.mCheckBox;
 //        checkBox.setText(page.getFile().getName());
-        checkBox.setText(page.getTitle());
+//        checkBox.setText(page.getTitle());
+        checkBox.setText("#: " + Integer.toString(position+1));
+
         final int pos = position;
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override

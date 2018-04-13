@@ -170,6 +170,9 @@ public class Helper {
         };
 
         File[] folders = mediaStorageDir.listFiles(directoryFilter);
+        if (folders == null)
+            return documents;
+
         ArrayList<File> dirs = new ArrayList<>(Arrays.asList(folders));
 
         for (File dir : dirs) {
@@ -234,7 +237,6 @@ public class Helper {
             boolean isAwaitingUpload = isDirAwaitingUpload(new File(dirName), fileList);
             document.setIsAwaitingUpload(isAwaitingUpload);
         }
-
 
         return document;
 

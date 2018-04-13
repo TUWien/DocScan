@@ -32,6 +32,10 @@ public class Page {
         this.mFile = mFile;
     }
 
+    public void setTitle(String title) {
+        mTitle = title;
+    }
+
     public String getTitle() { return mTitle; }
 
 }

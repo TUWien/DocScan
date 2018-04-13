@@ -5,12 +5,12 @@
     <group
         android:id="@+id/gallery_menu_main"
         >
-        <item
-            android:id="@+id/gallery_menu_document_item"
-            android:icon="@drawable/ic_folder_white_24dp"
-            android:title="@string/gallery_menu_document_item_title"
-            app:showAsAction="always"
-            />
+        <!--<item-->
+            <!--android:id="@+id/gallery_menu_document_item"-->
+            <!--android:icon="@drawable/ic_folder_white_24dp"-->
+            <!--android:title="@string/gallery_menu_document_item_title"-->
+            <!--app:showAsAction="always"-->
+            <!--/>-->
     </group>
 
     <group

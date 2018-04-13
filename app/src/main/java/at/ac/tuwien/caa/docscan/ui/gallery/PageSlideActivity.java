@@ -91,9 +91,14 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
         mButtonsLayout = findViewById(R.id.page_view_buttons_layout);
 
 
-        int position = getIntent().getIntExtra("PAGE_POSITION", -1);
-        if (position != -1)
-            mPager.setCurrentItem(position);
+//        Which position was selected?
+        int pos = getIntent().getIntExtra("PAGE_POSITION", -1);
+        if (pos != -1 && mDocument.getPages() != null && mDocument.getPages().size() > pos) {
+            mPager.setCurrentItem(pos);
+            setToolbarTitle(pos);
+            mPage = mDocument.getPages().get(pos);
+        }
+
 
     }
 
@@ -111,6 +116,7 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
             public void onPageSelected(int position) {
 
                 mPage = mDocument.getPages().get(position);
+                setToolbarTitle(position);
 
 //                mPager.setCurrentItem(mPager.getCurrentItem());
 //          TODO: uncomment later:
@@ -142,6 +148,14 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
             }
         });
 
+    }
+
+    private void setToolbarTitle(int pos) {
+
+        if (mToolbar != null) {
+            getSupportActionBar().setTitle("#: " + Integer.toString(pos+1) + "/" +
+                    Integer.toString(mDocument.getPages().size())+ " - " + mDocument.getTitle());
+        }
     }
 
     // A method to find height of the status bar
@@ -370,7 +384,10 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
         @Override
         public int getCount() {
 
-            return mDocument.getPages().size();
+            if (mDocument == null)
+                return -1;
+            else
+                return mDocument.getPages().size();
 
         }
 
