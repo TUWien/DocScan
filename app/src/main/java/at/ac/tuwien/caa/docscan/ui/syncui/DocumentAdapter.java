@@ -52,7 +52,6 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
     public View getView(int position, View convertView, ViewGroup parent) {
 
 
-
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.layout_listview_row, null);

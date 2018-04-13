@@ -202,7 +202,7 @@
     <string name="sync_snackbar_finished_upload_text">Finished upload.</string>
     <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>
     <string name="sync_snackbar_offline_postfix_text">will be uploaded, once the device is online again.</string>
-    <string name="sync_snackbar_offline_text">Your device is currently offline. The selected file(s) will be uploaded, once the device is online again.</string>
+    <string name="sync_snackbar_offline_text">Your device is currently offline. The selected document(s) will be uploaded, once the device is online again.</string>
     <string name="sync_snackbar_no_permissions">Files cannot be uploaded without permission.</string>
     <string name="sync_snackbar_files_deleted_prefix">Deleted</string>
     <string name="sync_server_changed_title">Upload server changed</string>

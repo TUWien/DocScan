@@ -12,11 +12,14 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
 
 /**
  * Created by fabian on 26.09.2017.
@@ -178,6 +181,43 @@ public class Helper {
 
     }
 
+    public static List<Document> getNonEmptyDocuments(List<Document> documents) {
+
+        List<Document> nonEmptyDocuments = new ArrayList<>();
+
+        if (documents == null || documents.size() == 0)
+            return nonEmptyDocuments;
+
+        for (Document document : documents) {
+            if (document.getPages().size() > 0)
+                nonEmptyDocuments.add(document);
+        }
+
+        // Sort it based on the upload status:
+        java.util.Collections.sort(nonEmptyDocuments, new DocumentComparator());
+
+        return nonEmptyDocuments;
+
+    }
+
+    static class DocumentComparator implements Comparator<Document>
+    {
+        @Override public int compare(Document doc1, Document doc2)
+        {
+            int value;
+            if (doc1.isUploaded() && !doc2.isUploaded())
+                value = 1;
+            else if (!doc1.isUploaded() && doc2.isUploaded())
+                value = -1;
+            else {
+                value = doc1.getTitle().compareToIgnoreCase(doc2.getTitle());
+            }
+
+            return value;
+
+        }
+    }
+
     public static Document getDocument(String dirName) {
 
         Document document = new Document();
@@ -187,7 +227,59 @@ public class Helper {
         File file = new File(dirName);
         document.setTitle(file.getName());
 
+        boolean isDocumentUploaded = areFilesUploaded(fileList);
+        document.setIsUploaded(isDocumentUploaded);
+
+        if (!isDocumentUploaded) {
+            boolean isAwaitingUpload = isDirAwaitingUpload(new File(dirName), fileList);
+            document.setIsAwaitingUpload(isAwaitingUpload);
+        }
+
+
         return document;
+
+    }
+
+//    TODO: this should later be changed:
+    private static boolean areFilesUploaded(ArrayList<File> fileList) {
+
+        if (fileList == null)
+            return false;
+
+        if (fileList.size() == 0)
+            return false;
+
+        File[] files = fileList.toArray(new File[fileList.size()]);
+
+        return SyncInfo.getInstance().areFilesUploaded(files);
+
+//        if (files.length == 0)
+//            return false;
+//
+//        // Check if every file contained in the folder is already uploaded:
+//        for (File file : files) {
+//            if (!isFileUploaded(file))
+//                return false;
+//        }
+//
+//        return true;
+
+    }
+
+    private static boolean isDirAwaitingUpload(File dir, ArrayList<File> fileList) {
+
+        if (dir == null)
+            return false;
+
+        if (fileList == null)
+            return false;
+
+        if (fileList.size() == 0)
+            return false;
+
+        File[] files = fileList.toArray(new File[fileList.size()]);
+
+        return SyncInfo.getInstance().isDirAwaitingUpload(dir, files);
 
     }
 
@@ -236,6 +328,21 @@ public class Helper {
         boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
 
         return isConnected;
+
+    }
+
+    /**
+     * Returns the correct singular or plural form of the word documents, regarding the number of
+     * documents.
+     * @param numDoc
+     * @return
+     */
+    public static String getDocumentSingularPlural(Context context, int numDoc) {
+
+        if (numDoc == 1)
+            return context.getResources().getString(R.string.sync_selection_single_document_text);
+        else
+            return context.getResources().getString(R.string.sync_selection_many_documents_text);
 
     }
 

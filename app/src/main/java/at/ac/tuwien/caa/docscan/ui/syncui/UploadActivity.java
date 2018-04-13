@@ -1,14 +1,19 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.SparseBooleanArray;
 import android.view.Menu;
@@ -19,12 +24,14 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.LoginActivity;
@@ -32,6 +39,9 @@ import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
 import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_ERROR_ID;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_OFFLINE_ERROR_ID;
 
 /**
  * Created by fabian on 4/5/2018.
@@ -41,7 +51,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     private Context mContext;
     private ListView mListView;
-    private DocumentAdapter mAdapter;
+    private DocumentUploadAdapter mAdapter;
     private SelectionToolbar mSelectionToolbar;
     private List<Document> mDocuments;
     private Snackbar mSnackbar;
@@ -57,11 +67,11 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         mContext = this;
 
-//        if (Helper.isOnline(this) && !User.getInstance().isLoggedIn()) {
-////            If the user is not online show the corresponding activity and do nothing else:
-//            showActivityNotLoggedIn();
-//            return;
-//        }
+        if (Helper.isOnline(this) && !User.getInstance().isLoggedIn()) {
+//            If the user is not online show the corresponding activity and do nothing else:
+            showActivityNotLoggedIn();
+            return;
+        }
 
 
         setContentView(R.layout.activity_upload);
@@ -85,6 +95,12 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
             // Sets the adapter, note: This fills the list.
             initAdapter();
         }
+
+        // Register to receive messages.
+        // We are registering an observer (mMessageReceiver) to receive Intents
+        // with actions named "PROGRESS_INTENT_NAME".
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter("PROGRESS_INTENT_NAME"));
 
     }
 
@@ -170,8 +186,12 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         if (mContext != null) {
 
-            mDocuments = Helper.getDocuments(getResources().getString(R.string.app_name));
-            mAdapter = new DocumentAdapter(mContext, R.layout.rowlayout, mDocuments);
+//            mDocuments = Helper.getDocuments(getResources().getString(R.string.app_name));
+
+            List<Document> allDocuments = Helper.getDocuments(getResources().getString(R.string.app_name));
+            mDocuments = Helper.getNonEmptyDocuments(allDocuments);
+
+            mAdapter = new DocumentUploadAdapter(mContext, R.layout.rowlayout, mDocuments);
 
             if (mListView != null) {
                 mListView.setAdapter(mAdapter);
@@ -229,8 +249,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     public void selectAllItems(MenuItem item) {
 
-//        mAdapter.selectAllItems();
-
+        selectListViewItems();
 
     }
 
@@ -240,9 +259,112 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     public void deleteSelectedItems(MenuItem item) {
 
-//        showDeleteConfirmationDialog();
+//        deselectListViewItems();
+        showDeleteConfirmationDialog();
 
     }
+
+    private void showDeleteConfirmationDialog() {
+
+        if (mContext == null)
+            return;
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+
+        String deleteText = getResources().getString(R.string.sync_confirm_delete_prefix_text);
+        final ArrayList<Document> documents = getSelectedDocuments();
+        deleteText += " " + Integer.toString(documents.size());
+        deleteText += " " + Helper.getDocumentSingularPlural(this, documents.size());
+        deleteText += " " + getResources().getString(R.string.sync_confirm_delete_postfix_text);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.sync_confirm_delete_title)
+                .setPositiveButton(R.string.sync_confirm_delete_button_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)  {
+                        deleteSelectedDocuments(documents);
+                    }
+                })
+                .setNegativeButton(R.string.sync_cancel_delete_button_text, null)
+                .setCancelable(true)
+                .setMessage(deleteText);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
+    }
+
+    private void deleteSelectedDocuments(ArrayList<Document> documents) {
+
+        boolean isFolderDeleted = true;
+        for (Document document : documents) {
+            isFolderDeleted = isFolderDeleted && deleteFolder(document.getDir());
+        }
+
+        showDocumentsDeletedSnackbar(documents.size());
+
+        initAdapter();
+        deselectListViewItems();
+        // update the selection display:
+//        onSelectionChange();
+
+
+
+        if (!isFolderDeleted) {
+            // TODO: show an error message here.
+        }
+    }
+
+    /**
+     * Shows a snackbar indicating that documents have been deleted.
+     */
+    private void showDocumentsDeletedSnackbar(int numDoc) {
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_files_deleted_prefix);
+        snackbarText += " " + Integer.toString(numDoc) + " ";
+        snackbarText += Helper.getDocumentSingularPlural(this, numDoc);
+//        if (numDoc > 1)
+//            snackbarText += getResources().getString(R.string.sync_selection_many_documents_text);
+//        else
+//            snackbarText += getResources().getString(R.string.sync_selection_single_document_text);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_LONG);
+        mSnackbar.show();
+
+    }
+
+    /**
+     * Deletes a folder and the contained files. Note that File.delete does not delete non empty
+     * folder, hence the function deletes the files before deleting the folder.
+     * @param file
+     * @return
+     */
+    private static boolean deleteFolder(File file) {
+
+        if (!file.exists() || !file.isDirectory())
+            return false;
+
+        boolean isFolderDeleted = true;
+        File[] files = file.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isDirectory())
+                isFolderDeleted = isFolderDeleted && deleteFolder(files[i]);
+            else
+                isFolderDeleted = isFolderDeleted && files[i].delete();
+        }
+
+        return isFolderDeleted;
+
+
+    }
+
 
     /**
      * Called after the MenuItem for upload selected is clicked.
@@ -250,7 +372,153 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     public void startUpload(MenuItem item) {
 
-//        startUpload();
+        startUpload();
+
+    }
+
+    private void startUpload() {
+
+        ArrayList<Document> documents = getSelectedDocuments();
+
+        if (documents.size() == 0) {
+            showNoDirSelectedAlert();
+        }
+
+        else {
+            deselectListViewItems();
+            checkFolderOnlineStatusAndUpload(documents);
+            initAdapter();
+        }
+
+
+    }
+
+    /**
+     * Uploads a list of folders if they are not already uploaded.
+     * @param documents
+     */
+    private void checkFolderOnlineStatusAndUpload(ArrayList<Document> documents) {
+
+        ArrayList<File> uploadDirs = new ArrayList<>();
+        for (Document document : documents) {
+            // Just add the folder if all files contained are not uploaded:
+            if (!document.isUploaded()) {
+                if (document.getDir() != null)
+                    uploadDirs.add(document.getDir());
+            }
+
+        }
+
+        if (uploadDirs.isEmpty()) {
+            showAlreadyUploadedSnackbar();
+        }
+        else {
+
+            if (Helper.isOnline(this))
+                showUploadingSnackbar(); // tell the user that the uploaded started
+            else
+                showNotOnlineSnackbar();
+
+            startUpload(uploadDirs);
+
+        }
+
+
+    }
+
+    /**
+     * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
+     * upload folder.
+     */
+    private void startUpload(ArrayList<File> uploadDirs) {
+
+//        SyncInfo.getInstance().setUploadDirs(mSelectedDirs);
+
+        SyncInfo.getInstance().addUploadDirs(uploadDirs);
+        SyncInfo.saveToDisk(this);
+        SyncInfo.startSyncJob(this);
+
+    }
+
+
+    /**
+     * Shows a snackbar indicating that the device is offline.
+     */
+    private void showNotOnlineSnackbar() {
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_offline_text);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_LONG);
+        mSnackbar.show();
+
+    }
+
+    /**
+     * Shows a snackbar indicating that the upload process starts. We need this because we have
+     * little control of the time when the upload starts really.
+     */
+    private void showUploadingSnackbar() {
+
+        int selCnt = getSelectionCount();
+        String selText = selCnt + " " + Helper.getDocumentSingularPlural(this, selCnt);
+        if (selText == null)
+            return;
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_uploading_prefix_text) + " " +
+                        selText + ".";
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_INDEFINITE);
+        mSnackbar.show();
+
+    }
+
+    /**
+     * Shows a snackbar indicating that all selected files are already uploaded and nothing is done.
+     */
+    private void showAlreadyUploadedSnackbar() {
+
+        String snackbarText = getResources().getString(R.string.sync_snackbar_already_uploaded_prefix_text);
+
+        int selCnt = getSelectionCount();
+
+        snackbarText += " " + Helper.getDocumentSingularPlural(this, selCnt);
+        if (selCnt == 1)
+            snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_singular_text);
+        else
+            snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_plural_text);
+        snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_postfix_text);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_INDEFINITE);
+        mSnackbar.show();
+
+    }
+
+
+
+    private void showNoDirSelectedAlert() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.sync_no_dir_selected_title)
+                .setCancelable(true)
+                .setPositiveButton("OK", null)
+                .setMessage(R.string.sync_no_dir_selected_message);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
 
     }
 
@@ -267,6 +535,15 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         mSelectionToolbar.scrollToolbar(selectionCount);
         mMenu.setGroupVisible(R.id.sync_menu_selection, true);
+
+    }
+
+    private int getSelectionCount() {
+
+        if (mListView != null)
+            return mListView.getCheckedItemPositions().size();
+        else
+            return -1;
 
     }
 
@@ -297,11 +574,24 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
             if (checkedItems != null) {
                 for (int i = 0; i < checkedItems.size(); i++) {
                     int pos = checkedItems.keyAt(i);
-                    boolean val = checkedItems.valueAt(i);
                     mListView.setItemChecked(pos, false);
                 }
             }
         }
+
+        showNoSelectionToolbar();
+
+    }
+
+    private void selectListViewItems() {
+
+        if (mListView != null) {
+            for (int i = 0; i < mListView.getCount(); i++)
+                mListView.setItemChecked(i, true);
+        }
+
+        showSelectionToolbar(getSelectionCount());
+
     }
 
     /**
@@ -325,5 +615,95 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                 mSnackbar.dismiss();
 
     }
+
+    private void showUploadErrorDialog() {
+
+        if (mContext == null)
+            return;
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.sync_error_upload_title)
+                .setPositiveButton("OK", null)
+                .setMessage(R.string.sync_error_upload_text);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
+    }
+
+
+    /**
+     * Shows a snackbar indicating that the upload process starts. We need this because we have
+     * little control of the time when the upload starts really.
+     */
+    private void showUploadFinishedSnackbar() {
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_finished_upload_text);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_LONG);
+        mSnackbar.show();
+
+
+    }
+
+
+    /**
+     * Handles broadcast intents which inform about the upload progress:
+     */
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+
+            boolean error = intent.getBooleanExtra(UPLOAD_ERROR_ID, false);
+
+            if (error) {
+
+                showUploadErrorDialog();
+                initAdapter();
+//                displayUploadActive(false);
+
+                // update the selection display:
+//                onSelectionChange();
+
+
+                return;
+            }
+
+            boolean offlineError = intent.getBooleanExtra(UPLOAD_OFFLINE_ERROR_ID, false);
+
+            if (offlineError) {
+
+                showNotOnlineSnackbar();
+
+
+                // update the selection display:
+//                onSelectionChange();
+
+
+                return;
+            }
+
+            boolean finished = intent.getBooleanExtra(UPLOAD_FINISHED_ID, false);
+
+            if (finished) {
+
+                initAdapter();
+                showUploadFinishedSnackbar();
+
+            }
+
+        }
+    };
+
 
 }
