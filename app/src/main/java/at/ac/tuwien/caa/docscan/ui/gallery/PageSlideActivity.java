@@ -17,12 +17,15 @@ package at.ac.tuwien.caa.docscan.ui.gallery;
  * limitations under the License.
  */
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -213,14 +216,15 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
             public void onClick(View v) {
                 if (mPage != null) {
 
-//                    Uri uri = FileProvider.getUriForFile(getApplicationContext(), getApplicationContext().getPackageName(), mPage.getFile());
-                    Uri uri = FileProvider.getUriForFile(getApplicationContext(), "at.ac.tuwien.caa.fileprovider", mPage.getFile());
+                    Uri uri = getImageContentUri(getApplicationContext(), mPage.getFile());
 
                     Intent shareIntent = new Intent();
                     shareIntent.setAction(Intent.ACTION_SEND);
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, mPage.getFile().getAbsolutePath());
-                    shareIntent.setType("image/jpeg");
-                    startActivity(Intent.createChooser(shareIntent, "asdf"));
+                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); // temp permission for receiving app to read this file
+                    shareIntent.setDataAndType(uri, getContentResolver().getType(uri));
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                    shareIntent.setType("image/jpg");
+                    startActivity(Intent.createChooser(shareIntent, "Choose an app"));
 
                 }
             }
@@ -228,6 +232,29 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
     }
 
+
+    public static Uri getImageContentUri(Context context, File imageFile) {
+        String filePath = imageFile.getAbsolutePath();
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                new String[] { MediaStore.Images.Media._ID },
+                MediaStore.Images.Media.DATA + "=? ",
+                new String[] { filePath }, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
+            cursor.close();
+            return Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "" + id);
+        } else {
+            if (imageFile.exists()) {
+                ContentValues values = new ContentValues();
+                values.put(MediaStore.Images.Media.DATA, filePath);
+                return context.getContentResolver().insert(
+                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            } else {
+                return null;
+            }
+        }
+    }
 
     private void initCropButton() {
 
