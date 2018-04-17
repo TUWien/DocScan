@@ -15,10 +15,6 @@
             android:id="@+id/sync_item"
             android:title=""
             />
-        <item
-            android:id="@+id/sync_2_item"
-            android:title=""
-            />
 
     </group>
 

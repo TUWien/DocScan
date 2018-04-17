@@ -648,10 +648,10 @@ public class SyncActivity extends BaseNavigationActivity implements SyncAdapter.
     }
 
 
-    @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.SYNC;
-    }
+//    @Override
+//    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
+//        return NavigationDrawer.NavigationItemEnum.SYNC;
+//    }
 
 
     @Override

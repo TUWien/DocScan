@@ -236,7 +236,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     @Override
     protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.SYNC_2;
+        return NavigationDrawer.NavigationItemEnum.UPLOAD;
     }
 
 
