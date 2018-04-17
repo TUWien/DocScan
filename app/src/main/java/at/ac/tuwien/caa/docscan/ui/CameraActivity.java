@@ -343,7 +343,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         boolean useFastPageDetection = sharedPref.getBoolean(getResources().getString(R.string.key_fast_segmentation), true);
         NativeWrapper.setUseLab(!useFastPageDetection);
 
-        mIsFocusMeasured = sharedPref.getBoolean(getResources().getString(R.string.key_foocus_measure), true);
+        mIsFocusMeasured = sharedPref.getBoolean(getResources().getString(R.string.key_focus_measure), true);
         mCVResult.setMeasureFocus(mIsFocusMeasured);
 
         boolean isDebugViewShown = sharedPref.getBoolean(getResources().getString(R.string.key_show_debug_view), false);
