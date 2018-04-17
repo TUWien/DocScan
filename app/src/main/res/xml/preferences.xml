@@ -24,7 +24,7 @@
             android:defaultValue="true" />
 
         <CheckBoxPreference
-            android:key="@string/key_foocus_measure"
+            android:key="@string/key_focus_measure"
             android:title="@string/settings_focus_measure_checkbox_title"
             android:defaultValue="true" />
 
