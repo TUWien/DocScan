@@ -32,8 +32,8 @@ import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 
 public class TranskribusUtils  {
 
-//    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
-    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "upload_test";
+    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
+//    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "upload_test";
 
     // Singleton:
     private static TranskribusUtils mInstance;

@@ -208,8 +208,6 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
     private void initShareButton() {
 
-//        TODO: not working
-
         ImageView shareView = findViewById(R.id.page_view_buttons_layout_share_button);
         shareView.setOnClickListener(new View.OnClickListener() {
             @Override
