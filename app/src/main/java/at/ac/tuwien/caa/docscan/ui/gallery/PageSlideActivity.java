@@ -175,7 +175,7 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
     private void initButtons() {
 
-        initCropButton();
+//        initCropButton();
         initDeleteButton();
         initRotateButton();
         initShareButton();
@@ -255,23 +255,23 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
             }
         }
     }
-
-    private void initCropButton() {
-
-        ImageView cropImageView = findViewById(R.id.page_view_buttons_layout_crop_button);
-        cropImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mPage != null) {
-                    Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
-                    CropInfo cropInfo = new CropInfo(mPage.getFile().getPath());
-                    intent.putExtra(CROP_INFO_NAME, cropInfo);
-                    startActivity(intent);
-                }
-            }
-        });
-
-    }
+//
+//    private void initCropButton() {
+//
+//        ImageView cropImageView = findViewById(R.id.page_view_buttons_layout_crop_button);
+//        cropImageView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (mPage != null) {
+//                    Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+//                    CropInfo cropInfo = new CropInfo(mPage.getFile().getPath());
+//                    intent.putExtra(CROP_INFO_NAME, cropInfo);
+//                    startActivity(intent);
+//                }
+//            }
+//        });
+//
+//    }
 
     private void initDeleteButton() {
 
@@ -340,8 +340,25 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
         if (mToolbar.getVisibility() == View.VISIBLE) {
             mToolbar.setVisibility(View.INVISIBLE);
             mButtonsLayout.setVisibility(View.INVISIBLE);
+
+            View decorView = getWindow().getDecorView();
+// Hide the status bar.
+            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+            decorView.setSystemUiVisibility(uiOptions);
+// Remember that you should never show the action bar if the
+// status bar is hidden, so hide that too if necessary.
+//            ActionBar actionBar = getActionBar();
+//            actionBar.hide();
+
         }
         else {
+
+            View decorView = getWindow().getDecorView();
+// Hide the status bar.
+            int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
+            decorView.setSystemUiVisibility(uiOptions);
+
+
             mToolbar.setVisibility(View.VISIBLE);
             mButtonsLayout.setVisibility(View.VISIBLE);
         }
