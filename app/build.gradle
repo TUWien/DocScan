@@ -15,6 +15,7 @@ android {
 		targetSdkVersion 27
 		versionCode 16
 		versionName "1.1.8"
+		multiDexEnabled true
 		// we need vectorDrawables.useSupportLibrary to get rid of this error:
 //		References to other resources are not supported by build-time PNG generation
 		vectorDrawables.useSupportLibrary = true
@@ -122,5 +123,6 @@ dependencies {
 	implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.9.0'
 	implementation 'com.github.chrisbanes:PhotoView:2.0.0'
 	implementation 'com.fivehundredpx:greedo-layout:1.1.0'
+
 	compile 'com.google.android:flexbox:0.3.0-alpha2'
 }

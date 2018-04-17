@@ -122,6 +122,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity;
 import at.ac.tuwien.caa.docscan.ui.document.SeriesGeneralActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity;
+import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
@@ -473,35 +474,35 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         else if ((lastInstalledVersion == Settings.NO_ENTRY) || (lastInstalledVersion <= 11)) {
 
             // has the user already seen that the documents can be opened in the actionbar?
-            boolean isDocumentHintShown = Settings.getInstance().loadBooleanKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY);
-            if (!isDocumentHintShown) {
-                showDocumentHint();
-                Settings.getInstance().saveKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY, true);
-            }
+//            boolean isDocumentHintShown = Settings.getInstance().loadBooleanKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY);
+//            if (!isDocumentHintShown) {
+//                showDocumentHint();
+//                Settings.getInstance().saveKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY, true);
+//            }
 
         }
 
     }
 
-    private void showDocumentHint() {
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(R.string.camera_document_hint_title)
-                .setPositiveButton("OK", null)
-                .setMessage(R.string.camera_document_hint_msg);
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
-
-
-    }
+//    private void showDocumentHint() {
+//
+//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+//
+//
+//        // set dialog message
+//        alertDialogBuilder
+//                .setTitle(R.string.camera_document_hint_title)
+//                .setPositiveButton("OK", null)
+//                .setMessage(R.string.camera_document_hint_msg);
+//
+//        // create alert dialog
+//        AlertDialog alertDialog = alertDialogBuilder.create();
+//
+//        // show it
+//        alertDialog.show();
+//
+//
+//    }
 
     private void loadPreferences() {
 
@@ -1977,7 +1978,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     public void startSyncActivity(MenuItem item) {
 
-        Intent intent = new Intent(getApplicationContext(), SyncActivity.class);
+        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
         startActivity(intent);
 
     }
