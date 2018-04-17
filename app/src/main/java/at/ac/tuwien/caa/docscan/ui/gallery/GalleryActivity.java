@@ -66,7 +66,7 @@ public class GalleryActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_gallery);
 
         //        dummy document - start
-        mFileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
+        mFileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
 //        if (mFileName == null)
 //            mFileName = "/storage/emulated/0/Pictures/DocScan/Untitled document";
 
@@ -91,8 +91,12 @@ public class GalleryActivity extends AppCompatActivity implements
         }
 
         if (mFileRotated) {
-            mAdapter.notifyDataSetChanged();
+            if (mAdapter != null)
+                mAdapter.notifyDataSetChanged();
         }
+
+
+//        fixToolbar();
 
     }
 
@@ -286,12 +290,17 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void fixToolbar() {
 
-        mSelectionToolbar.fixToolbar();
+
+        if (mSelectionToolbar != null)
+            mSelectionToolbar.fixToolbar();
 
         //            Set the action bar title:
-        mToolbar.setTitle(mDocument.getTitle());
-        mMenu.setGroupVisible(R.id.gallery_menu_selection, false);
-        mMenu.setGroupVisible(R.id.gallery_menu_main, true);
+        if (mToolbar != null)
+            mToolbar.setTitle(mDocument.getTitle());
+        if (mMenu != null) {
+            mMenu.setGroupVisible(R.id.gallery_menu_selection, false);
+            mMenu.setGroupVisible(R.id.gallery_menu_main, true);
+        }
 
     }
 

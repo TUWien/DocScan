@@ -34,6 +34,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -67,16 +68,18 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
     private Toolbar mToolbar;
     private Document mDocument;
     private LinearLayout mButtonsLayout;
+    private Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_page_slide);
 
         // Instantiate a ViewPager and a PagerAdapter.
         initPager();
 
-        String fileName = getIntent().getStringExtra("DOCUMENT_FILE_NAME");
+        String fileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
         if (fileName == null)
             return;
 
@@ -90,9 +93,10 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
         mButtonsLayout = findViewById(R.id.page_view_buttons_layout);
 
+        mContext = this;
 
 //        Which position was selected?
-        int pos = getIntent().getIntExtra("PAGE_POSITION", -1);
+        int pos = getIntent().getIntExtra(getString(R.string.key_page_position), -1);
         if (pos != -1 && mDocument.getPages() != null && mDocument.getPages().size() > pos) {
             mPager.setCurrentItem(pos);
             setToolbarTitle(pos);
@@ -117,11 +121,6 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
                 mPage = mDocument.getPages().get(position);
                 setToolbarTitle(position);
-
-//                mPager.setCurrentItem(mPager.getCurrentItem());
-//          TODO: uncomment later:
-//                String title = mPage.getFile().getName();
-//                getSupportActionBar().setTitle(title);
 
             }
 
@@ -291,44 +290,6 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
     }
 
-
-//
-//    private ArrayList<File> getFileList(String dir) {
-//
-//        File[] files = getFiles(new File(dir));
-//
-//        ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
-//
-//        return fileList;
-//
-//    }
-//
-//    private ArrayList<Page> filesToPages(ArrayList<File> files) {
-//
-//        ArrayList<Page> pages = new ArrayList<>(files.size());
-//
-//        for (File file : files) {
-//            pages.add(new Page(file));
-//        }
-//
-//        return pages;
-//
-//    }
-//
-//    private File[] getFiles(File dir) {
-//
-//        FileFilter filesFilter = new FileFilter() {
-//            public boolean accept(File file) {
-//                return !file.isDirectory();
-//            }
-//        };
-//        File[] files = dir.listFiles(filesFilter);
-//        Arrays.sort(files);
-//
-//        return files;
-//    }
-
-
     private Document getDummyDocument(String fileName) {
 
         Document document = Helper.getDocument(fileName);
@@ -358,6 +319,7 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
             mButtonsLayout.setVisibility(View.VISIBLE);
         }
 
+
     }
 
     private class PageSlideAdapter extends FragmentStatePagerAdapter {
@@ -372,12 +334,25 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
         }
 
+
         @Override
         public Fragment getItem(int position) {
 
             Page page = mDocument.getPages().get(position);
 
-            return ImageViewerFragment.create(page);
+//            Bundle args = new Bundle();
+//            args.putInt("num", num);
+//            f.setArguments(args);
+
+//            ImageViewerFragment fragment = ImageViewerFragment.create(page, mContext);
+            ImageViewerFragment fragment = ImageViewerFragment.create();
+            Bundle args = new Bundle();
+                args.putString(getString(R.string.key_fragment_image_viewer_file_name),
+                        page.getFile().getAbsolutePath());
+            fragment.setArguments(args);
+
+//            return ImageViewerFragment.create(page, mContext);
+            return fragment;
 
         }
 

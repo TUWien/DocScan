@@ -100,7 +100,7 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(mContext, GalleryActivity.class);
-                        intent.putExtra("DOCUMENT_FILE_NAME", file.getParent());
+                        intent.putExtra(mContext.getString(R.string.key_document_file_name), file.getParent());
                         mContext.startActivity(intent);
                     }
                 });

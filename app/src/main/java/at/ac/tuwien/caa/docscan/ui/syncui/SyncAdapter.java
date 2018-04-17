@@ -265,7 +265,7 @@ public class SyncAdapter extends BaseDocumentAdapter {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, GalleryActivity.class);
-                intent.putExtra("DOCUMENT_FILE_NAME", uri);
+                intent.putExtra(mContext.getString(R.string.key_document_file_name), uri);
                 mContext.startActivity(intent);
 //                mContext.startActivity();
             }

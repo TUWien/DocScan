@@ -112,37 +112,6 @@ public class DocumentUploadAdapter extends DocumentAdapter {
 
         }
 
-
-////        Load the first image in the document into the thumbnail preview:
-//        ImageView thumbNail = convertView.findViewById(R.id.layout_listview_row_thumbnail);
-//        if (thumbNail != null) {
-//
-//            if (document.getPages().size() >= 1) {
-//                Log.d(getClass().getName(), "position: " + position);
-//                final File file = document.getPages().get(0).getFile();
-//                GlideApp.with(mContext)
-//                        .load(file.getAbsolutePath())
-//                        .into(thumbNail);
-//
-//                thumbNail.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        Intent intent = new Intent(mContext, GalleryActivity.class);
-//                        intent.putExtra("DOCUMENT_FILE_NAME", file.getParent());
-//                        mContext.startActivity(intent);
-//                    }
-//                });
-//            }
-//            else {
-//                thumbNail.setImageResource(R.drawable.ic_folder_open_black_24dp);
-//                thumbNail.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                    }
-//                });
-//            }
-//        }
-
         return convertView;
 
     }
