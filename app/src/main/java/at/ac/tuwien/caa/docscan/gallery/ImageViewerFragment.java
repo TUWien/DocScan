@@ -18,12 +18,15 @@ package at.ac.tuwien.caa.docscan.gallery;
  */
 
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ContentFrameLayout;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -55,29 +58,11 @@ public class ImageViewerFragment extends Fragment {
     private Page mPage;
 //    private SubsamplingScaleImageView mImageView;
     private TouchImageView mImageView;
+    private String mFileName;
 
-
-//    /** TODO: remove this, we just need it here for debugging if the CameraActivitiy is not started before ImageViewerFragment
-//     * Static initialization of the OpenCV and docscan-native modules.
-//     */
-//    static {
-//
-////         We need this for Android 4:
-//        if (!OpenCVLoader.initDebug()) {
-////            Log.d(TAG, "Error while initializing OpenCV.");
-//        } else {
-//            System.loadLibrary("opencv_java3");
-//            System.loadLibrary("docscan-native");
-////            Log.d(TAG, "OpenCV initialized");
-//        }
-//
-//    }
-
-
-    public static ImageViewerFragment create(Page page) {
+    public static ImageViewerFragment create() {
 
         ImageViewerFragment fragment = new ImageViewerFragment();
-        fragment.setPage(page);
 
         return fragment;
 
@@ -87,14 +72,14 @@ public class ImageViewerFragment extends Fragment {
 
     }
 
-    private void setPage(Page page) {
-        mPage = page;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        mFileName = getArguments() != null ?
+                getArguments().getString(getString(R.string.key_fragment_image_viewer_file_name)) : null;
 
     }
 
@@ -113,10 +98,13 @@ public class ImageViewerFragment extends Fragment {
 
     private void initImageView(ViewGroup rootView) {
 
-        mImageView = rootView.findViewById(R.id.image_viewer_image_view);
-        mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()).tilingDisabled());
-        mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
+        if (mFileName != null) {
 
+            mImageView = rootView.findViewById(R.id.image_viewer_image_view);
+            mImageView.setImage(ImageSource.uri(mFileName));
+            mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
+
+        }
 //      PhotoView by Chris Bane:
 //        PhotoView photoView = rootView.findViewById(R.id.page_slide_photo_view);
 //        photoView.setImageURI(Uri.fromFile(mPage.getFile()));
@@ -127,8 +115,9 @@ public class ImageViewerFragment extends Fragment {
 
     public void refreshImageView() {
 
-        mImageView.setImage(ImageSource.uri(mPage.getFile().getPath()));
+        mImageView.setImage(ImageSource.uri(mFileName));
 
     }
+
 
 }

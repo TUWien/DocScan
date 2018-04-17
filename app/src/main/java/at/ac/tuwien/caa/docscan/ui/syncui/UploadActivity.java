@@ -111,6 +111,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 //        TODO: check if it is really necessary to reload the documents:
         initAdapter();
 
+        showNoSelectionToolbar();
+
     }
 
     /**
@@ -533,17 +535,21 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     private void showNoSelectionToolbar() {
 
-        mSelectionToolbar.fixToolbar();
+        if (mSelectionToolbar != null)
+            mSelectionToolbar.fixToolbar();
 
         getToolbar().setTitle(R.string.sync_item_text);
-        mMenu.setGroupVisible(R.id.sync_menu_selection, false);
+        if (mMenu != null)
+            mMenu.setGroupVisible(R.id.sync_menu_selection, false);
 
     }
 
     private void showSelectionToolbar(int selectionCount) {
 
-        mSelectionToolbar.scrollToolbar(selectionCount);
-        mMenu.setGroupVisible(R.id.sync_menu_selection, true);
+        if (mSelectionToolbar != null)
+            mSelectionToolbar.scrollToolbar(selectionCount);
+        if (mMenu != null)
+            mMenu.setGroupVisible(R.id.sync_menu_selection, true);
 
     }
 

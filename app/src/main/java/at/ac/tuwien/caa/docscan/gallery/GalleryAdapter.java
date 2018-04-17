@@ -238,8 +238,8 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
 //                Start the image viewer:
                 Intent intent = new Intent(mContext, PageSlideActivity.class);
-                intent.putExtra("DOCUMENT_FILE_NAME", mFileName);
-                intent.putExtra("PAGE_POSITION", position);
+                intent.putExtra(mContext.getString(R.string.key_document_file_name), mFileName);
+                intent.putExtra(mContext.getString(R.string.key_page_position), position);
                 mContext.startActivity(intent);
             }
         }

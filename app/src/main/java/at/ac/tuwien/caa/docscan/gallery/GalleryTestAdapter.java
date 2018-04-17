@@ -173,8 +173,8 @@ public class GalleryTestAdapter extends RecyclerView.Adapter<GalleryTestAdapter.
             if(position != RecyclerView.NO_POSITION) {
                 Intent intent = new Intent(mContext, PageSlideActivity.class);
 
-                intent.putExtra("DOCUMENT_FILE_NAME", mFileName);
-                intent.putExtra("PAGE_POSITION", position);
+                intent.putExtra(mContext.getString(R.string.key_document_file_name), mFileName);
+                intent.putExtra(mContext.getString(R.string.key_page_position), position);
                 mContext.startActivity(intent);
             }
         }
