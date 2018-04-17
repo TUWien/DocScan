@@ -6,7 +6,7 @@
     <string name="about_item_text">About</string>
     <string name="share_log_item_text">Share log</string>
     <string name="sync_item_text">Upload</string>
-    <string name="sync_2_item_text">Fancy Upload</string>
+    <string name="upload_item_text">Upload</string>
     <string name="camera_item_text">Camera</string>
     <string name="header_text">DocScan</string>
     <string name="account_edit_text">Set up account</string>
