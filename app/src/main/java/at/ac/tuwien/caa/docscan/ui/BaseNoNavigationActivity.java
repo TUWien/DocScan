@@ -18,9 +18,23 @@ public abstract class BaseNoNavigationActivity extends AppCompatActivity {
      */
     protected void initToolbarTitle(int titleID) {
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(getString(titleID));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+    }
+
+    /**
+     * Sets the title of the toolbar.
+     * @param title title string
+     */
+    protected void initToolbarTitle(String title) {
+
+        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        setSupportActionBar(toolbar);
+        if (title != null)
+            getSupportActionBar().setTitle(title);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
     }
@@ -34,8 +48,5 @@ public abstract class BaseNoNavigationActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-
-
 
 }

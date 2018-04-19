@@ -8,25 +8,26 @@
     android:id="@+id/drawer_layout"
     >
 
-    <LinearLayout
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:id="@+id/sync_coordinatorlayout"
+        >
 
         <android.support.design.widget.AppBarLayout
-            android:id="@+id/appbar"
+            android:id="@+id/gallery_appbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             >
             <include layout="@layout/toolbar_autohide" />
         </android.support.design.widget.AppBarLayout>
 
-        <android.support.design.widget.CoordinatorLayout
-            android:id="@+id/sync_coordinatorlayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            >
+        <!--<android.support.design.widget.CoordinatorLayout-->
+            <!--android:id="@+id/sync_coordinatorlayout"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:orientation="vertical"-->
+            <!--&gt;-->
 
             <!-- Note app:layout_dodgeInsetEdges="bottom" moves the entire view up if a snackbar
             is shown -->
@@ -36,63 +37,10 @@
                 android:layout_height="match_parent"
                 android:choiceMode="none"
                 android:fadeScrollbars="false"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
                 />
             <!-- The selection_cardview is API dependent because for < Android L the elevation uses different dimensions -->
-            <include layout="@layout/selection_cardview"/>
-
-            <!--<android.support.v7.widget.CardView-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="70dp"-->
-                <!--android:layout_margin="@dimen/activity_vertical_margin"-->
-                <!--android:layout_gravity="bottom|center_horizontal"-->
-                <!--android:layout_marginBottom="@dimen/activity_vertical_margin"-->
-                <!--app:layout_dodgeInsetEdges="bottom"-->
-                <!--app:cardUseCompatPadding="true"-->
-                <!--&gt;-->
-                <!--&lt;!&ndash;app:cardElevation="70dp"&ndash;&gt;-->
-            <!--<RelativeLayout-->
-                <!--android:id="@+id/sync_selection_layout"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_gravity="center_vertical"-->
-                <!--android:minWidth="@dimen/sync_footer_height"-->
-                <!--&gt;-->
-                <!--<TextView-->
-                    <!--android:id="@+id/sync_selection_textview"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:text="@string/sync_selection_initial_text"-->
-                    <!--android:layout_centerVertical="true"-->
-                    <!--android:padding="@dimen/activity_vertical_margin"/>-->
-                <!--<ImageButton-->
-                    <!--android:id="@+id/sync_upload_button"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="match_parent"-->
-                    <!--android:layout_toLeftOf="@id/sync_delete_button"-->
-                    <!--android:layout_centerVertical="true"-->
-                    <!--app:srcCompat="@drawable/ic_cloud_upload_gray_24dp"-->
-                    <!--android:backgroundTint="@color/white"-->
-                    <!--android:padding="10dp"-->
-                    <!--android:layout_marginRight="5dp"-->
-                    <!--/>-->
-                <!--<ImageButton-->
-                    <!--android:id="@+id/sync_delete_button"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="match_parent"-->
-                    <!--android:layout_alignParentRight="true"-->
-                    <!--android:layout_centerVertical="true"-->
-                    <!--android:backgroundTint="@color/white"-->
-                    <!--app:srcCompat="@drawable/ic_delete_black_24dp"-->
-                    <!--android:padding="10dp"-->
-                    <!--android:layout_marginRight="5dp"-->
-                    <!--/>-->
-                <!--&lt;!&ndash;android:padding="@dimen/activity_vertical_margin"&ndash;&gt;-->
-            <!--</RelativeLayout>-->
-
-
-            <!--&gt;-->
-            <!--</android.support.v7.widget.CardView>-->
-
+            <!--<include layout="@layout/selection_cardview"/>-->
 
             <ProgressBar
                 android:id="@+id/sync_progressbar"
@@ -111,7 +59,7 @@
 
 
 
-    </LinearLayout>
+    <!--</android.support.design.widget.CoordinatorLayout>-->
 
     <include layout="@layout/navigation_view"/>
 

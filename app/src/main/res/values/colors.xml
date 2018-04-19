@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary"> #607d8b</color>
+
+    <color name="colorPrimary">#607d8b</color>
     <color name="colorPrimaryDark">#263238</color>
     <color name="colorAccent">#ff9800</color>
+    <color name="colorAccentLight">#ffb84d</color>
 
     <color name="control_background_color">#37474f</color>
     <color name="control_background_color_transparent">#4f37474f</color>
@@ -18,6 +20,7 @@
     <!--<color name="button_view_bg_color">#333</color>-->
 
     <color name="hud_page_rect_color">#dfa0</color>
+    <color name="cross_color">#96ffaa00</color>
 
     <color name="hud_focus_sharp_rect_color">#a3a3</color>
     <color name="hud_focus_unssharp_rect_color">#ad00</color>
@@ -28,12 +31,16 @@
     <color name="focus_touch_circle_fill">#aa666666</color>
     <color name="focus_touch_circle_outline">#96ffffff</color>
 
+    <color name="detail_crop_outline">#aa666666</color>
+
     <!--<color name="movement_color">#6fff0000</color>-->
     <color name="movement_color">#4f630000</color>
     <color name="waiting_frame_color">#00ffffff</color>
 
     <color name="expandable_list_view_child_color">#aa464646</color>
     <color name="light_gray">#d6d6d6</color>
+
+    <color name="gallery_checkbox_background">#9dffffff</color>
 
     <!--<color name="photo_button_view_bg_color">#333</color>-->
 

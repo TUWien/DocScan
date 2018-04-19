@@ -341,6 +341,67 @@ public class CVResult {
         }
     }
 
+    /**
+     * Normalizes the points contained in a DkPolyRect between zero and one. The screen orientation
+     * is taken into account.
+     * @param rect
+     * @return
+     */
+    public ArrayList<PointF> normPoints(DkPolyRect rect) {
+
+        ArrayList<PointF> points = new ArrayList<>();
+
+        for (PointF point : rect.getPoints())
+            points.add(getNormedPoint(point, mFrameWidth, mFrameHeight, mCameraOrientation));
+
+        return points;
+
+    }
+
+    /**
+     * Normalizes a point coordinate between zero and 1 and takes orientation into account.
+     * @param point
+     * @param frameWidth
+     * @param frameHeight
+     * @param orientation
+     * @return
+     */
+    private PointF getNormedPoint(PointF point, int frameWidth, int frameHeight, int orientation) {
+
+        switch (orientation) {
+
+            case ORIENTATION_PORTRAIT: // Portrait mode
+                return new PointF(
+                        (frameHeight - point.y) / frameHeight,
+                        point.x / frameWidth
+                );
+
+            case ORIENTATION_FLIPPED_PORTRAIT: // Portrait mode flipped (devices should not rotate
+                // to this but we do it for the completeness)
+                return new PointF(
+                        point.y / frameHeight,
+                        (frameWidth - point.x) / frameWidth
+                );
+
+
+            case ORIENTATION_LANDSCAPE: // Landscape mode
+                return new PointF(
+                        point.x / frameWidth,
+                        point.y / frameHeight
+                );
+
+            case ORIENTATION_FLIPPED_LANDSCAPE: // Landscape mode flipped
+                return new PointF(
+                        (frameWidth - point.x) / frameWidth,
+                        (frameHeight - point.y) / frameHeight
+                );
+
+            default:
+                return null;
+        }
+
+    }
+
     public PointF normPoint(PointF point) {
 
         PointF normedPoint = new PointF();

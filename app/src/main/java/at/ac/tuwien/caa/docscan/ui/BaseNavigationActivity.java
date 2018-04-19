@@ -29,7 +29,7 @@ import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
 public abstract class BaseNavigationActivity extends AppCompatActivity implements
         LoginRequest.LoginCallback, LogoutRequest.LogoutCallback {
 
-    private NavigationDrawer mNavigationDrawer;
+    protected NavigationDrawer mNavigationDrawer;
     private Toolbar mToolbar;
 
     @Override

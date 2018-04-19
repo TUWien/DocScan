@@ -52,6 +52,24 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
+        <!--<activity-->
+            <!--android:name=".ui.settings.PreferenceActivity"-->
+            <!--android:exported="true"-->
+            <!--android:parentActivityName=".ui.CameraActivity"-->
+            <!--/>-->
+
+        <activity
+            android:name=".ui.gallery.PageSlideActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
+        <activity
+            android:name=".ui.gallery.GalleryActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
         <activity
             android:name=".ui.LoginActivity"
             android:exported="false"
@@ -77,6 +95,10 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
+        <activity
+            android:name=".ui.CropViewActivity"
+            android:exported="false"
+            />
 
         <!--launchMode = "singleInstance" avoids opening the intent twice -->
         <!--nohistory = "true" creates the activity instead of just resuming it -->
@@ -88,17 +110,23 @@
             android:configChanges="orientation|screenSize"
             />
 
-        <activity
+
+		<activity
             android:name=".ui.settings.PreferenceActivity"
             android:exported="false"
-            android:parentActivityName=".ui.CameraActivity"
-            />
+		/>
 
-        <activity
+		<activity
+            android:name=".ui.MapViewActivity"
+            android:exported="false"
+		/>
+
+		<activity
             android:name=".ui.settings.DebugPreferenceActivity"
             android:exported="false"
-            android:parentActivityName=".ui.CameraActivity"
-            />
+		/>
+
+
 
         <activity
             android:name=".ui.LogActivity"
@@ -134,12 +162,13 @@
 
 
         <activity
-            android:name=".sync.SyncStartActivity"
+            android:name=".ui.syncui.SyncActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
+
         <activity
-            android:name=".ui.syncui.SyncActivity"
+            android:name=".ui.syncui.UploadActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />

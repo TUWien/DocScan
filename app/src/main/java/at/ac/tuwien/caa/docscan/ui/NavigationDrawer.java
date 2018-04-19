@@ -23,6 +23,7 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.settings.PreferenceActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity;
+import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
 import static at.ac.tuwien.caa.docscan.ui.NavigationDrawer.NavigationItemEnum.ACCOUNT_EDIT;
 
@@ -282,14 +283,15 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_info_black_24dp, AboutActivity.class),
         SHARE_LOG(R.id.share_log_item, R.string.share_log_item_text,
                 R.drawable.ic_share_black_24dp, LogActivity.class),
-        SYNC(R.id.sync_item, R.string.sync_item_text,
-                R.drawable.ic_cloud_upload_black_24dp, SyncActivity.class),
         ACCOUNT_EDIT(R.id.account_edit_item, R.string.account_edit_text,
                 R.drawable.ic_account_box_black_24dp, AccountActivity.class),
         ACCOUNT_LOGOUT(R.id.account_logout_item, R.string.account_logout,
                 R.drawable.ic_remove_circle_outline_black_24dp, LogoutActivity.class),
         SETTINGS(R.id.settings_item, R.string.settings_item_text,
                 R.drawable.ic_settings_black_24dp, PreferenceActivity.class),
+
+        UPLOAD(R.id.sync_item, R.string.upload_item_text,
+                R.drawable.ic_cloud_upload_black_24dp, UploadActivity.class),
 //        REST_TEST(R.id.rest_item, R.string.rest_item_text,
 //                R.drawable.ic_weekend_black_24dp, RestTestActivity.class),
         INVALID(-1, 0, 0, null);

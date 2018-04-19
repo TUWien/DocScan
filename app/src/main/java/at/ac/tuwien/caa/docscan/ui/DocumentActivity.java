@@ -42,7 +42,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
         setContentView(R.layout.activity_document);
         super.initToolbarTitle(R.string.document_title);
 
-        mListView = (ExpandableListView) findViewById(R.id.document_list_view);
+        mListView = findViewById(R.id.document_list_view);
         mContext = this;
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -57,7 +57,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
 
         final Context c = this;
         final Activity a = this;
-        Button selectSeries = (Button) findViewById(R.id.document_select_button);
+        Button selectSeries = findViewById(R.id.document_select_button);
         selectSeries.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

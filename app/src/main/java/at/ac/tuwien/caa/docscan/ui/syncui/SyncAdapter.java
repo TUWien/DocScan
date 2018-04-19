@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.v7.content.res.AppCompatResources;
@@ -8,8 +9,11 @@ import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.TextView;
+import android.widget.ImageView;
+
+import com.bumptech.glide.signature.MediaStoreSignature;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -18,8 +22,10 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
+import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 
 /**
  * Created by fabian on 02.10.2017.
@@ -57,6 +63,32 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
         return selectedDirs;
 
+    }
+
+    public void selectAllItems() {
+
+        setAllSelections(true);
+
+    }
+
+    public void deselectAllItems() {
+
+        setAllSelections(false);
+
+    }
+
+    private void setAllSelections(boolean isSelected) {
+
+        for (int i = 0; i < mDirs.size(); i++) {
+            mSelections.put(i, isSelected);
+        }
+
+//        We need to redraw the check boxes:
+        this.notifyDataSetChanged();
+
+//        We need to inform the parent activity that the selection has changed:
+//        mCallback.onSelectionChange(mDirs.size());
+        mCallback.onSelectionChange();
     }
 
     /**
@@ -187,6 +219,9 @@ public class SyncAdapter extends BaseDocumentAdapter {
                 }
             });
 
+            ImageView imageView = convertView.findViewById(R.id.checkbox_list_group_image_view);
+
+
         }
 
         CheckBox checkBoxListHeader = (CheckBox) convertView.findViewById(R.id.checkboxListHeader);
@@ -224,6 +259,23 @@ public class SyncAdapter extends BaseDocumentAdapter {
         checkBoxListHeader.setEnabled(isCheckBoxEnabled);
         checkBoxListHeader.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
 
+        Button showImageButton = convertView.findViewById(R.id.show_image_button);
+        final String uri = ((File) getGroup(groupPosition)).getAbsolutePath();
+        showImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, GalleryActivity.class);
+                intent.putExtra(mContext.getString(R.string.key_document_file_name), uri);
+                mContext.startActivity(intent);
+//                mContext.startActivity();
+            }
+        });
+
+        ImageView imageView = convertView.findViewById(R.id.checkbox_list_group_image_view);
+
+        GlideApp.with(mContext)
+                .load(mFiles.get(groupPosition)[0].getPath())
+                .into(imageView);
 
         return convertView;
 
@@ -266,40 +318,40 @@ public class SyncAdapter extends BaseDocumentAdapter {
         return false;
     }
 
-    @Override
-    public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-
-        final String childText = ((File) getChild(groupPosition, childPosition)).getName();
-
-        if (convertView == null) {
-            LayoutInflater infalInflater = (LayoutInflater) mContext
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = infalInflater.inflate(R.layout.list_item, null);
-
-//            TODO: open the file on a click. The code below is not working on targetSDK > 24
-//            Solution is here: https://stackoverflow.com/questions/38200282/android-os-fileuriexposedexception-file-storage-emulated-0-test-txt-exposed
-
-//            TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
-//            txtListChild.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
+//    @Override
+//    public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
 //
-//                    Intent intent = new Intent(Intent.ACTION_VIEW);
-//                    File dir = getGroupFile(groupPosition);
-//                    intent.setData(Uri.fromFile(getFiles(dir)[childPosition]));
-//                    mContext.startActivity(intent);
+//        final String childText = ((File) getChild(groupPosition, childPosition)).getName();
 //
-//                }
-//            });
-        }
-
-        TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
-
-        txtListChild.setText(childText);
-
-        return convertView;
-
-    }
+//        if (convertView == null) {
+//            LayoutInflater infalInflater = (LayoutInflater) mContext
+//                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//            convertView = infalInflater.inflate(R.layout.list_item, null);
+//
+////            TODO: open the file on a click. The code below is not working on targetSDK > 24
+////            Solution is here: https://stackoverflow.com/questions/38200282/android-os-fileuriexposedexception-file-storage-emulated-0-test-txt-exposed
+//
+////            TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
+////            txtListChild.setOnClickListener(new View.OnClickListener() {
+////                @Override
+////                public void onClick(View v) {
+////
+////                    Intent intent = new Intent(Intent.ACTION_VIEW);
+////                    File dir = getGroupFile(groupPosition);
+////                    intent.setData(Uri.fromFile(getFiles(dir)[childPosition]));
+////                    mContext.startActivity(intent);
+////
+////                }
+////            });
+//        }
+//
+//        TextView txtListChild = (TextView) convertView.findViewById(R.id.lblListItem);
+//
+//        txtListChild.setText(childText);
+//
+//        return convertView;
+//
+//    }
 
     public interface SyncAdapterCallback {
         void onSelectionChange();

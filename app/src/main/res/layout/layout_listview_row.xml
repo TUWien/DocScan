@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/list_view_multi_selector"
+    android:padding="8dp">
+
+
+    <RelativeLayout
+        android:id="@+id/layout_listview_row_icon_layout"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="8dp"
+        >
+        <ImageView
+            android:id="@+id/layout_listview_row_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            app:srcCompat="@drawable/ic_cloud_upload_gray_24dp"
+        />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/layout_listview_row_title"
+        android:text="one two three four five six seven eight nine ten eleven"
+        android:layout_toLeftOf="@id/layout_listview_image_frame_layout"
+        android:layout_marginLeft="6dp"
+        android:layout_toRightOf="@id/layout_listview_row_icon_layout"
+        android:textSize="20sp"
+        android:ellipsize="end"
+        android:layout_marginTop="8dp"
+        android:maxLines="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        />
+
+    <TextView
+        android:id="@+id/layout_listview_row_description"
+        android:text="one two three four five six seven eight nine ten eleve asdfn"
+        android:layout_toLeftOf="@id/layout_listview_image_frame_layout"
+        android:layout_toRightOf="@id/layout_listview_row_icon_layout"
+        android:layout_marginLeft="6dp"
+        android:textSize="14sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/layout_listview_row_title"
+        />
+
+    <RelativeLayout
+        android:id="@+id/layout_listview_image_frame_layout"
+        android:layout_alignParentRight="true"
+        android:layout_width="60dp"
+        android:layout_height="60dp">
+
+        <ImageView
+            android:id="@+id/layout_listview_row_thumbnail"
+            android:src="@mipmap/docscan_launcher"
+            android:scaleType="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <ImageView
+            app:srcCompat="@drawable/ic_more_vert_white_black_24dp"
+            android:scaleType="center"
+            android:layout_alignRight="@id/layout_listview_row_thumbnail"
+            android:layout_alignBottom="@id/layout_listview_row_thumbnail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+
+
+</RelativeLayout>

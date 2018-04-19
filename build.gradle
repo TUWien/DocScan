@@ -15,6 +15,7 @@ allprojects {
         jcenter()
         maven { url "https://jitpack.io" }		// necessary for XmlToJson
         maven { url "https://maven.google.com" }		// necessary for Google Play Services
+        maven { url 'https://github.com/500px/greedo-layout-for-android/raw/master/releases/' }
 
     }
 }
