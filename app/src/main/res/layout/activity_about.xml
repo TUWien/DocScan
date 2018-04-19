@@ -55,11 +55,19 @@
                     android:layout_centerHorizontal="true"
                     />
                 <TextView
+                    android:id="@+id/about_buildtime_textview"
+                    android:textSize="10sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/about_version_textview"
+                    android:layout_centerHorizontal="true"
+                    />
+                <TextView
                     android:id="@+id/about_website_textview"
                     android:layout_marginTop="@dimen/activity_vertical_margin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/about_version_textview"
+                    android:layout_below="@id/about_buildtime_textview"
                     android:text="@string/about_scantent_text"
                     android:autoLink="web"/>
                 <TextView
