@@ -260,7 +260,16 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     public void selectAllItems(MenuItem item) {
 
-        selectListViewItems();
+        if (areAllItemsSelected())
+            deselectListViewItems();
+        else
+            selectListViewItems();
+
+    }
+
+    private boolean areAllItemsSelected() {
+
+        return mListView.getCount() == getSelectedDocuments().size();
 
     }
 
@@ -473,7 +482,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     private void showUploadingSnackbar() {
 
-        int selCnt = getSelectionCount();
+        int selCnt = getSelectedDocuments().size();
         String selText = selCnt + " " + Helper.getDocumentSingularPlural(this, selCnt);
         if (selText == null)
             return;
@@ -496,7 +505,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         String snackbarText = getResources().getString(R.string.sync_snackbar_already_uploaded_prefix_text);
 
-        int selCnt = getSelectionCount();
+        int selCnt = getSelectedDocuments().size();
 
         snackbarText += " " + Helper.getDocumentSingularPlural(this, selCnt);
         if (selCnt == 1)
@@ -553,14 +562,6 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     }
 
-    private int getSelectionCount() {
-
-        if (mListView != null)
-            return mListView.getCheckedItemPositions().size();
-        else
-            return -1;
-
-    }
 
     private ArrayList<Document> getSelectedDocuments() {
 
@@ -605,7 +606,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                 mListView.setItemChecked(i, true);
         }
 
-        showSelectionToolbar(getSelectionCount());
+        showSelectionToolbar(getSelectedDocuments().size());
 
     }
 
