@@ -17,51 +17,38 @@ package at.ac.tuwien.caa.docscan.ui.gallery;
  * limitations under the License.
  */
 
+import android.Manifest;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.content.FileProvider;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.davemorrissey.labs.subscaleview.ImageSource;
-
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
 import at.ac.tuwien.caa.docscan.gallery.TouchImageView;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
-import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
-
-import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
 public class PageSlideActivity extends AppCompatActivity implements TouchImageView.SingleClickListener {
 
@@ -72,6 +59,10 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
     private Document mDocument;
     private LinearLayout mButtonsLayout;
     private Context mContext;
+
+    private static final int PERMISSION_ROTATE = 0;
+    private static final int PERMISSION_DELETE = 1;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,9 +85,36 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
         initToolbar();
         initButtons();
 
-        mButtonsLayout = findViewById(R.id.page_view_buttons_layout);
-
         mContext = this;
+
+//        View decorView = getWindow().getDecorView();
+//        decorView.setOnSystemUiVisibilityChangeListener
+//                (new View.OnSystemUiVisibilityChangeListener() {
+//                    @Override
+//                    public void onSystemUiVisibilityChange(int visibility) {
+//                        // Note that system bars will only be "visible" if none of the
+//                        // LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
+//                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+//                            // TODO: The system bars are visible. Make any desired
+//                            // adjustments to your UI, such as showing the action bar or
+//                            // other navigational controls.
+//                            if (mToolbar != null)
+//                                mToolbar.setVisibility(View.VISIBLE);
+//                            if (mButtonsLayout != null)
+//                                mButtonsLayout.setVisibility(View.VISIBLE);
+//
+//                        } else {
+//                            // TODO: The system bars are NOT visible. Make any desired
+//                            // adjustments to your UI, such as hiding the action bar or
+//                            // other navigational controls.
+//
+//                            if (mToolbar != null)
+//                                mToolbar.setVisibility(View.INVISIBLE);
+//                            if (mButtonsLayout != null)
+//                                mButtonsLayout.setVisibility(View.INVISIBLE);
+//                        }
+//                    }
+//                });
 
 //        Which position was selected?
         int pos = getIntent().getIntExtra(getString(R.string.key_page_position), -1);
@@ -106,8 +124,52 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
             mPage = mDocument.getPages().get(pos);
         }
 
-
     }
+
+//    @Override
+//    public void onWindowFocusChanged(boolean hasFocus) {
+//        super.onWindowFocusChanged(hasFocus);
+//        if (hasFocus) {
+//            View decorView = getWindow().getDecorView();
+//            decorView.setSystemUiVisibility(
+//                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+//                            | View.SYSTEM_UI_FLAG_FULLSCREEN
+//                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+//        }
+//    }
+
+
+    /**
+     * Called after permission has been given or has been rejected. This is necessary on Android M
+     * and younger Android systems.
+     *
+     * @param requestCode Request code
+     * @param permissions Permission
+     * @param grantResults results
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+
+
+        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+
+        switch (requestCode) {
+
+            case PERMISSION_ROTATE:
+                if (isPermissionGiven)
+                    rotatePage();
+                break;
+            case PERMISSION_DELETE:
+                if (isPermissionGiven)
+                    deletePage();
+                break;
+
+        }
+    }
+
 
     private void initPager() {
         mPager = findViewById(R.id.slide_viewpager);
@@ -140,6 +202,7 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        //       Take care that the mToolbar is not overlaid by the status bar:
         mToolbar.setPadding(0, getStatusBarHeight(), 0, 0);
 
         // Close the fragment if the user hits the back button in the toolbar:
@@ -161,7 +224,8 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
     }
 
     // A method to find height of the status bar
-    public int getStatusBarHeight() {
+//    Based on: https://gist.github.com/hamakn/8939eb68a920a6d7a498
+    private int getStatusBarHeight() {
 
         int result = 0;
         int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
@@ -172,8 +236,28 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
     }
 
+    // A method to find height of the navigation bar
+//    Based on: https://gist.github.com/hamakn/8939eb68a920a6d7a498
+    private int getNavigationBarHeight() {
 
-    private void initButtons() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+
+        return result;
+    }
+
+
+
+
+   private void initButtons() {
+
+       mButtonsLayout = findViewById(R.id.page_view_buttons_layout);
+//       Take care that the mButtonsLayout is not overlaid by the navigation bar:
+//       mButtonsLayout.setPadding(0, 0, 0, getNavigationBarHeight());
+
 
 //        initCropButton();
         initDeleteButton();
@@ -188,22 +272,32 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
         rotateImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mPage != null) {
-                    try {
-//                        Rotate the image 90 degrees and set the image again (I did not find another way to force an update of the imageview)
-                        if (Helper.rotateExif(mPage.getFile().getAbsoluteFile())) {
-                            mPagerAdapter.getCurrentFragment().refreshImageView();
-//                              Tell the gallery viewer that the file has rotated:
-                            GalleryActivity.fileRotated();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
 
-                }
+                // Check if we have the permission to rotate images:
+                if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    // ask for permission:
+                    ActivityCompat.requestPermissions((AppCompatActivity) mContext, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
+                } else
+                    rotatePage();
             }
         });
 
+    }
+
+    private void rotatePage() {
+        if (mPage != null) {
+            try {
+//                        Rotate the image 90 degrees and set the image again (I did not find another way to force an update of the imageview)
+                if (Helper.rotateExif(mPage.getFile().getAbsoluteFile())) {
+                    mPagerAdapter.getCurrentFragment().refreshImageView();
+//                              Tell the gallery viewer that the file has rotated:
+                    GalleryActivity.fileRotated();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     private void initShareButton() {
@@ -277,15 +371,25 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
         deleteImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mPage != null) {
-                    showDeleteConfirmationDialog();
+
+
+                    if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        // ask for permission:
+                        ActivityCompat.requestPermissions((AppCompatActivity) mContext, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_DELETE);
+                    } else
+                        deletePage();
                 }
-            }
+//            }
         });
 
     }
 
-    private void showDeleteConfirmationDialog() {
+            private void deletePage() {
+                if (mPage != null)
+                    showDeleteConfirmationDialog();
+            }
+
+            private void showDeleteConfirmationDialog() {
 
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -332,30 +436,41 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
     }
 
+    private void showSystemUI(final boolean show) {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                getWindow().getDecorView().setSystemUiVisibility(show ?
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN :
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE
+                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            }
+        });
+
+//        showUI(show);
+    }
+
+    private void showUI(boolean UI) {
+
+    }
+
     @Override
     public void onSingleClick() {
 
+
+//        Hide the status bar and the navigation bar:
         if (mToolbar.getVisibility() == View.VISIBLE) {
             mToolbar.setVisibility(View.INVISIBLE);
             mButtonsLayout.setVisibility(View.INVISIBLE);
-
-            View decorView = getWindow().getDecorView();
-// Hide the status bar.
-            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-            decorView.setSystemUiVisibility(uiOptions);
-// Remember that you should never show the action bar if the
-// status bar is hidden, so hide that too if necessary.
-//            ActionBar actionBar = getActionBar();
-//            actionBar.hide();
-
         }
         else {
-
-            View decorView = getWindow().getDecorView();
-// Hide the status bar.
-            int uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
-            decorView.setSystemUiVisibility(uiOptions);
-
 
             mToolbar.setVisibility(View.VISIBLE);
             mButtonsLayout.setVisibility(View.VISIBLE);
@@ -363,6 +478,8 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
 
 
     }
+
+
 
     private class PageSlideAdapter extends FragmentStatePagerAdapter {
 

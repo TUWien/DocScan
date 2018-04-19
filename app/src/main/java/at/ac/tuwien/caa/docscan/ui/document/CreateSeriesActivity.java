@@ -18,6 +18,7 @@ import android.widget.RelativeLayout;
 import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
+//import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
@@ -74,22 +75,22 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
         String qrText = "<root>" + text + "</root>";
 
         Log.d(getClass().getName(), "parsing document");
-        Document document = parseQRCode(qrText);
+        DocumentMetaData document = parseQRCode(qrText);
         Log.d(getClass().getName(), "found document: " + document);
         fillViews(document);
 
     }
 
-    private Document parseQRCode(String text) {
+    private DocumentMetaData parseQRCode(String text) {
 
         Log.d(getClass().getName(), "QR code text: " + text);
 
-        return Document.parseXML(text);
+        return DocumentMetaData.parseXML(text);
 
     }
 
     //        Temporarily deactivate the advanced fields:
-    private void fillViews(Document document) {
+    private void fillViews(DocumentMetaData document) {
 
         if (document == null)
             return;
@@ -115,7 +116,7 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
 
     }
 
-    private void fillAdvancedFields(Document document) {
+    private void fillAdvancedFields(DocumentMetaData document) {
         //           // Description:
 //           EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
 //           if (document.getTitle() != null)
