@@ -1,22 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <CheckBoxPreference
-        android:key="@string/key_show_focus_values"
-        android:title="@string/settings_show_focus_values_checkbox_title"
-        android:defaultValue="false" />
+    <PreferenceCategory
+        android:title="@string/settings_preview_title">
+        <CheckBoxPreference
+            android:key="@string/key_show_focus_values"
+            android:title="@string/settings_show_focus_values_checkbox_title"
+            android:defaultValue="false" />
+
+        <CheckBoxPreference
+            android:key="@string/key_show_debug_view"
+            android:title="@string/settings_show_debug_view_checkbox_title"
+            android:summary="@string/settings_show_debug_view_checkbox_summary"
+            android:defaultValue="false" />
+    </PreferenceCategory>
 
     <CheckBoxPreference
-        android:key="@string/key_show_debug_view"
-        android:title="@string/settings_show_debug_view_checkbox_title"
-        android:summary="@string/settings_show_debug_view_checkbox_summary"
+        android:key="@string/key_show_advanced_qr_code"
+        android:title="@string/settings_show_advanced_qr_code_checkbox_title"
+        android:summary="@string/settings_show_advanced_qr_code_checkbox_summary"
         android:defaultValue="false" />
     <CheckBoxPreference
         android:key="@string/key_show_advanced_qr_code"
         android:title="@string/settings_show_advanced_qr_code_checkbox_title"
         android:summary="@string/settings_show_advanced_qr_code_checkbox_summary"
         android:defaultValue="false" />
-
 
 
 

@@ -16,7 +16,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
-import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
@@ -34,6 +34,7 @@ import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 public class TranskribusUtils  {
 
     public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
+//    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "upload_test";
 
     // Singleton:
     private static TranskribusUtils mInstance;
@@ -171,7 +172,7 @@ public class TranskribusUtils  {
         for (File dir : mSelectedDirs) {
 
             // Get the image files contained in the directory:
-            File[] imgFiles = TranskribusUtils.getFiles(dir);
+            File[] imgFiles = Helper.getImageList(dir);
             if (imgFiles == null)
                 return;
             else if (imgFiles.length == 0)
@@ -202,7 +203,8 @@ public class TranskribusUtils  {
         DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "title: " + title);
 
         if (selectedDir != null) {
-            for (File file : TranskribusUtils.getFiles(selectedDir))
+            File[] imageList = Helper.getImageList(selectedDir);
+            for (File file : imageList)
                 SyncInfo.getInstance().addTranskribusFile(mContext, file, uploadId);
         }
 
@@ -326,20 +328,19 @@ public class TranskribusUtils  {
         return result;
     }
 
-    public static File[] getFiles(File dir) {
-
-//TODO: filter JPGS only
-
-        FileFilter filesFilter = new FileFilter() {
-            public boolean accept(File file) {
-                return !file.isDirectory();
-            }
-        };
-
-        File[] files = dir.listFiles(filesFilter);
-
-        return files;
-    }
+//    public static File[] getFiles(File dir) {
+//
+//
+//        FileFilter filesFilter = new FileFilter() {
+//            public boolean accept(File file) {
+//                return !file.isDirectory();
+//            }
+//        };
+//
+//        File[] files = dir.listFiles(filesFilter);
+//
+//        return files;
+//    }
 
 
     public interface TranskribusUtilsCallback {

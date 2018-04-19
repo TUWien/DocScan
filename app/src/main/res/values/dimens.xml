@@ -11,7 +11,15 @@
     <dimen name="focus_short_length">12dp</dimen>
     <dimen name="focus_touch_circle_radius_start">50dp</dimen>
     <dimen name="focus_touch_circle_radius_end">30dp</dimen>
+
+    <dimen name="crop_circle_radius">10dp</dimen>
+    <dimen name="crop_detail_width">30dp</dimen>
+    <dimen name="crop_detail_outer_width">35dp</dimen>
+    <dimen name="crop_detail_offset">70dp</dimen>
+    <dimen name="crop_cross_width">15dp</dimen>
+
     <dimen name="page_stroke_width">4dp</dimen>
+    <dimen name="cross_stroke_width">2dp</dimen>
     <dimen name="focus_circle_stroke_width">1dp</dimen>
     <dimen name="spinner_dropdown_width">70dp</dimen>
     <dimen name="photo_button_size">80dp</dimen>

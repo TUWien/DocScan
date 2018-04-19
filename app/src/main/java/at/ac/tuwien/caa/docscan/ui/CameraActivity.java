@@ -48,7 +48,6 @@ import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
@@ -117,6 +116,8 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.crop.CropInfo;
+import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -127,10 +128,14 @@ import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity;
 import at.ac.tuwien.caa.docscan.ui.document.SeriesGeneralActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity;
+import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
+import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
+import static at.ac.tuwien.caa.docscan.logic.Helper.getAngleFromExif;
+import static at.ac.tuwien.caa.docscan.logic.Helper.getImageList;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
@@ -193,6 +198,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private static Date mLastTimeStamp;
     private int mMaxFrameCnt = 0;
     private DkPolyRect[] mLastDkPolyRects;
+
     private Toast mToast;
     private OrientationEventListener mOrientationListener;
 
@@ -204,6 +210,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     static {
 
+        Log.d(TAG, "initializing OpenCV");
+
 //         We need this for Android 4:
         if (!OpenCVLoader.initDebug()) {
             Log.d(TAG, "Error while initializing OpenCV.");
@@ -211,6 +219,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             System.loadLibrary("opencv_java3");
             System.loadLibrary("docscan-native");
+
+            Log.d(TAG, "OpenCV initialized");
         }
 
     }
@@ -505,35 +515,35 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         else if ((lastInstalledVersion == Settings.NO_ENTRY) || (lastInstalledVersion <= 11)) {
 
             // has the user already seen that the documents can be opened in the actionbar?
-            boolean isDocumentHintShown = Settings.getInstance().loadBooleanKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY);
-            if (!isDocumentHintShown) {
-                showDocumentHint();
-                Settings.getInstance().saveKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY, true);
-            }
+//            boolean isDocumentHintShown = Settings.getInstance().loadBooleanKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY);
+//            if (!isDocumentHintShown) {
+//                showDocumentHint();
+//                Settings.getInstance().saveKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY, true);
+//            }
 
         }
 
     }
 
-    private void showDocumentHint() {
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(R.string.camera_document_hint_title)
-                .setPositiveButton("OK", null)
-                .setMessage(R.string.camera_document_hint_msg);
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
-
-
-    }
+//    private void showDocumentHint() {
+//
+//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+//
+//
+//        // set dialog message
+//        alertDialogBuilder
+//                .setTitle(R.string.camera_document_hint_title)
+//                .setPositiveButton("OK", null)
+//                .setMessage(R.string.camera_document_hint_msg);
+//
+//        // create alert dialog
+//        AlertDialog alertDialog = alertDialogBuilder.create();
+//
+//        // show it
+//        alertDialog.show();
+//
+//
+//    }
 
     private void loadPreferences() {
 
@@ -691,12 +701,23 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void openGallery() {
 
-        int currentApiVersion = android.os.Build.VERSION.SDK_INT;
+//        startActivity();
+//        startActivity(new Intent(getApplicationContext(), GalleryActivity.class));
+//        startActivity(new Intent(getApplicationContext(), PageSlideActivity.class));
 
-        if (currentApiVersion >= Build.VERSION_CODES.M)
-            requestFileOpen();
-        else
-            startScan();
+        File mediaStorageDir = getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
+        if (mediaStorageDir == null)
+            return;
+
+//                Start the image viewer:
+        Intent intent = new Intent(mContext, PageSlideActivity.class);
+//      Set the directory name:
+        intent.putExtra(getString(R.string.key_document_file_name), mediaStorageDir.getAbsolutePath());
+
+//      Set the file position - it is the index of the last file in the sorted list of files:
+        File[] imgList = getImageList(mediaStorageDir);
+        intent.putExtra(getString(R.string.key_page_position), imgList.length - 1);
+        mContext.startActivity(intent);
 
     }
 
@@ -2003,13 +2024,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         Log.d(TAG, " menu created!");
         // Create the menu for the first time:
-//        if (mSeriesPopupMenu == null) {
+        if (mSeriesPopupMenu == null) {
             mSeriesPopupMenu = new PopupMenu(this, menuItemView);
             mSeriesPopupMenu.setOnMenuItemClickListener(this);
             Log.d(TAG, "setOnMenuItemClickListener created");
             mSeriesPopupMenu.inflate(R.menu.series_menu);
-//        }
-
+}
         mSeriesPopupMenu.show();
 
     }
@@ -2037,7 +2057,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     public void startSyncActivity(MenuItem item) {
 
-        Intent intent = new Intent(getApplicationContext(), SyncActivity.class);
+        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
         startActivity(intent);
 
     }
@@ -2087,6 +2107,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             case R.id.series_new_item:
                 startActivity(new Intent(getApplicationContext(), CreateSeriesActivity.class));
+//                startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 return true;
 
             case R.id.series_switch_item:
@@ -2309,25 +2330,32 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mediaStorageDir == null)
             return;
 
-        FileFilter filesFilter = new FileFilter() {
-            public boolean accept(File file) {
-                return !file.isDirectory();
-            }
-        };
+//        FileFilter filesFilter = new FileFilter() {
+//            public boolean accept(File file) {
+//                return !file.isDirectory();
+//            }
+//        };
+//
+//        File[] files = mediaStorageDir.listFiles(filesFilter);
+//
+//        if (files == null)
+//            return;
+//        else if (files.length == 0)
+//            return;
+//
+//        // Determine the most recent image:
+//        Arrays.sort(files);
+//        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1].getName();
 
-        File[] files = mediaStorageDir.listFiles(filesFilter);
-
-        if (files == null)
+        File[] imgList = Helper.getImageList(mediaStorageDir);
+        if (imgList == null)
             return;
-        else if (files.length == 0)
+        else if (imgList.length == 0)
             return;
-
-        // Determine the most recent image:
-        Arrays.sort(files);
-        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1].getName();
 
         ThumbnailLoader thumbnailLoader = new ThumbnailLoader();
-        thumbnailLoader.execute(fileName);
+        thumbnailLoader.execute(imgList[imgList.length-1].getAbsolutePath());
+
     }
 
     @SuppressWarnings("deprecation")
@@ -2366,25 +2394,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    private int getAngleFromExif(int orientation) {
-
-        switch (orientation) {
-
-            case 1:
-                return 0;
-            case 6:
-                return 90;
-            case 3:
-                return 180;
-            case 8:
-                return 270;
-
-        }
-
-        return -1;
-
-    }
-
 
     @Override
     protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
@@ -2403,7 +2412,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             String fileName = fileNames[0];
 
-            Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName), 50, 50);
+            Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName), 200, 200);
             if (thumbNailBitmap == null)
                 return null;
 
@@ -2443,7 +2452,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     /**
      * Class used to save pictures in an own thread (AsyncTask).
      */
-    private class FileSaver extends AsyncTask<Uri, Void, Void> {
+    private class FileSaver extends AsyncTask<Uri, Void, String> {
 
         private byte[] mData;
 
@@ -2454,7 +2463,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
 
         @Override
-        protected Void doInBackground(Uri... uris) {
+        protected String doInBackground(Uri... uris) {
 
             mIsSaving = true;
 
@@ -2481,13 +2490,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Save exif information (especially the orientation):
                 saveExif(outFile);
 
-                // Set the thumbnail on the gallery button, this must be done one the UI thread:
+                // Set the thumbnail on the gallery button, this must be done on the UI thread:
                 updateThumbnail(outFile);
 
 //                // Add the file to the sync list:
 //                addToSyncList(mContext, outFile);
 
                 mIsPictureSafe = true;
+
+                return uris[0].getPath();
 
             }
 
@@ -2586,14 +2597,26 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
 
 
-        protected void onPostExecute(Void v) {
+        protected void onPostExecute(String uri) {
 
             mIsSaving = false;
             // Release the memory. Note this is essential, because otherwise allocated memory will increase.
             mData = null;
 
+//            if (!mIsSeriesMode && uri != null)
+//                startCropViewActivity(uri);
+
+
         }
 
+        private void startCropViewActivity(String uri) {
+//            Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+            Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
+            startActivity(intent);
+            CropInfo r = new CropInfo(uri);
+            intent.putExtra(CROP_INFO_NAME, r);
+
+        }
 
 
     }

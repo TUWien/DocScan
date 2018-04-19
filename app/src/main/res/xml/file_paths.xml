@@ -1,3 +1,4 @@
-<paths xmlns:android="http://schemas.android.com/apk/res/android">
+<paths>
     <files-path name="logs" path="/"/>
+    <external-path name="images" path="Android/data/at.ac.tuwien.caa.docscan/files/Pictures" />
 </paths>

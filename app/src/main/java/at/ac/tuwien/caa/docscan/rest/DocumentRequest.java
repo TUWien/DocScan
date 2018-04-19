@@ -37,7 +37,7 @@ public class DocumentRequest extends RestRequest.JSONObjectRestRequest {
 
 //    public interface DocumentCallback extends RestRequest.RestCallback{
 //
-//        void onDocument(Document document);
+//        void onDocument(DocumentMetaData document);
 //
 //    }
 }

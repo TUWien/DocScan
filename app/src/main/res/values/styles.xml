@@ -9,6 +9,14 @@
         <item name="android:windowActionBarOverlay">true</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="preferenceTheme">@style/Preference</item>
+
+    </style>
+
+
+    <!--This theme is used for the image viewer (in viewpager) -->
+    <style name="AppDarkTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorControlNormal">@color/white</item>
+        <item name="colorPrimary">@color/white</item>
     </style>
 
     <!--Taken from: https://www.murrayc.com/permalink/2014/10/28/android-changing-the-toolbars-text-color-and-overflow-icon-color/-->
@@ -16,6 +24,7 @@
         <item name="android:textColorPrimary">@color/white</item>
         <item name="actionMenuTextColor">@color/white</item>
         <item name="android:textColorSecondary">@color/white</item>
+
     </style>
 
     <style name="Toolbar.TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
@@ -24,7 +33,7 @@
 
     <style name="DrawerArrowStyle" parent="@style/Widget.AppCompat.DrawerArrowToggle">
         <item name="spinBars">true</item>
-        <item name="color">@android:color/white</item>
+        <item name="color">@android:color/black</item>
     </style>
 
     <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">

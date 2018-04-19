@@ -14,7 +14,7 @@ import java.util.Date;
  * Created by fabian on 28.11.2017.
  */
 
-public class Document {
+public class DocumentMetaData {
 
     private static final String AUTHORITY = "authority";
     private static final String TITLE = "title";
@@ -42,7 +42,7 @@ public class Document {
     public String getSignature() { return mSignature; }
     public Date getDate() { return mDate; }
 
-    private Document() {
+    private DocumentMetaData() {
 
     }
 
@@ -78,7 +78,7 @@ public class Document {
 
     }
 
-    public static Document parseXML(String text) {
+    public static DocumentMetaData parseXML(String text) {
 
         try {
 
@@ -90,7 +90,7 @@ public class Document {
             InputStream stream = new ByteArrayInputStream(escapedText.getBytes(Charset.forName("UTF-8")));
             parser.setInput(stream, null);
 
-            Document document = new Document();
+            DocumentMetaData documentMetaData = new DocumentMetaData();
 
             while (parser.next() != XmlPullParser.END_TAG) {
                 if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -99,27 +99,27 @@ public class Document {
                 String name = parser.getName();
 
                 if (name.equals(AUTHORITY))
-                    document.mAuthority = readTextFromTag(parser, AUTHORITY);
+                    documentMetaData.mAuthority = readTextFromTag(parser, AUTHORITY);
 
                 else if (name.equals(IDENTIFIER)) {
                     IdentifierValue iv = readIdentifier(parser);
                     if (iv.getIdentifier().equals(TYPE_HIERARCHY))
-                        document.mHierarchy = iv.getValue();
+                        documentMetaData.mHierarchy = iv.getValue();
                     else if (iv.getIdentifier().equals(TYPE_URI))
-                        document.mUri = iv.getValue();
+                        documentMetaData.mUri = iv.getValue();
                 }
                 else if (name.equals(TITLE))
-                    document.mTitle = readTextFromTag(parser, TITLE);
+                    documentMetaData.mTitle = readTextFromTag(parser, TITLE);
                 else if (name.equals(DESCRIPTION))
-                    document.mDescription = readTextFromTag(parser, DESCRIPTION);
+                    documentMetaData.mDescription = readTextFromTag(parser, DESCRIPTION);
                 else if (name.equals(SIGNATURE))
-                    document.mSignature = readTextFromTag(parser, SIGNATURE);
+                    documentMetaData.mSignature = readTextFromTag(parser, SIGNATURE);
                 else if (name.equals(DATE))
                     skip(parser);
 
             }
 
-            return document;
+            return documentMetaData;
 
 
         } catch (XmlPullParserException e) {

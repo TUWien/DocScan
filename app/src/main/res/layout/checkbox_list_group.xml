@@ -1,23 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp"
     android:descendantFocusability="blocksDescendants"
     >
-    <!-- Divider between dropdown button and checkbox -->
-    <View
-        android:layout_width="?android:attr/expandableListPreferredChildPaddingLeft"
-        android:layout_height="match_parent"
-        />
 
-    <CheckBox
-        android:id="@+id/checkboxListHeader"
+    <ImageView
+        android:layout_alignParentRight="true"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:scaleType="center"
+        android:id="@+id/checkbox_list_group_image_view"/>
+    <Button
+        android:id="@+id/show_image_button"
+        android:layout_below="@id/checkbox_list_group_image_view"
+        android:layout_alignParentRight="true"
         android:layout_width="wrap_content"
-        android:drawablePadding="@dimen/activity_vertical_margin"
-        android:paddingLeft="@dimen/activity_vertical_margin"
         android:layout_height="wrap_content"
-        android:textColor="@drawable/list_group_selector"/>
+        android:text="show" />
 
-</LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:orientation="horizontal">
+        <!-- Divider between dropdown button and checkbox -->
+        <View
+            android:layout_width="?android:attr/expandableListPreferredChildPaddingLeft"
+            android:layout_height="match_parent"
+            />
+
+        <CheckBox
+            android:id="@+id/checkboxListHeader"
+            android:layout_width="wrap_content"
+            android:drawablePadding="@dimen/activity_vertical_margin"
+            android:paddingLeft="@dimen/activity_vertical_margin"
+            android:layout_height="wrap_content"
+            android:textColor="@drawable/list_group_selector"/>
+
+
+
+
+
+    </LinearLayout>
+
+</RelativeLayout>
