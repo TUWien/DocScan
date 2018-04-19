@@ -16,6 +16,7 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.Collection;

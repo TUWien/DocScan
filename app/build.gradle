@@ -13,8 +13,8 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 15
 		targetSdkVersion 27
-		versionCode 20
-		versionName "1.1.12"
+		versionCode 21
+		versionName "1.1.14"
 		multiDexEnabled true
 		// we need vectorDrawables.useSupportLibrary to get rid of this error:
 //		References to other resources are not supported by build-time PNG generation

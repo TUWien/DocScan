@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:app="http://schemas.android.com/apk/res-auto"
-android:id="@+id/content"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:theme="@style/AppDarkTheme"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/AppDarkTheme"
+
     >
     <!--<com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView-->
     <!--android:id="@+id/image_viewer_image_view"-->
@@ -33,6 +34,8 @@ android:theme="@style/AppDarkTheme"
         />
 
 
-    <include layout="@layout/page_view_buttons_layout" />
+    <include layout="@layout/page_view_buttons_layout"
+        android:theme="@style/AppDarkTheme"
+        />
 
 </FrameLayout>

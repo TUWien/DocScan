@@ -1,12 +1,14 @@
 package at.ac.tuwien.caa.docscan.ui.gallery;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
@@ -14,14 +16,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.fivehundredpx.greedolayout.GreedoLayoutManager;
-import com.fivehundredpx.greedolayout.GreedoSpacingItemDecoration;
-
-import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
@@ -29,11 +24,8 @@ import at.ac.tuwien.caa.docscan.gallery.GalleryLayoutManager;
 import at.ac.tuwien.caa.docscan.gallery.InnerItemDecoration;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
-import static android.support.v7.widget.DividerItemDecoration.HORIZONTAL;
-import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
 
 /**
  * Created by fabian on 01.02.2018.
@@ -50,6 +42,9 @@ public class GalleryActivity extends AppCompatActivity implements
     private RecyclerView mRecyclerView;
     private String mFileName;
     private SelectionToolbar mSelectionToolbar;
+
+    private static final int PERMISSION_ROTATE = 0;
+    private static final int PERMISSION_DELETE = 1;
 
 
 //    This is used to determine if some file changes (rotation or deletion) happened outside of the
@@ -98,6 +93,34 @@ public class GalleryActivity extends AppCompatActivity implements
 
 //        fixToolbar();
 
+    }
+
+    /**
+     * Called after permission has been given or has been rejected. This is necessary on Android M
+     * and younger Android systems.
+     *
+     * @param requestCode Request code
+     * @param permissions Permission
+     * @param grantResults results
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+
+
+        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+
+        switch (requestCode) {
+
+            case PERMISSION_ROTATE:
+                if (isPermissionGiven)
+                    rotateSelectedItems();
+                break;
+            case PERMISSION_DELETE:
+                if (isPermissionGiven)
+                    deleteSelectedItems();
+                break;
+
+        }
     }
 
     public static void resetFileManipulation() {
@@ -224,12 +247,26 @@ public class GalleryActivity extends AppCompatActivity implements
 
     public void deleteSelectedItems(MenuItem item) {
 
-        showDeleteConfirmationDialog();
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_DELETE);
+        } else
+            deleteSelectedItems();
 
     }
 
     public void rotateSelectedItems(MenuItem item) {
 
+        // Check if we have the permission to rotate images:
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
+        } else
+            rotateSelectedItems();
+
+    }
+
+    private void rotateSelectedItems() {
         if (mDocument == null || mAdapter == null)
             return;
 
@@ -245,7 +282,6 @@ public class GalleryActivity extends AppCompatActivity implements
                 e.printStackTrace();
             }
         }
-
     }
 
     private void deleteSelections() {
@@ -304,7 +340,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
-    private void showDeleteConfirmationDialog() {
+    private void deleteSelectedItems() {
 
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
