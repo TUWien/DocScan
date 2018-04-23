@@ -9,6 +9,7 @@ import android.os.Build;
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -110,11 +111,16 @@ public class RequestHandler {
 
                 return params;
             }
+
         };
+
+        //Set a retry policy in case of SocketTimeout & ConnectionTimeout Exceptions.
+        //Volley does retry for you if you have specified the policy.
+        if (stringRequest != null)
+            stringRequest.setRetryPolicy(new DefaultRetryPolicy(10000,3, 2));
 
         RequestQueue requestQueue = createRequestQueue(request.getContext());
         requestQueue.add(stringRequest);
-
 
     }
 
@@ -144,6 +150,12 @@ public class RequestHandler {
                 return headers;
             }
         };
+
+        //Set a retry policy in case of SocketTimeout & ConnectionTimeout Exceptions.
+        //Volley does retry for you if you have specified the policy.
+        if (stringRequest != null)
+            stringRequest.setRetryPolicy(new DefaultRetryPolicy(10000,3, 2));
+//            stringRequest.setRetryPolicy(new DefaultRetryPolicy(100,1, 1));
 
         //Adding the string request to the queue
 //        RequestQueue requestQueue = Volley.newRequestQueue(request.getContext());
@@ -200,6 +212,12 @@ public class RequestHandler {
             }
         };
 
+        //Set a retry policy in case of SocketTimeout & ConnectionTimeout Exceptions.
+        //Volley does retry for you if you have specified the policy.
+        if (jsArrayRequest != null)
+            jsArrayRequest.setRetryPolicy(new DefaultRetryPolicy(10000,3, 2));
+//            jsArrayRequest.setRetryPolicy(new DefaultRetryPolicy(100,1, 1));
+
         return jsArrayRequest;
 
     }
@@ -241,6 +259,12 @@ public class RequestHandler {
         };
 
         jsArrayRequest.setShouldCache(false);
+
+        //Set a retry policy in case of SocketTimeout & ConnectionTimeout Exceptions.
+        //Volley does retry for you if you have specified the policy.
+        if (jsArrayRequest != null)
+            jsArrayRequest.setRetryPolicy(new DefaultRetryPolicy(10000,3, 2));
+//            jsArrayRequest.setRetryPolicy(new DefaultRetryPolicy(100,1, 1));
 
 //        jsArrayRequest.setRetryPolicy(new DefaultRetryPolicy(5000,
 //                DefaultRetryPolicy.DEFAULT_MAX_RETRIES,

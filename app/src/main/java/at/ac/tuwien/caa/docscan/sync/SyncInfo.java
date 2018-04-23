@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
 
 /**
@@ -72,6 +73,69 @@ public class SyncInfo implements Serializable {
         }
 
     }
+
+    /**
+     * Restart a sync job. This method should only be called after an error occured. We set here a
+     * larger time window to prevent too much server requests.
+     * @param context
+     */
+    public static void restartSyncJob(Context context) {
+
+        DataLog.getInstance().writeUploadLog(context, "SyncInfo", "restartSyncJob");
+
+        DataLog.getInstance().writeUploadLog(context, "SyncInfo", "time: ");
+
+        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
+
+        String tag = "sync_job";
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(R.string.key_upload_mobile_data), false);
+        int[] constraints;
+        if (useMobileConnection)
+            constraints = new int[]{Constraint.ON_ANY_NETWORK};
+        else
+            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
+
+
+//        if (useMobileConnection)
+
+
+        Job syncJob = dispatcher.newJobBuilder()
+                // the JobService that will be called
+                .setService(SyncService.class)
+                // uniquely identifies the job
+                .setTag(tag)
+                // one-off job
+                .setRecurring(false)
+                // don't persist past a device reboot
+                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
+                // start between 0 and 60 seconds from now
+                .setTrigger(Trigger.executionWindow(60, 100))
+//                .setTrigger(Trigger.NOW)
+                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
+                .setReplaceCurrent(true)
+                // retry with exponential backoff
+                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
+                // constraints that need to be satisfied for the job to run
+//                .setConstraints(
+//                        // only run on an unmetered network
+//                        Constraint.ON_UNMETERED_NETWORK,
+//                        // only run when the device is charging
+//                        Constraint.DEVICE_CHARGING
+//                )
+                .setConstraints(
+                        constraints
+                )
+                .build();
+
+
+
+        dispatcher.mustSchedule(syncJob);
+
+    }
+
 
 
     /**
