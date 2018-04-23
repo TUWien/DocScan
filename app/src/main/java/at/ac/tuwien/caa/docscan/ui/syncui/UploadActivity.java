@@ -430,12 +430,12 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         }
 
         if (uploadDirs.isEmpty()) {
-            showAlreadyUploadedSnackbar();
+            showAlreadyUploadedSnackbar(documents.size());
         }
         else {
 
             if (Helper.isOnline(this))
-                showUploadingSnackbar(); // tell the user that the uploaded started
+                showUploadingSnackbar(documents.size()); // tell the user that the uploaded started
             else
                 showNotOnlineSnackbar();
 
@@ -480,9 +480,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      * Shows a snackbar indicating that the upload process starts. We need this because we have
      * little control of the time when the upload starts really.
      */
-    private void showUploadingSnackbar() {
+    private void showUploadingSnackbar(int selCnt) {
 
-        int selCnt = getSelectedDocuments().size();
         String selText = selCnt + " " + Helper.getDocumentSingularPlural(this, selCnt);
         if (selText == null)
             return;
@@ -501,11 +500,9 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     /**
      * Shows a snackbar indicating that all selected files are already uploaded and nothing is done.
      */
-    private void showAlreadyUploadedSnackbar() {
+    private void showAlreadyUploadedSnackbar(int selCnt) {
 
         String snackbarText = getResources().getString(R.string.sync_snackbar_already_uploaded_prefix_text);
-
-        int selCnt = getSelectedDocuments().size();
 
         snackbarText += " " + Helper.getDocumentSingularPlural(this, selCnt);
         if (selCnt == 1)
