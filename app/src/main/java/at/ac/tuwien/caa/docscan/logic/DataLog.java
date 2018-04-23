@@ -52,6 +52,8 @@ import java.util.Date;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.GPS;
 
+import static android.content.Intent.ACTION_SEND_MULTIPLE;
+
 
 public class DataLog {
 
@@ -107,22 +109,32 @@ public class DataLog {
 
     public void shareLog(Activity activity) {
 
+        File uploadLogPath = new File(activity.getBaseContext().getFilesDir(), UPLOAD_LOG_FILE_NAME);
         File logPath = new File(activity.getBaseContext().getFilesDir(), LOG_FILE_NAME);
-        Uri contentUri = FileProvider.getUriForFile(activity.getBaseContext(), "at.ac.tuwien.caa.fileprovider", logPath);
+        Uri logUri = FileProvider.getUriForFile(activity.getBaseContext(), "at.ac.tuwien.caa.fileprovider", logPath);
+        Uri uploadLogUri = FileProvider.getUriForFile(activity.getBaseContext(), "at.ac.tuwien.caa.fileprovider", uploadLogPath);
 
         String emailSubject =   activity.getBaseContext().getString(R.string.log_email_subject);
-//        String[] emailTo =      new String[]{activity.getBaseContext().getString(R.string.log_email_to)};
-        String[] emailTo =      new String[] {"holl@cvl.tuwien.ac.at"};
+        String[] emailTo =      new String[]{activity.getBaseContext().getString(R.string.log_email_to)};
+//        String[] emailTo =      new String[]{"holl@cvl.tuwien.ac.at"};
         String text =           activity.getBaseContext().getString(R.string.log_email_text);
 
         Intent intent = ShareCompat.IntentBuilder.from(activity)
                 .setType("text/plain")
                 .setSubject(emailSubject)
                 .setEmailTo(emailTo)
-                .setStream(contentUri)
+//                .setStream(contentUri)
                 .setText(text)
                 .getIntent()
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        intent.setAction(Intent.ACTION_SEND_MULTIPLE);
+
+        ArrayList<Uri> uris = new ArrayList();
+        uris.add(logUri);
+        uris.add(uploadLogUri);
+//        uris.add(Uri.fromFile(logPath));
+        intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
 
         activity.startActivity(intent);
 
@@ -158,7 +170,13 @@ public class DataLog {
 
 
     public void writeUploadLog(Context context, String sender, String text) {
-        writeUploadLog(context, sender + ": " + text);
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String logText = sender + ": " + text;
+        if (timeStamp != null)
+               logText = timeStamp + ": " + logText;
+
+        writeUploadLog(context, logText);
     }
 
     public void writeUploadLog(Context context, String text) {

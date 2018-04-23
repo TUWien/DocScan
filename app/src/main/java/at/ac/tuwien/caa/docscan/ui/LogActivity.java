@@ -20,13 +20,13 @@ public class LogActivity extends BaseNavigationActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_log);
 
-        Button sendButton = (Button) findViewById(R.id.share_log_button);
+        Button sendButton = findViewById(R.id.share_log_button);
         final Activity activity = this;
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                DataLog.getInstance().shareLog(activity);
-                DataLog.getInstance().shareUploadLog(activity);
+                DataLog.getInstance().shareLog(activity);
+//                DataLog.getInstance().shareUploadLog(activity);
             }
         });
 
