@@ -152,6 +152,7 @@ public class SyncService extends JobService implements
     public void onUploadStart(int uploadId, String title) {
 
         Log.d(TAG, "onUploadStart");
+
         DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onUploadStart");
 
         TranskribusUtils.getInstance().onUploadStart(uploadId, title);
@@ -173,10 +174,12 @@ public class SyncService extends JobService implements
     @Override
     public void handleRestError(VolleyError error) {
 
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", error.getMessage());
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService - rest error", error.getMessage());
+
+        Log.d(getClass().getName(), "rest_error" + error.getMessage());
 
 //        Removed this because it can lead to an infinite loop of server requests (if the server is too slow answering):
-//        handleRestUploadError();
+        handleRestUploadError();
 
     }
 
@@ -185,7 +188,7 @@ public class SyncService extends JobService implements
      */
     private void handleRestUploadError() {
 
-//        Log.d(getClass().getName(), "onError");
+        Log.d(getClass().getName(), "onError");
 //
 //        //        Collect the files that are not uploaded yet and get their paths:
 //        ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
@@ -198,7 +201,8 @@ public class SyncService extends JobService implements
 
         SyncInfo.saveToDisk(getApplicationContext());
 //        Schedule the upload job:
-        SyncInfo.startSyncJob(getApplicationContext());
+//        SyncInfo.startSyncJob(getApplicationContext());
+        SyncInfo.restartSyncJob(getApplicationContext());
 
         updateNotification(NOTIFICATION_ERROR);
 
@@ -463,7 +467,6 @@ public class SyncService extends JobService implements
 
             Log.d(getClass().getName(), "onError");
             DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onError");
-
 
             //        Collect the files that are not uploaded yet and get their paths:
             ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
