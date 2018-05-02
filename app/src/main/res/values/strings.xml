@@ -95,9 +95,9 @@
 
     <string name="upload_item">Upload</string>
 
-    <string name="series_create">Create new document</string>
-    <string name="series_switch">Switch document</string>
-    <string name="series_qr">Document from QR code</string>
+    <string name="series_create">New document</string>
+    <string name="series_switch">Open document</string>
+    <string name="series_qr">New document from QR code</string>
 
     <string name="debug_view_item_show">Show debug view</string>
 
