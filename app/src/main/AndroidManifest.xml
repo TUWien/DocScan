@@ -113,6 +113,7 @@
 
 		<activity
             android:name=".ui.settings.PreferenceActivity"
+            android:parentActivityName=".ui.CameraActivity"
             android:exported="false"
 		/>
 
