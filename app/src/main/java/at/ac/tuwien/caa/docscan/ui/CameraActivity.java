@@ -252,9 +252,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 
-        //    just for markus oneplus:
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            colorStatusBar();
+//        //    just for markus oneplus:
+//        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+//            colorStatusBar();
 
 
         //        Open the log file at app startup:
@@ -267,13 +267,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-//    just for markus oneplus:
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void colorStatusBar() {
-
-        getWindow().setNavigationBarColor(ContextCompat.getColor(this, R.color.black));
-
-    }
+////    just for markus oneplus:
+//    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+//    private void colorStatusBar() {
+//
+//        getWindow().setNavigationBarColor(ContextCompat.getColor(this, R.color.black));
+//
+//    }
 
 
     /**
@@ -2156,26 +2156,26 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if ((v != null) && (!mCameraPreview.isPreviewFitting()))
             v.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
 
-//        Make the actionbar intransparent in case the preview does not fit the entire screen
-//        Note: this is especially for markus oneplus not tested on other devices yet:
-        if (mCameraPreview.isPreviewFitting() &&
-                (getDisplayRotation() == Surface.ROTATION_0 || getDisplayRotation() == Surface.ROTATION_180)) {
-
-            int actionBarHeight;
-
-            final TypedArray styledAttributes = getTheme().obtainStyledAttributes(
-                    new int[]{android.R.attr.actionBarSize}
-            );
-            actionBarHeight = (int) styledAttributes.getDimension(0, 0);
-            styledAttributes.recycle();
-
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) l.getLayoutParams();
-            params.setMargins(0, actionBarHeight, 0, 0);
-        }
-        else {
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) l.getLayoutParams();
-            params.setMargins(0, 0, 0, 0);
-        }
+////        Make the actionbar opaque in case the preview does not fit the entire screen
+////        Note: this is especially for markus oneplus not tested on other devices yet:
+//        if (mCameraPreview.isPreviewFitting() &&
+//                (getDisplayRotation() == Surface.ROTATION_0 || getDisplayRotation() == Surface.ROTATION_180)) {
+//
+//            int actionBarHeight;
+//
+//            final TypedArray styledAttributes = getTheme().obtainStyledAttributes(
+//                    new int[]{android.R.attr.actionBarSize}
+//            );
+//            actionBarHeight = (int) styledAttributes.getDimension(0, 0);
+//            styledAttributes.recycle();
+//
+//            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) l.getLayoutParams();
+//            params.setMargins(0, actionBarHeight, 0, 0);
+//        }
+//        else {
+//            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) l.getLayoutParams();
+//            params.setMargins(0, 0, 0, 0);
+//        }
 
     }
 

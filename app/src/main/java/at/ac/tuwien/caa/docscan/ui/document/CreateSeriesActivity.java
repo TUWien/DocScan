@@ -64,9 +64,29 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
                 processQRCode(qrText);
             }
         }
+    }
+
+    /**
+     * Called after permission has been given or has been rejected. This is necessary on Android M
+     * and younger Android systems.
+     *
+     * @param requestCode Request code
+     * @param permissions Permission
+     * @param grantResults results
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
 
 
-
+        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+        switch (requestCode) {
+            case PERMISSION_WRITE_EXTERNAL_STORAGE:
+                if (isPermissionGiven)
+                    createDir();
+                else
+                    showNoPermissionAlert();
+                break;
+        }
     }
 
     private void processQRCode(String text) {
@@ -144,59 +164,16 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
     }
 
 
-//    private void fillViews(Document document) {
-//
-//        // Emulate a click and open up the extended layout (shows the views above):
-//        CheckBox checkBox = (CheckBox) findViewById(R.id.create_series_advanced_options_checkbox);
-//        checkBox.setChecked(true);
-//
-//        if (document == null)
-//            return;
-//
-//        // Title:
-//        EditText titleEditText = findViewById(R.id.create_series_name_edittext);
-//        if (document.getTitle() != null)
-//            titleEditText.setText(document.getTitle());
-//
-////        // Description:
-////        EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
-////        if (document.getTitle() != null)
-////            descriptionEditText.setText(document.getDescription());
-//
-//        // Signature:
-//        EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
-//        if (document.getSignature() != null)
-//            signatureEditText.setText(document.getSignature());
-//
-//        // Authority:
-//        EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
-//        if (document.getAuthority() != null)
-//            authorityEditText.setText(document.getAuthority());
-//
-//        // Hierarchy:
-//        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
-//        if (document.getHierarchy() != null)
-//            hierarchyEditText.setText(document.getHierarchy());
-//
-////        // Uri:
-////        EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
-////        if (document.getUri() != null)
-////            uriEditText.setText(document.getUri());
-//
-//    }
-
-
-
     private void initOkButton() {
-        final EditText userInput = (EditText) findViewById(R.id.create_series_name_edittext);
 
-        Button okButton = (Button) findViewById(R.id.create_series_done_button);
+        Button okButton = findViewById(R.id.create_series_done_button);
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onCreateDirResult(userInput.getText().toString());
+                askForPermissionCreateDir();
             }
         });
+
     }
 
     private void initShowFieldsCheckBox() {
@@ -216,23 +193,53 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
         });
     }
 
-    private void onCreateDirResult(String result) {
+    /**
+     * This is called once the user enters a text for the subdir. The function should only be called
+     * after user interaction.
+     */
+    private void askForPermissionCreateDir() {
+
+//        No permission given:
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED)
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+        else
+            createDir();
+
+    }
+
+    /**
+     * Creates a directory for the images. Should only be called if the required permission is
+     * given by the user.
+     */
+    private void createDir() {
+
+//        Note: This check is just done for safety, but this point should not be reachable if the
+//        permission is not given.
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+            return;
+        }
+
+
+        EditText editText = findViewById(R.id.create_series_name_edittext);
+        String subDirText = editText.getText().toString();
 
         File mediaStorageDir = Helper.getMediaStorageDir(getResources().getString(R.string.app_name));
-        File subDir = new File(mediaStorageDir.getAbsolutePath(), result);
+        File subDir = new File(mediaStorageDir.getAbsolutePath(), subDirText);
 
         if (subDir.exists()) {
             showDirExistingCreatedAlert(subDir.getName());
             return;
         }
 
-        if (isWriteExternalStoragePermitted())
-            createSubDir(subDir);
-        else {
-            mSubDir = subDir;
-            // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
-        }
+
+        createSubDir(subDir);
 
     }
 
@@ -257,38 +264,23 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
 
     }
 
-    /**
-     * Called after permission has been given or has been rejected. This is necessary on Android M
-     * and younger Android systems.
-     *
-     * @param requestCode Request code
-     * @param permissions Permission
-     * @param grantResults results
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    private void showNoPermissionAlert() {
 
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
-        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
-        switch (requestCode) {
-            case PERMISSION_WRITE_EXTERNAL_STORAGE:
-                if (isPermissionGiven && mSubDir != null)
-                    createSubDir(mSubDir);
-                break;
-        }
-    }
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.document_no_permission_title)
+                .setCancelable(true)
+                .setPositiveButton("OK", null)
+                .setMessage(R.string.document_no_permission_message);
 
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
 
+        // show it
+        alertDialog.show();
 
-    /**
-     * Check if we have the permission to write to the external storage.
-     * @return
-     */
-    private boolean isWriteExternalStoragePermitted() {
-
-        boolean isPermitted =
-                (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
-        return isPermitted;
     }
 
     private void showDirExistingCreatedAlert(String dirName) {
