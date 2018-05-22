@@ -381,6 +381,7 @@ public class TranskribusUtils  {
 
                                 removeFromUnprocessedList(fileSync.getUploadId());
                                 Log.d(getClass().getName(), "finished upload with ID: " + fileSync.getUploadId());
+                                Log.d(getClass().getName(), "response: " + result);
                                 DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "finished upload with ID: " + fileSync.getUploadId());
                             }
 
@@ -395,8 +396,14 @@ public class TranskribusUtils  {
                 });
     }
 
+    public void removeFromUnfinishedList(int uploadID) {
 
-    private void removeFromUnprocessedList(int uploadID) {
+        SyncInfo.getInstance().getUnfinishedUploadIDs().remove(new Integer(uploadID));
+
+    }
+
+
+    public void removeFromUnprocessedList(int uploadID) {
 
         SyncInfo.getInstance().getUnprocessedUploadIDs().remove(new Integer(uploadID));
 

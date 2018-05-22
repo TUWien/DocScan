@@ -11,6 +11,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import at.ac.tuwien.caa.docscan.sync.TranskribusUtils;
+
 /**
  * Created by fabian on 29.06.2017.
  */
@@ -42,6 +44,12 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
         try {
 //            TODO: I have no clue, why this class has to be a XMLRequest to receive a JSON string...
             JSONObject j1 = new JSONObject(response);
+
+//            Check if we are not processing an already finished upload:
+            if (j1.has("finished")) {
+                ((UploadStatusCallback) mRestCallback).onUploadFinished(mUploadID);
+                return;
+            }
             JSONObject j2 = j1.getJSONObject("pageList");
             JSONArray a = j2.getJSONArray("pages");
 
@@ -66,6 +74,7 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
     public interface UploadStatusCallback extends RestCallback{
 
         void onStatusReceived(int uploadID, ArrayList<String> unfinishedFileNames);
+        void onUploadFinished(int uploadID);
 
     }
 }

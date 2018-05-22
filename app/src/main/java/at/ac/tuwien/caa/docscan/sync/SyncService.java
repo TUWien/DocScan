@@ -307,6 +307,14 @@ public class SyncService extends JobService implements
 
     }
 
+    @Override
+    public void onUploadFinished(int uploadID) {
+
+//        TranskribusUtils.getInstance().removeFromUnprocessedList(uploadID);
+        TranskribusUtils.getInstance().removeFromUnfinishedList(uploadID);
+
+    }
+
 
     // Handler that receives messages from the thread
     protected final class ServiceHandler extends Handler implements SyncInfo.Callback {
