@@ -42,7 +42,6 @@ public class StartUploadRequest extends RestRequest.JSONObjectRestRequest {
     @Override
     public void handleResponse(JSONObject response) {
 
-
         try {
             JSONObject o = response.getJSONObject(TRPUPLOAD_ID);
             int id = o.getInt(UPLOAD_ID_ID);
@@ -51,7 +50,6 @@ public class StartUploadRequest extends RestRequest.JSONObjectRestRequest {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
 
     }
 

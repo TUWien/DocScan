@@ -15,6 +15,7 @@ import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity;
+import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
 /**
  * Created by fabian on 08.02.2017.
@@ -47,8 +48,8 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
         // The string extra look something like this:
 //        at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity$1
 //        So we have to use String.startsWith instead of String.compareTo
-        if (extras != null && extras.getString(PARENT_ACTIVITY_NAME, "").startsWith(SyncActivity.class.getName()))
-            mParentClass = SyncActivity.class;
+        if (extras != null && extras.getString(PARENT_ACTIVITY_NAME, "").startsWith(UploadActivity.class.getName()))
+            mParentClass = UploadActivity.class;
         else
             mParentClass = CameraActivity.class;
 

@@ -17,7 +17,6 @@ public class User {
     private String mDropboxToken;
     private String mDocumentName = null;
     private int mTranskribusUploadCollId;
-    private boolean mIsUploadActive;
 
     /**
      * Returns a singleton.
@@ -37,8 +36,6 @@ public class User {
         mIsLoggedin = false;
         mIsAutoLogInDone = false;
         mTranskribusUploadCollIdSet = false;
-        mIsUploadActive = false;
-
     }
 
     public void setCollection(Collection collection) {
@@ -101,14 +98,5 @@ public class User {
     public void setDocumentName(String documentName) { mDocumentName = documentName; }
 
     public String getDocumentName() { return mDocumentName; }
-
-    public int getTranskribusUploadCollId() { return mTranskribusUploadCollId; }
-
-//    TODO: find another place for this:
-
-    public boolean isUploadActive() { return mIsUploadActive; }
-
-    public void setUploadActive(boolean isUploadActive) { mIsUploadActive = isUploadActive; }
-
 
 }

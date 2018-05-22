@@ -19,7 +19,6 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
-import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
 
 /**
  * Created by fabian on 26.09.2017.
@@ -184,6 +183,43 @@ public class Helper {
 
     }
 
+    /**
+     *
+     * @param appName
+     * @param fileName
+     * @return
+     */
+    public static File getFile(String appName, String fileName){
+
+        File mediaStorageDir = getMediaStorageDir(appName);
+
+        FileFilter directoryFilter = new FileFilter() {
+            public boolean accept(File file) {
+                return file.isDirectory();
+            }
+        };
+
+        File[] folders = mediaStorageDir.listFiles(directoryFilter);
+        if (folders == null)
+            return null;
+
+        ArrayList<File> dirs = new ArrayList<>(Arrays.asList(folders));
+
+//        Iterate over the sub directories to find the image file:
+        for (File dir : dirs) {
+
+            ArrayList<File> files = getImageList(dir);
+            for (File file : files) {
+                if (file.getName().equals(fileName))
+                    return file;
+
+            }
+        }
+
+        return null;
+
+    }
+
     public static List<Document> getNonEmptyDocuments(List<Document> documents) {
 
         List<Document> nonEmptyDocuments = new ArrayList<>();
@@ -287,13 +323,20 @@ public class Helper {
 
     private static ArrayList<File> getImageList(String dir) {
 
-        File[] files = getImageList(new File(dir));
+        return getImageList(new File(dir));
+
+    }
+
+    private static ArrayList<File> getImageList(File file) {
+
+        File[] files = getImageArray(file);
 
         ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
 
         return fileList;
 
     }
+
 
     private static ArrayList<Page> filesToPages(ArrayList<File> files) {
 
@@ -307,7 +350,7 @@ public class Helper {
 
     }
 
-    public static File[] getImageList(File dir) {
+    public static File[] getImageArray(File dir) {
 
         FileFilter filesFilter = new FileFilter() {
             public boolean accept(File file) {

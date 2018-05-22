@@ -1,7 +1,6 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
-import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -12,10 +11,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
@@ -23,19 +23,21 @@ import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
 import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
+import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 
 import static android.content.ContentValues.TAG;
 import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 
 /**
- * Created by fabian on 05.09.2017.
+ * A class responsible for handling functionality that is connected to Transkribus. Other (more
+ * general) functionality should be included in SyncService.
  */
 
 public class TranskribusUtils  {
 
-    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
-//    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "upload_test";
+//    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
+    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "upload_continue_test_2";
 
     // Singleton:
     private static TranskribusUtils mInstance;
@@ -45,6 +47,8 @@ public class TranskribusUtils  {
     private int mNumUploadJobs;
     private TranskribusUtilsCallback mCallback;
     private boolean mIsCollectionCreated;
+    private ArrayList<Integer> mUnfinishedUploadIDsProcessed;
+    private boolean mAreUnfinishedFilesPrepared, mAreDocumentsPrepared;
 
 //    private int mUploadId;
 
@@ -61,11 +65,35 @@ public class TranskribusUtils  {
 
     }
 
+    public void startUpload(Context context) {
+
+        mContext = context;
+
+        if (SyncInfo.getInstance().getUploadDirs() != null && !SyncInfo.getInstance().getUploadDirs().isEmpty()) {
+            mAreDocumentsPrepared = false;
+            //        Start the upload of user selected dirs:
+            TranskribusUtils.getInstance().uploadDocuments(mContext, SyncInfo.getInstance().getUploadDirs());
+        }
+        else
+            mAreDocumentsPrepared = true;
+
+        if (SyncInfo.getInstance().getUnfinishedUploadIDs() != null &&
+                !SyncInfo.getInstance().getUnfinishedUploadIDs().isEmpty()) {
+            mAreUnfinishedFilesPrepared = false;
+            startFindingUnfinishedUploads(SyncInfo.getInstance().getUnfinishedUploadIDs());
+        }
+        else
+            mAreUnfinishedFilesPrepared = true;
+
+
+    }
+
     /**
      * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
      * upload folder.
      */
-    public void startUpload(Context context, ArrayList<File> selectedDirs) {
+    public void uploadDocuments(Context context, ArrayList<File> selectedDirs) {
+
 
         mContext = context;
         mSelectedDirs = selectedDirs;
@@ -79,6 +107,20 @@ public class TranskribusUtils  {
             createDocScanCollection();
 
 //        new CollectionsRequest(mContext);
+
+    }
+
+    /**
+     * Sends requests to the server asking in order to collect the unfinished files.
+     * @param unfinishedIDs
+     */
+    public void startFindingUnfinishedUploads(ArrayList<Integer> unfinishedIDs) {
+
+        mAreUnfinishedFilesPrepared = false;
+        mUnfinishedUploadIDsProcessed = new ArrayList<>();
+
+        for (Integer id : unfinishedIDs)
+            new UploadStatusRequest(mContext, id);
 
     }
 
@@ -151,11 +193,6 @@ public class TranskribusUtils  {
 
     }
 
-//    private void docScanCollectionFound(Collection collection) {
-//
-//        uploadDirs(mSelectedDirs, collection.getID());
-//
-//    }
 
     private void docScanCollectionFound(int id) {
 
@@ -173,7 +210,7 @@ public class TranskribusUtils  {
         for (File dir : mSelectedDirs) {
 
             // Get the image files contained in the directory:
-            File[] imgFiles = Helper.getImageList(dir);
+            File[] imgFiles = Helper.getImageArray(dir);
             if (imgFiles == null)
                 return;
             else if (imgFiles.length == 0)
@@ -189,13 +226,22 @@ public class TranskribusUtils  {
         }
     }
 
+    public void saveUnfinishedUploadIDs(){
+
+        SyncInfo.getInstance().saveUnprocessedUploadIDs();
+
+
+    }
+
     /**
      * Receives the uploadId for a document/directory and starts the upload job. Note that multiple
      * directories can be selected and we have to take assign each directory to its correct
      * uploadId (this is done by comparing the title).
      * @param uploadId
      */
-    public void onUploadStart(int uploadId, String title) {
+    public void onUploadIDReceived(int uploadId, String title) {
+
+        SyncInfo.getInstance().getUnprocessedUploadIDs().add(new Integer(uploadId));
 
         File selectedDir = getMatchingDir(title);
 
@@ -204,23 +250,90 @@ public class TranskribusUtils  {
         DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "title: " + title);
 
         if (selectedDir != null) {
-            File[] imageList = Helper.getImageList(selectedDir);
+            File[] imageList = Helper.getImageArray(selectedDir);
             for (File file : imageList)
                 SyncInfo.getInstance().addTranskribusFile(mContext, file, uploadId);
         }
 
         mNumUploadJobs++;
 
-        // For each directory the upload request is finished and all files are added to the sync list:
-        if (mNumUploadJobs == mSelectedDirs.size())
-            mCallback.onFilesPrepared();
-//            SyncInfo.startSyncJob(mContext);
+        Iterator<File> iter = mSelectedDirs.iterator();
+        while (iter.hasNext()) {
+            if (iter.next() == selectedDir)
+                iter.remove();
+        }
 
-//        TranskribusUtils.getInstance().setUploadId(uploadId);
-//        SyncInfo.startSyncJob(this);
+//        // For each directory the upload request is finished and all files are added to the sync list:
+//        if (mNumUploadJobs == mSelectedDirs.size())
+//            mCallback.onSelectedFilesPrepared();
+
+        // For each directory the upload request is finished and all files are added to the sync list:
+        if (mSelectedDirs.size() == 0) {
+            mAreDocumentsPrepared = true;
+            checkFilesPrepared();
+//            mCallback.onSelectedFilesPrepared();
+        }
 
     }
 
+    public void onUploadStatusReceived(Context context, int uploadID, ArrayList<String> unfinishedFileNames) {
+
+        Log.d(getClass().getName(), "onUploadStatusReceived");
+
+        for (String fileName : unfinishedFileNames) {
+
+//      We have to find here the file for the corresponding fileName. Unfortunately, we have to rely
+//        here on the timestamp in the fileName to find correspondences...
+            File file = Helper.getFile(context.getResources().getString(R.string.app_name), fileName);
+
+            if (file != null) {
+//                SyncInfo.getInstance().addToUnfinishedSyncList(file, uploadID);
+                Log.d(getClass().getName(), "onUploadStatusReceived: added unfinished file - id: " + uploadID + " file: " + file);
+                SyncInfo.getInstance().addTranskribusFile(context, file, uploadID);
+            }
+            else {
+                Log.d(getClass().getName(), "onUploadStatusReceived: file not existing: " + fileName);
+                //            TODO: error handling here!
+            }
+        }
+
+        mUnfinishedUploadIDsProcessed.add(uploadID);
+
+        if (areUnfinishedFilesProcessed()) {
+            mAreUnfinishedFilesPrepared = true;
+            checkFilesPrepared();
+        }
+
+    }
+
+    /**
+     * Checks if the unfinished files and the user selected documents are ready for upload.
+     */
+    private void checkFilesPrepared() {
+
+        if (mAreDocumentsPrepared && mAreUnfinishedFilesPrepared)
+            mCallback.onFilesPrepared();
+    }
+
+
+    private boolean areUnfinishedFilesProcessed() {
+
+        //        The unfinished files are now ready for upload:
+        if (mUnfinishedUploadIDsProcessed.size() ==
+                SyncInfo.getInstance().getUnfinishedUploadIDs().size()) {
+
+            for (int i : SyncInfo.getInstance().getUnfinishedUploadIDs()) {
+                if (!mUnfinishedUploadIDsProcessed.contains(i))
+                    return false;
+
+            }
+
+            return true;
+        }
+
+        return false;
+
+    }
 
     /**
      * Find the directory assigned to its title:
@@ -259,16 +372,34 @@ public class TranskribusUtils  {
                     public void onCompleted(Exception e, String result) {
 
                         if (e == null) {
+                            Log.d(getClass().getName(), "uploaded file: " + fileSync.toString());
                             callback.onUploadComplete(fileSync);
                             DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "uploaded file: " + fileSync.toString());
+
+                            if (result.contains("<finished>")) {
+//                                TODO: remove the document from the unfinished documents list.
+
+                                removeFromUnprocessedList(fileSync.getUploadId());
+                                Log.d(getClass().getName(), "finished upload with ID: " + fileSync.getUploadId());
+                                DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "finished upload with ID: " + fileSync.getUploadId());
+                            }
+
                         }
                         else {
                             callback.onError(e);
+                            Log.d(getClass().getName(), "error uploading file with upload ID: " + fileSync.getUploadId() + " fileSync: " + fileSync.toString());
                             DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "error uploading file: " + e);
                         }
 
                     }
                 });
+    }
+
+
+    private void removeFromUnprocessedList(int uploadID) {
+
+        SyncInfo.getInstance().getUnprocessedUploadIDs().remove(new Integer(uploadID));
+
     }
 
 
@@ -329,110 +460,13 @@ public class TranskribusUtils  {
         return result;
     }
 
-//    public static File[] getFiles(File dir) {
-//
-//
-//        FileFilter filesFilter = new FileFilter() {
-//            public boolean accept(File file) {
-//                return !file.isDirectory();
-//            }
-//        };
-//
-//        File[] files = dir.listFiles(filesFilter);
-//
-//        return files;
-//    }
-
-
     public interface TranskribusUtilsCallback {
 
         void onFilesPrepared();
+//        void onSelectedFilesPrepared();
+//        void onUnfinishedFilesPrepared();
 
     }
 
-
-
-
-//    // Singleton:
-//    private static TranskribusUtils mInstance;
-//
-//    public static TranskribusUtils getInstance() {
-//
-//        if (mInstance == null)
-//            mInstance = new TranskribusUtils();
-//
-//        return mInstance;
-//
-//    }
-//
-//    private TranskribusUtils() {
-//
-//    }
-//
-//    public void uploadFile(SyncInfo.Callback callback, SyncInfo.FileSync file) {
-//        new UploadFileTask(callback, file).execute();
-//    }
-//
-//    /**
-//     * Async task to upload a file to a directory
-//     * Taken from: @see <a href="https://github.com/dropbox/dropbox-sdk-java/blob/master/examples/android/src/main/java/com/dropbox/core/examples/android/UploadFileTask.java"/>
-//     */
-//    private class UploadFileTask extends AsyncTask<Void, Void, FileMetadata> {
-//
-//        private final SyncInfo.Callback mCallback;
-//        private Exception mException;
-//        private SyncInfo.FileSync mFileSync;
-//
-//
-//        UploadFileTask(SyncInfo.Callback callback, SyncInfo.FileSync fileSync) {
-//            mCallback = callback;
-//            mFileSync = fileSync;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(FileMetadata result) {
-//            super.onPostExecute(result);
-//            if (mException != null) {
-//                mCallback.onError(mException);
-//            } else if (result == null) {
-//                mCallback.onError(null);
-//            } else {
-//                mCallback.onUploadComplete(mFileSync);
-//            }
-//        }
-//
-//        @Override
-//        protected FileMetadata doInBackground(Void... params) {
-//
-//
-//            File localFile = mFileSync.getFile();
-//
-//            if (localFile != null) {
-////                String remoteFolderPath = params[1];
-//
-//                // Note - this is not ensuring the name is a valid dropbox file name
-//                String remoteFileName = localFile.getName();
-//
-//
-////                try  {
-////
-////                    InputStream inputStream = new FileInputStream(localFile);
-////
-////                    return mClient.files().uploadBuilder("/" + remoteFileName)
-////                            .withMode(WriteMode.OVERWRITE)
-////                            .uploadAndFinish(inputStream);
-////
-//////                    return mClient.files().uploadBuilder(remoteFolderPath + "/" + remoteFileName)
-//////                            .withMode(WriteMode.OVERWRITE)
-//////                            .uploadAndFinish(inputStream);
-////                } catch (DbxException | IOException e) {
-////                    mException = e;
-////                    Log.d("DropboxUtils", "exception: " + e);
-////                }
-//            }
-//
-//            return null;
-//        }
-//    }
 
 }

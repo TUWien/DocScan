@@ -218,8 +218,6 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
             }
         }
 
-//        onSelectionChange();
-
     }
 
     @Override
@@ -691,43 +689,27 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         @Override
         public void onReceive(Context context, Intent intent) {
 
+//            update the list view:
+            initAdapter();
 
             boolean error = intent.getBooleanExtra(UPLOAD_ERROR_ID, false);
 
             if (error) {
-
                 showUploadErrorDialog();
-                initAdapter();
-//                displayUploadActive(false);
-
-                // update the selection display:
-//                onSelectionChange();
-
-
                 return;
             }
 
             boolean offlineError = intent.getBooleanExtra(UPLOAD_OFFLINE_ERROR_ID, false);
 
             if (offlineError) {
-
                 showNotOnlineSnackbar();
-
-
-                // update the selection display:
-//                onSelectionChange();
-
-
                 return;
             }
 
             boolean finished = intent.getBooleanExtra(UPLOAD_FINISHED_ID, false);
 
             if (finished) {
-
-                initAdapter();
                 showUploadFinishedSnackbar();
-
             }
 
         }

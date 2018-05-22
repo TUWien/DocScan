@@ -20,7 +20,7 @@ public class SyncUtils {
             return;
 
         boolean isUserSaved = UserHandler.loadCredentials(context);
-        if (isUserSaved && !User.getInstance().isAutoLogInDone()) {
+        if (isUserSaved) {
 
             if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS) {
                 RequestHandler.createRequest(context, RequestHandler.REQUEST_LOGIN);

@@ -128,6 +128,7 @@ public class RequestHandler {
     public static void processRequest(final RestRequest.XMLRequest request) {
 
         int method = request.getMethod();
+// TODO: I do not know why this has to be a XML Request although the response is a JSO
 
         StringRequest stringRequest = new StringRequest(method, request.getURL(),
                 new Response.Listener<String>() {

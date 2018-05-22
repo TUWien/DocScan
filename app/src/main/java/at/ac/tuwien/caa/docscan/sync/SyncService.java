@@ -9,7 +9,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.provider.ContactsContract;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -29,6 +28,7 @@ import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
 import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
+import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
@@ -48,7 +48,8 @@ public class SyncService extends JobService implements
         CollectionsRequest.CollectionsCallback,
         CreateCollectionRequest.CreateCollectionCallback,
         StartUploadRequest.StartUploadCallback,
-        TranskribusUtils.TranskribusUtilsCallback {
+        TranskribusUtils.TranskribusUtilsCallback,
+        UploadStatusRequest.UploadStatusCallback {
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
@@ -71,6 +72,8 @@ public class SyncService extends JobService implements
 
     private int mFilesNum;
     private int mFilesUploaded;
+    private boolean mIsInterrupted = false;
+
 
     @Override
     public boolean onStartJob(JobParameters job) {
@@ -97,12 +100,28 @@ public class SyncService extends JobService implements
         } else {
             Log.d(TAG, "user is logged in");
             DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "user is logged in");
-            TranskribusUtils.getInstance().startUpload(this, SyncInfo.getInstance().getUploadDirs());
+            startUpload();
 
         }
 
 
         return false; // Answers the question: "Is there still work going on?"
+    }
+
+    private void startUpload() {
+
+        TranskribusUtils.getInstance().startUpload(this);
+
+//        if (SyncInfo.getInstance().getUploadDirs() != null && !SyncInfo.getInstance().getUploadDirs().isEmpty())
+//    //        Start the upload of user selected dirs:
+//            TranskribusUtils.getInstance().uploadDocuments(this, SyncInfo.getInstance().getUploadDirs());
+//
+//        if (SyncInfo.getInstance().getUnfinishedUploadIDs() != null &&
+//                !SyncInfo.getInstance().getUnfinishedUploadIDs().isEmpty())
+//            TranskribusUtils.getInstance().startFindingUnfinishedUploads(this,
+//                    SyncInfo.getInstance().getUnfinishedUploadIDs());
+
+
     }
 
     @Override
@@ -119,12 +138,15 @@ public class SyncService extends JobService implements
         DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onLogin");
 
 //        Starts the upload:
-        TranskribusUtils.getInstance().startUpload(this, SyncInfo.getInstance().getUploadDirs());
+//        TranskribusUtils.getInstance().uploadDocuments(this, SyncInfo.getInstance().getUploadDirs());
+        startUpload();
 
     }
 
     @Override
     public void onLoginError() {
+
+        Log.d(getClass().getName(), "onLoginError");
 
     }
 
@@ -151,11 +173,11 @@ public class SyncService extends JobService implements
     @Override
     public void onUploadStart(int uploadId, String title) {
 
-        Log.d(TAG, "onUploadStart");
+        Log.d(TAG, "onUploadIDReceived");
 
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onUploadStart");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onUploadIDReceived");
 
-        TranskribusUtils.getInstance().onUploadStart(uploadId, title);
+        TranskribusUtils.getInstance().onUploadIDReceived(uploadId, title);
 
     }
 
@@ -165,7 +187,38 @@ public class SyncService extends JobService implements
         Log.d(TAG, "onFilesPrepared");
         DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onFilesPrepared");
 
-//         Start the upload:
+        uploadFiles();
+
+    }
+
+//    @Override
+//    public void onSelectedFilesPrepared() {
+//
+//        Log.d(TAG, "onSelectedFilesPrepared");
+//        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onSelectedFilesPrepared");
+//
+//        mAreSelectedFilesPrepared = true;
+//        if (mAreUnfinishedFilesPrepared)
+//            // Start the upload:
+//            uploadFiles();
+//
+//    }
+//
+//    @Override
+//    public void onUnfinishedFilesPrepared() {
+//
+//        Log.d(TAG, "onUnfinishedFilesPrepared");
+//        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onUnfinishedFilesPrepared");
+//
+//        mAreUnfinishedFilesPrepared = true;
+//        if (mAreSelectedFilesPrepared)
+//            // Start the upload:
+//            uploadFiles();
+//
+//    }
+
+    private void uploadFiles() {
+
         Message msg = mServiceHandler.obtainMessage();
         mServiceHandler.sendMessage(msg);
 
@@ -174,11 +227,10 @@ public class SyncService extends JobService implements
     @Override
     public void handleRestError(VolleyError error) {
 
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService - rest error", error.getMessage());
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService - rest error ", error.getMessage());
 
         Log.d(getClass().getName(), "rest_error" + error.getMessage());
 
-//        Removed this because it can lead to an infinite loop of server requests (if the server is too slow answering):
         handleRestUploadError();
 
     }
@@ -188,7 +240,11 @@ public class SyncService extends JobService implements
      */
     private void handleRestUploadError() {
 
-        Log.d(getClass().getName(), "onError");
+        Log.d(getClass().getName(), "handleRestUploadError");
+
+        updateNotification(NOTIFICATION_ERROR);
+        sendOfflineErrorIntent();
+
 //
 //        //        Collect the files that are not uploaded yet and get their paths:
 //        ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
@@ -199,49 +255,16 @@ public class SyncService extends JobService implements
 //
 //        SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
 
+        TranskribusUtils.getInstance().saveUnfinishedUploadIDs();
+
         SyncInfo.saveToDisk(getApplicationContext());
 //        Schedule the upload job:
 //        SyncInfo.startSyncJob(getApplicationContext());
         SyncInfo.restartSyncJob(getApplicationContext());
 
-        updateNotification(NOTIFICATION_ERROR);
-
-        sendOfflineErrorIntent();
 
     }
 
-//    private void updateNotification(int notificationID) {
-//
-//        switch (notificationID) {
-//
-//            case NOTIFICATION_ERROR:
-//                mNotificationBuilder
-//                        .setContentTitle(getString(R.string.sync_notification_error_title))
-//                        .setContentText(getString(R.string.sync_notification_error_text))
-//                        // Removes the progress bar
-//                        .setProgress(0, 0, false);
-//                break;
-//            case NOTIFICATION_PROGRESS_UPDATE:
-//                int progress = (int) Math.floor(mFilesUploaded / (double) mFilesNum * 100);
-//                mNotificationBuilder
-//                        .setContentTitle(getString(R.string.sync_notification_title))
-//                        .setContentText(getString(R.string.sync_notification_uploading_transkribus_text))
-//                        .setProgress(100, progress, false);
-//                break;
-//            case NOTIFICATION_SUCCESS:
-//                mNotificationBuilder
-//                        .setContentTitle(getString(R.string.sync_notification_uploading_finished_title))
-//                        .setContentText(getString(R.string.sync_notification_uploading_finished_text))
-//                        // Removes the progress bar
-//                        .setProgress(0, 0, false);
-//                break;
-//
-//        }
-//
-//        // show the new notification:
-//        mNotificationManager.notify(mNotifyID, mNotificationBuilder.build());
-//
-//    }
 
     // Send an Intent with an action named "PROGRESS_INTENT_NAME".
     private void sendOfflineErrorIntent() {
@@ -276,29 +299,13 @@ public class SyncService extends JobService implements
 
     }
 
+    @Override
+    public void onStatusReceived(int uploadID, ArrayList<String> unfinishedFileNames) {
 
+        TranskribusUtils.getInstance().onUploadStatusReceived(getApplicationContext(), uploadID,
+                unfinishedFileNames);
 
-//
-//    @Override
-//    public void handleRestError(VolleyError error) {
-//
-//        Log.d(getClass().getName(), "onError");
-//
-//        //        Collect the files that are not uploaded yet and get their paths:
-//        ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
-//
-//        // In the case of an error this directory list should not be empty:
-//        if (unfinishedDirs == null || unfinishedDirs.isEmpty())
-//            return;
-//
-//        SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
-//        SyncInfo.startSyncJob(getApplicationContext());
-//
-//        updateNotification(NOTIFICATION_ERROR);
-//
-//        sendOfflineErrorIntent();
-//
-//    }
+    }
 
 
     // Handler that receives messages from the thread
@@ -325,8 +332,6 @@ public class SyncService extends JobService implements
 
             if (mFilesNum == 0)
                 return;
-
-            User.getInstance().setUploadActive(true);
 
             // Start with the first file:
             SyncInfo.FileSync fileSync = getNextUpload();
@@ -451,10 +456,7 @@ public class SyncService extends JobService implements
             // Notify the SyncActivity:
             sendFinishedIntent();
 
-            User.getInstance().setUploadActive(false);
-
         }
-
 
         /**
          * This occurs during file upload and is thrown by TranskribusUtils.uploadFile.
@@ -468,19 +470,28 @@ public class SyncService extends JobService implements
             Log.d(getClass().getName(), "onError");
             DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onError");
 
-            //        Collect the files that are not uploaded yet and get their paths:
-            ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
+            TranskribusUtils.getInstance().saveUnfinishedUploadIDs();
 
-            // In the case of an error this directory list should not be empty:
-            if (unfinishedDirs == null || unfinishedDirs.isEmpty())
-                return;
+//            //        Collect the files that are not uploaded yet and get their paths:
+//            ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
+//
+//            // In the case of an error this directory list should not be empty:
+//            if (unfinishedDirs == null || unfinishedDirs.isEmpty())
+//                return;
 
-            SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
-            SyncInfo.startSyncJob(getApplicationContext());
+//            SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
+
+//            SyncInfo.startSyncJob(getApplicationContext());
+            SyncInfo.restartSyncJob(getApplicationContext());
 
             updateNotification(NOTIFICATION_ERROR);
 
             sendOfflineErrorIntent();
+
+        }
+
+        @Override
+        public void onDocumentUploadComplete(int uploadID) {
 
         }
 
@@ -507,6 +518,7 @@ public class SyncService extends JobService implements
 
         private SyncInfo.FileSync getNextUpload() {
 
+//            TODO: include here the unfinished list:
             for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
                 if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED)
                     return fileSync;
@@ -584,8 +596,15 @@ public class SyncService extends JobService implements
 
     private void updateNotification(int notificationID) {
 
-        if (mNotificationBuilder == null)
+        Log.d(getClass().getName(), "notificationID: " + notificationID);
+
+        if (mIsInterrupted)
+            Log.d("ein test", "interrupted!");
+
+        if (mNotificationBuilder == null || mIsInterrupted)
             return;
+
+        Log.d(getClass().getName(), "mNotificationBuilder not null" + notificationID);
 
         switch (notificationID) {
 
@@ -595,6 +614,7 @@ public class SyncService extends JobService implements
                         .setContentText(getString(R.string.sync_notification_error_text))
                         // Removes the progress bar
                         .setProgress(0, 0, false);
+                mIsInterrupted = true;
                 break;
             case NOTIFICATION_PROGRESS_UPDATE:
                 int progress = (int) Math.floor(mFilesUploaded / (double) mFilesNum * 100);

@@ -32,7 +32,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -48,13 +47,10 @@ import android.media.MediaScannerConnection;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -76,7 +72,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -91,12 +86,8 @@ import com.google.android.gms.security.ProviderInstaller;
 import com.google.zxing.Result;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -131,7 +122,6 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity;
 import at.ac.tuwien.caa.docscan.ui.document.SeriesGeneralActivity;
-import at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
@@ -139,7 +129,7 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATI
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getAngleFromExif;
-import static at.ac.tuwien.caa.docscan.logic.Helper.getImageList;
+import static at.ac.tuwien.caa.docscan.logic.Helper.getImageArray;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
@@ -719,7 +709,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         intent.putExtra(getString(R.string.key_document_file_name), mediaStorageDir.getAbsolutePath());
 
 //      Set the file position - it is the index of the last file in the sorted list of files:
-        File[] imgList = getImageList(mediaStorageDir);
+        File[] imgList = getImageArray(mediaStorageDir);
         intent.putExtra(getString(R.string.key_page_position), imgList.length - 1);
         mContext.startActivity(intent);
 
@@ -2350,7 +2340,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //        Arrays.sort(files);
 //        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1].getName();
 
-        File[] imgList = Helper.getImageList(mediaStorageDir);
+        File[] imgList = Helper.getImageArray(mediaStorageDir);
         if (imgList == null)
             return;
         else if (imgList.length == 0)
