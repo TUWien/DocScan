@@ -117,7 +117,7 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 
     public static File[] getFiles(File dir) {
 
-        return Helper.getImageList(dir);
+        return Helper.getImageArray(dir);
 
     }
 

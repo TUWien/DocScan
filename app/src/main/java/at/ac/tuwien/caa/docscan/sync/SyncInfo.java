@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
 
 /**
@@ -36,6 +37,9 @@ public class SyncInfo implements Serializable {
 
     private static SyncInfo mInstance = null;
     private ArrayList<FileSync> mFileSyncList;
+    private ArrayList<FileSync> mUnfinishedSyncList;
+    private ArrayList<Integer> mUnprocessedUploadIDs;
+    private ArrayList<Integer> mUnfinishedUploadIDs;
     private ArrayList<File> mUploadDirs;
 
     // TODO: this is a dirty workaround, think about something better useable:
@@ -98,10 +102,6 @@ public class SyncInfo implements Serializable {
         else
             constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
 
-
-//        if (useMobileConnection)
-
-
         Job syncJob = dispatcher.newJobBuilder()
                 // the JobService that will be called
                 .setService(SyncService.class)
@@ -113,6 +113,7 @@ public class SyncInfo implements Serializable {
                 .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
                 // start between 0 and 60 seconds from now
                 .setTrigger(Trigger.executionWindow(60, 100))
+//                .setTrigger(Trigger.executionWindow(1, 7))
 //                .setTrigger(Trigger.NOW)
                 // overwrite an existing job with the same tag - this assures that just one job is running at a time:
                 .setReplaceCurrent(true)
@@ -128,6 +129,9 @@ public class SyncInfo implements Serializable {
                 .setConstraints(
                         constraints
                 )
+//                .setConstraints(
+//                        Constraint.ON_ANY_NETWORK
+//                )
                 .build();
 
 
@@ -145,6 +149,9 @@ public class SyncInfo implements Serializable {
     public static void startSyncJob(Context context) {
 
         FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
+
+        Log.d("SyncInfo", "startSyncJob");
+        DataLog.getInstance().writeUploadLog(context, "SyncService", "startSyncJob");
 
 
         String tag = "sync_job";
@@ -172,7 +179,8 @@ public class SyncInfo implements Serializable {
                 // don't persist past a device reboot
                 .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
                 // start between 0 and 60 seconds from now
-                .setTrigger(Trigger.executionWindow(0, 1))
+                .setTrigger(Trigger.executionWindow(5, 15))
+//                .setTrigger(Trigger.executionWindow(1, 7))
 //                .setTrigger(Trigger.NOW)
                 // overwrite an existing job with the same tag - this assures that just one job is running at a time:
                 .setReplaceCurrent(true)
@@ -217,6 +225,9 @@ public class SyncInfo implements Serializable {
     private SyncInfo() {
 
         mFileSyncList = new ArrayList<>();
+        mUnfinishedSyncList = new ArrayList<>();
+        mUnfinishedUploadIDs = new ArrayList<>();
+        mUnprocessedUploadIDs = new ArrayList<>();
 
     }
 
@@ -241,8 +252,32 @@ public class SyncInfo implements Serializable {
         if (mUploadDirs == null)
             mUploadDirs = new ArrayList<>();
 
-        mUploadDirs.addAll(dirs);
+//        Just add the directory if it is not already contained:
+        for (File dir : dirs)
+            if (!mUploadDirs.contains(dir))
+                mUploadDirs.add(dir);
+
         createAwaitingUploadList();
+
+    }
+
+    public void saveUnprocessedUploadIDs() {
+
+        mUnfinishedUploadIDs = new ArrayList<>(mUnprocessedUploadIDs);
+        mUnprocessedUploadIDs.clear();
+
+    }
+
+    public ArrayList<Integer> getUnprocessedUploadIDs() {
+
+        return mUnprocessedUploadIDs;
+
+    }
+
+
+    public ArrayList<Integer> getUnfinishedUploadIDs() {
+
+        return mUnfinishedUploadIDs;
 
     }
 
@@ -279,26 +314,17 @@ public class SyncInfo implements Serializable {
 
     }
 
+    public void addToUnfinishedSyncList(File file, int uploadID) {
 
-    public void createSyncList(File[] files) {
-
-        if (mFileSyncList == null)
-            mFileSyncList = new ArrayList<>();
-        else
-            mFileSyncList.clear();
-
-        for (File file : files)
-            mFileSyncList.add(new FileSync(file));
+        mUnfinishedSyncList.add(new TranskribusFileSync(file, uploadID));
 
     }
+
 
     public ArrayList<FileSync> getSyncList() {
         return mFileSyncList;
     }
 
-    public ArrayList<File> getAwaitingUploadFile() {
-        return mAwaitingUploadFiles;
-    }
 
     public class TranskribusFileSync extends FileSync {
 
@@ -420,6 +446,7 @@ public class SyncInfo implements Serializable {
     public interface Callback {
         void onUploadComplete(SyncInfo.FileSync fileSync);
         void onError(Exception e);
+        void onDocumentUploadComplete(int uploadID);
     }
 
 
