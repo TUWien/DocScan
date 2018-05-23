@@ -79,6 +79,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.signature.MediaStoreSignature;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -112,6 +113,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
+import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
@@ -184,7 +186,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private List<String> mFlashModes;
     private PopupMenu mFlashPopupMenu, mSeriesPopupMenu;
     private byte[] mPictureData;
-    private Drawable mGalleryButtonDrawable;
+//    private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
     private final static int SINGLE_POS = 0;
     private final static int SERIES_POS = 1;
@@ -251,9 +253,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (AppState.isDataLogged())
             DataLog.getInstance().readLog(this);
 
+        mContext = this;
+
         initActivity();
 
-        mContext = this;
+
 
     }
 
@@ -2308,37 +2312,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void loadThumbnail() {
 
-        // Check if a thumbnail is already existing (this should occur on orientation changes):
-        if (mGalleryButtonDrawable != null)
-            setGalleryButtonDrawable(mGalleryButtonDrawable);
-
-        // Load the most recent image from the folder:
-        else
-            loadThumbnailFromDisk();
+        loadThumbnailFromDisk();
 
     }
 
     private void loadThumbnailFromDisk() {
+
         File mediaStorageDir = Helper.getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
         if (mediaStorageDir == null)
             return;
-
-//        FileFilter filesFilter = new FileFilter() {
-//            public boolean accept(File file) {
-//                return !file.isDirectory();
-//            }
-//        };
-//
-//        File[] files = mediaStorageDir.listFiles(filesFilter);
-//
-//        if (files == null)
-//            return;
-//        else if (files.length == 0)
-//            return;
-//
-//        // Determine the most recent image:
-//        Arrays.sort(files);
-//        String fileName = mediaStorageDir.toString() + "/" + files[files.length - 1].getName();
 
         File[] imgList = Helper.getImageArray(mediaStorageDir);
         if (imgList == null)
@@ -2346,25 +2328,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         else if (imgList.length == 0)
             return;
 
-        ThumbnailLoader thumbnailLoader = new ThumbnailLoader();
-        thumbnailLoader.execute(imgList[imgList.length-1].getAbsolutePath());
-
-    }
-
-    @SuppressWarnings("deprecation")
-    private void setGalleryButtonDrawable(Drawable drawable) {
-
-        mGalleryButton.setVisibility(View.VISIBLE);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-//            mGalleryButton.setBackground(drawable);
-//        else
-//            mGalleryButton.setBackgroundDrawable(drawable);
-//
-        mGalleryButton.setImageDrawable(drawable);
-//        mGalleryButton.setAdjustViewBounds(true);
-//        mGalleryButton.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        // Keep a reference to the drawable, because we need it if the orientation is changed:
-        mGalleryButtonDrawable = drawable;
+        GlideApp.with(mContext)
+                .load(imgList[imgList.length-1].getPath())
+                .into(mGalleryButton);
 
     }
 
@@ -2393,54 +2359,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         return NavigationDrawer.NavigationItemEnum.CAMERA;
     }
 
-
-    /**
-     * Class responsible for loading thumbnails from images. This is time intense and hence it is
-     * done in an own thread (AsyncTask).
-     */
-    private class ThumbnailLoader extends AsyncTask<String, Void, Void> {
-
-        @Override
-        protected Void doInBackground(String... fileNames) {
-
-            String fileName = fileNames[0];
-
-            Bitmap thumbNailBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(fileName), 200, 200);
-            if (thumbNailBitmap == null)
-                return null;
-
-            // Determine the rotation angle of the image:
-            int angle = -1;
-            try {
-                ExifInterface exif = new ExifInterface(fileName);
-                String attr = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
-                angle = getAngleFromExif(Integer.valueOf(attr));
-            } catch (IOException e) {
-                return null;
-            }
-
-            //Rotate the image:
-            Matrix mtx = new Matrix();
-            mtx.setRotate(angle);
-            thumbNailBitmap = Bitmap.createBitmap(thumbNailBitmap, 0, 0, thumbNailBitmap.getWidth(), thumbNailBitmap.getHeight(), mtx, true);
-
-            // Update the gallery button:
-            final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), thumbNailBitmap);
-            if (thumbDrawable == null)
-                return null;
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    setGalleryButtonDrawable(thumbDrawable);
-                }
-            });
-
-            return null;
-
-        }
-
-    }
 
     /**
      * Class used to save pictures in an own thread (AsyncTask).
@@ -2483,8 +2401,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Save exif information (especially the orientation):
                 saveExif(outFile);
 
-                // Set the thumbnail on the gallery button, this must be done on the UI thread:
-                updateThumbnail(outFile);
 
 //                // Add the file to the sync list:
 //                addToSyncList(mContext, outFile);
@@ -2519,44 +2435,31 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         }
 
-        private void updateThumbnail(final File outFile) {
-            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{outFile.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
+        private void updateThumbnail(final File file) {
+            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{file.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
 
                 public void onScanCompleted(String path, Uri uri) {
 
-//                        Before ThumbnailUtils.extractThumbnail was used which causes OOM's:
-//                        Bitmap resized = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(outFile.toString()), 200, 200);
-
-//                        Instead use this method to avoid loading large images into memory:
-                    Bitmap resized = decodeFile(outFile, 200, 200);
-
-                    Matrix mtx = new Matrix();
-                    mtx.setRotate(mCameraOrientation);
-
-                    resized = Bitmap.createBitmap(resized, 0, 0, resized.getWidth(), resized.getHeight(), mtx, true);
-                    final BitmapDrawable thumbDrawable = new BitmapDrawable(getResources(), resized);
-
                     runOnUiThread(new Runnable() {
-
                         @Override
                         public void run() {
-                            mProgressBar.setVisibility(View.INVISIBLE);
-                            setGalleryButtonDrawable(thumbDrawable);
-                        }
 
+                            mProgressBar.setVisibility(View.INVISIBLE);
+                            mGalleryButton.setVisibility(View.VISIBLE);
+
+                            GlideApp.with(mContext)
+                                    .load(file.getPath())
+                                    .into(mGalleryButton);
+
+                        }
                     });
+
 
                 }
 
-//                    }
             });
         }
 
-        private void addToSyncList(Context context, File outFile) {
-
-            SyncInfo.getInstance().addFile(context, outFile);
-
-        }
 
         private void saveExif(File outFile) throws IOException {
             final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
@@ -2596,23 +2499,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             // Release the memory. Note this is essential, because otherwise allocated memory will increase.
             mData = null;
 
-//            long startTime = System.currentTimeMillis();
-//
-//
-//            Mat inputMat = Imgcodecs.imread(uri);
-//
-//            Mat mg = new Mat();
-//            Imgproc.cvtColor(inputMat, mg, Imgproc.COLOR_RGBA2RGB);
-//
-//            DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mg);
-//
-//            long timePassed = System.currentTimeMillis() - startTime;
-//
-//            Log.d(TAG, "page detection took me: " + timePassed);
-
-//            if (!mIsSeriesMode && uri != null)
-//                startCropViewActivity(uri);
-
+            // Set the thumbnail on the gallery button, this must be done on the UI thread:
+            updateThumbnail(new File(uri));
 
         }
 

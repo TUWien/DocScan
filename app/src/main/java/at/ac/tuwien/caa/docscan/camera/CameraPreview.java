@@ -134,8 +134,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
-    private static final int MIN_RESOLUTION_AREA = 1000000;
-
     private boolean isCameraInitialized;
     private DkPolyRect mIlluminationRect;
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.

@@ -1,7 +1,9 @@
 package at.ac.tuwien.caa.docscan.camera.cv;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
+import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -131,7 +133,7 @@ public class ChangeDetector {
 
         double changeRatio = getChangeRatio(frame, mNewFrameDetector, 0);
 
-        if (changeRatio > .1)
+        if (changeRatio > .05)
             return true;
         else
             return false;
@@ -143,7 +145,9 @@ public class ChangeDetector {
         Mat tmp = new Mat(frame.rows(), frame.cols(), CvType.CV_8UC1);
         Imgproc.cvtColor(frame, tmp, Imgproc.COLOR_RGB2GRAY);
 
-        // TODO: find out why here an exception is thrown (happened after switching to other camera app and back again)
+        Bitmap bm = Bitmap.createBitmap(frame.cols(), frame.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(frame, bm);
+
         Log.d(TAG, "frame rows: " + frame.rows() + " frame cols: " + frame.cols());
         Log.d(TAG, "mFrameWidth: " + mFrameWidth + " mFrameHeight " + mFrameHeight);
         Imgproc.resize(tmp, tmp, new Size(mFrameWidth, mFrameHeight));
