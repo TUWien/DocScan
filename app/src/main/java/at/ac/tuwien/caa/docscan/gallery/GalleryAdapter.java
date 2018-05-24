@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.signature.MediaStoreSignature;
 import com.fivehundredpx.greedolayout.GreedoLayoutSizeCalculator;
 import com.fivehundredpx.greedolayout.Size;
@@ -132,11 +133,16 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
             GlideApp.with(mContext)
                     .load(page.getFile().getPath())
                     .signature(new MediaStoreSignature("", 0, exifOrientation))
+//                    TODO: enable disk caching!
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .skipMemoryCache(true)
+                    .transform(new CropRectTransform(page.getFile().getAbsolutePath()))
                     .into(imageView);
         }
         else {
             GlideApp.with(mContext)
                     .load(page.getFile().getPath())
+                    .transform(new CropRectTransform(page.getFile().getAbsolutePath()))
                     .into(imageView);
         }
 

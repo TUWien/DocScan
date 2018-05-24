@@ -34,17 +34,14 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.media.ExifInterface;
 import android.media.MediaScannerConnection;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -79,7 +76,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.signature.MediaStoreSignature;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -112,6 +108,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.camera.threads.CropManager;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
@@ -121,7 +118,6 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
-import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity;
 import at.ac.tuwien.caa.docscan.ui.document.SeriesGeneralActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
@@ -130,7 +126,6 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
-import static at.ac.tuwien.caa.docscan.logic.Helper.getAngleFromExif;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getImageArray;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
@@ -2325,6 +2320,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         File[] imgList = Helper.getImageArray(mediaStorageDir);
         if (imgList == null)
             return;
+
         else if (imgList.length == 0)
             return;
 
@@ -2502,14 +2498,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             // Set the thumbnail on the gallery button, this must be done on the UI thread:
             updateThumbnail(new File(uri));
 
+            CropManager.saveCropResult(new File(uri));
+//            startCropViewActivity(uri);
+
         }
 
         private void startCropViewActivity(String uri) {
+
 //            Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
             Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
-            startActivity(intent);
             CropInfo r = new CropInfo(uri);
             intent.putExtra(CROP_INFO_NAME, r);
+            startActivity(intent);
 
         }
 

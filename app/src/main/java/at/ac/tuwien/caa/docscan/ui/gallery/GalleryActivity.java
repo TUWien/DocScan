@@ -62,8 +62,8 @@ public class GalleryActivity extends AppCompatActivity implements
 
         //        dummy document - start
         mFileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
-//        if (mFileName == null)
-//            mFileName = "/storage/emulated/0/Pictures/DocScan/Untitled document";
+        if (mFileName == null)
+            mFileName = "/storage/emulated/0/Pictures/DocScan/crop";
 
         mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
 
