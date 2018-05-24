@@ -485,7 +485,6 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
         }
 
-
     }
 
 
