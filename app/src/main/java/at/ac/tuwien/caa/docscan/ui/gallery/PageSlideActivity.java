@@ -45,12 +45,12 @@ import java.io.File;
 import java.io.IOException;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
-import at.ac.tuwien.caa.docscan.gallery.TouchImageView;
+import at.ac.tuwien.caa.docscan.gallery.PageImageView;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
-public class PageSlideActivity extends AppCompatActivity implements TouchImageView.SingleClickListener {
+public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
 
     private ViewPager mPager;
     private PageSlideAdapter mPagerAdapter;
@@ -316,7 +316,7 @@ public class PageSlideActivity extends AppCompatActivity implements TouchImageVi
                     shareIntent.setDataAndType(uri, getContentResolver().getType(uri));
                     shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
                     shareIntent.setType("image/jpg");
-                    startActivity(Intent.createChooser(shareIntent, "Choose an app"));
+                    startActivity(Intent.createChooser(shareIntent, mContext.getResources().getString(R.string.page_slide_fragment_share_choose_app_text)));
 
                 }
             }
