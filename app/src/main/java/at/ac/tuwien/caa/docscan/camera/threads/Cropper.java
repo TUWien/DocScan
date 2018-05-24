@@ -51,6 +51,21 @@ public class Cropper {
 
     }
 
+    public static void rotate90Degrees(String fileName) {
+
+        ArrayList<PointF> points = getNormedCropPoints(fileName);
+        for (PointF point : points) {
+            rotateNormedPoint(point, 90);
+        }
+
+        try {
+            savePointsToExif(fileName, points);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     static ArrayList<PointF> normPoints(DkPolyRect rect, int width, int height) {
 
         ArrayList<PointF> normedPoints = new ArrayList<>();

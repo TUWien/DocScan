@@ -274,6 +274,7 @@
     <string name="page_slide_fragment_confirm_delete_text">Delete image?</string>
     <string name="page_slide_fragment_confirm_delete_confirm_title">Delete</string>
     <string name="page_slide_fragment_confirm_delete_cancel_text">Cancel</string>
+    <string name="page_slide_fragment_share_choose_app_text">Choose an app</string>
 
     <!-- GalleryActivity -->
     <string name="gallery_menu_delete_item_title">Delete item</string>

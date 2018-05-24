@@ -18,46 +18,28 @@ package at.ac.tuwien.caa.docscan.gallery;
  */
 
 
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.res.Configuration;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.ContentFrameLayout;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
-import org.opencv.android.OpenCVLoader;
-
-import java.io.IOException;
+import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.crop.CropInfo;
-import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
 import at.ac.tuwien.caa.docscan.logic.Page;
-import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
-import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
-import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
-
-import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
 
 public class ImageViewerFragment extends Fragment {
 
     private Page mPage;
 //    private SubsamplingScaleImageView mImageView;
-    private TouchImageView mImageView;
+    private PageImageView mImageView;
     private String mFileName;
 
     public static ImageViewerFragment create() {
@@ -103,6 +85,15 @@ public class ImageViewerFragment extends Fragment {
             mImageView = rootView.findViewById(R.id.image_viewer_image_view);
             mImageView.setImage(ImageSource.uri(mFileName));
             mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
+
+//            Get the image dimensions without loading it:
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(mFileName, options);
+            int imageHeight = options.outHeight;
+            int imageWidth = options.outWidth;
+
+            mImageView.setPoints(Cropper.getScaledCropPoints(mFileName, imageHeight, imageWidth));
 
         }
 //      PhotoView by Chris Bane:
