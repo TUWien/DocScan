@@ -96,7 +96,6 @@ public class PageImageView extends SubsamplingScaleImageView {
     private void drawQuad(Canvas canvas, ArrayList<PointF> points) {
 
 //        TODO: optimize the drawing speed! consider this link: https://developer.android.com/topic/performance/vitals/render#common-jank
-
         mQuadPath.reset();
         boolean isStartSet = false;
 

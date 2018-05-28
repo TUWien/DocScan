@@ -293,6 +293,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                 if (Helper.rotateExif(mPage.getFile().getAbsoluteFile())) {
                     mPagerAdapter.getCurrentFragment().refreshImageView();
 //                              Tell the gallery viewer that the file has rotated:
+
                     GalleryActivity.fileRotated();
                 }
             } catch (IOException e) {

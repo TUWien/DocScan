@@ -36,6 +36,7 @@ import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.crop.CropView;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
@@ -125,12 +126,8 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
     public void rotateCropView(MenuItem item) {
 
-        try {
-            rotateExif(new File(mFileName));
-        }
-        catch(IOException e) {
+        rotateExif(new File(mFileName));
 
-        }
 
     }
 
@@ -240,39 +237,50 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
     }
 
-    private void rotateExif(File outFile) throws IOException {
+    private void rotateExif(File file) {
 
-        final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
-        if (exif != null) {
-
-            // Save the orientation of the image:
-//            int orientation = getExifOrientation();
-            String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
-            String newOrientation = null;
-            switch (orientation) {
-                case "1":
-                    newOrientation = "6"; // 90 degrees
-                    break;
-                case "6":
-                    newOrientation = "3"; // 180 degrees
-                    break;
-                case "3":
-                    newOrientation = "8"; // 270 degrees
-                    break;
-                case "8":
-                    newOrientation = "1"; // 0 degrees
-                    break;
-                default:
-            }
-
-            if (newOrientation != null)
-                exif.setAttribute(ExifInterface.TAG_ORIENTATION, newOrientation);
-
-            exif.saveAttributes();
-
-            rotateCropView();
-
+        try {
+            if (Helper.rotateExif(file))
+                rotateCropView();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
     }
+
+//    private void rotateExif(File outFile) throws IOException {
+//
+//        final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+//        if (exif != null) {
+//
+//            // Save the orientation of the image:
+////            int orientation = getExifOrientation();
+//            String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+//            String newOrientation = null;
+//            switch (orientation) {
+//                case "1":
+//                    newOrientation = "6"; // 90 degrees
+//                    break;
+//                case "6":
+//                    newOrientation = "3"; // 180 degrees
+//                    break;
+//                case "3":
+//                    newOrientation = "8"; // 270 degrees
+//                    break;
+//                case "8":
+//                    newOrientation = "1"; // 0 degrees
+//                    break;
+//                default:
+//            }
+//
+//            if (newOrientation != null)
+//                exif.setAttribute(ExifInterface.TAG_ORIENTATION, newOrientation);
+//
+//            exif.saveAttributes();
+//
+//            rotateCropView();
+//
+//        }
+//    }
 
 }
