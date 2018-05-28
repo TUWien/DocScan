@@ -12,6 +12,8 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import java.util.ArrayList;
 
+import at.ac.tuwien.caa.docscan.R;
+
 /**
  * Created by fabian on 4/4/2018.
  */
@@ -21,13 +23,28 @@ public class PageImageView extends SubsamplingScaleImageView {
     private SingleClickListener mClickCallBack;
     private ArrayList<PointF> mPoints;
 
-    private static final String CLASS_NAME = "TouchImageView";
+    private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
+    private static final String CLASS_NAME = "PageImageView";
+    private Paint mQuadPaint;
+    private Path mQuadPath;
 
     public PageImageView(Context context, AttributeSet attr) {
         super(context, attr);
 
         mClickCallBack = (SingleClickListener) context;
+        initPaint();
 
+    }
+
+    private void initPaint() {
+        mQuadPaint = new Paint();
+        mQuadPath = new Path();
+
+        mQuadPaint.setStyle(Paint.Style.STROKE);
+        mQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_stroke_width));
+        mQuadPaint.setColor(PAGE_RECT_COLOR);
+//        mQuadPaint.setStrokeWidth(4);
+        mQuadPaint.setAntiAlias(true);
     }
 
     public void setPoints(ArrayList<PointF> points) {
@@ -78,15 +95,7 @@ public class PageImageView extends SubsamplingScaleImageView {
 
     private void drawQuad(Canvas canvas, ArrayList<PointF> points) {
 
-//        canvas.drawCircle(marker1.x, marker1.y, 50, mQuadPaint);
-
-        Path mQuadPath = new Path();
-        Paint mQuadPaint;
-        mQuadPaint = new Paint();
-//        mQuadPaint.setColor(PAGE_RECT_COLOR);
-        mQuadPaint.setStyle(Paint.Style.STROKE);
-        mQuadPaint.setStrokeWidth(4);
-        mQuadPaint.setAntiAlias(true);
+//        TODO: optimize the drawing speed! consider this link: https://developer.android.com/topic/performance/vitals/render#common-jank
 
         mQuadPath.reset();
         boolean isStartSet = false;
@@ -101,9 +110,6 @@ public class PageImageView extends SubsamplingScaleImageView {
                 isStartSet = true;
             } else
                 mQuadPath.lineTo(transPoint.x, transPoint.y);
-
-            // draw the circle around the corner:
-//            canvas.drawCircle(point.x, point.y, CORNER_CIRCLE_RADIUS, mCirclePaint);
 
         }
 

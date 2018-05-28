@@ -101,6 +101,11 @@
 
     <string name="debug_view_item_show">Show debug view</string>
 
+    <string name="crop_view_item_rotate">Rotate 90 degrees</string>
+    <string name="crop_view_item_apply">Apply changes</string>
+
+    <string name="map_view_item_save">Save image</string>
+
     <!-- Preferences -->
     <string name="pref_precise_page_detection">Use precise page detection</string>
     <string name="pref_precise_page_detection_summary">Use precise page detection</string>

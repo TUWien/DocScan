@@ -44,11 +44,13 @@ import android.widget.LinearLayout;
 import java.io.File;
 import java.io.IOException;
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
 import at.ac.tuwien.caa.docscan.gallery.PageImageView;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
+import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 
 public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
 
@@ -259,7 +261,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //       mButtonsLayout.setPadding(0, 0, 0, getNavigationBarHeight());
 
 
-//        initCropButton();
+        initCropButton();
         initDeleteButton();
         initRotateButton();
         initShareButton();
@@ -348,22 +350,22 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         }
     }
 //
-//    private void initCropButton() {
-//
-//        ImageView cropImageView = findViewById(R.id.page_view_buttons_layout_crop_button);
-//        cropImageView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (mPage != null) {
-//                    Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
-//                    CropInfo cropInfo = new CropInfo(mPage.getFile().getPath());
-//                    intent.putExtra(CROP_INFO_NAME, cropInfo);
-//                    startActivity(intent);
-//                }
-//            }
-//        });
-//
-//    }
+    private void initCropButton() {
+
+        ImageView cropImageView = findViewById(R.id.page_view_buttons_layout_crop_button);
+        cropImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mPage != null) {
+                    Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+                    intent.putExtra(getString(R.string.key_crop_view_activity_file_name),
+                            mPage.getFile().getAbsolutePath());
+                    startActivity(intent);
+                }
+            }
+        });
+
+    }
 
     private void initDeleteButton() {
 

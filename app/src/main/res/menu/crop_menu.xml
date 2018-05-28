@@ -3,13 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/document_item"
-        android:icon="@drawable/ic_rotate_right_white_24dp"
-        android:title="@string/flash_mode"
+        android:icon="@drawable/ic_rotate_right_black_24dp"
+        android:title="@string/crop_view_item_rotate"
         android:visible="true"
         app:showAsAction="always"
         android:onClick="rotateCropView"
         />
 
+    <item
+        android:icon="@drawable/ic_done_black_24dp"
+        android:title="@string/crop_view_item_rotate"
+        android:visible="true"
+        app:showAsAction="always"
+        android:onClick="applyChanges"
+        />
 
 </menu>

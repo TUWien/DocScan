@@ -35,12 +35,12 @@
                 />
 
 
-            <ImageButton
-                android:id="@+id/confirm_map_crop_view_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorAccent"
-                app:srcCompat="@drawable/ic_done_black_24dp"/>
+            <!--<ImageButton-->
+                <!--android:id="@+id/confirm_map_crop_view_button"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:backgroundTint="@color/colorAccent"-->
+                <!--app:srcCompat="@drawable/ic_done_black_24dp"/>-->
 
             <!--<at.ac.tuwien.caa.docscan.crop.CropView-->
             <!--android:layout_width="match_parent"-->

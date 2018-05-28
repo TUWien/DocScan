@@ -1,14 +1,14 @@
 package at.ac.tuwien.caa.docscan.ui;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.view.View;
-import android.widget.ImageButton;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.ImageView;
 
 import org.opencv.android.Utils;
@@ -25,9 +25,8 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
+import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
-
-import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
 /**
  * Created by fabian on 24.11.2017.
@@ -53,22 +52,65 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
         super.initToolbarTitle(R.string.map_crop_view_title);
 
         mImageView = findViewById(R.id.map_crop_view);
-        CropInfo cropInfo = getIntent().getParcelableExtra(CROP_INFO_NAME);
-        if (cropInfo.getPoints() == null)
-            initCropInfo(cropInfo);
-        else
-            useCropInfo(cropInfo);
 
-        ImageButton okButton = findViewById(R.id.confirm_map_crop_view_button);
-        okButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
-//                CropInfo r = new CropInfo(cropPoints, mFileName);
-                intent.putExtra(CROP_INFO_NAME, mCropInfo);
-                startActivity(intent);
+        Bundle b = getIntent().getExtras();
+        if (b != null) {
+            mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
+
+            if (mFileName != null) {
+                ArrayList<PointF> points = Cropper.getNormedCropPoints(mFileName);
+                mapImage(points);
+//                mCropView.setPoints(points);
             }
-        });
+        }
+
+
+
+//        CropInfo cropInfo = getIntent().getParcelableExtra(CROP_INFO_NAME);
+//        if (cropInfo.getPoints() == null)
+//            initCropInfo(cropInfo);
+//        else
+//            useCropInfo(cropInfo);
+
+//        ImageButton okButton = findViewById(R.id.confirm_map_crop_view_button);
+//        okButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+////                CropInfo r = new CropInfo(cropPoints, mFileName);
+//                intent.putExtra(CROP_INFO_NAME, mCropInfo);
+//                startActivity(intent);
+//            }
+//        });
+    }
+
+    private void mapImage(ArrayList<PointF> points) {
+
+        Mat transformedMat = cropAndTransform(mFileName, points);
+        if (transformedMat == null)
+            showNoTransformationAlert();
+
+        else {
+            Bitmap resultBitmap = matToBitmap(transformedMat);
+            mImageView.setImageBitmap(resultBitmap);
+        }
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.map_menu, menu);
+
+        return true;
+
+    }
+
+    public void saveImage(MenuItem item) {
+
+//        startMapView();
+
     }
 
     private void useCropInfo(CropInfo cropInfo) {
