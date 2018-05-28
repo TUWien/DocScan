@@ -129,6 +129,11 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        float strokeWidth = mContext.getResources().getDimension(R.dimen.page_stroke_width);
+        int strokeColor = mContext.getResources().getColor(R.color.hud_page_rect_color);
+        String filePath = page.getFile().getAbsolutePath();
+
         if (exifOrientation != -1) {
             GlideApp.with(mContext)
                     .load(page.getFile().getPath())
@@ -136,13 +141,13 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 //                    TODO: enable disk caching!
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .skipMemoryCache(true)
-                    .transform(new CropRectTransform(page.getFile().getAbsolutePath()))
+                    .transform(new CropRectTransform(filePath, strokeColor, strokeWidth))
                     .into(imageView);
         }
         else {
             GlideApp.with(mContext)
                     .load(page.getFile().getPath())
-                    .transform(new CropRectTransform(page.getFile().getAbsolutePath()))
+                    .transform(new CropRectTransform(filePath, strokeColor, strokeWidth))
                     .into(imageView);
         }
 

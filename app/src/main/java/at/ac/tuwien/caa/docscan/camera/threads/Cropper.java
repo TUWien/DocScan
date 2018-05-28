@@ -116,7 +116,7 @@ public class Cropper {
 
     }
 
-    static void savePointsToExif(String fileName, ArrayList<PointF> points) throws IOException {
+    public static void savePointsToExif(String fileName, ArrayList<PointF> points) throws IOException {
 
         ExifInterface exif = new ExifInterface(fileName);
         if (exif != null) {
