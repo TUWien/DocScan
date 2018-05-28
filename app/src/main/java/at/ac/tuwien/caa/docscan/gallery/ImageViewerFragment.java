@@ -21,6 +21,7 @@ package at.ac.tuwien.caa.docscan.gallery;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,9 +30,11 @@ import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import java.io.File;
+import java.io.IOException;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
 
@@ -39,6 +42,7 @@ public class ImageViewerFragment extends Fragment {
 
     private Page mPage;
 //    private SubsamplingScaleImageView mImageView;
+    private static final String CLASS_NAME = "ImageViewerFragment";
     private PageImageView mImageView;
     private String mFileName;
 
@@ -72,7 +76,10 @@ public class ImageViewerFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater
                 .inflate(R.layout.fragment_image_viewer, container, false);
 
-        initImageView(rootView);
+        mImageView = rootView.findViewById(R.id.image_viewer_image_view);
+        mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
+
+        refreshImageView();
 
         return rootView;
 
@@ -82,9 +89,9 @@ public class ImageViewerFragment extends Fragment {
 
         if (mFileName != null) {
 
-            mImageView = rootView.findViewById(R.id.image_viewer_image_view);
+
             mImageView.setImage(ImageSource.uri(mFileName));
-            mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
+
 
 //            Get the image dimensions without loading it:
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -107,6 +114,34 @@ public class ImageViewerFragment extends Fragment {
     public void refreshImageView() {
 
         mImageView.setImage(ImageSource.uri(mFileName));
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(mFileName, options);
+
+        int imageHeight = options.outHeight;
+        int imageWidth = options.outWidth;
+
+        try {
+            int orientation = Helper.getExifOrientation(new File(mFileName));
+            if (orientation != -1) {
+                int angle = Helper.getAngleFromExif(orientation);
+                Log.d(CLASS_NAME, "refreshImageView: angle: " + angle);
+                if (angle == 0 || angle == 180)  {
+                    imageHeight = options.outWidth;
+                    imageWidth = options.outHeight;
+                }
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
+        Log.d(CLASS_NAME, "refreshImageView: w: " + imageWidth + " h: " + imageHeight);
+
+        mImageView.setPoints(Cropper.getScaledCropPoints(mFileName, imageHeight, imageWidth));
 
     }
 
