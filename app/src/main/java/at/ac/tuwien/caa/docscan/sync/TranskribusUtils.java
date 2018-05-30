@@ -38,6 +38,8 @@ public class TranskribusUtils  {
 
 //    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
     public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "upload_continue_test_2";
+//    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "qr_code_test";
+    private static final String CLASS_NAME = "TranskribusUtils";
 
     // Singleton:
     private static TranskribusUtils mInstance;
@@ -68,22 +70,31 @@ public class TranskribusUtils  {
     public void startUpload(Context context) {
 
         mContext = context;
+        mCallback = (TranskribusUtilsCallback) context;
+
+        SyncInfo.getInstance().clearSyncList();
 
         if (SyncInfo.getInstance().getUploadDirs() != null && !SyncInfo.getInstance().getUploadDirs().isEmpty()) {
             mAreDocumentsPrepared = false;
             //        Start the upload of user selected dirs:
-            TranskribusUtils.getInstance().uploadDocuments(mContext, SyncInfo.getInstance().getUploadDirs());
+            TranskribusUtils.getInstance().uploadDocuments(SyncInfo.getInstance().getUploadDirs());
         }
         else
             mAreDocumentsPrepared = true;
 
         if (SyncInfo.getInstance().getUnfinishedUploadIDs() != null &&
                 !SyncInfo.getInstance().getUnfinishedUploadIDs().isEmpty()) {
+
+            Log.d(CLASS_NAME, "startUpload: we have some unfinished work here");
+            SyncInfo.getInstance().printUnfinishedUploadIDs();
             mAreUnfinishedFilesPrepared = false;
             startFindingUnfinishedUploads(SyncInfo.getInstance().getUnfinishedUploadIDs());
         }
-        else
+        else {
+            SyncInfo.getInstance().printUnfinishedUploadIDs();
+            Log.d(CLASS_NAME, "startUpload: no unfinished work here");
             mAreUnfinishedFilesPrepared = true;
+        }
 
 
     }
@@ -92,13 +103,9 @@ public class TranskribusUtils  {
      * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
      * upload folder.
      */
-    public void uploadDocuments(Context context, ArrayList<File> selectedDirs) {
+    public void uploadDocuments(ArrayList<File> selectedDirs) {
 
-
-        mContext = context;
         mSelectedDirs = selectedDirs;
-        mCallback = (TranskribusUtilsCallback) context;
-
         mIsCollectionCreated = false;
 
         if (isCollectionIDSaved())
@@ -116,11 +123,70 @@ public class TranskribusUtils  {
      */
     public void startFindingUnfinishedUploads(ArrayList<Integer> unfinishedIDs) {
 
+        Log.d(CLASS_NAME, "startFindingUnfinishedUploads1");
+
         mAreUnfinishedFilesPrepared = false;
-        mUnfinishedUploadIDsProcessed = new ArrayList<>();
+
+//        We need here a deep copy, because we want to manipulate the member but not the
+//        corresponding SyncInfo member:
+        mUnfinishedUploadIDsProcessed = new ArrayList<>(unfinishedIDs);
 
         for (Integer id : unfinishedIDs)
             new UploadStatusRequest(mContext, id);
+
+        Log.d(CLASS_NAME, "startFindingUnfinishedUploads2");
+
+    }
+
+    public void onUnfinishedUploadStatusReceived(Context context, int uploadID, ArrayList<String> unfinishedFileNames) {
+
+
+        Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived1: unfinished upload ids size" +
+                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+
+//        Add the files to the sync list:
+
+        for (String fileName : unfinishedFileNames) {
+
+//      We have to find here the file for the corresponding fileName. Unfortunately, we have to rely
+//        here on the timestamp in the fileName to find correspondences...
+            File file = Helper.getFile(context.getResources().getString(R.string.app_name), fileName);
+
+            if (file != null) {
+//                SyncInfo.getInstance().addToUnfinishedSyncList(file, uploadID);
+                Log.d(getClass().getName(), "onUnfinishedUploadStatusReceived: added unfinished file - id: " + uploadID + " file: " + file);
+                SyncInfo.getInstance().addTranskribusFile(context, file, uploadID);
+            }
+            else {
+                Log.d(getClass().getName(), "onUnfinishedUploadStatusReceived: file not existing: " + fileName);
+                //            TODO: error handling here!
+            }
+        }
+
+
+//        mUnfinishedUploadIDsProcessed.add(uploadID);
+
+        Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived2: unfinished upload ids size" +
+                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+
+        int idx = mUnfinishedUploadIDsProcessed.indexOf(new Integer(uploadID));
+        if (idx != -1)
+            mUnfinishedUploadIDsProcessed.remove(idx);
+
+        if (mUnfinishedUploadIDsProcessed.isEmpty()) {
+            mAreUnfinishedFilesPrepared = true;
+            checkFilesPrepared();
+        }
+
+        Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived3: unfinished upload ids size" +
+                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+
+        SyncInfo.saveToDisk(mContext);
+
+//        if (areUnfinishedFilesProcessed()) {
+//            mAreUnfinishedFilesPrepared = true;
+//            checkFilesPrepared();
+//        }
 
     }
 
@@ -228,8 +294,13 @@ public class TranskribusUtils  {
 
     public void saveUnfinishedUploadIDs(){
 
-        SyncInfo.getInstance().saveUnprocessedUploadIDs();
+        Log.d(CLASS_NAME, "saveUnfinishedUploadIDs: saving unprocessed ids...");
 
+//        SyncInfo.getInstance().saveUnprocessedUploadIDs();
+
+        Log.d(CLASS_NAME, "saveUnfinishedUploadIDs: unfinished saved:");
+
+        SyncInfo.getInstance().printUnfinishedUploadIDs();
 
     }
 
@@ -239,7 +310,9 @@ public class TranskribusUtils  {
      * uploadId (this is done by comparing the title).
      * @param uploadId
      */
-    public void onUploadIDReceived(int uploadId, String title) {
+    public void onNewUploadIDReceived(int uploadId, String title) {
+
+        Log.d(CLASS_NAME, "onNewUploadIDReceived: id: " + uploadId + " title: " + title);
 
         SyncInfo.getInstance().getUnprocessedUploadIDs().add(new Integer(uploadId));
 
@@ -263,6 +336,9 @@ public class TranskribusUtils  {
                 iter.remove();
         }
 
+        SyncInfo.getInstance().getUnfinishedUploadIDs().add(uploadId);
+        Log.d(CLASS_NAME, "added ID to SyncInfo.unfinishedUploadIDs: " + uploadId);
+
 //        // For each directory the upload request is finished and all files are added to the sync list:
 //        if (mNumUploadJobs == mSelectedDirs.size())
 //            mCallback.onSelectedFilesPrepared();
@@ -276,64 +352,21 @@ public class TranskribusUtils  {
 
     }
 
-    public void onUploadStatusReceived(Context context, int uploadID, ArrayList<String> unfinishedFileNames) {
 
-        Log.d(getClass().getName(), "onUploadStatusReceived");
-
-        for (String fileName : unfinishedFileNames) {
-
-//      We have to find here the file for the corresponding fileName. Unfortunately, we have to rely
-//        here on the timestamp in the fileName to find correspondences...
-            File file = Helper.getFile(context.getResources().getString(R.string.app_name), fileName);
-
-            if (file != null) {
-//                SyncInfo.getInstance().addToUnfinishedSyncList(file, uploadID);
-                Log.d(getClass().getName(), "onUploadStatusReceived: added unfinished file - id: " + uploadID + " file: " + file);
-                SyncInfo.getInstance().addTranskribusFile(context, file, uploadID);
-            }
-            else {
-                Log.d(getClass().getName(), "onUploadStatusReceived: file not existing: " + fileName);
-                //            TODO: error handling here!
-            }
-        }
-
-        mUnfinishedUploadIDsProcessed.add(uploadID);
-
-        if (areUnfinishedFilesProcessed()) {
-            mAreUnfinishedFilesPrepared = true;
-            checkFilesPrepared();
-        }
-
-    }
 
     /**
      * Checks if the unfinished files and the user selected documents are ready for upload.
      */
     private void checkFilesPrepared() {
 
+        Log.d(CLASS_NAME, "checkFilesPrepared: mAreDocumentsPrepared: " + mAreDocumentsPrepared
+                + " mAreUnfinishedFilesPrepared: " + mAreUnfinishedFilesPrepared);
+
         if (mAreDocumentsPrepared && mAreUnfinishedFilesPrepared)
             mCallback.onFilesPrepared();
-    }
-
-
-    private boolean areUnfinishedFilesProcessed() {
-
-        //        The unfinished files are now ready for upload:
-        if (mUnfinishedUploadIDsProcessed.size() ==
-                SyncInfo.getInstance().getUnfinishedUploadIDs().size()) {
-
-            for (int i : SyncInfo.getInstance().getUnfinishedUploadIDs()) {
-                if (!mUnfinishedUploadIDsProcessed.contains(i))
-                    return false;
-
-            }
-
-            return true;
-        }
-
-        return false;
 
     }
+
 
     /**
      * Find the directory assigned to its title:
@@ -372,16 +405,21 @@ public class TranskribusUtils  {
                     public void onCompleted(Exception e, String result) {
 
                         if (e == null) {
-                            Log.d(getClass().getName(), "uploaded file: " + fileSync.toString());
+//                            Log.d(getClass().getName(), "uploaded file: " + fileSync.toString());
                             callback.onUploadComplete(fileSync);
+                            Log.d(CLASS_NAME, "uploaded file to collectionID: " +
+                                    fileSync.getUploadId() + " file: " + fileSync.toString());
                             DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "uploaded file: " + fileSync.toString());
 
                             if (result.contains("<finished>")) {
 //                                TODO: remove the document from the unfinished documents list.
 
-                                removeFromUnprocessedList(fileSync.getUploadId());
+//                                removeFromUnprocessedList(fileSync.getUploadId());
+//                                removeFromUnfinishedListAndCheckJob(fileSync.getUploadId());
+                                removeFromUnfinishedList(fileSync.getUploadId());
+
                                 Log.d(getClass().getName(), "finished upload with ID: " + fileSync.getUploadId());
-                                Log.d(getClass().getName(), "response: " + result);
+//                                Log.d(getClass().getName(), "response: " + result);
                                 DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "finished upload with ID: " + fileSync.getUploadId());
                             }
 
@@ -396,18 +434,53 @@ public class TranskribusUtils  {
                 });
     }
 
-    public void removeFromUnfinishedList(int uploadID) {
+    public void onError() {
+
+        Log.d(CLASS_NAME, "unfinished size: " + SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+        SyncInfo.saveToDisk(mContext);
+
+    }
+
+    public void removeFromUnfinishedListAndCheckJob(int uploadID) {
+
+        removeFromUnfinishedList(uploadID);
+
+        if (mUnfinishedUploadIDsProcessed.isEmpty()) {
+            mAreUnfinishedFilesPrepared = true;
+            checkFilesPrepared();
+        }
+
+    }
+
+    private void removeFromUnfinishedList(int uploadID) {
+
+        Log.d(CLASS_NAME, "removeFromUnfinishedList: uploadID: " + uploadID);
+        Log.d(CLASS_NAME, "removeFromUnfinishedList: list size: " +
+                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
 
         SyncInfo.getInstance().getUnfinishedUploadIDs().remove(new Integer(uploadID));
 
+        if (mUnfinishedUploadIDsProcessed == null)
+            return;
+
+        int idx = mUnfinishedUploadIDsProcessed.indexOf(new Integer(uploadID));
+        if (idx != -1)
+            mUnfinishedUploadIDsProcessed.remove(idx);
+
+        Log.d(CLASS_NAME, "removeFromUnfinishedList: list size: " +
+                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+
+        SyncInfo.saveToDisk(mContext);
+
+
     }
 
 
-    public void removeFromUnprocessedList(int uploadID) {
-
-        SyncInfo.getInstance().getUnprocessedUploadIDs().remove(new Integer(uploadID));
-
-    }
+//    public void removeFromUnprocessedList(int uploadID) {
+//
+//        SyncInfo.getInstance().getUnprocessedUploadIDs().remove(new Integer(uploadID));
+//
+//    }
 
 
 //    public void setUploadId(int uploadId) {
@@ -423,9 +496,18 @@ public class TranskribusUtils  {
     public static JSONObject getJSONObject(String dirName, File[] imgFiles) {
 
 //        File[] imgFiles = getFiles(dir);
+
         String metaData =   "\"md\": {" +
-                            "\"title\": " + "\"" + dirName + "\"" +
-                            "},";
+                "\"title\": " + "\"" + dirName + "\"" +
+                "},";
+
+// example for the QR code values:
+//        String metaData =   "\"md\": {" +
+//                            "\"title\": " + "\"" + dirName + "\"," +
+//                            "\"externalId\": "+ "\"" + "test_signature" + "\"," +
+//                            "\"authority\": "+ "\"" + "test_authority" + "\"," +
+//                            "\"hierarchy\": "+ "\"" + "test_hierarchy" + "\"" +
+//                            "},";
 
         String jsonStart =  "{" +
                 metaData +
