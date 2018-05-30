@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.rest;
 
 
 import android.content.Context;
+import android.util.Log;
 
 import com.android.volley.Request;
 
@@ -10,8 +11,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-
-import at.ac.tuwien.caa.docscan.sync.TranskribusUtils;
 
 /**
  * Created by fabian on 29.06.2017.
@@ -22,10 +21,14 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
     //    JSON method for retrieving documents: https://transkribus.eu/TrpServer/rest/collections/{collection-ID}/{document-ID}/fulldoc
     private final static String URL = "uploads/";
     private int mUploadID;
+    private static final String CLASS_NAME = "UploadStatusRequest";
 
     public UploadStatusRequest(Context context, int uploadID) {
 
         super(context);
+
+        Log.d(CLASS_NAME, "constructor: uploadID: " + uploadID);
+
         mMethod = Request.Method.GET;
         mUploadID = uploadID;
 
@@ -47,7 +50,8 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
 
 //            Check if we are not processing an already finished upload:
             if (j1.has("finished")) {
-                ((UploadStatusCallback) mRestCallback).onUploadFinished(mUploadID);
+                Log.d(CLASS_NAME, "handleResponse: finished");
+                ((UploadStatusCallback) mRestCallback).onUploadAlreadyFinished(mUploadID);
                 return;
             }
             JSONObject j2 = j1.getJSONObject("pageList");
@@ -74,7 +78,7 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
     public interface UploadStatusCallback extends RestCallback{
 
         void onStatusReceived(int uploadID, ArrayList<String> unfinishedFileNames);
-        void onUploadFinished(int uploadID);
+        void onUploadAlreadyFinished(int uploadID);
 
     }
 }

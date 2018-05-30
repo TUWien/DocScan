@@ -34,9 +34,11 @@ public class SyncInfo implements Serializable {
 
 
     private static final String SYNC_FILE_NAME = "syncinfo.txt";
+    private static final String CLASS_NAME = "SyncInfo";
 
     private static SyncInfo mInstance = null;
     private ArrayList<FileSync> mFileSyncList;
+    private ArrayList<FileSync> mUploadedList;
     private ArrayList<FileSync> mUnfinishedSyncList;
     private ArrayList<Integer> mUnprocessedUploadIDs;
     private ArrayList<Integer> mUnfinishedUploadIDs;
@@ -52,6 +54,37 @@ public class SyncInfo implements Serializable {
         }
 
         return mInstance;
+
+    }
+
+    public static void readFromDisk(Context context) {
+
+        File syncPath = context.getFilesDir();
+        File syncFile = new File(syncPath, SYNC_FILE_NAME);
+
+        Log.d(CLASS_NAME, "readFromDisk1");
+
+        try {
+            FileInputStream fis = new FileInputStream (syncFile);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            mInstance = (SyncInfo) ois.readObject();
+
+            Log.d(CLASS_NAME, "readFromDisk2");
+
+            if (mInstance.getUploadedList() == null) {
+                Log.d(CLASS_NAME, "readFromDisk3");
+                mInstance.setUploadedList(new ArrayList<FileSync>());
+            }
+            else
+                Log.d(CLASS_NAME, "readFromDisk4");
+
+
+            Log.d("SyncInfo", "SyncInfo list: " + mInstance.getSyncList().size());
+            ois.close();
+        }
+        catch(Exception e) {
+
+        }
 
     }
 
@@ -112,8 +145,8 @@ public class SyncInfo implements Serializable {
                 // don't persist past a device reboot
                 .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
                 // start between 0 and 60 seconds from now
-                .setTrigger(Trigger.executionWindow(60, 100))
-//                .setTrigger(Trigger.executionWindow(1, 7))
+//                .setTrigger(Trigger.executionWindow(60, 100))
+                .setTrigger(Trigger.executionWindow(1, 7))
 //                .setTrigger(Trigger.NOW)
                 // overwrite an existing job with the same tag - this assures that just one job is running at a time:
                 .setReplaceCurrent(true)
@@ -179,8 +212,8 @@ public class SyncInfo implements Serializable {
                 // don't persist past a device reboot
                 .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
                 // start between 0 and 60 seconds from now
-                .setTrigger(Trigger.executionWindow(5, 15))
-//                .setTrigger(Trigger.executionWindow(1, 7))
+//                .setTrigger(Trigger.executionWindow(5, 15))
+                .setTrigger(Trigger.executionWindow(1, 7))
 //                .setTrigger(Trigger.NOW)
                 // overwrite an existing job with the same tag - this assures that just one job is running at a time:
                 .setReplaceCurrent(true)
@@ -204,28 +237,20 @@ public class SyncInfo implements Serializable {
 
     }
 
-    public static void readFromDisk(Context context) {
 
-        File syncPath = context.getFilesDir();
-        File syncFile = new File(syncPath, SYNC_FILE_NAME);
+    public void clearSyncList() {
 
-        try {
-            FileInputStream fis = new FileInputStream (syncFile);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            mInstance = (SyncInfo) ois.readObject();
-            Log.d("SyncInfo", "SyncInfo list: " + mInstance.getSyncList().size());
-            ois.close();
-        }
-        catch(Exception e) {
-
-        }
+        mFileSyncList = new ArrayList<>();
 
     }
 
     private SyncInfo() {
 
+        Log.d(CLASS_NAME, "constructor");
+
         mFileSyncList = new ArrayList<>();
         mUnfinishedSyncList = new ArrayList<>();
+        mUploadedList = new ArrayList<>();
         mUnfinishedUploadIDs = new ArrayList<>();
         mUnprocessedUploadIDs = new ArrayList<>();
 
@@ -261,13 +286,6 @@ public class SyncInfo implements Serializable {
 
     }
 
-    public void saveUnprocessedUploadIDs() {
-
-        mUnfinishedUploadIDs = new ArrayList<>(mUnprocessedUploadIDs);
-        mUnprocessedUploadIDs.clear();
-
-    }
-
     public ArrayList<Integer> getUnprocessedUploadIDs() {
 
         return mUnprocessedUploadIDs;
@@ -278,6 +296,14 @@ public class SyncInfo implements Serializable {
     public ArrayList<Integer> getUnfinishedUploadIDs() {
 
         return mUnfinishedUploadIDs;
+
+    }
+
+    public void printUnfinishedUploadIDs() {
+
+        for (Integer i : mUnfinishedUploadIDs) {
+            Log.d(CLASS_NAME, "printUnfinishedUploadIDs: unfinished ID:" + i);
+        }
 
     }
 
@@ -305,6 +331,13 @@ public class SyncInfo implements Serializable {
         return mUploadDirs;
     }
 
+    public void addToUploadedList(FileSync fileSync) {
+
+        if (mUploadedList != null)
+            mUploadedList.add(fileSync);
+
+    }
+
     public void addTranskribusFile(Context context, File file, int uploadId) {
 
         if (mFileSyncList != null) {
@@ -322,9 +355,22 @@ public class SyncInfo implements Serializable {
 
 
     public ArrayList<FileSync> getSyncList() {
+
         return mFileSyncList;
+
     }
 
+    private ArrayList<FileSync> getUploadedList() {
+
+        return mUploadedList;
+
+    }
+
+    private void setUploadedList(ArrayList<FileSync> uploadedList) {
+
+        mUploadedList = uploadedList;
+
+    }
 
     public class TranskribusFileSync extends FileSync {
 
@@ -381,14 +427,24 @@ public class SyncInfo implements Serializable {
 
     private boolean isFileUploaded(File file) {
 
-        for (SyncInfo.FileSync fileSync : mFileSyncList) {
-            if ((file.getAbsolutePath().compareTo(fileSync.getFile().getAbsolutePath()) == 0)
-                    && fileSync.getState() == SyncInfo.FileSync.STATE_UPLOADED)
+        for (SyncInfo.FileSync fileSync : mUploadedList) {
+            if (file.getAbsolutePath().compareTo(fileSync.getFile().getAbsolutePath()) == 0)
                 return true;
         }
 
         return false;
     }
+
+//    private boolean isFileUploaded(File file) {
+//
+//        for (SyncInfo.FileSync fileSync : mFileSyncList) {
+//            if ((file.getAbsolutePath().compareTo(fileSync.getFile().getAbsolutePath()) == 0)
+//                    && fileSync.getState() == SyncInfo.FileSync.STATE_UPLOADED)
+//                return true;
+//        }
+//
+//        return false;
+//    }
 
     public class FileSync implements Serializable {
 
@@ -446,7 +502,6 @@ public class SyncInfo implements Serializable {
     public interface Callback {
         void onUploadComplete(SyncInfo.FileSync fileSync);
         void onError(Exception e);
-        void onDocumentUploadComplete(int uploadID);
     }
 
 
