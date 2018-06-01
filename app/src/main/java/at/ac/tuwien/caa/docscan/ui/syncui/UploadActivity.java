@@ -39,9 +39,7 @@ import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
 import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
-import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_ERROR_ID;
-import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
-import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_OFFLINE_ERROR_ID;
+
 
 /**
  * Created by fabian on 4/5/2018.
@@ -56,6 +54,12 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private List<Document> mDocuments;
     private Snackbar mSnackbar;
     private Menu mMenu;
+
+    public static final String UPLOAD_INTEND_KEY = "UPLOAD_INTEND_KEY";
+    public static final String UPLOAD_FINISHED_ID = "UPLOAD_FINISHED_ID";
+    public static final String UPLOAD_OFFLINE_ERROR_ID = "UPLOAD_OFFLINE_ERROR_ID";
+    public static final String UPLOAD_FILE_DELETED_ERROR_ID = "UPLOAD_FILE_DELETED_ERROR_ID";
+    public static final String UPLOAD_ERROR_ID = "UPLOAD_ERROR_ID";
 
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
 
@@ -437,7 +441,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
             if (Helper.isOnline(this))
                 showUploadingSnackbar(documents.size()); // tell the user that the uploaded started
             else
-                showNotOnlineSnackbar();
+                showOfflineSnackbar();
 
             startUpload(uploadDirs);
 
@@ -477,7 +481,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     /**
      * Shows a snackbar indicating that the device is offline.
      */
-    private void showNotOnlineSnackbar() {
+    private void showOfflineSnackbar() {
 
         String snackbarText =
                 getResources().getString(R.string.sync_snackbar_offline_text);
@@ -663,6 +667,27 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     }
 
+    private void showFileDeletedErrorDialog() {
+
+        if (mContext == null)
+            return;
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.sync_file_deleted_title)
+                .setPositiveButton("OK", null)
+                .setMessage(R.string.sync_file_deleted_text);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
+    }
+
 
     /**
      * Shows a snackbar indicating that the upload process starts. We need this because we have
@@ -692,25 +717,42 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 //            update the list view:
             initAdapter();
 
-            boolean error = intent.getBooleanExtra(UPLOAD_ERROR_ID, false);
+            String intentMessage = intent.getStringExtra(UPLOAD_INTEND_KEY);
 
-            if (error) {
-                showUploadErrorDialog();
-                return;
+            switch (intentMessage) {
+                case UPLOAD_ERROR_ID:
+                    showUploadErrorDialog();
+                    break;
+                case UPLOAD_OFFLINE_ERROR_ID:
+                    showOfflineSnackbar();
+                    break;
+                case UPLOAD_FINISHED_ID:
+                    showUploadFinishedSnackbar();
+                    break;
+                case UPLOAD_FILE_DELETED_ERROR_ID:
+                    showFileDeletedErrorDialog();
+                    break;
             }
 
-            boolean offlineError = intent.getBooleanExtra(UPLOAD_OFFLINE_ERROR_ID, false);
-
-            if (offlineError) {
-                showNotOnlineSnackbar();
-                return;
-            }
-
-            boolean finished = intent.getBooleanExtra(UPLOAD_FINISHED_ID, false);
-
-            if (finished) {
-                showUploadFinishedSnackbar();
-            }
+//            boolean error = intent.getBooleanExtra(UPLOAD_ERROR_ID, false);
+//
+//            if (error) {
+//                showUploadErrorDialog();
+//                return;
+//            }
+//
+//            boolean offlineError = intent.getBooleanExtra(UPLOAD_OFFLINE_ERROR_ID, false);
+//
+//            if (offlineError) {
+//                showOfflineSnackbar();
+//                return;
+//            }
+//
+//            boolean finished = intent.getBooleanExtra(UPLOAD_FINISHED_ID, false);
+//
+//            if (finished) {
+//                showUploadFinishedSnackbar();
+//            }
 
         }
     };

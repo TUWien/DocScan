@@ -14,7 +14,6 @@ import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
-import at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
 /**

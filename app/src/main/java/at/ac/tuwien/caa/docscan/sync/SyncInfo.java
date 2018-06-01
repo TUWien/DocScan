@@ -20,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
@@ -347,9 +348,17 @@ public class SyncInfo implements Serializable {
 
     }
 
-    public void addToUnfinishedSyncList(File file, int uploadID) {
+    public void removeDocument(String title) {
 
-        mUnfinishedSyncList.add(new TranskribusFileSync(file, uploadID));
+        Iterator<FileSync> iter = mUploadedList.iterator();
+        while (iter.hasNext()) {
+            File file = iter.next().getFile();
+            String subDir = file.getParentFile().getName();
+            if (subDir.equals(title)) {
+                Log.d(CLASS_NAME, "removeDocument: " + file);
+                iter.remove();
+            }
+        }
 
     }
 
