@@ -1,44 +1,26 @@
 package at.ac.tuwien.caa.docscan.ui;
 
-import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.PointF;
-import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageButton;
 
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.signature.MediaStoreSignature;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
-import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
-import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.crop.CropView;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-
-import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
 /**
  * Created by fabian on 21.11.2017.
@@ -88,17 +70,18 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
         mCropView = findViewById(R.id.crop_view);
 
-        Bundle b = getIntent().getExtras();
-        if (b != null) {
-            mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
-
-            loadBitmap();
-
-            if (mFileName != null) {
-                ArrayList<PointF> points = Cropper.getNormedCropPoints(mFileName);
-                mCropView.setPoints(points);
-            }
-        }
+//            Commented this because cropping will be released later on:
+//        Bundle b = getIntent().getExtras();
+//        if (b != null) {
+//            mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
+//
+//            loadBitmap();
+//
+//            if (mFileName != null) {
+//                ArrayList<PointF> points = Cropper.getNormedCropPoints(mFileName);
+//                mCropView.setPoints(points);
+//            }
+//        }
 
 //        mFileName = getArguments() != null ?
 //                getArguments().getString(getString(R.string.key_fragment_image_viewer_file_name)) : null;
@@ -140,19 +123,20 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
     private void startMapView() {
 
-        ArrayList<PointF> cropPoints = mCropView.getCropPoints();
-
-        try {
-            Cropper.savePointsToExif(mFileName, cropPoints);
-
-            Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
-            intent.putExtra(getString(R.string.key_crop_view_activity_file_name), mFileName);
-
-            startActivity(intent);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//            Commented this because cropping will be released later on:
+//        ArrayList<PointF> cropPoints = mCropView.getCropPoints();
+//
+//        try {
+//            Cropper.savePointsToExif(mFileName, cropPoints);
+//
+//            Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
+//            intent.putExtra(getString(R.string.key_crop_view_activity_file_name), mFileName);
+//
+//            startActivity(intent);
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
