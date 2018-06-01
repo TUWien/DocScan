@@ -353,18 +353,18 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //
     private void initCropButton() {
 
-        ImageView cropImageView = findViewById(R.id.page_view_buttons_layout_crop_button);
-        cropImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mPage != null) {
-                    Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
-                    intent.putExtra(getString(R.string.key_crop_view_activity_file_name),
-                            mPage.getFile().getAbsolutePath());
-                    startActivity(intent);
-                }
-            }
-        });
+//        ImageView cropImageView = findViewById(R.id.page_view_buttons_layout_crop_button);
+//        cropImageView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (mPage != null) {
+//                    Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+//                    intent.putExtra(getString(R.string.key_crop_view_activity_file_name),
+//                            mPage.getFile().getAbsolutePath());
+//                    startActivity(intent);
+//                }
+//            }
+//        });
 
     }
 
