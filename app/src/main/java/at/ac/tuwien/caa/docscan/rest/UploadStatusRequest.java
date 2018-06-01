@@ -66,7 +66,8 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
                     fileNames.add(o.getString("fileName"));
             }
 
-            ((UploadStatusCallback) mRestCallback).onStatusReceived(mUploadID, fileNames);
+            String title = j1.getJSONObject("md").getString("title");
+            ((UploadStatusCallback) mRestCallback).onStatusReceived(mUploadID, title, fileNames);
 
 
         } catch (JSONException e) {
@@ -77,7 +78,7 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
 
     public interface UploadStatusCallback extends RestCallback{
 
-        void onStatusReceived(int uploadID, ArrayList<String> unfinishedFileNames);
+        void onStatusReceived(int uploadID, String title, ArrayList<String> unfinishedFileNames);
         void onUploadAlreadyFinished(int uploadID);
 
     }

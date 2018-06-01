@@ -169,6 +169,8 @@
     <string name="sync_notification_uploading_transkribus_text">Uploading to Transkribus.</string>
     <string name="sync_notification_uploading_finished_title">Upload finished</string>
     <string name="sync_notification_uploading_finished_text">Finished image upload.</string>
+    <string name="sync_notification_stoped_title">Upload stopped</string>
+    <string name="sync_notification_stoped_text">Could not find selected file(s).</string>
     <string name="sync_notification_error_title">Upload interrupted</string>
     <string name="sync_notification_error_text">Upload postponed.</string>
 
@@ -197,6 +199,8 @@
     <string name="sync_snackbar_already_uploaded_postfix_text">already uploaded.</string>
     <string name="sync_error_upload_title">Upload error</string>
     <string name="sync_error_upload_text">An error happened while uploading your files. Please try to upload your files again.</string>
+    <string name="sync_file_deleted_title">Upload error</string>
+    <string name="sync_file_deleted_text">One or more files could not be uploaded, because they are not existing anymore. Please try to upload your documents again.</string>
     <string name="sync_confirm_delete_button_text">Delete</string>
     <string name="sync_cancel_delete_button_text">Cancel</string>
     <string name="sync_confirm_delete_title">Delete</string>

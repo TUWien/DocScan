@@ -138,13 +138,14 @@ public class TranskribusUtils  {
 
     }
 
-    public void onUnfinishedUploadStatusReceived(Context context, int uploadID, ArrayList<String> unfinishedFileNames) {
+    public void onUnfinishedUploadStatusReceived(Context context, int uploadID, String title,
+                                                 ArrayList<String> unfinishedFileNames) {
 
 
         Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived1: unfinished upload ids size" +
                 SyncInfo.getInstance().getUnfinishedUploadIDs().size());
 
-//        Add the files to the sync list:
+        boolean isFileDeleted = false;
 
         for (String fileName : unfinishedFileNames) {
 
@@ -155,12 +156,23 @@ public class TranskribusUtils  {
             if (file != null) {
 //                SyncInfo.getInstance().addToUnfinishedSyncList(file, uploadID);
                 Log.d(getClass().getName(), "onUnfinishedUploadStatusReceived: added unfinished file - id: " + uploadID + " file: " + file);
+        //        Add the files to the sync list:
                 SyncInfo.getInstance().addTranskribusFile(context, file, uploadID);
             }
             else {
                 Log.d(getClass().getName(), "onUnfinishedUploadStatusReceived: file not existing: " + fileName);
-                //            TODO: error handling here!
+
+//                First remove the upload ID from the unfinished list:
+                removeFromSyncInfoUnfinishedList(uploadID);
+                removeFromSyncInfoUploadList(title);
+                isFileDeleted = true;
+                break;
             }
+        }
+
+//        Tell the user that one or more files have been deleted:
+        if (isFileDeleted) {
+            mCallback.onFilesDeleted();
         }
 
 
@@ -412,11 +424,7 @@ public class TranskribusUtils  {
                             DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "uploaded file: " + fileSync.toString());
 
                             if (result.contains("<finished>")) {
-//                                TODO: remove the document from the unfinished documents list.
-
-//                                removeFromUnprocessedList(fileSync.getUploadId());
-//                                removeFromUnfinishedListAndCheckJob(fileSync.getUploadId());
-                                removeFromUnfinishedList(fileSync.getUploadId());
+                                removeFromSyncInfoUnfinishedList(fileSync.getUploadId());
 
                                 Log.d(getClass().getName(), "finished upload with ID: " + fileSync.getUploadId());
 //                                Log.d(getClass().getName(), "response: " + result);
@@ -443,7 +451,7 @@ public class TranskribusUtils  {
 
     public void removeFromUnfinishedListAndCheckJob(int uploadID) {
 
-        removeFromUnfinishedList(uploadID);
+        removeFromSyncInfoUnfinishedList(uploadID);
 
         if (mUnfinishedUploadIDsProcessed.isEmpty()) {
             mAreUnfinishedFilesPrepared = true;
@@ -452,10 +460,23 @@ public class TranskribusUtils  {
 
     }
 
-    private void removeFromUnfinishedList(int uploadID) {
+    /**
+     * Removes every entry from the sync info uploaded list. This is necessary to show the document
+     * as not uploaded. Otherwise, if the directory contains soley uploaded files, but also contains
+     * missing files, it would be shown as uploaded.
+     * @param title
+     */
+    private void removeFromSyncInfoUploadList(String title) {
 
-        Log.d(CLASS_NAME, "removeFromUnfinishedList: uploadID: " + uploadID);
-        Log.d(CLASS_NAME, "removeFromUnfinishedList: list size: " +
+        SyncInfo.getInstance().removeDocument(title);
+        SyncInfo.saveToDisk(mContext);
+
+    }
+
+    private void removeFromSyncInfoUnfinishedList(int uploadID) {
+
+        Log.d(CLASS_NAME, "removeFromSyncInfoUnfinishedList: uploadID: " + uploadID);
+        Log.d(CLASS_NAME, "removeFromSyncInfoUnfinishedList: list size: " +
                 SyncInfo.getInstance().getUnfinishedUploadIDs().size());
 
         SyncInfo.getInstance().getUnfinishedUploadIDs().remove(new Integer(uploadID));
@@ -467,8 +488,12 @@ public class TranskribusUtils  {
         if (idx != -1)
             mUnfinishedUploadIDsProcessed.remove(idx);
 
-        Log.d(CLASS_NAME, "removeFromUnfinishedList: list size: " +
+        Log.d(CLASS_NAME, "removeFromSyncInfoUnfinishedList: list size: " +
                 SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+
+        for (Integer i : SyncInfo.getInstance().getUnfinishedUploadIDs())
+            Log.d(CLASS_NAME, "still in list: " + i);
+
 
         SyncInfo.saveToDisk(mContext);
 
@@ -552,6 +577,7 @@ public class TranskribusUtils  {
     public interface TranskribusUtilsCallback {
 
         void onFilesPrepared();
+        void onFilesDeleted();
 //        void onSelectedFilesPrepared();
 //        void onUnfinishedFilesPrepared();
 

@@ -33,10 +33,11 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
-import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_ERROR_ID;
-import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_FINISHED_ID;
-import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_OFFLINE_ERROR_ID;
-import static at.ac.tuwien.caa.docscan.ui.syncui.UploadingActivity.UPLOAD_PROGRESS_ID;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity.UPLOAD_ERROR_ID;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity.UPLOAD_FILE_DELETED_ERROR_ID;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity.UPLOAD_FINISHED_ID;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity.UPLOAD_INTEND_KEY;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity.UPLOAD_OFFLINE_ERROR_ID;
 
 /**
  * Created by fabian on 18.08.2017.
@@ -64,6 +65,7 @@ public class SyncService extends JobService implements
     private static final int NOTIFICATION_PROGRESS_UPDATE = 0;
     private static final int NOTIFICATION_ERROR = 1;
     private static final int NOTIFICATION_SUCCESS = 2;
+    private static final int NOTIFICATION_FILE_DELETED = 3;
 
     public static final String SERVICE_ALONE_KEY = "SERVICE_ALONE_KEY";
     private static final String CLASS_NAME = "SyncService";
@@ -195,6 +197,32 @@ public class SyncService extends JobService implements
 
     }
 
+    @Override
+    public void onFilesDeleted() {
+
+        Log.d(CLASS_NAME, "onFilesDeleted");
+
+        showNotification();
+        updateNotification(NOTIFICATION_FILE_DELETED);
+        sendFileDeletedErrorIntent();
+
+
+
+    }
+
+    private void sendFileDeletedErrorIntent() {
+
+        Log.d(CLASS_NAME, "sendFileDeletedErrorIntent:");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "sendFileDeletedErrorIntent");
+
+        Intent intent = new Intent("PROGRESS_INTENT_NAME");
+        intent.putExtra(UPLOAD_INTEND_KEY, UPLOAD_FILE_DELETED_ERROR_ID);
+
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+
+    }
+
+
 //    @Override
 //    public void onSelectedFilesPrepared() {
 //
@@ -235,7 +263,7 @@ public class SyncService extends JobService implements
 
         DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService - rest error ", error.getMessage());
 
-        Log.d(getClass().getName(), "rest_error" + error.getMessage());
+        Log.d(getClass().getName(), "rest_error: " + error.getMessage());
 
         handleRestUploadError();
 
@@ -268,7 +296,8 @@ public class SyncService extends JobService implements
         DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "Broadcasting message");
 
         Intent intent = new Intent("PROGRESS_INTENT_NAME");
-        intent.putExtra(UPLOAD_OFFLINE_ERROR_ID, true);
+        intent.putExtra(UPLOAD_INTEND_KEY, UPLOAD_OFFLINE_ERROR_ID);
+//        intent.putExtra(UPLOAD_OFFLINE_ERROR_ID, true);
 
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
@@ -295,10 +324,10 @@ public class SyncService extends JobService implements
     }
 
     @Override
-    public void onStatusReceived(int uploadID, ArrayList<String> unfinishedFileNames) {
+    public void onStatusReceived(int uploadID, String title, ArrayList<String> unfinishedFileNames) {
 
-        TranskribusUtils.getInstance().onUnfinishedUploadStatusReceived(getApplicationContext(), uploadID,
-                unfinishedFileNames);
+        TranskribusUtils.getInstance().onUnfinishedUploadStatusReceived(getApplicationContext(),
+                uploadID, title, unfinishedFileNames);
 
     }
 
@@ -351,17 +380,17 @@ public class SyncService extends JobService implements
 
         }
 
-        // Send an Intent with an action named "PROGRESS_INTENT_NAME".
-        private void sendProgressIntent(int progress) {
-
-            Log.d("sender", "Broadcasting message");
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "Broadcasting message");
-
-            Intent intent = new Intent("PROGRESS_INTENT_NAME");
-            intent.putExtra(UPLOAD_PROGRESS_ID, progress);
-
-            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-        }
+//        // Send an Intent with an action named "PROGRESS_INTENT_NAME".
+//        private void sendProgressIntent(int progress) {
+//
+//            Log.d("sender", "Broadcasting message");
+//            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "Broadcasting message");
+//
+//            Intent intent = new Intent("PROGRESS_INTENT_NAME");
+//            intent.putExtra(UPLOAD_PROGRESS_ID, progress);
+//
+//            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+//        }
 
         // Send an Intent with an action named "PROGRESS_INTENT_NAME".
         private void sendFinishedIntent() {
@@ -370,10 +399,12 @@ public class SyncService extends JobService implements
             DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "finish intend");
 
             Intent intent = new Intent("PROGRESS_INTENT_NAME");
-            intent.putExtra(UPLOAD_FINISHED_ID, true);
+            intent.putExtra(UPLOAD_INTEND_KEY, UPLOAD_FINISHED_ID);
+//            intent.putExtra(UPLOAD_FINISHED_ID, true);
 
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
+
 
         // Send an Intent with an action named "PROGRESS_INTENT_NAME".
         private void sendOfflineErrorIntent() {
@@ -382,7 +413,8 @@ public class SyncService extends JobService implements
             DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "sendOfflineErrorIntent");
 
             Intent intent = new Intent("PROGRESS_INTENT_NAME");
-            intent.putExtra(UPLOAD_OFFLINE_ERROR_ID, true);
+            intent.putExtra(UPLOAD_INTEND_KEY, UPLOAD_OFFLINE_ERROR_ID);
+//            intent.putExtra(UPLOAD_OFFLINE_ERROR_ID, true);
 
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
@@ -394,7 +426,8 @@ public class SyncService extends JobService implements
 
 
             Intent intent = new Intent("PROGRESS_INTENT_NAME");
-            intent.putExtra(UPLOAD_ERROR_ID, true);
+            intent.putExtra(UPLOAD_INTEND_KEY, UPLOAD_ERROR_ID);
+//            intent.putExtra(UPLOAD_ERROR_ID, true);
 
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
@@ -533,7 +566,6 @@ public class SyncService extends JobService implements
 
         private SyncInfo.FileSync getNextUpload() {
 
-//            TODO: include here the unfinished list:
             for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
                 if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED)
                     return fileSync;
@@ -646,6 +678,13 @@ public class SyncService extends JobService implements
                         .setContentTitle(getString(R.string.sync_notification_title))
                         .setContentText(getString(R.string.sync_notification_uploading_transkribus_text))
                         .setProgress(100, progress, false);
+                break;
+            case NOTIFICATION_FILE_DELETED:
+                mNotificationBuilder
+                        .setContentTitle(getString(R.string.sync_notification_stoped_title))
+                        .setContentText(getString(R.string.sync_notification_stoped_text))
+                        // Removes the progress bar
+                        .setProgress(0, 0, false);
                 break;
             case NOTIFICATION_SUCCESS:
                 Log.d(CLASS_NAME, "updateNotification: NOTIFICATION_SUCCESS");
