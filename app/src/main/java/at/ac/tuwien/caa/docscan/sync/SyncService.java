@@ -153,6 +153,7 @@ public class SyncService extends JobService implements
     public void onLoginError() {
 
         Log.d(getClass().getName(), "onLoginError");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onLoginError");
 
     }
 
@@ -201,7 +202,7 @@ public class SyncService extends JobService implements
     public void onFilesDeleted() {
 
         Log.d(CLASS_NAME, "onFilesDeleted");
-
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onFilesDeleted");
         showNotification();
         updateNotification(NOTIFICATION_FILE_DELETED);
         sendFileDeletedErrorIntent();
@@ -274,7 +275,12 @@ public class SyncService extends JobService implements
      */
     private void handleRestUploadError() {
 
+
+
+        User.getInstance().setLoggedIn(false);
+
         Log.d(getClass().getName(), "handleRestUploadError");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "handleRestUploadError");
 
         updateNotification(NOTIFICATION_ERROR);
         sendOfflineErrorIntent();
@@ -369,7 +375,7 @@ public class SyncService extends JobService implements
             mFilesNum = getFilesNum();
 
             Log.d(CLASS_NAME, "handleMessage: mFilesNum: " + mFilesNum);
-
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "handleMessage: mFilesNum: " + mFilesNum);
             if (mFilesNum == 0)
                 return;
 
@@ -415,19 +421,6 @@ public class SyncService extends JobService implements
             Intent intent = new Intent("PROGRESS_INTENT_NAME");
             intent.putExtra(UPLOAD_INTEND_KEY, UPLOAD_OFFLINE_ERROR_ID);
 //            intent.putExtra(UPLOAD_OFFLINE_ERROR_ID, true);
-
-            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-        }
-
-        // Send an Intent with an action named "PROGRESS_INTENT_NAME".
-        private void sendErrorIntent() {
-
-            Log.d("sender", "Broadcasting message");
-
-
-            Intent intent = new Intent("PROGRESS_INTENT_NAME");
-            intent.putExtra(UPLOAD_INTEND_KEY, UPLOAD_ERROR_ID);
-//            intent.putExtra(UPLOAD_ERROR_ID, true);
 
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
@@ -511,30 +504,15 @@ public class SyncService extends JobService implements
         @Override
         public void onError(Exception e) {
 
-//            handleRestUploadError();
-
-
-            Log.d(getClass().getName(), "onError");
-
             Log.d(CLASS_NAME, "onError: unfinished upload ids size: "
                     + SyncInfo.getInstance().getUnfinishedUploadIDs().size());
 
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onError");
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                    "onError: unfinished upload ids size: "
+                            + SyncInfo.getInstance().getUnfinishedUploadIDs().size());
 
             TranskribusUtils.getInstance().onError();
 
-//            TranskribusUtils.getInstance().saveUnfinishedUploadIDs();
-
-//            //        Collect the files that are not uploaded yet and get their paths:
-//            ArrayList<File> unfinishedDirs = getUnfinishedUploadDirs();
-//
-//            // In the case of an error this directory list should not be empty:
-//            if (unfinishedDirs == null || unfinishedDirs.isEmpty())
-//                return;
-
-//            SyncInfo.getInstance().setUploadDirs(unfinishedDirs);
-
-//            SyncInfo.startSyncJob(getApplicationContext());
             SyncInfo.restartSyncJob(getApplicationContext());
 
             updateNotification(NOTIFICATION_ERROR);
@@ -642,26 +620,19 @@ public class SyncService extends JobService implements
 
     private void updateNotification(int notificationID) {
 
-        Log.d(getClass().getName(), "notificationID: " + notificationID);
 
         Log.d(CLASS_NAME, "updateNotification: unfinished upload ids size: "
                 + SyncInfo.getInstance().getUnfinishedUploadIDs().size());
-
-        if (mIsInterrupted)
-            Log.d(CLASS_NAME, "interrupted!");
-
-        Log.d(CLASS_NAME, "updateNotification: mNoticationBuilder is null: "
-                + (mNotificationBuilder == null));
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                "updateNotification: unfinished upload ids size: "
+                + SyncInfo.getInstance().getUnfinishedUploadIDs().size());
 
         if (mNotificationBuilder == null)
             return;
 
-//        Log.d(getClass().getName(), "mNotificationBuilder not nul" + notificationID);
-
         switch (notificationID) {
 
             case NOTIFICATION_ERROR:
-                Log.d(CLASS_NAME, "updateNotification: NOTIFICATION_ERROR");
                 mNotificationBuilder
                         .setContentTitle(getString(R.string.sync_notification_error_title))
                         .setContentText(getString(R.string.sync_notification_error_text))
@@ -671,8 +642,6 @@ public class SyncService extends JobService implements
                 break;
             case NOTIFICATION_PROGRESS_UPDATE:
                 int progress = (int) Math.floor(mFilesUploaded / (double) mFilesNum * 100);
-                Log.d(CLASS_NAME, "updateNotification: mFilesUploaded: " + mFilesUploaded);
-                Log.d(CLASS_NAME, "updateNotification: progress: " + progress);
 
                 mNotificationBuilder
                         .setContentTitle(getString(R.string.sync_notification_title))
@@ -688,6 +657,8 @@ public class SyncService extends JobService implements
                 break;
             case NOTIFICATION_SUCCESS:
                 Log.d(CLASS_NAME, "updateNotification: NOTIFICATION_SUCCESS");
+                DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                        "updateNotification: NOTIFICATION_SUCCESS");
                 mNotificationBuilder
                         .setContentTitle(getString(R.string.sync_notification_uploading_finished_title))
                         .setContentText(getString(R.string.sync_notification_uploading_finished_text))

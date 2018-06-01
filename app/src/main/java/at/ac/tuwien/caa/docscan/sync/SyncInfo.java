@@ -63,28 +63,21 @@ public class SyncInfo implements Serializable {
         File syncPath = context.getFilesDir();
         File syncFile = new File(syncPath, SYNC_FILE_NAME);
 
-        Log.d(CLASS_NAME, "readFromDisk1");
+        Log.d(CLASS_NAME, "readFromDisk");
+        DataLog.getInstance().writeUploadLog(context, CLASS_NAME, "readFromDisk");
 
         try {
             FileInputStream fis = new FileInputStream (syncFile);
             ObjectInputStream ois = new ObjectInputStream(fis);
             mInstance = (SyncInfo) ois.readObject();
 
-            Log.d(CLASS_NAME, "readFromDisk2");
-
             if (mInstance.getUploadedList() == null) {
-                Log.d(CLASS_NAME, "readFromDisk3");
                 mInstance.setUploadedList(new ArrayList<FileSync>());
             }
-            else
-                Log.d(CLASS_NAME, "readFromDisk4");
-
-
-            Log.d("SyncInfo", "SyncInfo list: " + mInstance.getSyncList().size());
             ois.close();
         }
         catch(Exception e) {
-
+            Log.d(CLASS_NAME, e.toString());
         }
 
     }
@@ -121,8 +114,6 @@ public class SyncInfo implements Serializable {
 
         DataLog.getInstance().writeUploadLog(context, "SyncInfo", "restartSyncJob");
 
-        DataLog.getInstance().writeUploadLog(context, "SyncInfo", "time: ");
-
         FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
 
         String tag = "sync_job";
@@ -146,8 +137,8 @@ public class SyncInfo implements Serializable {
                 // don't persist past a device reboot
                 .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
                 // start between 0 and 60 seconds from now
-//                .setTrigger(Trigger.executionWindow(60, 100))
-                .setTrigger(Trigger.executionWindow(1, 7))
+                .setTrigger(Trigger.executionWindow(30, 50))
+//                .setTrigger(Trigger.executionWindow(1, 7))
 //                .setTrigger(Trigger.NOW)
                 // overwrite an existing job with the same tag - this assures that just one job is running at a time:
                 .setReplaceCurrent(true)
@@ -186,7 +177,6 @@ public class SyncInfo implements Serializable {
 
         Log.d("SyncInfo", "startSyncJob");
         DataLog.getInstance().writeUploadLog(context, "SyncService", "startSyncJob");
-
 
         String tag = "sync_job";
 
@@ -257,6 +247,9 @@ public class SyncInfo implements Serializable {
 
     }
 
+//    We need this method although it is not used, because the serializable SyncInfo was build with
+//    this method.
+//    @see: https://stackoverflow.com/questions/8335813/java-serialization-java-io-invalidclassexception-local-class-incompatible
     public void addFile(Context context, File file) {
 
         if (mFileSyncList != null) {
@@ -415,18 +408,41 @@ public class SyncInfo implements Serializable {
 
     public boolean isDirAwaitingUpload(File dir, File[] files) {
 
+        Log.d(CLASS_NAME, "isDirAwaitingUpload");
+
         if (files.length == 0)
             return false;
 
         // Is the dir already added to the upload list:
         if ((mUploadDirs != null) && (mUploadDirs.contains(dir))) {
+            Log.d(CLASS_NAME, "isDirAwaitingUpload: mUploadDirs.size: " + mUploadDirs.size());
 //            Check if all files in the dir are added to the awaiting upload list:
+//            for (File file : files) {
+//                if (!mAwaitingUploadFiles.contains(file))
+//                    return false;
+//            }
+
+            return true;
+        }
+        else if ((mFileSyncList != null) && (mFileSyncList.size() > 0)) {
+            Log.d(CLASS_NAME, "isDirAwaitingUpload: mFileSyncList.size: " + mFileSyncList.size());
+            Log.d(CLASS_NAME, "isDirAwaitingUpload: files.size: " + files.length);
             for (File file : files) {
-                if (!mAwaitingUploadFiles.contains(file))
+                boolean isFileOnList = false;
+                for (FileSync fileSync : mFileSyncList) {
+                    if (fileSync.getFile().equals(file)) {
+                        isFileOnList = true;
+                        break;
+                    }
+                }
+
+                if (!isFileOnList)
                     return false;
+
             }
 
             return true;
+
         }
 
         return false;
