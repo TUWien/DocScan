@@ -181,6 +181,9 @@ public class DataLog {
 
     public void writeUploadLog(Context context, String text) {
 
+        if ((context == null ) || (text == null))
+            return;
+
         try {
             String fileName = getUploadLogFileName(context);
             File file = new File(fileName);
