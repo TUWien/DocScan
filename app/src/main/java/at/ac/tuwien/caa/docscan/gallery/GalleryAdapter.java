@@ -138,16 +138,18 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
             GlideApp.with(mContext)
                     .load(page.getFile().getPath())
                     .signature(new MediaStoreSignature("", 0, exifOrientation))
-//                    TODO: enable disk caching!
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true)
-                    .transform(new CropRectTransform(filePath, strokeColor, strokeWidth))
+//            Commented this because cropping will be released later on:
+////                    TODO: enable disk caching!
+//                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                    .skipMemoryCache(true)
+//                    .transform(new CropRectTransform(filePath, strokeColor, strokeWidth))
                     .into(imageView);
         }
         else {
             GlideApp.with(mContext)
                     .load(page.getFile().getPath())
-                    .transform(new CropRectTransform(filePath, strokeColor, strokeWidth))
+//            Commented this because cropping will be released later on:
+//                    .transform(new CropRectTransform(filePath, strokeColor, strokeWidth))
                     .into(imageView);
         }
 

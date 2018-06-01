@@ -25,7 +25,6 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
-import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 
 /**
@@ -53,16 +52,17 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
         mImageView = findViewById(R.id.map_crop_view);
 
-        Bundle b = getIntent().getExtras();
-        if (b != null) {
-            mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
-
-            if (mFileName != null) {
-                ArrayList<PointF> points = Cropper.getNormedCropPoints(mFileName);
-                mapImage(points);
-//                mCropView.setPoints(points);
-            }
-        }
+//            Commented this because cropping will be released later on:
+//        Bundle b = getIntent().getExtras();
+//        if (b != null) {
+//            mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
+//
+//            if (mFileName != null) {
+//                ArrayList<PointF> points = Cropper.getNormedCropPoints(mFileName);
+//                mapImage(points);
+////                mCropView.setPoints(points);
+//            }
+//        }
 
 
 

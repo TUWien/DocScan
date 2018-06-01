@@ -33,7 +33,6 @@ import java.io.File;
 import java.io.IOException;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
@@ -85,30 +84,30 @@ public class ImageViewerFragment extends Fragment {
 
     }
 
-    private void initImageView(ViewGroup rootView) {
-
-        if (mFileName != null) {
-
-
-            mImageView.setImage(ImageSource.uri(mFileName));
-
-
-//            Get the image dimensions without loading it:
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(mFileName, options);
-            int imageHeight = options.outHeight;
-            int imageWidth = options.outWidth;
-
-            mImageView.setPoints(Cropper.getScaledCropPoints(mFileName, imageHeight, imageWidth));
-
-        }
-//      PhotoView by Chris Bane:
-//        PhotoView photoView = rootView.findViewById(R.id.page_slide_photo_view);
-//        photoView.setImageURI(Uri.fromFile(mPage.getFile()));
-//        photoView.setRotationBy();
-
-    }
+//    private void initImageView(ViewGroup rootView) {
+//
+//        if (mFileName != null) {
+//
+//
+//            mImageView.setImage(ImageSource.uri(mFileName));
+//
+//
+////            Get the image dimensions without loading it:
+//            BitmapFactory.Options options = new BitmapFactory.Options();
+//            options.inJustDecodeBounds = true;
+//            BitmapFactory.decodeFile(mFileName, options);
+//            int imageHeight = options.outHeight;
+//            int imageWidth = options.outWidth;
+//
+//            mImageView.setPoints(Cropper.getScaledCropPoints(mFileName, imageHeight, imageWidth));
+//
+//        }
+////      PhotoView by Chris Bane:
+////        PhotoView photoView = rootView.findViewById(R.id.page_slide_photo_view);
+////        photoView.setImageURI(Uri.fromFile(mPage.getFile()));
+////        photoView.setRotationBy();
+//
+//    }
 
 
     public void refreshImageView() {
@@ -140,8 +139,8 @@ public class ImageViewerFragment extends Fragment {
 
 
         Log.d(CLASS_NAME, "refreshImageView: w: " + imageWidth + " h: " + imageHeight);
-
-        mImageView.setPoints(Cropper.getScaledCropPoints(mFileName, imageHeight, imageWidth));
+//            Commented this because cropping will be released later on:
+//        mImageView.setPoints(Cropper.getScaledCropPoints(mFileName, imageHeight, imageWidth));
 
     }
 
