@@ -21,7 +21,6 @@ import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
-import at.ac.tuwien.caa.docscan.ui.DocumentActivity;
 
 /**
  * Created by fabian on 05.10.2017.
@@ -77,7 +76,7 @@ public class SeriesGeneralActivity extends BaseNoNavigationActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), CreateSeriesActivity.class);
+                Intent intent = new Intent(getApplicationContext(), CreateDocumentActivity.class);
                 startActivity(intent);
             }
         });
@@ -89,7 +88,7 @@ public class SeriesGeneralActivity extends BaseNoNavigationActivity {
         selectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), DocumentActivity.class);
+                Intent intent = new Intent(getApplicationContext(), OpenDocumentActivity.class);
                 startActivity(intent);
             }
         });

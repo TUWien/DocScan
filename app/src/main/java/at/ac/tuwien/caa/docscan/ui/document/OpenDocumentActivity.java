@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui;
+package at.ac.tuwien.caa.docscan.ui.document;
 
 import android.Manifest;
 import android.app.Activity;
@@ -7,8 +7,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
-import android.text.InputFilter;
-import android.text.Spanned;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ExpandableListView;
@@ -17,16 +15,16 @@ import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
+import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.SeriesAdapter;
 
 /**
  * Created by fabian on 26.09.2017.
  */
 
-public class DocumentActivity extends BaseNoNavigationActivity  {
+public class OpenDocumentActivity extends BaseNoNavigationActivity {
 
     private ExpandableListView mListView;
     private Context mContext;
@@ -39,7 +37,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_document);
+        setContentView(R.layout.activity_open_document);
         super.initToolbarTitle(R.string.document_title);
 
         mListView = findViewById(R.id.document_list_view);

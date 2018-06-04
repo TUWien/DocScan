@@ -20,7 +20,6 @@ import java.io.File;
 import at.ac.tuwien.caa.docscan.R;
 //import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
@@ -29,7 +28,7 @@ import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
  * Created by fabian on 24.10.2017.
  */
 
-public class CreateSeriesActivity extends BaseNoNavigationActivity {
+public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
     public static final String DOCUMENT_QR_TEXT = "DOCUMENT_QR_TEXT";
@@ -41,7 +40,7 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_series);
+        setContentView(R.layout.activity_create_document);
 
         super.initToolbarTitle(R.string.create_series_title);
 

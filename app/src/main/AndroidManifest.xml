@@ -98,7 +98,7 @@
         <!--launchMode = "singleInstance" avoids opening the intent twice -->
         <!--nohistory = "true" creates the activity instead of just resuming it -->
         <activity
-            android:name=".ui.document.CreateSeriesActivity"
+            android:name=".ui.document.CreateDocumentActivity"
             android:exported="true"
             android:launchMode = "singleInstance"
             android:noHistory="true"
@@ -137,7 +137,7 @@
             />
 
         <activity
-            android:name=".ui.DocumentActivity"
+            android:name=".ui.document.OpenDocumentActivity"
             android:exported="false"
             android:parentActivityName=".ui.document.SeriesGeneralActivity"
             />
