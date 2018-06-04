@@ -87,6 +87,7 @@
     <string name="login_title">Login to Transkribus</string>
 
     <!-- Menus -->
+    <string name="document_item">Documents</string>
     <string name="flash_mode">Flash mode</string>
     <string name="flash_off_mode">Flash off</string>
     <string name="flash_auto_mode">Flash auto</string>
