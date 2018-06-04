@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -89,7 +90,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         initToolbar();
 
-//        addFooter();
+        addFooter();
 
         // Read the upload information:
         SyncInfo.readFromDisk(this);
@@ -102,12 +103,24 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
             initAdapter();
         }
 
+        initFAB();
+
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents
         // with actions named "PROGRESS_INTENT_NAME".
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter("PROGRESS_INTENT_NAME"));
 
+    }
+
+    private void initFAB() {
+        FloatingActionButton fab = findViewById(R.id.upload_fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish(); // close the activity
+            }
+        });
     }
 
     @Override
@@ -399,6 +412,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         startUpload();
 
     }
+
+
 
     private void startUpload() {
 

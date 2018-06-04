@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.ui;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -28,6 +29,8 @@ import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
  */
 public abstract class BaseNavigationActivity extends AppCompatActivity implements
         LoginRequest.LoginCallback, LogoutRequest.LogoutCallback {
+
+    private static final String CLASS_NAME = "BaseNavigationActivity";
 
     protected NavigationDrawer mNavigationDrawer;
     private Toolbar mToolbar;
@@ -149,7 +152,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
 
     @Override
     public void handleRestError(VolleyError error) {
-
+        Log.d(CLASS_NAME, "handleRestError: " + error.toString());
     }
 
 
