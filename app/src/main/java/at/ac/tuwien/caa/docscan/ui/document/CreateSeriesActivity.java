@@ -256,9 +256,9 @@ public class CreateSeriesActivity extends BaseNoNavigationActivity {
             User.getInstance().setDocumentName(subDir.getName());
             UserHandler.saveSeriesName(this);
 
-            Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, true);
-            Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, false);
-
+//            Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, true);
+//            Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, false);
+//
             Helper.startCameraActivity(this);
         }
 

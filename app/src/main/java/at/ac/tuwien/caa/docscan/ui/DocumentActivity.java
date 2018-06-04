@@ -65,8 +65,8 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
                     User.getInstance().setDocumentName(mSelectedDir.getName());
                     UserHandler.saveSeriesName(c);
 
-                    Settings.getInstance().saveKey(a, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, true);
-                    Settings.getInstance().saveKey(a, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, false);
+//                    Settings.getInstance().saveKey(a, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, true);
+//                    Settings.getInstance().saveKey(a, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, false);
 
                     Helper.startCameraActivity(c);
 
@@ -141,43 +141,7 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
         mListView.addFooterView(footer);
     }
 
-    private void onCreateDirResult(String result) {
 
-        File mediaStorageDir = Helper.getMediaStorageDir(mContext.getResources().getString(R.string.app_name));
-        File subDir = new File(mediaStorageDir.getAbsolutePath(), result);
-        boolean dirCreated = false;
-        if (subDir != null) {
-            dirCreated = subDir.mkdir();
-
-        }
-
-        if (!dirCreated)
-            showNoDirCreatedAlert();
-        else {
-            mAdapter = new SeriesAdapter(this);
-            mListView.setAdapter(mAdapter);
-        }
-
-    }
-
-    private void showNoDirCreatedAlert() {
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
-
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(R.string.document_no_dir_created_title)
-                .setCancelable(true)
-                .setPositiveButton("OK", null)
-                .setMessage(R.string.document_no_dir_created_message);
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
-
-    }
 
     private void showNoFileSelectedAlert() {
 
@@ -198,26 +162,6 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
 
     }
 
-    private InputFilter[] getInputFilters() {
-
-        InputFilter filter = new InputFilter() {
-            public CharSequence filter(CharSequence source, int start, int end,
-                                       Spanned dest, int dstart, int dend) {
-                for (int i = start; i < end; i++) {
-                    char c = source.charAt(i);
-                    if (!Character.isLetterOrDigit(c) && !Character.isSpaceChar(c)) {
-                        return "";
-                    }
-                }
-                return null;
-            }
-        };
-
-        InputFilter[] filters = {filter};
-
-        return filters;
-
-    }
 
     /**
      * Updates the list view adapter and causes a new filling of the list view.
@@ -231,15 +175,6 @@ public class DocumentActivity extends BaseNoNavigationActivity  {
         }
 
     }
-
-//    @Override
-//    protected void onResume() {
-//
-//        super.onResume();
-//        mAdapter = new SeriesAdapter(this);
-//        mListView.setAdapter(mAdapter);
-//
-//    }
 
 
 }
