@@ -175,7 +175,7 @@
     <string name="sync_notification_error_title">Upload interrupted</string>
     <string name="sync_notification_error_text">Upload postponed.</string>
 
-    <!-- DocumentActivity -->
+    <!-- OpenDocumentActivity -->
     <string name="document_title">Select a document</string>
     <string name="document_select_button_text">Use selected document</string>
     <string name="document_no_dir_created_title">No document created</string>

@@ -110,6 +110,8 @@ import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
+import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
+import at.ac.tuwien.caa.docscan.ui.document.OpenDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
@@ -117,7 +119,6 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
-import at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity;
 import at.ac.tuwien.caa.docscan.ui.document.SeriesGeneralActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
@@ -130,7 +131,7 @@ import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
-import static at.ac.tuwien.caa.docscan.ui.document.CreateSeriesActivity.DOCUMENT_QR_TEXT;
+import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUMENT_QR_TEXT;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -648,12 +649,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
     /**
-     * Start the CreateSeriesActivity via an intent.
+     * Start the CreateDocumentActivity via an intent.
      * @param qrText
      */
     private void startCreateSeriesActivity(String qrText) {
 
-        Intent intent = new Intent(getApplicationContext(), CreateSeriesActivity.class);
+        Intent intent = new Intent(getApplicationContext(), CreateDocumentActivity.class);
         intent.putExtra(DOCUMENT_QR_TEXT, qrText);
         startActivity(intent);
     }
@@ -1940,7 +1941,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 }
             });
         }
-        // Start the CreateSeriesActivity:
+        // Start the CreateDocumentActivity:
         else {
             // Stop searching for QR code:
             mIsQRActive = false;
@@ -2098,12 +2099,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 return true;
 
             case R.id.series_new_item:
-                startActivity(new Intent(getApplicationContext(), CreateSeriesActivity.class));
+                startActivity(new Intent(getApplicationContext(), CreateDocumentActivity.class));
 //                startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 return true;
 
             case R.id.series_switch_item:
-                startActivity(new Intent(getApplicationContext(), DocumentActivity.class));
+                startActivity(new Intent(getApplicationContext(), OpenDocumentActivity.class));
                 return true;
 
             case R.id.series_qr_item:
