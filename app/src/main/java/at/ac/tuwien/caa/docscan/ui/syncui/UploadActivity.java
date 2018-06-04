@@ -90,7 +90,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         initToolbar();
 
-        addFooter();
+//        addFooter();
 
         // Read the upload information:
         SyncInfo.readFromDisk(this);
