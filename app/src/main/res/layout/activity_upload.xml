@@ -22,21 +22,15 @@
             <android.support.v7.widget.Toolbar
                 android:id="@+id/main_toolbar"
                 android:layout_width="match_parent"
-                android:layout_height="?actionBarSize"
+                android:layout_height="?android:attr/actionBarSize"
                 app:layout_scrollFlags="scroll|enterAlways"
                 android:background="@color/colorPrimary"
                 />
         </android.support.design.widget.AppBarLayout>
 
-        <!--<android.support.design.widget.CoordinatorLayout-->
-            <!--android:id="@+id/sync_coordinatorlayout"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:orientation="vertical"-->
-            <!--&gt;-->
-
-            <!-- Note app:layout_dodgeInsetEdges="bottom" moves the entire view up if a snackbar
-            is shown -->
+        <!--The following attributes are required for a footer, so the FAB is not overlapping:-->
+        <!--android:paddingBottom="80dp"-->
+        <!--android:clipToPadding="false"-->
         <ListView
             android:id="@+id/upload_list_view"
             android:layout_width="match_parent"
@@ -44,6 +38,8 @@
             android:choiceMode="multipleChoice"
             android:fadeScrollbars="false"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            android:paddingBottom="80dp"
+            android:clipToPadding="false"
             />
 
         <android.support.design.widget.FloatingActionButton
@@ -55,12 +51,6 @@
             android:layout_margin="16dp" />
 
         </android.support.design.widget.CoordinatorLayout>
-
-
-
-
-    <!--</android.support.design.widget.CoordinatorLayout>-->
-
     <include layout="@layout/navigation_view"/>
 
 </android.support.v4.widget.DrawerLayout>
