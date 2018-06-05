@@ -2,29 +2,35 @@ package at.ac.tuwien.caa.docscan.camera.threads;
 
 import java.io.File;
 
-public class CropTask implements CropRunnable.TaskRunnableCropMethods{
+public class MapTask implements MapRunnable.TaskRunnableMapMethods{
 
     private File mFile;
 
-    private Runnable mCropRunnable;
+    private Runnable mMapRunnable;
     // The Thread on which this task is currently running.
     private Thread mCurrentThread;
 
     /*
      * An object that contains the ThreadPool singleton.
      */
+//    private static MapManager sCropManager;
     private static CropManager sCropManager;
 
-    CropTask() {
+    MapTask() {
 
-        mCropRunnable = new CropRunnable(this);
-        sCropManager = CropManager.getInstance();
+        mMapRunnable = new MapRunnable(this);
+//        sCropManager = MapManager.getInstance();
 
     }
 
     @Override
     public void setCropThread(Thread currentThread) {
         setCurrentThread(currentThread);
+    }
+
+    @Override
+    public void handleState(int state) {
+        sCropManager.handleState(this, state);
     }
 
     @Override
@@ -50,12 +56,20 @@ public class CropTask implements CropRunnable.TaskRunnableCropMethods{
     /**
      * Initializes the task.
      */
-    void initializeCropTask(CropManager cropManager) {
-        sCropManager = cropManager;
+    void initializeMapTask(CropManager mapManager) {
+        sCropManager = mapManager;
     }
 
-    Runnable getCropRunnable() {
-        return mCropRunnable;
+//    /**
+//     * Initializes the task.
+//     */
+//    void initializeMapTask(MapManager mapManager) {
+//        sCropManager = mapManager;
+//    }
+
+    Runnable getMapRunnable() {
+        return mMapRunnable;
     }
+
 
 }

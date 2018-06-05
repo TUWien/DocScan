@@ -108,6 +108,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.camera.threads.CropManager;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
@@ -2499,7 +2500,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             updateThumbnail(new File(uri));
 
 //            Commented this because cropping will be released later on:
-//            CropManager.saveCropResult(new File(uri));
+            CropManager.saveCropResult(new File(uri), mContext);
 
 
         }

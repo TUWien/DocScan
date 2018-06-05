@@ -33,7 +33,6 @@ public class Cropper {
             Log.d(CLASS_TAG, "findRect: you should not perform this on the main thread!");
         }
 
-
         Mat inputMat = Imgcodecs.imread(fileName);
 
         Mat mg = new Mat();

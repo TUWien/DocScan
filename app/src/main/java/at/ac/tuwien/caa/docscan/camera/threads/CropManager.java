@@ -21,10 +21,17 @@
 
 package at.ac.tuwien.caa.docscan.camera.threads;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
+import android.util.Log;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -52,11 +59,15 @@ public class CropManager {
      */
     private static int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
 
+    private static final String CLASS_NAME = "CropManager";
 
     // A queue of Runnables for the page detection
     private final BlockingQueue<Runnable> mCropQueue;
     // A managed pool of background crop threads
     private final ThreadPoolExecutor mCropThreadPool;
+//    We use here a weak reference to avoid memory leaks:
+//    @see https://www.androiddesignpatterns.com/2013/01/inner-class-handler-memory-leak.html
+    private WeakReference<Context> mContext;
 
     // An object that manages Messages in a Thread
     private Handler mHandler;
@@ -74,7 +85,7 @@ public class CropManager {
 
     private CropManager() {
 
-       mCropQueue = new LinkedBlockingQueue<Runnable>();
+       mCropQueue = new LinkedBlockingQueue<>();
 
         mCropThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
                 KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mCropQueue);
@@ -87,8 +98,51 @@ public class CropManager {
          */
         mHandler = new Handler(Looper.getMainLooper()) {
 
+            /*
+             * handleMessage() defines the operations to perform when the
+             * Handler receives a new Message to process.
+             */
+            @Override
+            public void handleMessage(Message inputMessage) {
+
+                // Gets the map task from the incoming Message object.
+                MapTask mapTask = (MapTask) inputMessage.obj;
+                switch (inputMessage.what) {
+                    case 0:
+                        Log.d(CLASS_NAME, "handleMessage: " + 0);
+                        galleryAddPic(mapTask.getFile());
+
+                    default:
+                        // Otherwise, calls the super method
+                        super.handleMessage(inputMessage);
+
+                }
+            }
+
+            private void galleryAddPic(File file) {
+
+                Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+
+                Uri contentUri = Uri.fromFile(file);
+                mediaScanIntent.setData(contentUri);
+                mContext.get().sendBroadcast(mediaScanIntent);
+
+            }
+
+
         };
 
+    }
+
+    public void handleState(MapTask task, int state) {
+
+//        TODO: distinguish between the different states and tasks:
+        switch (state) {
+            case 0:
+                Message completeMessage = mHandler.obtainMessage(state, task);
+                completeMessage.sendToTarget();
+                break;
+        }
 
     }
 
@@ -102,7 +156,9 @@ public class CropManager {
     }
 
 
-    static public CropTask saveCropResult(File file) {
+    public static CropTask saveCropResult(File file, Context context) {
+
+        sInstance.mContext = new WeakReference<>(context);
 
         CropTask cropTask = new CropTask();
         cropTask.initializeCropTask(sInstance);
@@ -110,6 +166,22 @@ public class CropManager {
         sInstance.mCropThreadPool.execute(cropTask.getCropRunnable());
 
         return cropTask;
+
+    }
+
+    public static MapTask mapFile(File file) {
+
+//        CropTask cropTask = new CropTask();
+//        cropTask.initializeCropTask(sInstance);
+//        cropTask.setFile(file);
+//        sInstance.mCropThreadPool.execute(cropTask.getCropRunnable());
+
+        MapTask mapTask = new MapTask();
+        mapTask.initializeMapTask(sInstance);
+        mapTask.setFile(file);
+        sInstance.mCropThreadPool.execute(mapTask.getMapRunnable());
+
+        return mapTask;
 
     }
 }
