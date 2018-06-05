@@ -1,41 +1,27 @@
 package at.ac.tuwien.caa.docscan.camera.threads;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.PointF;
-import android.location.Location;
-import android.media.ExifInterface;
-import android.util.Log;
-
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
+import android.net.Uri;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import at.ac.tuwien.caa.docscan.camera.GPS;
-import at.ac.tuwien.caa.docscan.camera.LocationHandler;
-import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
-import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
-import at.ac.tuwien.caa.docscan.crop.CropInfo;
-import at.ac.tuwien.caa.docscan.logic.AppState;
-import at.ac.tuwien.caa.docscan.logic.DataLog;
-
-public class CropRunnable implements Runnable {
+public class MapRunnable implements Runnable {
 
     // Defines a field that contains the calling object of type PhotoTask.
-    final TaskRunnableCropMethods mCropTask;
+    final TaskRunnableMapMethods mMapTask;
 
 
-    interface TaskRunnableCropMethods {
+    interface TaskRunnableMapMethods {
 
         /**
          * Sets the Thread that this instance is running on
          * @param currentThread the current Thread
          */
         void setCropThread(Thread currentThread);
-
+        void handleState(int state);
         File getFile();
         void setFile(File file);
 
@@ -45,10 +31,10 @@ public class CropRunnable implements Runnable {
      * This constructor creates an instance of CropRunnable and stores in it a reference
      * to the PhotoTask instance that instantiated it.
      *
-     * @param cropTask The CropTask, which implements TaskRunnableCropMethods
+     * @param mapTask The CropTask, which implements TaskRunnableCropMethods
      */
-    CropRunnable(TaskRunnableCropMethods cropTask) {
-        mCropTask = cropTask;
+    MapRunnable(TaskRunnableMapMethods mapTask) {
+        mMapTask = mapTask;
     }
 
 
@@ -58,7 +44,7 @@ public class CropRunnable implements Runnable {
         // Moves the current Thread into the background
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 
-        File file = mCropTask.getFile();
+        File file = mMapTask.getFile();
 
         try {
             // Before continuing, checks to see that the Thread hasn't been
@@ -69,25 +55,35 @@ public class CropRunnable implements Runnable {
 
 //            This is where the magic happens :)
 
-            ArrayList<PointF> points = Cropper.findRect(file.getAbsolutePath());
-            if (points != null && points.size() > 0) {
+            String fileName = file.getAbsolutePath();
+            ArrayList<PointF> points = Cropper.getNormedCropPoints(fileName);
+            Mapper.mapImage(fileName, points);
+            mMapTask.handleState(0);
 
-                Cropper.savePointsToExif(file.getAbsolutePath(), points);
+//            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+//            File f = new File(mCurrentPhotoPath);
+//            Uri contentUri = Uri.fromFile(f);
+//            mediaScanIntent.setData(contentUri);
+//            sendBroadcast(mediaScanIntent);
 
-                CropManager.mapFile(file);
-//                ExifInterface exif = new ExifInterface(file.getAbsolutePath());
-//                if (exif != null) {
-//                    // Save the coordinates of the page detection:
-//                    if (points != null) {
-//                        String coordString = Cropper.getCoordString(points);
-//                        if (coordString != null) {
-//                            exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
-//                            exif.saveAttributes();
-//                            Log.d(getClass().getName(), "run(): coordString" + coordString);
-//                        }
-//                    }
-//                }
-            }
+
+//            ArrayList<PointF> points = Cropper.findRect(file.getAbsolutePath());
+//            if (points != null && points.size() > 0) {
+//
+//                Cropper.savePointsToExif(file.getAbsolutePath(), points);
+////                ExifInterface exif = new ExifInterface(file.getAbsolutePath());
+////                if (exif != null) {
+////                    // Save the coordinates of the page detection:
+////                    if (points != null) {
+////                        String coordString = Cropper.getCoordString(points);
+////                        if (coordString != null) {
+////                            exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
+////                            exif.saveAttributes();
+////                            Log.d(getClass().getName(), "run(): coordString" + coordString);
+////                        }
+////                    }
+////                }
+//            }
 
                 // Catches exceptions thrown in response to a queued interrupt
         } catch (InterruptedException e1) {
@@ -95,8 +91,8 @@ public class CropRunnable implements Runnable {
             // Does nothing
 
             // In all cases, handle the results
-        } catch (IOException e) {
-            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
         } finally {
 
             // If the file is null, reports that the cropping failed.
@@ -112,7 +108,7 @@ public class CropRunnable implements Runnable {
              */
 
             // Sets the reference to the current Thread to null, releasing its storage
-            mCropTask.setCropThread(null);
+            mMapTask.setCropThread(null);
 
             // Clears the Thread's interrupt flag
             Thread.interrupted();
