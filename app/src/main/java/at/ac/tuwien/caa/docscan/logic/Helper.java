@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
@@ -151,8 +152,8 @@ public class Helper {
                 exif.setAttribute(ExifInterface.TAG_ORIENTATION, newOrientation);
 
             exif.saveAttributes();
-//            Commented this because cropping will be released later on:
-//            Cropper.rotate90Degrees(outFile.getAbsolutePath());
+
+            Cropper.rotate90Degrees(outFile.getAbsolutePath());
         }
 
         return newOrientation != null;

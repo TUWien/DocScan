@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
@@ -136,11 +137,9 @@ public class ImageViewerFragment extends Fragment {
             e.printStackTrace();
         }
 
-
-
         Log.d(CLASS_NAME, "refreshImageView: w: " + imageWidth + " h: " + imageHeight);
-//            Commented this because cropping will be released later on:
-//        mImageView.setPoints(Cropper.getScaledCropPoints(mFileName, imageHeight, imageWidth));
+
+        mImageView.setPoints(Cropper.getScaledCropPoints(mFileName, imageHeight, imageWidth));
 
     }
 

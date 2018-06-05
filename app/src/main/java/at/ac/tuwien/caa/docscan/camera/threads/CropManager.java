@@ -119,13 +119,20 @@ public class CropManager {
                 }
             }
 
+            /**
+             * Informs DocScan and other (system) apps that the image has been changed.
+             * @param file
+             */
             private void galleryAddPic(File file) {
 
                 Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
 
                 Uri contentUri = Uri.fromFile(file);
                 mediaScanIntent.setData(contentUri);
-                mContext.get().sendBroadcast(mediaScanIntent);
+
+//                Send the broadcast:
+                if ((mContext != null) && (mContext.get() != null))
+                    mContext.get().sendBroadcast(mediaScanIntent);
 
             }
 

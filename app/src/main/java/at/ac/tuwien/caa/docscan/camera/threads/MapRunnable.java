@@ -57,33 +57,8 @@ public class MapRunnable implements Runnable {
 
             String fileName = file.getAbsolutePath();
             ArrayList<PointF> points = Cropper.getNormedCropPoints(fileName);
-            Mapper.mapImage(fileName, points);
+            Mapper.replaceWithMappedImage(fileName, points);
             mMapTask.handleState(0);
-
-//            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-//            File f = new File(mCurrentPhotoPath);
-//            Uri contentUri = Uri.fromFile(f);
-//            mediaScanIntent.setData(contentUri);
-//            sendBroadcast(mediaScanIntent);
-
-
-//            ArrayList<PointF> points = Cropper.findRect(file.getAbsolutePath());
-//            if (points != null && points.size() > 0) {
-//
-//                Cropper.savePointsToExif(file.getAbsolutePath(), points);
-////                ExifInterface exif = new ExifInterface(file.getAbsolutePath());
-////                if (exif != null) {
-////                    // Save the coordinates of the page detection:
-////                    if (points != null) {
-////                        String coordString = Cropper.getCoordString(points);
-////                        if (coordString != null) {
-////                            exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
-////                            exif.saveAttributes();
-////                            Log.d(getClass().getName(), "run(): coordString" + coordString);
-////                        }
-////                    }
-////                }
-//            }
 
                 // Catches exceptions thrown in response to a queued interrupt
         } catch (InterruptedException e1) {
@@ -99,13 +74,6 @@ public class MapRunnable implements Runnable {
             if (file == null) {
 //                mPhotoTask.handleDownloadState(HTTP_STATE_FAILED);
             }
-
-            /*
-             * The implementation of setHTTPDownloadThread() in PhotoTask calls
-             * PhotoTask.setCurrentThread(), which then locks on the static ThreadPool
-             * object and returns the current thread. Locking keeps all references to Thread
-             * objects the same until the reference to the current Thread is deleted.
-             */
 
             // Sets the reference to the current Thread to null, releasing its storage
             mMapTask.setCropThread(null);

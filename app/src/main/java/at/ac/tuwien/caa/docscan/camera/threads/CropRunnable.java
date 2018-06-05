@@ -74,21 +74,7 @@ public class CropRunnable implements Runnable {
 
                 Cropper.savePointsToExif(file.getAbsolutePath(), points);
 
-                CropManager.mapFile(file);
-//                ExifInterface exif = new ExifInterface(file.getAbsolutePath());
-//                if (exif != null) {
-//                    // Save the coordinates of the page detection:
-//                    if (points != null) {
-//                        String coordString = Cropper.getCoordString(points);
-//                        if (coordString != null) {
-//                            exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
-//                            exif.saveAttributes();
-//                            Log.d(getClass().getName(), "run(): coordString" + coordString);
-//                        }
-//                    }
-//                }
             }
-
                 // Catches exceptions thrown in response to a queued interrupt
         } catch (InterruptedException e1) {
 
@@ -103,13 +89,6 @@ public class CropRunnable implements Runnable {
             if (file == null) {
 //                mPhotoTask.handleDownloadState(HTTP_STATE_FAILED);
             }
-
-            /*
-             * The implementation of setHTTPDownloadThread() in PhotoTask calls
-             * PhotoTask.setCurrentThread(), which then locks on the static ThreadPool
-             * object and returns the current thread. Locking keeps all references to Thread
-             * objects the same until the reference to the current Thread is deleted.
-             */
 
             // Sets the reference to the current Thread to null, releasing its storage
             mCropTask.setCropThread(null);
