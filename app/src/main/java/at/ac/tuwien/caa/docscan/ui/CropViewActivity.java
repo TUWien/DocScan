@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.Intent;
 import android.graphics.PointF;
 import android.media.ExifInterface;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
 import at.ac.tuwien.caa.docscan.crop.CropView;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -70,30 +72,21 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
         mCropView = findViewById(R.id.crop_view);
 
-//            Commented this because cropping will be released later on:
-//        Bundle b = getIntent().getExtras();
-//        if (b != null) {
-//            mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
-//
-//            loadBitmap();
-//
-//            if (mFileName != null) {
-//                ArrayList<PointF> points = Cropper.getNormedCropPoints(mFileName);
-//                mCropView.setPoints(points);
-//            }
-//        }
+        initCropView();
+    }
 
-//        mFileName = getArguments() != null ?
-//                getArguments().getString(getString(R.string.key_fragment_image_viewer_file_name)) : null;
+    private void initCropView() {
 
-//        ImageButton button = findViewById(R.id.confirm_crop_view_button);
-//        button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                startMapView();
-//            }
-//        });
+        Bundle b = getIntent().getExtras();
+        if (b != null) {
+            mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
 
+            if (mFileName != null) {
+                loadBitmap();
+                ArrayList<PointF> points = Cropper.getNormedCropPoints(mFileName);
+                mCropView.setPoints(points);
+            }
+        }
     }
 
     @Override
@@ -123,20 +116,19 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
     private void startMapView() {
 
-//            Commented this because cropping will be released later on:
-//        ArrayList<PointF> cropPoints = mCropView.getCropPoints();
-//
-//        try {
-//            Cropper.savePointsToExif(mFileName, cropPoints);
-//
-//            Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
-//            intent.putExtra(getString(R.string.key_crop_view_activity_file_name), mFileName);
-//
-//            startActivity(intent);
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        ArrayList<PointF> cropPoints = mCropView.getCropPoints();
+
+        try {
+            Cropper.savePointsToExif(mFileName, cropPoints);
+
+            Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
+            intent.putExtra(getString(R.string.key_crop_view_activity_file_name), mFileName);
+
+            startActivity(intent);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

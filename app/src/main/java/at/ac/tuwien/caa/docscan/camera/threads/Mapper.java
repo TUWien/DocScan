@@ -29,53 +29,46 @@ public class Mapper {
 
     private static final String CLASS_NAME = "Mapper";
 
-    public static void mapImage(String fileName, ArrayList<PointF> points) {
+    /**
+     * Maps the image and replaces the corresponding file after mapping.
+     * @param fileName
+     * @param points
+     * @return
+     */
+    public static boolean replaceWithMappedImage(String fileName, ArrayList<PointF> points) {
 
         Mat transformedMat = cropAndTransform(fileName, points);
-//        TODO: handle cases where no transformation is found!
-//        if (transformedMat == null)
-//            showNoTransformationAlert();
 
         if (transformedMat != null) {
 
             boolean fileSaved = Imgcodecs.imwrite(fileName, transformedMat);
+            return fileSaved;
 
-//            File file = new File(fileName);
-//            String name = file.getName();
-//            String ext = name.substring(name.lastIndexOf("."));
-//
-//            String nameOut = name.substring(0, name.lastIndexOf("."))
-//                    + "-mapped" + ext;
-//
-//            File fileOut = new File(file.getParent(), nameOut);
-//
-//            boolean fileSaved = Imgcodecs.imwrite(fileOut.getAbsolutePath(), transformedMat);
-
-//            TODO: use the fileSaved state to handle errors!
-
-
-
-//            Log.d(CLASS_NAME, "mapImage: saved file: " + fileOut.getAbsoluteFile());
-//
-//            MediaScannerConnection.scanFile(
-//                    getApplicationContext(),
-//                    new String[]{file.getAbsolutePath()},
-//                    null,
-//                    new MediaScannerConnection.OnScanCompletedListener() {
-//                        @Override
-//                        public void onScanCompleted(String path, Uri uri) {
-//                            Log.v("grokkingandroid",
-//                                    "file " + path + " was scanned seccessfully: " + uri);
-//                        }
-//                    });
-//
-//
-////            Bitmap resultBitmap = matToBitmap(transformedMat);
-////            return resultBitmap;
-//
-//        }
         }
-//        return null;
+
+        return false;
+
+    }
+
+    /**
+     * Maps the image and saves it in the file with the name: newFileName
+     * @param fileName
+     * @param newFileName
+     * @param points
+     * @return
+     */
+    public static boolean mapImage(String fileName, String newFileName, ArrayList<PointF> points) {
+
+        Mat transformedMat = cropAndTransform(fileName, points);
+
+        if (transformedMat != null) {
+
+            boolean fileSaved = Imgcodecs.imwrite(newFileName, transformedMat);
+            return fileSaved;
+
+        }
+
+        return false;
 
     }
 

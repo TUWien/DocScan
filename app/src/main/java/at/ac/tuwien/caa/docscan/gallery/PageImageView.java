@@ -78,20 +78,20 @@ public class PageImageView extends SubsamplingScaleImageView {
 
     }
 
-//            Commented this because cropping will be released later on:
-//    @Override
-//    protected void onDraw(Canvas canvas) {
-//        super.onDraw(canvas);
-//
-//        // Don't draw pin before image is ready so it doesn't move around during setup.
-//        if (!isReady()) {
-//            return;
-//        }
-//
-//        drawQuad(canvas, mPoints);
-//
-//
-//    }
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+
+        // This comment was in the example of SubSamplingImageView:
+        // Don't draw before image is ready so it doesn't move around during setup.
+        if (!isReady()) {
+            return;
+        }
+
+        if ((canvas != null) && (mPoints != null) && (mPoints.size() > 0))
+            drawQuad(canvas, mPoints);
+
+    }
 
     private void drawQuad(Canvas canvas, ArrayList<PointF> points) {
 

@@ -2499,9 +2499,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             // Set the thumbnail on the gallery button, this must be done on the UI thread:
             updateThumbnail(new File(uri));
 
-//            Commented this because cropping will be released later on:
+//            Start the page detection on the saved image:
             CropManager.saveCropResult(new File(uri), mContext);
-
 
         }
 

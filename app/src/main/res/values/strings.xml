@@ -14,7 +14,11 @@
     <string name="account_logout">Logout</string>
     <string name="settings_item_text">Settings</string>
 
-    <!-- Use in the MainActivity: start -->
+    <!-- Strings used by multiple activities/dialogs -->
+    <string name="dialog_ok_text">OK</string>
+    <string name="dialog_cancel_text">Cancel</string>
+
+    <!--CameraActivity-->
 
     <string name="show_debug_view_text">Show debug view</string>
     <string name="hide_debug_view_text">Hide debug view</string>
@@ -105,7 +109,9 @@
     <string name="crop_view_item_rotate">Rotate 90 degrees</string>
     <string name="crop_view_item_apply">Apply changes</string>
 
+    <!-- MapViewActivity -->
     <string name="map_view_item_save">Save image</string>
+    <string name="map_view_loading_text">Please wait</string>
 
     <!-- Preferences -->
     <string name="pref_precise_page_detection">Use precise page detection</string>
@@ -255,6 +261,9 @@
     <string name="create_series_hierarchy_text">Hierarchy</string>
 
     <string name="map_crop_view_title">Warp image</string>
+    <string name="map_crop_view_overwrite_title">Replace image?</string>
+    <string name="map_crop_view_overwrite_text">This will replace the original image and cannot
+        be undone. Are you sure you want to continue?</string>
     <string name="map_crop_view_no_transformation_title">Image not transformed</string>
     <string name="map_crop_view_no_transformation_text">The image could not be transformed. Please try to adjust the cropping rectangle.</string>
     <!-- SettingsFragment -->
