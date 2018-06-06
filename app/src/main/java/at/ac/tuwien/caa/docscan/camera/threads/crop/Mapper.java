@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.camera.threads;
+package at.ac.tuwien.caa.docscan.camera.threads.crop;
 
 import android.graphics.Bitmap;
 import android.graphics.PointF;

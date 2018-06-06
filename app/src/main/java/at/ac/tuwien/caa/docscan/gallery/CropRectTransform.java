@@ -2,7 +2,6 @@ package at.ac.tuwien.caa.docscan.gallery;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
@@ -16,7 +15,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 
 public class CropRectTransform extends BitmapTransformation {
 
@@ -56,7 +55,7 @@ public class CropRectTransform extends BitmapTransformation {
         // Draw the original Bitmap onto the result Bitmap with a transformation:
         canvas.drawBitmap(resized, 0, 0, paint);
 
-        ArrayList<PointF> points = Cropper.getScaledCropPoints(mFileName,
+        ArrayList<PointF> points = PageDetector.getScaledCropPoints(mFileName,
                 original.getWidth(), original.getHeight());
         drawQuad(canvas, points);
 

@@ -33,7 +33,7 @@ import java.io.File;
 import java.io.IOException;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
@@ -100,7 +100,7 @@ public class ImageViewerFragment extends Fragment {
 //            int imageHeight = options.outHeight;
 //            int imageWidth = options.outWidth;
 //
-//            mImageView.setPoints(Cropper.getScaledCropPoints(mFileName, imageHeight, imageWidth));
+//            mImageView.setPoints(PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth));
 //
 //        }
 ////      PhotoView by Chris Bane:
@@ -139,7 +139,7 @@ public class ImageViewerFragment extends Fragment {
 
         Log.d(CLASS_NAME, "refreshImageView: w: " + imageWidth + " h: " + imageHeight);
 
-        mImageView.setPoints(Cropper.getScaledCropPoints(mFileName, imageHeight, imageWidth));
+        mImageView.setPoints(PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth));
 
     }
 

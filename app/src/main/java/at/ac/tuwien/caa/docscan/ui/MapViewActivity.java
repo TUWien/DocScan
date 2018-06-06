@@ -20,8 +20,8 @@ import java.io.File;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
-import at.ac.tuwien.caa.docscan.camera.threads.Mapper;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.Mapper;
 
 /**
  * Created by fabian on 24.11.2017.
@@ -50,7 +50,7 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
             if (mFileName != null) {
                 new MapTask().execute(mFileName);
-//                ArrayList<PointF> points = Cropper.getNormedCropPoints(mFileName);
+//                ArrayList<PointF> points = PageDetector.getNormedCropPoints(mFileName);
 //                mapImage(points);
 //                mCropView.setPoints(points);
             }
@@ -171,7 +171,7 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
         protected Boolean doInBackground(String... strings) {
             String fileName = strings[0];
 
-            ArrayList<PointF> points = Cropper.getNormedCropPoints(fileName);
+            ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
 
 //            Save the file: We still need the original image at this point, so save it as a temp file:
             File newFile = getTempFileName(fileName);
