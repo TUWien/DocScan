@@ -24,6 +24,12 @@
             app:showAsAction="always"
             />
         <item
+            android:icon="@drawable/ic_crop_black_24dp"
+            android:title="@string/gallery_menu_select_all_item_title"
+            android:onClick="cropSelectedItems"
+            app:showAsAction="always"
+            />
+        <item
             android:icon="@drawable/ic_rotate_right_black_24dp"
             android:title="@string/gallery_menu_rotate_item_title"
             android:onClick="rotateSelectedItems"

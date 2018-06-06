@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import java.io.IOException;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
 import at.ac.tuwien.caa.docscan.gallery.GalleryLayoutManager;
 import at.ac.tuwien.caa.docscan.gallery.InnerItemDecoration;
@@ -245,6 +246,19 @@ public class GalleryActivity extends AppCompatActivity implements
 
      }
 
+    public void cropSelectedItems(MenuItem item) {
+
+        // Check if we have the permission to rotate images:
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
+        } else
+            cropSelectedItems();
+
+
+    }
+
+
     public void deleteSelectedItems(MenuItem item) {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -263,6 +277,22 @@ public class GalleryActivity extends AppCompatActivity implements
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
         } else
             rotateSelectedItems();
+
+    }
+
+    private void cropSelectedItems() {
+
+        if (mDocument == null || mAdapter == null)
+            return;
+
+        int[] selections = mAdapter.getSelectionIndices();
+
+        for (int i = 0; i < selections.length; i++) {
+                CropManager.mapFile(mDocument.getPages().get(selections[i]).getFile());
+        }
+
+        mAdapter.notifyDataSetChanged();
+
 
     }
 
