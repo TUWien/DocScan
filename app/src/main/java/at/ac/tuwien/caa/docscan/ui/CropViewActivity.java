@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
-import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.crop.CropView;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -83,7 +83,7 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
             if (mFileName != null) {
                 loadBitmap();
-                ArrayList<PointF> points = Cropper.getNormedCropPoints(mFileName);
+                ArrayList<PointF> points = PageDetector.getNormedCropPoints(mFileName);
                 mCropView.setPoints(points);
             }
         }
@@ -119,7 +119,7 @@ public class CropViewActivity extends BaseNoNavigationActivity {
         ArrayList<PointF> cropPoints = mCropView.getCropPoints();
 
         try {
-            Cropper.savePointsToExif(mFileName, cropPoints);
+            PageDetector.savePointsToExif(mFileName, cropPoints);
 
             Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
             intent.putExtra(getString(R.string.key_crop_view_activity_file_name), mFileName);

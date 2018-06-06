@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.camera.threads;
+package at.ac.tuwien.caa.docscan.camera.threads.crop;
 
 import android.graphics.PointF;
 import android.media.ExifInterface;
@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 
-public class Cropper {
+public class PageDetector {
 
     public static final String BORDER_COORDS_PREFIX = "<Border><Coords points=\"";
     public static final String BORDER_COORDS_POSTFIX = "\"/></Border>";
-    private static final String CLASS_TAG = "Cropper";
+    private static final String CLASS_TAG = "PageDetector";
 
     /**
      * Performs the page detection. Note this is done in the calling thread, so assure you are not
@@ -121,7 +121,7 @@ public class Cropper {
         if (exif != null) {
             // Save the coordinates of the page detection:
             if (points != null) {
-                String coordString = Cropper.getCoordString(points);
+                String coordString = PageDetector.getCoordString(points);
                 if (coordString != null) {
                     exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
                     exif.saveAttributes();

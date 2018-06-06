@@ -74,7 +74,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center">
             <ProgressBar
-                android:id="@+id/login_progressbar"
+                android:id="@+id/map_progressbar"
                 android:layout_width="@dimen/login_spinner_size"
                 android:layout_height="@dimen/login_spinner_size"
                 android:layout_centerHorizontal="true"
@@ -82,7 +82,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/login_progressbar"
+                android:layout_below="@+id/map_progressbar"
                 android:layout_centerHorizontal="true"
                 android:text="@string/login_loading_text"/>
         </RelativeLayout>

@@ -16,7 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.threads.Cropper;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
@@ -153,7 +153,7 @@ public class Helper {
 
             exif.saveAttributes();
 
-            Cropper.rotate90Degrees(outFile.getAbsolutePath());
+            PageDetector.rotate90Degrees(outFile.getAbsolutePath());
         }
 
         return newOrientation != null;
