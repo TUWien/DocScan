@@ -2505,7 +2505,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             updateThumbnail(new File(uri));
 
 //            Start the page detection on the saved image:
-//            CropManager.pageDetection(new File(uri));
             CropManager.pageDetection(new File(uri));
 
         }

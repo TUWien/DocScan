@@ -204,7 +204,7 @@ public class CropManager {
 
 
 
-    public static PageDetectionTask pageDetection(File file) {
+    public static void pageDetection(File file) {
 
         Log.d(CLASS_NAME, "pageDetection:");
 
@@ -217,13 +217,14 @@ public class CropManager {
 
         sInstance.mCropThreadPool.execute(pageDetectionTask.getRunnable());
 
-        return pageDetectionTask;
-
     }
 
-    public static MapTask mapFile(File file) {
+    public static void mapFile(File file) {
 
         Log.d(CLASS_NAME, "mapFile:");
+
+        if (PageDetector.isCropped(file.getAbsolutePath()))
+            return;
 
         MapTask mapTask = new MapTask();
         mapTask.initializeTask(sInstance);
@@ -233,8 +234,6 @@ public class CropManager {
         CropLogger.addMapTask(file);
 
         sInstance.mCropThreadPool.execute(mapTask.getRunnable());
-
-        return mapTask;
 
     }
 

@@ -20,10 +20,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
 import at.ac.tuwien.caa.docscan.gallery.GalleryLayoutManager;
 import at.ac.tuwien.caa.docscan.gallery.InnerItemDecoration;
@@ -329,10 +332,23 @@ public class GalleryActivity extends AppCompatActivity implements
         if (mDocument == null || mAdapter == null)
             return;
 
-        int[] selections = mAdapter.getSelectionIndices();
+        int[] selectionIdx = mAdapter.getSelectionIndices();
+        ArrayList<Integer> uncroppedIdx = new ArrayList<>();
 
-        for (int i = 0; i < selections.length; i++) {
-                CropManager.mapFile(mDocument.getPages().get(selections[i]).getFile());
+//        Check if some selected files are already cropped, deselect these:
+        for (int i = 0; i < selectionIdx.length; i++) {
+            String fileName = mDocument.getPages().get(selectionIdx[i]).getFile().getAbsolutePath();
+            if (!PageDetector.isCropped(fileName))
+                uncroppedIdx.add(selectionIdx[i]);
+        }
+
+        if (uncroppedIdx.size() < selectionIdx.length)
+            mAdapter.setSelections(uncroppedIdx);
+
+//        TODO: show an error message if selectionIdx.size != uncroppedIdx.length
+
+        for (int i = 0; i < selectionIdx.length; i++) {
+                CropManager.mapFile(mDocument.getPages().get(selectionIdx[i]).getFile());
         }
 
         mAdapter.notifyDataSetChanged();
