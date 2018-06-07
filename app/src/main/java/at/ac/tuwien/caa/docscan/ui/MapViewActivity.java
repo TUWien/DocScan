@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.media.ExifInterface;
 import android.support.v7.app.AlertDialog;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,17 +18,25 @@ import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.Mapper;
+import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 
 /**
  * Created by fabian on 24.11.2017.
  */
 
 public class MapViewActivity  extends BaseNoNavigationActivity {
+
+    public static final String KEY_MAP_VIEW_ACTIVITY_FINISHED = "KEY_MAP_VIEW_ACTIVITY_FINISHED";
 
     private static final String TEMP_IMG_PREFIX = "TEMP_";
 
@@ -111,10 +120,62 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
     private void replaceImage() {
         //        Overwrite the original file with the temp file:
         if (mFileName != null) {
-            File file = getTempFileName(mFileName);
-            if (file != null) {
-                file.renameTo(new File(mFileName));
+            File tempFile = getTempFileName(mFileName);
+            if (tempFile != null) {
+                File newFile = new File(mFileName);
+                try {
+
+//                    Store the exif data of the original file:
+                    ExifInterface exif = new ExifInterface(mFileName);
+//                    Save the temporary file on the external storage:
+                    copyFile(tempFile, newFile);
+//                    Save the exif data of the original image to the new image:
+                    Helper.saveExif(exif, newFile.getAbsolutePath());
+//                    Save the new image as being cropped:
+                    PageDetector.saveAsCropped(newFile.getAbsolutePath());
+                    sendNewImageBroadcast(newFile);
+
+                    GalleryActivity.fileCropped();
+
+//                    Start the CropViewActivity and tell it to immediately close itself:
+                    Intent intent = new Intent(this, CropViewActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    intent.putExtra(KEY_MAP_VIEW_ACTIVITY_FINISHED, true);
+                    startActivity(intent);
+
+//                    Close the activity:
+                    finish();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+
+
+        }
+    }
+
+    /**
+     * Moves the temporary file from the internal to the external storage and overwrites the
+     * original image.
+     * @param src
+     * @param dst
+     * @throws IOException
+     */
+    private static void copyFile(File src, File dst) throws IOException
+    {
+        FileChannel inChannel = new FileInputStream(src).getChannel();
+        FileChannel outChannel = new FileOutputStream(dst).getChannel();
+        try
+        {
+            inChannel.transferTo(0, inChannel.size(), outChannel);
+        }
+        finally
+        {
+            if (inChannel != null)
+                inChannel.close();
+            if (outChannel != null)
+                outChannel.close();
         }
     }
 
@@ -157,11 +218,34 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
     }
 
+    /**
+     * Constructs a new temporary file the in the internal storage directory of the app.
+     * @param fileName
+     * @return
+     */
     @NonNull
     private File getTempFileName(String fileName) {
+
         File file = new File(fileName);
         String newFileName = TEMP_IMG_PREFIX + file.getName();
-        return new File(file.getParent(), newFileName);
+        return new File(getFilesDir(), newFileName);
+
+    }
+
+    /**
+     * Informs DocScan and other (system) apps that the image has been changed.
+     * @param file
+     */
+    private void sendNewImageBroadcast(File file) {
+
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+
+        Uri contentUri = Uri.fromFile(file);
+        mediaScanIntent.setData(contentUri);
+
+//                Send the broadcast:
+        sendBroadcast(mediaScanIntent);
+
     }
 
     private class MapTask extends AsyncTask<String, Void, Boolean> {
@@ -196,21 +280,6 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
             hideLoadingLayout();
         }
 
-        /**
-         * Informs DocScan and other (system) apps that the image has been changed.
-         * @param file
-         */
-        private void sendNewImageBroadcast(File file) {
-
-            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-
-            Uri contentUri = Uri.fromFile(file);
-            mediaScanIntent.setData(contentUri);
-
-//                Send the broadcast:
-            sendBroadcast(mediaScanIntent);
-
-        }
 
         protected void hideLoadingLayout() {
 

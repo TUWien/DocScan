@@ -51,6 +51,7 @@
         </RelativeLayout>
 
         <RelativeLayout
+            android:id="@+id/page_view_buttons_layout_crop_layout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1">
@@ -70,7 +71,6 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1">
-
             <ImageView
                 android:id="@+id/page_view_buttons_layout_delete_button"
                 android:layout_width="wrap_content"
@@ -82,21 +82,8 @@
                 app:srcCompat="@drawable/ic_delete_white_24dp" />
         </RelativeLayout>
 
-        <!--<RelativeLayout-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_weight="1">-->
-
-            <!--<ImageView-->
-                <!--android:id="@+id/delete_button"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_centerInParent="true"-->
-                <!--android:layout_marginBottom="8dp"-->
-                <!--android:layout_marginTop="8dp"-->
-                <!--android:background="?selectableItemBackgroundBorderless"-->
-                <!--android:padding="8dp"-->
-                <!--app:srcCompat="@drawable/ic_cancel_white_24dp" />-->
-        <!--</RelativeLayout>-->
     </LinearLayout>
+
+
+
 </LinearLayout>

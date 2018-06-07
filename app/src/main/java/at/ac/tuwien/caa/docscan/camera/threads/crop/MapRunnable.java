@@ -35,7 +35,7 @@ public class MapRunnable extends CropRunnable{
             ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
 
             if (Mapper.replaceWithMappedImage(fileName, points))
-                PageDetector.saveCropState(fileName);
+                PageDetector.saveAsCropped(fileName);
 
             mCropTask.handleState(0);
 

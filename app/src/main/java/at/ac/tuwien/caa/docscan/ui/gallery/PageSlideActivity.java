@@ -40,6 +40,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,6 +101,17 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null))
+            mPagerAdapter.getCurrentFragment().refreshImageView();
+
+        showHideCropButton();
+
+    }
+
 
     /**
      * Called after permission has been given or has been rejected. This is necessary on Android M
@@ -131,9 +143,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
 
     private void initPager() {
+
         mPager = findViewById(R.id.slide_viewpager);
-
-
         mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -144,15 +155,10 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             public void onPageSelected(int position) {
 
                 mPage = mDocument.getPages().get(position);
-
-//                Check if the file is already cropped.
-                ImageView cropImageView = findViewById(R.id.page_view_buttons_layout_crop_button);
-                if (PageDetector.isCropped(mPage.getFile().getAbsolutePath()))
-                    cropImageView.setVisibility(View.INVISIBLE);
-                else
-                    cropImageView.setVisibility(View.VISIBLE);
-
                 setToolbarTitle(position);
+
+                showHideCropButton();
+
 
             }
 
@@ -161,6 +167,17 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
             }
         });
+    }
+
+    private void showHideCropButton() {
+
+//                Check if the file is already cropped.
+        RelativeLayout l = findViewById(R.id.page_view_buttons_layout_crop_layout);
+        if (PageDetector.isCropped(mPage.getFile().getAbsolutePath()))
+            l.setVisibility(View.GONE);
+        else
+            l.setVisibility(View.VISIBLE);
+
     }
 
     private void initToolbar() {
@@ -203,18 +220,18 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-    // A method to find height of the navigation bar
-//    Based on: https://gist.github.com/hamakn/8939eb68a920a6d7a498
-    private int getNavigationBarHeight() {
-
-        int result = 0;
-        int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-
-        return result;
-    }
+//    // A method to find height of the navigation bar
+////    Based on: https://gist.github.com/hamakn/8939eb68a920a6d7a498
+//    private int getNavigationBarHeight() {
+//
+//        int result = 0;
+//        int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+//        if (resourceId > 0) {
+//            result = getResources().getDimensionPixelSize(resourceId);
+//        }
+//
+//        return result;
+//    }
 
 
 
@@ -258,7 +275,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                 if (Helper.rotateExif(mPage.getFile().getAbsoluteFile())) {
                     mPagerAdapter.getCurrentFragment().refreshImageView();
 //                              Tell the gallery viewer that the file has rotated:
-
                     GalleryActivity.fileRotated();
                 }
             } catch (IOException e) {

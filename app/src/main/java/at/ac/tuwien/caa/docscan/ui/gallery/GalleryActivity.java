@@ -51,7 +51,7 @@ public class GalleryActivity extends AppCompatActivity implements
 //    This is used to determine if some file changes (rotation or deletion) happened outside of the
 //    GalleryActivity (i.e. in the ImageViewerFragment). If something changed we need to reload the
 //    images in onResume.
-    private static boolean mFileDeleted, mFileRotated;
+    private static boolean sFileDeleted, sFileRotated, sFileCropped;
 
 
     @Override
@@ -81,12 +81,13 @@ public class GalleryActivity extends AppCompatActivity implements
 
 //        Just reload the files if some file changes happened in the meantime:
 
-        if (mFileDeleted) {
+        if (sFileDeleted) {
             loadDocument(); // get the files contained in the document:
             initAdapter();
+            mAdapter.notifyDataSetChanged();
         }
 
-        if (mFileRotated) {
+        if (sFileRotated || sFileCropped) {
             if (mAdapter != null)
                 mAdapter.notifyDataSetChanged();
         }
@@ -125,16 +126,21 @@ public class GalleryActivity extends AppCompatActivity implements
     }
 
     public static void resetFileManipulation() {
-        mFileDeleted = false;
-        mFileRotated = false;
+        sFileDeleted = false;
+        sFileRotated = false;
+        sFileCropped = false;
     }
 
     public static void fileDeleted() {
-        mFileDeleted = true;
+        sFileDeleted = true;
+    }
+
+    public static void fileCropped() {
+        sFileCropped = true;
     }
 
     public static void fileRotated() {
-        mFileRotated = true;
+        sFileRotated = true;
     }
 
     private void initAdapter() {
