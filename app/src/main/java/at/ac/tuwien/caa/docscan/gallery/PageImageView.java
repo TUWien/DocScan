@@ -32,6 +32,7 @@ public class PageImageView extends SubsamplingScaleImageView {
         super(context, attr);
 
         mClickCallBack = (SingleClickListener) context;
+
         initPaint();
 
     }
@@ -50,16 +51,15 @@ public class PageImageView extends SubsamplingScaleImageView {
     public void setPoints(ArrayList<PointF> points) {
 
         mPoints = points;
-
         invalidate();
 
     }
 
-    public void setClickCallBack(SingleClickListener listener) {
-
-        mClickCallBack = listener;
-
-    }
+//    public void setClickCallBack(SingleClickListener listener) {
+//
+//        mClickCallBack = listener;
+//
+//    }
 
     public PageImageView(Context context) {
         super(context);

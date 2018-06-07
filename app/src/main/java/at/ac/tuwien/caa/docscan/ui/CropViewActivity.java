@@ -2,8 +2,8 @@ package at.ac.tuwien.caa.docscan.ui;
 
 import android.content.Intent;
 import android.graphics.PointF;
-import android.media.ExifInterface;
 import android.os.Bundle;
+import android.support.media.ExifInterface;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;

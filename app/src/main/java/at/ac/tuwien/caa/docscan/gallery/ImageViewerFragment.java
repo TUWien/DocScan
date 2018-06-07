@@ -85,32 +85,6 @@ public class ImageViewerFragment extends Fragment {
 
     }
 
-//    private void initImageView(ViewGroup rootView) {
-//
-//        if (mFileName != null) {
-//
-//
-//            mImageView.setImage(ImageSource.uri(mFileName));
-//
-//
-////            Get the image dimensions without loading it:
-//            BitmapFactory.Options options = new BitmapFactory.Options();
-//            options.inJustDecodeBounds = true;
-//            BitmapFactory.decodeFile(mFileName, options);
-//            int imageHeight = options.outHeight;
-//            int imageWidth = options.outWidth;
-//
-//            mImageView.setPoints(PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth));
-//
-//        }
-////      PhotoView by Chris Bane:
-////        PhotoView photoView = rootView.findViewById(R.id.page_slide_photo_view);
-////        photoView.setImageURI(Uri.fromFile(mPage.getFile()));
-////        photoView.setRotationBy();
-//
-//    }
-
-
     public void refreshImageView() {
 
         mImageView.setImage(ImageSource.uri(mFileName));
@@ -139,7 +113,8 @@ public class ImageViewerFragment extends Fragment {
 
         Log.d(CLASS_NAME, "refreshImageView: w: " + imageWidth + " h: " + imageHeight);
 
-        mImageView.setPoints(PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth));
+        if (!PageDetector.isCropped(mFileName))
+            mImageView.setPoints(PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth));
 
     }
 

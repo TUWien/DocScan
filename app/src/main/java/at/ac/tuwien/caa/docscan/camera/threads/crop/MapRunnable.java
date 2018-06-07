@@ -33,7 +33,10 @@ public class MapRunnable extends CropRunnable{
 
             String fileName = file.getAbsolutePath();
             ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
-            Mapper.replaceWithMappedImage(fileName, points);
+
+            if (Mapper.replaceWithMappedImage(fileName, points))
+                PageDetector.saveCropState(fileName);
+
             mCropTask.handleState(0);
 
             // Catches exceptions thrown in response to a queued interrupt

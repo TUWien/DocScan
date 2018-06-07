@@ -1,8 +1,8 @@
 package at.ac.tuwien.caa.docscan.camera.threads.crop;
 
 import android.graphics.PointF;
-import android.media.ExifInterface;
 import android.os.Looper;
+import android.support.media.ExifInterface;
 import android.util.Log;
 
 import org.opencv.core.Mat;
@@ -20,6 +20,7 @@ public class PageDetector {
     public static final String BORDER_COORDS_PREFIX = "<Border><Coords points=\"";
     public static final String BORDER_COORDS_POSTFIX = "\"/></Border>";
     private static final String CLASS_TAG = "PageDetector";
+    public static final String CROPPING_PREFIX = "<Cropping applied=\"true\"/>";
 
     /**
      * Performs the page detection. Note this is done in the calling thread, so assure you are not
@@ -38,7 +39,6 @@ public class PageDetector {
         Mat mg = new Mat();
         Imgproc.cvtColor(inputMat, mg, Imgproc.COLOR_RGBA2RGB);
 
-//            TODO: put this into AsyncTask:
         DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mg);
 
         if (polyRects.length > 0 && polyRects[0] != null) {
@@ -121,7 +121,7 @@ public class PageDetector {
         if (exif != null) {
             // Save the coordinates of the page detection:
             if (points != null) {
-                String coordString = PageDetector.getCoordString(points);
+                String coordString = getCoordString(points);
                 if (coordString != null) {
                     exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
                     exif.saveAttributes();
@@ -244,26 +244,44 @@ public class PageDetector {
 
     }
 
-//    /**
-//     * Returns points that are located at the image corners.
-//     * @param width
-//     * @param height
-//     * @return
-//     */
-//    static ArrayList<PointF> getDefaultPoints(int width, int height) {
-//
-//        ArrayList<PointF> points = new ArrayList<>();
-////        I am not sure if we have to take care about the direction (cw vs. ccw):
-//        points.add(new PointF(0, 0));
-//        points.add(new PointF(0, height));
-//        points.add(new PointF(width, height));
-//        points.add(new PointF(0, height));
-//
-//        return points;
-//
-//    }
+    public static void saveCropState(String fileName) {
 
+        try {
+            ExifInterface exif = new ExifInterface(fileName);
+            if (exif != null) {
+                String coordString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
+                if (coordString != null) {
+                    coordString = CROPPING_PREFIX + coordString;
+                    exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
+                    exif.saveAttributes();
+                }
+            }
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static boolean isCropped(String fileName) {
+
+        try {
+            ExifInterface exif = new ExifInterface(fileName);
+            if (exif != null) {
+                String coordString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
+                if (coordString != null) {
+                    if (coordString.startsWith(CROPPING_PREFIX))
+                        return true;
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
 
 
 

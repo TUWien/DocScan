@@ -44,6 +44,7 @@ import android.widget.LinearLayout;
 import java.io.File;
 import java.io.IOException;
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
 import at.ac.tuwien.caa.docscan.gallery.PageImageView;
@@ -89,35 +90,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         mContext = this;
 
-//        View decorView = getWindow().getDecorView();
-//        decorView.setOnSystemUiVisibilityChangeListener
-//                (new View.OnSystemUiVisibilityChangeListener() {
-//                    @Override
-//                    public void onSystemUiVisibilityChange(int visibility) {
-//                        // Note that system bars will only be "visible" if none of the
-//                        // LOW_PROFILE, HIDE_NAVIGATION, or FULLSCREEN flags are set.
-//                        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-//                            // TODO: The system bars are visible. Make any desired
-//                            // adjustments to your UI, such as showing the action bar or
-//                            // other navigational controls.
-//                            if (mToolbar != null)
-//                                mToolbar.setVisibility(View.VISIBLE);
-//                            if (mButtonsLayout != null)
-//                                mButtonsLayout.setVisibility(View.VISIBLE);
-//
-//                        } else {
-//                            // TODO: The system bars are NOT visible. Make any desired
-//                            // adjustments to your UI, such as hiding the action bar or
-//                            // other navigational controls.
-//
-//                            if (mToolbar != null)
-//                                mToolbar.setVisibility(View.INVISIBLE);
-//                            if (mButtonsLayout != null)
-//                                mButtonsLayout.setVisibility(View.INVISIBLE);
-//                        }
-//                    }
-//                });
-
 //        Which position was selected?
         int pos = getIntent().getIntExtra(getString(R.string.key_page_position), -1);
         if (pos != -1 && mDocument.getPages() != null && mDocument.getPages().size() > pos) {
@@ -127,21 +99,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         }
 
     }
-
-//    @Override
-//    public void onWindowFocusChanged(boolean hasFocus) {
-//        super.onWindowFocusChanged(hasFocus);
-//        if (hasFocus) {
-//            View decorView = getWindow().getDecorView();
-//            decorView.setSystemUiVisibility(
-//                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-//                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-//                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-//                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-//                            | View.SYSTEM_UI_FLAG_FULLSCREEN
-//                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-//        }
-//    }
 
 
     /**
@@ -187,6 +144,14 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             public void onPageSelected(int position) {
 
                 mPage = mDocument.getPages().get(position);
+
+//                Check if the file is already cropped.
+                ImageView cropImageView = findViewById(R.id.page_view_buttons_layout_crop_button);
+                if (PageDetector.isCropped(mPage.getFile().getAbsolutePath()))
+                    cropImageView.setVisibility(View.INVISIBLE);
+                else
+                    cropImageView.setVisibility(View.VISIBLE);
+
                 setToolbarTitle(position);
 
             }
