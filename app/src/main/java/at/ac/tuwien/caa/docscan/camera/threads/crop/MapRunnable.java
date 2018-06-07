@@ -6,6 +6,8 @@ import android.util.Log;
 import java.io.File;
 import java.util.ArrayList;
 
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.MESSAGE_COMPLETED_TASK;
+
 public class MapRunnable extends CropRunnable{
 
     private static final String CLASS_NAME = "MapRunnable";
@@ -37,7 +39,7 @@ public class MapRunnable extends CropRunnable{
             if (Mapper.replaceWithMappedImage(fileName, points))
                 PageDetector.saveAsCropped(fileName);
 
-            mCropTask.handleState(0);
+            mCropTask.handleState(MESSAGE_COMPLETED_TASK);
 
             // Catches exceptions thrown in response to a queued interrupt
         } catch (InterruptedException e1) {

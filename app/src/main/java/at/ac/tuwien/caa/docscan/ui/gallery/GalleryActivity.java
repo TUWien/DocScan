@@ -1,12 +1,16 @@
 package at.ac.tuwien.caa.docscan.ui.gallery;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -25,7 +29,11 @@ import at.ac.tuwien.caa.docscan.gallery.GalleryLayoutManager;
 import at.ac.tuwien.caa.docscan.gallery.InnerItemDecoration;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
+
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_MAPPED;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
 
 
 /**
@@ -73,6 +81,12 @@ public class GalleryActivity extends AppCompatActivity implements
         initAdapter();
         initToolbar();
 
+        // Register to receive messages.
+        // We are registering an observer (mMessageReceiver) to receive Intents
+        // with actions named "PROGRESS_INTENT_NAME".
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(INTENT_FILE_MAPPED));
+
     }
 
     @Override
@@ -96,6 +110,30 @@ public class GalleryActivity extends AppCompatActivity implements
 //        fixToolbar();
 
     }
+
+    /**
+     * Handles broadcast intents which inform about the upload progress:
+     */
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if (mAdapter != null) {
+                String fileName = intent.getStringExtra(INTENT_FILE_NAME);
+
+                int idx = 0;
+                for (Page page : mDocument.getPages()) {
+                    if (page.getFile().getAbsolutePath().compareTo(fileName) == 0) {
+                        mAdapter.notifyItemChanged(idx);
+                        break;
+                    }
+                    idx++;
+                }
+            }
+
+            mAdapter.deselectAllItems();
+        }
+    };
 
     /**
      * Called after permission has been given or has been rejected. This is necessary on Android M
@@ -298,6 +336,7 @@ public class GalleryActivity extends AppCompatActivity implements
         }
 
         mAdapter.notifyDataSetChanged();
+
 
 
     }

@@ -23,11 +23,14 @@ package at.ac.tuwien.caa.docscan.camera.threads.crop;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -36,7 +39,17 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import at.ac.tuwien.caa.docscan.logic.DataLog;
+
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity.UPLOAD_FILE_DELETED_ERROR_ID;
+import static at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity.UPLOAD_INTEND_KEY;
+
 public class CropManager {
+
+    public static final int MESSAGE_COMPLETED_TASK = 0;
+
+    public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
+    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
 
     // Sets the amount of time an idle thread will wait for a task before terminating
     private static final int KEEP_ALIVE_TIME = 1;
@@ -82,9 +95,10 @@ public class CropManager {
         sInstance = new CropManager();
     }
 
+
     private CropManager() {
 
-       mCropQueue = new LinkedBlockingQueue<>();
+        mCropQueue = new LinkedBlockingQueue<>();
 
         mCropThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
                 KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mCropQueue);
@@ -109,18 +123,29 @@ public class CropManager {
 
                 if (task instanceof PageDetectionTask) {
                     switch (messageId) {
-                        case 0:
-                            Log.d(CLASS_NAME, "handleMessage: CropTask completed");
-                            notifyImageChanged(task.getFile());
+                        case MESSAGE_COMPLETED_TASK:
+                            Log.d(CLASS_NAME, "handleMessage: PageDetectionTask completed");
+
+//                            Remove the corresponding TaskLog from the logger:
+                            CropLogger.removePageDetectionTask(task.getFile());
+
+//                            notifyImageChanged(task.getFile());
                             isMessageProcessed = true;
+
                             break;
                     }
                 }
                 else if (task instanceof MapTask) {
                     switch (messageId) {
-                        case 0:
+                        case MESSAGE_COMPLETED_TASK:
                             Log.d(CLASS_NAME, "handleState: MapTask completed");
+
+//                            Remove the corresponding TaskLog from the logger:
+                            CropLogger.removeMapTask(task.getFile());
+                            notifyImageChanged(task.getFile());
+                            sendFileMappedIntent(task.getFile().getAbsolutePath());
                             isMessageProcessed = true;
+
                             break;
                     }
                 }
@@ -146,8 +171,6 @@ public class CropManager {
                     mContext.get().sendBroadcast(mediaScanIntent);
 
             }
-
-
         };
 
     }
@@ -169,18 +192,29 @@ public class CropManager {
         return sInstance;
     }
 
+    public static void initContext(Context context) {
+
+        Context applicationContext = context.getApplicationContext();
+        sInstance.mContext = new WeakReference<>(applicationContext);
+
+//        Load the logger:
+        CropLogger.getInstance().readFromDisk(sInstance.mContext.get());
+
+    }
 
 
-    public static PageDetectionTask pageDetection(File file, Context context) {
+
+    public static PageDetectionTask pageDetection(File file) {
 
         Log.d(CLASS_NAME, "pageDetection:");
-
-//        TODO: think about a better way for referencing the context:
-        sInstance.mContext = new WeakReference<>(context);
 
         PageDetectionTask pageDetectionTask = new PageDetectionTask();
         pageDetectionTask.initializeTask(sInstance);
         pageDetectionTask.setFile(file);
+
+//        Inform the logger that we got a new file here:
+        CropLogger.addPageDetectionTask(file);
+
         sInstance.mCropThreadPool.execute(pageDetectionTask.getRunnable());
 
         return pageDetectionTask;
@@ -194,10 +228,27 @@ public class CropManager {
         MapTask mapTask = new MapTask();
         mapTask.initializeTask(sInstance);
         mapTask.setFile(file);
+
+//        Inform the logger that we got a new file here:
+        CropLogger.addMapTask(file);
+
         sInstance.mCropThreadPool.execute(mapTask.getRunnable());
 
         return mapTask;
 
     }
+
+    private void sendFileMappedIntent(String fileName) {
+
+        Log.d(CLASS_NAME, "sendFileMappedIntent:");
+
+        Intent intent = new Intent(INTENT_FILE_MAPPED);
+        intent.putExtra(INTENT_FILE_NAME, fileName);
+
+        LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
+
+    }
+
+
 
 }
