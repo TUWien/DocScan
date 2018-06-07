@@ -128,6 +128,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
         int exifOrientation = -1;
         boolean isCropped = false;
+        long modified = file.lastModified();
 
         try {
             exifOrientation =  Helper.getExifOrientation(file);
@@ -147,10 +148,10 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 GlideApp.with(mContext)
                         .load(page.getFile().getPath())
                         //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
-                        .signature(new MediaStoreSignature("", 0, exifOrientation))
+                        .signature(new MediaStoreSignature("", file.lastModified(), exifOrientation))
                         // TODO: enable disk caching!
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true)
+//                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                        .skipMemoryCache(true)
                         .transform(new CropRectTransform(fileName, strokeColor, strokeWidth))
                         .into(imageView);
             }
@@ -159,10 +160,10 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 GlideApp.with(mContext)
                         .load(page.getFile().getPath())
                         //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
-                        .signature(new MediaStoreSignature("", 0, exifOrientation))
+                        .signature(new MediaStoreSignature("", file.lastModified(), exifOrientation))
                         // TODO: enable disk caching!
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .skipMemoryCache(true)
+//                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                        .skipMemoryCache(true)
                         .into(imageView);
             }
         }

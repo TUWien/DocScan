@@ -108,6 +108,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.CropLogger;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
@@ -328,6 +329,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // Read the sync information:
 //        SyncInfo.getInstance().readFromDisk(this);
+
+//        CropLogger.getInstance().readFromDisk(this);
+
+        CropManager.initContext(this);
 
         // Resume camera access:
         if (mCameraPreview != null)
@@ -2500,8 +2505,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             updateThumbnail(new File(uri));
 
 //            Start the page detection on the saved image:
-            CropManager.pageDetection(new File(uri), mContext);
-//            CropManager.saveCropResult(new File(uri), mContext);
+//            CropManager.pageDetection(new File(uri));
+            CropManager.pageDetection(new File(uri));
 
         }
 

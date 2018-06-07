@@ -45,7 +45,6 @@ public class SyncInfo implements Serializable {
     private ArrayList<Integer> mUnfinishedUploadIDs;
     private ArrayList<File> mUploadDirs;
 
-    // TODO: this is a dirty workaround, think about something better useable:
     ArrayList<File> mAwaitingUploadFiles;
 
     public static SyncInfo getInstance() {
