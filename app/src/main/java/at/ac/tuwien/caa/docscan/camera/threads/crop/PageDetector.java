@@ -244,7 +244,7 @@ public class PageDetector {
 
     }
 
-    public static void saveCropState(String fileName) {
+    public static void saveAsCropped(String fileName) {
 
         try {
             ExifInterface exif = new ExifInterface(fileName);

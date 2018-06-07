@@ -16,10 +16,12 @@ import com.bumptech.glide.signature.MediaStoreSignature;
 import com.fivehundredpx.greedolayout.GreedoLayoutSizeCalculator;
 import com.fivehundredpx.greedolayout.Size;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -121,10 +123,15 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
         ImageView imageView = holder.mImageView;
 
-//        Set up the caching strategy: i.e. reload the image after the orientation has changed:
+        File file = mDocument.getPages().get(position).getFile();
+        String fileName = file.getAbsolutePath();
+
         int exifOrientation = -1;
+        boolean isCropped = false;
+
         try {
-            exifOrientation =  Helper.getExifOrientation(mDocument.getPages().get(position).getFile());
+            exifOrientation =  Helper.getExifOrientation(file);
+            isCropped = PageDetector.isCropped(file.getAbsolutePath());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -132,22 +139,37 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
         float strokeWidth = mContext.getResources().getDimension(R.dimen.page_stroke_width);
         int strokeColor = mContext.getResources().getColor(R.color.hud_page_rect_color);
-        String filePath = page.getFile().getAbsolutePath();
+
 
         if (exifOrientation != -1) {
-            GlideApp.with(mContext)
-                    .load(page.getFile().getPath())
-                    .signature(new MediaStoreSignature("", 0, exifOrientation))
-////                    TODO: enable disk caching!
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true)
-                    .transform(new CropRectTransform(filePath, strokeColor, strokeWidth))
-                    .into(imageView);
+//            Draw the page detection border:
+            if (!isCropped) {
+                GlideApp.with(mContext)
+                        .load(page.getFile().getPath())
+                        //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
+                        .signature(new MediaStoreSignature("", 0, exifOrientation))
+                        // TODO: enable disk caching!
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true)
+                        .transform(new CropRectTransform(fileName, strokeColor, strokeWidth))
+                        .into(imageView);
+            }
+//            Image is already cropped, draw no border:
+            else {
+                GlideApp.with(mContext)
+                        .load(page.getFile().getPath())
+                        //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
+                        .signature(new MediaStoreSignature("", 0, exifOrientation))
+                        // TODO: enable disk caching!
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .skipMemoryCache(true)
+                        .into(imageView);
+            }
         }
         else {
+//            Exif data contains no cropping information, simply show the image:
             GlideApp.with(mContext)
                     .load(page.getFile().getPath())
-                    .transform(new CropRectTransform(filePath, strokeColor, strokeWidth))
                     .into(imageView);
         }
 

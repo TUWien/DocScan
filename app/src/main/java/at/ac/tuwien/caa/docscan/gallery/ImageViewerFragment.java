@@ -115,6 +115,10 @@ public class ImageViewerFragment extends Fragment {
 
         if (!PageDetector.isCropped(mFileName))
             mImageView.setPoints(PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth));
+        else
+//            We do this because the image might have been cropped in the meantime:
+            mImageView.setPoints(null);
+
 
     }
 

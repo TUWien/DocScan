@@ -24,6 +24,8 @@ import at.ac.tuwien.caa.docscan.crop.CropView;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 
+import static at.ac.tuwien.caa.docscan.ui.MapViewActivity.KEY_MAP_VIEW_ACTIVITY_FINISHED;
+
 /**
  * Created by fabian on 21.11.2017.
  */
@@ -37,31 +39,11 @@ public class CropViewActivity extends BaseNoNavigationActivity {
     private static final String CLASS_NAME = "CropViewActivity";
 
 
-//    TODO: remove this:
-    /**
-     * Static initialization of the OpenCV and docscan-native modules.
-     */
-    static {
-
-        Log.d(CLASS_NAME, "initializing OpenCV");
-
-//         We need this for Android 4:
-        if (!OpenCVLoader.initDebug()) {
-            Log.d(CLASS_NAME, "Error while initializing OpenCV.");
-        } else {
-
-            System.loadLibrary("opencv_java3");
-            System.loadLibrary("docscan-native");
-
-            Log.d(CLASS_NAME, "OpenCV initialized");
-        }
-
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_crop_view);
 
         super.initToolbarTitle(R.string.crop_view_title);
@@ -73,6 +55,22 @@ public class CropViewActivity extends BaseNoNavigationActivity {
         mCropView = findViewById(R.id.crop_view);
 
         initCropView();
+    }
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+
+//        Determine if the MapViewActivity has just closed and the image has been cropped (and
+//        mapped). In this case we do not need the CropViewActivity, but we want to get back to its
+//        calling Activity (might be CameraActivity or GalleryActivity).
+        boolean hasMapViewActivityFinished = getIntent().getBooleanExtra(
+                KEY_MAP_VIEW_ACTIVITY_FINISHED, false);
+        if (hasMapViewActivityFinished) {
+            finish();
+        }
+
     }
 
     private void initCropView() {
