@@ -6,9 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.ExifInterface;
 import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
+import android.support.media.ExifInterface;
 
 import java.io.IOException;
 

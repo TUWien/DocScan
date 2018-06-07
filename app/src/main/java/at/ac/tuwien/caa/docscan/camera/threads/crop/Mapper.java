@@ -2,9 +2,8 @@ package at.ac.tuwien.caa.docscan.camera.threads.crop;
 
 import android.graphics.Bitmap;
 import android.graphics.PointF;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.media.ExifInterface;
 import android.util.Log;
 
 import org.opencv.android.Utils;
@@ -15,10 +14,11 @@ import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 
 public class Mapper {
 
@@ -41,8 +41,20 @@ public class Mapper {
 
         if (transformedMat != null) {
 
-            boolean fileSaved = Imgcodecs.imwrite(fileName, transformedMat);
-            return fileSaved;
+            try {
+
+//            First copy the exif data, because we do not want to loose this data:
+                ExifInterface exif = new ExifInterface(fileName);
+                boolean fileSaved = Imgcodecs.imwrite(fileName, transformedMat);
+                if (fileSaved)
+                    Helper.saveExif(exif, fileName);
+
+                return fileSaved;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
 
         }
 
