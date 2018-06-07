@@ -18,6 +18,7 @@ import com.fivehundredpx.greedolayout.Size;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Random;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -214,6 +215,27 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     public void deselectAllItems() {
 
         setAllSelections(false);
+
+    }
+
+    public void setSelections(ArrayList<Integer> indices) {
+
+        for (int i = 0; i < mDocument.getPages().size(); i++) {
+            mSelections.put(i, false);
+            for (Integer idx : indices) {
+                if (idx == i) {
+                    mSelections.put(i, true);
+                    break;
+                }
+            }
+        }
+
+//        We need to redraw the check boxes:
+        this.notifyDataSetChanged();
+
+//        We need to inform the parent activity that the selection has changed:
+        mCallback.onSelectionChange(mSelections.count());
+
 
     }
 

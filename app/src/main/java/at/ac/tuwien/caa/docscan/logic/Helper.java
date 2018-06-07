@@ -288,6 +288,9 @@ public class Helper {
             String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
 
             switch (orientation) {
+                case "0":
+                    newOrientation = "6";
+                    break;
                 case "1":
                     newOrientation = "6"; // 90 degrees
                     break;
@@ -295,20 +298,21 @@ public class Helper {
                     newOrientation = "3"; // 180 degrees
                     break;
                 case "3":
-                    newOrientation = "8"; // 270 degrees
-                    break;
-                case "8":
-                    newOrientation = "1"; // 0 degrees
-                    break;
-                default:
-            }
+            newOrientation = "8"; // 270 degrees
+            break;
+            case "8":
+                newOrientation = "1"; // 0 degrees
+                break;
+            default:
+        }
 
             if (newOrientation != null)
                 exif.setAttribute(ExifInterface.TAG_ORIENTATION, newOrientation);
 
             exif.saveAttributes();
 
-            PageDetector.rotate90Degrees(outFile.getAbsolutePath());
+            if (!PageDetector.isCropped(outFile.getAbsolutePath()))
+                PageDetector.rotate90Degrees(outFile.getAbsolutePath());
         }
 
         return newOrientation != null;
