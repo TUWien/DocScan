@@ -18,22 +18,25 @@
         android:layout_height="match_parent"
         android:background="@color/black"/>
 
-    <!--<com.github.chrisbanes.photoview.PhotoView-->
-        <!--android:id="@+id/page_slide_photo_view"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_width="match_parent"-->
-        <!--/>-->
+    <RelativeLayout
+        android:id="@+id/image_viewer_progress_layout"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
 
-    <!--<android.support.v7.widget.Toolbar-->
-        <!--android:id="@+id/image_viewer_toolbar"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:background="@drawable/dark_to_transparent_gradient"-->
-        <!--android:theme="@style/AppDarkTheme"-->
-        <!--app:titleTextColor="@color/white"-->
-        <!--/>-->
-
-
-    <!--<include layout="@layout/page_view_buttons_layout" />-->
+        <ProgressBar
+            android:id="@+id/image_viewer_progressbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/page_slide_fragment_loading_text"
+            android:background="@color/light_gray"
+            android:layout_below="@+id/image_viewer_progressbar"
+            android:layout_centerHorizontal="true"/>
+    </RelativeLayout>
 
 </FrameLayout>

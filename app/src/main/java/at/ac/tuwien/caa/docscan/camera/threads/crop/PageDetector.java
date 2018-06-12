@@ -234,9 +234,9 @@ public class PageDetector {
     static ArrayList<PointF> getNormedDefaultPoints() {
 
         ArrayList<PointF> points = new ArrayList<>();
-//        I am not sure if we have to take care about the direction (cw vs. ccw):
+//        Take care about the direction, must be clock-wise:
         points.add(new PointF(0, 0));
-        points.add(new PointF(0, 1));
+        points.add(new PointF(1, 0));
         points.add(new PointF(1, 1));
         points.add(new PointF(0, 1));
 

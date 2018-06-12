@@ -50,6 +50,7 @@ public class CropManager {
 
     public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
     public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
+    public static final String INTENT_PAGE_DETECTED = "INTENT_PAGE_DETECTED";
 
     // Sets the amount of time an idle thread will wait for a task before terminating
     private static final int KEEP_ALIVE_TIME = 1;
@@ -128,7 +129,7 @@ public class CropManager {
 
 //                            Remove the corresponding TaskLog from the logger:
                             CropLogger.removePageDetectionTask(task.getFile());
-
+                            sendPageDetectedIntent(task.getFile().getAbsolutePath());
 //                            notifyImageChanged(task.getFile());
                             isMessageProcessed = true;
 
@@ -234,6 +235,17 @@ public class CropManager {
         CropLogger.addMapTask(file);
 
         sInstance.mCropThreadPool.execute(mapTask.getRunnable());
+
+    }
+
+    private void sendPageDetectedIntent(String fileName) {
+
+        Log.d(CLASS_NAME, "sendPageDetectedIntent:");
+
+        Intent intent = new Intent(INTENT_PAGE_DETECTED);
+        intent.putExtra(INTENT_FILE_NAME, fileName);
+
+        LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
 
     }
 

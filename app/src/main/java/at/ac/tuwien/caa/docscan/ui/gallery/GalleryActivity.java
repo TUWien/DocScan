@@ -7,12 +7,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
@@ -20,7 +22,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -28,8 +29,6 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
-import at.ac.tuwien.caa.docscan.gallery.GalleryLayoutManager;
-import at.ac.tuwien.caa.docscan.gallery.InnerItemDecoration;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
@@ -74,8 +73,8 @@ public class GalleryActivity extends AppCompatActivity implements
 
         //        dummy document - start
         mFileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
-//        if (mFileName == null)
-//            mFileName = "/storage/emulated/0/Pictures/DocScan/crop2";
+        if (mFileName == null)
+            mFileName = "/storage/emulated/0/Pictures/DocScan/jzu";
 
         mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
 
@@ -190,25 +189,47 @@ public class GalleryActivity extends AppCompatActivity implements
         mAdapter.setFileName(mFileName);
         mRecyclerView.setAdapter(mAdapter);
 
-//        GreedoLayoutManager layoutManager = new GreedoLayoutManager(mAdapter);
-        GalleryLayoutManager layoutManager = new GalleryLayoutManager(mAdapter);
-        layoutManager.setMaxRowHeight(1200);
+//        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this);
+//        layoutManager.setFlexDirection(FlexDirection.ROW);
+////        layoutManager.setJustifyContent(JustifyContent.SPACE_EVENLY);
+//        layoutManager.setFlexWrap(FlexWrap.WRAP);
+//        layoutManager.setAlignItems(AlignItems.STRETCH);
+//        mRecyclerView.setLayoutManager(layoutManager);
 
-        int spacing = dpToPx(1, this);
-        mRecyclerView.addItemDecoration(new InnerItemDecoration(spacing));
+//============= Greedo Layout: =============
+//
+//        GalleryLayoutManager layoutManager = new GalleryLayoutManager(mAdapter);
+//        layoutManager.setMaxRowHeight(1200);
+//        int spacing = dpToPx(1, this);
+//        mRecyclerView.addItemDecoration(new InnerItemDecoration(spacing));
+//        mAdapter.setSizeCalculator(layoutManager.getSizeCalculator());
+//        mRecyclerView.setLayoutManager(layoutManager);
 
-//        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
+//        int spacing = dpToPx(1, this);
+//        mRecyclerView.addItemDecoration(new InnerItemDecoration(spacing));
+
+//        DividerItemDecoration horizontalDivider = new DividerItemDecoration(mRecyclerView.getContext(),
 //                HORIZONTAL);
-//        DividerItemDecoration verticalDividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
+//        DividerItemDecoration verticalDivider = new DividerItemDecoration(mRecyclerView.getContext(),
 //                VERTICAL);
-//        mRecyclerView.addItemDecoration(dividerItemDecoration);
-//        mRecyclerView.addItemDecoration(verticalDividerItemDecoration);
+//        verticalDivider.setDrawable(getResources().getDrawable(R.drawable.gallery_divider));
+//        horizontalDivider.setDrawable(getResources().getDrawable(R.drawable.gallery_divider));
+//
+//        mRecyclerView.addItemDecoration(horizontalDivider);
+//        mRecyclerView.addItemDecoration(verticalDivider);
 
-        mAdapter.setSizeCalculator(layoutManager.getSizeCalculator());
 
+//============= Regular Layout: =============
+        int columnCount = 2;
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+            columnCount = 4;
+
+        GridLayoutManager layoutManager = new GridLayoutManager(this, columnCount);
+        mAdapter.setColumnCount(columnCount);
 
 
         mRecyclerView.setLayoutManager(layoutManager);
+
 
     }
 
@@ -288,10 +309,30 @@ public class GalleryActivity extends AppCompatActivity implements
 
     public void selectAllItems(MenuItem item) {
 
-        mAdapter.selectAllItems();
-
+        if (areAllItemsSelected())
+            deselectAllItems();
+        else
+            selectAllItems();
 
      }
+
+    private boolean areAllItemsSelected() {
+
+        return mAdapter.getItemCount() == mAdapter.getSelectionCount();
+
+    }
+
+    private void selectAllItems() {
+
+        mAdapter.selectAllItems();
+
+    }
+
+    private void deselectAllItems() {
+
+        mAdapter.deselectAllItems();
+
+    }
 
     public void cropSelectedItems(MenuItem item) {
 
@@ -342,10 +383,9 @@ public class GalleryActivity extends AppCompatActivity implements
                 uncroppedIdx.add(selectionIdx[i]);
         }
 
-        if (uncroppedIdx.size() < selectionIdx.length)
-            mAdapter.setSelections(uncroppedIdx);
-
-//        TODO: show an error message if selectionIdx.size != uncroppedIdx.length
+//        if (uncroppedIdx.size() < selectionIdx.length)
+//            mAdapter
+////        TODO: show an error message if selectionIdx.size != uncroppedIdx.length
 
         for (int i = 0; i < selectionIdx.length; i++) {
                 CropManager.mapFile(mDocument.getPages().get(selectionIdx[i]).getFile());
@@ -397,11 +437,15 @@ public class GalleryActivity extends AppCompatActivity implements
     public void onSelectionChange(int selectionCount) {
 
         // No selection - let the toolbar disappear, after scrolling down:
-        if (selectionCount == 0)
+        if (selectionCount == 0) {
+            mAdapter.setSelectionMode(false);
             fixToolbar();
+        }
         // One or more items are selected - the toolbar stays:
-        else
+        else {
+            mAdapter.setSelectionMode(true);
             scrollToolbar(selectionCount);
+        }
 
     }
 

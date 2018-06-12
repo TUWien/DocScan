@@ -36,12 +36,14 @@ public class PageDetectionRunnable extends CropRunnable {
 
 
             ArrayList<PointF> points = PageDetector.findRect(file.getAbsolutePath());
-            if (points != null && points.size() > 0) {
-
+            if (points != null && points.size() > 0)
                 PageDetector.savePointsToExif(file.getAbsolutePath(), points);
-                mCropTask.handleState(MESSAGE_COMPLETED_TASK);
+            else
+                PageDetector.savePointsToExif(file.getAbsolutePath(),
+                        PageDetector.getNormedDefaultPoints());
 
-            }
+            mCropTask.handleState(MESSAGE_COMPLETED_TASK);
+
             // Catches exceptions thrown in response to a queued interrupt
         } catch (InterruptedException e1) {
 

@@ -18,9 +18,14 @@ package at.ac.tuwien.caa.docscan.gallery;
  */
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,9 +38,14 @@ import java.io.File;
 import java.io.IOException;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.CropLogger;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
+
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_MAPPED;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_PAGE_DETECTED;
 
 
 public class ImageViewerFragment extends Fragment {
@@ -45,6 +55,7 @@ public class ImageViewerFragment extends Fragment {
     private static final String CLASS_NAME = "ImageViewerFragment";
     private PageImageView mImageView;
     private String mFileName;
+    private View mLoadingView;
 
     public static ImageViewerFragment create() {
 
@@ -79,11 +90,20 @@ public class ImageViewerFragment extends Fragment {
         mImageView = rootView.findViewById(R.id.image_viewer_image_view);
         mImageView.setOrientation(SubsamplingScaleImageView.ORIENTATION_USE_EXIF);
 
+        mLoadingView = rootView.findViewById(R.id.image_viewer_progress_layout);
+
         refreshImageView();
 
         return rootView;
 
     }
+
+    public boolean isLoadingViewVisible() {
+
+        return mLoadingView.getVisibility() == View.VISIBLE;
+
+    }
+
 
     public void refreshImageView() {
 
@@ -96,8 +116,10 @@ public class ImageViewerFragment extends Fragment {
         int imageHeight = options.outHeight;
         int imageWidth = options.outWidth;
 
+        File file = new File(mFileName);
+
         try {
-            int orientation = Helper.getExifOrientation(new File(mFileName));
+            int orientation = Helper.getExifOrientation(file);
             if (orientation != -1) {
                 int angle = Helper.getAngleFromExif(orientation);
                 Log.d(CLASS_NAME, "refreshImageView: angle: " + angle);
@@ -113,14 +135,20 @@ public class ImageViewerFragment extends Fragment {
 
         Log.d(CLASS_NAME, "refreshImageView: w: " + imageWidth + " h: " + imageHeight);
 
-        if (!PageDetector.isCropped(mFileName))
-            mImageView.setPoints(PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth));
-        else
+        if (CropLogger.isAwaitingPageDetection(file)) {
+            mLoadingView.setVisibility(View.VISIBLE);
+        }
+        else {
+            mLoadingView.setVisibility(View.INVISIBLE);
+            if (!PageDetector.isCropped(mFileName))
+                mImageView.setPoints(PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth));
+            else
 //            We do this because the image might have been cropped in the meantime:
-            mImageView.setPoints(null);
-
-
+                mImageView.setPoints(null);
+        }
     }
+
+
 
 
 }
