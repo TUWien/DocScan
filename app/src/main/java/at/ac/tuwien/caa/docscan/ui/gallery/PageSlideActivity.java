@@ -18,10 +18,12 @@ package at.ac.tuwien.caa.docscan.ui.gallery;
  */
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -32,10 +34,12 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -45,6 +49,7 @@ import android.widget.RelativeLayout;
 import java.io.File;
 import java.io.IOException;
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.CropLogger;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
@@ -53,6 +58,9 @@ import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
+
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_PAGE_DETECTED;
 
 public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
 
@@ -63,9 +71,11 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     private Document mDocument;
     private LinearLayout mButtonsLayout;
     private Context mContext;
+    private BroadcastReceiver mMessageReceiver;
 
     private static final int PERMISSION_ROTATE = 0;
     private static final int PERMISSION_DELETE = 1;
+    private static final String CLASS_NAME = "PageSlideActivity";
 
 
     @Override
@@ -99,16 +109,48 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             mPage = mDocument.getPages().get(pos);
         }
 
+        /**
+         * Handles broadcast intents which inform about the upload progress:
+         */
+        mMessageReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                Log.d(CLASS_NAME, "onReceive:");
+                if (mPage.getFile().getAbsolutePath().equals(intent.getStringExtra(INTENT_FILE_NAME))) {
+                    Log.d(CLASS_NAME, "onReceive: passing to mPagerAdapter");
+                    mPagerAdapter.getCurrentFragment().refreshImageView();
+                }
+
+            }
+        };
+
+        // Register to receive messages.
+        // We are registering an observer (mMessageReceiver) to receive Intents
+        // with actions named "PROGRESS_INTENT_NAME".
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(INTENT_PAGE_DETECTED));
+
     }
 
     @Override
     public void onResume() {
+
         super.onResume();
 
         if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null))
             mPagerAdapter.getCurrentFragment().refreshImageView();
 
         showHideCropButton();
+
+    }
+
+    @Override
+    public void onStop() {
+
+        super.onStop();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 
     }
 
@@ -154,8 +196,15 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             @Override
             public void onPageSelected(int position) {
 
+                Log.d(CLASS_NAME, "onPageSelected: " + position);
                 mPage = mDocument.getPages().get(position);
                 setToolbarTitle(position);
+
+                if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null)) {
+                    if (mPagerAdapter.getCurrentFragment().isLoadingViewVisible() &&
+                            !CropLogger.isAwaitingPageDetection(mPage.getFile()))
+                        mPagerAdapter.getCurrentFragment().refreshImageView();
+                }
 
                 showHideCropButton();
 
@@ -220,22 +269,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-//    // A method to find height of the navigation bar
-////    Based on: https://gist.github.com/hamakn/8939eb68a920a6d7a498
-//    private int getNavigationBarHeight() {
-//
-//        int result = 0;
-//        int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-//        if (resourceId > 0) {
-//            result = getResources().getDimensionPixelSize(resourceId);
-//        }
-//
-//        return result;
-//    }
-
-
-
-
    private void initButtons() {
 
        mButtonsLayout = findViewById(R.id.page_view_buttons_layout);
@@ -283,6 +316,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         }
     }
+
 
     private void initShareButton() {
 

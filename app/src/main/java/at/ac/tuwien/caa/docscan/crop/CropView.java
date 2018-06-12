@@ -53,6 +53,8 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private static final int TRANSPARENT = 0x00000000;
     private static final int TRANSLUCENT_BLACK = 0xBB000000;
     private static final int WHITE = 0x00FFFFFF;
+    private static final String CLASS_NAME = "CropView";
+
     private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
     private final int DETAIL_OUTLINE_COLOR = getResources().getColor(R.color.detail_crop_outline);
     private final int CROSS_COLOR = getResources().getColor(R.color.cross_color);
@@ -351,53 +353,6 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         return overlapLength / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
     }
 
-//    private Rect getDestRect(PointF viewPoint, PointF imgTL, PointF imgBR, PointF offSet) {
-//
-//        int bmpW = getBitmap().getWidth();
-//        int bmpH = getBitmap().getHeight();
-//
-//
-//        float startX, endX;
-//        if (imgTL.x < 0) {
-//            float transX = Math.abs(imgTL.x) / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
-//            startX = viewPoint.x + transX - DETAIL_WIDTH + offSet.x;
-//            endX = viewPoint.x + DETAIL_WIDTH + offSet.x;
-//        }
-//        else if (imgBR.x > bmpW) {
-//            float transX = (imgBR.x - bmpW) / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
-//            startX = viewPoint.x - DETAIL_WIDTH + offSet.x;
-//            endX = viewPoint.x - transX + DETAIL_WIDTH + offSet.x;
-//        }
-//        else {
-//            startX = viewPoint.x - DETAIL_WIDTH + offSet.x;
-//            endX = viewPoint.x + DETAIL_WIDTH + offSet.x;
-//        }
-//
-//        float startY, endY;
-//        if (imgTL.y < 0) {
-//            float transY = Math.abs(imgTL.y) / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
-//            startY = viewPoint.y + transY - DETAIL_WIDTH - offSet.y;
-//            endY = viewPoint.y + DETAIL_WIDTH - offSet.y;
-//        }
-//        else if (imgBR.y > bmpH) {
-//            float transY = (imgBR.y - bmpH) / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
-//            startY = viewPoint.y - DETAIL_WIDTH - offSet.y;
-//            endY = viewPoint.y - transY + DETAIL_WIDTH - offSet.y;
-//        }
-//        else {
-//            startY = viewPoint.y - DETAIL_WIDTH - offSet.y;
-//            endY = viewPoint.y + DETAIL_WIDTH - offSet.y;
-//        }
-//
-//        Rect dst = new Rect(Math.round(startX), Math.round(startY),
-//                Math.round(endX), Math.round(endY));
-//
-//        return dst;
-//
-//    }
-
-
-
     private PointF getDetailOffSet(PointF point) {
 
         // This is the usual offset:
@@ -543,6 +498,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
                 mQuadPath.lineTo(point.x, point.y);
 
             // draw the circle around the corner:
+            Log.d(CLASS_NAME, "drawQuad: point: " + point);
             canvas.drawCircle(point.x, point.y, CORNER_CIRCLE_RADIUS, mCirclePaint);
 
         }

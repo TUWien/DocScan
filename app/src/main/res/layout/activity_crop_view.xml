@@ -20,6 +20,7 @@
 
 
         <RelativeLayout
+
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -41,6 +42,7 @@
                 <!--/>-->
 
             <at.ac.tuwien.caa.docscan.crop.CropView
+                android:layout_margin="@dimen/activity_horizontal_margin"
                 android:id="@+id/crop_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

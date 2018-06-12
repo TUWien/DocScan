@@ -11,15 +11,11 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.signature.MediaStoreSignature;
-import com.fivehundredpx.greedolayout.GreedoLayoutSizeCalculator;
-import com.fivehundredpx.greedolayout.Size;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Random;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
@@ -40,12 +36,16 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     private Document mDocument;
     private Context mContext;
 
+    private int mWidth;
     private String mFileName;
     private CountableBooleanArray mSelections;
 
     // Callback to listen to selection changes:
     private GalleryAdapterCallback mCallback;
-    private GalleryLayoutSizeCalculator mSizeCalculator;
+    private int mPaddingPixel;
+    private boolean mIsSelectionMode = false;
+    private int mColumnCount;
+
 
     public GalleryAdapter(Context context, Document document) {
 
@@ -58,14 +58,29 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         // Stores the checkbox states
         mSelections = new CountableBooleanArray();
 
+        int paddingDp = 3;
+        float density = mContext.getResources().getDisplayMetrics().density;
+        mPaddingPixel = (int)(paddingDp * density);
+
+        mColumnCount = 2;
+
+
     }
 
     public void setFileName(String fileName) {
         mFileName = fileName;
     }
 
-    public void setSizeCalculator(GalleryLayoutSizeCalculator sizeCalculator) {
-        mSizeCalculator = sizeCalculator;
+    public void setSelectionMode(boolean isSelectionMode) {
+
+        mIsSelectionMode = isSelectionMode;
+
+    }
+
+    public void setColumnCount(int columnCount) {
+
+        mColumnCount = columnCount;
+
     }
 
     @Override
@@ -76,9 +91,11 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
         // Inflate the layout
         View photoView = inflater.inflate(R.layout.gallery_item, parent, false);
-
+        mWidth = parent.getMeasuredWidth() / mColumnCount;
         GalleryViewHolder viewHolder = new GalleryViewHolder(photoView);
+
         return viewHolder;
+
     }
 
     @Override
@@ -86,16 +103,42 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
         Page page = mDocument.getPages().get(position);
 
+        holder.mItemView.getLayoutParams().width = mWidth;
+
+        double aspectRatio= aspectRatioForIndex(position);
+        if (aspectRatio != 0)
+            holder.mItemView.getLayoutParams().height = (int) Math.round(mWidth / aspectRatio);
+        else
+            holder.mItemView.getLayoutParams().height = mWidth;
+
+
+//        Outer left item:
+        if ((position % mColumnCount) == 0)
+            holder.itemView.setPadding(0, 0,mPaddingPixel,mPaddingPixel);
+//        Outer right item:
+        else if ((position % mColumnCount) == (mColumnCount-1))
+            holder.itemView.setPadding(mPaddingPixel, 0,0,mPaddingPixel);
+//        Middle item:
+        else
+            holder.itemView.setPadding(mPaddingPixel/2, 0,mPaddingPixel / 2,mPaddingPixel);
+
+
 //        Show the image:
         initImageView(holder, position, page);
+
 
 //      Set the title and init the OnClickListener:
         initCheckBox(holder, position, page);
 
-        Size imageViewSize = mSizeCalculator.sizeForChildAtPosition(position);
-        holder.itemView.getLayoutParams().width = imageViewSize.getWidth();
-        holder.itemView.getLayoutParams().height = imageViewSize.getHeight();
 
+
+//////        TODO: find out why this slows down the caching:
+//        Size imageViewSize = mSizeCalculator.sizeForChildAtPosition(position);
+//        holder.itemView.getLayoutParams().width = imageViewSize.getWidth();
+//        holder.itemView.getLayoutParams().height = imageViewSize.getHeight();
+//
+//        holder.itemView.getLayoutParams().width = 400;
+//        holder.itemView.getLayoutParams().height = 600;
 
     }
 
@@ -143,6 +186,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         int strokeColor = mContext.getResources().getColor(R.color.hud_page_rect_color);
 
 
+//        int width = holder.mItemView.getMeasuredWidth();
+//        int height = Math.round(width * 2);
+
         if (exifOrientation != -1) {
 //            Draw the page detection border:
             if (!isCropped) {
@@ -154,6 +200,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 //                        .diskCacheStrategy(DiskCacheStrategy.NONE)
 //                        .skipMemoryCache(true)
                         .transform(new CropRectTransform(fileName, strokeColor, strokeWidth))
+                        .override(400,400)
                         .into(imageView);
             }
 //            Image is already cropped, draw no border:
@@ -161,7 +208,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 GlideApp.with(mContext)
                         .load(page.getFile().getPath())
                         //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
-                        .signature(new MediaStoreSignature("", file.lastModified(), exifOrientation))
+//                        .signature(new MediaStoreSignature("", file.lastModified(), exifOrientation))
                         // TODO: enable disk caching!
 //                        .diskCacheStrategy(DiskCacheStrategy.NONE)
 //                        .skipMemoryCache(true)
@@ -174,6 +221,14 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                     .load(page.getFile().getPath())
                     .into(imageView);
         }
+
+////        mImageView.setImageDrawable(drawable);
+//        ViewGroup.LayoutParams lp = imageView.getLayoutParams();
+//        if (lp instanceof FlexboxLayoutManager.LayoutParams) {
+//            FlexboxLayoutManager.LayoutParams flexboxLp = (FlexboxLayoutManager.LayoutParams) lp;
+//            flexboxLp.setFlexGrow(1.0f);
+//            flexboxLp.setAlignSelf(AlignSelf.FLEX_END);
+//        }
 
     }
 
@@ -287,16 +342,25 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         public void onClick(View view) {
 
             int position = getAdapterPosition();
-            if(position != RecyclerView.NO_POSITION) {
 
-//                Tell the GalleryActivity that no file change has been done yet:
-                GalleryActivity.resetFileManipulation();
+            if (!mIsSelectionMode) {
 
-//                Start the image viewer:
-                Intent intent = new Intent(mContext, PageSlideActivity.class);
-                intent.putExtra(mContext.getString(R.string.key_document_file_name), mFileName);
-                intent.putExtra(mContext.getString(R.string.key_page_position), position);
-                mContext.startActivity(intent);
+                if (position != RecyclerView.NO_POSITION) {
+
+                    //                Tell the GalleryActivity that no file change has been done yet:
+                    GalleryActivity.resetFileManipulation();
+
+                    //                Start the image viewer:
+                    Intent intent = new Intent(mContext, PageSlideActivity.class);
+                    intent.putExtra(mContext.getString(R.string.key_document_file_name), mFileName);
+                    intent.putExtra(mContext.getString(R.string.key_page_position), position);
+                    mContext.startActivity(intent);
+                }
+            }
+            else {
+                mSelections.put(position, !mSelections.get(position, false));
+                mCheckBox.setChecked(mSelections.get(position, false));
+                mCallback.onSelectionChange(getSelectionCount());
             }
         }
     }
