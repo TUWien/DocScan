@@ -220,13 +220,14 @@ public class GalleryActivity extends AppCompatActivity implements
 
 
 //============= Regular Layout: =============
+
         int columnCount = 2;
+
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
             columnCount = 4;
 
         GridLayoutManager layoutManager = new GridLayoutManager(this, columnCount);
         mAdapter.setColumnCount(columnCount);
-
 
         mRecyclerView.setLayoutManager(layoutManager);
 
@@ -391,8 +392,8 @@ public class GalleryActivity extends AppCompatActivity implements
                 CropManager.mapFile(mDocument.getPages().get(selectionIdx[i]).getFile());
         }
 
-        mAdapter.notifyDataSetChanged();
-
+//        mAdapter.notifyDataSetChanged();
+        deselectAllItems();
 
 
     }
@@ -404,13 +405,12 @@ public class GalleryActivity extends AppCompatActivity implements
         int[] selections = mAdapter.getSelectionIndices();
 
         for (int i = 0; i < selections.length; i++) {
-            try {
-                Helper.rotateExif(mDocument.getPages().get(selections[i]).getFile());
-//                mAdapter.notifyItemChanged(selections[i]);
+            if (Helper.rotateExif(mDocument.getPages().get(selections[i]).getFile())) {
+                mAdapter.notifyItemChanged(selections[i]);
+//                The following was necessary with the Greedo layout manager, now we just update
+//                the index:
 //              We need to update ALL items because the layout of the neighboring items probably will change:
-                mAdapter.notifyDataSetChanged();
-            } catch (IOException e) {
-                e.printStackTrace();
+//                mAdapter.notifyDataSetChanged();
             }
         }
     }

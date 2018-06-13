@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.media.ExifInterface;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -213,12 +212,8 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
     private void rotateExif(File file) {
 
-        try {
-            if (Helper.rotateExif(file))
-                rotateCropView();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        if (Helper.rotateExif(file))
+            rotateCropView();
 
     }
 
