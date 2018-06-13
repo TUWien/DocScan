@@ -303,15 +303,11 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     private void rotatePage() {
         if (mPage != null) {
-            try {
-//                        Rotate the image 90 degrees and set the image again (I did not find another way to force an update of the imageview)
-                if (Helper.rotateExif(mPage.getFile().getAbsoluteFile())) {
-                    mPagerAdapter.getCurrentFragment().refreshImageView();
-//                              Tell the gallery viewer that the file has rotated:
-                    GalleryActivity.fileRotated();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+//            Rotate the image 90 degrees and set the image again (I did not find another way to force an update of the imageview)
+            if (Helper.rotateExif(mPage.getFile().getAbsoluteFile())) {
+                mPagerAdapter.getCurrentFragment().refreshImageView();
+//                Tell the gallery viewer that the file has rotated:
+                GalleryActivity.fileRotated();
             }
 
         }

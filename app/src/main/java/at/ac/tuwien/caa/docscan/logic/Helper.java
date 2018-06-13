@@ -272,50 +272,37 @@ public class Helper {
             if (value != null)
                 newExif.setAttribute(attributes[i], value);
         }
+
+        newExif.resetOrientation();
+
         newExif.saveAttributes();
 
     }
 
-    public static boolean rotateExif(File outFile) throws IOException {
+    public static boolean rotateExif(File outFile)  {
 
-        String newOrientation = null;
+        final ExifInterface exif;
+        try {
+            exif = new ExifInterface(outFile.getAbsolutePath());
+            if (exif != null) {
 
-        final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
-        if (exif != null) {
+//            Note the regular android.media.ExifInterface has no method for rotation, but the
+//            android.support.media.ExifInterface does.
 
-            // Save the orientation of the image:
-//            int orientation = getExifOrientation();
-            String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+                exif.rotate(90);
+                exif.saveAttributes();
 
-            switch (orientation) {
-                case "0":
-                    newOrientation = "6";
-                    break;
-                case "1":
-                    newOrientation = "6"; // 90 degrees
-                    break;
-                case "6":
-                    newOrientation = "3"; // 180 degrees
-                    break;
-                case "3":
-            newOrientation = "8"; // 270 degrees
-            break;
-            case "8":
-                newOrientation = "1"; // 0 degrees
-                break;
-            default:
+                if (!PageDetector.isCropped(outFile.getAbsolutePath()))
+                    PageDetector.rotate90Degrees(outFile.getAbsolutePath());
+
+                return true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-            if (newOrientation != null)
-                exif.setAttribute(ExifInterface.TAG_ORIENTATION, newOrientation);
+        return false;
 
-            exif.saveAttributes();
-
-            if (!PageDetector.isCropped(outFile.getAbsolutePath()))
-                PageDetector.rotate90Degrees(outFile.getAbsolutePath());
-        }
-
-        return newOrientation != null;
     }
 
     public static List<Document> getDocuments(String appName){

@@ -208,7 +208,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 GlideApp.with(mContext)
                         .load(page.getFile().getPath())
                         //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
-//                        .signature(new MediaStoreSignature("", file.lastModified(), exifOrientation))
+                        .signature(new MediaStoreSignature("", file.lastModified(), exifOrientation))
                         // TODO: enable disk caching!
 //                        .diskCacheStrategy(DiskCacheStrategy.NONE)
 //                        .skipMemoryCache(true)

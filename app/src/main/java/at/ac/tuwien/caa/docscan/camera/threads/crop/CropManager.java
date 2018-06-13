@@ -32,6 +32,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.ImageView;
 
+import org.opencv.android.OpenCVLoader;
+
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.BlockingQueue;
@@ -94,6 +96,23 @@ public class CropManager {
         KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
 
         sInstance = new CropManager();
+    }
+
+    static {
+
+        Log.d(CLASS_NAME, "initializing OpenCV");
+
+//         We need this for Android 4:
+        if (!OpenCVLoader.initDebug()) {
+            Log.d(CLASS_NAME, "Error while initializing OpenCV.");
+        } else {
+
+            System.loadLibrary("opencv_java3");
+            System.loadLibrary("docscan-native");
+
+            Log.d(CLASS_NAME, "OpenCV initialized");
+        }
+
     }
 
 
