@@ -58,6 +58,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_TYPE;
 import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
 import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_OPERATION;
 
@@ -108,14 +109,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             mPage = mDocument.getPages().get(pos);
         }
 
-
-
-        // Register to receive messages.
-        // We are registering an observer (mMessageReceiver) to receive Intents
-        // with actions named "PROGRESS_INTENT_NAME".
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_CROP_OPERATION));
-
     }
 
     @Override
@@ -123,21 +116,13 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         super.onResume();
 
-        /**
-         * Handles broadcast intents which inform about the upload progress:
-         */
-        mMessageReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
+        // Register to receive messages.
+        // We are registering an observer (mMessageReceiver) to receive Intents
+        // with actions named "PROGRESS_INTENT_NAME".
+        mMessageReceiver = getReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(INTENT_CROP_OPERATION));
 
-                Log.d(CLASS_NAME, "onReceive:");
-                if (mPage.getFile().getAbsolutePath().equals(intent.getStringExtra(INTENT_FILE_NAME))) {
-                    Log.d(CLASS_NAME, "onReceive: passing to mPagerAdapter");
-                    mPagerAdapter.getCurrentFragment().refreshImageView();
-                }
-
-            }
-        };
 
         if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null))
             mPagerAdapter.getCurrentFragment().refreshImageView();
@@ -152,6 +137,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         super.onStop();
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        mMessageReceiver = null;
 
     }
 
@@ -184,6 +170,41 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         }
     }
 
+    private BroadcastReceiver getReceiver() {
+
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                Log.d(CLASS_NAME, "onReceive:");
+                if (mPage.getFile().getAbsolutePath().equals(intent.getStringExtra(INTENT_FILE_NAME))) {
+                    Log.d(CLASS_NAME, "onReceive: passing to mPagerAdapter");
+                    mPagerAdapter.getCurrentFragment().refreshImageView();
+                }
+
+            }
+        };
+
+        return receiver;
+
+    }
+
+//    /**
+//     * Handles broadcast intents which inform about the upload progress:
+//     */
+//    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//
+//            Log.d(CLASS_NAME, "onReceive:");
+//            if (mPage.getFile().getAbsolutePath().equals(intent.getStringExtra(INTENT_FILE_NAME))) {
+//                Log.d(CLASS_NAME, "onReceive: passing to mPagerAdapter");
+//                mPagerAdapter.getCurrentFragment().refreshImageView();
+//            }
+//
+//        }
+//    };
 
     private void initPager() {
 

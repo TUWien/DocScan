@@ -107,6 +107,7 @@
     <string name="debug_view_item_show">Show debug view</string>
 
     <string name="crop_view_item_rotate">Rotate 90 degrees</string>
+    <string name="crop_view_item_map">Preview mapping</string>
     <string name="crop_view_item_apply">Apply changes</string>
 
     <!-- MapViewActivity -->

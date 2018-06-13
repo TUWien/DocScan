@@ -88,6 +88,7 @@ public class GalleryActivity extends AppCompatActivity implements
         initToolbar();
 
 
+
     }
 
     @Override
@@ -107,13 +108,36 @@ public class GalleryActivity extends AppCompatActivity implements
                 mAdapter.notifyDataSetChanged();
         }
 
-        mMessageReceiver = new BroadcastReceiver() {
+        // Register to receive messages.
+        // We are registering an observer (mMessageReceiver) to receive Intents
+        // with actions named "PROGRESS_INTENT_NAME".
+        mMessageReceiver = getReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(INTENT_CROP_OPERATION));
 
+
+//        fixToolbar();
+
+    }
+
+    @Override
+    public void onStop() {
+
+        super.onStop();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        mMessageReceiver = null;
+
+    }
+
+
+    private BroadcastReceiver getReceiver() {
+
+        BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
 
-                int type = intent.getIntExtra(INTENT_CROP_TYPE, -1);
-                Log.d(CLASS_NAME, "onReceive: " + type);
+                Log.d(CLASS_NAME, "onReceive: " + intent.getIntExtra(INTENT_CROP_TYPE, -1));
 
                 if (mAdapter != null) {
                     String fileName = intent.getStringExtra(INTENT_FILE_NAME);
@@ -132,52 +156,19 @@ public class GalleryActivity extends AppCompatActivity implements
             }
         };
 
-        // Register to receive messages.
-        // We are registering an observer (mMessageReceiver) to receive Intents
-        // with actions named "PROGRESS_INTENT_NAME".
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_CROP_OPERATION));
-
-
-//        fixToolbar();
+        return receiver;
 
     }
-
-    @Override
-    public void onStop() {
-
-        super.onStop();
-
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-
-    }
-
 
 //    /**
 //     * Handles broadcast intents which inform about the upload progress:
 //     */
 //    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-//
 //        @Override
 //        public void onReceive(Context context, Intent intent) {
 //
-//            int type = intent.getIntExtra(INTENT_CROP_TYPE, -1);
-//            Log.d(CLASS_NAME, "onReceive: " + type);
 //
-//            if (mAdapter != null) {
-//                String fileName = intent.getStringExtra(INTENT_FILE_NAME);
 //
-//                int idx = 0;
-//                for (Page page : mDocument.getPages()) {
-//                    if (page.getFile().getAbsolutePath().compareTo(fileName) == 0) {
-//                        mAdapter.notifyItemChanged(idx);
-//                        break;
-//                    }
-//                    idx++;
-//                }
-//            }
-//
-//            mAdapter.deselectAllItems();
 //        }
 //    };
 

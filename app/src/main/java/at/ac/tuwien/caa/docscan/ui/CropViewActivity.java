@@ -3,14 +3,15 @@ package at.ac.tuwien.caa.docscan.ui;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.media.ExifInterface;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.bumptech.glide.signature.MediaStoreSignature;
-
-import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.crop.CropView;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
 import static at.ac.tuwien.caa.docscan.ui.MapViewActivity.KEY_MAP_VIEW_ACTIVITY_FINISHED;
 
@@ -29,9 +31,9 @@ import static at.ac.tuwien.caa.docscan.ui.MapViewActivity.KEY_MAP_VIEW_ACTIVITY_
  * Created by fabian on 21.11.2017.
  */
 
-public class CropViewActivity extends BaseNoNavigationActivity {
+public class CropViewActivity extends AppCompatActivity {
 
-
+    private Toolbar mToolbar;
     private CropView mCropView;
     private String mFileName;
 
@@ -45,16 +47,47 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
         setContentView(R.layout.activity_crop_view);
 
-        super.initToolbarTitle(R.string.crop_view_title);
+        initToolbar();
 
-//        CropInfo cropInfo = getIntent().getParcelableExtra(CROP_INFO_NAME);
-//        mCropView = findViewById(R.id.crop_view);
-//        initCropInfo(cropInfo);
+//        getSupportActionBar().setn
+//        mToolbar.setNavigationIcon(android.support.v7.appcompat.R.drawable.abc_ic_clear_material);
 
         mCropView = findViewById(R.id.crop_view);
 
         initCropView();
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()){
+            case android.R.id.home:
+                    onBackPressed();
+                    return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+
+    }
+
+    private void initToolbar() {
+
+        mToolbar = findViewById(R.id.main_toolbar);
+        mToolbar.setTitle(getString(R.string.crop_view_title));
+
+//        AppBarLayout appBarLayout = findViewById(R.id.crop_view_appbar);
+
+//        Enable back navigation in action bar:
+        setSupportActionBar(mToolbar);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        mToolbar.setNavigationIcon(android.support.v7.appcompat.R.drawable.abc_ic_clear_material);
+
+//        Note initialize SelectionToolbar just after setting setDisplayHomeAsUpEnabled, because
+//        SelectionToolbar needs a navigation icon (i.e. back button):
+//        mSelectionToolbar = new SelectionToolbar(this, mToolbar, appBarLayout);
+
+    }
+
 
     @Override
     protected void onResume() {
@@ -101,13 +134,24 @@ public class CropViewActivity extends BaseNoNavigationActivity {
 
         rotateExif(new File(mFileName));
 
-
     }
 
 
-    public void applyChanges(MenuItem item) {
+    public void startMapView(MenuItem item) {
 
         startMapView();
+
+    }
+
+    public void applyChanges(MenuItem item) {
+
+        ArrayList<PointF> cropPoints = mCropView.getCropPoints();
+        try {
+            PageDetector.savePointsToExif(mFileName, cropPoints);
+            finish();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
