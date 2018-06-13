@@ -122,6 +122,17 @@ public class CropLogger implements Serializable {
 
     }
 
+    public static boolean isAwaitingMapping(File file) {
+
+        for (TaskLog task : sInstance.mTasks) {
+            if ((task.getType() == TASK_TYPE_MAP) && (task.getFile().equals(file)))
+                return true;
+        }
+
+        return false;
+
+    }
+
     public static void addPageDetectionTask(File file) {
 
         sInstance.addTask(TASK_TYPE_PAGE_DETECTION, file);

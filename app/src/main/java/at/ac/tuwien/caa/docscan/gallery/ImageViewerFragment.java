@@ -43,10 +43,6 @@ import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_MAPPED;
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_PAGE_DETECTED;
-
 
 public class ImageViewerFragment extends Fragment {
 

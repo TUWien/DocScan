@@ -47,11 +47,10 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import java.io.File;
-import java.io.IOException;
+
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropLogger;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
-import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
 import at.ac.tuwien.caa.docscan.gallery.PageImageView;
 import at.ac.tuwien.caa.docscan.logic.Document;
@@ -60,7 +59,7 @@ import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_PAGE_DETECTED;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_OPERATION;
 
 public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
 
@@ -109,6 +108,21 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             mPage = mDocument.getPages().get(pos);
         }
 
+
+
+        // Register to receive messages.
+        // We are registering an observer (mMessageReceiver) to receive Intents
+        // with actions named "PROGRESS_INTENT_NAME".
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(INTENT_CROP_OPERATION));
+
+    }
+
+    @Override
+    public void onResume() {
+
+        super.onResume();
+
         /**
          * Handles broadcast intents which inform about the upload progress:
          */
@@ -124,19 +138,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
             }
         };
-
-        // Register to receive messages.
-        // We are registering an observer (mMessageReceiver) to receive Intents
-        // with actions named "PROGRESS_INTENT_NAME".
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_PAGE_DETECTED));
-
-    }
-
-    @Override
-    public void onResume() {
-
-        super.onResume();
 
         if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null))
             mPagerAdapter.getCurrentFragment().refreshImageView();

@@ -17,6 +17,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -34,7 +35,8 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_MAPPED;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_OPERATION;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_TYPE;
 import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
 
 
@@ -53,9 +55,11 @@ public class GalleryActivity extends AppCompatActivity implements
     private RecyclerView mRecyclerView;
     private String mFileName;
     private SelectionToolbar mSelectionToolbar;
+    private BroadcastReceiver mMessageReceiver;
 
     private static final int PERMISSION_ROTATE = 0;
     private static final int PERMISSION_DELETE = 1;
+    private static final String CLASS_NAME = "GalleryActivity";
 
 
 //    This is used to determine if some file changes (rotation or deletion) happened outside of the
@@ -83,11 +87,6 @@ public class GalleryActivity extends AppCompatActivity implements
         initAdapter();
         initToolbar();
 
-        // Register to receive messages.
-        // We are registering an observer (mMessageReceiver) to receive Intents
-        // with actions named "PROGRESS_INTENT_NAME".
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_FILE_MAPPED));
 
     }
 
@@ -108,34 +107,79 @@ public class GalleryActivity extends AppCompatActivity implements
                 mAdapter.notifyDataSetChanged();
         }
 
+        mMessageReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                int type = intent.getIntExtra(INTENT_CROP_TYPE, -1);
+                Log.d(CLASS_NAME, "onReceive: " + type);
+
+                if (mAdapter != null) {
+                    String fileName = intent.getStringExtra(INTENT_FILE_NAME);
+
+                    int idx = 0;
+                    for (Page page : mDocument.getPages()) {
+                        if (page.getFile().getAbsolutePath().compareTo(fileName) == 0) {
+                            mAdapter.notifyItemChanged(idx);
+                            break;
+                        }
+                        idx++;
+                    }
+                }
+
+                mAdapter.deselectAllItems();
+            }
+        };
+
+        // Register to receive messages.
+        // We are registering an observer (mMessageReceiver) to receive Intents
+        // with actions named "PROGRESS_INTENT_NAME".
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(INTENT_CROP_OPERATION));
+
 
 //        fixToolbar();
 
     }
 
-    /**
-     * Handles broadcast intents which inform about the upload progress:
-     */
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
+    @Override
+    public void onStop() {
 
-            if (mAdapter != null) {
-                String fileName = intent.getStringExtra(INTENT_FILE_NAME);
+        super.onStop();
 
-                int idx = 0;
-                for (Page page : mDocument.getPages()) {
-                    if (page.getFile().getAbsolutePath().compareTo(fileName) == 0) {
-                        mAdapter.notifyItemChanged(idx);
-                        break;
-                    }
-                    idx++;
-                }
-            }
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
 
-            mAdapter.deselectAllItems();
-        }
-    };
+    }
+
+
+//    /**
+//     * Handles broadcast intents which inform about the upload progress:
+//     */
+//    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//
+//            int type = intent.getIntExtra(INTENT_CROP_TYPE, -1);
+//            Log.d(CLASS_NAME, "onReceive: " + type);
+//
+//            if (mAdapter != null) {
+//                String fileName = intent.getStringExtra(INTENT_FILE_NAME);
+//
+//                int idx = 0;
+//                for (Page page : mDocument.getPages()) {
+//                    if (page.getFile().getAbsolutePath().compareTo(fileName) == 0) {
+//                        mAdapter.notifyItemChanged(idx);
+//                        break;
+//                    }
+//                    idx++;
+//                }
+//            }
+//
+//            mAdapter.deselectAllItems();
+//        }
+//    };
 
     /**
      * Called after permission has been given or has been rejected. This is necessary on Android M
@@ -246,19 +290,6 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
-//    private void loadDocument() {
-//
-//        DocumentMetaData document = new DocumentMetaData();
-//        ArrayList<File> fileList = getFileList(mFileName);
-//        ArrayList<Page> pages = filesToPages(fileList);
-//        document.setPages(pages);
-//
-//        File file = new File(mFileName);
-//        document.setTitle(file.getName());
-//
-//        mDocument = document;
-//
-//    }
 
     private void initToolbar() {
 

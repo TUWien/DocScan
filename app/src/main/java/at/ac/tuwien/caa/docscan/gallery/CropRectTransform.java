@@ -21,7 +21,6 @@ public class CropRectTransform extends BitmapTransformation {
 
     private static final String ID = "at.ac.tuwien.caa.docscan.gallery.CropRectTransform";
     private static final byte[] ID_BYTES = ID.getBytes(Charset.forName("UTF-8"));
-    private final int PAGE_RECT_COLOR = R.color.hud_page_rect_color;
 
     private String mFileName;
     private Paint mQuadPaint;
