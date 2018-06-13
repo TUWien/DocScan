@@ -23,14 +23,12 @@ package at.ac.tuwien.caa.docscan.camera.threads.crop;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.ImageView;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -41,18 +39,17 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import at.ac.tuwien.caa.docscan.logic.DataLog;
-
-import static at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity.UPLOAD_FILE_DELETED_ERROR_ID;
-import static at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity.UPLOAD_INTEND_KEY;
-
 public class CropManager {
 
     public static final int MESSAGE_COMPLETED_TASK = 0;
 
     public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
-    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
-    public static final String INTENT_PAGE_DETECTED = "INTENT_PAGE_DETECTED";
+//    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
+    public static final String INTENT_CROP_OPERATION = "INTENT_CROP_OPERATION";
+    public static final String INTENT_CROP_TYPE = "INTENT_CROP_TYPE";
+    public static final int INTENT_CROP_TYPE_FILE_MAP_STARTED = 0;
+    public static final int INTENT_CROP_TYPE_MAP_FINISHED = 1;
+    public static final int INTENT_CROP_TYPE_PAGE_FINISHED = 2;
 
     // Sets the amount of time an idle thread will wait for a task before terminating
     private static final int KEEP_ALIVE_TIME = 1;
@@ -98,6 +95,7 @@ public class CropManager {
         sInstance = new CropManager();
     }
 
+//    TODO: remove this for production:
     static {
 
         Log.d(CLASS_NAME, "initializing OpenCV");
@@ -148,7 +146,8 @@ public class CropManager {
 
 //                            Remove the corresponding TaskLog from the logger:
                             CropLogger.removePageDetectionTask(task.getFile());
-                            sendPageDetectedIntent(task.getFile().getAbsolutePath());
+//                            sendPageDetectedIntent(task.getFile().getAbsolutePath());
+                            sendCropIntent(task.getFile().getAbsolutePath(), INTENT_CROP_TYPE_PAGE_FINISHED);
 //                            notifyImageChanged(task.getFile());
                             isMessageProcessed = true;
 
@@ -158,12 +157,12 @@ public class CropManager {
                 else if (task instanceof MapTask) {
                     switch (messageId) {
                         case MESSAGE_COMPLETED_TASK:
-                            Log.d(CLASS_NAME, "handleState: MapTask completed");
+                            Log.d(CLASS_NAME, "handleMessage: MapTask completed");
 
 //                            Remove the corresponding TaskLog from the logger:
                             CropLogger.removeMapTask(task.getFile());
                             notifyImageChanged(task.getFile());
-                            sendFileMappedIntent(task.getFile().getAbsolutePath());
+                            sendCropIntent(task.getFile().getAbsolutePath(), INTENT_CROP_TYPE_MAP_FINISHED);
                             isMessageProcessed = true;
 
                             break;
@@ -210,6 +209,7 @@ public class CropManager {
     public static CropManager getInstance() {
 
         return sInstance;
+
     }
 
     public static void initContext(Context context) {
@@ -250,6 +250,8 @@ public class CropManager {
         mapTask.initializeTask(sInstance);
         mapTask.setFile(file);
 
+//        Inform other activities (GalleryActivity, PageSlideActivity) that the mapping started:
+        sInstance.sendCropIntent(file.getAbsolutePath(), INTENT_CROP_TYPE_MAP_FINISHED);
 //        Inform the logger that we got a new file here:
         CropLogger.addMapTask(file);
 
@@ -257,22 +259,46 @@ public class CropManager {
 
     }
 
-    private void sendPageDetectedIntent(String fileName) {
+//    private void sendMappingStartedIntent(String fileName) {
+//
+//        Log.d(CLASS_NAME, "sendMappingStartedIntent:");
+//
+//        Intent intent = new Intent(INTENT_CROP_OPERATION);
+//        intent.putExtra(INTENT_FILE_NAME, fileName);
+//
+//        LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
+//
+//    }
 
-        Log.d(CLASS_NAME, "sendPageDetectedIntent:");
+//    private void sendPageDetectedIntent(String fileName) {
+//
+//        Log.d(CLASS_NAME, "sendPageDetectedIntent:");
+//
+//        Intent intent = new Intent(INTENT_CROP_OPERATION);
+//        intent.putExtra(INTENT_FILE_NAME, fileName);
+//
+//        LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
+//
+//    }
 
-        Intent intent = new Intent(INTENT_PAGE_DETECTED);
-        intent.putExtra(INTENT_FILE_NAME, fileName);
+//    private void sendFileMappedIntent(String fileName) {
+//
+//        Log.d(CLASS_NAME, "sendFileMappedIntent:");
+//
+//        Intent intent = new Intent(INTENT_CROP_OPERATION);
+//        intent.putExtra(INTENT_CROP_OPERATION, INTENT_CROP_TYPE_MAP_FINISHED);
+//        intent.putExtra(INTENT_FILE_NAME, fileName);
+//
+//        LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
+//
+//    }
 
-        LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
+    private void sendCropIntent(String fileName, int type) {
 
-    }
+        Log.d(CLASS_NAME, "sendCropIntent:");
 
-    private void sendFileMappedIntent(String fileName) {
-
-        Log.d(CLASS_NAME, "sendFileMappedIntent:");
-
-        Intent intent = new Intent(INTENT_FILE_MAPPED);
+        Intent intent = new Intent(INTENT_CROP_OPERATION);
+        intent.putExtra(INTENT_CROP_TYPE, type);
         intent.putExtra(INTENT_FILE_NAME, fileName);
 
         LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);

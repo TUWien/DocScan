@@ -7,6 +7,6 @@ import com.bumptech.glide.module.AppGlideModule;
  * Class necessary to used GlideApp features instead of static calling.
  */
 
-@GlideModule
-public class TranskribusGlideModule extends AppGlideModule {
+@com.bumptech.glide.annotation.GlideModule
+public class DocScanGlideModule extends AppGlideModule {
 }

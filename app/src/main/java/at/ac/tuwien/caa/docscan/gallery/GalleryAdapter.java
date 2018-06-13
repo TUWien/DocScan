@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.gallery;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.bumptech.glide.signature.MediaStoreSignature;
 
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.CropLogger;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
@@ -177,25 +180,43 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         try {
             exifOrientation =  Helper.getExifOrientation(file);
             isCropped = PageDetector.isCropped(file.getAbsolutePath());
-
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        float strokeWidth = mContext.getResources().getDimension(R.dimen.page_stroke_width);
-        int strokeColor = mContext.getResources().getColor(R.color.hud_page_rect_color);
+        if (CropLogger.isAwaitingMapping(file) || CropLogger.isAwaitingPageDetection(file)) {
 
+            holder.mCheckBox.setEnabled(false);
 
-//        int width = holder.mItemView.getMeasuredWidth();
-//        int height = Math.round(width * 2);
+            GlideApp.with(mContext)
+                    .load(page.getFile().getPath())
+                    //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
+                    .signature(new MediaStoreSignature("", modified, exifOrientation))
+                    // TODO: enable disk caching!
+//                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+//                        .skipMemoryCache(true)
+                    .into(imageView);
+
+            holder.mProgressBar.setVisibility(View.VISIBLE);
+
+            return;
+        }
+        else {
+            holder.mProgressBar.setVisibility(View.INVISIBLE);
+            holder.mCheckBox.setEnabled(true);
+        }
 
         if (exifOrientation != -1) {
 //            Draw the page detection border:
             if (!isCropped) {
+
+                float strokeWidth = mContext.getResources().getDimension(R.dimen.page_stroke_width);
+                int strokeColor = mContext.getResources().getColor(R.color.hud_page_rect_color);
+
                 GlideApp.with(mContext)
                         .load(page.getFile().getPath())
                         //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
-                        .signature(new MediaStoreSignature("", file.lastModified(), exifOrientation))
+                        .signature(new MediaStoreSignature("", modified, exifOrientation))
                         // TODO: enable disk caching!
 //                        .diskCacheStrategy(DiskCacheStrategy.NONE)
 //                        .skipMemoryCache(true)
@@ -208,7 +229,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 GlideApp.with(mContext)
                         .load(page.getFile().getPath())
                         //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
-                        .signature(new MediaStoreSignature("", file.lastModified(), exifOrientation))
+                        .signature(new MediaStoreSignature("", modified, exifOrientation))
                         // TODO: enable disk caching!
 //                        .diskCacheStrategy(DiskCacheStrategy.NONE)
 //                        .skipMemoryCache(true)
@@ -323,17 +344,17 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         private ImageView mImageView;
         private View mItemView;
         private CheckBox mCheckBox;
+        private ProgressBar mProgressBar;
 
         public GalleryViewHolder(View itemView) {
 
             super(itemView);
 
             mItemView = itemView;
-
             mImageView = itemView.findViewById(R.id.page_imageview);
             itemView.setOnClickListener(this);
-
             mCheckBox = itemView.findViewById(R.id.page_checkbox);
+            mProgressBar = itemView.findViewById(R.id.page_progressbar);
 
         }
 
