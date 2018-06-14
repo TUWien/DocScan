@@ -23,6 +23,7 @@ import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.crop.CropView;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
 import static at.ac.tuwien.caa.docscan.ui.MapViewActivity.KEY_MAP_VIEW_ACTIVITY_FINISHED;
@@ -148,6 +149,7 @@ public class CropViewActivity extends AppCompatActivity {
         ArrayList<PointF> cropPoints = mCropView.getCropPoints();
         try {
             PageDetector.savePointsToExif(mFileName, cropPoints);
+            GalleryActivity.fileCropped();
             finish();
         } catch (IOException e) {
             e.printStackTrace();

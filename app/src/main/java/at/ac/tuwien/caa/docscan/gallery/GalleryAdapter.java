@@ -3,7 +3,6 @@ package at.ac.tuwien.caa.docscan.gallery;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -192,9 +191,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                     .load(page.getFile().getPath())
                     //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
                     .signature(new MediaStoreSignature("", modified, exifOrientation))
-                    // TODO: enable disk caching!
-//                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                        .skipMemoryCache(true)
                     .into(imageView);
 
             holder.mProgressBar.setVisibility(View.VISIBLE);
@@ -210,7 +206,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 //            Draw the page detection border:
             if (!isCropped) {
 
-                float strokeWidth = mContext.getResources().getDimension(R.dimen.page_stroke_width);
+                float strokeWidth = mContext.getResources().getDimension(R.dimen.page_gallery_stroke_width);
                 int strokeColor = mContext.getResources().getColor(R.color.hud_page_rect_color);
 
                 GlideApp.with(mContext)
@@ -230,9 +226,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                         .load(page.getFile().getPath())
                         //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
                         .signature(new MediaStoreSignature("", modified, exifOrientation))
-                        // TODO: enable disk caching!
-//                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                        .skipMemoryCache(true)
                         .into(imageView);
             }
         }
@@ -242,14 +235,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                     .load(page.getFile().getPath())
                     .into(imageView);
         }
-
-////        mImageView.setImageDrawable(drawable);
-//        ViewGroup.LayoutParams lp = imageView.getLayoutParams();
-//        if (lp instanceof FlexboxLayoutManager.LayoutParams) {
-//            FlexboxLayoutManager.LayoutParams flexboxLp = (FlexboxLayoutManager.LayoutParams) lp;
-//            flexboxLp.setFlexGrow(1.0f);
-//            flexboxLp.setAlignSelf(AlignSelf.FLEX_END);
-//        }
 
     }
 

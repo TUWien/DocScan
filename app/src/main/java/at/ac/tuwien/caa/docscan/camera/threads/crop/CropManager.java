@@ -259,40 +259,6 @@ public class CropManager {
 
     }
 
-//    private void sendMappingStartedIntent(String fileName) {
-//
-//        Log.d(CLASS_NAME, "sendMappingStartedIntent:");
-//
-//        Intent intent = new Intent(INTENT_CROP_OPERATION);
-//        intent.putExtra(INTENT_FILE_NAME, fileName);
-//
-//        LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
-//
-//    }
-
-//    private void sendPageDetectedIntent(String fileName) {
-//
-//        Log.d(CLASS_NAME, "sendPageDetectedIntent:");
-//
-//        Intent intent = new Intent(INTENT_CROP_OPERATION);
-//        intent.putExtra(INTENT_FILE_NAME, fileName);
-//
-//        LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
-//
-//    }
-
-//    private void sendFileMappedIntent(String fileName) {
-//
-//        Log.d(CLASS_NAME, "sendFileMappedIntent:");
-//
-//        Intent intent = new Intent(INTENT_CROP_OPERATION);
-//        intent.putExtra(INTENT_CROP_OPERATION, INTENT_CROP_TYPE_MAP_FINISHED);
-//        intent.putExtra(INTENT_FILE_NAME, fileName);
-//
-//        LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
-//
-//    }
-
     private void sendCropIntent(String fileName, int type) {
 
         Log.d(CLASS_NAME, "sendCropIntent:");
@@ -304,7 +270,5 @@ public class CropManager {
         LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
 
     }
-
-
 
 }

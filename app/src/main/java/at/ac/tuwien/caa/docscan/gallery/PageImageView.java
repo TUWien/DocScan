@@ -6,7 +6,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
@@ -42,7 +41,7 @@ public class PageImageView extends SubsamplingScaleImageView {
         mQuadPath = new Path();
 
         mQuadPaint.setStyle(Paint.Style.STROKE);
-        mQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_stroke_width));
+        mQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width));
         mQuadPaint.setColor(PAGE_RECT_COLOR);
 //        mQuadPaint.setStrokeWidth(4);
         mQuadPaint.setAntiAlias(true);

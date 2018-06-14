@@ -190,7 +190,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         mQuadPaint = new Paint();
         mQuadPaint.setColor(PAGE_RECT_COLOR);
         mQuadPaint.setStyle(Paint.Style.STROKE);
-        mQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_stroke_width));
+        mQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width));
         mQuadPaint.setAntiAlias(true);
         mQuadPath = new Path();
 
