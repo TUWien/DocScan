@@ -359,7 +359,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mSegmentationPaint = new Paint();
             mSegmentationPaint.setColor(PAGE_RECT_COLOR);
             mSegmentationPaint.setStyle(Paint.Style.STROKE);
-            mSegmentationPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_stroke_width));
+            mSegmentationPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width));
             mSegmentationPaint.setAntiAlias(true);
             mSegmentationPath = new Path();
 

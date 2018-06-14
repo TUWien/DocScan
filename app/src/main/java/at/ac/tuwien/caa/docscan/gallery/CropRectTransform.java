@@ -68,7 +68,6 @@ public class CropRectTransform extends BitmapTransformation {
         mQuadPaint.setStyle(Paint.Style.STROKE);
         mQuadPaint.setStrokeWidth(strokeWidth);
         mQuadPaint.setColor(strokeColor);
-//        mQuadPaint.setStrokeWidth(4);
         mQuadPaint.setAntiAlias(true);
     }
 
