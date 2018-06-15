@@ -6,6 +6,7 @@ import android.util.Log;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 
 /**
  * Created by fabian on 21.11.2017.
@@ -16,6 +17,7 @@ public class CropQuad {
     private static final int NO_ACTIVE_POINT_IDX = -1;
 
     private ArrayList<PointF> mViewPoints, mImgPoints;
+//    private ArrayList<PointF> mViewPoints, mImgPoints, mOuterPoints, mOuterViewPoints;
     private int mActivePointIdx;
 //    private int mImgWidth, mImgHeight;
 
@@ -23,6 +25,7 @@ public class CropQuad {
     public CropQuad(ArrayList<PointF> points, int imgWidth, int imgHeight) {
 
         mImgPoints = convertPoints(points, imgWidth, imgHeight);
+//        mOuterPoints = PageDetector.getScaledOuterPointsNew2(mImgPoints, imgWidth, imgHeight);
 
     }
 
@@ -32,6 +35,11 @@ public class CropQuad {
 
     }
 
+//    public void setOuterViewPoints(ArrayList<PointF> outerViewPoints) {
+//
+//        mOuterViewPoints = outerViewPoints;
+//
+//    }
 
 
     private ArrayList convertPoints(ArrayList<PointF> normedPoints, int imgWidth, int imgHeight) {
@@ -44,6 +52,12 @@ public class CropQuad {
         return points;
 
     }
+
+//    public ArrayList<PointF> getOuterImgPoints() {
+//
+//        return mOuterPoints;
+//
+//    }
 
     public ArrayList<PointF> getImgPoints() {
 
@@ -157,4 +171,9 @@ public class CropQuad {
         return minIdx;
     }
 
+//    public ArrayList<PointF> getOuterViewPoints() {
+//
+//        return mOuterViewPoints;
+//
+//    }
 }

@@ -9,8 +9,6 @@ public class DkVector {
 
     public float x, y;
 
-    private PointF mPoint1, mPoint2;
-
     public DkVector(float x, float y) {
 
         this.x = x;
@@ -23,17 +21,56 @@ public class DkVector {
         x = point1.x - point2.x;
         y = point1.y - point2.y;
 
-        mPoint1 = point1;
-        mPoint2 = point2;
+    }
+
+    public DkVector getNormalVector() {
+
+        return new DkVector(-y, x).norm();
 
     }
 
-    public PointF getPoint1() {
-        return mPoint1;
+    public DkVector project(DkVector vector) {
+
+        DkVector m = multiply(vector);
+        float length = (float) (vector.length() * vector.length());
+        DkVector d = m.divide(length);
+        DkVector r = d.multiply(vector);
+
+        return r;
+
     }
 
-    public PointF getPoint2() {
-        return mPoint2;
+    public DkVector bisect(DkVector vector) {
+
+        DkVector v1 = norm();
+        DkVector v2 = vector.norm();
+
+        return v1.add(v2);
+
+    }
+
+    private DkVector add(DkVector vector) {
+
+        return new DkVector(x + vector.x, y + vector.y);
+
+    }
+
+    public DkVector norm() {
+
+        return this.divide((float) this.length());
+
+    }
+
+    private DkVector divide(float scalar) {
+
+        return new DkVector(x / scalar, y / scalar);
+
+    }
+
+    private DkVector multiply(DkVector vector) {
+
+        return new DkVector(x * vector.x, y * vector.y);
+
     }
 
     public double length() {

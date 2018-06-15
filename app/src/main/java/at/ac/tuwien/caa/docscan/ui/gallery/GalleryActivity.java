@@ -59,6 +59,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private static final int PERMISSION_ROTATE = 0;
     private static final int PERMISSION_DELETE = 1;
+    private static final int PERMISSION_CROP = 2;
     private static final String CLASS_NAME = "GalleryActivity";
 
 
@@ -195,6 +196,10 @@ public class GalleryActivity extends AppCompatActivity implements
             case PERMISSION_DELETE:
                 if (isPermissionGiven)
                     deleteSelectedItems();
+                break;
+            case PERMISSION_CROP:
+                if (isPermissionGiven)
+                    showOverwriteImageAlert();
                 break;
 
         }
@@ -364,7 +369,7 @@ public class GalleryActivity extends AppCompatActivity implements
             // ask for permission:
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
         } else
-            cropSelectedItems();
+            showOverwriteImageAlert();
 
 
     }
@@ -385,9 +390,31 @@ public class GalleryActivity extends AppCompatActivity implements
         // Check if we have the permission to rotate images:
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_CROP);
         } else
             rotateSelectedItems();
+
+    }
+
+    private void showOverwriteImageAlert() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.gallery_confirm_overwrite_title)
+                .setPositiveButton(R.string.dialog_ok_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        cropSelectedItems();
+                    }
+                })
+                .setNegativeButton(R.string.dialog_cancel_text, null)
+                .setCancelable(true)
+                .setMessage(R.string.gallery_confirm_overwrite_text);
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
 
     }
 

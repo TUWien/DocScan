@@ -2,10 +2,13 @@ package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
 import android.support.media.ExifInterface;
+//import android.util.Size;
 
 import java.io.File;
 import java.io.FileFilter;

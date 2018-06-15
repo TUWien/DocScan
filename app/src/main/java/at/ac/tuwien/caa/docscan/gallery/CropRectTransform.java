@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.gallery;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -26,12 +27,15 @@ public class CropRectTransform extends BitmapTransformation {
     private Paint mQuadPaint;
     private Path mQuadPath;
 
-    public CropRectTransform(String fileName, int strokeColor, float strokeWidth) {
+//    private Paint mQuadPaint, mOuterQuadPaint;
+//    private Path mQuadPath, mOuterQuadPath;
+
+    public CropRectTransform(String fileName, Context context) {
 
         super();
 
         mFileName = fileName;
-        initPaint(strokeColor, strokeWidth);
+        initPaint(context);
 
     }
 
@@ -56,12 +60,26 @@ public class CropRectTransform extends BitmapTransformation {
 
         ArrayList<PointF> points = PageDetector.getScaledCropPoints(mFileName,
                 original.getWidth(), original.getHeight());
-        drawQuad(canvas, points);
+
+        ArrayList<PointF> outerPoints =
+                PageDetector.getScaledOuterPointsNew2(points,
+                        original.getWidth(), original.getHeight());
+
+//        ArrayList<PointF> outerPoints = PageDetector.getScaledOuterPoints(mFileName,
+//                original.getWidth(), original.getHeight());
+
+//        drawQuad(canvas, points);
+        drawQuad(canvas, points, mQuadPath, mQuadPaint);
+//        drawQuad(canvas, outerPoints, mOuterQuadPath, mOuterQuadPaint);
 
         return result;
     }
 
-    private void initPaint(int strokeColor, float strokeWidth) {
+    private void initPaint(Context context) {
+
+        float strokeWidth = context.getResources().getDimension(R.dimen.page_gallery_stroke_width);
+        int strokeColor = context.getResources().getColor(R.color.hud_page_rect_color);
+
         mQuadPaint = new Paint();
         mQuadPath = new Path();
 
@@ -69,29 +87,82 @@ public class CropRectTransform extends BitmapTransformation {
         mQuadPaint.setStrokeWidth(strokeWidth);
         mQuadPaint.setColor(strokeColor);
         mQuadPaint.setAntiAlias(true);
+
+//        float outerStrokeWidth = context.getResources().getDimension(R.dimen.page_gallery_stroke_width);
+//        int outerStrokeColor = context.getResources().getColor(R.color.page_outer_color);
+//
+//        mOuterQuadPaint = new Paint();
+//        mOuterQuadPath = new Path();
+//
+//        mOuterQuadPaint.setStyle(Paint.Style.STROKE);
+//        mOuterQuadPaint.setStrokeWidth(outerStrokeWidth);
+//        mOuterQuadPaint.setColor(outerStrokeColor);
+//        mOuterQuadPaint.setAntiAlias(true);
+
     }
 
 
 
-    private void drawQuad(Canvas canvas, ArrayList<PointF> points) {
+    private void drawQuad(Canvas canvas, ArrayList<PointF> points, Path path, Paint paint) {
 
-        mQuadPath.reset();
+//        initOuterValues(canvas);
+
+        path.reset();
         boolean isStartSet = false;
 
         for (PointF point : points) {
 
             if (!isStartSet) {
-                mQuadPath.moveTo(point.x, point.y);
+                path.moveTo(point.x, point.y);
                 isStartSet = true;
-            } else
-                mQuadPath.lineTo(point.x, point.y);
+            } else {
+                path.lineTo(point.x, point.y);
+            }
 
         }
 
-        mQuadPath.close();
-        canvas.drawPath(mQuadPath, mQuadPaint);
+        path.close();
+        canvas.drawPath(path, paint);
 
     }
+
+//    private void initOuterValues(Canvas canvas) {
+//
+//        centerPoint = new PointF((float) canvas.getWidth() / 2, (float) canvas.getHeight() / 2);
+//        outerOffset = 5;
+//
+//    }
+//
+//    private PointF getOuterPoint(PointF point) {
+//
+//        PointF result = new PointF(point.x, point.y);
+//
+//        if (isLeftOfCenter(point))
+//            result.x -= outerOffset;
+//        else
+//            result.x += outerOffset;
+//
+//        if (isAboveCenter(point))
+//            result.y -= outerOffset;
+//        else
+//            result.y += outerOffset;
+//
+//
+//        return result;
+//
+//    }
+//
+//    private boolean isLeftOfCenter(PointF point) {
+//
+//        return point.x < centerPoint.x;
+//
+//    }
+//
+//    private boolean isAboveCenter(PointF point) {
+//
+//        return point.y < centerPoint.y;
+//
+//    }
 
 
     @Override
