@@ -1,10 +1,13 @@
 package at.ac.tuwien.caa.docscan.camera.threads.crop;
 
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
+
+import at.ac.tuwien.caa.docscan.logic.Helper;
 
 import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.MESSAGE_COMPLETED_TASK;
 
@@ -34,10 +37,7 @@ public class MapRunnable extends CropRunnable{
             }
 
             String fileName = file.getAbsolutePath();
-            ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
-
-            if (Mapper.replaceWithMappedImage(fileName, points))
-                PageDetector.saveAsCropped(fileName);
+            performMapping(fileName);
 
             mCropTask.handleState(MESSAGE_COMPLETED_TASK);
 
@@ -57,6 +57,29 @@ public class MapRunnable extends CropRunnable{
             // Clears the Thread's interrupt flag
             Thread.interrupted();
         }
+
+    }
+
+    private void performMapping(String fileName) {
+
+        ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
+
+        if (Mapper.replaceWithMappedImage(fileName, points))
+            PageDetector.saveAsCropped(fileName);
+
+    }
+
+    private float getDiagonalLength(String fileName) {
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(fileName, options);
+
+        float length = (float) Math.sqrt(
+                options.outWidth * options.outWidth + options.outHeight * options.outHeight);
+
+        return length;
 
     }
 

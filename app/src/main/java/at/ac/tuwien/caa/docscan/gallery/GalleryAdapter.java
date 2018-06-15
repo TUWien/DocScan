@@ -206,8 +206,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 //            Draw the page detection border:
             if (!isCropped) {
 
-                float strokeWidth = mContext.getResources().getDimension(R.dimen.page_gallery_stroke_width);
-                int strokeColor = mContext.getResources().getColor(R.color.hud_page_rect_color);
+
 
                 GlideApp.with(mContext)
                         .load(page.getFile().getPath())
@@ -216,7 +215,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                         // TODO: enable disk caching!
 //                        .diskCacheStrategy(DiskCacheStrategy.NONE)
 //                        .skipMemoryCache(true)
-                        .transform(new CropRectTransform(fileName, strokeColor, strokeWidth))
+                        .transform(new CropRectTransform(fileName, mContext))
                         .override(400,400)
                         .into(imageView);
             }

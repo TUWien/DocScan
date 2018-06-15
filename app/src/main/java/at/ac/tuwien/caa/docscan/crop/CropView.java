@@ -56,6 +56,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private static final String CLASS_NAME = "CropView";
 
     private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
+    private final int PAGE_OUTER_RECT_COLOR = getResources().getColor(R.color.page_outer_color);
     private final int DETAIL_OUTLINE_COLOR = getResources().getColor(R.color.detail_crop_outline);
     private final int CROSS_COLOR = getResources().getColor(R.color.cross_color);
     private final float CORNER_CIRCLE_RADIUS =
@@ -81,8 +82,8 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     private Paint mPaintFrame;
     private int mFrameColor;
     private RectF mFrameRect;
-    private Path mQuadPath;
-    private Paint mQuadPaint, mCrossPaint, mCirclePaint;
+    private Path mQuadPath, mOuterQuadPath;
+    private Paint mQuadPaint, mOuterQuadPaint, mCrossPaint, mCirclePaint;
 
     // used for layout size calculation:
     private int mViewWidth = 0;
@@ -128,6 +129,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         mFrameRect = new RectF(0,0, 200, 200);
 
         initQuadPaint();
+        initOuterQuadPaint();
         initCrossPaint();
         initCirclePaint();
         initDetailOutlinePaint();
@@ -142,27 +144,11 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     }
 
-    public void setBitmapAndPoints(Bitmap bitmap, ArrayList<PointF> normedPoints) {
-
-        setImageBitmap(bitmap);
-        mCropQuad = new CropQuad(normedPoints, bitmap.getWidth(), bitmap.getHeight());
-
-    }
 
     public void setPoints(ArrayList<PointF> normedPoints) {
 
         mNormedPoints = normedPoints;
 //        mCropQuad = new CropQuad(normedPoints, getBitmap().getWidth(), getBitmap().getHeight());
-    }
-
-    /**
-     * Initializes the view with default points that are located at the image boundary. This function
-     * should be called if no page was found in the image.
-     */
-    public void setDefaultPoints() {
-
-        mNormedPoints = getDefaultPoints();
-
     }
 
     public void rotate90Degrees() {
@@ -174,17 +160,6 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     }
 
-    private ArrayList<PointF> getDefaultPoints() {
-
-        ArrayList<PointF> defaultPoints = new ArrayList<>();
-        defaultPoints.add(new PointF(0, 0));
-        defaultPoints.add(new PointF(1, 0));
-        defaultPoints.add(new PointF(1, 1));
-        defaultPoints.add(new PointF(0, 1));
-        return defaultPoints;
-
-    }
-
     private void initQuadPaint() {
 
         mQuadPaint = new Paint();
@@ -193,6 +168,17 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         mQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width));
         mQuadPaint.setAntiAlias(true);
         mQuadPath = new Path();
+
+    }
+
+    private void initOuterQuadPaint() {
+
+        mOuterQuadPaint = new Paint();
+        mOuterQuadPaint.setColor(PAGE_OUTER_RECT_COLOR);
+        mOuterQuadPaint.setStyle(Paint.Style.STROKE);
+        mOuterQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width));
+        mOuterQuadPaint.setAntiAlias(true);
+        mOuterQuadPath = new Path();
 
     }
 
@@ -227,7 +213,8 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
             if ((mCropQuad == null) && (mNormedPoints != null)) {
                 mCropQuad = new CropQuad(mNormedPoints, getBitmap().getWidth(), getBitmap().getHeight());
                 // Tell the CropQuad the transformation:
-                mapCropQuadPoints();
+//                mapCropQuadPoints();
+                mapPoints();
             }
             // draw crop frame
             drawCropFrame(canvas);
@@ -476,10 +463,54 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     private void drawCropFrame(Canvas canvas) {
 
-        if ((mCropQuad != null) && (mCropQuad.getViewPoints() != null))
-            drawQuad(canvas);
+//        if ((mCropQuad != null) && (mCropQuad.getViewPoints() != null))
+//            drawQuad(canvas);
+
+        if ((mCropQuad != null) && (mCropQuad.getViewPoints() != null)) {
+            drawQuad(canvas, mCropQuad.getViewPoints(), mQuadPath, mQuadPaint);
+            drawCircles(canvas, mCropQuad.getViewPoints(), mCirclePaint);
+        }
+//        if ((mCropQuad != null) && (mCropQuad.getOuterViewPoints() != null))
+//            drawQuad(canvas, mCropQuad.getOuterViewPoints(), mOuterQuadPath, mOuterQuadPaint);
 
     }
+
+    private void drawQuad(Canvas canvas, ArrayList<PointF> points, Path path, Paint paint) {
+
+//        canvas.drawCircle(marker1.x, marker1.y, 50, mQuadPaint);
+
+        path.reset();
+        boolean isStartSet = false;
+
+        for (PointF point : points) {
+
+            if (!isStartSet) {
+                path.moveTo(point.x, point.y);
+                isStartSet = true;
+            } else
+                path.lineTo(point.x, point.y);
+
+            // draw the circle around the corner:
+//            Log.d(CLASS_NAME, "drawQuad: point: " + point);
+//            canvas.drawCircle(point.x, point.y, CORNER_CIRCLE_RADIUS, mCirclePaint);
+
+        }
+
+        path.close();
+        canvas.drawPath(path, paint);
+
+    }
+
+    private void drawCircles(Canvas canvas, ArrayList<PointF> points, Paint paint) {
+
+        for (PointF point : points) {
+
+            canvas.drawCircle(point.x, point.y, CORNER_CIRCLE_RADIUS, paint);
+
+        }
+
+    }
+
 
 
     private void drawQuad(Canvas canvas) {
@@ -616,7 +647,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
         if ((getBitmap() != null) && (mNormedPoints != null)) {
             mCropQuad = new CropQuad(mNormedPoints, getBitmap().getWidth(), getBitmap().getHeight());
             // Tell the CropQuad the transformation:
-            mapCropQuadPoints();
+            mapPoints();
         }
 
         mImageRect = calcImageRect(new RectF(0f, 0f, mImgWidth, mImgHeight), mMatrix);
@@ -662,36 +693,75 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
     }
 
 
-
-
-    private void mapCropQuadPoints() {
-        int numPts = 8;
-        float[] imgPoints = new float[numPts];
-
-
-        imgPoints[0] = mCropQuad.getImgPoints().get(0).x;
-        imgPoints[1] = mCropQuad.getImgPoints().get(0).y;
-
-        imgPoints[2] = mCropQuad.getImgPoints().get(1).x;
-        imgPoints[3] = mCropQuad.getImgPoints().get(1).y;
-
-        imgPoints[4] = mCropQuad.getImgPoints().get(2).x;
-        imgPoints[5] = mCropQuad.getImgPoints().get(2).y;
-
-        imgPoints[6] = mCropQuad.getImgPoints().get(3).x;
-        imgPoints[7] = mCropQuad.getImgPoints().get(3).y;
-
-        mMatrix.mapPoints(imgPoints);
+    private ArrayList<PointF> imagePointsToViewPoints(ArrayList<PointF> imgPoints) {
 
         ArrayList<PointF> viewPoints = new ArrayList<>();
-        viewPoints.add(new PointF(imgPoints[0], imgPoints[1]));
-        viewPoints.add(new PointF(imgPoints[2], imgPoints[3]));
-        viewPoints.add(new PointF(imgPoints[4], imgPoints[5]));
-        viewPoints.add(new PointF(imgPoints[6], imgPoints[7]));
 
+        int numPts = 8;
+        float[] imgPointsArray = new float[numPts];
+
+        imgPointsArray[0] = imgPoints.get(0).x;
+        imgPointsArray[1] = imgPoints.get(0).y;
+
+        imgPointsArray[2] = imgPoints.get(1).x;
+        imgPointsArray[3] = imgPoints.get(1).y;
+
+        imgPointsArray[4] = imgPoints.get(2).x;
+        imgPointsArray[5] = imgPoints.get(2).y;
+
+        imgPointsArray[6] = imgPoints.get(3).x;
+        imgPointsArray[7] = imgPoints.get(3).y;
+
+        mMatrix.mapPoints(imgPointsArray);
+
+        viewPoints.add(new PointF(imgPointsArray[0], imgPointsArray[1]));
+        viewPoints.add(new PointF(imgPointsArray[2], imgPointsArray[3]));
+        viewPoints.add(new PointF(imgPointsArray[4], imgPointsArray[5]));
+        viewPoints.add(new PointF(imgPointsArray[6], imgPointsArray[7]));
+
+//        mCropQuad.setViewPoints(viewPoints);
+
+        return viewPoints;
+    }
+
+    private void mapPoints() {
+
+        ArrayList<PointF> viewPoints = imagePointsToViewPoints(mCropQuad.getImgPoints());
         mCropQuad.setViewPoints(viewPoints);
 
+//        ArrayList<PointF> outerViewPoints = imagePointsToViewPoints(mCropQuad.getOuterImgPoints());
+//        mCropQuad.setOuterViewPoints(outerViewPoints);
+
     }
+
+//    private void mapCropQuadPoints() {
+//
+//        int numPts = 8;
+//        float[] imgPoints = new float[numPts];
+//
+//        imgPoints[0] = mCropQuad.getImgPoints().get(0).x;
+//        imgPoints[1] = mCropQuad.getImgPoints().get(0).y;
+//
+//        imgPoints[2] = mCropQuad.getImgPoints().get(1).x;
+//        imgPoints[3] = mCropQuad.getImgPoints().get(1).y;
+//
+//        imgPoints[4] = mCropQuad.getImgPoints().get(2).x;
+//        imgPoints[5] = mCropQuad.getImgPoints().get(2).y;
+//
+//        imgPoints[6] = mCropQuad.getImgPoints().get(3).x;
+//        imgPoints[7] = mCropQuad.getImgPoints().get(3).y;
+//
+//        mMatrix.mapPoints(imgPoints);
+//
+//        ArrayList<PointF> viewPoints = new ArrayList<>();
+//        viewPoints.add(new PointF(imgPoints[0], imgPoints[1]));
+//        viewPoints.add(new PointF(imgPoints[2], imgPoints[3]));
+//        viewPoints.add(new PointF(imgPoints[4], imgPoints[5]));
+//        viewPoints.add(new PointF(imgPoints[6], imgPoints[7]));
+//
+//        mCropQuad.setViewPoints(viewPoints);
+//
+//    }
 
     public ArrayList<PointF> getCropPoints() {
 

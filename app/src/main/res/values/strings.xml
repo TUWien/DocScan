@@ -262,9 +262,6 @@
     <string name="create_series_hierarchy_text">Hierarchy</string>
 
     <string name="map_crop_view_title">Warp image</string>
-    <string name="map_crop_view_overwrite_title">Replace image?</string>
-    <string name="map_crop_view_overwrite_text">This will replace the original image and cannot
-        be undone. Are you sure you want to continue?</string>
     <string name="map_crop_view_no_transformation_title">Image not transformed</string>
     <string name="map_crop_view_no_transformation_text">The image could not be transformed. Please try to adjust the cropping rectangle.</string>
     <!-- SettingsFragment -->
@@ -309,5 +306,9 @@
     <string name="gallery_confirm_delete_text">Are you sure? This cannot be undone.</string>
     <string name="gallery_confirm_delete_confirm_button_text">Delete</string>
     <string name="gallery_confirm_delete_cancel_button_text">Cancel</string>
+    <string name="gallery_confirm_overwrite_title">Replace images?</string>
+    <string name="gallery_confirm_overwrite_text">This will replace the original images and cannot
+        be undone. Are you sure you want to continue?</string>
+
 
 </resources>

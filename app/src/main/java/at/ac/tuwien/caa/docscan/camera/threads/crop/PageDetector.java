@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.camera.threads.crop;
 
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.os.Looper;
 import android.support.media.ExifInterface;
@@ -14,13 +15,14 @@ import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 
 public class PageDetector {
 
-    public static final String BORDER_COORDS_PREFIX = "<Border><Coords points=\"";
-    public static final String BORDER_COORDS_POSTFIX = "\"/></Border>";
+    private static final String BORDER_COORDS_PREFIX = "<Border><Coords points=\"";
+    private static final String BORDER_COORDS_POSTFIX = "\"/></Border>";
     private static final String CLASS_TAG = "PageDetector";
-    public static final String CROPPING_PREFIX = "<Cropping applied=\"true\"/>";
+    private static final String CROPPING_PREFIX = "<Cropping applied=\"true\"/>";
 
     /**
      * Performs the page detection. Note this is done in the calling thread, so assure you are not
@@ -42,8 +44,7 @@ public class PageDetector {
         DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mg);
 
         if (polyRects.length > 0 && polyRects[0] != null) {
-            ArrayList<PointF> normedPoints = normPoints(polyRects[0], inputMat.width(), inputMat.height());
-            return normedPoints;
+            return normPoints(polyRects[0], inputMat.width(), inputMat.height());
         }
 
         return null;
@@ -65,7 +66,7 @@ public class PageDetector {
 
     }
 
-    static ArrayList<PointF> normPoints(DkPolyRect rect, int width, int height) {
+    private static ArrayList<PointF> normPoints(DkPolyRect rect, int width, int height) {
 
         ArrayList<PointF> normedPoints = new ArrayList<>();
 
@@ -90,7 +91,7 @@ public class PageDetector {
 //
 //    }
 
-    static void rotateNormedPoint(PointF point, int angle) {
+    private static void rotateNormedPoint(PointF point, int angle) {
 
         switch (angle) {
 
@@ -118,15 +119,13 @@ public class PageDetector {
     public static void savePointsToExif(String fileName, ArrayList<PointF> points) throws IOException {
 
         ExifInterface exif = new ExifInterface(fileName);
-        if (exif != null) {
-            // Save the coordinates of the page detection:
-            if (points != null) {
-                String coordString = getCoordString(points);
-                if (coordString != null) {
-                    exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
-                    exif.saveAttributes();
-                    Log.d(CLASS_TAG, "savePointsToExif: coordString" + coordString);
-                }
+        // Save the coordinates of the page detection:
+        if (points != null) {
+            String coordString = getCoordString(points);
+            if (coordString != null) {
+                exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
+                exif.saveAttributes();
+                Log.d(CLASS_TAG, "savePointsToExif: coordString" + coordString);
             }
         }
 
@@ -140,7 +139,7 @@ public class PageDetector {
      * @param points
      * @return
      */
-    static String getCoordString(ArrayList<PointF> points) {
+    private static String getCoordString(ArrayList<PointF> points) {
 
         if (points == null)
             return null;
@@ -173,6 +172,129 @@ public class PageDetector {
 
     }
 
+//    TODO: this is not really valid, in case of 'extreme' quadrilaterals. Maybe check out this
+//    http://forumgeom.fau.edu/FG2006volume6/FG200634.pdf to get the area centroid
+    public static ArrayList<PointF> getScaledOuterPointsNew2(ArrayList<PointF> points, int width, int height) {
+
+//        ArrayList<PointF> points = getNormedCropPoints(fileName);
+        ArrayList<PointF> outerPoints = new ArrayList<>();
+
+        float diagLength = (float) Math.sqrt(width * width + height * height);
+//        float fac = .01f;
+
+        int p1Idx, p2Idx, p3Idx;
+
+        for (int i = 0; i < points.size(); i++) {
+
+            p2Idx = i;
+            p1Idx = (i-1) % 4;
+            if (p1Idx < 0)
+                p1Idx += 4;
+            p3Idx = (i+1) % 4;
+
+            DkVector v1 = new DkVector(points.get(p1Idx), points.get(p2Idx));
+            DkVector v2 = new DkVector(points.get(p3Idx), points.get(p2Idx));
+            DkVector bisect = v1.bisect(v2);
+
+            DkVector offset = new DkVector(-bisect.x, -bisect.y);
+            DkVector offsetNormed = offset.norm();
+
+            DkVector offsetScaled = offsetNormed.multiply(diagLength *.03f);
+
+            PointF outerPoint = new PointF(points.get(p2Idx).x + offsetScaled.x,
+                    points.get(p2Idx).y + offsetScaled.y);
+
+            outerPoints.add(outerPoint);
+
+        }
+
+//        scalePoints(outerPoints, width, height);
+
+        return outerPoints;
+
+    }
+
+
+    public static ArrayList<PointF> getParallelPoints(ArrayList<PointF> points, String fileName) {
+
+        float diagLength = getDiagonalLength(fileName);
+        float offset = diagLength * 0.01f; // add an offset of 1% to the coordinates
+
+        ArrayList<PointF> outerPoints = new ArrayList<>();
+
+        int p1Idx, p2Idx, p3Idx;
+
+        for (int i = 0; i < points.size(); i++) {
+
+            p2Idx = i;
+            p1Idx = (i - 1) % 4;
+            if (p1Idx < 0)
+                p1Idx += 4;
+            p3Idx = (i + 1) % 4;
+
+            PointF intersection = getIntersection(
+                    points.get(p1Idx), points.get(p2Idx), points.get(p3Idx), offset);
+
+            outerPoints.add(intersection);
+
+        }
+
+        return outerPoints;
+
+    }
+
+    private static float getDiagonalLength(String fileName) {
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(fileName, options);
+
+        return (float) Math.sqrt(
+                options.outWidth * options.outWidth + options.outHeight * options.outHeight);
+
+    }
+
+    private static PointF getIntersection(PointF p1, PointF p2, PointF p3, float offset) {
+
+        DkVector vl = new DkVector(p1, p2);
+//        Construct the normal vector:
+        DkVector vln = new DkVector(-vl.y, vl.x).norm().multiply(offset);
+
+        DkVector vr = new DkVector(p3, p2);
+//        Construct the normal vector:
+        DkVector vrn = new DkVector(vr.y, -vr.x).norm().multiply(offset);
+
+        PointF plt = new PointF(p1.x + vln.x, p1.y + vln.y); // p1
+        float x1 = plt.x;
+        float y1 = plt.y;
+
+        PointF plb = new PointF(p2.x + vln.x, p2.y + vln.y); // p2
+        float x2 = plb.x;
+        float y2 = plb.y;
+
+        PointF prt = new PointF(p3.x + vrn.x, p3.y + vrn.y); // p3
+        float x3 = prt.x;
+        float y3 = prt.y;
+
+        PointF prb = new PointF(p2.x + vrn.x, p2.y + vrn.y); // p4
+        float x4 = prb.x;
+        float y4 = prb.y;
+
+//        Formula taken from: https://de.wikipedia.org/wiki/Schnittpunkt#Schnittpunkt_zweier_Geraden
+        float xs = ((x4 - x3) * (x2 * y1 - x1 * y2) - (x2 - x1) * (x4 * y3 - x3 * y4)) /
+                ((y4 - y3) * (x2 - x1) - (y2 - y1) * (x4 - x3));
+
+        float ys = ((y1 - y2) * (x4 * y3 - x3 * y4) - (y3 - y4) * (x2 * y1 - x1 * y2)) /
+                ((y4 - y3) * (x2 - x1) - (y2 - y1) * (x4 - x3));
+
+        PointF intersect = new PointF(xs, ys);
+
+        return intersect;
+
+    }
+
+
     /**
      * Searches in the exif data for the maker note and returns the page detection coordinates if
      * the attribute is correctly formatted according to the prima PAGE XML definition.
@@ -182,31 +304,29 @@ public class PageDetector {
 
         try {
             ExifInterface exif = new ExifInterface(fileName);
-            if (exif != null) {
-                String coordString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
-                if (coordString != null) {
+            String coordString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
+            if (coordString != null) {
 //  Take care that the string is well formed:
-                    if (coordString.startsWith(BORDER_COORDS_PREFIX) &&
-                            coordString.endsWith(BORDER_COORDS_POSTFIX)) {
-                        int idxStart = BORDER_COORDS_PREFIX.length();
-                        int idxEnd = coordString.length() - BORDER_COORDS_POSTFIX.length();
-                        String coords = coordString.substring(idxStart, idxEnd);
+                if (coordString.startsWith(BORDER_COORDS_PREFIX) &&
+                        coordString.endsWith(BORDER_COORDS_POSTFIX)) {
+                    int idxStart = BORDER_COORDS_PREFIX.length();
+                    int idxEnd = coordString.length() - BORDER_COORDS_POSTFIX.length();
+                    String coords = coordString.substring(idxStart, idxEnd);
 
-                        String[] coordPairs = coords.split(" ");
+                    String[] coordPairs = coords.split(" ");
 
-                        ArrayList<PointF> points = new ArrayList<>();
-                        for (String coordPair : coordPairs) {
-                            String[] coord = coordPair.split(",");
-                            float x = Float.parseFloat(coord[0]);
-                            float y = Float.parseFloat(coord[1]);
-                            points.add(new PointF(x, y));
-                        }
-
-                        return points;
-
+                    ArrayList<PointF> points = new ArrayList<>();
+                    for (String coordPair : coordPairs) {
+                        String[] coord = coordPair.split(",");
+                        float x = Float.parseFloat(coord[0]);
+                        float y = Float.parseFloat(coord[1]);
+                        points.add(new PointF(x, y));
                     }
 
+                    return points;
+
                 }
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -217,7 +337,7 @@ public class PageDetector {
 
     }
 
-    static void scalePoints(ArrayList<PointF> points, int width, int height) {
+    private static void scalePoints(ArrayList<PointF> points, int width, int height) {
 
         for (PointF point : points) {
             point.x *= width;
@@ -248,13 +368,11 @@ public class PageDetector {
 
         try {
             ExifInterface exif = new ExifInterface(fileName);
-            if (exif != null) {
-                String coordString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
-                if (coordString != null) {
-                    coordString = CROPPING_PREFIX + coordString;
-                    exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
-                    exif.saveAttributes();
-                }
+            String coordString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
+            if (coordString != null) {
+                coordString = CROPPING_PREFIX + coordString;
+                exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
+                exif.saveAttributes();
             }
 
         } catch (IOException e) {
@@ -267,12 +385,10 @@ public class PageDetector {
 
         try {
             ExifInterface exif = new ExifInterface(fileName);
-            if (exif != null) {
-                String coordString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
-                if (coordString != null) {
-                    if (coordString.startsWith(CROPPING_PREFIX))
-                        return true;
-                }
+            String coordString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
+            if (coordString != null) {
+                if (coordString.startsWith(CROPPING_PREFIX))
+                    return true;
             }
 
         } catch (IOException e) {

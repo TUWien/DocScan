@@ -21,11 +21,15 @@ public class PageImageView extends SubsamplingScaleImageView {
 
     private SingleClickListener mClickCallBack;
     private ArrayList<PointF> mPoints;
+//    private ArrayList<PointF> mPoints, mOuterPoints;
 
-    private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
     private static final String CLASS_NAME = "PageImageView";
+
     private Paint mQuadPaint;
     private Path mQuadPath;
+
+//    private Paint mQuadPaint, mOuterQuadPaint;
+//    private Path mQuadPath, mOuterQuadPath;
 
     public PageImageView(Context context, AttributeSet attr) {
         super(context, attr);
@@ -37,14 +41,23 @@ public class PageImageView extends SubsamplingScaleImageView {
     }
 
     private void initPaint() {
+
         mQuadPaint = new Paint();
         mQuadPath = new Path();
 
         mQuadPaint.setStyle(Paint.Style.STROKE);
         mQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width));
-        mQuadPaint.setColor(PAGE_RECT_COLOR);
-//        mQuadPaint.setStrokeWidth(4);
+        mQuadPaint.setColor(getResources().getColor(R.color.hud_page_rect_color));
         mQuadPaint.setAntiAlias(true);
+
+//        mOuterQuadPaint = new Paint();
+//        mOuterQuadPath = new Path();
+//
+//        mOuterQuadPaint.setStyle(Paint.Style.STROKE);
+//        mOuterQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width));
+//        mOuterQuadPaint.setColor(getResources().getColor(R.color.page_outer_color));
+//        mOuterQuadPaint.setAntiAlias(true);
+
     }
 
     public void setPoints(ArrayList<PointF> points) {
@@ -54,9 +67,11 @@ public class PageImageView extends SubsamplingScaleImageView {
 
     }
 
-//    public void setClickCallBack(SingleClickListener listener) {
+//    public void setPoints(ArrayList<PointF> points, ArrayList<PointF> outerPoints) {
 //
-//        mClickCallBack = listener;
+//        mPoints = points;
+//        mOuterPoints = outerPoints;
+//        invalidate();
 //
 //    }
 
@@ -87,15 +102,17 @@ public class PageImageView extends SubsamplingScaleImageView {
             return;
         }
 
-        if ((canvas != null) && (mPoints != null) && (mPoints.size() > 0))
-            drawQuad(canvas, mPoints);
+        if ((canvas != null) && (mPoints != null) && (mPoints.size() > 0)) {
+            drawQuad(canvas, mPoints, mQuadPath, mQuadPaint);
+//            drawQuad(canvas, mOuterPoints, mOuterQuadPath, mOuterQuadPaint);
+        }
 
     }
 
-    private void drawQuad(Canvas canvas, ArrayList<PointF> points) {
+    private void drawQuad(Canvas canvas, ArrayList<PointF> points, Path path, Paint paint) {
 
 //        TODO: optimize the drawing speed! consider this link: https://developer.android.com/topic/performance/vitals/render#common-jank
-        mQuadPath.reset();
+        path.reset();
         boolean isStartSet = false;
 
         for (PointF point : points) {
@@ -104,15 +121,22 @@ public class PageImageView extends SubsamplingScaleImageView {
             sourceToViewCoord(point, transPoint);
 
             if (!isStartSet) {
-                mQuadPath.moveTo(transPoint.x, transPoint.y);
+                path.moveTo(transPoint.x, transPoint.y);
                 isStartSet = true;
             } else
-                mQuadPath.lineTo(transPoint.x, transPoint.y);
+                path.lineTo(transPoint.x, transPoint.y);
 
         }
 
-        mQuadPath.close();
-        canvas.drawPath(mQuadPath, mQuadPaint);
+        path.close();
+        canvas.drawPath(path, paint);
+
+    }
+
+    public void resetPoints() {
+
+        mPoints = null;
+//        mOuterPoints = null;
 
     }
 

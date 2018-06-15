@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
+import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
@@ -36,6 +37,7 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropLogger;
@@ -136,11 +138,20 @@ public class ImageViewerFragment extends Fragment {
         }
         else {
             mLoadingView.setVisibility(View.INVISIBLE);
-            if (!PageDetector.isCropped(mFileName))
-                mImageView.setPoints(PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth));
+
+            if (!PageDetector.isCropped(mFileName)) {
+
+                ArrayList<PointF> points =
+                        PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth);
+
+                mImageView.setPoints(points);
+
+//                ArrayList<PointF> outerPoints = PageDetector.getParallelPoints(points, mFileName);
+//                mImageView.setPoints(points, outerPoints);
+            }
             else
 //            We do this because the image might have been cropped in the meantime:
-                mImageView.setPoints(null);
+                mImageView.resetPoints();
         }
     }
 

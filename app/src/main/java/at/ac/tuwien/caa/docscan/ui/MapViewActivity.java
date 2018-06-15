@@ -1,6 +1,5 @@
 package at.ac.tuwien.caa.docscan.ui;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.net.Uri;
@@ -93,9 +92,7 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 //        Delete the temp file:
         if (mFileName != null) {
             File file = getTempFileName(mFileName);
-            if (file != null) {
-                file.delete();
-            }
+            file.delete();
         }
 
     }
@@ -113,7 +110,8 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
     public void saveImage(MenuItem item) {
 
-        showOverwriteImageAlert();
+//        showOverwriteImageAlert();
+        replaceImage();
 
     }
 
@@ -121,34 +119,32 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
         //        Overwrite the original file with the temp file:
         if (mFileName != null) {
             File tempFile = getTempFileName(mFileName);
-            if (tempFile != null) {
-                File newFile = new File(mFileName);
-                try {
+            File newFile = new File(mFileName);
+            try {
 
 //                    Store the exif data of the original file:
-                    ExifInterface exif = new ExifInterface(mFileName);
+                ExifInterface exif = new ExifInterface(mFileName);
 //                    Save the temporary file on the external storage:
-                    copyFile(tempFile, newFile);
+                copyFile(tempFile, newFile);
 //                    Save the exif data of the original image to the new image:
-                    Helper.saveExif(exif, newFile.getAbsolutePath());
+                Helper.saveExif(exif, newFile.getAbsolutePath());
 //                    Save the new image as being cropped:
-                    PageDetector.saveAsCropped(newFile.getAbsolutePath());
-                    sendNewImageBroadcast(newFile);
+                PageDetector.saveAsCropped(newFile.getAbsolutePath());
+                sendNewImageBroadcast(newFile);
 
-                    GalleryActivity.fileCropped();
+                GalleryActivity.fileCropped();
 
 //                    Start the CropViewActivity and tell it to immediately close itself:
-                    Intent intent = new Intent(this, CropViewActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent.putExtra(KEY_MAP_VIEW_ACTIVITY_FINISHED, true);
-                    startActivity(intent);
+                Intent intent = new Intent(this, CropViewActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtra(KEY_MAP_VIEW_ACTIVITY_FINISHED, true);
+                startActivity(intent);
 
 //                    Close the activity:
-                    finish();
+                finish();
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
 
@@ -174,32 +170,31 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
         {
             if (inChannel != null)
                 inChannel.close();
-            if (outChannel != null)
-                outChannel.close();
+            outChannel.close();
         }
     }
 
-    private void showOverwriteImageAlert() {
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(R.string.map_crop_view_overwrite_title)
-                .setPositiveButton(R.string.dialog_ok_text, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        replaceImage();
-                    }
-                })
-                .setNegativeButton(R.string.dialog_cancel_text, null)
-                .setCancelable(true)
-                .setMessage(R.string.map_crop_view_overwrite_text);
-
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
-
-    }
+//    private void showOverwriteImageAlert() {
+//
+//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+//
+//        // set dialog message
+//        alertDialogBuilder
+//                .setTitle(R.string.map_crop_view_overwrite_title)
+//                .setPositiveButton(R.string.dialog_ok_text, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        replaceImage();
+//                    }
+//                })
+//                .setNegativeButton(R.string.dialog_cancel_text, null)
+//                .setCancelable(true)
+//                .setMessage(R.string.map_crop_view_overwrite_text);
+//
+//        AlertDialog alertDialog = alertDialogBuilder.create();
+//        alertDialog.show();
+//
+//    }
 
 
 
@@ -253,14 +248,16 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
         @Override
         protected Boolean doInBackground(String... strings) {
+
             String fileName = strings[0];
 
-            ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
+//            ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
 
 //            Save the file: We still need the original image at this point, so save it as a temp file:
             File newFile = getTempFileName(fileName);
-            return Mapper.mapImage(fileName, newFile.getAbsolutePath(), points);
+//            return Mapper.mapImage(fileName, newFile.getAbsolutePath(), points);
 
+            return null;
         }
 
 

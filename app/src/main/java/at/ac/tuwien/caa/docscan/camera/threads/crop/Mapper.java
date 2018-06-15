@@ -1,12 +1,10 @@
 package at.ac.tuwien.caa.docscan.camera.threads.crop;
 
-import android.graphics.Bitmap;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.media.ExifInterface;
 import android.util.Log;
 
-import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -62,6 +60,8 @@ public class Mapper {
 
     }
 
+
+
     /**
      * Maps the image and saves it in the file with the name: newFileName
      * @param fileName
@@ -75,8 +75,7 @@ public class Mapper {
 
         if (transformedMat != null) {
 
-            boolean fileSaved = Imgcodecs.imwrite(newFileName, transformedMat);
-            return fileSaved;
+            return Imgcodecs.imwrite(newFileName, transformedMat);
 
         }
 
@@ -84,13 +83,13 @@ public class Mapper {
 
     }
 
-    private static Bitmap matToBitmap(Mat transformedMat) {
-
-        Bitmap result = Bitmap.createBitmap(transformedMat.cols(), transformedMat.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(transformedMat, result);
-        return result;
-
-    }
+//    private static Bitmap matToBitmap(Mat transformedMat) {
+//
+//        Bitmap result = Bitmap.createBitmap(transformedMat.cols(), transformedMat.rows(), Bitmap.Config.ARGB_8888);
+//        Utils.matToBitmap(transformedMat, result);
+//        return result;
+//
+//    }
 
     private static Mat cropAndTransform(String fileName, ArrayList<PointF> srcPoints) {
 
@@ -98,6 +97,9 @@ public class Mapper {
 
         // Scale the points since they are normed:
         scalePoints(srcPoints, inputMat.width(), inputMat.height());
+//        Add an offset to the crop coordinates:
+        srcPoints = PageDetector.getParallelPoints(srcPoints, fileName);
+
         // Sort the points so that the bottom left corner is on the first index:
         sortPoints(srcPoints);
         printPointList(srcPoints, "sorted");
