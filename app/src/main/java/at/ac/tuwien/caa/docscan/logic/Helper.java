@@ -10,6 +10,8 @@ import android.os.Environment;
 import android.support.media.ExifInterface;
 //import android.util.Size;
 
+import com.koushikdutta.ion.bitmap.Exif;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -113,14 +115,20 @@ public class Helper {
     public static int getExifOrientation(File outFile) throws IOException {
         final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
         if (exif != null) {
-
-            // Save the orientation of the image:
-//            int orientation = getExifOrientation();
             String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
             return Integer.valueOf(orientation);
         }
 
         return -1;
+
+    }
+
+    public static void saveExifOrientation(File outFile, int orientation) throws IOException {
+        final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+        if (exif != null) {
+            exif.setAttribute(ExifInterface.TAG_ORIENTATION, Integer.toString(orientation));
+            exif.saveAttributes();
+        }
 
     }
 

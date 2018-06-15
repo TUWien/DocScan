@@ -40,7 +40,9 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
     private static final String TEMP_IMG_PREFIX = "TEMP_";
 
     private SubsamplingScaleImageView mImageView;
+    private MenuItem mSaveMenuItem;
     private String mFileName;
+    private boolean mIsMapTaskRunning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,33 +58,13 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
         if (b != null) {
             mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
 
-            if (mFileName != null) {
+            if (mFileName != null)
                 new MapTask().execute(mFileName);
-//                ArrayList<PointF> points = PageDetector.getNormedCropPoints(mFileName);
-//                mapImage(points);
-//                mCropView.setPoints(points);
-            }
+
         }
 
-
-
-//        CropInfo cropInfo = getIntent().getParcelableExtra(CROP_INFO_NAME);
-//        if (cropInfo.getPoints() == null)
-//            initCropInfo(cropInfo);
-//        else
-//            useCropInfo(cropInfo);
-
-//        ImageButton okButton = findViewById(R.id.confirm_map_crop_view_button);
-//        okButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
-////                CropInfo r = new CropInfo(cropPoints, mFileName);
-//                intent.putExtra(CROP_INFO_NAME, mCropInfo);
-//                startActivity(intent);
-//            }
-//        });
     }
+
 
     @Override
     public void onDestroy() {
@@ -103,6 +85,10 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.map_menu, menu);
+
+        mSaveMenuItem = menu.findItem(R.id.map_menu_save_item);
+        if (mIsMapTaskRunning)
+            mSaveMenuItem.setVisible(false);
 
         return true;
 
@@ -245,22 +231,30 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
     private class MapTask extends AsyncTask<String, Void, Boolean> {
 
+        @Override
+        protected void onPreExecute() {
+
+            mIsMapTaskRunning = true;
+
+            if (mSaveMenuItem != null)
+                mSaveMenuItem.setVisible(false);
+
+        }
 
         @Override
         protected Boolean doInBackground(String... strings) {
 
             String fileName = strings[0];
 
-//            ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
+            ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
 
 //            Save the file: We still need the original image at this point, so save it as a temp file:
             File newFile = getTempFileName(fileName);
-//            return Mapper.mapImage(fileName, newFile.getAbsolutePath(), points);
+            return Mapper.mapImage(fileName, newFile.getAbsolutePath(), points);
 
-            return null;
         }
 
-
+        @Override
         protected void onPostExecute(Boolean isSaved) {
 
             if (isSaved) {
@@ -275,12 +269,19 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
             }
 
             hideLoadingLayout();
+
+            mIsMapTaskRunning = false;
+
         }
 
 
-        protected void hideLoadingLayout() {
+        private void hideLoadingLayout() {
 
-            mImageView.setVisibility(View.VISIBLE);
+            if (mImageView != null)
+                mImageView.setVisibility(View.VISIBLE);
+            if (mSaveMenuItem != null)
+                mSaveMenuItem.setVisible(true);
+
             View loadingLayout = findViewById(R.id.map_loading_layout);
             loadingLayout.setVisibility(View.INVISIBLE);
 
