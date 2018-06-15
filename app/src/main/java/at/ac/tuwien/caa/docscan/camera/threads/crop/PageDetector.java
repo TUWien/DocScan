@@ -172,50 +172,14 @@ public class PageDetector {
 
     }
 
-//    TODO: this is not really valid, in case of 'extreme' quadrilaterals. Maybe check out this
-//    http://forumgeom.fau.edu/FG2006volume6/FG200634.pdf to get the area centroid
-    public static ArrayList<PointF> getScaledOuterPointsNew2(ArrayList<PointF> points, int width, int height) {
-
-//        ArrayList<PointF> points = getNormedCropPoints(fileName);
-        ArrayList<PointF> outerPoints = new ArrayList<>();
-
-        float diagLength = (float) Math.sqrt(width * width + height * height);
-//        float fac = .01f;
-
-        int p1Idx, p2Idx, p3Idx;
-
-        for (int i = 0; i < points.size(); i++) {
-
-            p2Idx = i;
-            p1Idx = (i-1) % 4;
-            if (p1Idx < 0)
-                p1Idx += 4;
-            p3Idx = (i+1) % 4;
-
-            DkVector v1 = new DkVector(points.get(p1Idx), points.get(p2Idx));
-            DkVector v2 = new DkVector(points.get(p3Idx), points.get(p2Idx));
-            DkVector bisect = v1.bisect(v2);
-
-            DkVector offset = new DkVector(-bisect.x, -bisect.y);
-            DkVector offsetNormed = offset.norm();
-
-            DkVector offsetScaled = offsetNormed.multiply(diagLength *.03f);
-
-            PointF outerPoint = new PointF(points.get(p2Idx).x + offsetScaled.x,
-                    points.get(p2Idx).y + offsetScaled.y);
-
-            outerPoints.add(outerPoint);
-
-        }
-
-//        scalePoints(outerPoints, width, height);
-
-        return outerPoints;
-
-    }
 
 
     public static ArrayList<PointF> getParallelPoints(ArrayList<PointF> points, String fileName) {
+
+//        Took me some time to figure out that you cannot use simply the vertex centroid. Instead
+//        one should have used the area centroid. However you can simply calculate the parallel
+//        lines of the quadrilateral and intersect them (much easier):
+//        https://stackoverflow.com/a/50873087/9827698
 
         float diagLength = getDiagonalLength(fileName);
         float offset = diagLength * 0.01f; // add an offset of 1% to the coordinates

@@ -61,16 +61,7 @@ public class CropRectTransform extends BitmapTransformation {
         ArrayList<PointF> points = PageDetector.getScaledCropPoints(mFileName,
                 original.getWidth(), original.getHeight());
 
-        ArrayList<PointF> outerPoints =
-                PageDetector.getScaledOuterPointsNew2(points,
-                        original.getWidth(), original.getHeight());
-
-//        ArrayList<PointF> outerPoints = PageDetector.getScaledOuterPoints(mFileName,
-//                original.getWidth(), original.getHeight());
-
-//        drawQuad(canvas, points);
         drawQuad(canvas, points, mQuadPath, mQuadPaint);
-//        drawQuad(canvas, outerPoints, mOuterQuadPath, mOuterQuadPaint);
 
         return result;
     }

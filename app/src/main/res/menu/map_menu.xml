@@ -9,8 +9,8 @@
         <!--app:showAsAction="always"-->
         <!--android:onClick="rotateMapView"-->
         <!--/>-->
-
     <item
+        android:id="@+id/map_menu_save_item"
         android:icon="@drawable/ic_save_black_24dp"
         android:title="@string/map_view_item_save"
         android:visible="true"
