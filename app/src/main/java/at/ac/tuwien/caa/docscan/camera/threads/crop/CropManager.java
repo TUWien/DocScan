@@ -30,8 +30,6 @@ import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import org.opencv.android.OpenCVLoader;
-
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.BlockingQueue;
@@ -45,7 +43,7 @@ public class CropManager {
 
     public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
 //    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
-    public static final String INTENT_CROP_OPERATION = "INTENT_CROP_OPERATION";
+    public static final String INTENT_CROP_ACTION = "INTENT_CROP_ACTION";
     public static final String INTENT_CROP_TYPE = "INTENT_CROP_TYPE";
     public static final int INTENT_CROP_TYPE_FILE_MAP_STARTED = 0;
     public static final int INTENT_CROP_TYPE_MAP_FINISHED = 1;
@@ -95,23 +93,23 @@ public class CropManager {
         sInstance = new CropManager();
     }
 
-//    TODO: remove this for production:
-    static {
-
-        Log.d(CLASS_NAME, "initializing OpenCV");
-
-//         We need this for Android 4:
-        if (!OpenCVLoader.initDebug()) {
-            Log.d(CLASS_NAME, "Error while initializing OpenCV.");
-        } else {
-
-            System.loadLibrary("opencv_java3");
-            System.loadLibrary("docscan-native");
-
-            Log.d(CLASS_NAME, "OpenCV initialized");
-        }
-
-    }
+////    TODO: remove this for production:
+//    static {
+//
+//        Log.d(CLASS_NAME, "initializing OpenCV");
+//
+////         We need this for Android 4:
+//        if (!OpenCVLoader.initDebug()) {
+//            Log.d(CLASS_NAME, "Error while initializing OpenCV.");
+//        } else {
+//
+//            System.loadLibrary("opencv_java3");
+//            System.loadLibrary("docscan-native");
+//
+//            Log.d(CLASS_NAME, "OpenCV initialized");
+//        }
+//
+//    }
 
 
     private CropManager() {
@@ -143,7 +141,7 @@ public class CropManager {
                     switch (messageId) {
                         case MESSAGE_COMPLETED_TASK:
                             Log.d(CLASS_NAME, "handleMessage: PageDetectionTask completed");
-
+                            Log.d(CLASS_NAME, "handleMessage: file: " + task.getFile());
 //                            Remove the corresponding TaskLog from the logger:
                             CropLogger.removePageDetectionTask(task.getFile());
 //                            sendPageDetectedIntent(task.getFile().getAbsolutePath());
@@ -263,7 +261,7 @@ public class CropManager {
 
         Log.d(CLASS_NAME, "sendCropIntent:");
 
-        Intent intent = new Intent(INTENT_CROP_OPERATION);
+        Intent intent = new Intent(INTENT_CROP_ACTION);
         intent.putExtra(INTENT_CROP_TYPE, type);
         intent.putExtra(INTENT_FILE_NAME, fileName);
 

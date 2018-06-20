@@ -23,7 +23,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -35,7 +34,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_OPERATION;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_ACTION;
 import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_TYPE;
 import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
 
@@ -114,7 +113,7 @@ public class GalleryActivity extends AppCompatActivity implements
         // with actions named "PROGRESS_INTENT_NAME".
         mMessageReceiver = getReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_CROP_OPERATION));
+                new IntentFilter(INTENT_CROP_ACTION));
 
 
 //        fixToolbar();

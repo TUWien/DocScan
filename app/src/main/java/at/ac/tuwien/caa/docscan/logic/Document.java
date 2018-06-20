@@ -12,13 +12,25 @@ public class Document {
     private String mTitle;
     private ArrayList<Page> mPages;
     private boolean mIsUploaded = false;
+    private boolean mIsCropped = false;
     private boolean mIsAwaitingUpload = false;
 
     public Document() {
 
     }
 
-//    TODO: temporary
+    public ArrayList<File> getFiles() {
+
+        ArrayList<File> files = new ArrayList<>(mPages.size());
+        for (Page page : mPages) {
+            files.add(page.getFile());
+        }
+
+        return files;
+
+    }
+
+    //    TODO: temporary
     public File getDir() {
 
         if (mPages != null) {
@@ -53,6 +65,18 @@ public class Document {
     public boolean isUploaded() {
 
         return mIsUploaded;
+
+    }
+
+    public void setIsCropped(boolean isCropped) {
+
+        mIsCropped = isCropped;
+
+    }
+
+    public boolean isCropped() {
+
+        return mIsCropped;
 
     }
 

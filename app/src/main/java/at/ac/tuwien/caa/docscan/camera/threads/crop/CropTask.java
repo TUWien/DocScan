@@ -46,6 +46,12 @@ public class CropTask implements CropRunnable.TaskRunnableCropMethods {
         }
     }
 
+    public void recycle() {
+
+        mFile = null;
+
+    }
+
 
     /**
      * Initializes the task.
