@@ -579,7 +579,7 @@ public class CropView extends android.support.v7.widget.AppCompatImageView {
 
     private void onDown(MotionEvent e) {
 
-        if (mCropQuad.getImgPoints() == null)
+        if ((mCropQuad == null) || (mCropQuad.getImgPoints() == null))
             return;
 
         invalidate();

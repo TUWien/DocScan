@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.threads.crop.CropLogger;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
@@ -429,12 +430,34 @@ public class Helper {
         boolean isDocumentUploaded = areFilesUploaded(fileList);
         document.setIsUploaded(isDocumentUploaded);
 
+        boolean isDocumentCropped = areFilesCropped(fileList);
+        document.setIsCropped(isDocumentCropped);
+
         if (!isDocumentUploaded) {
             boolean isAwaitingUpload = isDirAwaitingUpload(new File(dirName), fileList);
             document.setIsAwaitingUpload(isAwaitingUpload);
         }
 
         return document;
+
+    }
+
+    public static boolean areFilesCropped(ArrayList<File> fileList) {
+
+        if (fileList == null)
+            return false;
+
+        if (fileList.size() == 0)
+            return false;
+
+        File[] files = fileList.toArray(new File[fileList.size()]);
+
+        for (File file : files) {
+            if (CropLogger.isAwaitingCropping(file))
+                return true;
+        }
+
+        return false;
 
     }
 

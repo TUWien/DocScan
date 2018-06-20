@@ -84,7 +84,7 @@ public class CropLogger implements Serializable {
 
     }
 
-    public static void removePageDetectionTask(File file) {
+    public synchronized static void removePageDetectionTask(File file) {
 
         sInstance.removeTask(TASK_TYPE_PAGE_DETECTION, file);
 
@@ -96,7 +96,7 @@ public class CropLogger implements Serializable {
 
     }
 
-    private void removeTask(int type, File file) {
+    private synchronized  void removeTask(int type, File file) {
 
 //        TODO: check if we might have duplicates here:
 
@@ -108,6 +108,17 @@ public class CropLogger implements Serializable {
                 break;
             }
         }
+
+    }
+
+    public static boolean isAwaitingCropping(File file) {
+
+        for (TaskLog task : sInstance.mTasks) {
+            if (task.getFile().equals(file))
+                return true;
+        }
+
+        return false;
 
     }
 

@@ -20,8 +20,15 @@
             android:layout_height="20dp"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            app:srcCompat="@drawable/ic_cloud_upload_gray_24dp"
         />
+        <ProgressBar
+            android:id="@+id/layout_listview_progress_bar"
+            android:visibility="invisible"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            />
     </RelativeLayout>
 
     <TextView

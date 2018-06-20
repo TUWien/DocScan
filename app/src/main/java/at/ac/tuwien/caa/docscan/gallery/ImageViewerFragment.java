@@ -96,12 +96,38 @@ public class ImageViewerFragment extends Fragment {
 
     }
 
+    @Override
+    public void onResume() {
+
+        super.onResume();
+
+
+    }
+
     public boolean isLoadingViewVisible() {
 
         return mLoadingView.getVisibility() == View.VISIBLE;
 
     }
 
+    public void checkLoadingViewStatus() {
+
+        if (mFileName == null)
+            return;
+
+        if (CropLogger.isAwaitingPageDetection(new File(mFileName))) {
+            Log.d(CLASS_NAME, "checkLoadingViewStatus: cropping NOT done: " + mFileName);
+            if (mLoadingView != null)
+                mLoadingView.setVisibility(View.VISIBLE);
+        }
+        else {
+            Log.d(CLASS_NAME, "checkLoadingViewStatus: cropping done: " + mFileName);
+            if (mLoadingView != null)
+            if (mLoadingView != null)
+                mLoadingView.setVisibility(View.INVISIBLE);
+        }
+
+    }
 
     public void refreshImageView() {
 
@@ -153,6 +179,8 @@ public class ImageViewerFragment extends Fragment {
 //            We do this because the image might have been cropped in the meantime:
                 mImageView.resetPoints();
         }
+
+
     }
 
 

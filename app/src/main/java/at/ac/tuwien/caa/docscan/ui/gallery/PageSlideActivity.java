@@ -49,7 +49,6 @@ import android.widget.RelativeLayout;
 import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.threads.crop.CropLogger;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
 import at.ac.tuwien.caa.docscan.gallery.PageImageView;
@@ -58,9 +57,8 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_TYPE;
 import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_OPERATION;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_ACTION;
 
 public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
 
@@ -121,7 +119,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         // with actions named "PROGRESS_INTENT_NAME".
         mMessageReceiver = getReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_CROP_OPERATION));
+                new IntentFilter(INTENT_CROP_ACTION));
 
 
         if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null))
@@ -176,7 +174,11 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             @Override
             public void onReceive(Context context, Intent intent) {
 
+                if (mPagerAdapter != null)
+                    mPagerAdapter.notifyDataSetChanged();
+
                 Log.d(CLASS_NAME, "onReceive:");
+                Log.d(CLASS_NAME, "onReceive: file: " + intent.getStringExtra(INTENT_FILE_NAME));
                 if (mPage.getFile().getAbsolutePath().equals(intent.getStringExtra(INTENT_FILE_NAME))) {
                     Log.d(CLASS_NAME, "onReceive: passing to mPagerAdapter");
                     mPagerAdapter.getCurrentFragment().refreshImageView();
@@ -222,11 +224,17 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                 mPage = mDocument.getPages().get(position);
                 setToolbarTitle(position);
 
-                if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null)) {
-                    if (mPagerAdapter.getCurrentFragment().isLoadingViewVisible() &&
-                            !CropLogger.isAwaitingPageDetection(mPage.getFile()))
-                        mPagerAdapter.getCurrentFragment().refreshImageView();
-                }
+//                if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null)) {
+//                    mPagerAdapter.getCurrentFragment().checkLoadingViewStatus();
+//                }
+
+//                if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null)) {
+//                    if (mPagerAdapter.getCurrentFragment().isLoadingViewVisible() &&
+//                            !CropLogger.isAwaitingPageDetection(mPage.getFile())) {
+//                        mPagerAdapter.getCurrentFragment().refreshImageView();
+//                        Log.d(CLASS_NAME, "onPageSelected: " + )
+//                    }
+//                }
 
                 showHideCropButton();
 
@@ -539,12 +547,16 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //            args.putInt("num", num);
 //            f.setArguments(args);
 
+            Log.d(CLASS_NAME, "getItem: position: " + position);
+            Log.d(CLASS_NAME, "getItem: file: " + page.getFile().toString());
 //            ImageViewerFragment fragment = ImageViewerFragment.create(page, mContext);
             ImageViewerFragment fragment = ImageViewerFragment.create();
             Bundle args = new Bundle();
                 args.putString(getString(R.string.key_fragment_image_viewer_file_name),
                         page.getFile().getAbsolutePath());
             fragment.setArguments(args);
+
+//            fragment.checkLoadingViewStatus();
 
 //            return ImageViewerFragment.create(page, mContext);
             return fragment;
@@ -563,15 +575,17 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            if (getCurrentFragment() != object) {
+            if (getCurrentFragment() != object)
                 mCurrentFragment = ((ImageViewerFragment) object);
-            }
+
             super.setPrimaryItem(container, position, object);
+
         }
 
 
 
         public ImageViewerFragment getCurrentFragment() {
+
             return mCurrentFragment;
         }
 

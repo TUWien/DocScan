@@ -24,14 +24,12 @@
 package at.ac.tuwien.caa.docscan.camera;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -61,7 +59,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
@@ -96,7 +93,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     //private static final int MAX_MAT_WIDTH = 500;
     //private static final int MAX_MAT_HEIGHT = 500;
 
-    private static final String TAG = "CameraPreview";
+    private static final String CLASS_NAME = "CameraPreview";
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private Camera.CameraInfo mCameraInfo;
@@ -242,11 +239,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         Result rawResult = null;
 
         if (source != null) {
-            Log.d(TAG, "source not null");
+            Log.d(CLASS_NAME, "source not null");
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
             try {
                 rawResult = mMultiFormatReader.decodeWithState(bitmap);
-                Log.d(TAG, "rawResult found");
+                Log.d(CLASS_NAME, "rawResult found");
             } catch (ReaderException re) {
                 // continue
             } catch (NullPointerException npe) {
@@ -262,7 +259,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 bitmap = new BinaryBitmap(new HybridBinarizer(invertedSource));
                 try {
                     rawResult = mMultiFormatReader.decodeWithState(bitmap);
-                    Log.d(TAG, "rawResult2");
+                    Log.d(CLASS_NAME, "rawResult2");
                 }
                  catch (NotFoundException e) {
                     e.printStackTrace();
@@ -272,7 +269,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             }
 
             if (rawResult != null) {
-                Log.d(TAG, "rawresult output: " + rawResult.toString());
+                Log.d(CLASS_NAME, "rawresult output: " + rawResult.toString());
             }
 
             mCVCallback.onQRCode(rawResult);
@@ -661,7 +658,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         if (mHolder.getSurface() == null) {
             // preview surface does not exist
-            Log.d(TAG, "Preview surface does not exist");
+            Log.d(CLASS_NAME, "Preview surface does not exist");
             return;
         }
 
@@ -679,7 +676,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private void releaseCamera() {
 
-        Log.d(TAG, "releasing camera");
+        Log.d(CLASS_NAME, "releasing camera");
 
         if (mCamera != null) {
             mCamera.stopPreview();
@@ -708,7 +705,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     @SuppressWarnings("deprecation")
     public boolean onTouchEvent(MotionEvent event) {
 
-        Log.d(TAG, "onTouchEvent");
+        Log.d(CLASS_NAME, "onTouchEvent");
 
         if (mCamera == null)
             return true;
@@ -729,7 +726,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         Rect focusRect = getFocusRect(screenPoint);
         if (focusRect == null) {
-            Log.d(TAG, "focus rectangle is not valid!");
+            Log.d(CLASS_NAME, "focus rectangle is not valid!");
             return true;
         }
 
@@ -792,7 +789,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         PointF result = new PointF();
 
-        Log.d(TAG, "orientation: " + orientation);
+        Log.d(CLASS_NAME, "orientation: " + orientation);
 
         switch(orientation) {
             case 0:
@@ -930,10 +927,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // stop preview before making changes
         try {
             mCamera.stopPreview();
-            Log.d(TAG, "Preview stopped.");
+            Log.d(CLASS_NAME, "Preview stopped.");
         } catch (Exception e) {
             // ignore: tried to stop a non-existent preview
-            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+            Log.d(CLASS_NAME, "Error starting camera preview: " + e.getMessage());
         }
 
         if (mCamera == null)
@@ -1044,10 +1041,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                 });
             }
-            Log.d(TAG, "Camera preview started.");
+            Log.d(CLASS_NAME, "Camera preview started.");
 
         } catch (Exception e) {
-            Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+            Log.d(CLASS_NAME, "Error starting camera preview: " + e.getMessage());
         }
 
         // Tell the dependent Activity that the frame dimension (might have) change:
@@ -1486,6 +1483,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     @SuppressWarnings("deprecation")
     private void initCamera() {
 
+        Log.d(CLASS_NAME, "initCamera:");
 //        releaseCamera();
         // Open an instance of the first camera and retrieve its info.
 //        try {
@@ -1517,8 +1515,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // Tell the dependent Activity that the frame dimension (might have) change:
         mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, cameraOrienation);
 
-        Log.d(TAG, "display orientation changed: " + displayOrientation);
-        Log.d(TAG, "changed camera orientation: " + cameraOrienation);
+        Log.d(CLASS_NAME, "display orientation changed: " + displayOrientation);
+        Log.d(CLASS_NAME, "changed camera orientation: " + cameraOrienation);
 
     }
 
@@ -1548,7 +1546,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 wait();
             }
             catch (InterruptedException e) {
-                Log.w(TAG, "wait was interrupted");
+                Log.w(CLASS_NAME, "wait was interrupted");
             }
         }
     }
@@ -1651,6 +1649,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         public PageSegmentationThread(CameraPreview cameraView) {
 
+            Log.d(CLASS_NAME, "PageSegmentationThread:");
+
             mCameraView = cameraView;
             mIsRunning = true;
 
@@ -1667,6 +1667,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 while (true) {
 
                     try {
+
                         mCameraView.wait();
 
 

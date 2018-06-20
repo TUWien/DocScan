@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,6 +40,17 @@ import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_ACTION;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_TYPE;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_TYPE_MAP_FINISHED;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_TYPE_PAGE_FINISHED;
+import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_ERROR_ID;
+import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_FILE_DELETED_ERROR_ID;
+import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_FINISHED_ID;
+import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_INTEND_TYPE;
+import static at.ac.tuwien.caa.docscan.sync.SyncService.INTENT_UPLOAD_ACTION;
+import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_OFFLINE_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 
 
@@ -56,13 +68,10 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private Snackbar mSnackbar;
     private Menu mMenu;
 
-    public static final String UPLOAD_INTEND_KEY = "UPLOAD_INTEND_KEY";
-    public static final String UPLOAD_FINISHED_ID = "UPLOAD_FINISHED_ID";
-    public static final String UPLOAD_OFFLINE_ERROR_ID = "UPLOAD_OFFLINE_ERROR_ID";
-    public static final String UPLOAD_FILE_DELETED_ERROR_ID = "UPLOAD_FILE_DELETED_ERROR_ID";
-    public static final String UPLOAD_ERROR_ID = "UPLOAD_ERROR_ID";
 
+    private static final String CLASS_NAME = "UploadActivity";
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
+    private BroadcastReceiver mMessageReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,11 +114,6 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         initFAB();
 
-        // Register to receive messages.
-        // We are registering an observer (mMessageReceiver) to receive Intents
-        // with actions named "PROGRESS_INTENT_NAME".
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter("PROGRESS_INTENT_NAME"));
 
     }
 
@@ -127,10 +131,26 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     protected void onResume() {
         super.onResume();
 
-//        TODO: check if it is really necessary to reload the documents:
         initAdapter();
 
+        // Register to receive messages.
+        mMessageReceiver = getReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(INTENT_UPLOAD_ACTION));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(INTENT_CROP_ACTION));
+
         showNoSelectionToolbar();
+
+    }
+
+    @Override
+    public void onStop() {
+
+        super.onStop();
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        mMessageReceiver = null;
 
     }
 
@@ -725,52 +745,75 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     /**
      * Handles broadcast intents which inform about the upload progress:
      */
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
+    private BroadcastReceiver getReceiver() {
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
 
-//            update the list view:
-            initAdapter();
+                Log.d(CLASS_NAME, "onReceive: " + intent);
 
-            String intentMessage = intent.getStringExtra(UPLOAD_INTEND_KEY);
+                if (intent.getAction().equals(INTENT_UPLOAD_ACTION)) {
 
-            switch (intentMessage) {
-                case UPLOAD_ERROR_ID:
-                    showUploadErrorDialog();
-                    break;
-                case UPLOAD_OFFLINE_ERROR_ID:
-                    showOfflineSnackbar();
-                    break;
-                case UPLOAD_FINISHED_ID:
-                    showUploadFinishedSnackbar();
-                    break;
-                case UPLOAD_FILE_DELETED_ERROR_ID:
-                    showFileDeletedErrorDialog();
-                    break;
+                    //            update the list view:
+                    initAdapter();
+                    String intentMessage = intent.getStringExtra(UPLOAD_INTEND_TYPE);
+
+                    switch (intentMessage) {
+                        case UPLOAD_ERROR_ID:
+                            showUploadErrorDialog();
+                            break;
+                        case UPLOAD_OFFLINE_ERROR_ID:
+                            showOfflineSnackbar();
+                            break;
+                        case UPLOAD_FINISHED_ID:
+                            showUploadFinishedSnackbar();
+                            break;
+                        case UPLOAD_FILE_DELETED_ERROR_ID:
+                            showFileDeletedErrorDialog();
+                            break;
+                    }
+                }
+                else if (intent.getAction().equals(INTENT_CROP_ACTION)) {
+
+                    int defValue = -1;
+                    int cropType = intent.getIntExtra(INTENT_CROP_TYPE, defValue);
+
+//                    we just handle cases where there is an operation finished:
+                    if (cropType != defValue) {
+                        if ((cropType == INTENT_CROP_TYPE_MAP_FINISHED ) ||
+                                (cropType == INTENT_CROP_TYPE_PAGE_FINISHED)) {
+
+//                            find the corresponding document:
+                            String fileName = intent.getStringExtra(INTENT_FILE_NAME);
+                            if (fileName != null) {
+
+                                for (Document document : mDocuments) {
+
+                                    if (document.isCropped()) {
+
+                                        File documentPath = new File(Helper.getMediaStorageDir(
+                                                getString(R.string.app_name)), document.getTitle());
+                                        File filePath = (new File(fileName)).getParentFile();
+
+                                        if (documentPath.equals(filePath)) {
+                                            ArrayList<File> files = document.getFiles();
+                                            boolean isCropped = Helper.areFilesCropped(files);
+
+                                            if (!isCropped)
+                                                initAdapter();
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                }
             }
+        };
 
-//            boolean error = intent.getBooleanExtra(UPLOAD_ERROR_ID, false);
-//
-//            if (error) {
-//                showUploadErrorDialog();
-//                return;
-//            }
-//
-//            boolean offlineError = intent.getBooleanExtra(UPLOAD_OFFLINE_ERROR_ID, false);
-//
-//            if (offlineError) {
-//                showOfflineSnackbar();
-//                return;
-//            }
-//
-//            boolean finished = intent.getBooleanExtra(UPLOAD_FINISHED_ID, false);
-//
-//            if (finished) {
-//                showUploadFinishedSnackbar();
-//            }
-
-        }
-    };
-
+        return receiver;
+    }
 
 }

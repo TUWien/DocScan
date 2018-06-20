@@ -42,6 +42,8 @@ public class PageDetectionRunnable extends CropRunnable {
                 PageDetector.savePointsToExif(file.getAbsolutePath(),
                         PageDetector.getNormedDefaultPoints());
 
+//            Thread.sleep(3000);
+
             mCropTask.handleState(MESSAGE_COMPLETED_TASK);
 
             // Catches exceptions thrown in response to a queued interrupt
