@@ -1,6 +1,8 @@
 package at.ac.tuwien.caa.docscan.ui.gallery;
 
 import android.Manifest;
+import android.app.DialogFragment;
+import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -22,6 +24,8 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import java.util.ArrayList;
 
@@ -29,6 +33,7 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
+import at.ac.tuwien.caa.docscan.gallery.RenameDialog;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
@@ -373,6 +378,17 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
+    public void editDocument(MenuItem item) {
+
+        // Check if we have the permission to rotate images:
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
+        } else
+            showRenameAlert();
+
+    }
+
 
     public void deleteSelectedItems(MenuItem item) {
 
@@ -392,6 +408,37 @@ public class GalleryActivity extends AppCompatActivity implements
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_CROP);
         } else
             rotateSelectedItems();
+
+    }
+
+    private void showRenameAlert() {
+
+        RenameDialog renameDialog = RenameDialog.newInstance(mDocument.getTitle());
+        renameDialog.show(getSupportFragmentManager(), "dialog");
+
+//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+//
+//        // set dialog message
+//        alertDialogBuilder
+//                .setTitle(R.string.gallery_confirm_overwrite_title)
+//                .setPositiveButton(R.string.dialog_ok_text, new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        cropSelectedItems();
+//                    }
+//                })
+//                .setNegativeButton(R.string.dialog_cancel_text, null)
+//                .setCancelable(true);
+//
+//        final EditText input = new EditText(this);
+//        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+//                LinearLayout.LayoutParams.MATCH_PARENT,
+//                LinearLayout.LayoutParams.MATCH_PARENT);
+//
+//        AlertDialog alertDialog = alertDialogBuilder.create();
+//        input.setLayoutParams(lp);
+//        alertDialog.setView(input);
+//        alertDialog.show();
 
     }
 

@@ -5,6 +5,12 @@
     <group
         android:id="@+id/gallery_menu_main"
         >
+        <item
+            android:icon="@drawable/ic_edit_black_24dp"
+            android:title="@string/gallery_menu_edit_item_title"
+            app:showAsAction="always"
+            android:onClick="editDocument"
+            />
         <!--<item-->
             <!--android:id="@+id/gallery_menu_document_item"-->
             <!--android:icon="@drawable/ic_folder_white_24dp"-->
@@ -25,7 +31,7 @@
             />
         <item
             android:icon="@drawable/ic_crop_black_24dp"
-            android:title="@string/gallery_menu_select_all_item_title"
+            android:title="@string/gallery_menu_crop_item_title"
             android:onClick="cropSelectedItems"
             app:showAsAction="always"
             />
