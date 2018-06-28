@@ -24,6 +24,16 @@ public class Page {
         mTitle = title;
     }
 
+    public boolean changeDir(File newDir) {
+
+        File newFile = new File(newDir, mFile.getName());
+        if (newFile.exists())
+            return false;
+
+        return true;
+
+    }
+
     public File getFile() {
         return mFile;
     }
