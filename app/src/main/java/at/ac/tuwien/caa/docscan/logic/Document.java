@@ -30,6 +30,15 @@ public class Document {
 
     }
 
+    public void setDir(File newDir) {
+
+        mTitle = newDir.getName();
+
+        for (Page page : mPages)
+            page.changeDir(newDir);
+
+    }
+
     //    TODO: temporary
     public File getDir() {
 

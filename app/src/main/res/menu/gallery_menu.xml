@@ -6,6 +6,7 @@
         android:id="@+id/gallery_menu_main"
         >
         <item
+            android:id="@+id/gallery_menu_rename_item"
             android:icon="@drawable/ic_edit_black_24dp"
             android:title="@string/gallery_menu_edit_item_title"
             app:showAsAction="always"

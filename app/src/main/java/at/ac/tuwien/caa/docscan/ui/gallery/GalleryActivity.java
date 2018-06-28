@@ -1,8 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui.gallery;
 
 import android.Manifest;
-import android.app.DialogFragment;
-import android.app.FragmentTransaction;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.ActivityCompat;
@@ -21,22 +21,29 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
-import at.ac.tuwien.caa.docscan.gallery.RenameDialog;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
+import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
 import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_ACTION;
@@ -60,6 +67,9 @@ public class GalleryActivity extends AppCompatActivity implements
     private String mFileName;
     private SelectionToolbar mSelectionToolbar;
     private BroadcastReceiver mMessageReceiver;
+    private Drawable mNavigationDrawable;
+    private EditText mNameEditText;
+    private MenuItem mRenameDocumentItem;
 
     private static final int PERMISSION_ROTATE = 0;
     private static final int PERMISSION_DELETE = 1;
@@ -71,6 +81,7 @@ public class GalleryActivity extends AppCompatActivity implements
 //    GalleryActivity (i.e. in the ImageViewerFragment). If something changed we need to reload the
 //    images in onResume.
     private static boolean sFileDeleted, sFileRotated, sFileCropped;
+    private FrameLayout mDisableRecyleViewLayout;
 
 
     @Override
@@ -82,17 +93,124 @@ public class GalleryActivity extends AppCompatActivity implements
 
         //        dummy document - start
         mFileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
-        if (mFileName == null)
-            mFileName = "/storage/emulated/0/Pictures/DocScan/jzu";
+//        if (mFileName == null)
+//            mFileName = "/storage/emulated/0/Pictures/DocScan/abc";
 
         mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
+        mDisableRecyleViewLayout = findViewById(R.id.gallery_disable_layout);
+        mNameEditText = findViewById(R.id.document_name_edit_text);
+
+
+        mDisableRecyleViewLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showRenameEditText(false);
+            }
+        });
+
+        mNameEditText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+
+//                    mFileName = mNameEditText.getText().toString();
+                    renameDir(mNameEditText.getText().toString());
+                    showRenameEditText(false);
+
+//                    loadDocument();
+//                    initAdapter();
+
+//                    mToolbar.setTitle(mNameEditText.getText());
+
+
+                    return true;
+                }
+                return false; //action was not consumed
+            }
+        });
+
 
         loadDocument();
-
         initAdapter();
         initToolbar();
 
 
+
+    }
+
+    private void showRenameEditText(boolean show) {
+
+        if (!show) {
+            mRenameDocumentItem.setVisible(true);
+            mNameEditText.setVisibility(View.GONE);
+//            hide the soft keyboard:
+            InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(mNameEditText.getWindowToken(), 0);
+            mDisableRecyleViewLayout.setVisibility(View.INVISIBLE);
+            mToolbar.setNavigationIcon(mNavigationDrawable);
+        }
+        else {
+
+            mRenameDocumentItem.setVisible(false);
+            mNameEditText.setVisibility(View.VISIBLE);
+            mNameEditText.setText(mDocument.getTitle());
+            mNameEditText.requestFocus();
+            mDisableRecyleViewLayout.setVisibility(View.VISIBLE);
+            mToolbar.setNavigationIcon(android.support.v7.appcompat.R.drawable.abc_ic_clear_material);
+//            show the soft keyboard:
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(mNameEditText, InputMethodManager.SHOW_IMPLICIT);
+
+        }
+
+    }
+
+
+    private void renameDir(String newDir) {
+
+        File mediaStorageDir = Helper.getMediaStorageDir(getResources().getString(R.string.app_name));
+        File newFile = new File(mediaStorageDir.getAbsolutePath(), newDir);
+
+
+        if (newFile.exists()) {
+            showDirExistingCreatedAlert(newDir);
+            return;
+        }
+
+        if (newFile != null) {
+            boolean success = mDocument.getDir().renameTo(newFile);
+            if (success) {
+//                mDocument.setDir(newFile);
+                mFileName = newFile.getAbsolutePath();
+                mToolbar.setTitle(newDir);
+                loadDocument();
+                initAdapter();
+            }
+        }
+
+
+    }
+
+    private void showDirExistingCreatedAlert(String dirName) {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        String msg = getResources().getString(R.string.document_dir_existing_prefix_message)+
+                " " + dirName + " " +
+                getResources().getString(R.string.document_dir_existing_postfix_message);
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.document_no_dir_created_title)
+                .setCancelable(true)
+                .setPositiveButton("OK", null)
+                .setMessage(msg);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
 
     }
 
@@ -305,6 +423,7 @@ public class GalleryActivity extends AppCompatActivity implements
 //        Note initialize SelectionToolbar just after setting setDisplayHomeAsUpEnabled, because
 //        SelectionToolbar needs a navigation icon (i.e. back button):
         mSelectionToolbar = new SelectionToolbar(this, mToolbar, appBarLayout);
+        mNavigationDrawable = mToolbar.getNavigationIcon();
 
     }
 
@@ -313,10 +432,18 @@ public class GalleryActivity extends AppCompatActivity implements
 
         switch (item.getItemId()){
             case android.R.id.home:
-                if (mAdapter.getSelectionCount() == 0) {
+                // did the user cancel the renaming?
+                if (mNameEditText.getVisibility() == View.VISIBLE) {
+                    showRenameEditText(false);
+                    mToolbar.setTitle(mDocument.getTitle());
+                    return true;
+                }
+                // did the user press back?
+                else if (mAdapter.getSelectionCount() == 0) {
                     onBackPressed();
                     return true;
                 }
+                // did the user cancel the selection?
                 else {
                     mAdapter.deselectAllItems();
                     return true;
@@ -334,6 +461,8 @@ public class GalleryActivity extends AppCompatActivity implements
         inflater.inflate(R.menu.gallery_menu, menu);
 
         mMenu = menu;
+
+        mRenameDocumentItem = menu.findItem(R.id.gallery_menu_rename_item);
 
         return true;
 
@@ -385,7 +514,7 @@ public class GalleryActivity extends AppCompatActivity implements
             // ask for permission:
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
         } else
-            showRenameAlert();
+            renameDocument();
 
     }
 
@@ -411,34 +540,27 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
-    private void showRenameAlert() {
 
-        RenameDialog renameDialog = RenameDialog.newInstance(mDocument.getTitle());
-        renameDialog.show(getSupportFragmentManager(), "dialog");
 
-//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+    private void renameDocument() {
+
+        showRenameEditText(true);
+//        final EditText editText = findViewById(R.id.document_name_edit_text);
+//        FrameLayout layout = findViewById(R.id.gallery_disable_layout);
 //
-//        // set dialog message
-//        alertDialogBuilder
-//                .setTitle(R.string.gallery_confirm_overwrite_title)
-//                .setPositiveButton(R.string.dialog_ok_text, new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        cropSelectedItems();
-//                    }
-//                })
-//                .setNegativeButton(R.string.dialog_cancel_text, null)
-//                .setCancelable(true);
-//
-//        final EditText input = new EditText(this);
-//        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-//                LinearLayout.LayoutParams.MATCH_PARENT,
-//                LinearLayout.LayoutParams.MATCH_PARENT);
-//
-//        AlertDialog alertDialog = alertDialogBuilder.create();
-//        input.setLayoutParams(lp);
-//        alertDialog.setView(input);
-//        alertDialog.show();
+//        if (editText.getVisibility() == View.GONE) {
+//            editText.setVisibility(View.VISIBLE);
+//            editText.setText(mDocument.getTitle());
+//            editText.requestFocus();
+//            layout.setVisibility(View.VISIBLE);
+//            mToolbar.setNavigationIcon(android.support.v7.appcompat.R.drawable.abc_ic_clear_material);
+//            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//            imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+//        }
+//        else {
+//            editText.setVisibility(View.GONE);
+//            layout.setVisibility(View.INVISIBLE);
+//        }
 
     }
 

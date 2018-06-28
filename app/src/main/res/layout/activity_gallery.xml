@@ -19,6 +19,14 @@
             app:layout_scrollFlags="scroll|enterAlways"
             android:background="@color/colorPrimary"
             >
+            <EditText
+                android:id="@+id/document_name_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:selectAllOnFocus="true"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
+                android:visibility="gone"/>
         </android.support.v7.widget.Toolbar>
 
     </android.support.design.widget.AppBarLayout>
@@ -26,13 +34,31 @@
     <!-- We need the following attribute because without it the toolbar will be overlapping the content: -->
     <!--app:layout_behavior="@string/appbar_scrolling_view_behavior"-->
 
+    <!--Placeholder to disable the recycler view when the edittext is visible -->
+
+
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/gallery_images_recyclerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:focusable="true"
+        android:focusableInTouchMode ="true"
         />
+
+    <FrameLayout
+        android:id="@+id/gallery_disable_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"
+        android:background="@color/recycle_view_disabled"
+        android:clickable="true"
+        android:focusable="true"
+        />
+
+
 
 
 </android.support.design.widget.CoordinatorLayout>
