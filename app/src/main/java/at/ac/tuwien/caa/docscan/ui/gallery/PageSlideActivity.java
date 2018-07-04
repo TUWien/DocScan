@@ -428,12 +428,12 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-            private void deletePage() {
-                if (mPage != null)
-                    showDeleteConfirmationDialog();
-            }
+    private void deletePage() {
+        if (mPage != null)
+            showDeleteConfirmationDialog();
+    }
 
-            private void showDeleteConfirmationDialog() {
+    private void showDeleteConfirmationDialog() {
 
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -444,10 +444,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                 .setPositiveButton(R.string.page_slide_fragment_confirm_delete_confirm_title, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)  {
-                        mPage.getFile().delete();
-//                            Tell the gallery viewer that the file was deleted:
-                        GalleryActivity.fileDeleted();
-                        finish();
+
+                        deleteCurrentPage();
 
                     }
                 })
@@ -461,6 +459,36 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         // show it
         alertDialog.show();
 
+    }
+
+    private void deleteCurrentPage() {
+        mDocument.getPages().remove(mPage);
+        mPage.getFile().delete();
+        mPage = null;
+//                            Tell the gallery viewer that the file was deleted:
+        GalleryActivity.fileDeleted();
+
+        int newPos = mPager.getCurrentItem()-1;
+
+        if (newPos >= 0) {
+            mPager.setAdapter(mPagerAdapter);
+            mPager.setCurrentItem(newPos);
+
+//            onPageSelected is not called if newPos == 0. This is a known issue, see here:
+//            https://stackoverflow.com/questions/11794269/onpageselected-isnt-triggered-when-calling-setcurrentitem0
+            if (newPos == 0) {
+
+                mPage = mDocument.getPages().get(newPos);
+                setToolbarTitle(newPos);
+
+            }
+        }
+        else if (mDocument.getPages().size() > 0) {
+            mPager.setCurrentItem(0);
+            mPager.setAdapter(mPagerAdapter);
+        }
+        else
+            finish();
     }
 
     private Document getDummyDocument(String fileName) {
@@ -543,22 +571,15 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
             Page page = mDocument.getPages().get(position);
 
-//            Bundle args = new Bundle();
-//            args.putInt("num", num);
-//            f.setArguments(args);
-
             Log.d(CLASS_NAME, "getItem: position: " + position);
             Log.d(CLASS_NAME, "getItem: file: " + page.getFile().toString());
-//            ImageViewerFragment fragment = ImageViewerFragment.create(page, mContext);
+
             ImageViewerFragment fragment = ImageViewerFragment.create();
             Bundle args = new Bundle();
                 args.putString(getString(R.string.key_fragment_image_viewer_file_name),
                         page.getFile().getAbsolutePath());
             fragment.setArguments(args);
 
-//            fragment.checkLoadingViewStatus();
-
-//            return ImageViewerFragment.create(page, mContext);
             return fragment;
 
         }
