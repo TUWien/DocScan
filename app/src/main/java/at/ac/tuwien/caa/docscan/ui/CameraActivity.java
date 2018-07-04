@@ -357,9 +357,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         boolean isDebugViewShown = sharedPref.getBoolean(getResources().getString(R.string.key_show_debug_view), false);
         showDebugView(isDebugViewShown);
-
-
-
         // update the title of the toolbar:
         getSupportActionBar().setTitle(User.getInstance().getDocumentName());
 
@@ -368,6 +365,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         showControlsLayout(!mIsQRActive);
 
 		checkProviderInstaller();
+
+        loadThumbnail();
 
 //        MovementDetector.getInstance(this.getApplicationContext()).start();
 
@@ -946,7 +945,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         initPhotoButton();
         initGalleryCallback();
-        loadThumbnail();
         initShootModeSpinner();
         updatePhotoButtonIcon();
         initCancelQRButton();
@@ -1318,6 +1316,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //        // Initialize the newly created buttons:
         initButtons();
+        loadThumbnail();
 
     }
 
@@ -2313,26 +2312,29 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void loadThumbnail() {
 
-        loadThumbnailFromDisk();
+        int visibility = loadThumbnailFromDisk() ? View.VISIBLE : View.INVISIBLE;
+        mGalleryButton.setVisibility(visibility);
 
     }
 
-    private void loadThumbnailFromDisk() {
+    private boolean loadThumbnailFromDisk() {
 
         File mediaStorageDir = Helper.getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
         if (mediaStorageDir == null)
-            return;
+            return false;
 
         File[] imgList = Helper.getImageArray(mediaStorageDir);
         if (imgList == null)
-            return;
+            return false;
 
         else if (imgList.length == 0)
-            return;
+            return false;
 
         GlideApp.with(mContext)
                 .load(imgList[imgList.length-1].getPath())
                 .into(mGalleryButton);
+
+        return true;
 
     }
 
