@@ -70,7 +70,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
 
     private static final String CLASS_NAME = "UploadActivity";
-    private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
+    private static final int PERMISSION_READ_WRITE_EXTERNAL_STORAGE = 0;
     private BroadcastReceiver mMessageReceiver;
 
     @Override
@@ -104,9 +104,11 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         // Read the upload information:
         SyncInfo.readFromDisk(this);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_EXTERNAL_STORAGE);
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_WRITE_EXTERNAL_STORAGE);
         } else {
             // Sets the adapter, note: This fills the list.
             initAdapter();
@@ -129,9 +131,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     @Override
     protected void onResume() {
-        super.onResume();
 
-        initAdapter();
+        super.onResume();
 
         // Register to receive messages.
         mMessageReceiver = getReceiver();
@@ -168,12 +169,10 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
 
-        if (requestCode == PERMISSION_READ_EXTERNAL_STORAGE && isPermissionGiven) {
+        if (requestCode == PERMISSION_READ_WRITE_EXTERNAL_STORAGE && isPermissionGiven) {
             // Sets the adapter, note: This fills the list.
             initAdapter();
         }
-        else
-            showNoPermissionSnackbar();
 
     }
 
@@ -786,6 +785,9 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 //                            find the corresponding document:
                             String fileName = intent.getStringExtra(INTENT_FILE_NAME);
                             if (fileName != null) {
+
+                                if (mDocuments == null)
+                                    return;
 
                                 for (Document document : mDocuments) {
 
