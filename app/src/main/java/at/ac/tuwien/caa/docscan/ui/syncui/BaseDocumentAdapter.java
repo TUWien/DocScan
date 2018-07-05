@@ -42,14 +42,11 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
         super();
         mContext = context;
 
-//        fillLists();
-
     }
 
     public File getGroupFile(int position) {
 
         return mDirs.get(position);
-//        return mDirs[position];
 
     }
 
@@ -69,7 +66,6 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
         File[] dirs = mediaStorageDir.listFiles(directoryFilter);
         mDirs = new ArrayList<>(Arrays.asList(dirs));
 
-//        TODO: sort!
         java.util.Collections.sort(mDirs, new FileComparator());
         mFiles = new ArrayList<>(mDirs.size());
         for (File dir : mDirs) {
@@ -89,31 +85,6 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
     }
 
 
-//    private void fillLists() {
-//
-//        File mediaStorageDir = Helper.getMediaStorageDir(mContext.getResources().getString(R.string.app_name));
-//
-//        if (mediaStorageDir == null)
-//            return;
-//
-//        FileFilter directoryFilter = new FileFilter() {
-//            public boolean accept(File file) {
-//                return file.isDirectory();
-//            }
-//        };
-//
-//        mDirs = mediaStorageDir.listFiles(directoryFilter);
-//        Arrays.sort(mDirs);
-//        mFiles = new ArrayList<>(mDirs.length);
-//        int i = 0;
-//        for (File dir : mDirs) {
-//            mFiles.add(getFiles(dir));
-//            i++;
-//        }
-//
-//
-//
-//    }
 
     public static File[] getFiles(File dir) {
 
@@ -121,32 +92,6 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 
     }
 
-//    public static File[] getFiles(File dir) {
-//
-//        FileFilter filesFilter = new FileFilter() {
-//            public boolean accept(File file) {
-//                return !file.isDirectory();
-//            }
-//        };
-//        File[] files = dir.listFiles(filesFilter);
-//        Arrays.sort(files);
-//
-//        return files;
-//    }
-
-
-//    public static File[] getFiles(File dir) {
-//
-//        FileFilter filesFilter = new FileFilter() {
-//            public boolean accept(File file) {
-//                return !file.isDirectory();
-//            }
-//        };
-//        File[] files = dir.listFiles(filesFilter);
-//        Arrays.sort(files);
-//
-//        return files;
-//    }
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
@@ -170,36 +115,27 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 //         Glide test:
         final ImageView imageView;
         imageView = convertView.findViewById(R.id.document_list_image_view);
-        // TODO: look at this for the reason why we cannot use GlideApp
+
         // https://github.com/bumptech/glide/issues/1966
         Glide.with(mContext)
                 .load(((File) getChild(groupPosition, childPosition)).getPath())
                 .into(imageView);
 
-        convertView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(mContext, CropViewActivity.class);
-                ArrayList<PointF> cropPoints = new ArrayList<>();
-                cropPoints.add(new PointF(0,0));
-                cropPoints.add(new PointF(0,0));
-                cropPoints.add(new PointF(0,0));
-                cropPoints.add(new PointF(0,0));
-
-                CropInfo r = new CropInfo(cropPoints, file.getAbsolutePath());
-                intent.putExtra(CROP_INFO_NAME, r);
-                mContext.startActivity(intent);
-            }
-        });
-
-
-//        GlideApp
-//                .with(myFragment)
-//                .load(url)
-//                .centerCrop()
-//                .placeholder(R.drawable.loading_spinner)
-//                .into(myImageView);
-
+//        convertView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent intent = new Intent(mContext, CropViewActivity.class);
+//                ArrayList<PointF> cropPoints = new ArrayList<>();
+//                cropPoints.add(new PointF(0,0));
+//                cropPoints.add(new PointF(0,0));
+//                cropPoints.add(new PointF(0,0));
+//                cropPoints.add(new PointF(0,0));
+//
+//                CropInfo r = new CropInfo(cropPoints, file.getAbsolutePath());
+//                intent.putExtra(CROP_INFO_NAME, r);
+//                mContext.startActivity(intent);
+//            }
+//        });
 
 
         return convertView;
@@ -209,11 +145,22 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getGroupCount() {
+
+        if (mDirs == null)
+            return 0;
+
         return mDirs.size();
     }
 
     @Override
     public int getChildrenCount(int groupPosition) {
+
+        if (mFiles == null)
+            return 0;
+
+        if (mFiles.size()-1 < groupPosition)
+            return 0;
+
         return mFiles.get(groupPosition).length;
     }
 
@@ -224,6 +171,10 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 
     @Override
     public Object getChild(int groupPosition, int childPosition) {
+
+        if (mFiles == null)
+            return null;
+
         return mFiles.get(groupPosition)[childPosition];
     }
 
