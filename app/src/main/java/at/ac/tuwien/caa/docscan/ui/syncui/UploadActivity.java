@@ -134,6 +134,11 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         super.onResume();
 
+        if (ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+            initAdapter();
+
+
         // Register to receive messages.
         mMessageReceiver = getReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
