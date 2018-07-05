@@ -462,33 +462,31 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     }
 
     private void deleteCurrentPage() {
+
         mDocument.getPages().remove(mPage);
         mPage.getFile().delete();
         mPage = null;
-//                            Tell the gallery viewer that the file was deleted:
+
+//        Tell the gallery viewer that the file was deleted:
         GalleryActivity.fileDeleted();
 
         int newPos = mPager.getCurrentItem()-1;
 
-        if (newPos >= 0) {
-            mPager.setAdapter(mPagerAdapter);
-            mPager.setCurrentItem(newPos);
+        if ((newPos < 0) && (mDocument.getPages().size() > 0))
+            newPos = 0;
+        else if (mDocument.getPages().size() == 0) {
+            finish();
+            return;
+        }
+
+        mPager.setAdapter(mPagerAdapter);
+        mPager.setCurrentItem(newPos);
 
 //            onPageSelected is not called if newPos == 0. This is a known issue, see here:
 //            https://stackoverflow.com/questions/11794269/onpageselected-isnt-triggered-when-calling-setcurrentitem0
-            if (newPos == 0) {
+        mPage = mDocument.getPages().get(newPos);
+        setToolbarTitle(newPos);
 
-                mPage = mDocument.getPages().get(newPos);
-                setToolbarTitle(newPos);
-
-            }
-        }
-        else if (mDocument.getPages().size() > 0) {
-            mPager.setCurrentItem(0);
-            mPager.setAdapter(mPagerAdapter);
-        }
-        else
-            finish();
     }
 
     private Document getDummyDocument(String fileName) {

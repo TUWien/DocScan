@@ -47,6 +47,8 @@ public class CropViewActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
+        Log.d(CLASS_NAME, "onCreate: ");
+
         setContentView(R.layout.activity_crop_view);
 
         initToolbar();
@@ -93,6 +95,8 @@ public class CropViewActivity extends AppCompatActivity {
 
         super.onResume();
 
+        Log.d(CLASS_NAME, "onResume:");
+
 //        Determine if the MapViewActivity has just closed and the image has been cropped (and
 //        mapped). In this case we do not need the CropViewActivity, but we want to get back to its
 //        calling Activity (might be CameraActivity or GalleryActivity).
@@ -106,16 +110,27 @@ public class CropViewActivity extends AppCompatActivity {
 
     private void initCropView() {
 
+        Log.d(CLASS_NAME, "initCropView: ");
+
         Bundle b = getIntent().getExtras();
         if (b != null) {
             mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
 
+            Log.d(CLASS_NAME, "initCropView: mFileName: " + mFileName);
+
             if (mFileName != null) {
+
+                Log.d(CLASS_NAME, "initCropView: mFileName not null");
 
                 loadBitmap();
 
                 ArrayList<PointF> points = PageDetector.getNormedCropPoints(mFileName);
+
+                if (points == null)
+                    Log.d(CLASS_NAME, "initCropView: points are null");
                 mCropView.setPoints(points);
+                Log.d(CLASS_NAME, "initCropView:  points set");
+
                 try {
                     mOriginalOrientation = Helper.getExifOrientation(new File(mFileName));
 //                Store the original states in case the user cancels cropping:
@@ -198,10 +213,14 @@ public class CropViewActivity extends AppCompatActivity {
                     .signature(new MediaStoreSignature("", file.lastModified(), orientation))
                     .into(mCropView);
 
+            Log.d(CLASS_NAME, "loadBitmap: bitmap loaded");
+
         } catch (IOException e) {
             GlideApp.with(this)
                     .load(file)
                     .into(mCropView);
+
+            Log.d(CLASS_NAME, "loadBitmap: could not load bitmap");
         }
 
     }

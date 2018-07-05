@@ -707,13 +707,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mediaStorageDir == null)
             return;
 
+        File[] imgList = getImageArray(mediaStorageDir);
+
+        if (imgList == null)
+            return;
+        if (imgList.length == 0)
+            return;
+
 //                Start the image viewer:
         Intent intent = new Intent(mContext, PageSlideActivity.class);
 //      Set the directory name:
         intent.putExtra(getString(R.string.key_document_file_name), mediaStorageDir.getAbsolutePath());
 
 //      Set the file position - it is the index of the last file in the sorted list of files:
-        File[] imgList = getImageArray(mediaStorageDir);
         intent.putExtra(getString(R.string.key_page_position), imgList.length - 1);
         mContext.startActivity(intent);
 
