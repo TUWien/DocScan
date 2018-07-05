@@ -182,10 +182,23 @@ public class GalleryActivity extends AppCompatActivity implements
             boolean success = mDocument.getDir().renameTo(newFile);
             if (success) {
 //                mDocument.setDir(newFile);
+
+//                User.getInstance().setDocumentName(mSelectedDir.getName());
+//                UserHandler.saveSeriesName(c);
+
+                File oldFile = new File(mFileName);
+                String oldFileName = oldFile.getName();
+
+                if (User.getInstance().getDocumentName().equals(oldFileName))  {
+                    User.getInstance().setDocumentName(newFile.getName());
+                    UserHandler.saveSeriesName(this);
+                }
+
                 mFileName = newFile.getAbsolutePath();
                 mToolbar.setTitle(newDir);
                 loadDocument();
                 initAdapter();
+
             }
         }
 
