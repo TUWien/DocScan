@@ -1791,6 +1791,36 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    @Override
+    public void onPageSegmented(DkPolyRect[] polyRects) {
+
+        mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
+
+        long currentTime = System.currentTimeMillis();
+        long timeDiff = currentTime - mLastTime;
+
+        mLastTime = currentTime;
+
+        if (mCVResult != null) {
+//            mCVResult.setPatches(null);
+            if (!mCVResult.isStable())
+                mCVResult.setPatches(new Patch[0]);
+
+            mCVResult.setDKPolyRects(polyRects);
+        }
+
+//        if (isRectJumping(dkPolyRects))
+//            mCameraPreview.startFocusMeasurement(false);
+//        else
+//            mCameraPreview.startFocusMeasurement(true);
+
+        mLastDkPolyRects = polyRects;
+
+
+        mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
+
+    }
+
     boolean isRectJumping(DkPolyRect[] dkPolyRects){
 
         boolean isJumping = false;

@@ -24,6 +24,8 @@
 package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.graphics.PointF;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import java.util.ArrayList;
 
@@ -32,9 +34,9 @@ import java.util.ArrayList;
  * DocScanInterface.cpp Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPageSegmentation
  * There the DkPolyRect CPP object is converted to a DkPolyRect Java object.
  */
-public class DkPolyRect {
+public class DkPolyRect implements Parcelable {
 
-
+    public static final String KEY_POLY_RECT = "KEY_POLY_RECT";
 
     ArrayList<PointF> mPoints;
     ArrayList<PointF> mScreenPoints;
@@ -75,6 +77,26 @@ public class DkPolyRect {
         mPoints.add(new PointF());
 
     }
+
+    protected DkPolyRect(Parcel in) {
+        mPoints = in.createTypedArrayList(PointF.CREATOR);
+        mScreenPoints = in.createTypedArrayList(PointF.CREATOR);
+        mChl = in.readInt();
+        mThr = in.readInt();
+        mFrameID = in.readInt();
+    }
+
+    public static final Creator<DkPolyRect> CREATOR = new Creator<DkPolyRect>() {
+        @Override
+        public DkPolyRect createFromParcel(Parcel in) {
+            return new DkPolyRect(in);
+        }
+
+        @Override
+        public DkPolyRect[] newArray(int size) {
+            return new DkPolyRect[size];
+        }
+    };
 
     public void setFrameID(int frameID) {
         mFrameID = frameID;
@@ -287,6 +309,29 @@ public class DkPolyRect {
     public float getY4() { return mPoints.get(3).y; }
 
     public int channel() { return mChl; }
+
     public int threshold() { return mThr; }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
+        dest.writeFloat(mPoints.get(0).x);
+        dest.writeFloat(mPoints.get(0).y);
+
+        dest.writeFloat(mPoints.get(1).x);
+        dest.writeFloat(mPoints.get(1).y);
+
+        dest.writeFloat(mPoints.get(2).x);
+        dest.writeFloat(mPoints.get(2).y);
+
+        dest.writeFloat(mPoints.get(3).x);
+        dest.writeFloat(mPoints.get(3).y);
+
+    }
 
 }

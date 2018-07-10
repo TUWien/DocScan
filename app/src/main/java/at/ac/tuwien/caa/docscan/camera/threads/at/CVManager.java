@@ -1,8 +1,10 @@
 package at.ac.tuwien.caa.docscan.camera.threads.at;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Parcelable;
 import android.util.Log;
 
 import org.opencv.core.CvType;
@@ -16,9 +18,10 @@ import java.util.concurrent.TimeUnit;
 
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 
-import static at.ac.tuwien.caa.docscan.camera.threads.at.ChangeRunnable.MESSAGE_FRAME_MOVED;
-
+import static at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect.KEY_POLY_RECT;
+import static at.ac.tuwien.caa.docscan.camera.cv.Patch.KEY_FOCUS;
 
 public class CVManager {
 
@@ -31,19 +34,14 @@ public class CVManager {
     private static final long FRAME_TIME_DIFF = 200;
     private static final long FRAME_TIME_STEADY = 500;
 
-    // Sets the amount of time an idle thread will wait for a task before terminating
     private static final int KEEP_ALIVE_TIME = 1;
-
-    // Sets the Time Unit to seconds
     private static final TimeUnit KEEP_ALIVE_TIME_UNIT;
-
-    // Sets the initial threadpool size to 8
     private static final int CORE_POOL_SIZE = 8;
-
-    // Sets the maximum threadpool size to 8
     private static final int MAXIMUM_POOL_SIZE = 8;
 
-
+    protected static final int MESSAGE_FRAME_STEADY = 0;
+    protected static final int MESSAGE_FRAME_MOVED = 1;
+    protected static final int MESSAGE_TASK_COMPLETED = 2;
 
     // A queue of Runnables for the page detection
     private final BlockingQueue<Runnable> mCropQueue;
@@ -53,7 +51,6 @@ public class CVManager {
     // An object that manages Messages in a Thread
     private Handler mHandler;
     private CameraPreview.CVCallback mCVCallback;
-    private int cnt = 0;
 
     //    Singleton:
     private static CVManager sInstance = null;
@@ -122,59 +119,34 @@ public class CVManager {
             public void handleMessage(Message inputMessage) {
 
                 CVTask task = (CVTask) inputMessage.obj;
-                int message = inputMessage.what;
 
                 if (task instanceof PageTask) {
 
-                    cnt++;
-//                    TODO: message handling...
-                    mCVCallback.onPageSegmented(task.getPolyRect(), cnt);
-
-                    sInstance.mActiveTaskType = TYPE_FOCUS;
-                    FocusTask focusTask = new FocusTask();
-                    focusTask.setMat(task.getMat());
-                    sInstance.mCVThreadPool.execute(focusTask.getRunnable());
-
-//                    task.recycle();
-
+                    Bundle bundle = inputMessage.getData();
+                    DkPolyRect[] p = (DkPolyRect[]) bundle.getParcelableArray(KEY_POLY_RECT);
+                    mCVCallback.onPageSegmented(p);
                 }
 
                 else if (task instanceof ChangeTask) {
 
+                    int message = inputMessage.what;
+
                     boolean isMoved = message == MESSAGE_FRAME_MOVED ? true : false;
-
-                    if (isMoved) {
-                        DkPolyRect[] polyRects = new DkPolyRect[]{};
-                        mCVCallback.onFocusMeasured(null);
-                        mCVCallback.onPageSegmented(null,0);
-                        mIsActive = false;
-                        mCVCallback.onMovement(isMoved);
-                        return;
-                    }
-
-                    Log.d(CLASS_NAME, "handleMessage: message: " + message);
                     mCVCallback.onMovement(isMoved);
-
-                    if (sInstance.mLastTime - sInstance.mSteadyTime > FRAME_TIME_STEADY) {
-                        sInstance.mActiveTaskType = TYPE_PAGE;
-                        PageTask pageTask = new PageTask();
-                        pageTask.setMat(task.getMat());
-                        sInstance.mCVThreadPool.execute(pageTask.getRunnable());
-                    }
-                    else {
-                        task.recycle();
-                        mIsActive = false;
-                    }
 
                 }
 
                 else if (task instanceof FocusTask) {
 
-                    mCVCallback.onFocusMeasured(task.getPatch());
-                    mIsActive = false;
-                    task.recycle();
+//                    mCVCallback.onFocusMeasured(task.getPatch());
+                    Bundle bundle = inputMessage.getData();
+                    Patch[] p = (Patch[]) bundle.getParcelableArray(KEY_FOCUS);
+                    mCVCallback.onFocusMeasured(p);
 
                 }
+
+                mIsActive = false;
+                task.recycle();
 
 
 
@@ -184,10 +156,62 @@ public class CVManager {
 
     }
 
+
     public void handleState(CVTask task, int state) {
 
         Message completeMessage = mHandler.obtainMessage(state, task);
         completeMessage.sendToTarget();
+
+    }
+
+    public void handleState(CVTask cvTask, Object[] object) {
+
+        Message completeMessage = mHandler.obtainMessage(MESSAGE_TASK_COMPLETED, cvTask);
+        Bundle bundle = new Bundle();
+
+//        Determine the passed object based on the task:
+        if (cvTask instanceof PageTask)
+            bundle.putParcelableArray(KEY_POLY_RECT, (Parcelable[]) object);
+        else if (cvTask instanceof  FocusTask)
+            bundle.putParcelableArray(KEY_FOCUS, (Parcelable[]) object);
+
+        completeMessage.setData(bundle);
+        completeMessage.sendToTarget();
+
+    }
+
+    public static void performTask(int taskType, byte[] pixels, int frameWidth, int frameHeight) {
+
+        sInstance.mLastTime = System.currentTimeMillis();
+        sInstance.mIsActive = true;
+
+        Mat mat = byte2Mat(pixels, frameWidth, frameHeight);
+
+        CVTask task;
+
+        switch (taskType) {
+            case TYPE_MOVE:
+                task = new ChangeTask();
+                break;
+            case TYPE_PAGE:
+                task = new PageTask();
+                break;
+            case TYPE_FOCUS:
+                task = new FocusTask();
+                break;
+            default:
+                task = null;
+                break;
+        }
+
+        if (task == null)
+            return;
+
+        task.initializeTask(sInstance);
+        task.setMat(mat);
+
+        sInstance.mCVThreadPool.execute(task.getRunnable());
+
 
     }
 
@@ -236,34 +260,7 @@ public class CVManager {
 
     }
 
-    public static void performTask(int taskType, byte[] pixels, int frameWidth, int frameHeight) {
 
-        sInstance.mLastTime = System.currentTimeMillis();
-        sInstance.mIsActive = true;
-
-        Mat mat = byte2Mat(pixels, frameWidth, frameHeight);
-
-        CVTask task = null;
-
-        switch (taskType) {
-
-            case TYPE_MOVE:
-                task = new ChangeTask();
-                break;
-//TODO: fill out the other cases
-
-        }
-
-        if (task == null)
-            return;
-
-        task.initializeTask(sInstance);
-        task.setMat(mat);
-
-        sInstance.mCVThreadPool.execute(task.getRunnable());
-
-
-    }
 
     public static void performChangeTask(byte[] pixels, int frameWidth, int frameHeight) {
 
@@ -321,6 +318,7 @@ public class CVManager {
 
         return result;
     }
+
 
 
 }

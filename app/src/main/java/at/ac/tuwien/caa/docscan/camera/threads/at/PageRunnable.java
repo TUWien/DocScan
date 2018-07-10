@@ -18,7 +18,8 @@ import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.MESSAGE_C
 
 public class PageRunnable extends CVRunnable {
 
-    private static final String CLASS_NAME = "PageRunnable";
+
+    private final static String CLASS_NAME = "PageRunnable";
 
 
     public PageRunnable(PageTask pageTask) {
@@ -47,16 +48,7 @@ public class PageRunnable extends CVRunnable {
             Mat mat = mCVTask.getMat();
 //
             DkPolyRect[] polyRect = NativeWrapper.getPageSegmentation(mat);
-            mCVTask.setPolyRect(polyRect);
-
-            mCVTask.handleState(0);
-
-
-//            mCVTask.recycle();
-
-
-
-//            mCropTask.handleState(MESSAGE_COMPLETED_TASK);
+            mCVTask.handleObject(polyRect);
 
             // Catches exceptions thrown in response to a queued interrupt
         } catch (InterruptedException e1) {

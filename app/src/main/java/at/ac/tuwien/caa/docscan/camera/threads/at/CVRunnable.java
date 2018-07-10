@@ -13,11 +13,8 @@ public abstract class CVRunnable implements Runnable {
         void recycle();
         void setMat(Mat mat);
         Mat getMat();
-        void setPolyRect(DkPolyRect[] polyRects);
-        void setPatch(Patch[] patch);
-        Patch[] getPatch();
-        DkPolyRect[] getPolyRect();
         void handleState(int state);
+        void handleObject(Object[] object);
     }
 
     public CVRunnable(TaskRunnableCVMethods cvTask) {

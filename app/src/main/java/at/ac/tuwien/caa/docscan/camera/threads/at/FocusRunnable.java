@@ -36,10 +36,7 @@ class FocusRunnable extends CVRunnable {
             Mat mat = mCVTask.getMat();
 
             Patch[] patches = NativeWrapper.getFocusMeasures(mat);
-            mCVTask.setPatch(patches);
-
-            mCVTask.handleState(0);
-
+            mCVTask.handleObject(patches);
 
             // Catches exceptions thrown in response to a queued interrupt
         } catch (InterruptedException e1) {
@@ -47,15 +44,8 @@ class FocusRunnable extends CVRunnable {
             // Does nothing
 
             // In all cases, handle the results
-//        } catch (IOException e) {
-//            e.printStackTrace();
         } finally {
 
-//            // If the file is null, reports that the cropping failed.
-//            if (file == null) {
-////                mPhotoTask.handleDownloadState(HTTP_STATE_FAILED);
-//            }
-//
 //            // Sets the reference to the current Thread to null, releasing its storage
 //            mCropTask.setCropThread(null);
 
