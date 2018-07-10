@@ -34,33 +34,17 @@ public class CVTask implements CVRunnable.TaskRunnableCVMethods {
         return mMat;
     }
 
-    @Override
-    public void setPolyRect(DkPolyRect[] polyRects) {
-
-        mPolyRects = polyRects;
-
-    }
-
-    @Override
-    public void setPatch(Patch[] patch) {
-        mPatches = patch;
-    }
-
-    @Override
-    public Patch[] getPatch() {
-        return mPatches;
-    }
-
-
-    @Override
-    public DkPolyRect[] getPolyRect() {
-        return mPolyRects;
-    }
 
     @Override
     public void handleState(int state) {
         sCVManager.handleState(this, state);
     }
+
+    @Override
+    public void handleObject(Object[] object) {
+        sCVManager.handleState(this, object);
+    }
+
 
     public void initializeTask(CVManager cvManager) {
 

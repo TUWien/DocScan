@@ -515,22 +515,22 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     public void pauseImageProcessing(boolean pause, boolean isFocusMeasured) {
 
-        mIsImageProcessingPaused = pause;
-        if (mFocusMeasurementThread != null && isFocusMeasured)
-            mFocusMeasurementThread.setRunning(!pause);
-
-        if (mPageSegmentationThread != null)
-            mPageSegmentationThread.setRunning(!pause);
-
-        // Take care that no patches or pages are rendered in the PaintView:
-        if (pause) {
-            synchronized (this) {
-                DkPolyRect[] r = {};
-                mCVCallback.onPageSegmented(r, mFrameCnt);
-                Patch[] p = {};
-                mCVCallback.onFocusMeasured(p);
-            }
-        }
+//        mIsImageProcessingPaused = pause;
+//        if (mFocusMeasurementThread != null && isFocusMeasured)
+//            mFocusMeasurementThread.setRunning(!pause);
+//
+//        if (mPageSegmentationThread != null)
+//            mPageSegmentationThread.setRunning(!pause);
+//
+//        // Take care that no patches or pages are rendered in the PaintView:
+//        if (pause) {
+//            synchronized (this) {
+//                DkPolyRect[] r = {};
+//                mCVCallback.onPageSegmented(r, mFrameCnt);
+//                Patch[] p = {};
+//                mCVCallback.onFocusMeasured(p);
+//            }
+//        }
 
     }
 
@@ -687,6 +687,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         void onFocusMeasured(Patch[] patches);
         void onPageSegmented(DkPolyRect[] polyRects, int frameID);
+        void onPageSegmented(DkPolyRect[] polyRects);
         void onIluminationComputed(double value);
         void onMovement(boolean moved);
         void onWaitingForDoc(boolean waiting);

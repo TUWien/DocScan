@@ -24,13 +24,17 @@
 package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.graphics.PointF;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
  * Class containing the output of the focus measurement task. This class is used in
  * DocScanInterface.cpp Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetFocusMeasures
  * There the Patch CPP object is converted to a Patch Java object.
  */
-public class Patch {
+public class Patch implements Parcelable {
+
+    public static final String KEY_FOCUS = "KEY_FOCUS";
 
     private float mPX, mPY;
     private int mWidth, mHeight;
@@ -84,6 +88,30 @@ public class Patch {
     public Patch() {
 
     }
+
+    protected Patch(Parcel in) {
+        mPX = in.readFloat();
+        mPY = in.readFloat();
+        mWidth = in.readInt();
+        mHeight = in.readInt();
+        mFm = in.readDouble();
+        mIsSharp = in.readByte() != 0;
+        mIsForeGround = in.readByte() != 0;
+        mDrawViewPX = in.readFloat();
+        mDrawViewPY = in.readFloat();
+    }
+
+    public static final Creator<Patch> CREATOR = new Creator<Patch>() {
+        @Override
+        public Patch createFromParcel(Parcel in) {
+            return new Patch(in);
+        }
+
+        @Override
+        public Patch[] newArray(int size) {
+            return new Patch[size];
+        }
+    };
 
     /**
      * Returns the x coordinate of the center in frame coordinates
@@ -207,5 +235,24 @@ public class Patch {
      */
     public void setDrawViewPY(float drawViewPY) { mDrawViewPY = drawViewPY; }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
+        dest.writeFloat(mPX);
+        dest.writeFloat(mPY);
+        dest.writeInt(mWidth);
+        dest.writeInt(mHeight);
+        dest.writeDouble(mFm);
+        dest.writeByte((byte) (mIsSharp ? 1 : 0));
+        dest.writeByte((byte) (mIsForeGround ? 1 : 0));
+        dest.writeFloat(mDrawViewPX);
+        dest.writeFloat(mDrawViewPY);
+
+    }
 }
 
