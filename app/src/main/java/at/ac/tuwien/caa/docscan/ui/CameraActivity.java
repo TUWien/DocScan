@@ -972,7 +972,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     private void initShootModeSpinner() {
-        
+
         // TODO: define the text and the icons in an enum, to ensure that they have the same order.
         // Spinner for shoot mode:
         Spinner shootModeSpinner = (Spinner) findViewById(R.id.shoot_mode_spinner);
@@ -1737,8 +1737,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onFocusMeasured(Patch[] patches) {
 
-        if (mCVResult != null)
+//        if (mCVResult != null)
+//            mCVResult.setPatches(patches);
+
+        if (mCVResult != null && patches != null && patches.length > 0)
             mCVResult.setPatches(patches);
+
 
     }
 

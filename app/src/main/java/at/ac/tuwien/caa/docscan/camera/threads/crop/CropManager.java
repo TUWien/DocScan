@@ -93,24 +93,6 @@ public class CropManager {
         sInstance = new CropManager();
     }
 
-////    TODO: remove this for production:
-//    static {
-//
-//        Log.d(CLASS_NAME, "initializing OpenCV");
-//
-////         We need this for Android 4:
-//        if (!OpenCVLoader.initDebug()) {
-//            Log.d(CLASS_NAME, "Error while initializing OpenCV.");
-//        } else {
-//
-//            System.loadLibrary("opencv_java3");
-//            System.loadLibrary("docscan-native");
-//
-//            Log.d(CLASS_NAME, "OpenCV initialized");
-//        }
-//
-//    }
-
 
     private CropManager() {
 

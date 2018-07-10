@@ -66,6 +66,7 @@ import at.ac.tuwien.caa.docscan.camera.threads.CVThreadManager;
 import at.ac.tuwien.caa.docscan.camera.threads.ChangeCallable;
 import at.ac.tuwien.caa.docscan.camera.threads.FocusCallable;
 import at.ac.tuwien.caa.docscan.camera.threads.PageCallable;
+import at.ac.tuwien.caa.docscan.camera.threads.at.CVManager;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.CAMERA_FRAME;
@@ -75,11 +76,6 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.MOVEMENT_CHECK;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.NEW_DOC;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 
-//import com.google.android.gms.vision.Frame;
-//import com.google.android.gms.vision.barcode.Barcode;
-//import com.google.android.gms.vision.barcode.BarcodeDetector;
-//import com.google.android.gms.vision.text.TextBlock;
-//import com.google.android.gms.vision.text.TextRecognizer;
 
 /**
  * Class for showing the camera preview. This class is extending SurfaceView and making use of the
@@ -88,10 +84,6 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATI
  */
 @SuppressWarnings("deprecation")
 public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {
-
-    //// let the C routine decide which resolution they need...
-    //private static final int MAX_MAT_WIDTH = 500;
-    //private static final int MAX_MAT_HEIGHT = 500;
 
     private static final String CLASS_NAME = "CameraPreview";
     private SurfaceHolder mHolder;
@@ -103,7 +95,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private PageSegmentationThread mPageSegmentationThread;
     private FocusMeasurementThread mFocusMeasurementThread;
-//    private IlluminationThread mIlluminationThread;
     private CameraHandlerThread mThread = null;
 
     // Mat used by mPageSegmentationThread and mFocusMeasurementThread:
@@ -127,12 +118,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private long mLastTime;
     // Used for generating the mat (for CV tasks) at a fixed frequency:
-    private static long FRAME_TIME_DIFF = 50;
+    private static long FRAME_TIME_DIFF = 350;
     // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
     private boolean isCameraInitialized;
-    private DkPolyRect mIlluminationRect;
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
     private boolean mIsPreviewFitting = false;
 
@@ -143,7 +133,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private long mVerificationTime;
     private static long VERIFICATION_TIME_DIFF = 800;
     private boolean mMeasureFocus = false;
-//    private BarcodeDetector mDetector;
 
     private MultiFormatReader mMultiFormatReader;
 
@@ -162,6 +151,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mCVCallback = (CVCallback) context;
         mCameraPreviewCallback = (CameraPreviewCallback) context;
 
+        CVManager.getInstance().setCVCallback(mCVCallback);
+
         // used for debugging:
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
 
@@ -169,56 +160,19 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         mCVThreadManager = CVThreadManager.getsInstance();
 
-//        mDetector = new BarcodeDetector.Builder(context)
-//                        .setBarcodeFormats(Barcode.DATA_MATRIX | Barcode.QR_CODE)
-//                        .build();
-
         initMultiFormatReader();
 
     }
+
+
+
+
+//    QR code stuff starts here:
 
     public void startQrMode(boolean qrMode, boolean isFocusMeasured) {
 
         mIsQRMode = qrMode;
         pauseImageProcessing(qrMode, isFocusMeasured);
-
-    }
-
-    /**
-     * Called after the preview received a new frame (as byte array).
-     * @param pixels byte array containgin the frame.
-     * @param camera camera
-     */
-    @Override
-    public void onPreviewFrame(byte[] pixels, Camera camera) {
-
-
-//        updateFPS();
-
-        // TODO: handle an overflow:
-        mFrameCnt++;
-
-        if (pixels == null)
-            return;
-
-        if (mIsQRMode) {
-            detectBarcode(pixels);
-        }
-        else {
-
-            if (mIsImageProcessingPaused)
-                return;
-
-            // The verification is done in series mode after an automatic capture is requested:
-            if (mAwaitFrameChanges && mVerifyCapture) {
-                checkMovementAfterCapture(pixels);
-            } else {
-                if (mUseThreading)
-                    performCVTasks(pixels);
-                else
-                    singleThreadCV(pixels);
-            }
-        }
 
     }
 
@@ -274,28 +228,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
             mCVCallback.onQRCode(rawResult);
 
-
-//            final Result finalRawResult = rawResult;
-//
-//            if (finalRawResult != null) {
-//                Handler handler = new Handler(Looper.getMainLooper());
-////                handler.post(new Runnable() {
-////                    @Override
-////                    public void run() {
-////                        // Stopping the preview can take a little long.
-////                        // So we want to set result handler to null to discard subsequent calls to
-////                        // onPreviewFrame.
-////                        ZXingScannerView.ResultHandler tmpResultHandler = mResultHandler;
-////                        mResultHandler = null;
-////
-////                        stopCameraPreview();
-////                        if (tmpResultHandler != null) {
-////                            tmpResultHandler.handleResult(finalRawResult);
-////                        }
-////                    }
-////                });
-//            }
-
         }
 
     }
@@ -314,125 +246,117 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         return source;
     }
 
-//    private void readBarCodes(byte[] pixels) {
+//    QR code stuff ends here...
+
+
+//    private void oldSingleThread(byte[] pixels) {
 //
-//        if (mCamera == null || mCamera.getParameters() == null)
-//            return;
+//        long currentTime = System.currentTimeMillis();
 //
-//        ByteBuffer buf = ByteBuffer.wrap(pixels);
-//        Frame frame = new Frame.Builder().setImageData(buf, mFrameWidth, mFrameHeight,
-//                mPreviewFormat).build();
-//        SparseArray<Barcode> barcodes = mDetector.detect(frame);
+//        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
 //
-//        if (barcodes.size() > 0) {
-//            Barcode barcode = barcodes.valueAt(0);
-//            mCVCallback.onBarCodeFound(barcode);
-//        }
-//        else
-//            mCVCallback.onBarCodeFound(null);
+//            synchronized (this) {
 //
-//    }
+//                // 1.5 since YUV
+//                Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
+//                yuv.put(0, 0, pixels);
 //
-//    private void readText(byte[] pixels) {
+//                if (mFrameMat != null)
+//                    mFrameMat.release();
 //
-//        if (mCamera == null || mCamera.getParameters() == null)
-//            return;
+//                mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
+//                Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
 //
+//                if (mStoreMat) {
+//                    ChangeDetector.initNewFrameDetector(mFrameMat);
+//                    mStoreMat = false;
+//                }
 //
+//                yuv.release();
 //
-//        TextRecognizer textRecognizer = new TextRecognizer.Builder(this.getContext()).build();
+//                mLastTime = currentTime;
 //
-//        Bitmap textBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.cat);
+//                boolean processFrame = true;
 //
-//        ByteBuffer buf = ByteBuffer.wrap(pixels);
-//        Frame frame = new Frame.Builder().setImageData(buf, mFrameWidth, mFrameHeight,
-//                mCamera.getParameters().getPreviewFormat()).build();
+//                // This is done in series mode:
+//                if (mAwaitFrameChanges)
+//                    processFrame = isFrameSteadyAndNew();
 //
-//        Mat mat = byte2Mat(pixels);
-//        Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
-//        Utils.matToBitmap(mat, bitmap);
+//                // Check if there should be short break between two successive shots in series mode:
+//                boolean paused = pauseBetweenShots(currentTime);
+//                processFrame &= !paused;
 //
-//        Matrix mtx = new Matrix();
-//        int displayOrientation = CameraActivity.getDisplayRotation();
-//        int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
-//        mtx.setRotate(orientation);
-//        Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), mtx, true);
+////                If in single mode - or the frame is steady and contains a change, do the document analysis:
+//                if (processFrame)
+//                    this.notify();
 //
-//
-//        Frame frame2 = new Frame.Builder().setBitmap(rotated).build();
-//
-//        SparseArray<TextBlock> textBlocks = textRecognizer.detect(frame2);
-//
-//        String result = "";
-//        for (int i = 0; i < textBlocks.size(); ++i) {
-//            TextBlock item = textBlocks.valueAt(i);
-//            if (item != null && item.getValue() != null)
-//                result += item.getValue();
-////            List<Line> lines = (List<Line>) item.getComponents();
-////            for (Line line : lines) {
-////                List<Element> elements = (List<Element>) line.getComponents();
-////                for (Element element : elements) {
-////                    String word = element.getValue();
-////                    result += word;
-////                }
-////            }
+//            }
 //
 //        }
 //
-//
-////        if (result.length() > 0)
-//        mCVCallback.onTextFound(result);
-//
 //    }
 
+//    Image processing stuff starts here:
 
-    private void oldSingleThread(byte[] pixels) {
+    /**
+     * Called after the preview received a new frame (as byte array).
+     * @param pixels byte array containgin the frame.
+     * @param camera camera
+     */
+    @Override
+    public void onPreviewFrame(byte[] pixels, Camera camera) {
 
-        long currentTime = System.currentTimeMillis();
 
-        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
+//        updateFPS();
 
-            synchronized (this) {
+        // TODO: handle an overflow:
+        mFrameCnt++;
 
-                // 1.5 since YUV
-                Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
-                yuv.put(0, 0, pixels);
+        if (pixels == null)
+            return;
 
-                if (mFrameMat != null)
-                    mFrameMat.release();
+        if (mIsQRMode) {
+            detectBarcode(pixels);
+        }
+        else {
 
-                mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
-                Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
+            if (mIsImageProcessingPaused)
+                return;
 
-                if (mStoreMat) {
-                    ChangeDetector.initNewFrameDetector(mFrameMat);
-                    mStoreMat = false;
-                }
-
-                yuv.release();
-
-                mLastTime = currentTime;
-
-                boolean processFrame = true;
-
-                // This is done in series mode:
-                if (mAwaitFrameChanges)
-                    processFrame = isFrameSteadyAndNew();
-
-                // Check if there should be short break between two successive shots in series mode:
-                boolean paused = pauseBetweenShots(currentTime);
-                processFrame &= !paused;
-
-//                If in single mode - or the frame is steady and contains a change, do the document analysis:
-                if (processFrame)
-                    this.notify();
+            // The verification is done in series mode after an automatic capture is requested:
+            if (mAwaitFrameChanges && mVerifyCapture) {
+                checkMovementAfterCapture(pixels);
+            } else {
+//                if (mUseThreading)
+//                    performCVTasks(pixels);
+//                else
+//                    singleThreadCV(pixels);
+                cvManagerAction(pixels);
 
             }
-
         }
 
     }
 
+    private void cvManagerAction(byte[] pixels) {
+
+//        long currentTime = System.currentTimeMillis();
+//
+//        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
+//
+////            CVManager.performPageTask(pixels, mFrameWidth, mFrameHeight);
+//            CVManager.performChangeTask(pixels, mFrameWidth, mFrameHeight);
+//
+//            mLastTime = currentTime;
+//        }
+
+        if (CVManager.receivesFrames())
+//            CVManager.performTask(pixels, mFrameWidth, mFrameHeight);
+            CVManager.performTask(CVManager.TYPE_MOVE, pixels, mFrameWidth, mFrameHeight);
+
+
+
+    }
 
     private void singleThreadCV(byte[] pixels) {
 
@@ -454,17 +378,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 } else if (!ChangeDetector.isMovementDetectorInitialized()) {
                     ChangeDetector.initMovementDetector(mFrameMat);
                 }
-
-
-//                boolean processFrame = true;
-//
-//                // This is done in series mode:
-//                if (mAwaitFrameChanges)
-//                    processFrame = isFrameSteadyAndNew();
-//
-//                // Check if there should be short break between two successive shots in series mode:
-//                boolean paused = pauseBetweenShots(currentTime);
-//                processFrame &= !paused;
 
                 boolean processFrame = true;
                 // In serial mode the document analysis is just performed if no movement occurred:
@@ -594,30 +507,339 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    public boolean isImageProcessingPaused() {
+
+        return mIsImageProcessingPaused;
+
+    }
+
+    public void pauseImageProcessing(boolean pause, boolean isFocusMeasured) {
+
+        mIsImageProcessingPaused = pause;
+        if (mFocusMeasurementThread != null && isFocusMeasured)
+            mFocusMeasurementThread.setRunning(!pause);
+
+        if (mPageSegmentationThread != null)
+            mPageSegmentationThread.setRunning(!pause);
+
+        // Take care that no patches or pages are rendered in the PaintView:
+        if (pause) {
+            synchronized (this) {
+                DkPolyRect[] r = {};
+                mCVCallback.onPageSegmented(r, mFrameCnt);
+                Patch[] p = {};
+                mCVCallback.onFocusMeasured(p);
+            }
+        }
+
+    }
+
+    public boolean isFrameSteady() {
+
+        if (!mAwaitFrameChanges)
+            return true;
+        else {
+            return mCVThreadManager.isFrameSteadyAndNew();
+        }
+    }
+
+    private Mat byte2Mat(byte[] pixels) {
+
+        Mat yuv = new Mat((int) (mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
+        yuv.put(0, 0, pixels);
+
+        Mat result = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
+        Imgproc.cvtColor(yuv, result, Imgproc.COLOR_YUV2RGB_NV21);
+
+        return result;
+    }
+
+    /**
+     * Returns if enough time has past after the last shot in series mode. The function should prevent
+     * that a shot is taken in series mode, just because of small changes of the image content
+     * (e.g. a finger is laid on a manuscript).
+     * @param time The current time.
+     * @return boolean indicating if more time has to pass.
+     */
+    private boolean pauseBetweenShots(long time) {
+
+        boolean pause = false;
+
+        if (mIsSeriesMode && mLastShotTime != LAST_SHOT_TIME_NOT_INIT) {
+            if (time - mLastShotTime <= MIN_TIME_BETWEEN_SHOTS) {
+                pause = true;
+            }
+        }
+
+        return pause;
+
+    }
+
+    private boolean isFrameSteadyAndNew() {
+
+//                Check if there is sufficient image change between the current frame and the last image taken:
+        boolean isFrameSteady;
+        boolean isFrameDifferent = false;
+
+//                    The ChangeDetector is only initialized after an image has been taken:
+        if (ChangeDetector.isNewFrameDetectorInitialized()) {
+
+            mTimerCallbacks.onTimerStarted(MOVEMENT_CHECK);
+            isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
+            mTimerCallbacks.onTimerStopped(MOVEMENT_CHECK);
+
+            if (!isFrameSteady) {
+                mCVCallback.onMovement(true);
+                return false;
+            }
+            else {
+                mCVCallback.onMovement(false);
+            }
+
+            if (!isFrameDifferent) {
+                mTimerCallbacks.onTimerStarted(NEW_DOC);
+                isFrameDifferent = ChangeDetector.isNewFrame(mFrameMat);
+                mTimerCallbacks.onTimerStopped(NEW_DOC);
+
+                if (!isFrameDifferent) {
+                    mCVCallback.onWaitingForDoc(true);
+                    return false;
+                } else {
+                    mCVCallback.onWaitingForDoc(false);
+                    mTimerCallbacks.onTimerStarted(FLIP_SHOT_TIME);
+                }
+            }
+        }
+
+        return true;
+
+    }
+
+    private void updateFPS() {
+
+        // Take care that in this case the timer is first stopped (contrary to the other calls):
+        mTimerCallbacks.onTimerStopped(CAMERA_FRAME);
+        mTimerCallbacks.onTimerStarted(CAMERA_FRAME);
+
+    }
+
+
+    public void storeMat(boolean isSeriesMode) {
+
+        mStoreMat = true;
+
+        // If the user switched just to series mode do not make a break:
+        if (!mIsSeriesMode && isSeriesMode)
+            mLastShotTime = LAST_SHOT_TIME_NOT_INIT;
+        else
+            mLastShotTime = System.currentTimeMillis();
+
+        mIsSeriesMode = isSeriesMode;
+
+    }
+
+    public void startFocusMeasurement(boolean start) {
+
+        mFocusMeasurementThread.setRunning(start);
+        mMeasureFocus = start;
+
+    }
+
+    public boolean isFocusMeasured() {
+
+        return mFocusMeasurementThread.isRunning();
+
+    }
+
+    private class CameraHandlerThread extends HandlerThread {
+
+        Handler mHandler = null;
+
+        CameraHandlerThread() {
+            super("CameraHandlerThread");
+            start();
+            mHandler = new Handler(getLooper());
+        }
+
+        synchronized void notifyCameraOpened() {
+            notify();
+        }
+
+        void openCamera() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    initCamera();
+                    notifyCameraOpened();
+                }
+            });
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {
+                Log.w(CLASS_NAME, "wait was interrupted");
+            }
+        }
+    }
+
+    // Callbacks:
+    public interface CVCallback {
+
+        void onFocusMeasured(Patch[] patches);
+        void onPageSegmented(DkPolyRect[] polyRects, int frameID);
+        void onIluminationComputed(double value);
+        void onMovement(boolean moved);
+        void onWaitingForDoc(boolean waiting);
+        void onCaptureVerified();
+        //        void onBarCodeFound(final Barcode barcode);
+//        void onTextFound(final String result);
+        void onQRCode(Result result);
+
+    }
+
+    /**
+     * Interfaces used to tell the activity that a dimension is changed. This is used to enable
+     * a conversion between frame and screen coordinates (necessary for drawing in PaintView).
+     */
+    public interface CameraPreviewCallback {
+
+        void onMeasuredDimensionChange(int width, int height);
+        void onFrameDimensionChange(int width, int height, int cameraOrientation);
+        void onFlashModesFound(List<String> modes);
+        void onFocusTouch(PointF point);
+        void onFocusTouchSuccess();
+
+    }
+
+    public class FocusMeasurementThread extends Thread {
+
+        private CameraPreview mCameraView;
+        private boolean mIsRunning;
+
+
+        public FocusMeasurementThread(CameraPreview cameraView) {
+
+            mCameraView = cameraView;
+
+        }
+
+        /**
+         * The main loop of the thread.
+         */
+        @Override
+        public void run() {
+
+            synchronized (mCameraView) {
+
+                while (true) {
+
+                    try {
+                        mCameraView.wait();
+
+                        if (mIsRunning) {
+
+                            mTimerCallbacks.onTimerStarted(FOCUS_MEASURE);
+
+                            Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
+                            mTimerCallbacks.onTimerStopped(FOCUS_MEASURE);
+
+                            mCVCallback.onFocusMeasured(patches);
+
+                        }
+
+                    } catch (InterruptedException e) {
+                    }
+
+                }
+
+            }
+        }
+
+        public void setRunning(boolean running) {
+
+            mIsRunning = running;
+
+            if (!mIsRunning)
+                mCVCallback.onFocusMeasured(null);
+
+        }
+
+        public boolean isRunning() {
+            return mIsRunning;
+        }
+
+
+
+    }
+
+    public class PageSegmentationThread extends Thread {
+
+        private CameraPreview mCameraView;
+        private boolean mIsRunning;
+
+
+        public PageSegmentationThread(CameraPreview cameraView) {
+
+            Log.d(CLASS_NAME, "PageSegmentationThread:");
+
+            mCameraView = cameraView;
+            mIsRunning = true;
+
+        }
+
+        /**
+         * The main loop of the thread.
+         */
+        @Override
+        public void run() {
+
+            synchronized (mCameraView) {
+
+                while (true) {
+
+                    try {
+
+                        mCameraView.wait();
+
+
+                        if (mIsRunning) {
+
+                            mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
+
+                            DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
+                            mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
+                            mCVCallback.onPageSegmented(polyRects, mFrameCnt);
+
+                        }
+//                        execute();
+
+                    } catch (InterruptedException e) {
+                    }
+
+                }
+
+            }
+        }
+
+        public void setRunning(boolean running) {
+
+            mIsRunning = running;
+
+        }
+
+
+
+    }
+
+//    Image processing ends here
+
+
     public void stop() {
 
         isCameraInitialized = false;
 
     }
 
-    public boolean isFrameSame(Mat frame1, Mat frame2) {
-
-        Mat tmp1 = new Mat(frame1.rows(), frame1.cols(), CvType.CV_8UC1);
-        Imgproc.cvtColor(frame1, tmp1, Imgproc.COLOR_RGB2GRAY);
-
-        Mat tmp2 = new Mat(frame2.rows(), frame2.cols(), CvType.CV_8UC1);
-        Imgproc.cvtColor(frame2, tmp2, Imgproc.COLOR_RGB2GRAY);
-
-        Mat subtractResult = new Mat(frame2.rows(), frame2.cols(), CvType.CV_8UC1);
-        Core.absdiff(frame1, frame2, subtractResult);
-        Imgproc.threshold(subtractResult, subtractResult, 50, 1, Imgproc.THRESH_BINARY);
-        Scalar sumDiff = Core.sumElems(subtractResult);
-        double diffRatio = sumDiff.val[0] / (frame1.cols() * frame2.rows());
-
-
-        return diffRatio < .05;
-
-    }
 
     /**
      * Called after the surface is created.
@@ -1096,149 +1318,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-    public boolean isImageProcessingPaused() {
-
-        return mIsImageProcessingPaused;
-
-    }
-
-    public void pauseImageProcessing(boolean pause, boolean isFocusMeasured) {
-
-        mIsImageProcessingPaused = pause;
-        if (mFocusMeasurementThread != null && isFocusMeasured)
-            mFocusMeasurementThread.setRunning(!pause);
-
-        if (mPageSegmentationThread != null)
-            mPageSegmentationThread.setRunning(!pause);
-
-        // Take care that no patches or pages are rendered in the PaintView:
-        if (pause) {
-            synchronized (this) {
-                DkPolyRect[] r = {};
-                mCVCallback.onPageSegmented(r, mFrameCnt);
-                Patch[] p = {};
-                mCVCallback.onFocusMeasured(p);
-            }
-        }
-
-    }
-
-    public boolean isFrameSteady() {
-
-        if (!mAwaitFrameChanges)
-            return true;
-        else {
-            return mCVThreadManager.isFrameSteadyAndNew();
-        }
-    }
-
-    private Mat byte2Mat(byte[] pixels) {
-
-        Mat yuv = new Mat((int) (mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
-        yuv.put(0, 0, pixels);
-
-        Mat result = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
-        Imgproc.cvtColor(yuv, result, Imgproc.COLOR_YUV2RGB_NV21);
-
-        return result;
-    }
-
-    /**
-     * Returns if enough time has past after the last shot in series mode. The function should prevent
-     * that a shot is taken in series mode, just because of small changes of the image content
-     * (e.g. a finger is laid on a manuscript).
-     * @param time The current time.
-     * @return boolean indicating if more time has to pass.
-     */
-    private boolean pauseBetweenShots(long time) {
-
-        boolean pause = false;
-
-        if (mIsSeriesMode && mLastShotTime != LAST_SHOT_TIME_NOT_INIT) {
-            if (time - mLastShotTime <= MIN_TIME_BETWEEN_SHOTS) {
-                pause = true;
-            }
-        }
-
-        return pause;
-
-    }
-
-    private boolean isFrameSteadyAndNew() {
-
-//                Check if there is sufficient image change between the current frame and the last image taken:
-        boolean isFrameSteady;
-        boolean isFrameDifferent = false;
-
-//                    The ChangeDetector is only initialized after an image has been taken:
-        if (ChangeDetector.isNewFrameDetectorInitialized()) {
-
-            mTimerCallbacks.onTimerStarted(MOVEMENT_CHECK);
-            isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
-            mTimerCallbacks.onTimerStopped(MOVEMENT_CHECK);
-
-            if (!isFrameSteady) {
-                mCVCallback.onMovement(true);
-                return false;
-            }
-            else {
-                mCVCallback.onMovement(false);
-            }
-
-            if (!isFrameDifferent) {
-                mTimerCallbacks.onTimerStarted(NEW_DOC);
-                isFrameDifferent = ChangeDetector.isNewFrame(mFrameMat);
-                mTimerCallbacks.onTimerStopped(NEW_DOC);
-
-                if (!isFrameDifferent) {
-                    mCVCallback.onWaitingForDoc(true);
-                    return false;
-                } else {
-                    mCVCallback.onWaitingForDoc(false);
-                    mTimerCallbacks.onTimerStarted(FLIP_SHOT_TIME);
-                }
-            }
-        }
-
-        return true;
-
-    }
-
-    private void updateFPS() {
-
-        // Take care that in this case the timer is first stopped (contrary to the other calls):
-        mTimerCallbacks.onTimerStopped(CAMERA_FRAME);
-        mTimerCallbacks.onTimerStarted(CAMERA_FRAME);
-
-    }
-
-
-    public void storeMat(boolean isSeriesMode) {
-
-        mStoreMat = true;
-
-        // If the user switched just to series mode do not make a break:
-        if (!mIsSeriesMode && isSeriesMode)
-            mLastShotTime = LAST_SHOT_TIME_NOT_INIT;
-        else
-            mLastShotTime = System.currentTimeMillis();
-
-        mIsSeriesMode = isSeriesMode;
-
-    }
-
-    public void startFocusMeasurement(boolean start) {
-
-        mFocusMeasurementThread.setRunning(start);
-        mMeasureFocus = start;
-
-    }
-
-    public boolean isFocusMeasured() {
-
-        return mFocusMeasurementThread.isRunning();
-
-    }
 
     @SuppressWarnings("deprecation")
     private boolean isPreviewFitting(Camera.Size previewSize) {
@@ -1520,243 +1599,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-    private class CameraHandlerThread extends HandlerThread {
 
-        Handler mHandler = null;
-
-        CameraHandlerThread() {
-            super("CameraHandlerThread");
-            start();
-            mHandler = new Handler(getLooper());
-        }
-
-        synchronized void notifyCameraOpened() {
-            notify();
-        }
-
-        void openCamera() {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    initCamera();
-                    notifyCameraOpened();
-                }
-            });
-            try {
-                wait();
-            }
-            catch (InterruptedException e) {
-                Log.w(CLASS_NAME, "wait was interrupted");
-            }
-        }
-    }
-
-    // Callbacks:
-    public interface CVCallback {
-
-        void onFocusMeasured(Patch[] patches);
-        void onPageSegmented(DkPolyRect[] polyRects, int frameID);
-        void onIluminationComputed(double value);
-        void onMovement(boolean moved);
-        void onWaitingForDoc(boolean waiting);
-        void onCaptureVerified();
-//        void onBarCodeFound(final Barcode barcode);
-//        void onTextFound(final String result);
-        void onQRCode(Result result);
-
-    }
-
-    /**
-     * Interfaces used to tell the activity that a dimension is changed. This is used to enable
-     * a conversion between frame and screen coordinates (necessary for drawing in PaintView).
-     */
-    public interface CameraPreviewCallback {
-
-        void onMeasuredDimensionChange(int width, int height);
-        void onFrameDimensionChange(int width, int height, int cameraOrientation);
-        void onFlashModesFound(List<String> modes);
-        void onFocusTouch(PointF point);
-        void onFocusTouchSuccess();
-
-    }
-
-    public class FocusMeasurementThread extends Thread {
-
-        private CameraPreview mCameraView;
-        private boolean mIsRunning;
-
-
-        public FocusMeasurementThread(CameraPreview cameraView) {
-
-            mCameraView = cameraView;
-
-        }
-
-        /**
-         * The main loop of the thread.
-         */
-        @Override
-        public void run() {
-
-            synchronized (mCameraView) {
-
-                while (true) {
-
-                    try {
-                        mCameraView.wait();
-
-                        if (mIsRunning) {
-
-                            mTimerCallbacks.onTimerStarted(FOCUS_MEASURE);
-
-                            Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
-                            mTimerCallbacks.onTimerStopped(FOCUS_MEASURE);
-
-                            mCVCallback.onFocusMeasured(patches);
-
-                        }
-
-                    } catch (InterruptedException e) {
-                    }
-
-                }
-
-            }
-        }
-
-        public void setRunning(boolean running) {
-
-            mIsRunning = running;
-
-            if (!mIsRunning)
-                mCVCallback.onFocusMeasured(null);
-
-        }
-
-        public boolean isRunning() {
-            return mIsRunning;
-        }
-
-
-
-    }
-
-    public class PageSegmentationThread extends Thread {
-
-        private CameraPreview mCameraView;
-        private boolean mIsRunning;
-
-
-        public PageSegmentationThread(CameraPreview cameraView) {
-
-            Log.d(CLASS_NAME, "PageSegmentationThread:");
-
-            mCameraView = cameraView;
-            mIsRunning = true;
-
-        }
-
-        /**
-         * The main loop of the thread.
-         */
-        @Override
-        public void run() {
-
-            synchronized (mCameraView) {
-
-                while (true) {
-
-                    try {
-
-                        mCameraView.wait();
-
-
-                        if (mIsRunning) {
-
-                            mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
-
-                            DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
-                            mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
-                            mCVCallback.onPageSegmented(polyRects, mFrameCnt);
-
-                        }
-//                        execute();
-
-                    } catch (InterruptedException e) {
-                    }
-
-                }
-
-            }
-        }
-
-        public void setRunning(boolean running) {
-
-            mIsRunning = running;
-
-        }
-
-
-
-    }
-
-    public class IlluminationThread extends Thread {
-
-        private CameraPreview mCameraView;
-        private boolean mIsRunning;
-
-
-        public IlluminationThread(CameraPreview cameraView) {
-
-            mCameraView = cameraView;
-            mIsRunning = false;
-
-        }
-
-        /**
-         * The main loop of the thread.
-         */
-        @Override
-        public void run() {
-
-//            synchronized (mCameraView) {
-//
-//                while (true) {
-//
-//                    try {
-//                        mCameraView.wait();
-//
-//                        if (mIsRunning) {
-//
-////                            // Measure the time if required:
-////                            if (CameraActivity.isDebugViewEnabled())
-////                                mTimerCallbacks.onTimerStarted(ILLUMINATION);
-//
-//                            double illuminationValue = -1;
-//                            if (mIlluminationRect != null)
-//                                illuminationValue = NativeWrapper.getIllumination(mFrameMat, mIlluminationRect);
-//
-////                            if (CameraActivity.isDebugViewEnabled())
-////                                mTimerCallbacks.onTimerStopped(ILLUMINATION);
-//
-//                            mCVCallback.onIluminationComputed(illuminationValue);
-//
-//
-//                        }
-//
-//                    } catch (InterruptedException e) {
-//                    }
-//
-//                }
-//
-//            }
-        }
-
-        public void setRunning(boolean running) {
-
-            mIsRunning = running;
-
-        }
-    }
 
 }
