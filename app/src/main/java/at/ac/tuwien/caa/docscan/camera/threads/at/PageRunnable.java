@@ -52,6 +52,7 @@ public class PageRunnable extends CVRunnable {
 
             // Catches exceptions thrown in response to a queued interrupt
         } catch (InterruptedException e1) {
+            Log.d(CLASS_NAME, "InterruptedException");
 
             // Does nothing
 

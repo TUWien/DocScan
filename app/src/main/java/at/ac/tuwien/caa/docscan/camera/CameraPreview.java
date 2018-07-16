@@ -48,10 +48,8 @@ import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -125,6 +123,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean isCameraInitialized;
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
     private boolean mIsPreviewFitting = false;
+
 
     private CVThreadManager mCVThreadManager;
     private int mFrameCnt = 0;
@@ -350,9 +349,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //            mLastTime = currentTime;
 //        }
 
-        if (CVManager.receivesFrames())
+        if (CVManager.getInstance().receivesFrames())
+            CVManager.getInstance().performNextTask(pixels, mFrameWidth, mFrameHeight);
+
 //            CVManager.performTask(pixels, mFrameWidth, mFrameHeight);
-            CVManager.performTask(CVManager.TYPE_MOVE, pixels, mFrameWidth, mFrameHeight);
+//            CVManager.performTask(CVManager.TASK_TYPE_MOVE, pixels, mFrameWidth, mFrameHeight);
 
 
 
@@ -686,10 +687,11 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public interface CVCallback {
 
         void onFocusMeasured(Patch[] patches);
-        void onPageSegmented(DkPolyRect[] polyRects, int frameID);
         void onPageSegmented(DkPolyRect[] polyRects);
+        void onPageSegmented(DkPolyRect[] polyRects, Mat mat);
         void onIluminationComputed(double value);
         void onMovement(boolean moved);
+        void onMovement(boolean moved, Mat mat);
         void onWaitingForDoc(boolean waiting);
         void onCaptureVerified();
         //        void onBarCodeFound(final Barcode barcode);
@@ -809,7 +811,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                             DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
                             mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
-                            mCVCallback.onPageSegmented(polyRects, mFrameCnt);
+                            mCVCallback.onPageSegmented(polyRects);
 
                         }
 //                        execute();

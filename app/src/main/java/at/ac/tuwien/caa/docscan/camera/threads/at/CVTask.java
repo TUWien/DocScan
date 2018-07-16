@@ -18,7 +18,8 @@ public class CVTask implements CVRunnable.TaskRunnableCVMethods {
     @Override
     public void recycle() {
 
-        mMat.release();
+        if (mMat != null)
+            mMat.release();
         mMat = null;
 
     }

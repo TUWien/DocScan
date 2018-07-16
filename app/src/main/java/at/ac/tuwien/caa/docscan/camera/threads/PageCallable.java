@@ -34,7 +34,7 @@ public class PageCallable extends CVCallable {
 //            mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
 
             DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mMat);
-            mCVCallback.onPageSegmented(polyRects, mFrameCnt);
+            mCVCallback.onPageSegmented(polyRects);
 
             mMat.release();
 

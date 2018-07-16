@@ -83,6 +83,7 @@ import com.google.android.gms.security.ProviderInstaller;
 import com.google.zxing.Result;
 
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -108,7 +109,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.camera.threads.crop.CropLogger;
+import at.ac.tuwien.caa.docscan.camera.threads.at.CVManager;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
@@ -127,6 +128,9 @@ import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
+import static at.ac.tuwien.caa.docscan.camera.threads.CVThreadManager.TASK_FOCUS;
+import static at.ac.tuwien.caa.docscan.camera.threads.at.CVManager.TASK_TYPE_FOCUS;
+import static at.ac.tuwien.caa.docscan.camera.threads.at.CVManager.TASK_TYPE_MOVE;
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getImageArray;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
@@ -367,6 +371,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 		checkProviderInstaller();
 
         loadThumbnail();
+
+        CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
 
 //        MovementDetector.getInstance(this.getApplicationContext()).start();
 
@@ -1729,6 +1735,61 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     // ================= start: CALLBACKS called from native files =================
 
+    @Override
+    public void onMovement(boolean moved) {
+
+        // This happens if the user has just switched to single mode and the event occurs later than the touch event.
+
+//        if (!mIsSeriesMode) {
+//            mPaintView.drawMovementIndicator(false);
+//            return;
+//        }
+//        else if (mIsSeriesModePaused) {
+//            displaySeriesModePaused();
+//            return;
+//        }
+
+        mPaintView.drawMovementIndicator(moved);
+
+        if (moved) {
+            mCVResult.clearResults();
+            setTextViewText(R.string.instruction_movement);
+        }
+        else {
+            // This forces an update of the textview if it is still showing the R.string.instruction_movement text
+            if (mTextView.getText() == getResources().getString(R.string.instruction_movement))
+                setTextViewText(R.string.instruction_none);
+        }
+
+        if (moved)
+            CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
+        else
+            CVManager.getInstance().performTask(CVManager.TASK_TYPE_PAGE);
+
+    }
+
+    @Override
+    public void onMovement(boolean moved, Mat mat) {
+
+        mPaintView.drawMovementIndicator(moved);
+
+        if (moved) {
+            mCVResult.clearResults();
+            setTextViewText(R.string.instruction_movement);
+        }
+        else {
+            // This forces an update of the textview if it is still showing the R.string.instruction_movement text
+            if (mTextView.getText() == getResources().getString(R.string.instruction_movement))
+                setTextViewText(R.string.instruction_none);
+        }
+
+        if (moved)
+            CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
+        else
+            CVManager.getInstance().performTask(CVManager.TASK_TYPE_PAGE, mat);
+
+    }
+
     /**
      * Called after focus measurement is finished.
      *
@@ -1737,62 +1798,42 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onFocusMeasured(Patch[] patches) {
 
-//        if (mCVResult != null)
-//            mCVResult.setPatches(patches);
-
         if (mCVResult != null && patches != null && patches.length > 0)
             mCVResult.setPatches(patches);
 
+        CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
+
+//        if (mIsSeriesMode)
+//            CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
+//        else
+//            CVManager.getInstance().setNextTask(TASK_TYPE_PAGE);
 
     }
 
     /**
      * Called after page segmentation is finished.
      *
-     * @param dkPolyRects Array of polyRects
+     * @param polyRects Array of polyRects
      */
     @Override
-    public void onPageSegmented(DkPolyRect[] dkPolyRects, int frameCnt) {
+    public void onPageSegmented(DkPolyRect[] polyRects) {
 
-        // Check if the result is returned from a thread that is already outdated
-        // (an up-to-date result is already computed):
-        if (frameCnt <= mMaxFrameCnt) {
-            Log.d(TAG, "skipped frame id: " + frameCnt);
-            return;
-        }
-
-        mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
-
-        long currentTime = System.currentTimeMillis();
-        long timeDiff = currentTime - mLastTime;
-
-        mLastTime = currentTime;
-
-        if (mCVResult != null) {
-//            mCVResult.setPatches(null);
-            if (!mCVResult.isStable())
-                mCVResult.setPatches(new Patch[0]);
-
-            mCVResult.setDKPolyRects(dkPolyRects);
-        }
-
-//        if (isRectJumping(dkPolyRects))
-//            mCameraPreview.startFocusMeasurement(false);
-//        else
-//            mCameraPreview.startFocusMeasurement(true);
-
-        mLastDkPolyRects = dkPolyRects;
-
-        mMaxFrameCnt = frameCnt;
-
-
-        mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
-
+        updatePageSegmentation(polyRects);
+        CVManager.getInstance().performTask(TASK_TYPE_FOCUS);
+//        CVManager.getInstance().setNextTask(TASK_FOCUS);
 
     }
 
+
     @Override
-    public void onPageSegmented(DkPolyRect[] polyRects) {
+    public void onPageSegmented(DkPolyRect[] polyRects, Mat mat) {
+
+        updatePageSegmentation(polyRects);
+//        CVManager.getInstance().performTask(TASK_FOCUS, mat);
+
+    }
+
+    public void updatePageSegmentation(DkPolyRect[] polyRects) {
 
         mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
 
@@ -1816,10 +1857,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mLastDkPolyRects = polyRects;
 
-
         mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
 
     }
+
+
+
 
     boolean isRectJumping(DkPolyRect[] dkPolyRects){
 
@@ -1909,33 +1952,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             mPaintView.drawFocusTouchSuccess();
     }
 
-    @Override
-    public void onMovement(boolean moved) {
 
-        // This happens if the user has just switched to single mode and the event occurs later than the touch event.
-        // TODO: implement a proper handling of the events.
-        if (!mIsSeriesMode) {
-            mPaintView.drawMovementIndicator(false);
-            return;
-        }
-        else if (mIsSeriesModePaused) {
-            displaySeriesModePaused();
-            return;
-        }
-
-        mPaintView.drawMovementIndicator(moved);
-
-        if (moved) {
-            mCVResult.clearResults();
-            setTextViewText(R.string.instruction_movement);
-        }
-        else {
-            // This forces an update of the textview if it is still showing the R.string.instruction_movement text
-            if (mTextView.getText() == getResources().getString(R.string.instruction_movement))
-                setTextViewText(R.string.instruction_none);
-        }
-
-    }
 
     @Override
     public void onWaitingForDoc(boolean waiting) {
