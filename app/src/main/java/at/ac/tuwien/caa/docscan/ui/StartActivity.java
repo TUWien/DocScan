@@ -34,6 +34,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import at.ac.tuwien.caa.docscan.R;
 
 /**
@@ -50,11 +55,69 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+
+        try {
+            String test = "1234567890123456";
+            byte[] bytesOfMessage = test.getBytes("UTF-8");
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] digest = md.digest(bytesOfMessage);
+
+            BigInteger bigInt = new BigInteger(1,digest);
+            String hashtext = bigInt.toString(16);
+
+// Now we need to zero pad it if you actually want the full 32 chars.
+            while(hashtext.length() < 32 ){
+                hashtext = "0"+hashtext;
+            }
+
+
+
+            String m = md5(test);
+            String test2 = "12345678";
+
+            String m2 = md5(test2);
+
+            int b = 0;
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_container_view);
         mLayout = findViewById(R.id.main_frame_layout);
         showCameraPreview();
 
+
+
+
+    }
+
+    public static final String md5(final String s) {
+        final String MD5 = "MD5";
+        try {
+            // Create MD5 Hash
+            MessageDigest digest = java.security.MessageDigest
+                    .getInstance(MD5);
+            digest.update(s.getBytes());
+            byte messageDigest[] = digest.digest();
+
+            // Create Hex String
+            StringBuilder hexString = new StringBuilder();
+            for (byte aMessageDigest : messageDigest) {
+                String h = Integer.toHexString(0xFF & aMessageDigest);
+                while (h.length() < 2)
+                    h = "0" + h;
+                hexString.append(h);
+            }
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     @Override

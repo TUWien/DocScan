@@ -30,6 +30,7 @@ class FocusRunnable extends CVRunnable {
             // Before continuing, checks to see that the Thread hasn't been
             // interrupted
             if (Thread.interrupted()) {
+                Log.d(CLASS_NAME, "thread interrupted");
                 throw new InterruptedException();
             }
 
@@ -40,7 +41,7 @@ class FocusRunnable extends CVRunnable {
 
             // Catches exceptions thrown in response to a queued interrupt
         } catch (InterruptedException e1) {
-
+            Log.d(CLASS_NAME, "interrupted exception");
             // Does nothing
 
             // In all cases, handle the results
