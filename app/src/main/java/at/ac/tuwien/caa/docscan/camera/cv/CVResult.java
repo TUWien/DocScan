@@ -101,13 +101,13 @@ public class CVResult {
             updateRects();
             stateUpdated();
 
-            // notify is necessary, because the PaintView is waiting for updates on the CVResult
-            // object. If notify is not called no update would be drawn.
             mIsStable = isRectStable(dkPolyRects);
 
             Log.d(TAG, "stable: " + mIsStable);
             mIsRedrawNecessary = true;
             mLastDKPolyRects = dkPolyRects;
+            // notify is necessary, because the PaintView is waiting for updates on the CVResult
+            // object. If notify is not called no update would be drawn.
             this.notify();
 
         }
@@ -441,7 +441,7 @@ public class CVResult {
 
 
 
-    private int getCVState() {
+    public int getCVState() {
 
 //        return DOCUMENT_STATE_OK;
 

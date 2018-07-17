@@ -17,7 +17,7 @@ public class ChangeDetector2 {
     private static ChangeDetector2 sInstance;
 
     private Mat mFrame;
-    private BackgroundSubtractorMOG2 mNewFrameDetector, mMovementDetector;
+    private BackgroundSubtractorMOG2 mNewFrameDetector, mMovementDetector, mVerifyDetector;
 
     static {
 
@@ -39,6 +39,29 @@ public class ChangeDetector2 {
 
     }
 
+    public void initVerifyDetector(Mat frame) {
+
+        Mat mat = resizeMat(frame);
+
+        if (mVerifyDetector != null) {
+            mVerifyDetector.clear();
+        }
+
+        mVerifyDetector = Video.createBackgroundSubtractorMOG2();
+        Mat fgMask = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC1);
+
+        mVerifyDetector.apply(mat, fgMask, 1);
+
+    }
+
+    public boolean isSameFrame(Mat frame) {
+
+        double changeRatio = getChangeRatio(frame, mVerifyDetector, 0);
+
+        return changeRatio < .05;
+
+    }
+
     public void initDetectors(Mat frame) {
 
         if (mFrame != null) {
@@ -49,11 +72,11 @@ public class ChangeDetector2 {
         mFrame = resizeMat(frame);
 
 //        TODO: check how we can clear the detectors:
-//        if (mNewFrameDetector != null)
-//            mNewFrameDetector.clear();
-//
-//        if (mMovementDetector != null)
-//            mMovementDetector.clear();
+        if (mNewFrameDetector != null)
+            mNewFrameDetector.clear();
+
+        if (mMovementDetector != null)
+            mMovementDetector.clear();
 
         mNewFrameDetector = Video.createBackgroundSubtractorMOG2();
         mMovementDetector = Video.createBackgroundSubtractorMOG2();
@@ -64,6 +87,16 @@ public class ChangeDetector2 {
         mMovementDetector.apply(mFrame, fgMask, 1);
 
 
+    }
+
+    public boolean isNewFrame(Mat frame) {
+
+        double changeRatio = getChangeRatio(frame, mNewFrameDetector, 0);
+
+        if (changeRatio > .05)
+            return true;
+        else
+            return false;
     }
 
     public boolean isMoving(Mat mat) {

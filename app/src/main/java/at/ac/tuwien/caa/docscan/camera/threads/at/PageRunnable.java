@@ -36,8 +36,6 @@ public class PageRunnable extends CVRunnable {
         // Moves the current Thread into the background
         android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 
-
-
         try {
             // Before continuing, checks to see that the Thread hasn't been
             // interrupted

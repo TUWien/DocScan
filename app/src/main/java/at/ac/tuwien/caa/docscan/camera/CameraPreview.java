@@ -64,7 +64,8 @@ import at.ac.tuwien.caa.docscan.camera.threads.CVThreadManager;
 import at.ac.tuwien.caa.docscan.camera.threads.ChangeCallable;
 import at.ac.tuwien.caa.docscan.camera.threads.FocusCallable;
 import at.ac.tuwien.caa.docscan.camera.threads.PageCallable;
-import at.ac.tuwien.caa.docscan.camera.threads.at.CVManager;
+import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector2;
+import at.ac.tuwien.caa.docscan.camera.threads.at2.ImageProcessor;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.CAMERA_FRAME;
@@ -150,7 +151,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mCVCallback = (CVCallback) context;
         mCameraPreviewCallback = (CameraPreviewCallback) context;
 
-        CVManager.getInstance().setCVCallback(mCVCallback);
+//        CVManager.getInstance().setCVCallback(mCVCallback);
+        ImageProcessor.getInstance().setCVCallback(mCVCallback);
 
         // used for debugging:
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
@@ -348,9 +350,21 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //
 //            mLastTime = currentTime;
 //        }
+        Mat mat = byte2Mat(pixels);
+//        ImageProcessor.getInstance().createImageRunnable(mat);
+        if (mStoreMat) {
+            ChangeDetector2.getInstance().initDetectors(mat);
+            mStoreMat = false;
+            //                if (mStoreMat) {
+//                    ChangeDetector.initNewFrameDetector(mFrameMat);
+//                    mStoreMat = false;
+//                }
+        }
+        else
+            ImageProcessor.getInstance().createChangeRunnable(mat);
 
-        if (CVManager.getInstance().receivesFrames())
-            CVManager.getInstance().performNextTask(pixels, mFrameWidth, mFrameHeight);
+//        if (CVManager.getInstance().receivesFrames())
+//            CVManager.getInstance().performNextTask(pixels, mFrameWidth, mFrameHeight);
 
 //            CVManager.performTask(pixels, mFrameWidth, mFrameHeight);
 //            CVManager.performTask(CVManager.TASK_TYPE_MOVE, pixels, mFrameWidth, mFrameHeight);

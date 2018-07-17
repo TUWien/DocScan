@@ -78,7 +78,7 @@ public class CVManager {
         // The time unit for "keep alive" is in seconds
         KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
 
-        sInstance = new CVManager();
+//        sInstance = new CVManager();
     }
 
     /**
