@@ -110,6 +110,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.threads.at.CVManager;
+import at.ac.tuwien.caa.docscan.camera.threads.at2.ImageProcessor;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
@@ -372,7 +373,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         loadThumbnail();
 
-        CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
+//        CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
 
 //        MovementDetector.getInstance(this.getApplicationContext()).start();
 
@@ -464,6 +465,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         loadPreferences();
 
         mCVResult = new CVResult(this);
+        ImageProcessor.getInstance().setCVResult(mCVResult);
+
         mCVResult.setSeriesMode(mIsSeriesMode);
 
         mCameraPreview = (CameraPreview) findViewById(R.id.camera_view);
@@ -1761,10 +1764,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 setTextViewText(R.string.instruction_none);
         }
 
-        if (moved)
-            CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
-        else
-            CVManager.getInstance().performTask(CVManager.TASK_TYPE_PAGE);
+//        if (moved)
+//            CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
+//        else
+//            CVManager.getInstance().performTask(CVManager.TASK_TYPE_PAGE);
 
     }
 
@@ -1801,7 +1804,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mCVResult != null && patches != null && patches.length > 0)
             mCVResult.setPatches(patches);
 
-        CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
+//        CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
 
 //        if (mIsSeriesMode)
 //            CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
@@ -1819,7 +1822,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public void onPageSegmented(DkPolyRect[] polyRects) {
 
         updatePageSegmentation(polyRects);
-        CVManager.getInstance().performTask(TASK_TYPE_FOCUS);
+//        CVManager.getInstance().performTask(TASK_TYPE_FOCUS);
 //        CVManager.getInstance().setNextTask(TASK_FOCUS);
 
     }
@@ -1844,8 +1847,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         if (mCVResult != null) {
 //            mCVResult.setPatches(null);
-            if (!mCVResult.isStable())
-                mCVResult.setPatches(new Patch[0]);
+//            if (!mCVResult.isStable())
+//                mCVResult.setPatches(new Patch[0]);
 
             mCVResult.setDKPolyRects(polyRects);
         }
@@ -2237,61 +2240,65 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onStatusChange(final int state) {
 
-        if (mIsSeriesModePaused) {
-            displaySeriesModePaused();
-            return;
-        }
-
-        if (mIsFocusMeasured) {
-            // Check if we need the focus measurement at this point:
-            if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-                //            if (mCVResult.isStable())
-                mCameraPreview.startFocusMeasurement(true);
-                //            else
-                //                mCameraPreview.startFocusMeasurement(false);
-            }
-            // TODO: I do not know why this is happening, once the CameraActivity is resumed:
-            else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
-                //            if (mCVResult.isStable())
-                mCameraPreview.startFocusMeasurement(true);
-                //            else
-                //                mCameraPreview.startFocusMeasurement(false);
-            } else if (state < CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-                mCameraPreview.startFocusMeasurement(false);
-            }
-        }
+        if (state != CVResult.DOCUMENT_STATE_OK)
+            mTextView.setText(getInstructionMessage(state));
 
 
-        final String msg;
-
-        if (!mIsPictureSafe) {
-            msg = getResources().getString(R.string.taking_picture_text);
-        }
-
-        else if (!mIsSeriesMode || state != CVResult.DOCUMENT_STATE_OK) {
-            msg = getInstructionMessage(state);
-        }
-
-        else {
-
-            if (mIsSeriesMode) {
-                mCameraPreview.verifyCapture();
-                return;
-            }
-            else {
-                msg = getResources().getString(R.string.taking_picture_text);
-                if (mIsPictureSafe)
-                    takePicture();
-            }
-        }
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                mTextView.setText(msg);
-            }
-        });
+//        if (mIsSeriesModePaused) {
+//            displaySeriesModePaused();
+//            return;
+//        }
+//
+//        if (mIsFocusMeasured) {
+//            // Check if we need the focus measurement at this point:
+//            if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+//                //            if (mCVResult.isStable())
+//                mCameraPreview.startFocusMeasurement(true);
+//                //            else
+//                //                mCameraPreview.startFocusMeasurement(false);
+//            }
+//            // TODO: I do not know why this is happening, once the CameraActivity is resumed:
+//            else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
+//                //            if (mCVResult.isStable())
+//                mCameraPreview.startFocusMeasurement(true);
+//                //            else
+//                //                mCameraPreview.startFocusMeasurement(false);
+//            } else if (state < CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
+//                mCameraPreview.startFocusMeasurement(false);
+//            }
+//        }
+//
+//
+//        final String msg;
+//
+//        if (!mIsPictureSafe) {
+//            msg = getResources().getString(R.string.taking_picture_text);
+//        }
+//
+//        else if (!mIsSeriesMode || state != CVResult.DOCUMENT_STATE_OK) {
+//            msg = getInstructionMessage(state);
+//        }
+//
+//        else {
+//
+//            if (mIsSeriesMode) {
+//                mCameraPreview.verifyCapture();
+//                return;
+//            }
+//            else {
+//                msg = getResources().getString(R.string.taking_picture_text);
+//                if (mIsPictureSafe)
+//                    takePicture();
+//            }
+//        }
+//
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+//                mTextView.setText(msg);
+//            }
+//        });
 
 
 
