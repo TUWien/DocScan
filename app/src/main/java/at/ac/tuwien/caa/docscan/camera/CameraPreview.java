@@ -350,10 +350,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //
 //            mLastTime = currentTime;
 //        }
-        Mat mat = byte2Mat(pixels);
+//        Mat mat = byte2Mat(pixels);
 //        ImageProcessor.getInstance().createImageRunnable(mat);
         if (mStoreMat) {
-            ChangeDetector2.getInstance().initDetectors(mat);
+            ChangeDetector2.getInstance().initDetectors(byte2Mat(pixels));
             mStoreMat = false;
             //                if (mStoreMat) {
 //                    ChangeDetector.initNewFrameDetector(mFrameMat);
@@ -361,7 +361,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //                }
         }
         else
-            ImageProcessor.getInstance().createChangeRunnable(mat);
+            ImageProcessor.getInstance().receiveFrame(pixels, mFrameWidth, mFrameHeight);
+//            ImageProcessor.getInstance().createChangeRunnable(mat);
 
 //        if (CVManager.getInstance().receivesFrames())
 //            CVManager.getInstance().performNextTask(pixels, mFrameWidth, mFrameHeight);
