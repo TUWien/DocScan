@@ -4,8 +4,12 @@ import android.os.Process;
 import android.util.Log;
 
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
+
+import java.io.File;
 
 import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector2;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 
 public class ImageChangeRunnable implements Runnable {
 
@@ -61,6 +65,7 @@ public class ImageChangeRunnable implements Runnable {
 
             }
             else if (mCheckState == ImageProcessor.CHANGE_TASK_CHECK_VERIFY_FRAME){
+                
                 if (ChangeDetector2.getInstance().isSameFrame(mMat))
                     mImageChangeCallback.handleState(ImageProcessor.TASK_TYPE_VERIFIED_FRAME, mMat);
                 else
