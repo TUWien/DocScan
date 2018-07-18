@@ -58,7 +58,7 @@ public class ChangeDetector2 {
 
         double changeRatio = getChangeRatio(frame, mVerifyDetector, 0);
 
-        return changeRatio < .05;
+        return changeRatio < .01;
 
     }
 

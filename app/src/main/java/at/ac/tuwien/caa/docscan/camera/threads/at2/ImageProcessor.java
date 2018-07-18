@@ -9,8 +9,10 @@ import android.util.Log;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +22,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector2;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect.KEY_POLY_RECT;
 import static at.ac.tuwien.caa.docscan.camera.cv.Patch.KEY_FOCUS;
@@ -40,7 +43,7 @@ public class ImageProcessor implements ImageRunnable.ImageProcessorCallback,
     public static final int CHANGE_TASK_CHECK_NEW_FRAME = 1;
     public static final int CHANGE_TASK_CHECK_VERIFY_FRAME = 2;
 
-    private static final long MIN_STEADY_TIME = 1500;        // The time in which there must be no movement.
+    private static final long MIN_STEADY_TIME = 1000;        // The time in which there must be no movement.
     private static final long FRAME_TIME_DIFF = 300;
     private static final long NO_TIME_SET = -1;
 
@@ -217,6 +220,11 @@ public class ImageProcessor implements ImageRunnable.ImageProcessorCallback,
                     Log.d(CLASS_NAME, "handleMessage: verified frame");
 
                     mCVCallback.onCaptureVerified();
+
+//                    File file = new File(Helper.getMediaStorageDir("DocScan"), "verify.jpg");
+//                    Imgcodecs.imwrite(file.getAbsolutePath(), mat);
+
+
                     mLastFrameReceivedTime = NO_TIME_SET;
                     mLastSteadyTime = NO_TIME_SET;
                     mat.release();
