@@ -7,7 +7,9 @@ import android.os.Message;
 import android.os.Parcelable;
 import android.util.Log;
 
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -39,7 +41,8 @@ public class ImageProcessor implements ImageRunnable.ImageProcessorCallback,
     public static final int CHANGE_TASK_CHECK_VERIFY_FRAME = 2;
 
     private static final long MIN_STEADY_TIME = 1500;        // The time in which there must be no movement.
-    private static final long NO_STEADY_TIME = -1;
+    private static final long FRAME_TIME_DIFF = 300;
+    private static final long NO_TIME_SET = -1;
 
     private static final String CLASS_NAME = "ImageProcessor";
 
@@ -60,7 +63,8 @@ public class ImageProcessor implements ImageRunnable.ImageProcessorCallback,
     private boolean mVerifyFrame = false;
     private int mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
     private CVResult mCVResult;
-    private long mLastSteadyTime = NO_STEADY_TIME;
+    private long mLastSteadyTime = NO_TIME_SET;
+    private long mLastFrameReceivedTime = NO_TIME_SET;
 
     //    Singleton:
     private static ImageProcessor sInstance;
@@ -110,25 +114,29 @@ public class ImageProcessor implements ImageRunnable.ImageProcessorCallback,
 
                 if (message == TASK_TYPE_PAGE) {
 
+                    Log.d(CLASS_NAME, "handleMessage: onPageSegmented");
+
                     Bundle bundle = inputMessage.getData();
                     DkPolyRect[] p = (DkPolyRect[]) bundle.getParcelableArray(KEY_POLY_RECT);
-                    Log.d(CLASS_NAME, "handleMessage: onPageSegmented");
                     if (mCVCallback != null)
                         mCVCallback.onPageSegmented(p);
 
                 }
                 else if (message == TASK_TYPE_FOCUS) {
 
+                    Log.d(CLASS_NAME, "handleMessage: onFocusMeasured");
+
                     Bundle bundle = inputMessage.getData();
                     Patch[] p = (Patch[]) bundle.getParcelableArray(KEY_FOCUS);
-                    Log.d(CLASS_NAME, "handleMessage: onFocusMeasured");
                     mCVCallback.onFocusMeasured(p);
+
                     if (mCVResult.getCVState() == CVResult.DOCUMENT_STATE_OK) {
                         ChangeDetector2.getInstance().initVerifyDetector(mat);
                         mCheckState = CHANGE_TASK_CHECK_VERIFY_FRAME;
                     }
                     else
                         mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
+
                     mat.release();
                     mIsRunning = false;
 
@@ -137,32 +145,43 @@ public class ImageProcessor implements ImageRunnable.ImageProcessorCallback,
                 }
                 else if (message == TASK_TYPE_MOVEMENT) {
 
-                    mCVCallback.onMovement(true);
                     Log.d(CLASS_NAME, "handleMessage: onMovement: true");
+
+                    mCVCallback.onMovement(true);
                     mat.release();
                     mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                     mIsRunning = false;
+                    mLastSteadyTime = NO_TIME_SET;
 
                 }
                 else if (message == TASK_TYPE_NO_MOVEMENT) {
 
-                    mCVCallback.onMovement(false);
                     Log.d(CLASS_NAME, "handleMessage: onMovement: false");
-//                    mCheckForNewFrame = true;
-                    mat.release();
 
-                    if (mLastSteadyTime == NO_STEADY_TIME)
+                    mCVCallback.onMovement(false);
+//                    mCheckForNewFrame = true;
+
+                    if (mLastSteadyTime == NO_TIME_SET) {
                         mLastSteadyTime = System.currentTimeMillis();
-                    else if (System.currentTimeMillis() - mLastSteadyTime > MIN_STEADY_TIME)
-                        mCheckState = CHANGE_TASK_CHECK_NEW_FRAME;
+                        mat.release();
+                    }
+                    else if (System.currentTimeMillis() - mLastSteadyTime > MIN_STEADY_TIME) {
+                        mLastSteadyTime = NO_TIME_SET;
+                        mIsRunning = false;
+                        createChangeRunnable(mat, CHANGE_TASK_CHECK_NEW_FRAME);
+
+//                        mCheckState = CHANGE_TASK_CHECK_NEW_FRAME;
+
+                    }
 
                     mIsRunning = false;
 
                 }
                 else if (message == TASK_TYPE_NEW_FRAME) {
 
-                    mCVCallback.onWaitingForDoc(false);
                     Log.d(CLASS_NAME, "handleMessage: onWaitingForDoc: false");
+
+                    mCVCallback.onWaitingForDoc(false);
                     mCheckForNewFrame = false;
                     mIsRunning = false;
 //                    Start the page detection and the focus measurement:
@@ -171,8 +190,9 @@ public class ImageProcessor implements ImageRunnable.ImageProcessorCallback,
                 }
                 else if (message == TASK_TYPE_SAME_FRAME) {
 
-                    mCVCallback.onWaitingForDoc(true);
                     Log.d(CLASS_NAME, "handleMessage: onWaitingForDoc: true");
+
+                    mCVCallback.onWaitingForDoc(true);
 //                    mCheckForNewFrame = false;
                     mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                     mat.release();
@@ -181,6 +201,8 @@ public class ImageProcessor implements ImageRunnable.ImageProcessorCallback,
                 }
 
                 else if (message == TASK_TYPE_UNVERIFIED_FRAME) {
+
+                    Log.d(CLASS_NAME, "handleMessage: unverified frame");
 
                     mCVCallback.onMovement(true);
                     mat.release();
@@ -192,8 +214,11 @@ public class ImageProcessor implements ImageRunnable.ImageProcessorCallback,
 
                 else if (message == TASK_TYPE_VERIFIED_FRAME) {
 
+                    Log.d(CLASS_NAME, "handleMessage: verified frame");
+
                     mCVCallback.onCaptureVerified();
-                    mLastSteadyTime = NO_STEADY_TIME;
+                    mLastFrameReceivedTime = NO_TIME_SET;
+                    mLastSteadyTime = NO_TIME_SET;
                     mat.release();
 //                    mVerifyFrame = false;
                     mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
@@ -205,6 +230,50 @@ public class ImageProcessor implements ImageRunnable.ImageProcessorCallback,
 
             }
         };
+    }
+
+    public void receiveFrame(byte[] pixels, int frameWidth, int frameHeight) {
+
+//        Check if a thread is running or if we should wait in order to lower CPU usage:
+        if (!mIsRunning) {
+
+//            Avoid checking the change status too often:
+            if (mCheckState == CHANGE_TASK_CHECK_MOVEMENT) {
+                if (mLastFrameReceivedTime != NO_TIME_SET &&
+                        (System.currentTimeMillis() - mLastFrameReceivedTime < FRAME_TIME_DIFF))
+                    return;
+            }
+
+            mIsRunning = true;
+            Mat mat = byte2Mat(pixels, frameWidth, frameHeight);
+
+//            Remember the last time we received a frame:
+            mLastFrameReceivedTime = System.currentTimeMillis();
+            mExecutor.execute(new ImageChangeRunnable(this, mat, mCheckState));
+
+        }
+
+    }
+
+    private static Mat byte2Mat(byte[] pixels, int frameWidth, int frameHeight) {
+
+        Mat yuv = new Mat((int) (frameHeight * 1.5), frameWidth, CvType.CV_8UC1);
+        yuv.put(0, 0, pixels);
+
+        Mat result = new Mat(frameHeight, frameWidth, CvType.CV_8UC3);
+        Imgproc.cvtColor(yuv, result, Imgproc.COLOR_YUV2RGB_NV21);
+
+        return result;
+    }
+
+    public void createChangeRunnable(Mat mat, int type) {
+
+        if (!mIsRunning) {
+            mIsRunning = true;
+
+            mExecutor.execute(new ImageChangeRunnable(this, mat, type));
+        }
+
     }
 
     public void createChangeRunnable(Mat mat) {
