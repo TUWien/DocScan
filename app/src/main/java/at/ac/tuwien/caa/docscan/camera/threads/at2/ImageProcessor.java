@@ -5,9 +5,14 @@ import org.opencv.core.Mat;
 
 public abstract class ImageProcessor implements Runnable {
 
+    protected enum ProcessorType {
+        CHANGE, DUPLICATE, VERIFY, PAGE, FOCUS
+    }
 
     protected Mat mMat;
     protected ImageProcessorCallback mImageProcessorCallback;
+
+    protected abstract void process();
 
     protected ImageProcessor(ImageProcessorCallback imageProcessorCallback, Mat mat) {
 
@@ -15,8 +20,6 @@ public abstract class ImageProcessor implements Runnable {
         mMat = mat;
 
     }
-
-    protected abstract void process();
 
     @Override
     public void run() {

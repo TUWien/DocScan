@@ -936,10 +936,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                             showShootModeToast();
                             updateMode();
 
-                            // Show the SeriesGeneralActivity just if the user started the series mode and the hide
-                            // dialog setting is not true:
-                            if (mIsSeriesMode && !mIsSeriesModePaused &&  !mHideSeriesDialog)
-                                startDocumentActivity();
+//                            // Show the SeriesGeneralActivity just if the user started the series mode and the hide
+//                            // dialog setting is not true:
+//                            if (mIsSeriesMode && !mIsSeriesModePaused &&  !mHideSeriesDialog)
+//                                startDocumentActivity();
                         }
                         else if (mIsPictureSafe) {
                             // get an image from the camera
@@ -1108,8 +1108,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mCVResult != null)
             mCVResult.setSeriesMode(mIsSeriesMode);
 
-        if (mCameraPreview != null)
-            mCameraPreview.pauseImageProcessing(mIsSeriesModePaused, mIsFocusMeasured);
+//        if (mCameraPreview != null)
+//            mCameraPreview.pauseImageProcessing(mIsSeriesModePaused, mIsFocusMeasured);
+
+        IPManager.getInstance().setIsSeriesMode(mIsSeriesMode);
+        IPManager.getInstance().setIsPaused(mIsSeriesModePaused);
+
+//        IPManager.getInstance().setIsPaused(mIsSeriesModePaused);
 
         photoButton.setImageResource(drawable);
 
@@ -1148,7 +1153,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
         };
 
-        mCameraPreview.storeMat(mIsSeriesMode);
+        if (mIsSeriesMode)
+            mCameraPreview.storeMat();
+
         if (mCameraPreview.getCamera() != null) {
             mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
 //            if (mCameraPreview.isFrameSteady())
@@ -1740,15 +1747,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public void onMovement(boolean moved) {
 
         // This happens if the user has just switched to single mode and the event occurs later than the touch event.
-
-//        if (!mIsSeriesMode) {
-//            mPaintView.drawMovementIndicator(false);
-//            return;
-//        }
-//        else if (mIsSeriesModePaused) {
-//            displaySeriesModePaused();
-//            return;
-//        }
+        if (!mIsSeriesMode) {
+            mPaintView.drawMovementIndicator(false);
+            return;
+        }
+        else if (mIsSeriesModePaused) {
+            displaySeriesModePaused();
+            return;
+        }
 
         mPaintView.drawMovementIndicator(moved);
 
@@ -1761,11 +1767,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             if (mTextView.getText() == getResources().getString(R.string.instruction_movement))
                 setTextViewText(R.string.instruction_none);
         }
-
-//        if (moved)
-//            CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
-//        else
-//            CVManager.getInstance().performTask(CVManager.TASK_TYPE_PAGE);
 
     }
 
@@ -1820,8 +1821,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public void onPageSegmented(DkPolyRect[] polyRects) {
 
         updatePageSegmentation(polyRects);
-//        CVManager.getInstance().performTask(TASK_TYPE_FOCUS);
-//        CVManager.getInstance().setNextTask(TASK_FOCUS);
 
     }
 
@@ -2042,14 +2041,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void setTextViewText(int msg) {
 
-        final String msgText = getResources().getString(msg);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (mTextView != null)
-                    mTextView.setText(msgText);
-            }
-        });
+        String msgText = getResources().getString(msg);
+        if (mTextView != null)
+            mTextView.setText(msgText);
+
     }
 
 //    public void showSeriesPopup(MenuItem item) {

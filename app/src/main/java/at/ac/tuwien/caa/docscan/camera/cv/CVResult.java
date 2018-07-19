@@ -455,6 +455,7 @@ public class CVResult {
 
         DkPolyRect polyRect = mDKPolyRects[0];
 
+
         if (!mIsSeriesMode)
             if (!isAreaCorrect(polyRect))
                 return DOCUMENT_STATE_SMALL;

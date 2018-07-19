@@ -25,27 +25,17 @@ import static at.ac.tuwien.caa.docscan.camera.cv.Patch.KEY_FOCUS;
 
 public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
-    public static final int TASK_TYPE_PAGE = 0;
-    public static final int TASK_TYPE_FOCUS = 1;
-    public static final int TASK_TYPE_MOVEMENT = 2;
-    public static final int TASK_TYPE_NO_MOVEMENT = 3;
-    public static final int TASK_TYPE_NEW_FRAME = 4;
-    public static final int TASK_TYPE_SAME_FRAME = 5;
-    public static final int TASK_TYPE_VERIFIED_FRAME = 6;
-    public static final int TASK_TYPE_UNVERIFIED_FRAME = 7;
-
     protected static final int MESSAGE_CHANGE_DETECTED = 0;
     protected static final int MESSAGE_NO_CHANGE_DETECTED = 1;
-    protected static final int MESSAGE_PAGE_DETECTED = 2;
-    protected static final int MESSAGE_FOCUS_MEASURED = 3;
-    protected static final int MESSAGE_DUPLICATE_FOUND = 4;
-    protected static final int MESSAGE_NO_DUPLICATE_FOUND = 5;
+    protected static final int MESSAGE_DUPLICATE_FOUND = 2;
+    protected static final int MESSAGE_NO_DUPLICATE_FOUND = 3;
+    protected static final int MESSAGE_PAGE_DETECTED = 4;
+    protected static final int MESSAGE_FOCUS_MEASURED = 5;
     protected static final int MESSAGE_FRAME_NOT_VERIFIED = 6;
     protected static final int MESSAGE_FRAME_VERIFIED = 7;
 
-    public static final int CHANGE_TASK_CHECK_MOVEMENT = 0;
-    public static final int CHANGE_TASK_CHECK_NEW_FRAME = 1;
-    public static final int CHANGE_TASK_CHECK_VERIFY_FRAME = 2;
+    private static final int CHANGE_TASK_CHECK_MOVEMENT = 0;
+    private static final int CHANGE_TASK_CHECK_VERIFY_FRAME = 2;
 
     private static final long MIN_STEADY_TIME = 1000;        // The time in which there must be no movement.
     private static final long FRAME_TIME_DIFF = 300;
@@ -63,6 +53,10 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
     private CVResult mCVResult;
     private long mLastSteadyTime = NO_TIME_SET;
     private long mLastFrameReceivedTime = NO_TIME_SET;
+
+    private boolean mIsSeriesMode = false;
+    private boolean mProcessFrame = true;
+    private boolean mIsPaused = false;
 
     //    Singleton:
     private static IPManager sInstance;
@@ -108,124 +102,177 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                 int message = inputMessage.what;
                 Mat mat = (Mat) inputMessage.obj;
 
-// ===================== new message handling here: =====================
 
-                switch (message) {
+                if (mIsSeriesMode) {
 
-                    case MESSAGE_CHANGE_DETECTED:
+                    switch (message) {
 
-                        Log.d(CLASS_NAME, "handleMessage: onMovement: true");
+                        case MESSAGE_CHANGE_DETECTED:
 
-                        mCVCallback.onMovement(true);
-                        mat.release();
-                        mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
-                        mLastSteadyTime = NO_TIME_SET;
+                            Log.d(CLASS_NAME, "handleMessage: onMovement: true");
 
-                        break;
-
-                    case MESSAGE_NO_CHANGE_DETECTED:
-
-                        Log.d(CLASS_NAME, "handleMessage: onMovement: false");
-
-//                        There has been no movement but we better do some more checks to be sure:
-                        mCVCallback.onMovement(false);
-                        if (mLastSteadyTime == NO_TIME_SET) {
-                            mLastSteadyTime = System.currentTimeMillis();
+                            mCVCallback.onMovement(true);
                             mat.release();
-                        }
-//                        There has been no movement for a sufficient amount of time:
-                        else if (System.currentTimeMillis() - mLastSteadyTime > MIN_STEADY_TIME) {
+                            mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                             mLastSteadyTime = NO_TIME_SET;
-                            createDuplicateProcessor(mat);
-                        }
 
-                        break;
+                            processNextFrame();
 
-                    case MESSAGE_PAGE_DETECTED:
+                            break;
 
-                        Log.d(CLASS_NAME, "handleMessage: onPageSegmented");
+                        case MESSAGE_NO_CHANGE_DETECTED:
 
-                        Bundle pageBundle = inputMessage.getData();
-                        DkPolyRect[] polyRects = (DkPolyRect[]) pageBundle.getParcelableArray(KEY_POLY_RECT);
-                        if (mCVCallback != null)
-                            mCVCallback.onPageSegmented(polyRects);
+                            Log.d(CLASS_NAME, "handleMessage: onMovement: false");
 
-//                    Start the focus measurement:
-                        createFocusProcessor(mat);
 
-                        break;
+                            mCVCallback.onMovement(false);
+//                            Initialize the time if it is not initialized:
+                            if (mLastSteadyTime == NO_TIME_SET) {
+                                mLastSteadyTime = System.currentTimeMillis();
+                            }
 
-                    case MESSAGE_FOCUS_MEASURED:
+//                              There has been no movement for a sufficient amount of time:
+                            if (System.currentTimeMillis() - mLastSteadyTime > MIN_STEADY_TIME) {
+                                mLastSteadyTime = NO_TIME_SET;
+//                                createDuplicateProcessor(mat);
+                                createProcessor(mat, ImageProcessor.ProcessorType.DUPLICATE);
+                            }
+//                              There has been no movement but we better do some more checks to be sure:
+                            else {
+                                mat.release();
+                                processNextFrame();
+                            }
 
-                        Log.d(CLASS_NAME, "handleMessage: onFocusMeasured");
+                            break;
 
-                        Bundle focusBundle = inputMessage.getData();
-                        Patch[] patches = (Patch[]) focusBundle.getParcelableArray(KEY_FOCUS);
-                        mCVCallback.onFocusMeasured(patches);
+                        case MESSAGE_DUPLICATE_FOUND:
+
+                            Log.d(CLASS_NAME, "handleMessage: onWaitingForDoc: true");
+
+                            mCVCallback.onWaitingForDoc(true);
+
+                            mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
+                            mat.release();
+                            processNextFrame();
+
+                            break;
+
+                        case MESSAGE_NO_DUPLICATE_FOUND:
+
+                            Log.d(CLASS_NAME, "handleMessage: onWaitingForDoc: false");
+
+                            mCVCallback.onWaitingForDoc(false);
+
+                            //                    Start the page detection:
+//                            createPageProcessor(mat);
+                            createProcessor(mat, ImageProcessor.ProcessorType.PAGE);
+                            break;
+
+                        case MESSAGE_PAGE_DETECTED:
+
+                            Log.d(CLASS_NAME, "handleMessage: onPageSegmented");
+
+                            Bundle pageBundle = inputMessage.getData();
+                            DkPolyRect[] polyRects = (DkPolyRect[]) pageBundle.getParcelableArray(KEY_POLY_RECT);
+                            if (mCVCallback != null)
+                                mCVCallback.onPageSegmented(polyRects);
+
+                            //                    Start the focus measurement:
+//                            createFocusProcessor(mat);
+                            createProcessor(mat, ImageProcessor.ProcessorType.FOCUS);
+
+                            break;
+
+                        case MESSAGE_FOCUS_MEASURED:
+
+                            Log.d(CLASS_NAME, "handleMessage: onFocusMeasured");
+
+                            Bundle focusBundle = inputMessage.getData();
+                            Patch[] patches = (Patch[]) focusBundle.getParcelableArray(KEY_FOCUS);
+                            mCVCallback.onFocusMeasured(patches);
 
 //                        Start the verification task:
-                        if (mCVResult.getCVState() == CVResult.DOCUMENT_STATE_OK) {
-                            ChangeDetector2.getInstance().initVerifyDetector(mat);
-                            mCheckState = CHANGE_TASK_CHECK_VERIFY_FRAME;
-                        }
-//                        Start the change task:
-                        else
+                            if (mCVResult.getCVState() == CVResult.DOCUMENT_STATE_OK) {
+                                ChangeDetector2.getInstance().initVerifyDetector(mat);
+                                mCheckState = CHANGE_TASK_CHECK_VERIFY_FRAME;
+                            }
+                            //                        Start the change task:
+                            else {
+                                mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
+                            }
+
+                            mat.release();
+                            processNextFrame();
+
+                            break;
+
+
+                        case MESSAGE_FRAME_NOT_VERIFIED:
+
+                            //                        The last frame received is different than the one on which the image
+                            //                        processing was done.
+                            Log.d(CLASS_NAME, "handleMessage: unverified frame");
+
+                            mCVCallback.onMovement(true);
+                            mat.release();
+                            //                        Check for movements again:
                             mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
+                            processNextFrame();
 
-                        mat.release();
+                            break;
 
-                        break;
+                        case MESSAGE_FRAME_VERIFIED:
 
-                    case MESSAGE_DUPLICATE_FOUND:
+                            //                        The last frame received is the same as the one on which the image
+                            //                        processing was done.
+                            Log.d(CLASS_NAME, "handleMessage: verified frame");
 
-                        Log.d(CLASS_NAME, "handleMessage: onWaitingForDoc: true");
+                            mCVCallback.onCaptureVerified();
 
-                        mCVCallback.onWaitingForDoc(true);
+                            mLastFrameReceivedTime = NO_TIME_SET;
+                            mLastSteadyTime = NO_TIME_SET;
+                            mat.release();
+                            mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
+                            processNextFrame();
 
-                        mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
-                        mat.release();
+                            break;
 
-                        break;
+                    }
+                }
+                else {
 
-                    case MESSAGE_NO_DUPLICATE_FOUND:
+                    switch (message) {
 
-                        Log.d(CLASS_NAME, "handleMessage: onWaitingForDoc: false");
+                        case MESSAGE_PAGE_DETECTED:
 
-                        mCVCallback.onWaitingForDoc(false);
+                            Log.d(CLASS_NAME, "handleMessage: onPageSegmented");
 
-//                    Start the page detection:
-                        createPageProcessor(mat);
+                            Bundle pageBundle = inputMessage.getData();
+                            DkPolyRect[] polyRects = (DkPolyRect[]) pageBundle.getParcelableArray(KEY_POLY_RECT);
+                            if (mCVCallback != null)
+                                mCVCallback.onPageSegmented(polyRects);
 
-                        break;
+                            //                    Start the focus measurement:
+//                            createFocusProcessor(mat);
+                            createProcessor(mat, ImageProcessor.ProcessorType.FOCUS);
 
+                            break;
 
-                    case MESSAGE_FRAME_NOT_VERIFIED:
+                        case MESSAGE_FOCUS_MEASURED:
 
-//                        The last frame received is different than the one on which the image
-//                        processing was done.
-                        Log.d(CLASS_NAME, "handleMessage: unverified frame");
+                            Log.d(CLASS_NAME, "handleMessage: onFocusMeasured");
 
-                        mCVCallback.onMovement(true);
-                        mat.release();
-//                        Check for movements again:
-                        mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
+                            Bundle focusBundle = inputMessage.getData();
+                            Patch[] patches = (Patch[]) focusBundle.getParcelableArray(KEY_FOCUS);
+                            mCVCallback.onFocusMeasured(patches);
 
-                        break;
+                            mat.release();
+                            processNextFrame();
 
-                    case MESSAGE_FRAME_VERIFIED:
+                            break;
 
-//                        The last frame received is the same as the one on which the image
-//                        processing was done.
-                        Log.d(CLASS_NAME, "handleMessage: verified frame");
+                    }
 
-                        mCVCallback.onCaptureVerified();
-
-                        mLastFrameReceivedTime = NO_TIME_SET;
-                        mLastSteadyTime = NO_TIME_SET;
-                        mat.release();
-                        mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
-
-                        break;
 
                 }
 
@@ -236,28 +283,76 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
         };
     }
 
+    private void processNextFrame() {
+
+        if (!mIsPaused)
+            mProcessFrame = true;
+
+    }
+
+    public void setIsPaused(boolean isPaused) {
+
+        mIsPaused = isPaused;
+
+    }
+
+    public void setIsSeriesMode(boolean isSeriesMode) {
+
+        mIsSeriesMode = isSeriesMode;
+        mIsPaused = false;
+        mProcessFrame = true;
+
+    }
+
     public void receiveFrame(byte[] pixels, int frameWidth, int frameHeight) {
 
 //        Check if a thread is running or if we should wait in order to lower CPU usage:
-        if (!mIsRunning) {
+        if (mProcessFrame && !mIsPaused) {
 
-//            Avoid checking the change status too often:
-            if (mCheckState == CHANGE_TASK_CHECK_MOVEMENT) {
+//            We are in series mode, capture images automatically, and look for changes:
+            if (mIsSeriesMode) {
+
+                //            Avoid checking the change status too often:
+                if (mCheckState == CHANGE_TASK_CHECK_MOVEMENT) {
+                    if (mLastFrameReceivedTime != NO_TIME_SET &&
+                            (System.currentTimeMillis() - mLastFrameReceivedTime < FRAME_TIME_DIFF))
+                        return;
+                }
+
+                mProcessFrame = false;
+                Mat mat = byte2Mat(pixels, frameWidth, frameHeight);
+
+                //            Remember the last time we received a frame:
+                mLastFrameReceivedTime = System.currentTimeMillis();
+                if (mCheckState == CHANGE_TASK_CHECK_MOVEMENT)
+                    createProcessor(mat, ImageProcessor.ProcessorType.CHANGE);
+//                    createChangeProcessor(mat);
+                else if (mCheckState == CHANGE_TASK_CHECK_VERIFY_FRAME)
+                    createProcessor(mat, ImageProcessor.ProcessorType.VERIFY);
+//                    createVerificationProcessor(mat);
+            }
+
+//            We are in single mode, just perform page detection and focus measurement:
+            else {
+
                 if (mLastFrameReceivedTime != NO_TIME_SET &&
                         (System.currentTimeMillis() - mLastFrameReceivedTime < FRAME_TIME_DIFF))
                     return;
+
+                mProcessFrame = false;
+                Mat mat = byte2Mat(pixels, frameWidth, frameHeight);
+
+                //            Remember the last time we received a frame:
+                mLastFrameReceivedTime = System.currentTimeMillis();
+
+                createProcessor(mat, ImageProcessor.ProcessorType.PAGE);
+//                createPageProcessor(mat);
+
             }
 
-            mIsRunning = true;
-            Mat mat = byte2Mat(pixels, frameWidth, frameHeight);
-
-//            Remember the last time we received a frame:
-            mLastFrameReceivedTime = System.currentTimeMillis();
-            if (mCheckState == CHANGE_TASK_CHECK_MOVEMENT)
-                mExecutor.execute(new ChangeProcessor(this, mat));
-            else if (mCheckState == CHANGE_TASK_CHECK_VERIFY_FRAME)
-                mExecutor.execute(new VerificationProcessor(this, mat));
         }
+
+
 
     }
 
@@ -273,23 +368,61 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
     }
 
 
-    private void createPageProcessor(Mat mat) {
+    private void createProcessor(Mat mat, ImageProcessor.ProcessorType type) {
 
-        mExecutor.execute(new PageProcessor(this, mat));
+        if (mIsPaused) {
+            mat.release();
+            return;
+        }
+
+        switch (type) {
+            case CHANGE:
+                mExecutor.execute(new ChangeProcessor(this, mat));
+                break;
+            case DUPLICATE:
+                mExecutor.execute(new DuplicateProcessor(this, mat));
+                break;
+            case VERIFY:
+                mExecutor.execute(new VerificationProcessor(this, mat));
+                break;
+            case PAGE:
+                mExecutor.execute(new PageProcessor(this, mat));
+                break;
+            case FOCUS:
+                mExecutor.execute(new FocusProcessor(this, mat));
+                break;
+        }
 
     }
 
-    private void createFocusProcessor(Mat mat) {
-
-        mExecutor.execute(new FocusProcessor(this, mat));
-
-    }
-
-    private void createDuplicateProcessor(Mat mat) {
-
-        mExecutor.execute(new DuplicateProcessor(this, mat));
-
-    }
+//    private void createPageProcessor(Mat mat) {
+//
+//        mExecutor.execute(new PageProcessor(this, mat));
+//
+//    }
+//
+//    private void createFocusProcessor(Mat mat) {
+//
+//        mExecutor.execute(new FocusProcessor(this, mat));
+//
+//    }
+//
+//    private void createDuplicateProcessor(Mat mat) {
+//
+//        mExecutor.execute(new DuplicateProcessor(this, mat));
+//
+//    }
+//
+//    private void createChangeProcessor(Mat mat) {
+//
+//        mExecutor.execute(new ChangeProcessor(this, mat));
+//
+//    }
+//
+//    private void createVerificationProcessor(Mat mat) {
+//
+//        mExecutor.execute(new VerificationProcessor(this, mat));
+//    }
 
 
 
