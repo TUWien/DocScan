@@ -99,7 +99,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private boolean mStoreMat = false;
     private boolean mUseThreading = false;
 
-    // This is used to pause the CV tasks for a short time after an image has been taken in series mode.
+    // This is used to setIsPaused the CV tasks for a short time after an image has been taken in series mode.
     // Prevents a shooting within a very short time range:
     private static final int LAST_SHOT_TIME_NOT_INIT = -1;
     private long mLastShotTime = LAST_SHOT_TIME_NOT_INIT;
@@ -300,15 +300,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 
 
-//        mIsImageProcessingPaused = pause;
+//        mIsImageProcessingPaused = setIsPaused;
 //        if (mFocusMeasurementThread != null && isFocusMeasured)
-//            mFocusMeasurementThread.setRunning(!pause);
+//            mFocusMeasurementThread.setRunning(!setIsPaused);
 //
 //        if (mPageSegmentationThread != null)
-//            mPageSegmentationThread.setRunning(!pause);
+//            mPageSegmentationThread.setRunning(!setIsPaused);
 //
 //        // Take care that no patches or pages are rendered in the PaintView:
-//        if (pause) {
+//        if (setIsPaused) {
 //            synchronized (this) {
 //                DkPolyRect[] r = {};
 //                mCVCallback.onPageSegmented(r, mFrameCnt);
@@ -331,17 +331,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         return result;
     }
 
-    public void storeMat(boolean isSeriesMode) {
+    public void storeMat() {
 
         mStoreMat = true;
-
-        // If the user switched just to series mode do not make a break:
-        if (!mIsSeriesMode && isSeriesMode)
-            mLastShotTime = LAST_SHOT_TIME_NOT_INIT;
-        else
-            mLastShotTime = System.currentTimeMillis();
-
-        mIsSeriesMode = isSeriesMode;
 
     }
 
