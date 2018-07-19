@@ -110,7 +110,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.threads.at.CVManager;
-import at.ac.tuwien.caa.docscan.camera.threads.at2.ImageProcessor;
+import at.ac.tuwien.caa.docscan.camera.threads.at2.IPManager;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
@@ -129,8 +129,6 @@ import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
-import static at.ac.tuwien.caa.docscan.camera.threads.CVThreadManager.TASK_FOCUS;
-import static at.ac.tuwien.caa.docscan.camera.threads.at.CVManager.TASK_TYPE_FOCUS;
 import static at.ac.tuwien.caa.docscan.camera.threads.at.CVManager.TASK_TYPE_MOVE;
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getImageArray;
@@ -465,7 +463,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         loadPreferences();
 
         mCVResult = new CVResult(this);
-        ImageProcessor.getInstance().setCVResult(mCVResult);
+        IPManager.getInstance().setCVResult(mCVResult);
 
         mCVResult.setSeriesMode(mIsSeriesMode);
 
