@@ -57,22 +57,14 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.threads.CVThreadManager;
-import at.ac.tuwien.caa.docscan.camera.threads.ChangeCallable;
-import at.ac.tuwien.caa.docscan.camera.threads.FocusCallable;
-import at.ac.tuwien.caa.docscan.camera.threads.PageCallable;
 import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector2;
-import at.ac.tuwien.caa.docscan.camera.threads.at2.ImageProcessor;
+import at.ac.tuwien.caa.docscan.camera.threads.at2.IPManager;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
-import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.CAMERA_FRAME;
-import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FOCUS_MEASURE;
-import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.MOVEMENT_CHECK;
-import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.NEW_DOC;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 
 
@@ -152,7 +144,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mCameraPreviewCallback = (CameraPreviewCallback) context;
 
 //        CVManager.getInstance().setCVCallback(mCVCallback);
-        ImageProcessor.getInstance().setCVCallback(mCVCallback);
+        IPManager.getInstance().setCVCallback(mCVCallback);
 
         // used for debugging:
         mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
@@ -247,57 +239,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         return source;
     }
 
-//    QR code stuff ends here...
-
-
-//    private void oldSingleThread(byte[] pixels) {
-//
-//        long currentTime = System.currentTimeMillis();
-//
-//        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
-//
-//            synchronized (this) {
-//
-//                // 1.5 since YUV
-//                Mat yuv = new Mat((int)(mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
-//                yuv.put(0, 0, pixels);
-//
-//                if (mFrameMat != null)
-//                    mFrameMat.release();
-//
-//                mFrameMat = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
-//                Imgproc.cvtColor(yuv, mFrameMat, Imgproc.COLOR_YUV2RGB_NV21);
-//
-//                if (mStoreMat) {
-//                    ChangeDetector.initNewFrameDetector(mFrameMat);
-//                    mStoreMat = false;
-//                }
-//
-//                yuv.release();
-//
-//                mLastTime = currentTime;
-//
-//                boolean processFrame = true;
-//
-//                // This is done in series mode:
-//                if (mAwaitFrameChanges)
-//                    processFrame = isFrameSteadyAndNew();
-//
-//                // Check if there should be short break between two successive shots in series mode:
-//                boolean paused = pauseBetweenShots(currentTime);
-//                processFrame &= !paused;
-//
-////                If in single mode - or the frame is steady and contains a change, do the document analysis:
-//                if (processFrame)
-//                    this.notify();
-//
-//            }
-//
-//        }
-//
-//    }
-
-//    Image processing stuff starts here:
 
     /**
      * Called after the preview received a new frame (as byte array).
@@ -306,12 +247,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
      */
     @Override
     public void onPreviewFrame(byte[] pixels, Camera camera) {
-
-
-//        updateFPS();
-
-        // TODO: handle an overflow:
-        mFrameCnt++;
 
         if (pixels == null)
             return;
@@ -324,107 +259,24 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             if (mIsImageProcessingPaused)
                 return;
 
-            // The verification is done in series mode after an automatic capture is requested:
-            if (mAwaitFrameChanges && mVerifyCapture) {
-                checkMovementAfterCapture(pixels);
-            } else {
-//                if (mUseThreading)
-//                    performCVTasks(pixels);
-//                else
-//                    singleThreadCV(pixels);
-                cvManagerAction(pixels);
+            cvManagerAction(pixels);
 
-            }
         }
 
     }
 
     private void cvManagerAction(byte[] pixels) {
 
-//        long currentTime = System.currentTimeMillis();
-//
-//        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
-//
-////            CVManager.performPageTask(pixels, mFrameWidth, mFrameHeight);
-//            CVManager.performChangeTask(pixels, mFrameWidth, mFrameHeight);
-//
-//            mLastTime = currentTime;
-//        }
-//        Mat mat = byte2Mat(pixels);
-//        ImageProcessor.getInstance().createImageRunnable(mat);
-        if (mStoreMat) {
+        if (!mStoreMat)
+            IPManager.getInstance().receiveFrame(pixels, mFrameWidth, mFrameHeight);
+        else {
             ChangeDetector2.getInstance().initDetectors(byte2Mat(pixels));
             mStoreMat = false;
-            //                if (mStoreMat) {
-//                    ChangeDetector.initNewFrameDetector(mFrameMat);
-//                    mStoreMat = false;
-//                }
         }
-        else
-            ImageProcessor.getInstance().receiveFrame(pixels, mFrameWidth, mFrameHeight);
-//            ImageProcessor.getInstance().createChangeRunnable(mat);
-
-//        if (CVManager.getInstance().receivesFrames())
-//            CVManager.getInstance().performNextTask(pixels, mFrameWidth, mFrameHeight);
-
-//            CVManager.performTask(pixels, mFrameWidth, mFrameHeight);
-//            CVManager.performTask(CVManager.TASK_TYPE_MOVE, pixels, mFrameWidth, mFrameHeight);
-
 
 
     }
 
-    private void singleThreadCV(byte[] pixels) {
-
-        long currentTime = System.currentTimeMillis();
-
-        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
-
-            synchronized (this) {
-
-                if (mFrameMat != null)
-                    mFrameMat.release();
-
-                mFrameMat = byte2Mat(pixels);
-
-                if (mStoreMat) {
-                    ChangeDetector.initMovementDetector(mFrameMat);
-                    ChangeDetector.initNewFrameDetector(mFrameMat);
-                    mStoreMat = false;
-                } else if (!ChangeDetector.isMovementDetectorInitialized()) {
-                    ChangeDetector.initMovementDetector(mFrameMat);
-                }
-
-                boolean processFrame = true;
-                // In serial mode the document analysis is just performed if no movement occurred:
-                if (mAwaitFrameChanges) {
-                    if (!mCVThreadManager.isRunning(CVThreadManager.TASK_CHANGE)) {
-                        ChangeCallable cCallable = new ChangeCallable(mFrameMat.clone(), mCVCallback, mTimerCallbacks);
-                        mCVThreadManager.addCallable(cCallable, CVThreadManager.TASK_CHANGE);
-                        processFrame = mCVThreadManager.isFrameSteadyAndNew();
-                    }
-                }
-
-                //                If in single mode - or the frame is steady and contains a change, do the document analysis:
-                if (processFrame)
-                    this.notify();
-
-                if (mAwaitFrameChanges)
-                    mVerificationTime = System.currentTimeMillis();
-
-            }
-
-            mLastTime = currentTime;
-        }
-    }
-
-    public boolean isMultiThreading() {
-        return mUseThreading;
-    }
-
-    public void setThreading(boolean multiThreading) {
-        mUseThreading = multiThreading;
-    }
 
 
     /**
@@ -437,91 +289,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-    public void verifyCapture() {
-        mVerifyCapture = true;
-    }
-
-    private void checkMovementAfterCapture(byte[] pixels) {
-
-
-        long timePassed = System.currentTimeMillis() - mVerificationTime;
-        if (timePassed <= VERIFICATION_TIME_DIFF) {
-
-            Mat mat = byte2Mat(pixels);
-
-            ChangeCallable cCallable = new ChangeCallable(mat.clone(), mCVCallback, mTimerCallbacks);
-            mCVThreadManager.addCallable(cCallable, CVThreadManager.TASK_CHANGE);
-            boolean isSteady = mCVThreadManager.isFrameSteadyAndNew();
-            if (!isSteady)
-                mVerifyCapture = false;
-            return;
-
-        }
-        else {
-            mVerifyCapture = false;
-            mCVCallback.onCaptureVerified();
-            return;
-        }
-
-    }
-
-    private void performCVTasks(byte[] pixels) {
-
-        long currentTime = System.currentTimeMillis();
-
-        if (currentTime - mLastTime >= FRAME_TIME_DIFF) {
-
-//        if (true) {
-            Mat mat = byte2Mat(pixels);
-
-            if (mStoreMat) {
-                ChangeDetector.initMovementDetector(mat);
-                ChangeDetector.initNewFrameDetector(mat);
-                mStoreMat = false;
-            }
-            else if (!ChangeDetector.isMovementDetectorInitialized()) {
-                ChangeDetector.initMovementDetector(mat);
-            }
-
-            boolean processFrame = true;
-            // In serial mode the document analysis is just performed if no movement occurred:
-            if (mAwaitFrameChanges) {
-                if (!mCVThreadManager.isRunning(CVThreadManager.TASK_CHANGE)) {
-                    ChangeCallable cCallable = new ChangeCallable(mat.clone(), mCVCallback, mTimerCallbacks);
-                    mCVThreadManager.addCallable(cCallable, CVThreadManager.TASK_CHANGE);
-                    processFrame = mCVThreadManager.isFrameSteadyAndNew();
-                }
-            }
-
-            if (processFrame) {
-
-                mTimerCallbacks.onTimerStarted(TaskTimer.TaskType.MOVEMENT_CHECK);
-                Mat mat2 = mat.clone();
-                mTimerCallbacks.onTimerStopped(TaskTimer.TaskType.MOVEMENT_CHECK);
-
-                if (!mCVThreadManager.isRunning(CVThreadManager.TASK_PAGE)) {
-                    PageCallable pCallable = new PageCallable(mat.clone(), mCVCallback, mTimerCallbacks, mFrameCnt);
-                    mCVThreadManager.addCallable(pCallable, CVThreadManager.TASK_PAGE);
-                }
-
-                if (mMeasureFocus && !mCVThreadManager.isRunning(CVThreadManager.TASK_FOCUS)) {
-                    FocusCallable fCallable = new FocusCallable(mat.clone(), mCVCallback, mTimerCallbacks);
-                    mCVThreadManager.addCallable(fCallable, CVThreadManager.TASK_FOCUS);
-                }
-
-                if (mAwaitFrameChanges)
-                    mVerificationTime = System.currentTimeMillis();
-
-            }
-
-            mat.release();
-
-            mLastTime = currentTime;
-
-        }
-
-
-    }
 
     public boolean isImageProcessingPaused() {
 
@@ -530,6 +297,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     public void pauseImageProcessing(boolean pause, boolean isFocusMeasured) {
+
+
 
 //        mIsImageProcessingPaused = pause;
 //        if (mFocusMeasurementThread != null && isFocusMeasured)
@@ -550,14 +319,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-    public boolean isFrameSteady() {
-
-        if (!mAwaitFrameChanges)
-            return true;
-        else {
-            return mCVThreadManager.isFrameSteadyAndNew();
-        }
-    }
 
     private Mat byte2Mat(byte[] pixels) {
 
@@ -569,76 +330,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         return result;
     }
-
-    /**
-     * Returns if enough time has past after the last shot in series mode. The function should prevent
-     * that a shot is taken in series mode, just because of small changes of the image content
-     * (e.g. a finger is laid on a manuscript).
-     * @param time The current time.
-     * @return boolean indicating if more time has to pass.
-     */
-    private boolean pauseBetweenShots(long time) {
-
-        boolean pause = false;
-
-        if (mIsSeriesMode && mLastShotTime != LAST_SHOT_TIME_NOT_INIT) {
-            if (time - mLastShotTime <= MIN_TIME_BETWEEN_SHOTS) {
-                pause = true;
-            }
-        }
-
-        return pause;
-
-    }
-
-    private boolean isFrameSteadyAndNew() {
-
-//                Check if there is sufficient image change between the current frame and the last image taken:
-        boolean isFrameSteady;
-        boolean isFrameDifferent = false;
-
-//                    The ChangeDetector is only initialized after an image has been taken:
-        if (ChangeDetector.isNewFrameDetectorInitialized()) {
-
-            mTimerCallbacks.onTimerStarted(MOVEMENT_CHECK);
-            isFrameSteady = ChangeDetector.isFrameSteady(mFrameMat);
-            mTimerCallbacks.onTimerStopped(MOVEMENT_CHECK);
-
-            if (!isFrameSteady) {
-                mCVCallback.onMovement(true);
-                return false;
-            }
-            else {
-                mCVCallback.onMovement(false);
-            }
-
-            if (!isFrameDifferent) {
-                mTimerCallbacks.onTimerStarted(NEW_DOC);
-                isFrameDifferent = ChangeDetector.isNewFrame(mFrameMat);
-                mTimerCallbacks.onTimerStopped(NEW_DOC);
-
-                if (!isFrameDifferent) {
-                    mCVCallback.onWaitingForDoc(true);
-                    return false;
-                } else {
-                    mCVCallback.onWaitingForDoc(false);
-                    mTimerCallbacks.onTimerStarted(FLIP_SHOT_TIME);
-                }
-            }
-        }
-
-        return true;
-
-    }
-
-    private void updateFPS() {
-
-        // Take care that in this case the timer is first stopped (contrary to the other calls):
-        mTimerCallbacks.onTimerStopped(CAMERA_FRAME);
-        mTimerCallbacks.onTimerStarted(CAMERA_FRAME);
-
-    }
-
 
     public void storeMat(boolean isSeriesMode) {
 
@@ -654,18 +345,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-    public void startFocusMeasurement(boolean start) {
-
-        mFocusMeasurementThread.setRunning(start);
-        mMeasureFocus = start;
-
-    }
-
-    public boolean isFocusMeasured() {
-
-        return mFocusMeasurementThread.isRunning();
-
-    }
 
     private class CameraHandlerThread extends HandlerThread {
 

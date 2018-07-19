@@ -5,9 +5,14 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.video.BackgroundSubtractorMOG2;
 import org.opencv.video.Video;
+
+import java.io.File;
+
+import at.ac.tuwien.caa.docscan.logic.Helper;
 
 public class ChangeDetector2 {
 
@@ -33,11 +38,11 @@ public class ChangeDetector2 {
 
     }
 
-    private ChangeDetector2() {
-
-
-
-    }
+//    private ChangeDetector2() {
+//
+//
+//
+//    }
 
     public void initVerifyDetector(Mat frame) {
 
@@ -93,7 +98,7 @@ public class ChangeDetector2 {
 
         double changeRatio = getChangeRatio(frame, mNewFrameDetector, 0);
 
-        if (changeRatio > .05)
+        if (changeRatio > .025)
             return true;
         else
             return false;
@@ -113,13 +118,36 @@ public class ChangeDetector2 {
 
     }
 
+//    private double getChangeRatioV(Mat mat, BackgroundSubtractorMOG2 subtractor, double learnRate) {
+//
+//        Mat resizedMat = resizeMat(mat);
+//        Mat fgMask = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC1);
+//
+//        subtractor.apply(resizedMat, fgMask, learnRate);
+//
+//        Mat thMat = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC1);
+//        Imgproc.threshold(fgMask, thMat, 1, 1, Imgproc.THRESH_BINARY); // 127 is a shadow, but the majority of the pixels is classified as shadow - we do not know why.
+//
+//        Scalar fgPixels = Core.sumElems(thMat);
+//
+//        double changeRatio = fgPixels.val[0] / (fgMask.rows() * fgMask.cols());
+//
+//        if (changeRatio > 0.01) {
+//            File file = new File(Helper.getMediaStorageDir("DocScan"), "fgmask.jpg");
+//            Imgcodecs.imwrite(file.getAbsolutePath(), thMat);
+//        }
+//
+//        return changeRatio;
+//
+//    }
+
     private double getChangeRatio(Mat mat, BackgroundSubtractorMOG2 subtractor, double learnRate) {
 
         Mat resizedMat = resizeMat(mat);
         Mat fgMask = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC1);
 
         subtractor.apply(resizedMat, fgMask, learnRate);
-        Imgproc.threshold(fgMask, fgMask, 120, 1, Imgproc.THRESH_BINARY); // 127 is a shadow, but the majority of the pixels is classified as shadow - we do not know why.
+        Imgproc.threshold(fgMask, fgMask, 1, 1, Imgproc.THRESH_BINARY);
 
         Scalar fgPixels = Core.sumElems(fgMask);
 
