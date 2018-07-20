@@ -1490,25 +1490,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
             actionBar.setDisplayShowTitleEnabled(true);
-            actionBar.setTitle("Ich bin ein Österreicher");
-
-
-//            getToolbar().setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    showSeriesPopup(null);
-//                }
-//            });
-
-//            final int abTitleId = getResources().getIdentifier("Ich bin ein �sterreicher", "id", "android");
-//            findViewById(abTitleId).setOnClickListener(new View.OnClickListener() {
-//
-//                @Override
-//                public void onClick(View v) {
-//                    showSeriesPopup(null);
-//                }
-//            });
-
         }
 
 
