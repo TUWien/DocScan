@@ -2,7 +2,7 @@ package at.ac.tuwien.caa.docscan.camera.threads.at2;
 
 import org.opencv.core.Mat;
 
-import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector2;
+import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector;
 
 public class ChangeProcessor extends ImageProcessor {
 
@@ -15,7 +15,7 @@ public class ChangeProcessor extends ImageProcessor {
     @Override
     protected void process() {
 
-        if (ChangeDetector2.getInstance().isMoving(mMat))
+        if (ChangeDetector.getInstance().isMoving(mMat))
             mImageProcessorCallback.handleState(IPManager.MESSAGE_CHANGE_DETECTED, mMat);
         else
             mImageProcessorCallback.handleState(IPManager.MESSAGE_NO_CHANGE_DETECTED, mMat);

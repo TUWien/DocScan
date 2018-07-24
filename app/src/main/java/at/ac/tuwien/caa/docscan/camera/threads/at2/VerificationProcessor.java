@@ -2,7 +2,7 @@ package at.ac.tuwien.caa.docscan.camera.threads.at2;
 
 import org.opencv.core.Mat;
 
-import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector2;
+import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector;
 
 /**
  * A class that is used to determine if the current frame is the same as the one on which the other
@@ -19,7 +19,7 @@ public class VerificationProcessor extends ImageProcessor {
     @Override
     protected void process() {
 
-        if (ChangeDetector2.getInstance().isSameFrame(mMat))
+        if (ChangeDetector.getInstance().isSameFrame(mMat))
             mImageProcessorCallback.handleState(IPManager.MESSAGE_FRAME_VERIFIED, mMat);
         else
             mImageProcessorCallback.handleState(IPManager.MESSAGE_FRAME_NOT_VERIFIED, mMat);

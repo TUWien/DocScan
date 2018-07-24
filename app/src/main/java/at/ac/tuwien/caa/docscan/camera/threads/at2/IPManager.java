@@ -18,7 +18,7 @@ import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector2;
+import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect.KEY_POLY_RECT;
 import static at.ac.tuwien.caa.docscan.camera.cv.Patch.KEY_FOCUS;
@@ -37,9 +37,10 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
     private static final int CHANGE_TASK_CHECK_MOVEMENT = 0;
     private static final int CHANGE_TASK_CHECK_VERIFY_FRAME = 2;
 
-    private static final long MIN_STEADY_TIME = 1000;        // The time in which there must be no movement.
+    private static final long MIN_STEADY_TIME = 500;        // The time in which there must be no movement.
     private static final long FRAME_TIME_DIFF = 300;
     private static final long NO_TIME_SET = -1;
+    private static final int MIN_NO_MOVE_CYCLES = 1;
 
     private static final String CLASS_NAME = "IPManager";
 
@@ -57,15 +58,21 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
     private boolean mIsSeriesMode = false;
     private boolean mProcessFrame = true;
     private boolean mIsPaused = false;
+    private boolean mIsFocusMeasured;
+    private boolean mIsAlreadyChanged = true;
 
     //    Singleton:
     private static IPManager sInstance;
 
     static {
+
         Log.d(CLASS_NAME, "==========================creating new instance\"==========================");
 
         sInstance = new IPManager();
+
     }
+
+    private int mNoMoveCycles;
 
     public static IPManager getInstance() {
 
@@ -109,10 +116,12 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                         case MESSAGE_CHANGE_DETECTED:
 
+                            mNoMoveCycles = 0;
+                            mIsAlreadyChanged = true;
                             Log.d(CLASS_NAME, "handleMessage: onMovement: true");
 
                             mCVCallback.onMovement(true);
-                            mat.release();
+                            releaseMat(mat);
                             mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                             mLastSteadyTime = NO_TIME_SET;
 
@@ -124,6 +133,31 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                             Log.d(CLASS_NAME, "handleMessage: onMovement: false");
 
+                            if (!mIsAlreadyChanged){
+
+                                if (!ChangeDetector.getInstance().isNewFakeFrame(mat)) {
+
+                                    Log.d(CLASS_NAME, "handleMessage: FAKE onWaitingForDoc: true");
+
+                                    mCVCallback.onWaitingForDoc(true);
+
+                                    mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
+                                    releaseMat(mat);
+                                    processNextFrame();
+
+                                    break;
+
+                                }
+                                else
+                                    Log.d(CLASS_NAME, "handleMessage: is new fake " +
+                                            "frame");
+
+
+                            }
+
+                            mNoMoveCycles++;
+
+                            Log.d(CLASS_NAME, "is new fake: TEST");
 
                             mCVCallback.onMovement(false);
 //                            Initialize the time if it is not initialized:
@@ -132,14 +166,22 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                             }
 
 //                              There has been no movement for a sufficient amount of time:
-                            if (System.currentTimeMillis() - mLastSteadyTime > MIN_STEADY_TIME) {
+                            if (System.currentTimeMillis() - mLastSteadyTime > MIN_STEADY_TIME
+                                    && mNoMoveCycles > MIN_NO_MOVE_CYCLES) {
+//                            if (System.currentTimeMillis() - mLastSteadyTime > MIN_STEADY_TIME) {
+
+                                if (System.currentTimeMillis() - mLastSteadyTime > MIN_STEADY_TIME)
+                                    Log.d(CLASS_NAME, "no movement: min time passed");
+                                else
+                                    Log.d(CLASS_NAME, "no movement: min cycle num passed");
+
                                 mLastSteadyTime = NO_TIME_SET;
 //                                createDuplicateProcessor(mat);
                                 createProcessor(mat, ImageProcessor.ProcessorType.DUPLICATE);
                             }
 //                              There has been no movement but we better do some more checks to be sure:
                             else {
-                                mat.release();
+                                releaseMat(mat);
                                 processNextFrame();
                             }
 
@@ -152,7 +194,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                             mCVCallback.onWaitingForDoc(true);
 
                             mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
-                            mat.release();
+                            releaseMat(mat);
                             processNextFrame();
 
                             break;
@@ -179,7 +221,28 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                             //                    Start the focus measurement:
 //                            createFocusProcessor(mat);
-                            createProcessor(mat, ImageProcessor.ProcessorType.FOCUS);
+
+                            if (mIsFocusMeasured)
+                                createProcessor(mat, ImageProcessor.ProcessorType.FOCUS);
+                            else {
+
+                                //                        Start the verification task:
+                                if (mCVResult.getCVState() == CVResult.DOCUMENT_STATE_OK) {
+                                    Log.d(CLASS_NAME, "handleMessage: starting verification");
+                                    ChangeDetector.getInstance().initVerifyDetector(mat);
+                                    mCheckState = CHANGE_TASK_CHECK_VERIFY_FRAME;
+                                }
+                                //                        Start the change task:
+                                else {
+                                    Log.d(CLASS_NAME, "handleMessage: starting check movement");
+                                    mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
+                                }
+
+                                releaseMat(mat);
+                                processNextFrame();
+
+                            }
+
 
                             break;
 
@@ -193,15 +256,17 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
 //                        Start the verification task:
                             if (mCVResult.getCVState() == CVResult.DOCUMENT_STATE_OK) {
-                                ChangeDetector2.getInstance().initVerifyDetector(mat);
+                                Log.d(CLASS_NAME, "handleMessage: starting verification");
+                                ChangeDetector.getInstance().initVerifyDetector(mat);
                                 mCheckState = CHANGE_TASK_CHECK_VERIFY_FRAME;
                             }
                             //                        Start the change task:
                             else {
+                                Log.d(CLASS_NAME, "handleMessage: starting check movement");
                                 mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                             }
 
-                            mat.release();
+                            releaseMat(mat);
                             processNextFrame();
 
                             break;
@@ -214,7 +279,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                             Log.d(CLASS_NAME, "handleMessage: unverified frame");
 
                             mCVCallback.onMovement(true);
-                            mat.release();
+                            releaseMat(mat);
                             //                        Check for movements again:
                             mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                             processNextFrame();
@@ -227,11 +292,14 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                             //                        processing was done.
                             Log.d(CLASS_NAME, "handleMessage: verified frame");
 
+                            ChangeDetector.getInstance().initDetectors(mat);
+
                             mCVCallback.onCaptureVerified();
 
+                            mIsAlreadyChanged = false;
                             mLastFrameReceivedTime = NO_TIME_SET;
                             mLastSteadyTime = NO_TIME_SET;
-                            mat.release();
+                            releaseMat(mat);
                             mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                             processNextFrame();
 
@@ -253,8 +321,13 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                                 mCVCallback.onPageSegmented(polyRects);
 
                             //                    Start the focus measurement:
-//                            createFocusProcessor(mat);
-                            createProcessor(mat, ImageProcessor.ProcessorType.FOCUS);
+
+                            if (mIsFocusMeasured)
+                                createProcessor(mat, ImageProcessor.ProcessorType.FOCUS);
+                            else {
+                                releaseMat(mat);
+                                processNextFrame();
+                            }
 
                             break;
 
@@ -266,7 +339,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                             Patch[] patches = (Patch[]) focusBundle.getParcelableArray(KEY_FOCUS);
                             mCVCallback.onFocusMeasured(patches);
 
-                            mat.release();
+                            releaseMat(mat);
                             processNextFrame();
 
                             break;
@@ -283,6 +356,11 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
         };
     }
 
+    private void releaseMat(Mat mat) {
+        mat.release();
+        Log.d(CLASS_NAME, "releaseMat: released mat");
+    }
+
     private void processNextFrame() {
 
         if (!mIsPaused)
@@ -293,6 +371,12 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
     public void setIsPaused(boolean isPaused) {
 
         mIsPaused = isPaused;
+
+    }
+
+    public boolean getIsPaused() {
+
+        return mIsPaused;
 
     }
 
@@ -321,6 +405,8 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                 mProcessFrame = false;
                 Mat mat = byte2Mat(pixels, frameWidth, frameHeight);
+
+                Log.d(CLASS_NAME, "receiveFrame: allocated mat");
 
                 //            Remember the last time we received a frame:
                 mLastFrameReceivedTime = System.currentTimeMillis();
@@ -371,9 +457,11 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
     private void createProcessor(Mat mat, ImageProcessor.ProcessorType type) {
 
         if (mIsPaused) {
-            mat.release();
+            releaseMat(mat);
             return;
         }
+
+//        Log.d(CLASS_NAME, "createProcessor: " + type);
 
         switch (type) {
             case CHANGE:
@@ -454,5 +542,11 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
         Message completeMessage = mHandler.obtainMessage(type, mat);
         completeMessage.sendToTarget();
 
+    }
+
+    public void setIsFocusMeasured(boolean isFocusMeasured) {
+        
+        mIsFocusMeasured = isFocusMeasured;
+        
     }
 }
