@@ -59,13 +59,9 @@ import java.util.Map;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.camera.threads.CVThreadManager;
-import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector2;
+import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.threads.at2.IPManager;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
-
-import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FOCUS_MEASURE;
-import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 
 
 /**
@@ -80,51 +76,25 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private Camera.CameraInfo mCameraInfo;
-    private TaskTimer.TimerCallbacks mTimerCallbacks;
     private CVCallback mCVCallback;
     private CameraPreviewCallback mCameraPreviewCallback;
 
-    private PageSegmentationThread mPageSegmentationThread;
-    private FocusMeasurementThread mFocusMeasurementThread;
     private CameraHandlerThread mThread = null;
 
-    // Mat used by mPageSegmentationThread and mFocusMeasurementThread:
-    private Mat mFrameMat;
     private int mFrameWidth;
     private int mFrameHeight;
-    private int mPreviewFormat;
-    private boolean mAwaitFrameChanges = false; // this is dependent on the mode: single vs. series
-    private boolean mManualFocus = true;
-    private boolean mIsImageProcessingPaused = false;
     private boolean mStoreMat = false;
-    private boolean mUseThreading = false;
 
     // This is used to setIsPaused the CV tasks for a short time after an image has been taken in series mode.
     // Prevents a shooting within a very short time range:
-    private static final int LAST_SHOT_TIME_NOT_INIT = -1;
-    private long mLastShotTime = LAST_SHOT_TIME_NOT_INIT;
-    private boolean mIsSeriesMode;
     private boolean mIsQRMode;
-    private static final int MIN_TIME_BETWEEN_SHOTS = 2000; // in milli-seconds
 
-    private long mLastTime;
-    // Used for generating the mat (for CV tasks) at a fixed frequency:
-    private static long FRAME_TIME_DIFF = 350;
-    // Used for the size of the auto focus area:
+   // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
     private boolean isCameraInitialized;
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
     private boolean mIsPreviewFitting = false;
-
-
-    private CVThreadManager mCVThreadManager;
-    private int mFrameCnt = 0;
-
-    private boolean mVerifyCapture = false;
-    private long mVerificationTime;
-    private static long VERIFICATION_TIME_DIFF = 800;
-    private boolean mMeasureFocus = false;
 
     private MultiFormatReader mMultiFormatReader;
 
@@ -146,12 +116,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //        CVManager.getInstance().setCVCallback(mCVCallback);
         IPManager.getInstance().setCVCallback(mCVCallback);
 
-        // used for debugging:
-        mTimerCallbacks = (TaskTimer.TimerCallbacks) context;
 
         mFlashMode = null;
-
-        mCVThreadManager = CVThreadManager.getsInstance();
 
         initMultiFormatReader();
 
@@ -162,10 +128,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 //    QR code stuff starts here:
 
-    public void startQrMode(boolean qrMode, boolean isFocusMeasured) {
+    public void startQrMode(boolean qrMode) {
 
         mIsQRMode = qrMode;
-        pauseImageProcessing(qrMode, isFocusMeasured);
 
     }
 
@@ -255,12 +220,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             detectBarcode(pixels);
         }
         else {
-
-            if (mIsImageProcessingPaused)
-                return;
-
             cvManagerAction(pixels);
-
         }
 
     }
@@ -270,52 +230,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (!mStoreMat)
             IPManager.getInstance().receiveFrame(pixels, mFrameWidth, mFrameHeight);
         else {
-            ChangeDetector2.getInstance().initDetectors(byte2Mat(pixels));
+            ChangeDetector.getInstance().initDetectors(byte2Mat(pixels));
             mStoreMat = false;
         }
 
-
-    }
-
-
-
-    /**
-     * This is used to enable a movement and change detector (currently just used in series mode).
-     * @param awaitFrameChanges
-     */
-    public void setAwaitFrameChanges(boolean awaitFrameChanges) {
-
-        mAwaitFrameChanges = awaitFrameChanges;
-
-    }
-
-
-    public boolean isImageProcessingPaused() {
-
-        return mIsImageProcessingPaused;
-
-    }
-
-    public void pauseImageProcessing(boolean pause, boolean isFocusMeasured) {
-
-
-
-//        mIsImageProcessingPaused = setIsPaused;
-//        if (mFocusMeasurementThread != null && isFocusMeasured)
-//            mFocusMeasurementThread.setRunning(!setIsPaused);
-//
-//        if (mPageSegmentationThread != null)
-//            mPageSegmentationThread.setRunning(!setIsPaused);
-//
-//        // Take care that no patches or pages are rendered in the PaintView:
-//        if (setIsPaused) {
-//            synchronized (this) {
-//                DkPolyRect[] r = {};
-//                mCVCallback.onPageSegmented(r, mFrameCnt);
-//                Patch[] p = {};
-//                mCVCallback.onFocusMeasured(p);
-//            }
-//        }
 
     }
 
@@ -340,7 +258,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private class CameraHandlerThread extends HandlerThread {
 
-        Handler mHandler = null;
+        Handler mHandler;
 
         CameraHandlerThread() {
             super("CameraHandlerThread");
@@ -374,14 +292,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         void onFocusMeasured(Patch[] patches);
         void onPageSegmented(DkPolyRect[] polyRects);
-        void onPageSegmented(DkPolyRect[] polyRects, Mat mat);
-        void onIluminationComputed(double value);
         void onMovement(boolean moved);
-        void onMovement(boolean moved, Mat mat);
         void onWaitingForDoc(boolean waiting);
         void onCaptureVerified();
-        //        void onBarCodeFound(final Barcode barcode);
-//        void onTextFound(final String result);
         void onQRCode(Result result);
 
     }
@@ -399,128 +312,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onFocusTouchSuccess();
 
     }
-
-    public class FocusMeasurementThread extends Thread {
-
-        private CameraPreview mCameraView;
-        private boolean mIsRunning;
-
-
-        public FocusMeasurementThread(CameraPreview cameraView) {
-
-            mCameraView = cameraView;
-
-        }
-
-        /**
-         * The main loop of the thread.
-         */
-        @Override
-        public void run() {
-
-            synchronized (mCameraView) {
-
-                while (true) {
-
-                    try {
-                        mCameraView.wait();
-
-                        if (mIsRunning) {
-
-                            mTimerCallbacks.onTimerStarted(FOCUS_MEASURE);
-
-                            Patch[] patches = NativeWrapper.getFocusMeasures(mFrameMat);
-                            mTimerCallbacks.onTimerStopped(FOCUS_MEASURE);
-
-                            mCVCallback.onFocusMeasured(patches);
-
-                        }
-
-                    } catch (InterruptedException e) {
-                    }
-
-                }
-
-            }
-        }
-
-        public void setRunning(boolean running) {
-
-            mIsRunning = running;
-
-            if (!mIsRunning)
-                mCVCallback.onFocusMeasured(null);
-
-        }
-
-        public boolean isRunning() {
-            return mIsRunning;
-        }
-
-
-
-    }
-
-    public class PageSegmentationThread extends Thread {
-
-        private CameraPreview mCameraView;
-        private boolean mIsRunning;
-
-
-        public PageSegmentationThread(CameraPreview cameraView) {
-
-            Log.d(CLASS_NAME, "PageSegmentationThread:");
-
-            mCameraView = cameraView;
-            mIsRunning = true;
-
-        }
-
-        /**
-         * The main loop of the thread.
-         */
-        @Override
-        public void run() {
-
-            synchronized (mCameraView) {
-
-                while (true) {
-
-                    try {
-
-                        mCameraView.wait();
-
-
-                        if (mIsRunning) {
-
-                            mTimerCallbacks.onTimerStarted(PAGE_SEGMENTATION);
-
-                            DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mFrameMat);
-                            mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
-                            mCVCallback.onPageSegmented(polyRects);
-
-                        }
-//                        execute();
-
-                    } catch (InterruptedException e) {
-                    }
-
-                }
-
-            }
-        }
-
-        public void setRunning(boolean running) {
-
-            mIsRunning = running;
-
-        }
-
-
-
-    }
-
-//    Image processing ends here
 
 
     public void stop() {
@@ -886,17 +677,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mFlashMode != null)
             params.setFlashMode(mFlashMode);
 
-        mPreviewFormat = params.getPreviewFormat();
-
         mCamera.setParameters(params);
-
-        mPageSegmentationThread = new PageSegmentationThread(this);
-        if (mPageSegmentationThread.getState() == Thread.State.NEW)
-            mPageSegmentationThread.start();
-
-        mFocusMeasurementThread = new FocusMeasurementThread(this);
-        if (mFocusMeasurementThread.getState() == Thread.State.NEW)
-            mFocusMeasurementThread.start();
 
         try {
 
@@ -984,15 +765,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-    public void cancelAutoFocus() {
-
-        mCamera.cancelAutoFocus();
-
-    }
 
     public void startAutoFocus() {
-
-        mManualFocus = false;
 
         Camera.Parameters params = mCamera.getParameters();
 
@@ -1046,8 +820,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         int bestResArea = 0;
         int resArea;
         Camera.Size bestSize = null;
-        boolean optRatioFound = false;
-
 //        First try to find an optimal ratio:
         for (Camera.Size size : previewSizes) {
             ratio = (float) size.width / size.height;
@@ -1066,10 +838,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 //        Second find the closest ratio:
         for (Camera.Size size : previewSizes) {
             ratio = (float) size.width / size.height;
-            resArea = size.width * size.height;
 
             if ((Math.abs(ratio - optRatio) <= Math.abs(bestRatio - optRatio))) {
-                bestResArea = resArea;
                 bestRatio = ratio;
                 bestSize = size;
             }
@@ -1077,107 +847,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         return bestSize;
 
-//        if ((bestSize != null) && (bestResArea >= MIN_RESOLUTION_AREA))
-//            return bestSize;
-//
-////        Third find the largest resolution:
-//        for (Camera.Size size : previewSizes) {
-//            resArea = size.width * size.height;
-//
-//            if (resArea >= bestResArea) {
-//                bestResArea = resArea;
-//                bestSize = size;
-//            }
-//        }
-//
-//        return bestSize;
-
     }
 
-    /**
-     * Returns the preview size that fits best into the surface view.
-     * @param cameraSizes possible frame sizes (camera dependent)
-     * @param orientation orientation of the surface view
-     * @return best fitting size
-     */
-    @SuppressWarnings("deprecation")
-    private Camera.Size getBestFittingSize(List<Camera.Size> cameraSizes, int orientation) {
-
-        // If the app  is paused (=in background) and the orientation is changed, the width and
-        // height are not switched. So here we have to switch if necessary:
-//        int width = getWidth();
-
-        int width, height;
-//        Hack: Before the getWidth/getHeight was used, but on the Galaxy S6 the layout was differently initalized,
-//        so that the height returned the entire height without subtracting the height of the camera control layout.
-//        Therefore, we calculate the dimension of the preview manually.
-//        int height = getHeight();
-        Point dim = CameraActivity.getPreviewDimension();
-        if (dim != null) {
-            width = dim.x;
-            height = dim.y;
-        }
-        else {
-            width = getWidth();
-            height = getHeight();
-        }
-
-        if (((orientation == 90 || orientation == 270) && (width > height)) ||
-                ((orientation == 0 || orientation == 180) && (width < height))) {
-            int tmp = width;
-            width = height;
-            height = tmp;
-        }
-
-        Camera.Size bestSize = null;
-
-        final double ASPECT_TOLERANCE = 0.1;
-
-        double targetRatio;
-        int targetLength;
-
-        if (width > height) {
-            targetRatio = (double) height / width;
-            targetLength = height;
-        }
-        else {
-            targetRatio = (double) width / height;
-            targetLength = width;
-        }
-
-        double minDiff = Double.MAX_VALUE;
-
-        for (Camera.Size size : cameraSizes) {
-            double ratio = (double) size.height / size.width;
-
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE)
-                continue;
-
-            int length = size.height;
-
-            int diff = Math.abs(length - targetLength);
-            if (diff < minDiff) {
-                bestSize = size;
-                minDiff = diff;
-            }
-        }
-
-        if (bestSize == null) {
-            minDiff = Double.MAX_VALUE;
-            for (Camera.Size size : cameraSizes) {
-                int length = size.height;
-
-                int diff = Math.abs(length - targetLength);
-                if (diff < minDiff) {
-                    bestSize = size;
-                    minDiff = diff;
-                }
-            }
-        }
-
-        return bestSize;
-
-    }
 
     /**
      * Calculate the correct orientation for a {@link Camera} preview that is displayed on screen.

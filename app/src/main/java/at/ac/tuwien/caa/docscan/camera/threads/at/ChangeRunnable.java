@@ -34,7 +34,7 @@ public class ChangeRunnable extends CVRunnable {
 
             Mat mat = mCVTask.getMat();
 
-            if (ChangeDetector2.getInstance().isMoving(mat))
+            if (ChangeDetector.getInstance().isMoving(mat))
                 mCVTask.handleState(MESSAGE_FRAME_MOVED);
             else
                 mCVTask.handleState(MESSAGE_FRAME_STEADY);

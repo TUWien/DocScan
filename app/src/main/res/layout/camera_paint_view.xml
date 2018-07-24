@@ -62,6 +62,7 @@
             android:textColor="@color/white"
             android:background="@color/debug_view_bg_color"
             android:layout_marginBottom="@dimen/instruction_view_margin_bottom"
+            android:textSize="16sp"
             android:gravity="center"
             />
 

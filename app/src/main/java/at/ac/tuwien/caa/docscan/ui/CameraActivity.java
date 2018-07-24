@@ -83,7 +83,6 @@ import com.google.android.gms.security.ProviderInstaller;
 import com.google.zxing.Result;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Mat;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -109,7 +108,6 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.camera.threads.at.CVManager;
 import at.ac.tuwien.caa.docscan.camera.threads.at2.IPManager;
 import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
@@ -129,7 +127,6 @@ import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
-import static at.ac.tuwien.caa.docscan.camera.threads.at.CVManager.TASK_TYPE_MOVE;
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getImageArray;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
@@ -148,7 +145,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener,
         AdapterView.OnItemSelectedListener {
 
-    private static final String TAG = "CameraActivity";
+    private static final String CLASS_NAME = "CameraActivity";
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
@@ -206,17 +203,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     static {
 
-        Log.d(TAG, "initializing OpenCV");
+        Log.d(CLASS_NAME, "initializing OpenCV");
 
 //         We need this for Android 4:
         if (!OpenCVLoader.initDebug()) {
-            Log.d(TAG, "Error while initializing OpenCV.");
+            Log.d(CLASS_NAME, "Error while initializing OpenCV.");
         } else {
 
             System.loadLibrary("opencv_java3");
             System.loadLibrary("docscan-native");
 
-            Log.d(TAG, "OpenCV initialized");
+            Log.d(CLASS_NAME, "OpenCV initialized");
         }
 
     }
@@ -295,6 +292,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (AppState.isDataLogged())
             DataLog.getInstance().writeLog(this);
 
+        mPictureData = null;
+
         super.onPause();
 
     }
@@ -337,6 +336,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         CropManager.initContext(this);
 
+        mIsPictureSafe = true;
+
         // Resume camera access:
         if (mCameraPreview != null)
             mCameraPreview.resume();
@@ -357,6 +358,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mIsFocusMeasured = sharedPref.getBoolean(getResources().getString(R.string.key_focus_measure), true);
         mCVResult.setMeasureFocus(mIsFocusMeasured);
+        IPManager.getInstance().setIsFocusMeasured(mIsFocusMeasured);
 
         boolean isDebugViewShown = sharedPref.getBoolean(getResources().getString(R.string.key_show_debug_view), false);
         showDebugView(isDebugViewShown);
@@ -467,15 +469,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mCVResult.setSeriesMode(mIsSeriesMode);
 
-        mCameraPreview = (CameraPreview) findViewById(R.id.camera_view);
+        mCameraPreview = findViewById(R.id.camera_view);
 
-        mPaintView = (PaintView) findViewById(R.id.paint_view);
+        mPaintView = findViewById(R.id.paint_view);
         if (mPaintView != null)
             mPaintView.setCVResult(mCVResult);
 
-        mCounterView = (TextView) findViewById(R.id.counter_view);
+        mCounterView = findViewById(R.id.counter_view);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -688,8 +690,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void initGalleryCallback() {
 
-        mGalleryButton = (ImageButton) findViewById(R.id.gallery_button);
-        mProgressBar = (ProgressBar) findViewById(R.id.saving_progressbar);
+        mGalleryButton = findViewById(R.id.gallery_button);
+        mProgressBar = findViewById(R.id.saving_progressbar);
 
         mGalleryButton.setOnClickListener(
                 new View.OnClickListener() {
@@ -889,7 +891,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
 
-                Log.d(TAG, "taking picture");
+                Log.d(CLASS_NAME, "taking picture");
 
                 mTimerCallbacks.onTimerStopped(SHOT_TIME);
                 mTimerCallbacks.onTimerStarted(SHOT_TIME);
@@ -910,7 +912,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //                }
                 requestPictureSave(data);
 
-                Log.d(TAG, "took picture");
+                Log.d(CLASS_NAME, "took picture");
 
             }
         };
@@ -922,7 +924,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void initPhotoButton() {
 
-        ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
+        ImageButton photoButton = findViewById(R.id.photo_button);
         if (photoButton == null)
             return;
 
@@ -966,12 +968,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void initCancelQRButton() {
 
-        ImageButton button = (ImageButton) findViewById(R.id.cancel_qr_button);
+        ImageButton button = findViewById(R.id.cancel_qr_button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mIsQRActive = false;
-                mCameraPreview.startQrMode(false, mIsFocusMeasured);
+                mCameraPreview.startQrMode(false);
+                IPManager.getInstance().setIsPaused(false);
                 showControlsLayout(!mIsQRActive);
             }
         });
@@ -982,7 +985,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // TODO: define the text and the icons in an enum, to ensure that they have the same order.
         // Spinner for shoot mode:
-        Spinner shootModeSpinner = (Spinner) findViewById(R.id.shoot_mode_spinner);
+        Spinner shootModeSpinner = findViewById(R.id.shoot_mode_spinner);
         String[] shootModeText = getResources().getStringArray(R.array.shoot_mode_array);
         Integer[] shootModeIcons = new Integer[]{R.drawable.ic_photo_vector, R.drawable.ic_burst_mode_vector};
         shootModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, shootModeText, shootModeIcons));
@@ -1007,8 +1010,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             mIsSeriesMode = false;
             mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
         }
-
-        mCameraPreview.setAwaitFrameChanges(mIsSeriesMode);
 
         // Show a toast and update the mode, but just if he selected the spinner manually:
         if (!mItemSelectedAutomatically) {
@@ -1041,7 +1042,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void updateShootModeSpinner() {
 
-        Spinner shootModeSpinner = (Spinner) findViewById(R.id.shoot_mode_spinner);
+        Spinner shootModeSpinner = findViewById(R.id.shoot_mode_spinner);
         if (mIsSeriesMode)
             shootModeSpinner.setSelection(SERIES_POS);
         else
@@ -1051,7 +1052,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void updatePhotoButtonIcon() {
 
-        ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
+        ImageButton photoButton = findViewById(R.id.photo_button);
         if (photoButton == null)
             return;
 
@@ -1083,7 +1084,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void updateMode() {
 
-        ImageButton photoButton = (ImageButton) findViewById(R.id.photo_button);
+        ImageButton photoButton = findViewById(R.id.photo_button);
         if (photoButton == null)
             return;
 
@@ -1153,8 +1154,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
         };
 
-        if (mIsSeriesMode)
-            mCameraPreview.storeMat();
+//        if (mIsSeriesMode)
+//            mCameraPreview.storeMat();
 
         if (mCameraPreview.getCamera() != null) {
             mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
@@ -1273,7 +1274,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
 
-        Log.d(TAG, "configuration changed");
+        Log.d(CLASS_NAME, "configuration changed");
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
 
@@ -1292,7 +1293,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             public void onOrientationChanged(int orientation) {
 
                 int displayRotation = getDisplayRotation();
-                Log.d(TAG, "device orientation: " + displayRotation);
+                Log.d(CLASS_NAME, "device orientation: " + displayRotation);
 
 //                Catch the display rotation changes that are not covered by configuration changes
 //                (e.g. landscape to reverse landscape and portrait to reverse portrait):
@@ -1499,7 +1500,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
         mTimerCallbacks = this;
-        mTextView = (TextView) findViewById(R.id.instruction_view);
+        mTextView = findViewById(R.id.instruction_view);
 
         mIsDebugViewEnabled = (mDebugViewFragment == null);
         if (mDebugViewFragment == null)
@@ -1515,14 +1516,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @SuppressWarnings("deprecation")
     private void setupNavigationDrawer() {
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.drawer_open, R.string.drawer_close) {
         };
 
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(mDrawerToggle);
 
-        NavigationView mDrawer = (NavigationView) findViewById(R.id.left_drawer);
+        NavigationView mDrawer = findViewById(R.id.left_drawer);
         setupDrawerContent(mDrawer);
 
         // Set the item text for the debug view in the naviation drawer:
@@ -1571,72 +1572,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      * @param menuItem ID of the selected item.
      */
     private void selectDrawerItem(MenuItem menuItem) {
-
-        switch (menuItem.getItemId()) {
-
-//            case R.id.debug_view_item:
-//
-//                // Create the debug view - if it is not already created:
-//                if (mDebugViewFragment == null) {
-//                    mDebugViewFragment = new DebugViewFragment();
-//                }
-//
-//                // Show the debug view:
-//                if (getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT) == null) {
-//                    mIsDebugViewEnabled = true;
-//                    menuItem.setTitle(R.string.hide_debug_view_text);
-//                    getSupportFragmentManager().beginTransaction().add(R.id.container_layout, mDebugViewFragment, DEBUG_VIEW_FRAGMENT).commit();
-//                }
-//                // Hide the debug view:
-//                else {
-//                    mIsDebugViewEnabled = false;
-//                    menuItem.setTitle(R.string.show_debug_view_text);
-//                    getSupportFragmentManager().beginTransaction().remove(mDebugViewFragment).commit();
-//                }
-//
-//                break;
-
-
-//            // Focus measurement:
-//            case R.id.show_fm_values_item:
-//
-//                if (mPaintView.isFocusTextVisible()) {
-//                    menuItem.setTitle(R.string.show_fm_values_text);
-//                    mPaintView.drawFocusText(false);
-//                } else {
-//                    menuItem.setTitle(R.string.hide_fm_values_text);
-//                    mPaintView.drawFocusText(true);
-//                }
-//
-//                break;
-//
-//            // Guide lines:
-//            case R.id.show_guide_item:
-//
-//                if (mPaintView.areGuideLinesDrawn()) {
-//                    mPaintView.drawGuideLines(false);
-//                    menuItem.setTitle(R.string.show_guide_text);
-//                } else {
-//                    mPaintView.drawGuideLines(true);
-//                    menuItem.setTitle(R.string.hide_guide_text);
-//                }
-//
-//                break;
-
-//            // Switch between the two page segmentation methods:
-//            case R.id.action_precise_page_seg:
-//
-//                if (NativeWrapper.useLab()) {
-//                    NativeWrapper.setUseLab(false);
-//                    menuItem.setTitle(R.string.precise_page_seg_text);
-//                }
-//                else {
-//                    NativeWrapper.setUseLab(true);
-//                    menuItem.setTitle(R.string.fast_page_seg_text);
-//                }
-
-
-        }
 
         mDrawerLayout.closeDrawers();
 
@@ -1727,6 +1662,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onMovement(boolean moved) {
 
+        if (IPManager.getInstance().getIsPaused()) {
+            mPaintView.drawMovementIndicator(false);
+            mCVResult.clearResults();
+            return;
+        }
+
         // This happens if the user has just switched to single mode and the event occurs later than the touch event.
         if (!mIsSeriesMode) {
             mPaintView.drawMovementIndicator(false);
@@ -1751,28 +1692,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    @Override
-    public void onMovement(boolean moved, Mat mat) {
-
-        mPaintView.drawMovementIndicator(moved);
-
-        if (moved) {
-            mCVResult.clearResults();
-            setTextViewText(R.string.instruction_movement);
-        }
-        else {
-            // This forces an update of the textview if it is still showing the R.string.instruction_movement text
-            if (mTextView.getText() == getResources().getString(R.string.instruction_movement))
-                setTextViewText(R.string.instruction_none);
-        }
-
-        if (moved)
-            CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
-        else
-            CVManager.getInstance().performTask(CVManager.TASK_TYPE_PAGE, mat);
-
-    }
-
     /**
      * Called after focus measurement is finished.
      *
@@ -1780,6 +1699,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     @Override
     public void onFocusMeasured(Patch[] patches) {
+
+        if (IPManager.getInstance().getIsPaused()) {
+            mPaintView.drawMovementIndicator(false);
+            mCVResult.clearResults();
+            return;
+        }
 
         if (mCVResult != null && patches != null && patches.length > 0)
             mCVResult.setPatches(patches);
@@ -1801,21 +1726,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onPageSegmented(DkPolyRect[] polyRects) {
 
-        updatePageSegmentation(polyRects);
-
-    }
-
-
-    @Override
-    public void onPageSegmented(DkPolyRect[] polyRects, Mat mat) {
-
-        updatePageSegmentation(polyRects);
-//        CVManager.getInstance().performTask(TASK_FOCUS, mat);
-
-    }
-
-    public void updatePageSegmentation(DkPolyRect[] polyRects) {
-
+        if (IPManager.getInstance().getIsPaused()) {
+            mPaintView.drawMovementIndicator(false);
+            mCVResult.clearResults();
+            return;
+        }
         mTimerCallbacks.onTimerStopped(PAGE_SEGMENTATION);
 
         long currentTime = System.currentTimeMillis();
@@ -1843,18 +1758,16 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
 
-
-
     boolean isRectJumping(DkPolyRect[] dkPolyRects){
 
         boolean isJumping = false;
 
-        Log.d(TAG, "jumping?");
+        Log.d(CLASS_NAME, "jumping?");
 
         if (dkPolyRects != null && mLastDkPolyRects != null) {
-            Log.d(TAG, "check 1");
+            Log.d(CLASS_NAME, "check 1");
             if (dkPolyRects.length == 1 && mLastDkPolyRects.length == 1) {
-                Log.d(TAG, "check 2");
+                Log.d(CLASS_NAME, "check 2");
                 PointF distVec = mLastDkPolyRects[0].getLargestDistVector(dkPolyRects[0]);
                 PointF normedPoint = mCVResult.normPoint(distVec);
 
@@ -1862,26 +1775,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     isJumping = true;
                 }
 
-                Log.d(TAG, "distance: " + normedPoint.length());
+                Log.d(CLASS_NAME, "distance: " + normedPoint.length());
             }
         }
 
         return isJumping;
     }
 
-    /**
-     * Called after page segmentation is finished.
-     *
-     * @param value illumination value
-     */
-    @Override
-    public void onIluminationComputed(double value) {
-
-        if (mCVResult != null)
-            mCVResult.setIllumination(value);
-
-
-    }
 
     // ================= end: CALLBACKS called from native files =================
 
@@ -1919,7 +1819,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onFocusTouch(PointF point) {
 
-        Log.d(TAG, "onFocusTouch");
+        Log.d(CLASS_NAME, "onFocusTouch");
 
         if (mPaintView != null)
             mPaintView.drawFocusTouch(point);
@@ -1951,17 +1851,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onCaptureVerified() {
 
-        if (!mIsPictureSafe)
+        if (!mIsPictureSafe) {
+            Log.d(CLASS_NAME, "onCaptureVerified: not safe to save picture");
             return;
+        }
 
-        //  Tell the user that a picture will be taken:
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                mTextView.setText(getResources().getString(R.string.taking_picture_text));
-            }
-        });
+
+        mTextView.setText(getResources().getString(R.string.taking_picture_text));
 
         takePicture();
 
@@ -1975,20 +1871,20 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Tell the user that we are still searching for a QR code:
         if (result == null) {
             text = getString(R.string.instruction_searching_qr);
-
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
                     mTextView.setText(text);
                 }
             });
+
         }
         // Start the CreateDocumentActivity:
         else {
             // Stop searching for QR code:
             mIsQRActive = false;
-            mCameraPreview.startQrMode(false, mIsFocusMeasured);
+            mCameraPreview.startQrMode(false);
+            IPManager.getInstance().setIsPaused(false);
 
             text = result.toString();
             startCreateSeriesActivity(text);
@@ -2049,17 +1945,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     public void showSeriesPopup(MenuItem item) {
 
-        Log.d(TAG, "showSeriesPopup");
+        Log.d(CLASS_NAME, "showSeriesPopup");
         View menuItemView = findViewById(R.id.document_item);
         if (menuItemView == null)
             return;
 
-        Log.d(TAG, " menu created!");
+        Log.d(CLASS_NAME, " menu created!");
         // Create the menu for the first time:
         if (mSeriesPopupMenu == null) {
             mSeriesPopupMenu = new PopupMenu(this, menuItemView);
             mSeriesPopupMenu.setOnMenuItemClickListener(this);
-            Log.d(TAG, "setOnMenuItemClickListener created");
+            Log.d(CLASS_NAME, "setOnMenuItemClickListener created");
             mSeriesPopupMenu.inflate(R.menu.series_menu);
 }
         mSeriesPopupMenu.show();
@@ -2149,7 +2045,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             case R.id.series_qr_item:
                 mIsQRActive = true;
                 showControlsLayout(false);
-                mCameraPreview.startQrMode(true, mIsFocusMeasured);
+                mCVResult.clearResults();
+                mCameraPreview.startQrMode(true);
+                IPManager.getInstance().setIsPaused(true);
                 return true;
 
             default:
@@ -2214,8 +2112,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onStatusChange(final int state) {
 
-        if (state != CVResult.DOCUMENT_STATE_OK)
-            mTextView.setText(getInstructionMessage(state));
+
+
+//        if (state != CVResult.DOCUMENT_STATE_OK)
+        mTextView.setText(getInstructionMessage(state));
 
 
 //        if (mIsSeriesModePaused) {
@@ -2468,7 +2368,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 });
 
 
-//                Log.d(TAG, "Could not save file: " + outFile);
+//                Log.d(CLASS_NAME, "Could not save file: " + outFile);
             }
 
 
@@ -2542,10 +2442,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             mData = null;
 
             // Set the thumbnail on the gallery button, this must be done on the UI thread:
-            updateThumbnail(new File(uri));
+            if (uri != null) {
+                updateThumbnail(new File(uri));
 
-//            Start the page detection on the saved image:
-            CropManager.pageDetection(new File(uri));
+                //            Start the page detection on the saved image:
+                CropManager.pageDetection(new File(uri));
+            }
+            else
+                Log.d(CLASS_NAME, "onPostExecute: could not save file!");
 
         }
 
