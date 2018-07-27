@@ -23,7 +23,12 @@
 
 package at.ac.tuwien.caa.docscan.camera;
 
+import android.os.Looper;
+import android.util.Log;
+
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
@@ -32,6 +37,9 @@ import at.ac.tuwien.caa.docscan.camera.cv.Patch;
  * Class responsible for calling native methods (for page segmentation and focus measurement).
  */
 public class NativeWrapper {
+
+    private static final String CLASS_NAME = "NativeWrapper";
+    private static final int MAX_IMG_SIZE = 600;
 
     private static boolean mUseLab = true;
     private static DkPolyRect mOldRect = new DkPolyRect();
@@ -63,7 +71,26 @@ public class NativeWrapper {
         else
             mOldRect = new DkPolyRect();
 
+
         return rects;
+    }
+
+    public static float resize(Mat mat) {
+
+        //        resize the image:
+        int maxImgSide = Math.max(mat.rows(), mat.cols());
+        float scale = (float) 600 / maxImgSide;
+
+        // do not upscale
+        if (scale > 0.8f || scale <= 0.0f)
+            scale = 1.0f;
+
+        if (scale != 1.0f)
+            Imgproc.resize(mat, mat,
+                    new Size(Math.round(mat.width() * scale), Math.round(mat.height() * scale)));
+
+        return scale;
+
     }
 
     public static double getIllumination(Mat src, DkPolyRect polyRect) {

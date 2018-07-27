@@ -78,6 +78,14 @@ public class DkPolyRect implements Parcelable {
 
     }
 
+    public void scale(float scale) {
+
+        for (PointF point : mPoints) {
+            point.x *= scale;
+            point.y *= scale;
+        }
+    }
+
     protected DkPolyRect(Parcel in) {
         mPoints = in.createTypedArrayList(PointF.CREATOR);
         mScreenPoints = in.createTypedArrayList(PointF.CREATOR);
