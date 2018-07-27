@@ -1,10 +1,9 @@
-package at.ac.tuwien.caa.docscan.camera.threads.at2;
+package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
 import android.util.Log;
 
 import org.opencv.core.Mat;
 
-import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector;
 
 /**
  * A class used to determine if the current frame is different to the one that was recently

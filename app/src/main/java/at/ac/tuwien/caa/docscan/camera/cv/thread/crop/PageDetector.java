@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.camera.threads.crop;
+package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
@@ -7,14 +7,13 @@ import android.support.media.ExifInterface;
 import android.util.Log;
 
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
+import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 

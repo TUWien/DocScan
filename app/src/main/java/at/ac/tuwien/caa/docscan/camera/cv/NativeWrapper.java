@@ -21,7 +21,7 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan.camera;
+package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.os.Looper;
 import android.util.Log;
@@ -79,7 +79,7 @@ public class NativeWrapper {
 
         //        resize the image:
         int maxImgSide = Math.max(mat.rows(), mat.cols());
-        float scale = (float) 600 / maxImgSide;
+        float scale = (float) MAX_IMG_SIZE / maxImgSide;
 
         // do not upscale
         if (scale > 0.8f || scale <= 0.0f)

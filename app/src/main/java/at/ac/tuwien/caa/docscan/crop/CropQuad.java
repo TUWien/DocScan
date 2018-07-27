@@ -6,7 +6,6 @@ import android.util.Log;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
-import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
 
 /**
  * Created by fabian on 21.11.2017.

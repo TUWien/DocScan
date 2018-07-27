@@ -16,7 +16,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 
 public class CropRectTransform extends BitmapTransformation {
 

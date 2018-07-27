@@ -28,9 +28,8 @@
 #include <jni.h>
 
 extern "C" {
-    JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetFocusMeasures(JNIEnv *, jclass, jlong);
-    JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetPageSegmentation(JNIEnv *, jclass, jlong srcImg, jboolean useLab, jobject oldRect);
-    JNIEXPORT jdouble JNICALL Java_at_ac_tuwien_caa_docscan_camera_NativeWrapper_nativeGetIllumination(JNIEnv *, jclass, jlong, jobject);
+    JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetFocusMeasures(JNIEnv *, jclass, jlong);
+    JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(JNIEnv *, jclass, jlong srcImg, jboolean useLab, jobject oldRect);
 }
 
 namespace dsc {

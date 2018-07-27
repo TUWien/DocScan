@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.camera.threads.at2;
+package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
 import android.os.Process;
 import org.opencv.core.Mat;

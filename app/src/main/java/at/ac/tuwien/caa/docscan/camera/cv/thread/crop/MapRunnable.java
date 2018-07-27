@@ -1,20 +1,20 @@
-package at.ac.tuwien.caa.docscan.camera.threads.crop;
+package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.util.Log;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.MESSAGE_COMPLETED_TASK;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.MESSAGE_COMPLETED_TASK;
 
-public class PageDetectionRunnable extends CropRunnable {
+public class MapRunnable extends CropRunnable{
 
-    private static final String CLASS_NAME = "PageDetectionRunnable";
+    private static final String CLASS_NAME = "MapRunnable";
 
-    public PageDetectionRunnable(PageDetectionTask pageDetectionTask) {
-        super(pageDetectionTask);
+    public MapRunnable(MapTask mapTask) {
+        super(mapTask);
     }
 
     @Override
@@ -34,26 +34,14 @@ public class PageDetectionRunnable extends CropRunnable {
                 throw new InterruptedException();
             }
 
-
-            ArrayList<PointF> points = PageDetector.findRect(file.getAbsolutePath());
-            if (points != null && points.size() > 0)
-                PageDetector.savePointsToExif(file.getAbsolutePath(), points);
-            else
-                PageDetector.savePointsToExif(file.getAbsolutePath(),
-                        PageDetector.getNormedDefaultPoints());
-
-//            Thread.sleep(3000);
+            String fileName = file.getAbsolutePath();
+            performMapping(fileName);
 
             mCropTask.handleState(MESSAGE_COMPLETED_TASK);
 
             // Catches exceptions thrown in response to a queued interrupt
         } catch (InterruptedException e1) {
 
-            // Does nothing
-
-            // In all cases, handle the results
-        } catch (IOException e) {
-            e.printStackTrace();
         } finally {
 
             // If the file is null, reports that the cropping failed.
@@ -67,6 +55,29 @@ public class PageDetectionRunnable extends CropRunnable {
             // Clears the Thread's interrupt flag
             Thread.interrupted();
         }
+
+    }
+
+    private void performMapping(String fileName) {
+
+        ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
+
+        if (Mapper.replaceWithMappedImage(fileName, points))
+            PageDetector.saveAsCropped(fileName);
+
+    }
+
+    private float getDiagonalLength(String fileName) {
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(fileName, options);
+
+        float length = (float) Math.sqrt(
+                options.outWidth * options.outWidth + options.outHeight * options.outHeight);
+
+        return length;
 
     }
 

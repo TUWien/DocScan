@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.camera.threads.crop;
+package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 public class MapTask extends CropTask {
 

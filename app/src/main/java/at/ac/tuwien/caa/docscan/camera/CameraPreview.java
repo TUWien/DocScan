@@ -48,10 +48,6 @@ import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -59,8 +55,7 @@ import java.util.Map;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector;
-import at.ac.tuwien.caa.docscan.camera.threads.at2.IPManager;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 
@@ -83,7 +78,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private int mFrameWidth;
     private int mFrameHeight;
-    private boolean mStoreMat = false;
 
     // This is used to setIsPaused the CV tasks for a short time after an image has been taken in series mode.
     // Prevents a shooting within a very short time range:
@@ -227,31 +221,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private void cvManagerAction(byte[] pixels) {
 
-        if (!mStoreMat)
-            IPManager.getInstance().receiveFrame(pixels, mFrameWidth, mFrameHeight);
-        else {
-            ChangeDetector.getInstance().initDetectors(byte2Mat(pixels));
-            mStoreMat = false;
-        }
-
-
-    }
-
-
-    private Mat byte2Mat(byte[] pixels) {
-
-        Mat yuv = new Mat((int) (mFrameHeight * 1.5), mFrameWidth, CvType.CV_8UC1);
-        yuv.put(0, 0, pixels);
-
-        Mat result = new Mat(mFrameHeight, mFrameWidth, CvType.CV_8UC3);
-        Imgproc.cvtColor(yuv, result, Imgproc.COLOR_YUV2RGB_NV21);
-
-        return result;
-    }
-
-    public void storeMat() {
-
-        mStoreMat = true;
+        IPManager.getInstance().receiveFrame(pixels, mFrameWidth, mFrameHeight);
 
     }
 

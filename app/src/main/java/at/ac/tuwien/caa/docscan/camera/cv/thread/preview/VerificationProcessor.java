@@ -1,8 +1,6 @@
-package at.ac.tuwien.caa.docscan.camera.threads.at2;
+package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
 import org.opencv.core.Mat;
-
-import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector;
 
 /**
  * A class that is used to determine if the current frame is the same as the one on which the other

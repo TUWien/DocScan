@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.camera.threads.at;
+package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
 import android.util.Log;
 
