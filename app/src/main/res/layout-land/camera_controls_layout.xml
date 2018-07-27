@@ -45,9 +45,10 @@
 
         <RelativeLayout
             android:layout_width="@dimen/photo_button_size"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/photo_button_size"
+            android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginBottom="4dp"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
             >
 
 
@@ -55,44 +56,22 @@
                 android:id="@+id/gallery_button"
                 android:layout_alignParentTop="true"
                 android:layout_centerHorizontal="true"
-                android:layout_width="@dimen/gallery_button_size"
-                android:layout_height="@dimen/gallery_button_size"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:adjustViewBounds="true"
-                android:layout_marginTop="4dp"
-                android:background="@null"
-                android:layout_marginBottom="4dp"
+                android:background="#0000"
                 />
 
             <ProgressBar
                 android:id="@+id/saving_progressbar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:layout_alignStart="@id/gallery_button"
-                android:layout_alignTop="@id/gallery_button"
-                android:layout_alignBottom="@id/gallery_button"
-                android:layout_alignEnd="@id/gallery_button"
-                android:layout_alignRight="@id/gallery_button"
-                android:layout_alignLeft="@id/gallery_button"
+                android:layout_width="@dimen/gallery_progress_bar_size"
+                android:layout_height="@dimen/gallery_progress_bar_size"
+                android:layout_centerInParent="true"
                 android:visibility="invisible"
                 android:indeterminate="true"
                 style="?android:attr/progressBarStyle"
-
                 />
-
-            <!--<ProgressBar-->
-            <!--android:id="@+id/saving_progressbar"-->
-            <!--android:layout_alignParentTop="true"-->
-            <!--android:layout_centerHorizontal="true"-->
-            <!--android:layout_width="@dimen/gallery_button_size"-->
-            <!--android:layout_height="@dimen/gallery_button_size"-->
-            <!--android:indeterminate="true"-->
-            <!--android:layout_marginTop="@dimen/activity_vertical_margin"-->
-            <!--android:padding="@dimen/activity_vertical_margin"-->
-            <!--style="?android:attr/progressBarStyle"-->
-            <!--android:visibility="invisible"-->
-            <!--/>-->
 
         </RelativeLayout>
 
