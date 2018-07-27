@@ -7,6 +7,7 @@ import android.support.media.ExifInterface;
 import android.util.Log;
 
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
@@ -41,13 +42,19 @@ public class PageDetector {
         Mat mg = new Mat();
         Imgproc.cvtColor(inputMat, mg, Imgproc.COLOR_RGBA2RGB);
 
+//        Resize the image:
+        NativeWrapper.resize(mg);
+
         DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mg);
 
+        ArrayList<PointF> result = null;
         if (polyRects.length > 0 && polyRects[0] != null) {
-            return normPoints(polyRects[0], inputMat.width(), inputMat.height());
+            result = normPoints(polyRects[0], mg.width(), mg.height());
         }
 
-        return null;
+        mg.release();
+
+        return result;
 
     }
 
