@@ -24,8 +24,8 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
-import at.ac.tuwien.caa.docscan.camera.threads.crop.Mapper;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.Mapper;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 

@@ -1,8 +1,8 @@
-package at.ac.tuwien.caa.docscan.camera.threads.at2;
+package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
 import org.opencv.core.Mat;
 
-import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
+import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 
 public class FocusProcessor extends ImageProcessor {

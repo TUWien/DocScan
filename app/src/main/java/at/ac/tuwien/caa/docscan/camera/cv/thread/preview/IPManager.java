@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.camera.threads.at2;
+package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,7 +18,6 @@ import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.camera.threads.at.ChangeDetector;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect.KEY_POLY_RECT;
 import static at.ac.tuwien.caa.docscan.camera.cv.Patch.KEY_FOCUS;

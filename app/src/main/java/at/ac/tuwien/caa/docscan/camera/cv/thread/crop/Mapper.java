@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.camera.threads.crop;
+package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 import android.graphics.PointF;
 import android.support.annotation.NonNull;

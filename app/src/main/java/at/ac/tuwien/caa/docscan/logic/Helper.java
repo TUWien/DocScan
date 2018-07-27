@@ -2,15 +2,11 @@ package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
 import android.support.media.ExifInterface;
 //import android.util.Size;
-
-import com.koushikdutta.ion.bitmap.Exif;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -21,8 +17,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.threads.crop.CropLogger;
-import at.ac.tuwien.caa.docscan.camera.threads.crop.PageDetector;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropLogger;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;

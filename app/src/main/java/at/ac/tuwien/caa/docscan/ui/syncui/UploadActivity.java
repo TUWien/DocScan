@@ -40,11 +40,11 @@ import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_ACTION;
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_TYPE;
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_TYPE_MAP_FINISHED;
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_CROP_TYPE_PAGE_FINISHED;
-import static at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_ACTION;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_TYPE;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_TYPE_MAP_FINISHED;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_TYPE_PAGE_FINISHED;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_FILE_NAME;
 import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_FILE_DELETED_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_FINISHED_ID;

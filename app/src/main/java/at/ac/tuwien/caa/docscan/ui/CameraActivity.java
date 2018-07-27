@@ -101,15 +101,14 @@ import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
 import at.ac.tuwien.caa.docscan.camera.GPS;
 import at.ac.tuwien.caa.docscan.camera.LocationHandler;
-import at.ac.tuwien.caa.docscan.camera.NativeWrapper;
+import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.PaintView;
 import at.ac.tuwien.caa.docscan.camera.TaskTimer;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
-import at.ac.tuwien.caa.docscan.camera.cv.ChangeDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.camera.threads.at2.IPManager;
-import at.ac.tuwien.caa.docscan.camera.threads.crop.CropManager;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
@@ -1154,13 +1153,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
         };
 
-//        if (mIsSeriesMode)
-//            mCameraPreview.storeMat();
-
         if (mCameraPreview.getCamera() != null) {
             mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
-//            if (mCameraPreview.isFrameSteady())
-//                mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
         }
 
 
@@ -1199,7 +1193,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                ChangeDetector.resetNewFrameDetector();
                 mIsPictureSafe = true;
             }
         });
