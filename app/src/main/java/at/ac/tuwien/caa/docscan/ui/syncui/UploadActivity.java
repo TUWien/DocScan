@@ -38,7 +38,6 @@ import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
-import at.ac.tuwien.caa.docscan.ui.AutoLoginActivity;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
