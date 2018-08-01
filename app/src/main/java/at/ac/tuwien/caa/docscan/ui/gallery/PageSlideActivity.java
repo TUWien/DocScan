@@ -179,11 +179,14 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
                 Log.d(CLASS_NAME, "onReceive:");
                 Log.d(CLASS_NAME, "onReceive: file: " + intent.getStringExtra(INTENT_FILE_NAME));
-                if (mPage.getFile().getAbsolutePath().equals(intent.getStringExtra(INTENT_FILE_NAME))) {
-                    Log.d(CLASS_NAME, "onReceive: passing to mPagerAdapter");
-                    mPagerAdapter.getCurrentFragment().refreshImageView();
-                }
 
+                if (mPage != null && mPage.getFile() != null) {
+                    if (mPage.getFile().getAbsolutePath().equals(intent.getStringExtra(INTENT_FILE_NAME))) {
+                        Log.d(CLASS_NAME, "onReceive: passing to mPagerAdapter");
+                        if (mPagerAdapter != null)
+                            mPagerAdapter.getCurrentFragment().refreshImageView();
+                    }
+                }
             }
         };
 

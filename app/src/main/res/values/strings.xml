@@ -86,9 +86,15 @@
     <string name="login_button_text">Login</string>
     <string name="login_check_input_toast">Please check your login credentials.</string>
     <string name="login_welcome_text">Welcome</string>
-    <string name="login_loading_text">Loading, please wait</string>
+    <string name="login_loading_text">Login, please wait</string>
     <string name="login_error_text">User name or password is incorrect. Please reenter your credentials.</string>
     <string name="login_title">Login to Transkribus</string>
+
+    <!-- AutoLoginActivity -->
+    <string name="auto_login_error_text">Sorry, could not login - try to login later again.\n
+        Otherwise, you can change your login credentials. Do you want to reenter your credentials?</string>
+    <string name="auto_login_cancel_button">Cancel</string>
+    <string name="auto_login_ok_button">Ok</string>
 
     <!-- Menus -->
     <string name="document_item">Documents</string>
@@ -146,7 +152,7 @@
     <string name="sync_start_service_button_text">Start sync</string>
     <string name="sync_connect_dropbox_button_text">Dropbox</string>
     <string name="sync_connect_transkribus_button_text">Transkribus</string>
-    <string name="sync_dropbox_app_key">p2393aiyn7jdr54</string>
+    <string name="sync_dropbox_app_key">-</string>
     <string name="sync_no_dropbox_access">Sorry your dropbox account is not accessible.</string>
     <string name="sync_dropbox_text">Dropbox</string>
     <string name="sync_transkribus_text">Transkribus</string>
@@ -219,6 +225,8 @@
     <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>
     <string name="sync_snackbar_offline_postfix_text">will be uploaded, once the device is online again.</string>
     <string name="sync_snackbar_offline_text">Your device is currently offline. Upload postponed.</string>
+    <string name="sync_snackbar_disconnected_text">Could not login on the server. Upload postponed.</string>
+    <string name="sync_snackbar_more_button_text">More</string>
     <string name="sync_snackbar_no_permissions">Files cannot be uploaded without permission.</string>
     <string name="sync_snackbar_files_deleted_prefix">Deleted</string>
     <string name="sync_server_changed_title">Upload server changed</string>
@@ -229,7 +237,10 @@
     <string name="sync_menu_delete_item_title">Delete item</string>
     <string name="sync_menu_select_all_item_title">Select all items</string>
     <string name="sync_pages_text">Images:</string>
-
+    <string name="sync_dialog_not_logged_in_text">In order to connect to the server, it is required that you login. Do you want to login now?</string>
+    <string name="sync_cancel_login_button_text">Cancel</string>
+    <string name="sync_confirm_login_button_text">Login</string>
+    <string name="sync_not_logged_in_title">Cannot start upload</string>
     <string name="sync_not_logged_in_text">You are currently not logged in, please log in first.</string>
     <string name="sync_not_logged_in_button_text">Log in</string>
 

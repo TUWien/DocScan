@@ -247,7 +247,8 @@ public class CropManager {
         intent.putExtra(INTENT_CROP_TYPE, type);
         intent.putExtra(INTENT_FILE_NAME, fileName);
 
-        LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
+        if (mContext != null)
+            LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
 
     }
 
