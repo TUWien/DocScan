@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -33,8 +34,11 @@ import java.util.List;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
+import at.ac.tuwien.caa.docscan.ui.AutoLoginActivity;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
@@ -67,10 +71,12 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private List<Document> mDocuments;
     private Snackbar mSnackbar;
     private Menu mMenu;
-
+    private boolean mIsUserCredentialsKnown = true;
 
     private static final String CLASS_NAME = "UploadActivity";
     private static final int PERMISSION_READ_WRITE_EXTERNAL_STORAGE = 0;
+    private static final int REQUEST_LOGIN = 0;
+
     private BroadcastReceiver mMessageReceiver;
 
     @Override
@@ -79,13 +85,15 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         super.onCreate(savedInstanceState);
 
+        Log.d(CLASS_NAME, "onCreate");
+
         mContext = this;
 
-        if (Helper.isOnline(this) && !User.getInstance().isLoggedIn()) {
-//            If the user is not online show the corresponding activity and do nothing else:
-            showActivityNotLoggedIn();
-            return;
-        }
+//        if (Helper.isOnline(this) && !User.getInstance().isLoggedIn()) {
+////            If the user is not online show the corresponding activity and do nothing else:
+//            showActivityNotLoggedIn();
+//            return;
+//        }
 
 
         setContentView(R.layout.activity_upload);
@@ -116,8 +124,69 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         initFAB();
 
+    }
+
+    private void checkNetworkStatus() {
+
+        //        The user has not logged in yet:
+        if (!User.getInstance().isLoggedIn()) {
+//            But has internet access:
+            if (Helper.isOnline(this)) {
+//                We know the user credentials so log in automatically:
+                if (UserHandler.loadCredentials(this))
+//                    So do the auto login:
+                    RequestHandler.createRequest(this, RequestHandler.REQUEST_LOGIN);
+                else {
+//                    We show here nothing, just if the user clicks on the upload button
+                    mIsUserCredentialsKnown = false;
+//                    showNotLoggedInDialog();
+                }
+
+            }
+
+        }
+    }
+
+    private void showNotLoggedInDialog() {
+
+        if (mContext == null)
+            return;
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.sync_not_logged_in_title)
+                .setPositiveButton(R.string.sync_confirm_login_button_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)  {
+//                        Start the LoginActivity
+                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                        intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton(R.string.sync_cancel_login_button_text, null)
+                .setCancelable(true)
+                .setMessage(R.string.sync_not_logged_in_text);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
 
     }
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//
+//        if (requestCode == REQUEST_LOGIN) {
+//            if (resultCode == Activity.RESULT_CANCELED) {
+//                showNotConnectedSnackbar();
+//            }
+//        }
+//    }
 
     private void initFAB() {
         FloatingActionButton fab = findViewById(R.id.upload_fab);
@@ -147,6 +216,12 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                 new IntentFilter(INTENT_CROP_ACTION));
 
         showNoSelectionToolbar();
+
+//        update the navigation drawer, because the user might have logged in in the meantime:
+        mNavigationDrawer.setupDrawerHeader();
+
+//        See if the user is not logged in but is online:
+        checkNetworkStatus();
 
     }
 
@@ -433,6 +508,11 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     public void startUpload(MenuItem item) {
 
+        if (!mIsUserCredentialsKnown) {
+            showNotLoggedInDialog();
+            return;
+        }
+
         startUpload();
 
     }
@@ -516,6 +596,20 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     }
 
+    /**
+     * Shows a snackbar indicating that the device is offline.
+     */
+    private void showNotConnectedSnackbar() {
+
+        String snackbarText =
+                getResources().getString(R.string.sync_snackbar_disconnected_text);
+
+        closeSnackbar();
+        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+                snackbarText, Snackbar.LENGTH_LONG);
+        mSnackbar.show();
+
+    }
 
     /**
      * Shows a snackbar indicating that the device is offline.
