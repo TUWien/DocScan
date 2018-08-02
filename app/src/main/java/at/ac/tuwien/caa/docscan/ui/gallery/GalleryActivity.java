@@ -257,9 +257,9 @@ public class GalleryActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onStop() {
+    public void onPause() {
 
-        super.onStop();
+        super.onPause();
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         mMessageReceiver = null;
