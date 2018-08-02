@@ -10,6 +10,7 @@ import com.dropbox.core.android.Auth;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
+import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
@@ -105,7 +106,7 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
 
 
     @Override
-    public void handleRestError(VolleyError error) {
+    public void handleRestError(RestRequest request, VolleyError error) {
 
     }
 }

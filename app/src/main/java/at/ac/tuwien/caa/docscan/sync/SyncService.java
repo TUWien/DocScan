@@ -18,6 +18,7 @@ import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
 import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
+import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
@@ -264,13 +266,53 @@ public class SyncService extends JobService implements
     }
 
     @Override
-    public void handleRestError(VolleyError error) {
+    public void handleRestError(RestRequest request, VolleyError error) {
 
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService - rest error ", error.getMessage());
+//        Log the error:
 
-        Log.d(getClass().getName(), "rest_error: " + error.getMessage());
+//        Log error.getMessage: (but this is usually null)
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                "handleRestError: RestRequest: " + request);
+        Log.d(CLASS_NAME, "handleRestError: RestRequest: " + request);
+
+//        Log error.getMessage: (but this is usually null)
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                "handleRestError: error.getMessage: " + error.getMessage());
+        Log.d(CLASS_NAME, "handleRestError: error.getMessage: " + error.getMessage());
+
+//        Log the status code:
+        String statusCode = String.valueOf(error.networkResponse.statusCode);
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                "handleRestError: statusCode: " + statusCode);
+        Log.d(CLASS_NAME, "handleRestError: statusCode: " + statusCode);
+
+//        Log the network response:
+        String networkResponse = getNetworkResponse(error);
+        if (networkResponse != null) {
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                    "handleRestError: networkResponse: " + networkResponse);
+            Log.d(CLASS_NAME, "handleRestError: networkResponse: " + networkResponse);
+        }
+
+        if (request instanceof UploadStatusRequest) {
+//            TODO: remove maybe?
+        }
+
 
         handleRestUploadError();
+
+    }
+
+    private String getNetworkResponse(VolleyError error) {
+
+        try {
+            String body = new String(error.networkResponse.data, "UTF-8");
+            return body;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+//            This should not be null, because we should use the proper encoding:
+            return null;
+        }
 
     }
 
