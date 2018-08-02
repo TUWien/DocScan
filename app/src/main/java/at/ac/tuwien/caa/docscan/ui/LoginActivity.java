@@ -12,6 +12,7 @@ import com.android.volley.VolleyError;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.RequestHandler;
+import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
@@ -128,7 +129,7 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
     }
 
     @Override
-    public void handleRestError(VolleyError error) {
+    public void handleRestError(RestRequest request, VolleyError error) {
 
     }
 }

@@ -7,6 +7,8 @@ import com.android.volley.VolleyError;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * Created by fabian on 01.12.2016.
  */
@@ -46,7 +48,14 @@ public abstract class RestRequest {
 
     public void handleRestError(VolleyError error) {
 
-        mRestCallback.handleRestError(error);
+        try {
+            String body = new String(error.networkResponse.data, "UTF-8");
+            int b = 0;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        mRestCallback.handleRestError(this, error);
 
     }
 
@@ -72,7 +81,7 @@ public abstract class RestRequest {
      */
     public interface RestCallback {
 
-        void handleRestError(VolleyError error);
+        void handleRestError(RestRequest request, VolleyError error);
 
     }
 
