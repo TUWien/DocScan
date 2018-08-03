@@ -27,6 +27,8 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.android.volley.VolleyError;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +36,7 @@ import java.util.List;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.rest.RequestHandler;
+import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
@@ -225,11 +227,14 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     }
 
     @Override
-    public void onStop() {
+    public void onPause() {
 
-        super.onStop();
+        super.onPause();
+
+        Log.d(CLASS_NAME, "onPause: ");
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        Log.d(CLASS_NAME, "unregisterReceiver: ");
         mMessageReceiver = null;
 
     }
@@ -915,5 +920,6 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         return receiver;
     }
+
 
 }
