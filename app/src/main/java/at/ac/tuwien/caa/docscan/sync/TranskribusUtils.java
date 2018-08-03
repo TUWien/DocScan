@@ -84,6 +84,8 @@ public class TranskribusUtils  {
         else
             mAreDocumentsPrepared = true;
 
+        SyncInfo.getInstance().getUnfinishedUploadIDs().add(4086);
+
         if (SyncInfo.getInstance().getUnfinishedUploadIDs() != null &&
                 !SyncInfo.getInstance().getUnfinishedUploadIDs().isEmpty()) {
 
@@ -295,7 +297,7 @@ public class TranskribusUtils  {
 
     }
 
-    private void uploadDirs(ArrayList<File> dirs, int uploadId) {
+    private void uploadDirs(ArrayList<File> dirs, int collectionId) {
 
         mSelectedDirs = dirs;
         mNumUploadJobs = 0;
@@ -317,7 +319,7 @@ public class TranskribusUtils  {
 //            Start the upload request:
             if (jsonObject != null) {
                 DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", jsonObject.toString());
-                new StartUploadRequest(mContext, jsonObject, uploadId);
+                new StartUploadRequest(mContext, jsonObject, collectionId);
             }
         }
     }
