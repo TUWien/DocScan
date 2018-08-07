@@ -24,6 +24,7 @@ import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
 import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
@@ -268,7 +269,20 @@ public class SyncService extends JobService implements
     @Override
     public void handleRestError(RestRequest request, VolleyError error) {
 
-//        Log the error:
+        logRestError(request, error);
+
+//        if (request instanceof UploadStatusRequest) {
+//            ((UploadStatusRequest) request).getUploadID()
+//        }
+
+
+        handleRestUploadError();
+
+    }
+
+    private void logRestError(RestRequest request, VolleyError error) {
+
+        //        Log the error:
 
 //        Log error.getMessage: (but this is usually null)
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
@@ -287,34 +301,15 @@ public class SyncService extends JobService implements
         Log.d(CLASS_NAME, "handleRestError: statusCode: " + statusCode);
 
 //        Log the network response:
-        String networkResponse = getNetworkResponse(error);
+        String networkResponse = Helper.getNetworkResponse(error);
         if (networkResponse != null) {
             DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                     "handleRestError: networkResponse: " + networkResponse);
             Log.d(CLASS_NAME, "handleRestError: networkResponse: " + networkResponse);
         }
-
-        if (request instanceof UploadStatusRequest) {
-//            TODO: remove maybe?
-        }
-
-
-        handleRestUploadError();
-
     }
 
-    private String getNetworkResponse(VolleyError error) {
 
-        try {
-            String body = new String(error.networkResponse.data, "UTF-8");
-            return body;
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-//            This should not be null, because we should use the proper encoding:
-            return null;
-        }
-
-    }
 
     /**
      * Handles errors that occur before the first file is uploaded.

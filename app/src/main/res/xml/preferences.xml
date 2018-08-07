@@ -13,7 +13,6 @@
     </PreferenceCategory>
 
 
-
     <PreferenceCategory
         android:title="@string/settings_image_processing_title">
 
@@ -29,6 +28,12 @@
             android:defaultValue="true" />
 
     </PreferenceCategory>
+
+    <CheckBoxPreference
+        android:key="@string/key_show_grid"
+        android:title="@string/settings_show_grid_title"
+        android:summary="@string/settings_show_grid_summary"
+        android:defaultValue="false" />
 
     <!-- opens another nested subscreen -->
     <Preference

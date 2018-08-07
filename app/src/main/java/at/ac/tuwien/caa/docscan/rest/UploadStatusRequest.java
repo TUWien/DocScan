@@ -5,12 +5,17 @@ import android.content.Context;
 import android.util.Log;
 
 import com.android.volley.Request;
+import com.android.volley.VolleyError;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
+
+import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 
 /**
  * Created by fabian on 29.06.2017.
@@ -33,6 +38,12 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
         mUploadID = uploadID;
 
         RequestHandler.processRequest(this);
+
+    }
+
+    public int getUploadID() {
+
+        return mUploadID;
 
     }
 
@@ -74,6 +85,57 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     This is a dirty workaround to solve the issue arising with unfinished uploads, that are
+     already finished, but we did not receive a finish from the server, because the connection
+     was closed before. After a while, such old and finished uploads are removed from the
+     server and if we query them we get a 404 error. Therefore, we catch the error in this class.
+     * @param error
+     */
+
+    @Override
+    public void handleRestError(VolleyError error) {
+
+        logError(error);
+
+        int statusCode = error.networkResponse.statusCode;
+        switch (statusCode) {
+//            TODO: switch to the other status code
+            case HttpURLConnection.HTTP_NOT_FOUND: // 404-
+//            case HttpURLConnection.HTTP_INTERNAL_ERROR:
+                ((UploadStatusCallback) mRestCallback).onUploadAlreadyFinished(mUploadID);
+                break;
+            default:
+                mRestCallback.handleRestError(this, error);
+                break;
+        }
+
+
+
+    }
+
+    private void logError(VolleyError error) {
+        DataLog.getInstance().writeUploadLog(getContext(), CLASS_NAME,
+                "handleRestError: request: " + this.toString());
+        Log.d(CLASS_NAME, "handleRestError: request: " + this.toString());
+
+
+        DataLog.getInstance().writeUploadLog(getContext(), CLASS_NAME,
+                "handleRestError: error: " + error.getMessage());
+        Log.d(CLASS_NAME, "handleRestError: error: " + error.getMessage());
+
+        int statusCode = error.networkResponse.statusCode;
+        DataLog.getInstance().writeUploadLog(getContext(), CLASS_NAME,
+                "handleRestError: statusCode: " + statusCode);
+        Log.d(CLASS_NAME, "handleRestError: statusCode: " + statusCode);
+
+
+        String networkResponse = Helper.getNetworkResponse(error);
+        DataLog.getInstance().writeUploadLog(getContext(), CLASS_NAME,
+                "handleRestError: networkResponse: " + networkResponse);
+        Log.d(CLASS_NAME, "handleRestError: networkResponse: " + networkResponse);
     }
 
     public interface UploadStatusCallback extends RestCallback{

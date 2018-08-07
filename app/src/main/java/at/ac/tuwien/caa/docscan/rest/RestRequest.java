@@ -9,6 +9,8 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 
+import at.ac.tuwien.caa.docscan.logic.Helper;
+
 /**
  * Created by fabian on 01.12.2016.
  */
@@ -20,6 +22,7 @@ public abstract class RestRequest {
     protected int mMethod;
 
     public static final String BASE_URL = "https://transkribus.eu/TrpServer/rest/";
+    public static final String BASE_TEST_URL = "https://transkribus.eu/TrpServerTesting/rest/";
 
     public RestRequest(Context context) {
 
@@ -28,12 +31,26 @@ public abstract class RestRequest {
 
     }
 
+    @Override
+    public String toString() {
+
+        String resultName = "name=" + getClass().getName();
+        String resultUrl = "url=" + getExtendedUrl();
+
+        return resultName + "," + "resultUrl";
+
+    }
+
+
+
 //    public String getExtendedUrl() {
 //        return mUrl;
 //    }
 
     public String getURL() {
-        return BASE_URL + getExtendedUrl();
+
+        return Helper.getTranskribusBaseUrl(mContext) + getExtendedUrl();
+
     }
 
     public abstract String getExtendedUrl();
@@ -47,13 +64,6 @@ public abstract class RestRequest {
     }
 
     public void handleRestError(VolleyError error) {
-
-        try {
-            String body = new String(error.networkResponse.data, "UTF-8");
-            int b = 0;
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
 
         mRestCallback.handleRestError(this, error);
 

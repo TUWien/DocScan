@@ -284,6 +284,8 @@
     <string name="settings_fast_segmentation_checkbox_title">Fast page detection</string>
     <string name="settings_focus_measure_checkbox_title">Measure focus</string>
     <string name="settings_fast_segmentation_checkbox_summary">Fast page detection with a potential loss of accuracy</string>
+    <string name="settings_show_grid_title">Display grid</string>
+    <string name="settings_show_grid_summary">Overlays a grid on the camera view</string>
 
     <!-- DebugSettingsFragment -->
     <string name="debug_settings_title">Debug settings</string>
@@ -295,6 +297,9 @@
     <string name="settings_show_debug_settings_summary">Settings used mainly for development and measurement of the app performance.</string>
     <string name="settings_show_advanced_qr_code_checkbox_title">Show QR code details</string>
     <string name="settings_show_advanced_qr_code_checkbox_summary">Show extra fields found in the QR code. Warning: These fields are not saved yet and not used in Transkribus!</string>
+    <string name="settings_use_transkribus_test_server_title">Use Transkribus test server</string>
+    <string name="settings_use_transkribus_test_server_summary">Please restart the app, if you change this. Warning: This setting should only be used for testing the app and the Transkribus server.</string>
+
 
     <string name="crop_view_title">Crop</string>
 

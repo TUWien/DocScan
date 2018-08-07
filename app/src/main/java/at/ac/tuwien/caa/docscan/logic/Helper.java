@@ -2,15 +2,20 @@ package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.support.media.ExifInterface;
 //import android.util.Size;
+
+import com.android.volley.VolleyError;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -19,6 +24,7 @@ import java.util.List;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropLogger;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
+import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
@@ -554,6 +560,44 @@ public class Helper {
         return isConnected;
 
     }
+
+    public static String getNetworkResponse(VolleyError error) {
+
+        try {
+            String body = new String(error.networkResponse.data, "UTF-8");
+            return body;
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+//            This should not be null, because we should use the proper encoding:
+            return null;
+        }
+
+    }
+
+    /**
+     * Returns the url of the production or test server, depending on the user setting.
+     * @param context
+     * @return
+     */
+    public static String getTranskribusBaseUrl(Context context) {
+
+        boolean useTestServer = useTranskribusTestServer(context);
+
+        if (useTestServer)
+            return RestRequest.BASE_TEST_URL;
+        else
+            return RestRequest.BASE_URL;
+
+    }
+
+    public static boolean useTranskribusTestServer(Context context) {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        return sharedPref.getBoolean(context.getResources().getString(
+                R.string.key_use_test_server), false);
+
+    }
+
 
     /**
      * Returns the correct singular or plural form of the word documents, regarding the number of
