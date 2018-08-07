@@ -352,6 +352,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         boolean showFocusValues = sharedPref.getBoolean(getResources().getString(R.string.key_show_focus_values), false);
         mPaintView.drawFocusText(showFocusValues);
 
+        boolean showGrid = sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
+        mPaintView.drawGrid(showGrid);
+
         boolean useFastPageDetection = sharedPref.getBoolean(getResources().getString(R.string.key_fast_segmentation), true);
         NativeWrapper.setUseLab(!useFastPageDetection);
 

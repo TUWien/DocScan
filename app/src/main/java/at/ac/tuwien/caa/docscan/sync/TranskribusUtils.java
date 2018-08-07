@@ -1,6 +1,8 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -27,7 +29,6 @@ import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 
 import static android.content.ContentValues.TAG;
-import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 
 /**
  * A class responsible for handling functionality that is connected to Transkribus. Other (more
@@ -37,8 +38,6 @@ import static at.ac.tuwien.caa.docscan.rest.RestRequest.BASE_URL;
 public class TranskribusUtils  {
 
     public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
-//    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "upload_continue_test_2";
-//    public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "qr_code_test";
     private static final String CLASS_NAME = "TranskribusUtils";
 
     // Singleton:
@@ -83,8 +82,6 @@ public class TranskribusUtils  {
         }
         else
             mAreDocumentsPrepared = true;
-
-        SyncInfo.getInstance().getUnfinishedUploadIDs().add(4086);
 
         if (SyncInfo.getInstance().getUnfinishedUploadIDs() != null &&
                 !SyncInfo.getInstance().getUnfinishedUploadIDs().isEmpty()) {
@@ -135,7 +132,7 @@ public class TranskribusUtils  {
         Log.d(CLASS_NAME, "startFindingUnfinishedUploads1");
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "startFindingUnfinishedUploads1");
 
-                mAreUnfinishedFilesPrepared = false;
+        mAreUnfinishedFilesPrepared = false;
 
 //        We need here a deep copy, because we want to manipulate the member but not the
 //        corresponding SyncInfo member:
@@ -221,19 +218,56 @@ public class TranskribusUtils  {
 
     }
 
+    /**
+     * Determines if there is a DocScan collection ID saved in SharedPreferences.
+     * @return
+     */
     private boolean isCollectionIDSaved() {
 
-        int savedCollectionID =
-                Settings.getInstance().loadIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY);
+        int savedCollectionID = getDocScanCollectionID();
 
         return (savedCollectionID != Settings.NO_ENTRY);
 
     }
 
+    private int getDocScanCollectionID() {
+
+        int savedCollectionID;
+
+        //        Should we use the Transkribus test server?
+        boolean useTestServer = Helper.useTranskribusTestServer(mContext);
+
+//        Get the stored value, if one is existing otherwise Settings.NO_ENTRY is returned.
+        if (useTestServer)
+            savedCollectionID = Settings.getInstance().loadIntKey(mContext,
+                    Settings.SettingEnum.TEST_COLLECTION_ID_KEY);
+        else
+            savedCollectionID = Settings.getInstance().loadIntKey(mContext,
+                    Settings.SettingEnum.COLLECTION_ID_KEY);
+
+        return savedCollectionID;
+
+    }
+
+
+    private void saveDocScanCollectionID(int collectionID) {
+
+        boolean useTestServer = Helper.useTranskribusTestServer(mContext);
+
+        if (useTestServer)
+            Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.TEST_COLLECTION_ID_KEY,
+                    collectionID);
+        else
+            Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY,
+                    collectionID);
+
+
+
+    }
+
     public void onCollections(List<Collection> collections) {
 
-        int savedCollectionID =
-                Settings.getInstance().loadIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY);
+        int savedCollectionID = getDocScanCollectionID();
 
         int maxId = -1;
 
@@ -263,7 +297,8 @@ public class TranskribusUtils  {
         if (maxId > -1) {
 
             mIsCollectionCreated = false;
-            Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, maxId);
+            saveDocScanCollectionID(maxId);
+//            Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, maxId);
             docScanCollectionFound(maxId);
             return;
 
@@ -413,10 +448,13 @@ public class TranskribusUtils  {
 
         final File file = fileSync.getFile();
 
+        Log.d(CLASS_NAME, "uploading file: " + fileSync.toString());
+
         DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "uploading file: " + fileSync.toString());
 
         Ion.with(context)
-                .load("PUT", BASE_URL + "uploads/" + Integer.toString(fileSync.getUploadId()))
+                .load("PUT", Helper.getTranskribusBaseUrl(mContext) + "uploads/" +
+                        Integer.toString(fileSync.getUploadId()))
                 .setHeader("Cookie", "JSESSIONID=" + User.getInstance().getSessionID())
                 .setMultipartContentType("multipart/form-data")
                 .setMultipartFile("img", "application/octet-stream", file)
@@ -430,7 +468,8 @@ public class TranskribusUtils  {
                             callback.onUploadComplete(fileSync);
                             Log.d(CLASS_NAME, "uploaded file to collectionID: " +
                                     fileSync.getUploadId() + " file: " + fileSync.toString());
-                            DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "uploaded file: " + fileSync.toString());
+                            DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils",
+                                    "uploaded file: " + fileSync.toString());
 
                             if (result.contains("<finished>")) {
                                 removeFromSyncInfoUnfinishedList(fileSync.getUploadId());

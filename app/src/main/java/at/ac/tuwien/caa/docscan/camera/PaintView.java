@@ -54,6 +54,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
 
     private static final String TAG = "PaintView";
+    private Paint mGridPaint;
     private DrawerThread mDrawerThread;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
 
@@ -68,6 +69,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private static Flicker mFlicker;
     private CVResult mCVResult;
+    private boolean mDrawGrid = false;
 
     /**
      * Creates the PaintView, the timerCallback and the thread responsible for the drawing.
@@ -106,6 +108,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     public void drawFocusText(boolean drawText) {
 
         mDrawFocusText = drawText;
+
+    }
+
+    public void drawGrid(boolean drawGrid) {
+
+        mDrawGrid = drawGrid;
 
     }
 
@@ -398,6 +406,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mFocusTouchCirclePaint.setStyle(Paint.Style.FILL);
             mFocusTouchCirclePaint.setStrokeWidth(getResources().getDimension(R.dimen.focus_circle_stroke_width));
 
+            mGridPaint = new Paint();
+            mGridPaint.setColor(getResources().getColor(R.color.grid_color));
+            mGridPaint.setStyle(Paint.Style.STROKE);
+            mGridPaint.setStrokeWidth(getResources().getDimension(R.dimen.focus_circle_stroke_width));
+
             mFocusTouchOutlinePaint = new Paint();
             mFocusTouchOutlinePaint.setColor(getResources().getColor(R.color.focus_touch_circle_outline));
             mFocusTouchOutlinePaint.setStyle(Paint.Style.STROKE);
@@ -520,6 +533,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 canvas.drawRect(rect, mWaitingFramePaint);
             }
 
+            if (mDrawGrid)
+                drawGrid(canvas);
+
             if (mDrawFocusTouch)
                 drawFocusCircle(canvas);
 
@@ -584,6 +600,25 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         }
 
+
+        private void drawGrid(Canvas canvas) {
+
+            int gridColumnNum = 3;
+            int gridRowNum = 3;
+
+//            Draw the vertical lines:
+            for (int i = 0; i < gridColumnNum - 1; i++) {
+                float x = ((float) getWidth() / gridColumnNum) * (i+1);
+                canvas.drawLine(x, 0, x, getHeight(), mGridPaint);
+            }
+
+//            Draw the horizontal lines:
+            for (int i = 0; i < gridRowNum - 1; i++) {
+                float y = ((float) getHeight() / gridRowNum) * (i+1);
+                canvas.drawLine(0, y, getWidth(), y, mGridPaint);
+            }
+
+        }
 
         /**
          * Draws the output of the page segmentation task.

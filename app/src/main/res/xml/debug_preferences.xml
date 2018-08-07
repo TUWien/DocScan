@@ -21,5 +21,10 @@
         android:summary="@string/settings_show_advanced_qr_code_checkbox_summary"
         android:defaultValue="false" />
 
+    <CheckBoxPreference
+        android:key="@string/key_use_test_server"
+        android:title="@string/settings_use_transkribus_test_server_title"
+        android:summary="@string/settings_use_transkribus_test_server_summary"
+        android:defaultValue="false" />
 
 </PreferenceScreen>
