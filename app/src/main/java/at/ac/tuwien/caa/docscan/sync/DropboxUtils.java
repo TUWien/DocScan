@@ -33,7 +33,12 @@ import static android.content.Context.MODE_PRIVATE;
 import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 
 /**
- * Created by fabian on 18.08.2017.
+ * Class used to access Dropbox. The Dropbox API key is not provided in repository and should never
+ * be provided. Instead a not working dummy key is provided in gradle.properties. You can get the
+ * API key if you send a mail to docscan@cvl.tuwien.ac.at. Before you replace the dummy key, assure
+ * that you do not commit the key with the following command:
+ * git update-index --assume-unchanged gradle.properties
+ * Then you just have to replace the dummy key in gradle.properties.
  */
 
 public class DropboxUtils {

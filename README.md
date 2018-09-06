@@ -17,7 +17,7 @@ Markus Diem
 ### Configuration
 - copy`.\app\src\main\jni\local\AndroidSkel.mk` to `.\app\src\main\jni\local\Android.mk`
 - open `.\app\src\main\jni\local\Android.mk` in a text editor
-- uncomment and change the line `MY_OPENCVROOT:= C:/cvl/dmrz/code/opencv_sdk/OpenCV-android-sdk` such that
+- uncomment and change the line `MY_OPENCVROOT:= C:/somepath/OpenCV-android-sdk` such that
 it points to your opencv installation (contains the folders: apk, sample, sdk)
 - Open Project from Android Studio
 - You will see a dialog "Gradle settings for this project are not configured yet. Would you like the project to use the Gradle wrapper? ..." - click Ok
@@ -30,12 +30,21 @@ it points to your opencv installation (contains the folders: apk, sample, sdk)
   See step 6 in [2]
   - Set the Android NDK path
 - Add Android NDK
-  - Open `Tools > Android > SDK Manager`
+  - Open 'Tools > Android > SDK Manager'
   - Tab SDK Tools
   - Check NDK (takes a few minutes to download/install) (copy the NDK path, you will need it later)
   - Restart Android Studio
-  - right click `app > Open Module Settings > SDK Location`
+  - right click 'app > Open Module Settings > SDK Location'
   - Set the NDK path
+
+### Dropbox integration
+The dropbox API key is not provided on github. If you want to build the project and use dropbox, please send a mail to docscan@cvl.tuwien.ac.at and we will send you the API key.
+
+If you received the API key, please assure that you do not commit it to the repository with the following command:
+
+`git update-index --assume-unchanged gradle.properties`
+
+Afterwards, just replace the dummy key in gradle.properties.
 
 ### Error messages
   - 'Could not find method android() for arguments...':
@@ -43,9 +52,6 @@ it points to your opencv installation (contains the folders: apk, sample, sdk)
     Maybe you have an obsolete android() block in your top-level gradle file. See:
      https://stackoverflow.com/questions/37250493/could-not-find-method-android-for-arguments for solution
 
-### Exporting to apk
-- Build -> Generate Signed APK
-- The APK is now under 'DocScan\app\build\outputs\apk\app-release-unaligned.apk'
 
 ### Links
 - [1] https://sourceforge.net/projects/opencvlibrary/files/opencv-android/3.1.0/OpenCV-3.1.0-android-sdk.zip/download
