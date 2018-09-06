@@ -1,8 +1,11 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -18,12 +21,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Executor;
 
+import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 
 import static android.content.Context.MODE_PRIVATE;
+import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 
 /**
  * Created by fabian on 18.08.2017.
@@ -65,12 +72,21 @@ public class DropboxUtils {
 
     }
 
-    public void startAuthentication(Context context) {
+    public boolean startAuthentication(Context context) {
 
-        Auth.startOAuth2Authentication(context, context.getString(R.string.sync_dropbox_app_key));
+//        TODO: handle cases in which the user rejects the authentication
+
+        try {
+            Auth.startOAuth2Authentication(context, BuildConfig.DropboxApiKey);
+        }
+        catch (Exception e) {
+//                This happens if a wrong api key is provided
+            return false;
+        }
+
+        return true;
 
     }
-
 
     public void authenticate(DropboxConnectorCallback callback, Context context) {
 
@@ -91,20 +107,21 @@ public class DropboxUtils {
 
 
         SharedPreferences prefs = context.getSharedPreferences("dropbox-access", MODE_PRIVATE);
-        String accessToken = prefs.getString("access-tokenx", null);
-
-        if (accessToken == null) {
+//        String accessToken = prefs.getString("access-tokenx", null);
+//
+//        if (accessToken == null) {
             // Retrieve the authorization token from the Dropbox developers website:
 
-            Auth.startOAuth2Authentication(context, context.getString(R.string.sync_dropbox_app_key));
-            accessToken = Auth.getOAuth2Token();
+//            Auth.startOAuth2Authentication(context, context.getString(R.string.sync_dropbox_app_key));
+
+            String accessToken = Auth.getOAuth2Token();
             if (accessToken != null) {
                 prefs.edit().putString("access-token", accessToken).apply();
 //                initAndLoadData(accessToken);
             }
-        } else {
-//            initAndLoadData(accessToken);
-        }
+//        } else {
+////            initAndLoadData(accessToken);
+//        }
 
 
 
