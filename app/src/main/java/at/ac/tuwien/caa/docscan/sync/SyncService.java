@@ -123,7 +123,20 @@ public class SyncService extends JobService implements
 
     private void startUpload() {
 
-        TranskribusUtils.getInstance().startUpload(this);
+        switch (User.getInstance().getConnection()) {
+
+            case User.SYNC_TRANSKRIBUS:
+                TranskribusUtils.getInstance().startUpload(this);
+                break;
+            case User.SYNC_DROPBOX:
+                DropboxUtils.getInstance().startUpload(this, this);
+                break;
+            default:
+                Log.d(CLASS_NAME, "startUpload: connection unknown");
+
+        }
+
+
 
 //        if (SyncInfo.getInstance().getUploadDirs() != null && !SyncInfo.getInstance().getUploadDirs().isEmpty())
 //    //        Start the upload of user selected dirs:

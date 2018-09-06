@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.dropbox.core.android.Auth;
@@ -85,6 +86,11 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
 
     @Override
     public void onLogin(User user) {
+
+        String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
+        Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+
+//        TODO: save the user credentials
 
         // Start the CameraActivity and remove everything from the back stack:
         Intent intent = new Intent(getApplicationContext(), CameraActivity.class);

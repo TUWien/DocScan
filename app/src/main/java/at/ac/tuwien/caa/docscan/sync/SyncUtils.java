@@ -27,10 +27,8 @@ public class SyncUtils {
                 User.getInstance().setAutoLogInDone(true);
             }
             else if (User.getInstance().getConnection() == User.SYNC_DROPBOX) {
-                if (UserHandler.loadDropboxToken(context)) {
-                    DropboxUtils.getInstance().loginToDropbox(loginCallback, User.getInstance().getDropboxToken());
-                    User.getInstance().setAutoLogInDone(true);
-                }
+                DropboxUtils.getInstance().loginToDropbox(loginCallback, User.getInstance().getDropboxToken());
+                User.getInstance().setAutoLogInDone(true);
             }
         }
 
