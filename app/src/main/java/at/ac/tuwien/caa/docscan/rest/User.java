@@ -9,6 +9,7 @@ public class User {
 
     public static final int SYNC_DROPBOX        = 0;
     public static final int SYNC_TRANSKRIBUS    = 1;
+    public static final int SYNC_DRIVE          = 2;
 
     private String mUserName, mPassword, mFirstName, mLastName, mSessionID;
     private boolean mIsLoggedin, mIsAutoLogInDone, mTranskribusUploadCollIdSet;

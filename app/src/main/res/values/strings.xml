@@ -151,9 +151,11 @@
     <!-- Sync: -->
     <string name="sync_start_service_button_text">Start sync</string>
     <string name="sync_connect_dropbox_button_text">Dropbox</string>
+    <string name="sync_connect_drive_button_text">Google Drive</string>
     <string name="sync_connect_transkribus_button_text">Transkribus</string>
     <string name="sync_dropbox_app_key">-</string>
     <string name="sync_no_dropbox_access">Sorry your dropbox account is not accessible.</string>
+    <string name="sync_drive_text">Google Drive</string>
     <string name="sync_dropbox_text">Dropbox</string>
     <string name="sync_transkribus_text">Transkribus</string>
     <string name="sync_not_connected_text">Offline</string>

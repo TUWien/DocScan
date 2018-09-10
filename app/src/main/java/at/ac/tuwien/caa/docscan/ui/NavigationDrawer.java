@@ -21,6 +21,7 @@ import at.ac.tuwien.caa.docscan.ActivityUtils;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
+import at.ac.tuwien.caa.docscan.sync.SyncUtils;
 import at.ac.tuwien.caa.docscan.ui.settings.PreferenceActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
@@ -113,13 +114,15 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
         // Set up the account name field:
 
-        // The user is logged in, show the name:
+
         if (User.getInstance().isLoggedIn()) {
+            // The user is logged in, show the name:
             userTextView.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
-            if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
-                connectionTextView.setText(mActivity.getResources().getText(R.string.sync_dropbox_text));
-            else if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS)
-                connectionTextView.setText(mActivity.getResources().getText(R.string.sync_transkribus_text));
+
+//            Show the connection type:
+            String cloudText = SyncUtils.getConnectionText(mActivity, User.getInstance().getConnection());
+            connectionTextView.setText(cloudText);
+
         }
 
         // The user is not logged in, but was logged in some time before, show the name:

@@ -9,6 +9,9 @@ import android.widget.TextView;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.sync.SyncUtils;
+import at.ac.tuwien.caa.docscan.ui.syncui.DriveActivity;
+import at.ac.tuwien.caa.docscan.ui.syncui.DropboxActivity;
 
 /**
  * Created by fabian on 22.08.2017.
@@ -42,7 +45,15 @@ public class AccountActivity extends BaseNavigationActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), DropboxActivity.class);
-                intent.putExtra("test", "withinapp");
+                startActivity(intent);
+            }
+        });
+
+        Button driveButon = (Button) findViewById(R.id.sync_switcher_drive_button);
+        driveButon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), DriveActivity.class);
                 startActivity(intent);
             }
         });
@@ -59,12 +70,12 @@ public class AccountActivity extends BaseNavigationActivity {
 
         // Show the cloud service:
         TextView cloudTextView = (TextView) findViewById(R.id.account_cloud_textview);
-        String cloudText = getString(R.string.account_cloud_textview_text) + " ";
-        if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
-            cloudText += getString(R.string.sync_dropbox_text);
-        else if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS)
-            cloudText += getString(R.string.sync_transkribus_text);
-        cloudTextView.setText(cloudText);
+        String cloudTextPrefix = getString(R.string.account_cloud_textview_text) + " ";
+
+        String cloudTextPostfix = SyncUtils.getConnectionText(this,
+                User.getInstance().getConnection());
+
+        cloudTextView.setText(cloudTextPrefix + cloudTextPostfix);
 
     }
 

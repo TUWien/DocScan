@@ -143,9 +143,15 @@
             />
 
         <activity
-            android:name=".ui.DropboxActivity"
+            android:name=".ui.syncui.DropboxActivity"
             android:exported="true"
-            android:parentActivityName=".ui.CameraActivity"
+            android:parentActivityName=".ui.AccountActivity"
+            />
+
+        <activity
+            android:name=".ui.syncui.DriveActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.AccountActivity"
             />
 
         <activity

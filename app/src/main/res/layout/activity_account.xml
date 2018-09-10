@@ -97,6 +97,16 @@
                     android:textColor="@color/white"
                     android:text="@string/sync_connect_dropbox_button_text"
                     />
+
+                <android.support.v7.widget.AppCompatButton
+                    android:id="@+id/sync_switcher_drive_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:backgroundTint="@color/colorAccent"
+                    android:textColor="@color/white"
+                    android:text="@string/sync_connect_drive_button_text"
+                    />
+
                 </LinearLayout>
 
         </LinearLayout>
