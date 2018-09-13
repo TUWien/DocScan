@@ -12,13 +12,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.ActivityUtils;
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
@@ -109,8 +113,9 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
 
         View headerLayout = mNavigationView.getHeaderView(0);
-        TextView userTextView = (TextView) headerLayout.findViewById(R.id.navigation_view_header_user_textview);
-        TextView connectionTextView = (TextView) headerLayout.findViewById(R.id.navigation_view_header_sync_textview);
+        TextView userTextView = headerLayout.findViewById(R.id.navigation_view_header_user_textview);
+        TextView connectionTextView = headerLayout.findViewById(R.id.navigation_view_header_sync_textview);
+        ImageView userImageView = headerLayout.findViewById(R.id.navigation_view_header_user_image_view);
 
         // Set up the account name field:
 
@@ -123,6 +128,14 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
             String cloudText = SyncUtils.getConnectionText(mActivity, User.getInstance().getConnection());
             connectionTextView.setText(cloudText);
 
+            String photoUrl = User.getInstance().getPhotoUrl();
+            if (photoUrl != null) {
+                GlideApp.with(mActivity)
+                        .load(photoUrl)
+//                        Make the image view circular:
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(userImageView);
+            }
         }
 
         // The user is not logged in, but was logged in some time before, show the name:

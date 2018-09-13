@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.android.gms.oss-licenses-plugin'
+//apply plugin: 'com.google.gms.oss.licenses.plugin'
 
 android {
 	signingConfigs {
@@ -30,11 +32,15 @@ android {
 		debug {
             buildConfigField "String", "DropboxApiKey", "\"${DropboxApiKey}\""
             resValue 'string', "dropbox_api_key","\"${DropboxManifestApiKey}\""
+			buildConfigField "String", "OneDriveApiKey", "\"${OneDriveKey}\""
+			buildConfigField "String", "DriveApiKey", "\"${GoogleDriveApiKey}\""
 		}
 		release {
 			minifyEnabled false
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField "String", "DropboxApiKey", "\"${DropboxApiKey}\""
+			buildConfigField "String", "OneDriveApiKey", "\"${OneDriveKey}\""
+			buildConfigField "String", "DriveApiKey", "\"${GoogleDriveApiKey}\""
             resValue 'string', "dropbox_api_key","\"${DropboxManifestApiKey}\""
 		}
 	}
@@ -140,10 +146,23 @@ dependencies {
 	annotationProcessor 'com.github.bumptech.glide:compiler:4.5.0'
 	implementation project(':openCVLibrary')
 	implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.9.0'
-	implementation 'com.github.chrisbanes:PhotoView:2.0.0'
-	implementation 'com.fivehundredpx:greedo-layout:1.1.0'
+//	implementation 'com.github.chrisbanes:PhotoView:2.0.0'
+//	implementation 'com.fivehundredpx:greedo-layout:1.1.0'
 	implementation 'com.google.android:flexbox:1.0.0'
 	implementation 'com.google.android.gms:play-services-drive:11.6.0'
     implementation 'com.google.android.gms:play-services-auth:11.6.0'
-//    implementation 'com.google.android:flexbox:0.3.0-alpha2'
+	implementation 'com.onedrive.sdk:onedrive-sdk-android:1.3+'
+	// Include supported authentication methods for your application
+
+//	OneDrive SDK:
+    implementation 'com.microsoft.services.msa:msa-auth:0.8.+'
+    implementation 'com.microsoft.aad:adal:1.1.+'
+
+//	MSGraph SDK:
+    implementation 'com.microsoft.graph:msa-auth-for-android-adapter:0.10.+'
+	implementation 'com.microsoft.graph:msgraph-sdk-android:1.7.+'
+
+//	implementation 'com.google.android.gms:play-services-oss-licenses:16.0.0'
+	implementation 'com.google.android.gms:play-services-oss-licenses:11.6.0'
+
 }

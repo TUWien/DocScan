@@ -434,8 +434,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             // Indicates that Google Play services is out of date, disabled, etc.
             // Prompt the user to install/update/enable Google Play services.
-            GooglePlayServicesUtil.showErrorNotification(
-                    e.getConnectionStatusCode(), mContext);
+//            commented this because of gradle build errors:
+//            GooglePlayServicesUtil.showErrorNotification(
+//                    e.getConnectionStatusCode(), mContext);
 
         } catch (GooglePlayServicesNotAvailableException e) {
             // Indicates a non-recoverable error; the ProviderInstaller is not able

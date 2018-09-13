@@ -138,6 +138,7 @@ public class DropboxUtils {
                 User.getInstance().setFirstName(account.getName().getGivenName());
                 User.getInstance().setLastName(account.getName().getSurname());
                 User.getInstance().setConnection(User.SYNC_DROPBOX);
+                User.getInstance().setPhotoUrl(account.getProfilePhotoUrl());
 
             } catch (DbxException e) {
                 e.printStackTrace();

@@ -1,5 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
+import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -18,6 +20,7 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DriveUtils;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
+import at.ac.tuwien.caa.docscan.sync.OneDriveUtils;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
@@ -42,18 +45,20 @@ public class DriveActivity extends BaseNoNavigationActivity implements LoginRequ
         mIsActitivyJustCreated = true;
 
         Button authenticateButton = findViewById(R.id.drive_authenticate_button);
+        final Application app = getApplication();
+        final Activity activity = this;
         authenticateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //        TODO: handle cases in which the user rejects the authentication
-//                if (!DropboxUtils.getInstance().startAuthentication(getApplicationContext())) {
-//                    showNotAuthenticatedDialog();
 //                }
 
-                DriveUtils.getInstance().authenticate(getApplicationContext());
-                startActivityForResult(DriveUtils.getInstance().getSignInClient().getSignInIntent(),
-                        REQUEST_CODE_SIGN_IN);
+//                DriveUtils.getInstance().authenticate(getApplicationContext());
+//                startActivityForResult(DriveUtils.getInstance().getSignInClient().getSignInIntent(),
+//                        REQUEST_CODE_SIGN_IN);
 
+//                OneDriveUtils.getInstance().startClient(activity);
+//                OneDriveUtils.getInstance().startGraphSDK(getApplication(), activity);
             }
         });
 
@@ -70,7 +75,7 @@ public class DriveActivity extends BaseNoNavigationActivity implements LoginRequ
                 // Called after user is signed in.
                 if (resultCode == RESULT_OK) {
 
-                    DriveUtils.getInstance().initClient(this);
+//                    DriveUtils.getInstance().initClient(this);
 
                 }
                 break;

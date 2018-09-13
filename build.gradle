@@ -6,6 +6,8 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.4'
+        classpath 'com.google.android.gms:oss-licenses-plugin:0.9.3'
+//        classpath 'com.google.gms:oss-licenses:0.9.0'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -16,8 +18,6 @@ allprojects {
         jcenter()
         maven { url "https://jitpack.io" }		// necessary for XmlToJson
         maven { url "https://maven.google.com" }		// necessary for Google Play Services
-        maven { url 'https://github.com/500px/greedo-layout-for-android/raw/master/releases/' }
-
         google()
     }
 }

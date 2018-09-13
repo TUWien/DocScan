@@ -32,8 +32,7 @@ import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
  * Created by fabian on 2/6/2018.
  */
 
-public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder>
-        implements GalleryLayoutSizeCalculator.SizeCalculatorDelegate {
+public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder> {
 
     private Document mDocument;
     private Context mContext;
@@ -370,9 +369,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         }
     }
 
-//    Needed by the GreedoLayoutManager:
-    @Override
-    public double aspectRatioForIndex(int i) {
+////    Needed by the GreedoLayoutManager:
+//    @Override
+    private double aspectRatioForIndex(int i) {
 
         if (mDocument.getPages().size() <= i)
             return 1.0;

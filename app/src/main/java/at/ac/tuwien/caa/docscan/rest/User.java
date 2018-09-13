@@ -1,6 +1,6 @@
 package at.ac.tuwien.caa.docscan.rest;
 
-/**
+import android.net.Uri; /**
  * Created by fabian on 01.12.2016.
  */
 public class User {
@@ -17,7 +17,7 @@ public class User {
     private Collection mCollection;
     private String mDropboxToken;
     private String mDocumentName = null;
-    private int mTranskribusUploadCollId;
+    private String mPhotoUrl = null;
 
     /**
      * Returns a singleton.
@@ -100,4 +100,24 @@ public class User {
 
     public String getDocumentName() { return mDocumentName; }
 
+    public void setPhotoUrl(String photoUrl) {
+
+        mPhotoUrl = photoUrl;
+
+    }
+
+    public String getPhotoUrl() {
+
+        return mPhotoUrl;
+
+    }
+
+    public void setPhotoUrl(Uri photoUrl) {
+
+        if (photoUrl != null)
+            mPhotoUrl = photoUrl.toString();
+        else
+            mPhotoUrl = null;
+
+    }
 }
