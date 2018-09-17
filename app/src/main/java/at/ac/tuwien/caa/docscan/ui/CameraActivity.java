@@ -111,8 +111,10 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
+import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
-import at.ac.tuwien.caa.docscan.ui.document.OpenDocumentActivity;
+import at.ac.tuwien.caa.docscan.ui.document.SelectDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
@@ -249,6 +251,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (AppState.isDataLogged())
             DataLog.getInstance().readLog(this);
 
+//        Load the file containing documents created:
+//        DocumentStorage.readFromDisk(this);
+//        DocumentStorage.loadJSON(this);
+
         mContext = this;
 
         initActivity();
@@ -283,6 +289,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
         savePreferences();
+        DocumentStorage.saveJSON(this);
 
 //        // Save the sync info:
 //        SyncInfo.getInstance().saveToDisk(this);
@@ -365,7 +372,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         boolean isDebugViewShown = sharedPref.getBoolean(getResources().getString(R.string.key_show_debug_view), false);
         showDebugView(isDebugViewShown);
         // update the title of the toolbar:
-        getSupportActionBar().setTitle(User.getInstance().getDocumentName());
+//        getSupportActionBar().setTitle(User.getInstance().getDocumentName());
+        if (DocumentStorage.getInstance(mContext).getTitle() != null)
+            getSupportActionBar().setTitle(DocumentStorage.getInstance(mContext).getTitle());
 
         mHideSeriesDialog = Settings.getInstance().loadBooleanKey(this, HIDE_SERIES_DIALOG_KEY);
 
@@ -710,29 +719,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void openGallery() {
 
-//        startActivity();
-//        startActivity(new Intent(getApplicationContext(), GalleryActivity.class));
-//        startActivity(new Intent(getApplicationContext(), PageSlideActivity.class));
-
-        File mediaStorageDir = getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
-        if (mediaStorageDir == null)
-            return;
-
-        File[] imgList = getImageArray(mediaStorageDir);
-
-        if (imgList == null)
-            return;
-        if (imgList.length == 0)
-            return;
-
-//                Start the image viewer:
-        Intent intent = new Intent(mContext, PageSlideActivity.class);
-//      Set the directory name:
-        intent.putExtra(getString(R.string.key_document_file_name), mediaStorageDir.getAbsolutePath());
-
-//      Set the file position - it is the index of the last file in the sorted list of files:
-        intent.putExtra(getString(R.string.key_page_position), imgList.length - 1);
-        mContext.startActivity(intent);
+        Document document = DocumentStorage.getInstance(this).getActiveDocument();
+        if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
+            Intent intent = new Intent(getApplicationContext(), PageSlideActivity.class);
+            intent.putExtra(mContext.getString(R.string.key_document_file_name),
+                    document.getTitle());
+            intent.putExtra(mContext.getString(R.string.key_page_position),
+                    document.getPages().size()-1);
+            mContext.startActivity(intent);
+        }
 
     }
 
@@ -1183,7 +1178,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void savePicture(byte[] data) {
 
-        Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
+//        commented, because we are restructuring the document setup:
+//        Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
+        Uri uri = getFileName(getResources().getString(R.string.app_name));
         FileSaver fileSaver = new FileSaver(data);
         fileSaver.execute(uri);
 
@@ -1224,6 +1221,22 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 mContext.getString(R.string.img_prefix) + timeStamp + mContext.getString(R.string.img_extension));
 
         return Uri.fromFile(mediaFile);
+    }
+
+    private static Uri getFileName(String appName) {
+
+        File mediaStorageDir = Helper.getMediaStorageDir(appName);
+        if (mediaStorageDir == null)
+            return null;
+
+        // Create a media file name
+        mLastTimeStamp = new Date();
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(mLastTimeStamp);
+        File mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                mContext.getString(R.string.img_prefix) + timeStamp + mContext.getString(R.string.img_extension));
+
+        return Uri.fromFile(mediaFile);
+
     }
 
 //    /**
@@ -2035,7 +2048,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 return true;
 
             case R.id.series_switch_item:
-                startActivity(new Intent(getApplicationContext(), OpenDocumentActivity.class));
+//                startActivity(new Intent(getApplicationContext(), OpenDocumentActivity.class));
+                startActivity(new Intent(getApplicationContext(), SelectDocumentActivity.class));
                 return true;
 
             case R.id.series_qr_item:
@@ -2253,22 +2267,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private boolean loadThumbnailFromDisk() {
 
-        File mediaStorageDir = Helper.getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
-        if (mediaStorageDir == null)
-            return false;
+        String fileName = DocumentStorage.getInstance(mContext).getLastPageFileInActiveDocument();
+        if (fileName != null) {
 
-        File[] imgList = Helper.getImageArray(mediaStorageDir);
-        if (imgList == null)
-            return false;
+            GlideApp.with(mContext)
+                    .load(fileName)
+                    .into(mGalleryButton);
 
-        else if (imgList.length == 0)
-            return false;
+            return true;
+        }
 
-        GlideApp.with(mContext)
-                .load(imgList[imgList.length-1].getPath())
-                .into(mGalleryButton);
-
-        return true;
+        return false;
 
     }
 
@@ -2316,9 +2325,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             mIsSaving = true;
 
-            final File outFile = new File(uris[0].getPath());
+            final File file = new File(uris[0].getPath());
 
-            if (outFile == null)
+            if (file == null)
                 return null;
 
             try {
@@ -2331,17 +2340,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     }
                 });
 
-                FileOutputStream fos = new FileOutputStream(outFile);
+                FileOutputStream fos = new FileOutputStream(file);
                 fos.write(mData);
 
                 fos.close();
 
                 // Save exif information (especially the orientation):
-                saveExif(outFile);
+                saveExif(file);
 
-
-//                // Add the file to the sync list:
-//                addToSyncList(mContext, outFile);
+                DocumentStorage.getInstance(mContext).addToActiveDocument(file);
+//                DocumentStorage.saveJSON(mContext);
+//                DocumentStorage.saveToDisk(mContext);
 
                 mIsPictureSafe = true;
 

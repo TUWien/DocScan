@@ -200,6 +200,10 @@
     <string name="document_no_permission_message">Files cannot be created without permission.</string>
     <string name="document_no_permission_title">Permission required</string>
 
+    <!-- SelectDocumentActivity -->
+    <string name="select_document_title">Select a document</string>
+    <string name="select_document_select_button_text">Use selected document</string>
+
     <!-- SyncActivity -->
     <string name="sync_no_dir_selected_title">No directory selected</string>
     <string name="sync_no_dir_selected_message">Please select at least one folder.</string>

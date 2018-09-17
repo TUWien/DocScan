@@ -53,6 +53,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
 import at.ac.tuwien.caa.docscan.gallery.PageImageView;
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
@@ -89,7 +90,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         if (fileName == null)
             return;
 
-        mDocument = getDummyDocument(fileName);
+//        mDocument = getDummyDocument(fileName);
+        mDocument = DocumentStorage.getInstance(this).getDocument(fileName);
 
         mPagerAdapter = new PageSlideAdapter(getSupportFragmentManager(), mDocument);
         mPager.setAdapter(mPagerAdapter);
