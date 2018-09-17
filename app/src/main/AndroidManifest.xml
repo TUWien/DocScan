@@ -52,11 +52,10 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
-        <!--<activity-->
-            <!--android:name=".ui.settings.PreferenceActivity"-->
-            <!--android:exported="true"-->
-            <!--android:parentActivityName=".ui.CameraActivity"-->
-            <!--/>-->
+        <activity
+            android:name=".ui.LicensesActivity"
+            android:exported="false"
+            />
 
         <activity
             android:name=".ui.gallery.PageSlideActivity"

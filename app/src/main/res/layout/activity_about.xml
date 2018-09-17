@@ -81,7 +81,7 @@
 
                 <Button
                     android:id="@+id/about_licenses_button"
-                    android:text="@string/about_licences_text"
+                    android:text="@string/about_licenses_text"
                     android:layout_centerHorizontal="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

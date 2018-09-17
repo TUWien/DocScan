@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.android.gms.oss-licenses-plugin'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 //apply plugin: 'com.google.gms.oss.licenses.plugin'
 
 android {
@@ -164,5 +166,11 @@ dependencies {
 
 //	implementation 'com.google.android.gms:play-services-oss-licenses:16.0.0'
 	implementation 'com.google.android.gms:play-services-oss-licenses:11.6.0'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
+	implementation 'com.google.code.gson:gson:2.8.5'
+
+}
+repositories {
+    mavenCentral()
 }

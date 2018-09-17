@@ -21,10 +21,10 @@ class LicensesActivity : BaseNoNavigationActivity () {
 //        val licenses = convertToLicenseList(list)
         val licenseAdapater = LicenseAdapter(generateLicenses())
 
-        with(licenses_recycler_view) {
-            adapter = licenseAdapater
-            layoutManager = LinearLayoutManager(this@LicensesActivity)
-        }
+//        with(licenses_recycler_view) {
+            licenses_recycler_view.adapter = licenseAdapater
+            licenses_recycler_view.layoutManager = LinearLayoutManager(this@LicensesActivity)
+//        }
 
         var toolbar: Toolbar = findViewById(R.id.main_toolbar)
         toolbar.title = "Open Source Licenses"

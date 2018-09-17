@@ -14,6 +14,7 @@ import android.widget.ExpandableListView;
 import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.logic.DocumentStore;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
@@ -62,6 +63,8 @@ public class OpenDocumentActivity extends BaseNoNavigationActivity {
                 if (mSelectedDir != null) {
                     User.getInstance().setDocumentName(mSelectedDir.getName());
                     UserHandler.saveSeriesName(c);
+
+//                    DocumentStore.getInstance().createNewDocument(mSelectedDir.getName());
 
 //                    Settings.getInstance().saveKey(a, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, true);
 //                    Settings.getInstance().saveKey(a, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, false);

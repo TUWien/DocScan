@@ -35,6 +35,7 @@ import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentStore;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.RestRequest;
@@ -322,8 +323,9 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
 //            mDocuments = Helper.getDocuments(getResources().getString(R.string.app_name));
 
-            List<Document> allDocuments = Helper.getDocuments(getResources().getString(R.string.app_name));
-            mDocuments = Helper.getNonEmptyDocuments(allDocuments);
+//            List<Document> allDocuments = Helper.getDocuments(getResources().getString(R.string.app_name));
+//            mDocuments = Helper.getNonEmptyDocuments(allDocuments);
+            mDocuments = DocumentStore.getInstance().getDocuments();
 
             mAdapter = new DocumentUploadAdapter(mContext, R.layout.rowlayout, mDocuments);
 

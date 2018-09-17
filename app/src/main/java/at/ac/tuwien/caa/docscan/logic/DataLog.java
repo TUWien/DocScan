@@ -116,7 +116,6 @@ public class DataLog {
 
         String emailSubject =   activity.getBaseContext().getString(R.string.log_email_subject);
         String[] emailTo =      new String[]{activity.getBaseContext().getString(R.string.log_email_to)};
-//        String[] emailTo =      new String[]{"holl@cvl.tuwien.ac.at"};
         String text =           activity.getBaseContext().getString(R.string.log_email_text);
 
         Intent intent = ShareCompat.IntentBuilder.from(activity)

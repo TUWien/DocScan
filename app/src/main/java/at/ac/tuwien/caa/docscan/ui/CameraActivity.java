@@ -78,7 +78,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.zxing.Result;
 
@@ -111,6 +110,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager;
 import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
+import at.ac.tuwien.caa.docscan.logic.DocumentStore;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.document.OpenDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
@@ -248,6 +248,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         //        Open the log file at app startup:
         if (AppState.isDataLogged())
             DataLog.getInstance().readLog(this);
+
+//        Load the file containing documents created:
+        DocumentStore.readFromDisk(this);
 
         mContext = this;
 
@@ -1184,7 +1187,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void savePicture(byte[] data) {
 
-        Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
+//        commented, because we are restructuring the document setup:
+//        Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
+        Uri uri = getFileName(getResources().getString(R.string.app_name));
         FileSaver fileSaver = new FileSaver(data);
         fileSaver.execute(uri);
 
@@ -1225,6 +1230,22 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 mContext.getString(R.string.img_prefix) + timeStamp + mContext.getString(R.string.img_extension));
 
         return Uri.fromFile(mediaFile);
+    }
+
+    private static Uri getFileName(String appName) {
+
+        File mediaStorageDir = Helper.getMediaStorageDir(appName);
+        if (mediaStorageDir == null)
+            return null;
+
+        // Create a media file name
+        mLastTimeStamp = new Date();
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(mLastTimeStamp);
+        File mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                mContext.getString(R.string.img_prefix) + timeStamp + mContext.getString(R.string.img_extension));
+
+        return Uri.fromFile(mediaFile);
+
     }
 
 //    /**
@@ -2317,9 +2338,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             mIsSaving = true;
 
-            final File outFile = new File(uris[0].getPath());
+            final File file = new File(uris[0].getPath());
 
-            if (outFile == null)
+            if (file == null)
                 return null;
 
             try {
@@ -2332,17 +2353,16 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     }
                 });
 
-                FileOutputStream fos = new FileOutputStream(outFile);
+                FileOutputStream fos = new FileOutputStream(file);
                 fos.write(mData);
 
                 fos.close();
 
                 // Save exif information (especially the orientation):
-                saveExif(outFile);
+                saveExif(file);
 
-
-//                // Add the file to the sync list:
-//                addToSyncList(mContext, outFile);
+                DocumentStore.getInstance().addToActiveDocument(file);
+                DocumentStore.saveToDisk(mContext);
 
                 mIsPictureSafe = true;
 

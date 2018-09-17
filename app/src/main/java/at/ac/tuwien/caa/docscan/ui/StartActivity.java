@@ -32,6 +32,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 
 import java.io.UnsupportedEncodingException;
@@ -113,20 +114,27 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     }
 
     private void showCameraPreview() {
-        // BEGIN_INCLUDE(startCamera)
-        // Check if the Camera permission has been granted
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
-            // Permission is already available, start camera preview
-            Snackbar.make(mLayout,
-                    "Camera permission is available. Starting preview.",
-                    Snackbar.LENGTH_SHORT).show();
 
-            startCamera();
+        try {
+            // BEGIN_INCLUDE(startCamera)
+            // Check if the Camera permission has been granted
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                    == PackageManager.PERMISSION_GRANTED) {
+                // Permission is already available, start camera preview
+                Snackbar.make(mLayout,
+                        "Camera permission is available. Starting preview.",
+                        Snackbar.LENGTH_SHORT).show();
 
-        } else {
-            // Permission is missing and must be requested.
-            requestCameraPermission();
+                startCamera();
+
+            } else {
+                // Permission is missing and must be requested.
+                requestCameraPermission();
+            }
+        }
+
+        finally {
+            Log.d("StartActivity", "finally block reached");
         }
         // END_INCLUDE(startCamera)
     }

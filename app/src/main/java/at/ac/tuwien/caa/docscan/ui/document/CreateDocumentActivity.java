@@ -19,6 +19,7 @@ import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
 //import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentStore;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
@@ -169,10 +170,24 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                askForPermissionCreateDir();
+//                askForPermissionCreateDir();
+                createNewDocument();
             }
         });
 
+    }
+
+    private void createNewDocument() {
+
+
+        EditText editText = findViewById(R.id.create_series_name_edittext);
+        String documentName = editText.getText().toString();
+
+        //        TODO: check if a document with that name is existing!
+        DocumentStore.getInstance().createNewDocument(documentName);
+
+        Helper.startCameraActivity(this);
+        
     }
 
     private void initShowFieldsCheckBox() {

@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.view.View
 import at.ac.tuwien.caa.docscan.R
 import kotlinx.android.synthetic.main.license_list_item.view.*
+import java.util.*
 
 
 class LicenseAdapter(val licenseList: ArrayList<LicensesActivity.License>) : RecyclerView.Adapter<LicenseAdapter.ViewHolder>() {
@@ -27,12 +28,20 @@ class LicenseAdapter(val licenseList: ArrayList<LicensesActivity.License>) : Rec
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         val license = licenseList.get(position)
-        with (holder) {
-            title.text = license.mName
-            copyright.text = license.mCopyright
-            license_text.text = license.mLicense
-            url.text = license.mUrl
-        }
+
+
+        holder.title.text = license.mName
+        holder.copyright.text = license.mCopyright
+        holder.license_text.text = license.mLicense
+        holder.url.text = license.mUrl
+
+
+//        with (holder) {
+//            title.text = license.mName
+//            copyright.text = license.mCopyright
+//            license_text.text = license.mLicense
+//            url.text = license.mUrl
+//        }
 
     }
 

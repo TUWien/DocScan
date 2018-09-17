@@ -1,12 +1,13 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import java.io.File;
+import java.io.Serializable;
 
 /**
  * Created by fabian on 01.02.2018.
  */
 
-public class Page {
+public class Page implements Serializable {
 
     private File mFile;
     private String mTitle;

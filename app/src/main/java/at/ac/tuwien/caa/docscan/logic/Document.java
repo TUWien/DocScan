@@ -1,13 +1,14 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by fabian on 01.02.2018.
  */
 
-public class Document {
+public class Document implements Serializable {
 
     private String mTitle;
     private ArrayList<Page> mPages;
@@ -16,6 +17,13 @@ public class Document {
     private boolean mIsAwaitingUpload = false;
 
     public Document() {
+
+    }
+
+    public Document(String title) {
+
+        mTitle = title;
+        mPages = new ArrayList<>();
 
     }
 

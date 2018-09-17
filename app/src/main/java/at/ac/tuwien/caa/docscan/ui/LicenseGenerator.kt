@@ -1,8 +1,9 @@
 package at.ac.tuwien.caa.docscan.ui
 
 import at.ac.tuwien.caa.docscan.ui.LicensesActivity.License
+import java.util.*
 
-fun generateLicenses(): ArrayList<License>{
+fun generateLicenses(): ArrayList<License> {
 
     var list = ArrayList<License>()
 
