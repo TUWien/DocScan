@@ -40,6 +40,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.rest.User;
@@ -416,8 +417,12 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void loadDocument() {
 
-        if (mFileName != null)
-            mDocument = Helper.getDocument(mFileName);
+//        if (mFileName != null)
+//            mDocument = Helper.getDocument(mFileName);
+
+        if (mFileName != null) {
+            mDocument = DocumentStorage.getInstance(this).getDocument(mFileName);
+        }
 
     }
 

@@ -70,16 +70,17 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
 
         }
 
+        final Document document = mDocuments.get(position);
 
         TextView titleTextView = convertView.findViewById(R.id.layout_listview_row_title);
         if (titleTextView != null && mDocuments != null) {
-            String text = mDocuments.get(position).getTitle();
+            String text = document.getTitle();
             titleTextView.setText(text);
         }
 
         TextView descriptionTextView = convertView.findViewById(R.id.layout_listview_row_description);
         if (descriptionTextView != null && mDocuments != null) {
-            int num = mDocuments.get(position).getPages().size();
+            int num = document.getPages().size();
             String desc = mContext.getResources().getString(R.string.sync_pages_text);
             desc += " " + Integer.toString(num);
             descriptionTextView.setText(desc);
@@ -90,7 +91,7 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
         ImageView thumbNail = convertView.findViewById(R.id.layout_listview_row_thumbnail);
         if (thumbNail != null && mDocuments != null) {
 
-            if (mDocuments.get(position).getPages().size() >= 1) {
+            if (document.getPages().size() >= 1) {
                 Log.d(getClass().getName(), "position: " + position);
                 final File file = mDocuments.get(position).getPages().get(0).getFile();
                 loadThumbnail(thumbNail, file);
@@ -99,9 +100,14 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
                 thumbNail.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+
                         Intent intent = new Intent(mContext, GalleryActivity.class);
-                        intent.putExtra(mContext.getString(R.string.key_document_file_name), file.getParent());
+                        intent.putExtra(mContext.getString(R.string.key_document_file_name), document.getTitle());
                         mContext.startActivity(intent);
+
+//                        Intent intent = new Intent(mContext, GalleryActivity.class);
+//                        intent.putExtra(mContext.getString(R.string.key_document_file_name), file.getParent());
+//                        mContext.startActivity(intent);
                     }
                 });
             }

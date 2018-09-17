@@ -19,6 +19,13 @@ public class Document {
 
     }
 
+    public Document(String title) {
+
+        mTitle = title;
+        mPages = new ArrayList<>();
+
+    }
+
     public ArrayList<File> getFiles() {
 
         ArrayList<File> files = new ArrayList<>(mPages.size());

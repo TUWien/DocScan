@@ -5,8 +5,11 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.renderscript.ScriptGroup;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,6 +22,7 @@ import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
 //import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
@@ -32,6 +36,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
     public static final String DOCUMENT_QR_TEXT = "DOCUMENT_QR_TEXT";
+    private static final String RESERVED_CHARS = "|\\?*<\":>+[]/'";
 
     // Eventually a permission is required for dir creation, hence we store this as member:
     private File mSubDir;
@@ -45,6 +50,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         super.initToolbarTitle(R.string.create_series_title);
 
         initOkButton();
+        initEditField();
 
 //        Temporarily deactivate the advanced fields:
 //        initShowFieldsCheckBox();
@@ -63,6 +69,26 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                 processQRCode(qrText);
             }
         }
+    }
+
+    private void initEditField() {
+
+        InputFilter filter = new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                if (source.length() < 1)
+                    return null;
+                char last = source.charAt(source.length() - 1);
+                if(RESERVED_CHARS.indexOf(last) > -1)
+                    return source.subSequence(0, source.length() - 1);
+
+                return null;
+            }
+        };
+
+        EditText editText = findViewById(R.id.create_series_name_edittext);
+        editText.setFilters(new InputFilter[] {filter});
+
     }
 
     /**
@@ -169,9 +195,44 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                askForPermissionCreateDir();
+//                Retrieve the entered text:
+                EditText editText = findViewById(R.id.create_series_name_edittext);
+                String title = editText.getText().toString();
+
+                createNewDocument(title);
             }
         });
+
+    }
+
+    private void createNewDocument(String title) {
+
+        if (title == null)
+            return;
+
+        boolean isTitleAlreadyAssigned =
+                DocumentStorage.getInstance(this).isTitleAlreadyAssigned(title);
+
+        if (isTitleAlreadyAssigned) {
+            showDirExistingCreatedAlert(title);
+            return;
+        }
+        boolean isDocumentCreated = DocumentStorage.getInstance(this).createNewDocument(title);
+        if (isDocumentCreated)
+            Helper.startCameraActivity(this);
+
+
+
+
+
+
+
+//
+//        if (!isDocumentCreated)
+//            showDirExistingCreatedAlert(documentName);
+//        else {
+//            Helper.startCameraActivity(this);
+//        }
 
     }
 

@@ -52,6 +52,12 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
+        <activity
+            android:name=".ui.document.SelectDocumentActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.CameraActivity"
+            />
+
         <!--<activity-->
             <!--android:name=".ui.settings.PreferenceActivity"-->
             <!--android:exported="true"-->
@@ -100,8 +106,6 @@
         <activity
             android:name=".ui.document.CreateDocumentActivity"
             android:exported="true"
-            android:launchMode = "singleInstance"
-            android:noHistory="true"
             android:configChanges="orientation|screenSize"
             />
 
