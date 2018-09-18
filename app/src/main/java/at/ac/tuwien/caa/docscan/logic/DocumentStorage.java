@@ -67,7 +67,8 @@ public class DocumentStorage {
      */
     public boolean createNewDocument(String title) {
 
-//        TODO: check if the document contains valid characters!
+        if (title == null || title.isEmpty())
+            return false;
 
         if (isTitleAlreadyAssigned(title))
             return false;
@@ -166,6 +167,9 @@ public class DocumentStorage {
 
         if (mInstance == null)
             loadJSON(context);
+
+//        if (mInstance == null)
+//            mInstance = new DocumentStorage();
 
         return mInstance;
 

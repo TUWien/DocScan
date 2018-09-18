@@ -136,6 +136,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         super.onPause();
 
+        DocumentStorage.saveJSON(this);
+
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         mMessageReceiver = null;
 

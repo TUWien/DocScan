@@ -68,11 +68,11 @@
 
         <ImageView
             android:id="@+id/layout_listview_row_thumbnail"
-            android:src="@mipmap/docscan_launcher"
             android:scaleType="center"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
         <ImageView
+            android:id="@+id/layout_listview_more_image_view"
             app:srcCompat="@drawable/ic_more_vert_white_black_24dp"
             android:scaleType="center"
             android:layout_alignRight="@id/layout_listview_row_thumbnail"

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -57,6 +58,14 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
 
     }
 
+    @Override
+    public void onPause() {
+
+        super.onPause();
+        DocumentStorage.saveJSON(this);
+
+    }
+
     private void initSelectButton() {
 
         mSelectButton = findViewById(R.id.document_select_button);
@@ -64,10 +73,8 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
             @Override
             public void onClick(View v) {
                 if (mSelectedDocument != null) {
-
                     DocumentStorage.getInstance(mContext).setTitle(mSelectedDocument.getTitle());
-                    DocumentStorage.saveJSON(mContext);
-
+                    Helper.startCameraActivity(mContext);
                 }
 
             }

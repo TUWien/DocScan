@@ -19,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.InputFilter;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -99,7 +100,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
         mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
         mDisableRecyleViewLayout = findViewById(R.id.gallery_disable_layout);
-        mNameEditText = findViewById(R.id.document_name_edit_text);
+        initEditText();
 
 
         mDisableRecyleViewLayout.setOnClickListener(new View.OnClickListener() {
@@ -109,27 +110,7 @@ public class GalleryActivity extends AppCompatActivity implements
             }
         });
 
-        mNameEditText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
 
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-
-//                    mFileName = mNameEditText.getText().toString();
-                    renameDir(mNameEditText.getText().toString());
-                    showRenameEditText(false);
-
-//                    loadDocument();
-//                    initAdapter();
-
-//                    mToolbar.setTitle(mNameEditText.getText());
-
-
-                    return true;
-                }
-                return false; //action was not consumed
-            }
-        });
 
 
         loadDocument();
@@ -138,6 +119,28 @@ public class GalleryActivity extends AppCompatActivity implements
 
 
 
+    }
+
+    private void initEditText() {
+
+        mNameEditText = findViewById(R.id.document_name_edit_text);
+//        Prevent that the user enters a non valid character:
+        InputFilter filter = Helper.getDocumentInputFilter();
+        mNameEditText.setFilters(new InputFilter[] {filter});
+
+        mNameEditText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    renameDir(mNameEditText.getText().toString());
+                    showRenameEditText(false);
+
+                    return true;
+                }
+                return false; //action was not consumed
+            }
+        });
     }
 
     private void showRenameEditText(boolean show) {
@@ -170,6 +173,21 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void renameDir(String newDir) {
 
+        boolean isTitleAssigned = DocumentStorage.getInstance(this).isTitleAlreadyAssigned(newDir);
+        if (isTitleAssigned) {
+            showDirExistingCreatedAlert(newDir);
+            return;
+        }
+
+        mFileName = newDir;
+        mDocument.setTitle(newDir);
+        mToolbar.setTitle(newDir);
+        loadDocument();
+        initAdapter();
+
+
+
+/*
         File mediaStorageDir = Helper.getMediaStorageDir(getResources().getString(R.string.app_name));
         File newFile = new File(mediaStorageDir.getAbsolutePath(), newDir);
 
@@ -202,7 +220,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
             }
         }
-
+*/
 
     }
 
@@ -261,6 +279,8 @@ public class GalleryActivity extends AppCompatActivity implements
     public void onPause() {
 
         super.onPause();
+
+        DocumentStorage.saveJSON(this);
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         mMessageReceiver = null;
@@ -364,38 +384,6 @@ public class GalleryActivity extends AppCompatActivity implements
         mAdapter = new GalleryAdapter(this, mDocument);
         mAdapter.setFileName(mFileName);
         mRecyclerView.setAdapter(mAdapter);
-
-//        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this);
-//        layoutManager.setFlexDirection(FlexDirection.ROW);
-////        layoutManager.setJustifyContent(JustifyContent.SPACE_EVENLY);
-//        layoutManager.setFlexWrap(FlexWrap.WRAP);
-//        layoutManager.setAlignItems(AlignItems.STRETCH);
-//        mRecyclerView.setLayoutManager(layoutManager);
-
-//============= Greedo Layout: =============
-//
-//        GalleryLayoutManager layoutManager = new GalleryLayoutManager(mAdapter);
-//        layoutManager.setMaxRowHeight(1200);
-//        int spacing = dpToPx(1, this);
-//        mRecyclerView.addItemDecoration(new InnerItemDecoration(spacing));
-//        mAdapter.setSizeCalculator(layoutManager.getSizeCalculator());
-//        mRecyclerView.setLayoutManager(layoutManager);
-
-//        int spacing = dpToPx(1, this);
-//        mRecyclerView.addItemDecoration(new InnerItemDecoration(spacing));
-
-//        DividerItemDecoration horizontalDivider = new DividerItemDecoration(mRecyclerView.getContext(),
-//                HORIZONTAL);
-//        DividerItemDecoration verticalDivider = new DividerItemDecoration(mRecyclerView.getContext(),
-//                VERTICAL);
-//        verticalDivider.setDrawable(getResources().getDrawable(R.drawable.gallery_divider));
-//        horizontalDivider.setDrawable(getResources().getDrawable(R.drawable.gallery_divider));
-//
-//        mRecyclerView.addItemDecoration(horizontalDivider);
-//        mRecyclerView.addItemDecoration(verticalDivider);
-
-
-//============= Regular Layout: =============
 
         int columnCount = 2;
 
@@ -661,6 +649,8 @@ public class GalleryActivity extends AppCompatActivity implements
             mDocument.getPages().get(selections[i]).getFile().delete();
             mDocument.getPages().remove(selections[i]);
         }
+
+        loadDocument();
 
         mAdapter.clearSelection();
         mAdapter.notifyDataSetChanged();

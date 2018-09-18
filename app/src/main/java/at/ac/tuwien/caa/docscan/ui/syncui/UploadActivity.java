@@ -235,6 +235,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         Log.d(CLASS_NAME, "onPause: ");
 
+        DocumentStorage.saveJSON(this);
+
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         Log.d(CLASS_NAME, "unregisterReceiver: ");
         mMessageReceiver = null;

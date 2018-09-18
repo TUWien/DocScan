@@ -100,25 +100,18 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
                 thumbNail.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
                         Intent intent = new Intent(mContext, GalleryActivity.class);
                         intent.putExtra(mContext.getString(R.string.key_document_file_name), document.getTitle());
                         mContext.startActivity(intent);
-
-//                        Intent intent = new Intent(mContext, GalleryActivity.class);
-//                        intent.putExtra(mContext.getString(R.string.key_document_file_name), file.getParent());
-//                        mContext.startActivity(intent);
                     }
                 });
             }
+//            Show no image and hide the more button (with the three dots)
             else {
-                thumbNail.setImageResource(R.drawable.ic_folder_open_black_24dp);
-                thumbNail.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                    }
-                });
+                ImageView moreImageView = convertView.findViewById(R.id.layout_listview_more_image_view);
+                moreImageView.setVisibility(View.INVISIBLE);
             }
+
         }
 
         return convertView;

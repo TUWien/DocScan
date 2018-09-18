@@ -70,12 +70,14 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.signature.MediaStoreSignature;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -120,7 +122,6 @@ import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
-import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.document.SeriesGeneralActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
@@ -129,7 +130,6 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
-import static at.ac.tuwien.caa.docscan.logic.Helper.getImageArray;
 import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
@@ -382,7 +382,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 		checkProviderInstaller();
 
-        loadThumbnail();
+        updateThumbnail();
 
 //        CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
 
@@ -1346,7 +1346,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //        // Initialize the newly created buttons:
         initButtons();
-        loadThumbnail();
+        updateThumbnail();
 
     }
 
@@ -2258,21 +2258,36 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     /**
      * Shows the last picture taken as a thumbnail on the gallery button.
      */
-    private void loadThumbnail() {
+    private void updateThumbnail() {
 
-        int visibility = loadThumbnailFromDisk() ? View.VISIBLE : View.INVISIBLE;
+        int visibility = loadThumbNail() ? View.VISIBLE : View.INVISIBLE;
         mGalleryButton.setVisibility(visibility);
 
     }
 
-    private boolean loadThumbnailFromDisk() {
+    private boolean loadThumbNail() {
 
         String fileName = DocumentStorage.getInstance(mContext).getLastPageFileInActiveDocument();
         if (fileName != null) {
+            //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
+            int exifOrientation = -1;
+            try {
+                exifOrientation = Helper.getExifOrientation(fileName);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-            GlideApp.with(mContext)
-                    .load(fileName)
-                    .into(mGalleryButton);
+            if (exifOrientation != -1) {
+                GlideApp.with(mContext)
+                        .load(fileName)
+                        .signature(new MediaStoreSignature("", 0, exifOrientation))
+                        .into(mGalleryButton);
+            }
+            else {
+                GlideApp.with(mContext)
+                        .load(fileName)
+                        .into(mGalleryButton);
+            }
 
             return true;
         }
@@ -2280,6 +2295,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         return false;
 
     }
+
 
     private int getExifOrientation() {
 
