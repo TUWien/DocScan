@@ -8,6 +8,8 @@ import android.net.NetworkInfo;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.media.ExifInterface;
+import android.text.InputFilter;
+import android.text.Spanned;
 //import android.util.Size;
 
 import com.android.volley.VolleyError;
@@ -34,6 +36,8 @@ import at.ac.tuwien.caa.docscan.ui.CameraActivity;
  */
 
 public class Helper {
+
+    private static final String RESERVED_CHARS = "|\\?*<\":>+[]/'";
 
 
     /**
@@ -117,6 +121,18 @@ public class Helper {
 
     public static int getExifOrientation(File outFile) throws IOException {
         final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+        if (exif != null) {
+            String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+            return Integer.valueOf(orientation);
+        }
+
+        return -1;
+
+    }
+
+    public static int getExifOrientation(String fileName) throws IOException {
+
+        final ExifInterface exif = new ExifInterface(fileName);
         if (exif != null) {
             String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
             return Integer.valueOf(orientation);
@@ -460,6 +476,30 @@ public class Helper {
         }
 
         return false;
+
+    }
+
+    /**
+     * Returns an input filter for edit text that prevents that the user enters non valid characters
+     * for directories (under Windows and Unix).
+     * @return
+     */
+    public static InputFilter getDocumentInputFilter() {
+
+        InputFilter filter = new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                if (source.length() < 1)
+                    return null;
+                char last = source.charAt(source.length() - 1);
+                if(RESERVED_CHARS.indexOf(last) > -1)
+                    return source.subSequence(0, source.length() - 1);
+
+                return null;
+            }
+        };
+
+        return filter;
 
     }
 
