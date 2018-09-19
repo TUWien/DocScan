@@ -91,7 +91,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             return;
 
 //        mDocument = getDummyDocument(fileName);
-        mDocument = DocumentStorage.getInstance(this).getDocument(fileName);
+        mDocument = DocumentStorage.getInstance().getDocument(fileName);
 
         mPagerAdapter = new PageSlideAdapter(getSupportFragmentManager(), mDocument);
         mPager.setAdapter(mPagerAdapter);
@@ -502,7 +502,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         return document;
 
-//        DocumentMetaData document = new DocumentMetaData();
+//        TranskribusDocumentMetaData document = new TranskribusDocumentMetaData();
 //        ArrayList<File> fileList = getFileList(fileName);
 //        ArrayList<Page> pages = filesToPages(fileList);
 //        document.setPages(pages);

@@ -17,8 +17,6 @@ import com.android.volley.VolleyError;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +41,7 @@ import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
  * Based on: @see <a href="https://developer.android.com/guide/components/services.html#ExtendingService"/>
  */
 
-public class SyncService extends JobService implements
+public class UploadService extends JobService implements
         LoginRequest.LoginCallback,
         CollectionsRequest.CollectionsCallback,
         CreateCollectionRequest.CreateCollectionCallback,
@@ -76,7 +74,7 @@ public class SyncService extends JobService implements
     private static final int NOTIFICATION_FILE_DELETED = 3;
 
     public static final String SERVICE_ALONE_KEY = "SERVICE_ALONE_KEY";
-    private static final String CLASS_NAME = "SyncService";
+    private static final String CLASS_NAME = "UploadService";
 
 
     private int mFilesNum;
@@ -84,35 +82,36 @@ public class SyncService extends JobService implements
     private boolean mIsInterrupted;
 
 
+    //        TODO: replace this one
     @Override
     public boolean onStartJob(JobParameters job) {
 
-        Log.d("SyncService", "================= service starting =================");
+        Log.d(CLASS_NAME, "================= service starting =================");
 
         mIsInterrupted = false;
 
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "================= service starting =================");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "================= service starting =================");
 
         // Check if the app is active, if not read the physical file about the upload status:
-        if (SyncInfo.isInstanceNull()) {
-            SyncInfo.readFromDisk(getApplicationContext());
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "loaded SyncInfo from disk");
-            Log.d("SyncService", "loaded SyncInfo from disk");
+        if (SyncStorage.isInstanceNull()) {
+            SyncStorage.loadJSON(this);
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "loaded SyncStorage from disk");
+            Log.d(CLASS_NAME, "loaded SyncStorage from disk");
         } else {
-            Log.d("SyncService", "SyncInfo is in RAM");
-            SyncInfo.getInstance().printUnfinishedUploadIDs();
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "SyncInfo is in RAM");
+            Log.d(CLASS_NAME, "SyncStorage is in RAM");
+            SyncStorage.getInstance().printUnfinishedUploadIDs();
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "SyncStorage is in RAM");
         }
 
 //        First check if the User is already logged in:
         if (!User.getInstance().isLoggedIn()) {
 //            Log in if necessary:
             Log.d(CLASS_NAME, "login...");
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "login...");
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "login...");
             SyncUtils.login(this, this);
         } else {
             Log.d(CLASS_NAME, "user is logged in");
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "user is logged in");
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "user is logged in");
             startUpload();
 
         }
@@ -124,16 +123,6 @@ public class SyncService extends JobService implements
     private void startUpload() {
 
         TranskribusUtils.getInstance().startUpload(this);
-
-//        if (SyncInfo.getInstance().getUploadDirs() != null && !SyncInfo.getInstance().getUploadDirs().isEmpty())
-//    //        Start the upload of user selected dirs:
-//            TranskribusUtils.getInstance().uploadDocuments(this, SyncInfo.getInstance().getUploadDirs());
-//
-//        if (SyncInfo.getInstance().getUnfinishedUploadIDs() != null &&
-//                !SyncInfo.getInstance().getUnfinishedUploadIDs().isEmpty())
-//            TranskribusUtils.getInstance().startFindingUnfinishedUploads(this,
-//                    SyncInfo.getInstance().getUnfinishedUploadIDs());
-
 
     }
 
@@ -149,9 +138,6 @@ public class SyncService extends JobService implements
 
         Log.d(CLASS_NAME, "onLogin");
         DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onLogin");
-
-//        Starts the upload:
-//        TranskribusUtils.getInstance().uploadDocuments(this, SyncInfo.getInstance().getUploadDirs());
         startUpload();
 
     }
@@ -316,8 +302,6 @@ public class SyncService extends JobService implements
      */
     private void handleRestUploadError() {
 
-
-
         User.getInstance().setLoggedIn(false);
 
         Log.d(getClass().getName(), "handleRestUploadError");
@@ -327,11 +311,8 @@ public class SyncService extends JobService implements
         sendOfflineErrorIntent();
 
 
-        SyncInfo.saveToDisk(getApplicationContext());
-//        Schedule the upload job:
-//        SyncInfo.startSyncJob(getApplicationContext());
-        SyncInfo.restartSyncJob(getApplicationContext());
-
+        SyncStorage.saveJSON(getApplicationContext());
+        SyncUtils.startSyncJob(getApplicationContext(), true);
 
     }
 
@@ -349,26 +330,6 @@ public class SyncService extends JobService implements
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
-    /**
-     * Searches for the unfinished uploads and returns a list of unique directory paths that could
-     * not be uploaded.
-     * @return
-     */
-    protected ArrayList<File> getUnfinishedUploadDirs() {
-
-        ArrayList<File> unfinishedDirs = new ArrayList<>();
-
-        for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
-            if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED) {
-                File parentPath = fileSync.getFile().getParentFile();
-                if (!unfinishedDirs.contains(parentPath))
-                    unfinishedDirs.add(parentPath);
-            }
-        }
-
-        return unfinishedDirs;
-
-    }
 
     @Override
     public void onStatusReceived(int uploadID, String title, ArrayList<String> unfinishedFileNames) {
@@ -387,14 +348,13 @@ public class SyncService extends JobService implements
     @Override
     public void onUploadAlreadyFinished(int uploadID) {
 
-//        TranskribusUtils.getInstance().removeFromUnprocessedList(uploadID);
         TranskribusUtils.getInstance().removeFromUnfinishedListAndCheckJob(uploadID);
 
     }
 
 
     // Handler that receives messages from the thread
-    protected final class ServiceHandler extends Handler implements SyncInfo.Callback {
+    protected final class ServiceHandler extends Handler implements SyncStorage.Callback {
 
         public ServiceHandler(Looper looper) {
             super(looper);
@@ -411,7 +371,7 @@ public class SyncService extends JobService implements
             mFilesUploaded = 0;
 
 //            // Show all files:
-            printSyncInfo();
+            printSyncStatus();
 
             mFilesNum = getFilesNum();
 
@@ -421,9 +381,9 @@ public class SyncService extends JobService implements
                 return;
 
             // Start with the first file:
-            SyncInfo.FileSync fileSync = getNextUpload();
-            if (fileSync != null)
-                uploadFile(fileSync);
+            SyncFile syncFile = getNextUpload();
+            if (syncFile != null)
+                uploadFile(syncFile);
 
         }
 
@@ -455,63 +415,39 @@ public class SyncService extends JobService implements
             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
         }
 
-        private void uploadFile(SyncInfo.FileSync fileSync) {
+        private void uploadFile(SyncFile syncFile) {
 
-            if (fileSync == null)
+            if (syncFile == null)
                 return;
 
-            fileSync.setState(SyncInfo.FileSync.STATE_AWAITING_UPLOAD);
-//uncommented this because of compatibility:
-//            if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
-//                DropboxUtils.getInstance().uploadFile(this, fileSync);
-//            else if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS)
-//                TranskribusUtils.getInstance().uploadFile(this, getApplicationContext(),
-//                        (SyncInfo.TranskribusFileSync) fileSync);
+            syncFile.setState(SyncFile.STATE_AWAITING_UPLOAD);
 
+            if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS) {
+                TranskribusUtils.getInstance().uploadFile(this, getApplicationContext(),
+                        (TranskribusSyncFile) syncFile);
+            }
 
         }
 
         private int getFilesNum() {
 
             int result = 0;
-            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
-                if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED)
+            for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
+                if (syncFile.getState() == SyncFile.STATE_NOT_UPLOADED)
                     result++;
             }
 
             return result;
         }
 
-        @Override
-        public void onUploadComplete(SyncInfo.FileSync fileSync) {
-
-//            Log.d("SyncService", "uploaded file: " + fileSync.getFile().getPath());
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "uploaded file: " + fileSync.getFile().getPath());
-
-            fileSync.setState(SyncInfo.FileSync.STATE_UPLOADED);
-
-            SyncInfo.getInstance().addToUploadedList(fileSync);
-
-            mFilesUploaded++;
-//            updateProgressbar();
-
-            updateNotification(NOTIFICATION_PROGRESS_UPDATE);
-
-            SyncInfo.FileSync nextFileSync = getNextUpload();
-            if (nextFileSync != null)
-                uploadFile(nextFileSync);
-            else
-                uploadsFinished();
-
-        }
-
-
 
         private void uploadsFinished() {
 
-            SyncInfo.getInstance().setUploadDirs(null);
+            SyncStorage.getInstance().setUploadDocumentTitles(null);
+//          TODO save here:
+            SyncStorage.saveJSON(getApplicationContext());
 
-            SyncInfo.saveToDisk(getApplicationContext());
+
 
             // Show the finished progressbar for a short time:
             try {
@@ -527,6 +463,30 @@ public class SyncService extends JobService implements
 
         }
 
+        @Override
+        public void onUploadComplete(SyncFile syncFile) {
+
+            //            Log.d("SyncService", "uploaded file: " + fileSync.getFile().getPath());
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService",
+                    "uploaded file: " + syncFile.getFile().getPath());
+
+            syncFile.setState(SyncFile.STATE_UPLOADED);
+
+            SyncStorage.getInstance().addToUploadedList(syncFile);
+
+            mFilesUploaded++;
+//            updateProgressbar();
+
+            updateNotification(NOTIFICATION_PROGRESS_UPDATE);
+
+            SyncFile nextSyncFile = getNextUpload();
+            if (nextSyncFile != null)
+                uploadFile(nextSyncFile);
+            else
+                uploadsFinished();
+
+        }
+
         /**
          * This occurs during file upload and is thrown by TranskribusUtils.uploadFile.
          * @param e
@@ -535,15 +495,15 @@ public class SyncService extends JobService implements
         public void onError(Exception e) {
 
             Log.d(CLASS_NAME, "onError: unfinished upload ids size: "
-                    + SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+                    + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
 
             DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                     "onError: unfinished upload ids size: "
-                            + SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+                            + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
 
             TranskribusUtils.getInstance().onError();
 
-            SyncInfo.restartSyncJob(getApplicationContext());
+            SyncUtils.startSyncJob(getApplicationContext(), true);
 
             updateNotification(NOTIFICATION_ERROR);
 
@@ -551,42 +511,22 @@ public class SyncService extends JobService implements
 
         }
 
-        /**
-         * Searches for the unfinished uploads and returns a list of unique directory paths that could
-         * not be uploaded.
-         * @return
-         */
-        protected ArrayList<File> getUnfinishedUploadDirs() {
+        private SyncFile getNextUpload() {
 
-            ArrayList<File> unfinishedDirs = new ArrayList<>();
-
-            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
-                if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED) {
-                    File parentPath = fileSync.getFile().getParentFile();
-                    if (!unfinishedDirs.contains(parentPath))
-                        unfinishedDirs.add(parentPath);
-                }
-            }
-
-            return unfinishedDirs;
-
-        }
-
-        private SyncInfo.FileSync getNextUpload() {
-
-            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
-                if (fileSync.getState() == SyncInfo.FileSync.STATE_NOT_UPLOADED)
-                    return fileSync;
+            for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
+                if (syncFile.getState() == SyncFile.STATE_NOT_UPLOADED)
+                    return syncFile;
             }
 
             return null;
 
         }
 
-        private void printSyncInfo() {
+        private void printSyncStatus() {
 
-            for (SyncInfo.FileSync fileSync : SyncInfo.getInstance().getSyncList()) {
-                DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", fileSync.toString());
+            for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
+                DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService",
+                        syncFile.toString());
             }
 
         }
@@ -652,10 +592,10 @@ public class SyncService extends JobService implements
 
 
         Log.d(CLASS_NAME, "updateNotification: unfinished upload ids size: "
-                + SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+                + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                 "updateNotification: unfinished upload ids size: "
-                + SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+                + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
 
         if (mNotificationBuilder == null)
             return;

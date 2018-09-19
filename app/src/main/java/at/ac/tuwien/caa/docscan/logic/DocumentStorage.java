@@ -1,29 +1,26 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 public class DocumentStorage {
 
-
     private static final String DOCUMENT_STORE_FILE_NAME = "documentstorage.json";
     private static final String CLASS_NAME = "DocumentStorage";
-    private static DocumentStorage mInstance;
+    private static DocumentStorage sInstance;
 
     private ArrayList<Document> mDocuments;
     private String mTitle = null;
@@ -163,35 +160,57 @@ public class DocumentStorage {
     }
 
 
-    public static DocumentStorage getInstance(Context context) {
+    public static DocumentStorage getInstance() {
 
-        if (mInstance == null)
-            loadJSON(context);
+//        if (sInstance == null)
+//            loadJSON(context);
 
-//        if (mInstance == null)
-//            mInstance = new DocumentStorage();
+        if (sInstance == null)
+            sInstance = new DocumentStorage();
 
-        return mInstance;
+        return sInstance;
 
     }
 
-    private static void loadJSON(Context context) {
+    public void updateStatus() {
+
+        for (Document document : mDocuments) {
+
+            boolean areFilesUploaded = SyncStorage.getInstance().areFilesUploaded(document.getFiles());
+            document.setIsUploaded(areFilesUploaded);
+
+            if (!areFilesUploaded) {
+                boolean isAwaitingUpload = SyncStorage.getInstance().
+                        isDocumentAwaitingUpload(document);
+                document.setIsAwaitingUpload(isAwaitingUpload);
+            }
+
+            boolean isDocumentCropped = Helper.areFilesCropped(document);
+            document.setIsCropped(isDocumentCropped);
+
+        }
+
+
+
+    }
+
+    public static void loadJSON(Context context) {
 
         File path = context.getFilesDir();
         File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
 
         if (!storeFile.exists())
-            mInstance = new DocumentStorage();
+            sInstance = new DocumentStorage();
         else {
             try {
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(storeFile));
 
                 Gson gson = new Gson();
-                mInstance = gson.fromJson(bufferedReader, DocumentStorage.class);
+                sInstance = gson.fromJson(bufferedReader, DocumentStorage.class);
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
-                mInstance = new DocumentStorage();
+                sInstance = new DocumentStorage();
             }
         }
 
@@ -204,7 +223,7 @@ public class DocumentStorage {
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(storeFile));
-            String documentStorage = new Gson().toJson(mInstance);
+            String documentStorage = new Gson().toJson(sInstance);
             writer.write(documentStorage);
             writer.close();
 

@@ -4,13 +4,13 @@ package at.ac.tuwien.caa.docscan.rest;
  * Created by fabian on 29.06.2017.
  */
 
-public class DocumentMetaData {
+public class TranskribusDocumentMetaData {
 
     private int mID;
     private String mName;
     private Collection mCollection;
 
-    public DocumentMetaData(int id, String name, final Collection collection) {
+    public TranskribusDocumentMetaData(int id, String name, final Collection collection) {
 
         mID = id;
         mName = name;

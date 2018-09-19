@@ -436,6 +436,8 @@ public class Helper {
         }
     }
 
+
+
     public static Document getDocument(String dirName) {
 
         Document document = new Document();
@@ -460,6 +462,21 @@ public class Helper {
 
     }
 
+    public static boolean areFilesCropped(Document document) {
+
+        if (document != null) {
+            ArrayList<File> files = document.getFiles();
+            if (files != null && !files.isEmpty()) {
+                for (File file : files) {
+                    if (CropLogger.isAwaitingCropping(file))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public static boolean areFilesCropped(ArrayList<File> fileList) {
 
         if (fileList == null)
@@ -468,9 +485,8 @@ public class Helper {
         if (fileList.size() == 0)
             return false;
 
-        File[] files = fileList.toArray(new File[fileList.size()]);
 
-        for (File file : files) {
+        for (File file : fileList) {
             if (CropLogger.isAwaitingCropping(file))
                 return true;
         }
@@ -528,6 +544,7 @@ public class Helper {
 //        return true;
 
     }
+
 
     private static boolean isDirAwaitingUpload(File dir, ArrayList<File> fileList) {
 

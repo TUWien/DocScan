@@ -3,6 +3,8 @@ package at.ac.tuwien.caa.docscan.logic;
 import java.io.File;
 import java.util.ArrayList;
 
+import at.ac.tuwien.caa.docscan.ui.document.DocumentMetaData;
+
 /**
  * Created by fabian on 01.02.2018.
  */
@@ -15,6 +17,8 @@ public class Document {
     private boolean mIsCropped = false;
     private boolean mIsAwaitingUpload = false;
 
+    private DocumentMetaData mMetaData = null;
+
     public Document() {
 
     }
@@ -26,7 +30,22 @@ public class Document {
 
     }
 
+    public void setMetaData(DocumentMetaData metaData) {
+
+        mMetaData = metaData;
+
+    }
+
+    public DocumentMetaData getMetaData() {
+
+        return mMetaData;
+
+    }
+
     public ArrayList<File> getFiles() {
+
+        if (mPages == null)
+            return null;
 
         ArrayList<File> files = new ArrayList<>(mPages.size());
         for (Page page : mPages) {

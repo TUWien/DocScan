@@ -253,7 +253,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //        Load the file containing documents created:
 //        DocumentStorage.readFromDisk(this);
-//        DocumentStorage.loadJSON(this);
+        DocumentStorage.loadJSON(this);
 
         mContext = this;
 
@@ -373,8 +373,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         showDebugView(isDebugViewShown);
         // update the title of the toolbar:
 //        getSupportActionBar().setTitle(User.getInstance().getDocumentName());
-        if (DocumentStorage.getInstance(mContext).getTitle() != null)
-            getSupportActionBar().setTitle(DocumentStorage.getInstance(mContext).getTitle());
+        if (DocumentStorage.getInstance().getTitle() != null)
+            getSupportActionBar().setTitle(DocumentStorage.getInstance().getTitle());
 
         mHideSeriesDialog = Settings.getInstance().loadBooleanKey(this, HIDE_SERIES_DIALOG_KEY);
 
@@ -719,7 +719,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void openGallery() {
 
-        Document document = DocumentStorage.getInstance(this).getActiveDocument();
+        Document document = DocumentStorage.getInstance().getActiveDocument();
         if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
             Intent intent = new Intent(getApplicationContext(), PageSlideActivity.class);
             intent.putExtra(mContext.getString(R.string.key_document_file_name),
@@ -2267,7 +2267,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private boolean loadThumbNail() {
 
-        String fileName = DocumentStorage.getInstance(mContext).getLastPageFileInActiveDocument();
+        String fileName = DocumentStorage.getInstance().getLastPageFileInActiveDocument();
         if (fileName != null) {
             //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
             int exifOrientation = -1;
@@ -2364,7 +2364,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Save exif information (especially the orientation):
                 saveExif(file);
 
-                DocumentStorage.getInstance(mContext).addToActiveDocument(file);
+                DocumentStorage.getInstance().addToActiveDocument(file);
 //                DocumentStorage.saveJSON(mContext);
 //                DocumentStorage.saveToDisk(mContext);
 

@@ -73,7 +73,7 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
             @Override
             public void onClick(View v) {
                 if (mSelectedDocument != null) {
-                    DocumentStorage.getInstance(mContext).setTitle(mSelectedDocument.getTitle());
+                    DocumentStorage.getInstance().setTitle(mSelectedDocument.getTitle());
                     Helper.startCameraActivity(mContext);
                 }
 
@@ -86,7 +86,7 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
 
         if (mContext != null) {
 
-            mDocuments = DocumentStorage.getInstance(this).getDocuments();
+            mDocuments = DocumentStorage.getInstance().getDocuments();
             mAdapter = new DocumentAdapter(mContext, R.layout.rowlayout, mDocuments);
             if (mListView != null) {
                 mListView.setAdapter(mAdapter);

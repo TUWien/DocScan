@@ -67,29 +67,29 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
     public void selectAllItems() {
 
-        setAllSelections(true);
+//        setAllSelections(true);
 
     }
 
     public void deselectAllItems() {
 
-        setAllSelections(false);
+//        setAllSelections(false);
 
     }
 
-    private void setAllSelections(boolean isSelected) {
-
-        for (int i = 0; i < mDirs.size(); i++) {
-            mSelections.put(i, isSelected);
-        }
-
-//        We need to redraw the check boxes:
-        this.notifyDataSetChanged();
-
-//        We need to inform the parent activity that the selection has changed:
-//        mCallback.onSelectionChange(mDirs.size());
-        mCallback.onSelectionChange();
-    }
+//    private void setAllSelections(boolean isSelected) {
+//
+//        for (int i = 0; i < mDirs.size(); i++) {
+//            mSelections.put(i, isSelected);
+//        }
+//
+////        We need to redraw the check boxes:
+//        this.notifyDataSetChanged();
+//
+////        We need to inform the parent activity that the selection has changed:
+////        mCallback.onSelectionChange(mDirs.size());
+//        mCallback.onSelectionChange();
+//    }
 
     /**
      * Fills the list with directories that contain at least one image.
@@ -138,62 +138,62 @@ public class SyncAdapter extends BaseDocumentAdapter {
 
     }
 
-    class FileComparator implements Comparator<File>
-    {
-        @Override public int compare(File file1, File file2)
-        {
-            int value;
-            if (isDirUploaded(file1) && !isDirUploaded(file2))
-                value = 1;
-            else if (!isDirUploaded(file1) && isDirUploaded(file2))
-                value = -1;
-            else {
-                value = file1.getName().compareToIgnoreCase(file2.getName());
-            }
-
-            return value;
-
-        }
-    }
-
-    private boolean isDirUploaded(File dir) {
-
-        File[] files = getFiles(dir);
-
-        return SyncInfo.getInstance().areFilesUploaded(files);
-
-//        if (files.length == 0)
-//            return false;
+//    class FileComparator implements Comparator<File>
+//    {
+//        @Override public int compare(File file1, File file2)
+//        {
+//            int value;
+//            if (isDirUploaded(file1) && !isDirUploaded(file2))
+//                value = 1;
+//            else if (!isDirUploaded(file1) && isDirUploaded(file2))
+//                value = -1;
+//            else {
+//                value = file1.getName().compareToIgnoreCase(file2.getName());
+//            }
 //
-//        // Check if every file contained in the folder is already uploaded:
-//        for (File file : files) {
-//            if (!isFileUploaded(file))
-//                return false;
+//            return value;
+//
 //        }
+//    }
+
+//    private boolean isDirUploaded(File dir) {
 //
-//        return true;
-
-    }
-
-    private boolean isDirUploaded(int groupPosition) {
-
-        File dir = getGroupFile(groupPosition);
-        File[] files = getFiles(dir);
-
-        return SyncInfo.getInstance().areFilesUploaded(files);
-
-//        if (files.length == 0)
-//            return false;
+//        File[] files = getFiles(dir);
 //
-//        // Check if every file contained in the folder is already uploaded:
-//        for (File file : files) {
-//            if (!isFileUploaded(file))
-//                return false;
-//        }
+//        return SyncInfo.getInstance().areFilesUploaded(files);
 //
-//        return true;
+////        if (files.length == 0)
+////            return false;
+////
+////        // Check if every file contained in the folder is already uploaded:
+////        for (File file : files) {
+////            if (!isFileUploaded(file))
+////                return false;
+////        }
+////
+////        return true;
+//
+//    }
 
-    }
+//    private boolean isDirUploaded(int groupPosition) {
+//
+//        File dir = getGroupFile(groupPosition);
+//        File[] files = getFiles(dir);
+//
+//        return SyncInfo.getInstance().areFilesUploaded(files);
+//
+////        if (files.length == 0)
+////            return false;
+////
+////        // Check if every file contained in the folder is already uploaded:
+////        for (File file : files) {
+////            if (!isFileUploaded(file))
+////                return false;
+////        }
+////
+////        return true;
+//
+//    }
 
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
@@ -233,8 +233,9 @@ public class SyncAdapter extends BaseDocumentAdapter {
         // Skip the animation that usually arises after CheckBox.setChecked
         convertView.jumpDrawablesToCurrentState();
 
-        boolean isUploaded = isDirUploaded(groupPosition);
+//        boolean isUploaded = isDirUploaded(groupPosition);
 
+        boolean isUploaded = false;
         String headerText = headerTitle;
         boolean isCheckBoxEnabled;
         //        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
