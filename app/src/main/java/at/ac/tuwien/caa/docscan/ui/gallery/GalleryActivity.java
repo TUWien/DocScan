@@ -173,7 +173,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void renameDir(String newDir) {
 
-        boolean isTitleAssigned = DocumentStorage.getInstance(this).isTitleAlreadyAssigned(newDir);
+        boolean isTitleAssigned = DocumentStorage.getInstance().isTitleAlreadyAssigned(newDir);
         if (isTitleAssigned) {
             showDirExistingCreatedAlert(newDir);
             return;
@@ -409,7 +409,7 @@ public class GalleryActivity extends AppCompatActivity implements
 //            mDocument = Helper.getDocument(mFileName);
 
         if (mFileName != null) {
-            mDocument = DocumentStorage.getInstance(this).getDocument(mFileName);
+            mDocument = DocumentStorage.getInstance().getDocument(mFileName);
         }
 
     }

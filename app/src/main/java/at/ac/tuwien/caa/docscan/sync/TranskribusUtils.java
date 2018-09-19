@@ -1,9 +1,6 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.koushikdutta.async.future.FutureCallback;
@@ -19,6 +16,8 @@ import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.Collection;
@@ -44,7 +43,7 @@ public class TranskribusUtils  {
     private static TranskribusUtils mInstance;
 
     private Context mContext;
-    private ArrayList<File> mSelectedDirs;
+    private ArrayList<String> mSelectedDirs;
     private int mNumUploadJobs;
     private TranskribusUtilsCallback mCallback;
     private boolean mIsCollectionCreated;
@@ -73,29 +72,30 @@ public class TranskribusUtils  {
 
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "startUpload");
 
-        SyncInfo.getInstance().clearSyncList();
+        SyncStorage.getInstance().clearSyncList();
 
-        if (SyncInfo.getInstance().getUploadDirs() != null && !SyncInfo.getInstance().getUploadDirs().isEmpty()) {
+        if (SyncStorage.getInstance().getUploadDocumentTitles() != null &&
+                !SyncStorage.getInstance().getUploadDocumentTitles().isEmpty()) {
             mAreDocumentsPrepared = false;
             //        Start the upload of user selected dirs:
-            TranskribusUtils.getInstance().uploadDocuments(SyncInfo.getInstance().getUploadDirs());
+            TranskribusUtils.getInstance().uploadDocuments(SyncStorage.getInstance().getUploadDocumentTitles());
         }
         else
             mAreDocumentsPrepared = true;
 
-        if (SyncInfo.getInstance().getUnfinishedUploadIDs() != null &&
-                !SyncInfo.getInstance().getUnfinishedUploadIDs().isEmpty()) {
+        if (SyncStorage.getInstance().getUnfinishedUploadIDs() != null &&
+                !SyncStorage.getInstance().getUnfinishedUploadIDs().isEmpty()) {
 
             Log.d(CLASS_NAME, "startUpload: we have some unfinished work here");
             DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "startUpload: we have some unfinished work here");
-            SyncInfo.getInstance().printUnfinishedUploadIDs();
+            SyncStorage.getInstance().printUnfinishedUploadIDs();
             mAreUnfinishedFilesPrepared = false;
-            startFindingUnfinishedUploads(SyncInfo.getInstance().getUnfinishedUploadIDs());
+            startFindingUnfinishedUploads(SyncStorage.getInstance().getUnfinishedUploadIDs());
 
         }
         else {
 
-            SyncInfo.getInstance().printUnfinishedUploadIDs();
+            SyncStorage.getInstance().printUnfinishedUploadIDs();
             DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "startUpload: no unfinished work here");
             Log.d(CLASS_NAME, "startUpload: no unfinished work here");
             mAreUnfinishedFilesPrepared = true;
@@ -105,11 +105,12 @@ public class TranskribusUtils  {
 
     }
 
+
     /**
      * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
      * upload folder.
      */
-    public void uploadDocuments(ArrayList<File> selectedDirs) {
+    public void uploadDocuments(ArrayList<String> selectedDirs) {
 
         mSelectedDirs = selectedDirs;
         mIsCollectionCreated = false;
@@ -135,7 +136,7 @@ public class TranskribusUtils  {
         mAreUnfinishedFilesPrepared = false;
 
 //        We need here a deep copy, because we want to manipulate the member but not the
-//        corresponding SyncInfo member:
+//        corresponding SyncStorage member:
         mUnfinishedUploadIDsProcessed = new ArrayList<>(unfinishedIDs);
 
         for (Integer id : unfinishedIDs)
@@ -151,32 +152,29 @@ public class TranskribusUtils  {
 
 
         Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived1: unfinished upload ids size" +
-                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+                SyncStorage.getInstance().getUnfinishedUploadIDs().size());
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"onUnfinishedUploadStatusReceived1: unfinished upload ids size" +
-                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+                SyncStorage.getInstance().getUnfinishedUploadIDs().size());
 
         boolean isFileDeleted = false;
+        File dir = Helper.getMediaStorageDir(context.getResources().getString(R.string.app_name));
 
         for (String fileName : unfinishedFileNames) {
 
-//      We have to find here the file for the corresponding fileName. Unfortunately, we have to rely
-//        here on the timestamp in the fileName to find correspondences...
-            File file = Helper.getFile(context.getResources().getString(R.string.app_name), fileName);
+            File file = new File(dir.getAbsolutePath(), fileName);
 
-            if (file != null) {
-//                SyncInfo.getInstance().addToUnfinishedSyncList(file, uploadID);
+            if (file.exists()) {
                 Log.d(getClass().getName(), "onUnfinishedUploadStatusReceived: added unfinished file - id: " + uploadID + " file: " + file);
                 DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onUnfinishedUploadStatusReceived: added unfinished file - id: " + uploadID + " file: " + file);
         //        Add the files to the sync list:
-                SyncInfo.getInstance().addTranskribusFile(context, file, uploadID);
+                SyncStorage.getInstance().addTranskribusFile(file, uploadID);
             }
             else {
                 Log.d(getClass().getName(), "onUnfinishedUploadStatusReceived: file not existing: " + fileName);
                 DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onUnfinishedUploadStatusReceived: file not existing: " + fileName);
-
 //                First remove the upload ID from the unfinished list:
-                removeFromSyncInfoUnfinishedList(uploadID);
-                removeFromSyncInfoUploadList(title);
+                removeFromSyncStorageUnfinishedList(uploadID);
+                removeFromSyncStorageUploadList(title);
                 isFileDeleted = true;
                 break;
             }
@@ -191,9 +189,9 @@ public class TranskribusUtils  {
 //        mUnfinishedUploadIDsProcessed.add(uploadID);
 
         Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived2: unfinished upload ids size" +
-                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+                SyncStorage.getInstance().getUnfinishedUploadIDs().size());
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"onUnfinishedUploadStatusReceived2: unfinished upload ids size" +
-                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+                SyncStorage.getInstance().getUnfinishedUploadIDs().size());
 
         int idx = mUnfinishedUploadIDsProcessed.indexOf(new Integer(uploadID));
         if (idx != -1)
@@ -205,11 +203,12 @@ public class TranskribusUtils  {
         }
 
         Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived3: unfinished upload ids size" +
-                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+                SyncStorage.getInstance().getUnfinishedUploadIDs().size());
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onUnfinishedUploadStatusReceived3: unfinished upload ids size" +
-                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+                SyncStorage.getInstance().getUnfinishedUploadIDs().size());
 
-        SyncInfo.saveToDisk(mContext);
+//        TODO: save here
+//        SyncStorage.saveToDisk(mContext);
 
 //        if (areUnfinishedFilesProcessed()) {
 //            mAreUnfinishedFilesPrepared = true;
@@ -332,7 +331,7 @@ public class TranskribusUtils  {
 
     }
 
-    private void uploadDirs(ArrayList<File> dirs, int collectionId) {
+    private void uploadDirs(ArrayList<String> dirs, int collectionId) {
 
         mSelectedDirs = dirs;
         mNumUploadJobs = 0;
@@ -340,23 +339,27 @@ public class TranskribusUtils  {
         Log.d(TAG, "preparing file: " + dirs + " for upload");
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"preparing file: " + dirs + " for upload");
 
-        for (File dir : mSelectedDirs) {
+        for (String dir : mSelectedDirs) {
 
             // Get the image files contained in the directory:
-            File[] imgFiles = Helper.getImageArray(dir);
-            if (imgFiles == null)
-                return;
-            else if (imgFiles.length == 0)
-                return;
+            Document document = DocumentStorage.getInstance().getDocument(dir);
 
+            if (document != null) {
+                ArrayList<File> files = document.getFiles();
+                if (files != null && !files.isEmpty()) {
+                    File[] imgFiles = files.toArray(new File[files.size()]);
 //            Create the JSON object for the directory:
-            JSONObject jsonObject = TranskribusUtils.getJSONObject(dir.getName(), imgFiles);
+                    JSONObject jsonObject = TranskribusUtils.getJSONObject(dir, imgFiles);
 //            Start the upload request:
-            if (jsonObject != null) {
-                DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", jsonObject.toString());
-                new StartUploadRequest(mContext, jsonObject, collectionId);
+                    if (jsonObject != null) {
+                        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", jsonObject.toString());
+                        new StartUploadRequest(mContext, jsonObject, collectionId);
+                    }
+                }
             }
         }
+
+
     }
 
 
@@ -371,27 +374,26 @@ public class TranskribusUtils  {
         Log.d(CLASS_NAME, "onNewUploadIDReceived: id: " + uploadId + " title: " + title);
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,  + uploadId + " title: " + title);
 
-        SyncInfo.getInstance().getUnprocessedUploadIDs().add(new Integer(uploadId));
+        SyncStorage.getInstance().getUnprocessedUploadIDs().add(new Integer(uploadId));
 
-        File selectedDir = getMatchingDir(title);
-
-        if (selectedDir != null) {
-            File[] imageList = Helper.getImageArray(selectedDir);
-            for (File file : imageList)
-                SyncInfo.getInstance().addTranskribusFile(mContext, file, uploadId);
+//        File selectedDir = getMatchingDir(title);
+        Document document = DocumentStorage.getInstance().getDocument(title);
+        if (document != null) {
+            ArrayList<File> files = document.getFiles();
+            if (files != null && !files.isEmpty()) {
+                File[] imageList = files.toArray(new File[files.size()]);
+                for (File file : imageList)
+                    SyncStorage.getInstance().addTranskribusFile(file, uploadId);
+            }
         }
 
         mNumUploadJobs++;
 
-        Iterator<File> iter = mSelectedDirs.iterator();
-        while (iter.hasNext()) {
-            if (iter.next() == selectedDir)
-                iter.remove();
-        }
+        mSelectedDirs.remove(title);
 
-        SyncInfo.getInstance().getUnfinishedUploadIDs().add(uploadId);
-        Log.d(CLASS_NAME, "added ID to SyncInfo.unfinishedUploadIDs: " + uploadId);
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "added ID to SyncInfo.unfinishedUploadIDs: " + uploadId);
+        SyncStorage.getInstance().getUnfinishedUploadIDs().add(uploadId);
+        Log.d(CLASS_NAME, "added ID to SyncStorage.unfinishedUploadIDs: " + uploadId);
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "added ID to SyncStorage.unfinishedUploadIDs: " + uploadId);
 
 //        // For each directory the upload request is finished and all files are added to the sync list:
 //        if (mNumUploadJobs == mSelectedDirs.size())
@@ -424,37 +426,18 @@ public class TranskribusUtils  {
     }
 
 
-    /**
-     * Find the directory assigned to its title:
-     * @param title
-     * @return
-     */
-    @Nullable
-    private File getMatchingDir(String title) {
-        File selectedDir = null;
 
-        // Find the
-        for (File dir : mSelectedDirs) {
-            if (dir.getName().compareTo(title) == 0) {
-                selectedDir = dir;
-                break;
-            }
-        }
-        return selectedDir;
-    }
+    public void uploadFile(final SyncStorage.Callback callback, Context context, final TranskribusSyncFile syncFile) {
 
+        final File file = syncFile.getFile();
 
-    public void uploadFile(final SyncInfo.Callback callback, Context context, final SyncInfo.TranskribusFileSync fileSync) {
+        Log.d(CLASS_NAME, "uploading file: " + syncFile.toString());
 
-        final File file = fileSync.getFile();
-
-        Log.d(CLASS_NAME, "uploading file: " + fileSync.toString());
-
-        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "uploading file: " + fileSync.toString());
+        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "uploading file: " + syncFile.toString());
 
         Ion.with(context)
                 .load("PUT", Helper.getTranskribusBaseUrl(mContext) + "uploads/" +
-                        Integer.toString(fileSync.getUploadId()))
+                        Integer.toString(syncFile.getUploadId()))
                 .setHeader("Cookie", "JSESSIONID=" + User.getInstance().getSessionID())
                 .setMultipartContentType("multipart/form-data")
                 .setMultipartFile("img", "application/octet-stream", file)
@@ -465,24 +448,24 @@ public class TranskribusUtils  {
 
                         if (e == null) {
 //                            Log.d(getClass().getName(), "uploaded file: " + fileSync.toString());
-                            callback.onUploadComplete(fileSync);
+                            callback.onUploadComplete(syncFile);
                             Log.d(CLASS_NAME, "uploaded file to collectionID: " +
-                                    fileSync.getUploadId() + " file: " + fileSync.toString());
+                                    syncFile.getUploadId() + " file: " + syncFile.toString());
                             DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils",
-                                    "uploaded file: " + fileSync.toString());
+                                    "uploaded file: " + syncFile.toString());
 
                             if (result.contains("<finished>")) {
-                                removeFromSyncInfoUnfinishedList(fileSync.getUploadId());
+                                removeFromSyncStorageUnfinishedList(syncFile.getUploadId());
 
-                                Log.d(getClass().getName(), "finished upload with ID: " + fileSync.getUploadId());
+                                Log.d(getClass().getName(), "finished upload with ID: " + syncFile.getUploadId());
 //                                Log.d(getClass().getName(), "response: " + result);
-                                DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "finished upload with ID: " + fileSync.getUploadId());
+                                DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "finished upload with ID: " + syncFile.getUploadId());
                             }
 
                         }
                         else {
                             callback.onError(e);
-                            Log.d(getClass().getName(), "error uploading file with upload ID: " + fileSync.getUploadId() + " fileSync: " + fileSync.toString());
+                            Log.d(getClass().getName(), "error uploading file with upload ID: " + syncFile.getUploadId() + " fileSync: " + syncFile.toString());
                             DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "error uploading file: " + e);
                         }
 
@@ -490,18 +473,20 @@ public class TranskribusUtils  {
                 });
     }
 
+
     public void onError() {
 
         User.getInstance().setLoggedIn(false);
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onError");
-        Log.d(CLASS_NAME, "unfinished size: " + SyncInfo.getInstance().getUnfinishedUploadIDs().size());
-        SyncInfo.saveToDisk(mContext);
+        Log.d(CLASS_NAME, "unfinished size: " + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+//        TODO: save here
+//        SyncStorage.saveToDisk(mContext);
 
     }
 
     public void removeFromUnfinishedListAndCheckJob(int uploadID) {
 
-        removeFromSyncInfoUnfinishedList(uploadID);
+        removeFromSyncStorageUnfinishedList(uploadID);
 
         if (mUnfinishedUploadIDsProcessed.isEmpty()) {
             mAreUnfinishedFilesPrepared = true;
@@ -516,24 +501,25 @@ public class TranskribusUtils  {
      * missing files, it would be shown as uploaded.
      * @param title
      */
-    private void removeFromSyncInfoUploadList(String title) {
+    private void removeFromSyncStorageUploadList(String title) {
 
-        SyncInfo.getInstance().removeDocument(title);
-        SyncInfo.saveToDisk(mContext);
+        SyncStorage.getInstance().removeDocument(title);
+//        TODO: save here:
+//        SyncStorage.saveToDisk(mContext);
 
     }
 
-    private void removeFromSyncInfoUnfinishedList(int uploadID) {
+    private void removeFromSyncStorageUnfinishedList(int uploadID) {
 
-        Log.d(CLASS_NAME, "removeFromSyncInfoUnfinishedList: uploadID: " + uploadID);
-        Log.d(CLASS_NAME, "removeFromSyncInfoUnfinishedList: list size: " +
-                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "removeFromSyncInfoUnfinishedList: uploadID: " + uploadID);
-                DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "removeFromSyncInfoUnfinishedList: list size: " +
-                        SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+        Log.d(CLASS_NAME, "removeFromSyncStorageUnfinishedList: uploadID: " + uploadID);
+        Log.d(CLASS_NAME, "removeFromSyncStorageUnfinishedList: list size: " +
+                SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "removeFromSyncStorageUnfinishedList: uploadID: " + uploadID);
+                DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "removeFromSyncStorageUnfinishedList: list size: " +
+                        SyncStorage.getInstance().getUnfinishedUploadIDs().size());
 
 
-        SyncInfo.getInstance().getUnfinishedUploadIDs().remove(new Integer(uploadID));
+        SyncStorage.getInstance().getUnfinishedUploadIDs().remove(new Integer(uploadID));
 
         if (mUnfinishedUploadIDsProcessed == null)
             return;
@@ -542,39 +528,24 @@ public class TranskribusUtils  {
         if (idx != -1)
             mUnfinishedUploadIDsProcessed.remove(idx);
 
-        Log.d(CLASS_NAME, "removeFromSyncInfoUnfinishedList: list size: " +
-                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+        Log.d(CLASS_NAME, "removeFromSyncStorageUnfinishedList: list size: " +
+                SyncStorage.getInstance().getUnfinishedUploadIDs().size());
 
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,  "removeFromSyncInfoUnfinishedList: list size: " +
-                SyncInfo.getInstance().getUnfinishedUploadIDs().size());
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,  "removeFromSyncStorageUnfinishedList: list size: " +
+                SyncStorage.getInstance().getUnfinishedUploadIDs().size());
 
 
-        for (Integer i : SyncInfo.getInstance().getUnfinishedUploadIDs()) {
+        for (Integer i : SyncStorage.getInstance().getUnfinishedUploadIDs()) {
             Log.d(CLASS_NAME, "still in list: " + i);
             DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "still in list: " + i);
         }
 
-
-        SyncInfo.saveToDisk(mContext);
+//TODO: save here:
+//        SyncStorage.saveToDisk(mContext);
 
 
     }
 
-
-//    public void removeFromUnprocessedList(int uploadID) {
-//
-//        SyncInfo.getInstance().getUnprocessedUploadIDs().remove(new Integer(uploadID));
-//
-//    }
-
-
-//    public void setUploadId(int uploadId) {
-//        mUploadId = uploadId;
-//    }
-//
-//    public int getUploadId() {
-//        return mUploadId;
-//    }
 
 //    ================================ static methods start here: ================================
 

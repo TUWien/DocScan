@@ -1,7 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,8 +26,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
-import com.android.volley.VolleyError;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,10 +35,10 @@ import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.RequestHandler;
-import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
-import at.ac.tuwien.caa.docscan.sync.SyncInfo;
+import at.ac.tuwien.caa.docscan.sync.SyncStorage;
+import at.ac.tuwien.caa.docscan.sync.SyncUtils;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
@@ -110,10 +107,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         initToolbar();
 
-//        addFooter();
-
         // Read the upload information:
-        SyncInfo.readFromDisk(this);
+        SyncStorage.loadJSON(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // ask for permission:
@@ -210,7 +205,6 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
             initAdapter();
 
-
         // Register to receive messages.
         mMessageReceiver = getReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
@@ -236,6 +230,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         Log.d(CLASS_NAME, "onPause: ");
 
         DocumentStorage.saveJSON(this);
+        SyncStorage.saveJSON(this);
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         Log.d(CLASS_NAME, "unregisterReceiver: ");
@@ -323,11 +318,10 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         if (mContext != null) {
 
-//            mDocuments = Helper.getDocuments(getResources().getString(R.string.app_name));
+            DocumentStorage.getInstance().updateStatus();
+            ArrayList<Document> allDocuments = DocumentStorage.getInstance().getDocuments();
+            mDocuments = Helper.getNonEmptyDocuments(allDocuments);
 
-//            List<Document> allDocuments = Helper.getDocuments(getResources().getString(R.string.app_name));
-//            mDocuments = Helper.getNonEmptyDocuments(allDocuments);
-            mDocuments = DocumentStorage.getInstance(this).getDocuments();
 
             mAdapter = new DocumentUploadAdapter(mContext, R.layout.rowlayout, mDocuments);
 
@@ -445,24 +439,36 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     private void deleteSelectedDocuments(ArrayList<Document> documents) {
 
-        boolean isFolderDeleted = true;
-        for (Document document : documents) {
-            isFolderDeleted = isFolderDeleted && deleteFolder(document.getDir());
-        }
+        for (Document document : documents)
+            DocumentStorage.getInstance().getDocuments().remove(document);
 
+//        update the UI:
         showDocumentsDeletedSnackbar(documents.size());
-
         initAdapter();
         deselectListViewItems();
-        // update the selection display:
-//        onSelectionChange();
 
-
-
-        if (!isFolderDeleted) {
-            // TODO: show an error message here.
-        }
     }
+
+//    private void deleteSelectedDocuments(ArrayList<Document> documents) {
+//
+//        boolean isFolderDeleted = true;
+//        for (Document document : documents) {
+//            isFolderDeleted = isFolderDeleted && deleteFolder(document.getDir());
+//        }
+//
+//        showDocumentsDeletedSnackbar(documents.size());
+//
+//        initAdapter();
+//        deselectListViewItems();
+//        // update the selection display:
+////        onSelectionChange();
+//
+//
+//
+//        if (!isFolderDeleted) {
+//            // TODO: show an error message here.
+//        }
+//    }
 
     /**
      * Shows a snackbar indicating that documents have been deleted.
@@ -484,6 +490,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         mSnackbar.show();
 
     }
+
 
     /**
      * Deletes a folder and the contained files. Note that File.delete does not delete non empty
@@ -551,12 +558,12 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     private void checkFolderOnlineStatusAndUpload(ArrayList<Document> documents) {
 
-        ArrayList<File> uploadDirs = new ArrayList<>();
+        ArrayList<String> uploadDirs = new ArrayList<>();
         for (Document document : documents) {
             // Just add the folder if all files contained are not uploaded:
             if (!document.isUploaded()) {
                 if (document.getDir() != null)
-                    uploadDirs.add(document.getDir());
+                    uploadDirs.add(document.getTitle());
             }
 
         }
@@ -595,13 +602,12 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
      * upload folder.
      */
-    private void startUpload(ArrayList<File> uploadDirs) {
+    private void startUpload(ArrayList<String> uploadDirs) {
 
 //        SyncInfo.getInstance().setUploadDirs(mSelectedDirs);
 
-        SyncInfo.getInstance().addUploadDirs(uploadDirs);
-        SyncInfo.saveToDisk(this);
-        SyncInfo.startSyncJob(this);
+        SyncStorage.getInstance().addUploadDirs(uploadDirs);
+        SyncUtils.startSyncJob(this, false);
 
     }
 

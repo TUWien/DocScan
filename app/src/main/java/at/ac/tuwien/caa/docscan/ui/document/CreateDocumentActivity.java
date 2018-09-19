@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
@@ -33,6 +34,7 @@ import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
+    private DocumentMetaData mMetaData = null;
     public static final String DOCUMENT_QR_TEXT = "DOCUMENT_QR_TEXT";
 
     // Eventually a permission is required for dir creation, hence we store this as member:
@@ -50,7 +52,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         initEditField();
 
 //        Temporarily deactivate the advanced fields:
-//        initShowFieldsCheckBox();
+        initShowFieldsCheckBox();
 
 //        Debugging: (if you just want to launch the Activity (without CameraActivity)
 //        String qrText = "<root><authority>Universitätsarchiv Greifswald</authority><identifier type=\"hierarchy description\">Universitätsarchiv Greifswald/Altes Rektorat/01. Rechtliche Stellung der Universität - 01.01. Statuten/R 1199</identifier><identifier type=\"uri\">https://ariadne-portal.uni-greifswald.de/?arc=1&type=obj&id=5162222</identifier><title>Entwurf neuer Universitätsstatuten </title><date normal=\"1835010118421231\">1835-1842</date><callNumber>R 1199</callNumber><description>Enthält u.a.: Ausführliche rechtshistorische Begründung des Entwurfs von 1835.</description></root>";
@@ -63,7 +65,9 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             String qrText = extras.getString(DOCUMENT_QR_TEXT, initString);
             if (!qrText.equals(initString)) {
                 Log.d(getClass().getName(), qrText);
-                processQRCode(qrText);
+                mMetaData = processQRCode(qrText);
+                String json = mMetaData.toJSON();
+                fillViews(mMetaData);
             }
         }
     }
@@ -108,15 +112,16 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         }
     }
 
-    private void processQRCode(String text) {
+    private DocumentMetaData processQRCode(String text) {
 
         // Currently the XML has no root defined (malformed) so we add one manually:
         String qrText = "<root>" + text + "</root>";
-
         Log.d(getClass().getName(), "parsing document");
-        DocumentMetaData document = parseQRCode(qrText);
-        Log.d(getClass().getName(), "found document: " + document);
-        fillViews(document);
+        DocumentMetaData metaData = parseQRCode(qrText);
+
+        Log.d(getClass().getName(), "found document: " + metaData);
+
+        return metaData;
 
     }
 
@@ -209,15 +214,20 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             return false;
 
         boolean isTitleAlreadyAssigned =
-                DocumentStorage.getInstance(this).isTitleAlreadyAssigned(title);
+                DocumentStorage.getInstance().isTitleAlreadyAssigned(title);
 
         if (isTitleAlreadyAssigned) {
             showDirExistingCreatedAlert(title);
             return false;
         }
-        boolean isDocumentCreated = DocumentStorage.getInstance(this).createNewDocument(title);
+        boolean isDocumentCreated = DocumentStorage.getInstance().createNewDocument(title);
         if (!isDocumentCreated)
             showNoDirCreatedAlert();
+//        Save the metadata:
+        else if (mMetaData != null) {
+            Document document = DocumentStorage.getInstance().getDocument(title);
+            document.setMetaData(mMetaData);
+        }
 
         return isDocumentCreated;
 

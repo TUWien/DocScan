@@ -36,6 +36,14 @@
             </intent-filter>
         </service>
 
+        <service
+            android:exported="false"
+            android:name=".sync.UploadService">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".ui.StartActivity"
             android:theme="@style/SplashTheme"

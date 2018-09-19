@@ -194,7 +194,8 @@ public class SyncInfo implements Serializable {
 
         Job syncJob = dispatcher.newJobBuilder()
                 // the JobService that will be called
-                .setService(SyncService.class)
+//                .setService(SyncService.class)
+                .setService(UploadService.class)
                 // uniquely identifies the job
                 .setTag(tag)
                 // one-off job
