@@ -11,7 +11,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -26,6 +25,7 @@ import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.ui.document.DocumentJSONParser;
 
 import static android.content.ContentValues.TAG;
 
@@ -341,24 +341,26 @@ public class TranskribusUtils  {
 
         for (String dir : mSelectedDirs) {
 
-            // Get the image files contained in the directory:
+            // Get the corresponding document:
             Document document = DocumentStorage.getInstance().getDocument(dir);
 
-            if (document != null) {
-                ArrayList<File> files = document.getFiles();
-                if (files != null && !files.isEmpty()) {
-                    File[] imgFiles = files.toArray(new File[files.size()]);
-//            Create the JSON object for the directory:
-                    JSONObject jsonObject = TranskribusUtils.getJSONObject(dir, imgFiles);
-//            Start the upload request:
-                    if (jsonObject != null) {
-                        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", jsonObject.toString());
-                        new StartUploadRequest(mContext, jsonObject, collectionId);
-                    }
+            if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
+
+                //                Create the JSON object:
+                String jsonString = DocumentJSONParser.toJSONString(document);
+                try {
+                    JSONObject jsonObject = new JSONObject(jsonString);
+                    new StartUploadRequest(mContext, jsonObject, collectionId);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+//                    TODO: tell the user that an error happened:
+                    DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
+                            "error while parsing json string: " + jsonString);
+                    Log.d(CLASS_NAME,"error while parsing json string: " + jsonString);
                 }
             }
         }
-
 
     }
 
@@ -540,14 +542,10 @@ public class TranskribusUtils  {
             DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "still in list: " + i);
         }
 
-//TODO: save here:
-//        SyncStorage.saveToDisk(mContext);
-
+        SyncStorage.saveJSON(mContext);
 
     }
 
-
-//    ================================ static methods start here: ================================
 
     public static JSONObject getJSONObject(String dirName, File[] imgFiles) {
 

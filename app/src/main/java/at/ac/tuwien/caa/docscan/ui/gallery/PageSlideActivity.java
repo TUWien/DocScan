@@ -496,22 +496,22 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-    private Document getDummyDocument(String fileName) {
-
-        Document document = Helper.getDocument(fileName);
-
-        return document;
-
-//        TranskribusDocumentMetaData document = new TranskribusDocumentMetaData();
-//        ArrayList<File> fileList = getFileList(fileName);
-//        ArrayList<Page> pages = filesToPages(fileList);
-//        document.setPages(pages);
-//        File file = new File(fileName);
-//        document.setTitle(file.getName());
+//    private Document getDummyDocument(String fileName) {
+//
+//        Document document = Helper.getDocument(fileName);
 //
 //        return document;
-
-    }
+//
+////        TranskribusDocumentMetaData document = new TranskribusDocumentMetaData();
+////        ArrayList<File> fileList = getFileList(fileName);
+////        ArrayList<Page> pages = filesToPages(fileList);
+////        document.setPages(pages);
+////        File file = new File(fileName);
+////        document.setTitle(file.getName());
+////
+////        return document;
+//
+//    }
 
     private void showSystemUI(final boolean show) {
         new Handler().post(new Runnable() {

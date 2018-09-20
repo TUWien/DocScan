@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
+import at.ac.tuwien.caa.docscan.ui.document.DocumentJSONParser;
 
 public class DocumentStorage {
 
@@ -224,7 +226,8 @@ public class DocumentStorage {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(storeFile));
             String documentStorage = new Gson().toJson(sInstance);
-            writer.write(documentStorage);
+            Log.d(CLASS_NAME, "json: " + documentStorage);
+                writer.write(documentStorage);
             writer.close();
 
         } catch (IOException e) {

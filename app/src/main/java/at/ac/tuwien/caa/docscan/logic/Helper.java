@@ -335,32 +335,32 @@ public class Helper {
 
     }
 
-    public static List<Document> getDocuments(String appName){
-
-        List<Document> documents = new ArrayList<>();
-
-        File mediaStorageDir = getMediaStorageDir(appName);
-
-        FileFilter directoryFilter = new FileFilter() {
-            public boolean accept(File file) {
-                return file.isDirectory();
-            }
-        };
-
-        File[] folders = mediaStorageDir.listFiles(directoryFilter);
-        if (folders == null)
-            return documents;
-
-        ArrayList<File> dirs = new ArrayList<>(Arrays.asList(folders));
-
-        for (File dir : dirs) {
-            Document document = getDocument(dir.getAbsolutePath());
-            documents.add(document);
-        }
-
-        return documents;
-
-    }
+//    public static List<Document> getDocuments(String appName){
+//
+//        List<Document> documents = new ArrayList<>();
+//
+//        File mediaStorageDir = getMediaStorageDir(appName);
+//
+//        FileFilter directoryFilter = new FileFilter() {
+//            public boolean accept(File file) {
+//                return file.isDirectory();
+//            }
+//        };
+//
+//        File[] folders = mediaStorageDir.listFiles(directoryFilter);
+//        if (folders == null)
+//            return documents;
+//
+//        ArrayList<File> dirs = new ArrayList<>(Arrays.asList(folders));
+//
+//        for (File dir : dirs) {
+//            Document document = getDocument(dir.getAbsolutePath());
+//            documents.add(document);
+//        }
+//
+//        return documents;
+//
+//    }
 
     /**
      *
@@ -438,29 +438,29 @@ public class Helper {
 
 
 
-    public static Document getDocument(String dirName) {
-
-        Document document = new Document();
-        ArrayList<File> fileList = getImageList(dirName);
-        ArrayList<Page> pages = filesToPages(fileList);
-        document.setPages(pages);
-        File file = new File(dirName);
-        document.setTitle(file.getName());
-
-        boolean isDocumentUploaded = areFilesUploaded(fileList);
-        document.setIsUploaded(isDocumentUploaded);
-
-        boolean isDocumentCropped = areFilesCropped(fileList);
-        document.setIsCropped(isDocumentCropped);
-
-        if (!isDocumentUploaded) {
-            boolean isAwaitingUpload = isDirAwaitingUpload(new File(dirName), fileList);
-            document.setIsAwaitingUpload(isAwaitingUpload);
-        }
-
-        return document;
-
-    }
+//    public static Document getDocument(String dirName) {
+//
+//        Document document = new Document();
+//        ArrayList<File> fileList = getImageList(dirName);
+//        ArrayList<Page> pages = filesToPages(fileList);
+//        document.setPages(pages);
+//        File file = new File(dirName);
+//        document.setTitle(file.getName());
+//
+//        boolean isDocumentUploaded = areFilesUploaded(fileList);
+//        document.setIsUploaded(isDocumentUploaded);
+//
+//        boolean isDocumentCropped = areFilesCropped(fileList);
+//        document.setIsCropped(isDocumentCropped);
+//
+//        if (!isDocumentUploaded) {
+//            boolean isAwaitingUpload = isDirAwaitingUpload(new File(dirName), fileList);
+//            document.setIsAwaitingUpload(isAwaitingUpload);
+//        }
+//
+//        return document;
+//
+//    }
 
     public static boolean areFilesCropped(Document document) {
 
