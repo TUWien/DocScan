@@ -1,5 +1,10 @@
 package at.ac.tuwien.caa.docscan.ui.document;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
+
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -16,23 +21,29 @@ import java.util.Date;
 
 public class DocumentMetaData {
 
-    private static final String AUTHORITY = "authority";
-    private static final String TITLE = "title";
-    private static final String IDENTIFIER = "identifier";
-    private static final String TYPE = "type";
-    private static final String TYPE_HIERARCHY = "hierarchy description";
-    private static final String TYPE_URI = "uri";
-    private static final String SIGNATURE = "callNumber";
-    private static final String DESCRIPTION = "description";
-    private static final String DATE = "date";
+    public static final int NO_RELATED_UPLOAD_ID_ASSIGNED = -1;
+
+//    Strings needed to parse QR codes:
+    private static final String QR_RELATED_UPLOAD_ID =  "relatedUploadId";
+    private static final String QR_AUTHORITY =          "authority";
+    private static final String QR_TITLE =              "title";
+    private static final String QR_IDENTIFIER =         "identifier";
+    private static final String QR_TYPE =               "type";
+    private static final String QR_TYPE_HIERARCHY =     "hierarchy description";
+    private static final String QR_TYPE_URI =           "uri";
+    private static final String QR_SIGNATURE =          "callNumber";
+    private static final String QR_DESCRIPTION =        "description";
+    private static final String QR_DATE =               "date";
 
     private String mTitle;
-    private String mDescription;
     private String mAuthority;
     private String mHierarchy;
-    private String mUri;
     private String mSignature;
+    private String mUri;
+
+    private String mDescription;
     private Date mDate;
+    private int mRelatedUploadId = NO_RELATED_UPLOAD_ID_ASSIGNED;
 
     public String getTitle() { return mTitle; }
     public String getDescription() { return mDescription; }
@@ -41,8 +52,19 @@ public class DocumentMetaData {
     public String getUri() { return mUri; }
     public String getSignature() { return mSignature; }
     public Date getDate() { return mDate; }
+    public int getRelatedUploadId() { return mRelatedUploadId; }
 
     private DocumentMetaData() {
+
+    }
+
+    public String toJSON() {
+
+        Gson gson = new GsonBuilder().setFieldNamingPolicy(
+                FieldNamingPolicy.UPPER_CAMEL_CASE).create();
+        String json = gson.toJson(this);
+
+        return json;
 
     }
 
@@ -98,23 +120,27 @@ public class DocumentMetaData {
                 }
                 String name = parser.getName();
 
-                if (name.equals(AUTHORITY))
-                    documentMetaData.mAuthority = readTextFromTag(parser, AUTHORITY);
+                if (name.equals(QR_AUTHORITY))
+                    documentMetaData.mAuthority = readTextFromTag(parser, QR_AUTHORITY);
 
-                else if (name.equals(IDENTIFIER)) {
+                else if (name.equals(QR_IDENTIFIER)) {
                     IdentifierValue iv = readIdentifier(parser);
-                    if (iv.getIdentifier().equals(TYPE_HIERARCHY))
+                    if (iv.getIdentifier().equals(QR_TYPE_HIERARCHY))
                         documentMetaData.mHierarchy = iv.getValue();
-                    else if (iv.getIdentifier().equals(TYPE_URI))
+                    else if (iv.getIdentifier().equals(QR_TYPE_URI))
                         documentMetaData.mUri = iv.getValue();
                 }
-                else if (name.equals(TITLE))
-                    documentMetaData.mTitle = readTextFromTag(parser, TITLE);
-                else if (name.equals(DESCRIPTION))
-                    documentMetaData.mDescription = readTextFromTag(parser, DESCRIPTION);
-                else if (name.equals(SIGNATURE))
-                    documentMetaData.mSignature = readTextFromTag(parser, SIGNATURE);
-                else if (name.equals(DATE))
+                else if (name.equals(QR_TITLE))
+                    documentMetaData.mTitle = readTextFromTag(parser, QR_TITLE);
+                else if (name.equals(QR_DESCRIPTION))
+                    documentMetaData.mDescription = readTextFromTag(parser, QR_DESCRIPTION);
+                else if (name.equals(QR_SIGNATURE))
+                    documentMetaData.mSignature = readTextFromTag(parser, QR_SIGNATURE);
+                else if (name.equals(QR_RELATED_UPLOAD_ID)) {
+                    String rId = readTextFromTag(parser, QR_RELATED_UPLOAD_ID);
+                    documentMetaData.mRelatedUploadId = Integer.valueOf(rId);
+                }
+                else if (name.equals(QR_DATE))
                     skip(parser);
 
             }
@@ -162,17 +188,17 @@ public class DocumentMetaData {
 
     private static IdentifierValue readIdentifier(XmlPullParser parser) throws IOException, XmlPullParserException {
 
-        parser.require(XmlPullParser.START_TAG, null, IDENTIFIER);
+        parser.require(XmlPullParser.START_TAG, null, QR_IDENTIFIER);
         String tag = parser.getName();
-        String identifierType = parser.getAttributeValue(null, TYPE);
+        String identifierType = parser.getAttributeValue(null, QR_TYPE);
         String value = null;
 
-        if (tag.equals(IDENTIFIER)) {
-            if (identifierType.equals(TYPE_HIERARCHY) || identifierType.equals(TYPE_URI))
+        if (tag.equals(QR_IDENTIFIER)) {
+            if (identifierType.equals(QR_TYPE_HIERARCHY) || identifierType.equals(QR_TYPE_URI))
                 value = readText(parser);
         }
 
-        parser.require(XmlPullParser.END_TAG, null, IDENTIFIER);
+        parser.require(XmlPullParser.END_TAG, null, QR_IDENTIFIER);
 
         return new IdentifierValue(identifierType, value);
 

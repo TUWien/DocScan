@@ -893,6 +893,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
 //                    we just handle cases where there is an operation finished:
                     if (cropType != defValue) {
+
                         if ((cropType == INTENT_CROP_TYPE_MAP_FINISHED ) ||
                                 (cropType == INTENT_CROP_TYPE_PAGE_FINISHED)) {
 
@@ -903,22 +904,30 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                                 if (mDocuments == null)
                                     return;
 
+                                boolean isAdapterUpdateRequired = false;
+
                                 for (Document document : mDocuments) {
 
                                     if (document.isCropped()) {
-
-                                        File documentPath = new File(Helper.getMediaStorageDir(
-                                                getString(R.string.app_name)), document.getTitle());
-                                        File filePath = (new File(fileName)).getParentFile();
-
-                                        if (documentPath.equals(filePath)) {
-                                            ArrayList<File> files = document.getFiles();
-                                            boolean isCropped = Helper.areFilesCropped(files);
-
-                                            if (!isCropped)
-                                                initAdapter();
+                                        boolean isCropped = Helper.areFilesCropped(document);
+                                        if (!isCropped) {
+                                            document.setIsCropped(false);
+                                            isAdapterUpdateRequired = true;
                                         }
+//
+//                                        File documentPath = new File(Helper.getMediaStorageDir(
+//                                                getString(R.string.app_name)), document.getTitle());
+//                                        File filePath = (new File(fileName)).getParentFile();
+//
+//                                        if (documentPath.equals(filePath)) {
+//                                            ArrayList<File> files = document.getFiles();
+//                                            boolean isCropped = Helper.areFilesCropped(files);
+
+
+//                                        }
                                     }
+                                if (isAdapterUpdateRequired)
+                                    initAdapter();
                                 }
                             }
 

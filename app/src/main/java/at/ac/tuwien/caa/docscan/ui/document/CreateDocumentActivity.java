@@ -34,6 +34,7 @@ import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
+    private static final String CLASS_NAME = "CreateDocumentActivity";
     private DocumentMetaData mMetaData = null;
     public static final String DOCUMENT_QR_TEXT = "DOCUMENT_QR_TEXT";
 
@@ -67,6 +68,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                 Log.d(getClass().getName(), qrText);
                 mMetaData = processQRCode(qrText);
                 String json = mMetaData.toJSON();
+                Log.d(CLASS_NAME, "metadata json: " + json);
                 fillViews(mMetaData);
             }
         }
@@ -228,6 +230,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             Document document = DocumentStorage.getInstance().getDocument(title);
             document.setMetaData(mMetaData);
         }
+
 
         return isDocumentCreated;
 
