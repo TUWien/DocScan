@@ -75,6 +75,8 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         if(!hasPermissions(this, PERMISSIONS)){
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
+        else
+            startCamera();
 
     }
 
