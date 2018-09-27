@@ -33,7 +33,7 @@ import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 
 public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
-    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
+//    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
     private static final String CLASS_NAME = "CreateDocumentActivity";
     private DocumentMetaData mMetaData = null;
     public static final String DOCUMENT_QR_TEXT = "DOCUMENT_QR_TEXT";
@@ -46,6 +46,8 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_document);
+
+        Log.d(CLASS_NAME, "oncreate");
 
         super.initToolbarTitle(R.string.create_series_title);
 
@@ -91,27 +93,34 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     }
 
-    /**
-     * Called after permission has been given or has been rejected. This is necessary on Android M
-     * and younger Android systems.
-     *
-     * @param requestCode Request code
-     * @param permissions Permission
-     * @param grantResults results
-     */
+//    /**
+//     * Called after permission has been given or has been rejected. This is necessary on Android M
+//     * and younger Android systems.
+//     *
+//     * @param requestCode Request code
+//     * @param permissions Permission
+//     * @param grantResults results
+//     */
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+//
+//
+//        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+//        switch (requestCode) {
+//            case PERMISSION_WRITE_EXTERNAL_STORAGE:
+//                if (isPermissionGiven)
+//                    createDir();
+//                else
+//                    showNoPermissionAlert();
+//                break;
+//        }
+//    }
+
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onResume() {
 
-
-        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
-        switch (requestCode) {
-            case PERMISSION_WRITE_EXTERNAL_STORAGE:
-                if (isPermissionGiven)
-                    createDir();
-                else
-                    showNoPermissionAlert();
-                break;
-        }
+        super.onResume();
+        Log.d(CLASS_NAME, "onresume");
     }
 
     private DocumentMetaData processQRCode(String text) {
@@ -152,10 +161,11 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
         RelativeLayout layout = findViewById(R.id.create_series_fields_layout);
 
+        fillAdvancedFields(document);
+
         if (showAdvancedFields) {
 //           Show the advanced settings:
             layout.setVisibility(View.VISIBLE);
-            fillAdvancedFields(document);
         }
         else
             layout.setVisibility(View.INVISIBLE);
@@ -253,95 +263,95 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         });
     }
 
-    /**
-     * This is called once the user enters a text for the subdir. The function should only be called
-     * after user interaction.
-     */
-    private void askForPermissionCreateDir() {
-
-//        No permission given:
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED)
-            // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
-        else
-            createDir();
-
-    }
-
-    /**
-     * Creates a directory for the images. Should only be called if the required permission is
-     * given by the user.
-     */
-    private void createDir() {
-
-//        Note: This check is just done for safety, but this point should not be reachable if the
-//        permission is not given.
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{
-                    Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
-            return;
-        }
-
-
-        EditText editText = findViewById(R.id.create_series_name_edittext);
-        String subDirText = editText.getText().toString();
-
-        File mediaStorageDir = Helper.getMediaStorageDir(getResources().getString(R.string.app_name));
-        File subDir = new File(mediaStorageDir.getAbsolutePath(), subDirText);
-
-        if (subDir.exists()) {
-            showDirExistingCreatedAlert(subDir.getName());
-            return;
-        }
-
-
-        createSubDir(subDir);
-
-    }
-
-    private void createSubDir(File subDir) {
-
-        boolean dirCreated = false;
-        if (subDir != null) {
-            dirCreated = subDir.mkdir();
-        }
-
-        if (!dirCreated)
-            showNoDirCreatedAlert();
-        else {
-            User.getInstance().setDocumentName(subDir.getName());
-            UserHandler.saveSeriesName(this);
-
-//            Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, true);
-//            Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, false);
+//    /**
+//     * This is called once the user enters a text for the subdir. The function should only be called
+//     * after user interaction.
+//     */
+//    private void askForPermissionCreateDir() {
 //
-            Helper.startCameraActivity(this);
-        }
+////        No permission given:
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                != PackageManager.PERMISSION_GRANTED)
+//            // ask for permission:
+//            ActivityCompat.requestPermissions(this, new String[]{
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+//        else
+//            createDir();
+//
+//    }
 
-    }
+//    /**
+//     * Creates a directory for the images. Should only be called if the required permission is
+//     * given by the user.
+//     */
+//    private void createDir() {
+//
+////        Note: This check is just done for safety, but this point should not be reachable if the
+////        permission is not given.
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            // ask for permission:
+//            ActivityCompat.requestPermissions(this, new String[]{
+//                    Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+//            return;
+//        }
+//
+//
+//        EditText editText = findViewById(R.id.create_series_name_edittext);
+//        String subDirText = editText.getText().toString();
+//
+//        File mediaStorageDir = Helper.getMediaStorageDir(getResources().getString(R.string.app_name));
+//        File subDir = new File(mediaStorageDir.getAbsolutePath(), subDirText);
+//
+//        if (subDir.exists()) {
+//            showDirExistingCreatedAlert(subDir.getName());
+//            return;
+//        }
+//
+//
+//        createSubDir(subDir);
+//
+//    }
 
-    private void showNoPermissionAlert() {
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(R.string.document_no_permission_title)
-                .setCancelable(true)
-                .setPositiveButton("OK", null)
-                .setMessage(R.string.document_no_permission_message);
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
-
-    }
+//    private void createSubDir(File subDir) {
+//
+//        boolean dirCreated = false;
+//        if (subDir != null) {
+//            dirCreated = subDir.mkdir();
+//        }
+//
+//        if (!dirCreated)
+//            showNoDirCreatedAlert();
+//        else {
+//            User.getInstance().setDocumentName(subDir.getName());
+//            UserHandler.saveSeriesName(this);
+//
+////            Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY, true);
+////            Settings.getInstance().saveKey(this, Settings.SettingEnum.SERIES_MODE_PAUSED_KEY, false);
+////
+//            Helper.startCameraActivity(this);
+//        }
+//
+//    }
+//
+//    private void showNoPermissionAlert() {
+//
+//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+//
+//        // set dialog message
+//        alertDialogBuilder
+//                .setTitle(R.string.document_no_permission_title)
+//                .setCancelable(true)
+//                .setPositiveButton("OK", null)
+//                .setMessage(R.string.document_no_permission_message);
+//
+//        // create alert dialog
+//        AlertDialog alertDialog = alertDialogBuilder.create();
+//
+//        // show it
+//        alertDialog.show();
+//
+//    }
 
     private void showDirExistingCreatedAlert(String dirName) {
 

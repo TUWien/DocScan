@@ -39,6 +39,12 @@ public class DocumentStorage {
 
     }
 
+    public void setDocuments(ArrayList<Document> documents) {
+
+        mDocuments = documents;
+
+    }
+
     public void setTitle(String title) {
 
         mTitle = title;
@@ -129,8 +135,8 @@ public class DocumentStorage {
 ////        TODO: temporary until the new document structure is done:
 //        if (mActiveDocument == null)
 //            mActiveDocument = new Document(User.getInstance().getDocumentName());
-        if (mTitle == null)
-            mTitle = User.getInstance().getDocumentName();
+//        if (mTitle == null)
+//            mTitle = User.getInstance().getDocumentName();
 
         if (mDocuments.isEmpty())
             mDocuments.add(new Document(mTitle));

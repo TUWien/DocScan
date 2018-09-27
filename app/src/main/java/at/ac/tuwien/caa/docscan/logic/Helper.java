@@ -52,27 +52,27 @@ public class Helper {
 
     }
 
-    /**
-     * Returns the root path to the directory in which the images are saved.
-     *
-     * @param appName name of the app, this is used for gathering the directory string.
-     * @return the path where the images are stored.
-     */
-    public static File getMediaStorageUserSubDir(String appName) {
-
-        File mediaStorageDir = getMediaStorageDir(appName);
-        File subDir = mediaStorageDir;
-        if (mediaStorageDir != null)
-            if (User.getInstance().getDocumentName() != null) {
-                subDir = new File(mediaStorageDir, User.getInstance().getDocumentName());
-                // Check if the directory is existing:
-                if (!subDir.exists())
-                    subDir.mkdir();
-            }
-
-        return subDir;
-
-    }
+//    /**
+//     * Returns the root path to the directory in which the images are saved.
+//     *
+//     * @param appName name of the app, this is used for gathering the directory string.
+//     * @return the path where the images are stored.
+//     */
+//    public static File getMediaStorageUserSubDir(String appName) {
+//
+//        File mediaStorageDir = getMediaStorageDir(appName);
+//        File subDir = mediaStorageDir;
+//        if (mediaStorageDir != null)
+//            if (User.getInstance().getDocumentName() != null) {
+//                subDir = new File(mediaStorageDir, User.getInstance().getDocumentName());
+//                // Check if the directory is existing:
+//                if (!subDir.exists())
+//                    subDir.mkdir();
+//            }
+//
+//        return subDir;
+//
+//    }
 
     /**
      * Returns the root path to the directory in which the images are saved.

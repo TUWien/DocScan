@@ -367,6 +367,12 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
     }
 
+    public void setProcessFrame(boolean processFrame) {
+
+        mProcessFrame = processFrame;
+
+    }
+
     public void setIsPaused(boolean isPaused) {
 
         mIsPaused = isPaused;

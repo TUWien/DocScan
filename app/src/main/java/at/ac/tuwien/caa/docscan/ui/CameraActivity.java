@@ -70,7 +70,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -92,7 +91,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -111,9 +109,9 @@ import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager;
-import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.document.SelectDocumentActivity;
@@ -122,15 +120,11 @@ import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
-import at.ac.tuwien.caa.docscan.rest.UserHandler;
-import at.ac.tuwien.caa.docscan.ui.document.SeriesGeneralActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
-import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
-import static at.ac.tuwien.caa.docscan.logic.Helper.getMediaStorageUserSubDir;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
@@ -143,8 +137,7 @@ import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUME
 
 public class CameraActivity extends BaseNavigationActivity implements TaskTimer.TimerCallbacks,
         CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
-        MediaScannerConnection.MediaScannerConnectionClient, PopupMenu.OnMenuItemClickListener,
-        AdapterView.OnItemSelectedListener {
+        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemSelectedListener {
 
     private static final String CLASS_NAME = "CameraActivity";
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
@@ -169,17 +162,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private int mCameraOrientation;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
-    private MediaScannerConnection mMediaScannerConnection;
     private boolean mIsPictureSafe;
-    private boolean mIsSaving = false;
     private TextView mTextView;
-    private Menu mOptionsMenu;;
     private MenuItem mFlashMenuItem, mDocumentMenuItem;
     private Drawable mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
     private boolean mHideSeriesDialog;
     private boolean mIsSeriesModePaused = true;
-    private long mStartTime;
     // We hold here a reference to the popupmenu and the list, because we are not sure what is first initialized:
     private List<String> mFlashModes;
     private PopupMenu mFlashPopupMenu, mSeriesPopupMenu;
@@ -190,7 +179,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private final static int SERIES_POS = 1;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private static Date mLastTimeStamp;
-    private int mMaxFrameCnt = 0;
     private DkPolyRect[] mLastDkPolyRects;
 
     private Toast mToast;
@@ -373,6 +361,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         showDebugView(isDebugViewShown);
         // update the title of the toolbar:
 //        getSupportActionBar().setTitle(User.getInstance().getDocumentName());
+
         if (DocumentStorage.getInstance().getTitle() != null)
             getSupportActionBar().setTitle(DocumentStorage.getInstance().getTitle());
 
@@ -528,40 +517,51 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Save the current version:
         Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
 
-        if (currentVersion == lastInstalledVersion)
-            return;
-        else if ((lastInstalledVersion == Settings.NO_ENTRY) || (lastInstalledVersion <= 11)) {
+        startDocumentMigration();
+//        TODO: test this for updates:
 
-            // has the user already seen that the documents can be opened in the actionbar?
-//            boolean isDocumentHintShown = Settings.getInstance().loadBooleanKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY);
-//            if (!isDocumentHintShown) {
-//                showDocumentHint();
-//                Settings.getInstance().saveKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY, true);
-//            }
-
-        }
+//        if (currentVersion == lastInstalledVersion)
+//            return;
+////        else if ((lastInstalledVersion == Settings.NO_ENTRY) || (lastInstalledVersion <= 11)) {
+//        else if (lastInstalledVersion <= 34) {
+//            startDocumentMigration();
+//            // has the user already seen that the documents can be opened in the actionbar?
+////            boolean isDocumentHintShown = Settings.getInstance().loadBooleanKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY);
+////            if (!isDocumentHintShown) {
+////                showDocumentHint();
+////                Settings.getInstance().saveKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY, true);
+////            }
+//
+//        }
 
     }
 
-//    private void showDocumentHint() {
-//
-//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-//
-//
-//        // set dialog message
-//        alertDialogBuilder
-//                .setTitle(R.string.camera_document_hint_title)
-//                .setPositiveButton("OK", null)
-//                .setMessage(R.string.camera_document_hint_msg);
-//
-//        // create alert dialog
-//        AlertDialog alertDialog = alertDialogBuilder.create();
-//
-//        // show it
-//        alertDialog.show();
-//
-//
-//    }
+    private void startDocumentMigration() {
+
+//        showDocumentHint();
+        DocumentMigrator.migrate(this);
+
+    }
+
+    private void showDocumentHint() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.camera_document_hint_title)
+                .setPositiveButton("OK", null)
+                .setMessage("moving on...");
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
+
+    }
 
     private void loadPreferences() {
 
@@ -570,7 +570,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mIsSeriesMode = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_ACTIVE_KEY);
         mIsSeriesModePaused = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_PAUSED_KEY);
 
-        UserHandler.loadSeriesName(this);
+//        UserHandler.loadSeriesName(this);
 
         showShootModeToast();
         updateMode();
@@ -620,8 +620,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.actionbar_menu, menu);
-
-        mOptionsMenu = menu;
 
         mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
         mDocumentMenuItem = menu.findItem(R.id.document_item);
@@ -684,15 +682,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         startActivity(intent);
     }
 
-    /**
-     * Start the document activity via an intent.
-     */
-    private void startDocumentActivity() {
 
-        Intent intent = new Intent(getApplicationContext(), SeriesGeneralActivity.class);
-        startActivity(intent);
-
-    }
 
     // ================= start: methods for opening the gallery =================
 
@@ -731,102 +721,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-
-
-    /**
-     * Request to read the external storage. This method is used to enable file saving in Android >= marshmallow
-     * (Android 6), since in this version external file opening is not allowed without user permission.
-     */
-    @TargetApi(16)
-    private void requestFileOpen() {
-
-        // Check permission
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_EXTERNAL_STORAGE);
-        } else
-            startScan();
-
-    }
-
-    /**
-     * Starts the MediaScanner.
-     */
-    private void startScan() {
-
-        if (mMediaScannerConnection != null)
-            mMediaScannerConnection.disconnect();
-
-        mMediaScannerConnection = new MediaScannerConnection(this, this);
-        mMediaScannerConnection.connect();
-
-    }
-
-    /**
-     * Tells the MediaScanner where the directory of DocScan pictures is and tells it to scan the
-     * most recent file.
-     */
-    @Override
-    public void onMediaScannerConnected() {
-
-        File mediaStorageDir = getMediaStorageUserSubDir(getResources().getString(R.string.app_name));
-
-        if (mediaStorageDir == null) {
-            showNoFileFoundDialog();
-            return;
-        }
-
-        String[] files = mediaStorageDir.list();
-
-        if (files == null) {
-            showNoFileFoundDialog();
-            return;
-        } else if (files.length == 0) {
-            showNoFileFoundDialog();
-            return;
-        }
-
-        //	    Opens the most recent image:
-        Arrays.sort(files);
-        String fileName = mediaStorageDir.toString() + File.separator + files[files.length - 1];
-        mMediaScannerConnection.scanFile(fileName, null);
-
-    }
-
-    /**
-     * Starts an intent with the last saved picture as data. This event is then handled by a user
-     * defined app (like the image gallery app).
-     *
-     * @param path Path
-     * @param uri Uri
-     */
-    @Override
-    public void onScanCompleted(String path, Uri uri) {
-
-        try {
-
-
-            if (uri != null) {
-
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(uri);
-//                The flag FLAG_ACTIVITY_REORDER_TO_FRONT prevents that the gallery app can be
-//                launched multiple times (by multiple clicking the button before the gallery is
-//                started).
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-
-                startActivity(intent);
-
-            }
-
-
-        } finally {
-            mMediaScannerConnection.disconnect();
-            mMediaScannerConnection = null;
-        }
-
-    }
 
     /**
      * Shows a dialog saying that no saved picture has been found.
@@ -971,6 +865,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             public void onClick(View v) {
                 mIsQRActive = false;
                 mCameraPreview.startQrMode(false);
+                IPManager.getInstance().setProcessFrame(true);
                 IPManager.getInstance().setIsPaused(false);
                 showControlsLayout(!mIsQRActive);
             }
@@ -1200,27 +1095,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         AlertDialog dialog = builder.create();
         dialog.show();
 
-    }
-
-    /**
-     * Returns the URI of a new file containing a time stamp.
-     *
-     * @param appName name of the app, this is used for gathering the directory string.
-     * @return the filename.
-     */
-    private static Uri getOutputMediaFile(String appName) {
-
-        File mediaStorageDir = getMediaStorageUserSubDir(appName);
-        if (mediaStorageDir == null)
-            return null;
-
-        // Create a media file name
-        mLastTimeStamp = new Date();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(mLastTimeStamp);
-        File mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                mContext.getString(R.string.img_prefix) + timeStamp + mContext.getString(R.string.img_extension));
-
-        return Uri.fromFile(mediaFile);
     }
 
     private static Uri getFileName(String appName) {
@@ -2339,7 +2213,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         @Override
         protected String doInBackground(Uri... uris) {
 
-            mIsSaving = true;
 
             final File file = new File(uris[0].getPath());
 
@@ -2458,7 +2331,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         protected void onPostExecute(String uri) {
 
-            mIsSaving = false;
             // Release the memory. Note this is essential, because otherwise allocated memory will increase.
             mData = null;
 
@@ -2471,16 +2343,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
             else
                 Log.d(CLASS_NAME, "onPostExecute: could not save file!");
-
-        }
-
-        private void startCropViewActivity(String uri) {
-
-//            Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
-            Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
-            CropInfo r = new CropInfo(uri);
-            intent.putExtra(CROP_INFO_NAME, r);
-            startActivity(intent);
 
         }
 
