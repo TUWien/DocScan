@@ -362,7 +362,9 @@ public class SyncInfo implements Serializable {
 
     }
 
-    private ArrayList<FileSync> getUploadedList() {
+//    Note this was private, I am not sure if i can change the modifier, without breaking serialization.
+//    private ArrayList<FileSync> getUploadedList() {
+    public ArrayList<FileSync> getUploadedList() {
 
         return mUploadedList;
 

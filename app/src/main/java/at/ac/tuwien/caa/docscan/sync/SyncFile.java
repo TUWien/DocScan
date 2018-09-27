@@ -19,6 +19,13 @@ public class SyncFile {
 
     }
 
+    public SyncFile(File file, int state) {
+
+        mFile = file;
+        mState = state;
+
+    }
+
     @Override
     public String toString() {
 
