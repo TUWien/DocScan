@@ -24,22 +24,18 @@
 package at.ac.tuwien.caa.docscan.ui;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 import at.ac.tuwien.caa.docscan.R;
+
 
 /**
  * Activity called after the app is started. This activity is responsible for requesting the camera
@@ -58,90 +54,135 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_container_view);
         mLayout = findViewById(R.id.main_frame_layout);
-        showCameraPreview();
+//        showCameraPreview();
+
+        askForPermissions();
 
     }
 
-    public static final String md5(final String s) {
-        final String MD5 = "MD5";
-        try {
-            // Create MD5 Hash
-            MessageDigest digest = java.security.MessageDigest
-                    .getInstance(MD5);
-            digest.update(s.getBytes());
-            byte messageDigest[] = digest.digest();
+    /**
+     * Asks for permissions that are really needed. If they are not given, the app is unusable.
+     */
+    private void askForPermissions() {
 
-            // Create Hex String
-            StringBuilder hexString = new StringBuilder();
-            for (byte aMessageDigest : messageDigest) {
-                String h = Integer.toHexString(0xFF & aMessageDigest);
-                while (h.length() < 2)
-                    h = "0" + h;
-                hexString.append(h);
-            }
-            return hexString.toString();
+        int PERMISSION_ALL = 1;
+        String[] PERMISSIONS = {
+                Manifest.permission.CAMERA,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_FINE_LOCATION
+        };
 
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+        if(!hasPermissions(this, PERMISSIONS)){
+            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
-        return "";
+
+    }
+
+    /**
+     * Ask for multiple permissions. Taken from:
+     * https://stackoverflow.com/a/34343101/9827698
+     * @param context
+     * @param permissions
+     * @return
+     */
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
+    private void showPermissionRequiredAlert(String alertText) {
+
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        alertText += "\n" + getResources().getString(R.string.start_permission_retry_text);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.start_permission_title)
+                .setPositiveButton(R.string.start_confirm_button_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)  {
+                        askForPermissions();
+                    }
+                })
+                .setNegativeButton(R.string.start_cancel_button_text, null)
+                .setCancelable(true)
+                .setMessage(alertText);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == PERMISSION_CAMERA) {
-            // Request for camera permission.
-            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission has been granted. Start camera preview Activity.
-                Snackbar.make(mLayout, "Camera permission was granted. Starting preview.",
-                        Snackbar.LENGTH_SHORT)
-                        .show();
 
-//                Set the default settings if they have not been set before:
-                PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-                PreferenceManager.setDefaultValues(this, R.xml.debug_preferences, false);
+        boolean permissionsGiven = true;
 
-                startCamera();
-            } else {
-                // Permission request was denied.
-                Snackbar.make(mLayout, "Camera permission request was denied.",
-                        Snackbar.LENGTH_SHORT)
-                        .show();
+        for (int i = 0; i < permissions.length; i++) {
+
+            if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+//                These are the permissions that are definitely needed:
+                if (permissions[i].equals(Manifest.permission.CAMERA)) {
+                    showPermissionRequiredAlert(getResources().getString(
+                            R.string.start_permission_camera_text));
+                    permissionsGiven = false;
+                }
+                else if (permissions[i].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    showPermissionRequiredAlert(getResources().getString(
+                            R.string.start_permission_storage_text));
+                    permissionsGiven = false;
+                }
+
             }
         }
-        // END_INCLUDE(onRequestPermissionsResult)
-    }
 
-    private void showCameraPreview() {
-        // BEGIN_INCLUDE(startCamera)
-        // Check if the Camera permission has been granted
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
-            // Permission is already available, start camera preview
-            Snackbar.make(mLayout,
-                    "Camera permission is available. Starting preview.",
-                    Snackbar.LENGTH_SHORT).show();
-
-            startCamera();
-
-        } else {
-            // Permission is missing and must be requested.
-            requestCameraPermission();
-        }
-        // END_INCLUDE(startCamera)
-    }
-
-
-
-    private void requestCameraPermission() {
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
-        }
-        else
+        if (permissionsGiven)
             startCamera();
 
     }
+//
+//    private void showCameraPreview() {
+//        // BEGIN_INCLUDE(startCamera)
+//        // Check if the Camera permission has been granted
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+//                == PackageManager.PERMISSION_GRANTED) {
+//            // Permission is already available, start camera preview
+//            Snackbar.make(mLayout,
+//                    "Camera permission is available. Starting preview.",
+//                    Snackbar.LENGTH_SHORT).show();
+//
+//            startCamera();
+//
+//        } else {
+//            // Permission is missing and must be requested.
+//            requestCameraPermission();
+//        }
+//        // END_INCLUDE(startCamera)
+//    }
+
+//
+//
+//    private void requestCameraPermission() {
+//
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
+//        }
+//        else
+//            startCamera();
+//
+//    }
 
     private void startCamera() {
 
