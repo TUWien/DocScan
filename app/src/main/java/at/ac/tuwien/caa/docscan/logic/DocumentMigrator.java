@@ -6,10 +6,8 @@ import android.support.v7.preference.PreferenceManager;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropLogger;
@@ -31,19 +29,26 @@ public class DocumentMigrator {
         ArrayList<Document> documents = getDocuments(appName);
         File imgDir = Helper.getMediaStorageDir(appName);
 
-//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-//        String seriesName = sharedPref.getString(
-//                context.getResources().getString(R.string.series_name_key),
-//                context.getResources().getString(R.string.series_name_default));
-
         for (Document document : documents)
             movePages(document, imgDir);
 
-
+        String activeDocumentTitle = getActiveDocumentTitle(context);
 
 //        Save the new documents:
         DocumentStorage.getInstance().setDocuments(documents);
+        DocumentStorage.getInstance().setTitle(activeDocumentTitle);
         DocumentStorage.saveJSON(context);
+
+    }
+
+    private static String getActiveDocumentTitle(Context context) {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        String seriesName = sharedPref.getString(
+                context.getResources().getString(R.string.series_name_key),
+                context.getResources().getString(R.string.series_name_default));
+
+        return seriesName;
 
     }
 
