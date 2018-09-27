@@ -85,7 +85,7 @@ public class SyncStorage {
     }
 
 
-    private SyncStorage() {
+    public SyncStorage() {
 
         mFileSyncList = new ArrayList<>();
         mUploadedList = new ArrayList<>();
@@ -122,6 +122,12 @@ public class SyncStorage {
 
     }
 
+    public void setUnprocessedUploadIDs(ArrayList<Integer> unprocessedUploadIDs) {
+
+        mUnprocessedUploadIDs = unprocessedUploadIDs;
+
+    }
+
     public ArrayList<Integer> getUnprocessedUploadIDs() {
 
         return mUnprocessedUploadIDs;
@@ -131,6 +137,12 @@ public class SyncStorage {
     public ArrayList<Integer> getUnfinishedUploadIDs() {
 
         return mUnfinishedUploadIDs;
+
+    }
+
+    public void setUnfinishedUploadIDs(ArrayList<Integer> unfinishedUploadIDs) {
+
+        mUnfinishedUploadIDs = unfinishedUploadIDs;
 
     }
 
@@ -212,13 +224,20 @@ public class SyncStorage {
 
     }
 
+    public void setSyncList(ArrayList<SyncFile> fileSyncList) {
+
+        mFileSyncList = fileSyncList;
+
+    }
+
+
     private ArrayList<SyncFile> getUploadedList() {
 
         return mUploadedList;
 
     }
 
-    private void setUploadedList(ArrayList<SyncFile> uploadedList) {
+    public void setUploadedList(ArrayList<SyncFile> uploadedList) {
 
         mUploadedList = uploadedList;
 

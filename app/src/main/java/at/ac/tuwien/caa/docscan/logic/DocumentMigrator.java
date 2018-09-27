@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 import android.support.v7.preference.PreferenceManager;
 
 import java.io.File;
@@ -11,7 +12,9 @@ import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropLogger;
+import at.ac.tuwien.caa.docscan.sync.SyncFile;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
+import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 /**
  * A class that is used for a migration of how the old documents (with serialization) are saved to
@@ -22,23 +25,88 @@ public class DocumentMigrator {
 
     public static void migrate(Context context) {
 
-//        TODO: acquire the permission to read the data
+        saveDocuments(context);
+        saveOnlineStatus(context);
 
-//        Get a list of 'old' documents:
+    }
+
+    private static void saveOnlineStatus(Context context) {
+
+//        Load the saved sync info:
+        SyncInfo.readFromDisk(context);
+        syncInfoToSyncStorage(SyncInfo.getInstance());
+
+    }
+
+    private static void syncInfoToSyncStorage(SyncInfo syncInfo) {
+
+        SyncStorage syncStorage = SyncStorage.getInstance();
+
+        ArrayList<SyncFile> fileSyncList = toSyncFileList(syncInfo.getSyncList());
+        syncStorage.setSyncList(fileSyncList);
+
+        ArrayList<SyncFile> uploadedList = toSyncFileList(syncInfo.getUploadedList());
+        syncStorage.setUploadedList(uploadedList);
+
+        ArrayList<String> titles = getUploadTitles(syncInfo);
+        syncStorage.setUploadDocumentTitles(titles);
+
+        syncStorage.setUnprocessedUploadIDs(
+                (ArrayList<Integer>) syncInfo.getUnprocessedUploadIDs().clone());
+        syncStorage.setUnfinishedUploadIDs(
+                (ArrayList<Integer>) syncInfo.getUnfinishedUploadIDs().clone());
+
+
+    }
+
+    private static ArrayList<SyncFile> toSyncFileList(ArrayList<SyncInfo.FileSync> fileSyncs) {
+
+        ArrayList<SyncFile> syncFiles = new ArrayList<>();
+
+        if (fileSyncs != null) {
+            for (SyncInfo.FileSync fileSync : fileSyncs)
+                syncFiles.add(new SyncFile(fileSync.getFile(), fileSync.getState()));
+        }
+
+        return syncFiles;
+
+    }
+
+    @NonNull
+    private static ArrayList<String> getUploadTitles(SyncInfo syncInfo) {
+        //        Convert the upload dirs to string lists:
+        ArrayList<String> titles = new ArrayList<>();
+
+        if (syncInfo.getUploadDirs() != null) {
+            for (File file : syncInfo.getUploadDirs())
+                titles.add(file.getName());
+        }
+        return titles;
+    }
+
+    private static void saveDocuments(Context context) {
+
+        //        Get a list of 'old' documents:
+        ArrayList<Document> documents = documentsFromFolders(context);
+        DocumentStorage.getInstance().setDocuments(documents);
+
+        String activeDocumentTitle = getActiveDocumentTitle(context);
+        DocumentStorage.getInstance().setTitle(activeDocumentTitle);
+
+//        Save the new documents:
+        DocumentStorage.saveJSON(context);
+
+    }
+
+    @NonNull
+    private static ArrayList<Document> documentsFromFolders(Context context) {
         String appName = context.getResources().getString(R.string.app_name);
         ArrayList<Document> documents = getDocuments(appName);
         File imgDir = Helper.getMediaStorageDir(appName);
 
         for (Document document : documents)
             movePages(document, imgDir);
-
-        String activeDocumentTitle = getActiveDocumentTitle(context);
-
-//        Save the new documents:
-        DocumentStorage.getInstance().setDocuments(documents);
-        DocumentStorage.getInstance().setTitle(activeDocumentTitle);
-        DocumentStorage.saveJSON(context);
-
+        return documents;
     }
 
     private static String getActiveDocumentTitle(Context context) {
