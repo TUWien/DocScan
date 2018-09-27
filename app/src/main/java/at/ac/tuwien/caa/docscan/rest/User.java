@@ -13,10 +13,8 @@ public class User {
     private String mUserName, mPassword, mFirstName, mLastName, mSessionID;
     private boolean mIsLoggedin, mIsAutoLogInDone, mTranskribusUploadCollIdSet;
     private int mConnection;
-    private Collection mCollection;
     private String mDropboxToken;
     private String mDocumentName = null;
-    private int mTranskribusUploadCollId;
 
     /**
      * Returns a singleton.
@@ -36,12 +34,6 @@ public class User {
         mIsLoggedin = false;
         mIsAutoLogInDone = false;
         mTranskribusUploadCollIdSet = false;
-    }
-
-    public void setCollection(Collection collection) {
-
-        mCollection = collection;
-
     }
 
     public boolean isAutoLogInDone() { return mIsAutoLogInDone; }
@@ -95,8 +87,8 @@ public class User {
         return mDropboxToken;
     }
 
-    public void setDocumentName(String documentName) { mDocumentName = documentName; }
-
-    public String getDocumentName() { return mDocumentName; }
+//    public void setDocumentName(String documentName) { mDocumentName = documentName; }
+//
+//    public String getDocumentName() { return mDocumentName; }
 
 }

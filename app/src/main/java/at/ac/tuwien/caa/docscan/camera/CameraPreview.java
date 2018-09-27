@@ -210,12 +210,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (pixels == null)
             return;
 
-        if (mIsQRMode) {
+        if (mIsQRMode)
             detectBarcode(pixels);
-        }
-        else {
+        else
             cvManagerAction(pixels);
-        }
 
     }
 
@@ -410,10 +408,14 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         Camera.Parameters parameters = mCamera.getParameters();
         parameters.setJpegQuality(100);
+// Use autofocus if available:
+//        useAutoFocus(parameters);
 
-        if (parameters.getFocusMode() != Camera.Parameters.FOCUS_MODE_AUTO) {
+
+        if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)
+            && parameters.getFocusMode() != Camera.Parameters.FOCUS_MODE_AUTO)
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        }
+
         if (parameters.getMaxNumFocusAreas() > 0) {
 
             if (mCamera.getParameters().getMaxNumFocusAreas() > 0)
@@ -630,13 +632,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mFrameWidth = previewSize.width;
         mFrameHeight = previewSize.height;
         mIsPreviewFitting = isPreviewFitting(previewSize);
+        useAutoFocus(params);
 
-        // Use autofocus if available:
-        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-        else if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        }
 
         params.setPreviewSize(mFrameWidth, mFrameHeight);
 
@@ -715,6 +712,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    private void useAutoFocus(Camera.Parameters params) {
+        // Use autofocus if available:
+        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        else if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        }
+    }
+
     private Camera.Size getLargestPictureSize() {
 
         Camera.Size size = null;
@@ -741,11 +747,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         Camera.Parameters params = mCamera.getParameters();
 
         // Use autofocus if available:
-        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-        else if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        }
+        useAutoFocus(params);
 
         mCamera.setParameters(params);
 

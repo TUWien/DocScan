@@ -48,28 +48,28 @@ public class UserHandler {
 
     }
 
-    public static void loadSeriesName(Context context) {
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        String seriesName = sharedPref.getString(
-                context.getResources().getString(R.string.series_name_key),
-                context.getResources().getString(R.string.series_name_default));
-
-        User.getInstance().setDocumentName(seriesName);
-
-    }
-
-    public static void saveSeriesName(Context context) {
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(
-                context.getResources().getString(R.string.series_name_key),
-                User.getInstance().getDocumentName());
-        editor.apply();
-        editor.commit();
-
-    }
+//    public static void loadSeriesName(Context context) {
+//
+//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+//        String seriesName = sharedPref.getString(
+//                context.getResources().getString(R.string.series_name_key),
+//                context.getResources().getString(R.string.series_name_default));
+//
+//        User.getInstance().setDocumentName(seriesName);
+//
+//    }
+//
+//    public static void saveSeriesName(Context context) {
+//
+//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+//        SharedPreferences.Editor editor = sharedPref.edit();
+//        editor.putString(
+//                context.getResources().getString(R.string.series_name_key),
+//                User.getInstance().getDocumentName());
+//        editor.apply();
+//        editor.commit();
+//
+//    }
 
     public static boolean loadUserNames(Context context) {
 

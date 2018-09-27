@@ -486,6 +486,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             return;
         }
 
+        mPagerAdapter.notifyDataSetChanged();
+
         mPager.setAdapter(mPagerAdapter);
         mPager.setCurrentItem(newPos);
 

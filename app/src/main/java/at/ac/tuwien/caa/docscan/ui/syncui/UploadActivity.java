@@ -108,7 +108,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         initToolbar();
 
         // Read the upload information:
-        SyncStorage.loadJSON(this);
+//        SyncStorage.loadJSON(this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // ask for permission:

@@ -91,13 +91,6 @@
             />
 
         <activity
-            android:name=".ui.document.SeriesGeneralActivity"
-            android:exported="true"
-            android:windowSoftInputMode="adjustPan"
-            android:parentActivityName=".ui.CameraActivity"
-            />
-
-        <activity
             android:name=".ui.CameraActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize"
@@ -146,12 +139,6 @@
             android:name=".ui.AccountActivity"
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
-            />
-
-        <activity
-            android:name=".ui.document.OpenDocumentActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.document.SeriesGeneralActivity"
             />
 
         <activity
