@@ -33,6 +33,7 @@ import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
 
 public class SyncInfo implements Serializable {
 
+    private static final long serialVersionUID = -1078733185746102614L;
 
     private static final String SYNC_FILE_NAME = "syncinfo.txt";
     private static final String CLASS_NAME = "SyncInfo";
