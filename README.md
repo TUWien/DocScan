@@ -1,62 +1,38 @@
-# Transkribus DocScan
+# DocScan
 App for document scanning.
+
+<a href='https://play.google.com/store/apps/details?id=at.ac.tuwien.caa.docscan&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png' width="250px"/></a>
 
 ## Authors
 Fabian Hollaus,
 Florian Kleber,
 Markus Diem
 
-## Build Instructions
-
-### Dependencies
-- `JDK` v7 or newer
-- Install `Android Studio`
-- `OpenCV` for Android [1]
-- Android NDK (will be installed via Android Studio)
-
-### Configuration
-- copy`.\app\src\main\jni\local\AndroidSkel.mk` to `.\app\src\main\jni\local\Android.mk`
-- open `.\app\src\main\jni\local\Android.mk` in a text editor
-- uncomment and change the line `MY_OPENCVROOT:= C:/cvl/dmrz/code/opencv_sdk/OpenCV-android-sdk` such that
-it points to your opencv installation (contains the folders: apk, sample, sdk)
-- Open Project from Android Studio
+## Build Instructions for Android Studio
+### Preparation:
+- You need to install Android NDK if you do not have it
+- Download and unzip OpenCV for Android (https://opencv.org/releases.html)
+- Clone the project and open it in Android Studio
 - You will see a dialog "Gradle settings for this project are not configured yet. Would you like the project to use the Gradle wrapper? ..." - click Ok
-- Import OpenCV module
-  - File -> New -> Import module
-  - Set the OpenCV SDK path: .\yourlocalpath\OpenCV-android-sdk\sdk\java
-  - Finish.
-  - Open project view and from there open Project -> openCVLibrary->build.gradle
-  - Set compileSdkVersion, targetSdkVersion and buildToolsVersion to the values of your main build.gradle file.
-  See step 6 in [2]
-  - Set the Android NDK path
-- Add Android NDK
-  - Open `Tools > Android > SDK Manager`
-  - Tab SDK Tools
-  - Check NDK (takes a few minutes to download/install) (copy the NDK path, you will need it later)
-  - Restart Android Studio
-  - right click `app > Open Module Settings > SDK Location`
-  - Set the NDK path
+### Import the OpenCV module
+- In Android Studio: 'File' -> 'New' -> 'Import Module'
+- Set 'Source directory' to: `{your_local_path}/OpenCV-android-sdk/sdk/java`
+- Set 'Module name' to: `openCVLibrary` (Note: Do not include any version number here.)
+- Open 'openCVLibrary/build.gradle'
+- Correct the version numbers of `compileSdkVersion`, `minSdkVersion`, `targetSdkVersion` so that it matches the version numbers in your app build.gradle (You can also delete the buildToolsVersion since this is not needed by gradle anymore)
 
-### Error messages
-  - 'Could not find method android() for arguments...':
+### Set the OpenCV SDK path
+- copy `\app\src\main\jni\local\AndroidSkel.mk` to `.\app\src\main\jni\local\Android.mk`
+- open `.\app\src\main\jni\local\Android.mk`
+- uncomment and change the following line so that it points to your opencv installation (contains the folders: apk, sample, sdk): `# MY_OPENCVROOT:= C:/somepath/OpenCV-android-sdk` (Do not forget to remove the `#`!)
 
-    Maybe you have an obsolete android() block in your top-level gradle file. See:
-     https://stackoverflow.com/questions/37250493/could-not-find-method-android-for-arguments for solution
-
-### Exporting to apk
-- Build -> Generate Signed APK
-- The APK is now under 'DocScan\app\build\outputs\apk\app-release-unaligned.apk'
-
-### Links
-- [1] https://sourceforge.net/projects/opencvlibrary/files/opencv-android/3.1.0/OpenCV-3.1.0-android-sdk.zip/download
-- [2] https://www.learn2crack.com/2016/03/setup-opencv-sdk-android-studio.html
-
+### Build the project
 
 ## Visual Studio Project (C++ Library)
-- Optional
-- C++ lib for Page Segmentation and Focus Measure
+- Optional for testing the C++ module
+- C++ lib for page segmentation and focus measure
 - use CMake to create a Visual Studio Project
-  - Source Code Path: DocScan/app/src/main
+  - source code path: DocScan/app/src/main
   - binaries path e.g.: DocScan/build2015-x64
   - Specify OpenCV_DIR
 
