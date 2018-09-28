@@ -126,8 +126,8 @@ dependencies {
 	annotationProcessor 'com.github.bumptech.glide:compiler:4.5.0'
 	implementation project(':openCVLibrary')
 	implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.9.0'
-	implementation 'com.github.chrisbanes:PhotoView:2.0.0'
-	implementation 'com.fivehundredpx:greedo-layout:1.1.0'
-	implementation 'com.google.android:flexbox:1.0.0'
+//	implementation 'com.github.chrisbanes:PhotoView:2.0.0'
+//	implementation 'com.fivehundredpx:greedo-layout:1.1.0'
+//	implementation 'com.google.android:flexbox:1.0.0'
 //    implementation 'com.google.android:flexbox:0.3.0-alpha2'
 }
