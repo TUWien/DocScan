@@ -28,7 +28,7 @@ Markus Diem
 - open `.\app\src\main\jni\local\Android.mk`
 - uncomment and change the following line so that it points to your opencv installation (contains the folders: apk, sample, sdk): `# MY_OPENCVROOT:= C:/somepath/OpenCV-android-sdk` (Do not forget to remove the `#`!)
 
-### Build the project
+### Sync and build the project
 
 ## Visual Studio Project (C++ Library)
 - Optional for testing the C++ module
