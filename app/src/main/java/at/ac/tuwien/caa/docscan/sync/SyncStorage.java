@@ -29,7 +29,7 @@ public class SyncStorage {
     private ArrayList<Integer> mUnprocessedUploadIDs;
     private ArrayList<Integer> mUnfinishedUploadIDs;
     private ArrayList<String> mUploadDocumentTitles;
-    private ArrayList<File> mAwaitingUploadFiles;
+//    private ArrayList<File> mAwaitingUploadFiles;
 
     public static SyncStorage getInstance() {
 
@@ -156,29 +156,29 @@ public class SyncStorage {
 
     private void createAwaitingUploadList() {
 
-        mAwaitingUploadFiles = new ArrayList<>();
-
-        if (mUploadDocumentTitles == null || mUploadDocumentTitles.isEmpty())
-            return;
-
-        for (String dir : mUploadDocumentTitles) {
-
-            if (dir == null)
-                continue;
-
-//            Get the files contained in the document:
-            Document document = DocumentStorage.getInstance().getDocument(dir);
-            if (document != null) {
-                ArrayList<File> files = document.getFiles();
-                if (files != null && !files.isEmpty()) {
-//                    Add it to the awaiting list:
-                    for (File file : files) {
-                        mAwaitingUploadFiles.add(file);
-                    }
-                }
-            }
-
-        }
+//        mAwaitingUploadFiles = new ArrayList<>();
+//
+//        if (mUploadDocumentTitles == null || mUploadDocumentTitles.isEmpty())
+//            return;
+//
+//        for (String dir : mUploadDocumentTitles) {
+//
+//            if (dir == null)
+//                continue;
+//
+////            Get the files contained in the document:
+//            Document document = DocumentStorage.getInstance().getDocument(dir);
+//            if (document != null) {
+//                ArrayList<File> files = document.getFiles();
+//                if (files != null && !files.isEmpty()) {
+////                    Add it to the awaiting list:
+//                    for (File file : files) {
+//                        mAwaitingUploadFiles.add(file);
+//                    }
+//                }
+//            }
+//
+//        }
 
     }
 
