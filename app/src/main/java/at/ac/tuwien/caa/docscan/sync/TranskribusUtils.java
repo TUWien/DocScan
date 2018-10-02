@@ -76,12 +76,16 @@ public class TranskribusUtils  {
 
         if (SyncStorage.getInstance().getUploadDocumentTitles() != null &&
                 !SyncStorage.getInstance().getUploadDocumentTitles().isEmpty()) {
+            Log.d(CLASS_NAME, "startUpload: the following titles are selected for upload: " +
+                    SyncStorage.getInstance().getUploadDocumentTitles());
             mAreDocumentsPrepared = false;
             //        Start the upload of user selected dirs:
             TranskribusUtils.getInstance().uploadDocuments(SyncStorage.getInstance().getUploadDocumentTitles());
         }
-        else
+        else {
             mAreDocumentsPrepared = true;
+            Log.d(CLASS_NAME, "startUpload: no titles are selected for upload");
+        }
 
         if (SyncStorage.getInstance().getUnfinishedUploadIDs() != null &&
                 !SyncStorage.getInstance().getUnfinishedUploadIDs().isEmpty()) {
@@ -266,6 +270,8 @@ public class TranskribusUtils  {
 
     public void onCollections(List<Collection> collections) {
 
+        Log.d(CLASS_NAME, "onCollections");
+
         int savedCollectionID = getDocScanCollectionID();
 
         int maxId = -1;
@@ -286,6 +292,7 @@ public class TranskribusUtils  {
 //                    return;
                 }
                 else if ((savedCollectionID == collection.getID())) {
+                    Log.d(CLASS_NAME, "onCollections: docScanCollectionFound");
                     docScanCollectionFound(collection.getID());
                     return;
                 }
@@ -295,6 +302,7 @@ public class TranskribusUtils  {
 
         if (maxId > -1) {
 
+            Log.d(CLASS_NAME, "onCollections: saveDocScanCollectionID");
             mIsCollectionCreated = false;
             saveDocScanCollectionID(maxId);
 //            Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, maxId);
@@ -336,18 +344,26 @@ public class TranskribusUtils  {
         mSelectedDirs = dirs;
         mNumUploadJobs = 0;
 
-        Log.d(TAG, "preparing file: " + dirs + " for upload");
+        Log.d(CLASS_NAME, "preparing file: " + dirs + " for upload");
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"preparing file: " + dirs + " for upload");
 
         for (String dir : mSelectedDirs) {
 
+            Log.d(CLASS_NAME, "uploadDirs: processing dir: " + dir);
+
             // Get the corresponding document:
             Document document = DocumentStorage.getInstance().getDocument(dir);
 
+
+
+
             if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
+
+                Log.d(CLASS_NAME, "uploadDirs: processed dir: " + dir);
 
                 //                Create the JSON object:
                 String jsonString = DocumentJSONParser.toJSONString(document);
+                Log.d(CLASS_NAME, "uploadDirs: json: " + jsonString);
                 try {
                     JSONObject jsonObject = new JSONObject(jsonString);
                     new StartUploadRequest(mContext, jsonObject, collectionId);

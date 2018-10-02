@@ -145,6 +145,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
+    private static final int CREATE_DOCUMENT_FROM_QR_REQUEST = 0;
 
     @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
@@ -239,10 +240,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (AppState.isDataLogged())
             DataLog.getInstance().readLog(this);
 
-//        Load the file containing documents created:
-//        DocumentStorage.readFromDisk(this);
-        DocumentStorage.loadJSON(this);
-
         mContext = this;
 
         initActivity();
@@ -314,7 +311,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         super.onResume();
 
-//        Log.d(getClass().getName(), "onResume");
+        Log.d(getClass().getName(), "onResume");
 
 //        Stop receiving orientation change events:
         if (mOrientationListener != null && mOrientationListener.canDetectOrientation())
@@ -356,6 +353,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mIsFocusMeasured = sharedPref.getBoolean(getResources().getString(R.string.key_focus_measure), true);
         mCVResult.setMeasureFocus(mIsFocusMeasured);
         IPManager.getInstance().setIsFocusMeasured(mIsFocusMeasured);
+
 
         boolean isDebugViewShown = sharedPref.getBoolean(getResources().getString(R.string.key_show_debug_view), false);
         showDebugView(isDebugViewShown);
@@ -517,8 +515,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Save the current version:
         Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
 
-        startDocumentMigration();
-//        TODO: test this for updates:
+        if (lastInstalledVersion <= 34)
+            startDocumentMigration();
+
 
 //        if (currentVersion == lastInstalledVersion)
 //            return;
@@ -539,7 +538,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private void startDocumentMigration() {
 
 //        showDocumentHint();
-        DocumentMigrator.migrate(this);
+//        DocumentMigrator.migrate(this);
 
     }
 
@@ -677,9 +676,20 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void startCreateSeriesActivity(String qrText) {
 
+        stopQRMode();
+
         Intent intent = new Intent(getApplicationContext(), CreateDocumentActivity.class);
         intent.putExtra(DOCUMENT_QR_TEXT, qrText);
-        startActivity(intent);
+        startActivityForResult(intent, CREATE_DOCUMENT_FROM_QR_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Check which request we're responding to
+        if (requestCode == CREATE_DOCUMENT_FROM_QR_REQUEST) {
+//            Take care that the image processing is resumed, regardless of the intent result:
+            resumeFromQRMode();
+        }
     }
 
 
@@ -863,14 +873,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mIsQRActive = false;
-                mCameraPreview.startQrMode(false);
-                IPManager.getInstance().setProcessFrame(true);
-                IPManager.getInstance().setIsPaused(false);
-                showControlsLayout(!mIsQRActive);
+                resumeFromQRMode();
             }
         });
 
+    }
+
+    private void resumeFromQRMode() {
+        mIsQRActive = false;
+        mCameraPreview.startQrMode(false);
+        IPManager.getInstance().setProcessFrame(true);
+        IPManager.getInstance().setIsPaused(false);
+        showControlsLayout(!mIsQRActive);
     }
 
     private void initShootModeSpinner() {
@@ -1176,7 +1190,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             public void onOrientationChanged(int orientation) {
 
                 int displayRotation = getDisplayRotation();
-                Log.d(CLASS_NAME, "device orientation: " + displayRotation);
 
 //                Catch the display rotation changes that are not covered by configuration changes
 //                (e.g. landscape to reverse landscape and portrait to reverse portrait):
@@ -1750,24 +1763,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onQRCode(Result result) {
 
+        Log.d(CLASS_NAME, "qr code found: " + result);
+
         final String text;
         // Tell the user that we are still searching for a QR code:
         if (result == null) {
             text = getString(R.string.instruction_searching_qr);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mTextView.setText(text);
-                }
-            });
+            setInstructionText(text);
 
         }
         // Start the CreateDocumentActivity:
         else {
             // Stop searching for QR code:
-            mIsQRActive = false;
-            mCameraPreview.startQrMode(false);
-            IPManager.getInstance().setIsPaused(false);
+//            stopQRMode();
 
             text = result.toString();
             startCreateSeriesActivity(text);
@@ -1777,6 +1785,21 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
 
+    }
+
+    private void stopQRMode() {
+        mIsQRActive = false;
+        mCameraPreview.startQrMode(false);
+        IPManager.getInstance().setIsPaused(false);
+    }
+
+    private void setInstructionText(final String text) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTextView.setText(text);
+            }
+        });
     }
 
 //    @Override
@@ -1931,6 +1954,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 showControlsLayout(false);
                 mCVResult.clearResults();
                 mCameraPreview.startQrMode(true);
+//                String text = getString(R.string.instruction_searching_qr);
+//                setInstructionText(text);
+
                 IPManager.getInstance().setIsPaused(true);
                 return true;
 

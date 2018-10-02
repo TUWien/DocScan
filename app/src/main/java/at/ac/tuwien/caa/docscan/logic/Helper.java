@@ -462,6 +462,17 @@ public class Helper {
 //
 //    }
 
+    public static String getActiveDocumentTitle(Context context) {
+
+        SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        String seriesName = sharedPref.getString(
+                context.getResources().getString(R.string.series_name_key),
+                context.getResources().getString(R.string.series_name_default));
+
+        return seriesName;
+
+    }
+
     public static boolean areFilesCropped(Document document) {
 
         if (document != null) {

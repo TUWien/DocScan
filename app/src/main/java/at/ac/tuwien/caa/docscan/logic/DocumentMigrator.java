@@ -25,8 +25,8 @@ public class DocumentMigrator {
 
     public static void migrate(Context context) {
 
-//        saveDocuments(context);
-        saveOnlineStatus(context);
+        saveDocuments(context);
+//        saveOnlineStatus(context);
 
     }
 
@@ -34,18 +34,22 @@ public class DocumentMigrator {
 
 //        Load the saved sync info:
         SyncInfo.readFromDisk(context);
-        syncInfoToSyncStorage(SyncInfo.getInstance());
+
+        String appName = context.getResources().getString(R.string.app_name);
+        File imgDir = Helper.getMediaStorageDir(appName);
+
+        syncInfoToSyncStorage(imgDir, SyncInfo.getInstance());
 
     }
 
-    private static void syncInfoToSyncStorage(SyncInfo syncInfo) {
+    private static void syncInfoToSyncStorage(File imgDir, SyncInfo syncInfo) {
 
         SyncStorage syncStorage = SyncStorage.getInstance();
 
-        ArrayList<SyncFile> fileSyncList = toSyncFileList(syncInfo.getSyncList());
+        ArrayList<SyncFile> fileSyncList = toSyncFileList(imgDir, syncInfo.getSyncList());
         syncStorage.setSyncList(fileSyncList);
 
-        ArrayList<SyncFile> uploadedList = toSyncFileList(syncInfo.getUploadedList());
+        ArrayList<SyncFile> uploadedList = toSyncFileList(imgDir, syncInfo.getUploadedList());
         syncStorage.setUploadedList(uploadedList);
 
         ArrayList<String> titles = getUploadTitles(syncInfo);
@@ -59,13 +63,16 @@ public class DocumentMigrator {
 
     }
 
-    private static ArrayList<SyncFile> toSyncFileList(ArrayList<SyncInfo.FileSync> fileSyncs) {
+    private static ArrayList<SyncFile> toSyncFileList(File imgDir,
+                                                      ArrayList<SyncInfo.FileSync> fileSyncs) {
 
         ArrayList<SyncFile> syncFiles = new ArrayList<>();
 
         if (fileSyncs != null) {
-            for (SyncInfo.FileSync fileSync : fileSyncs)
-                syncFiles.add(new SyncFile(fileSync.getFile(), fileSync.getState()));
+            for (SyncInfo.FileSync fileSync : fileSyncs) {
+                File file = new File(imgDir, fileSync.getFile().getName());
+                syncFiles.add(new SyncFile(file, fileSync.getState()));
+            }
         }
 
         return syncFiles;
@@ -90,7 +97,7 @@ public class DocumentMigrator {
         ArrayList<Document> documents = documentsFromFolders(context);
         DocumentStorage.getInstance().setDocuments(documents);
 
-        String activeDocumentTitle = getActiveDocumentTitle(context);
+        String activeDocumentTitle = Helper.getActiveDocumentTitle(context);
         DocumentStorage.getInstance().setTitle(activeDocumentTitle);
 
 //        Save the new documents:
@@ -109,16 +116,16 @@ public class DocumentMigrator {
         return documents;
     }
 
-    private static String getActiveDocumentTitle(Context context) {
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        String seriesName = sharedPref.getString(
-                context.getResources().getString(R.string.series_name_key),
-                context.getResources().getString(R.string.series_name_default));
-
-        return seriesName;
-
-    }
+//    private static String getActiveDocumentTitle(Context context) {
+//
+//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+//        String seriesName = sharedPref.getString(
+//                context.getResources().getString(R.string.series_name_key),
+//                context.getResources().getString(R.string.series_name_default));
+//
+//        return seriesName;
+//
+//    }
 
     private static void movePages(Document document, File imgDir) {
 

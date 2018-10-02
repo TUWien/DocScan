@@ -22,6 +22,7 @@ import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
@@ -91,6 +92,10 @@ public class UploadService extends JobService implements
         mIsInterrupted = false;
 
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "================= service starting =================");
+
+//        Check if the DocumentStorage is active, otherwise read it from disk:
+        if (DocumentStorage.isInstanceNull())
+            DocumentStorage.loadJSON(getApplicationContext());
 
         // Check if the app is active, if not read the physical file about the upload status:
         if (SyncStorage.isInstanceNull()) {
@@ -444,7 +449,6 @@ public class UploadService extends JobService implements
         private void uploadsFinished() {
 
             SyncStorage.getInstance().setUploadDocumentTitles(null);
-//          TODO save here:
             SyncStorage.saveJSON(getApplicationContext());
 
 

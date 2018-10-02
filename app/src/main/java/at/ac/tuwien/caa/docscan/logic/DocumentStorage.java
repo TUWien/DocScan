@@ -31,6 +31,7 @@ public class DocumentStorage {
 
         mDocuments = new ArrayList<>();
 
+
     }
 
     public ArrayList<Document> getDocuments() {
@@ -167,6 +168,11 @@ public class DocumentStorage {
 
     }
 
+    public static boolean isInstanceNull() {
+
+        return sInstance == null;
+
+    }
 
     public static DocumentStorage getInstance() {
 
@@ -207,8 +213,12 @@ public class DocumentStorage {
         File path = context.getFilesDir();
         File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
 
-        if (!storeFile.exists())
+        if (!storeFile.exists()) {
             sInstance = new DocumentStorage();
+            DocumentStorage.getInstance().setTitle(Helper.getActiveDocumentTitle(context));
+        }
+
+
         else {
             try {
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(storeFile));

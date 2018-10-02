@@ -35,6 +35,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
+import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 
 /**
@@ -153,6 +156,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         if (permissionsGiven)
             startCamera();
 
+
     }
 //
 //    private void showCameraPreview() {
@@ -187,6 +191,11 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 //    }
 
     private void startCamera() {
+
+        DocumentStorage.loadJSON(this);
+        DocumentStorage.getInstance().setTitle(Helper.getActiveDocumentTitle(this));
+
+        SyncStorage.loadJSON(this);
 
         Intent intent = new Intent(this, CameraActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
