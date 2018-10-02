@@ -515,7 +515,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Save the current version:
         Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
 
-        if (lastInstalledVersion <= 34)
+        if (lastInstalledVersion <= 35)
             DocumentMigrator.migrate(this);
 
     }
