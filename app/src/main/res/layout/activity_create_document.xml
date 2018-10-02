@@ -49,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/create_series_done_button"
                 android:text="@string/create_series_advanced_options_text"
-                android:visibility="visible"/>
+                android:visibility="gone"/>
 
             <RelativeLayout
                 android:id="@+id/create_series_fields_layout"

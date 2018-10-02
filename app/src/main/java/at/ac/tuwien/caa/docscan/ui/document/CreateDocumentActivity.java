@@ -27,6 +27,8 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 
+import static at.ac.tuwien.caa.docscan.ui.document.DocumentMetaData.NO_RELATED_UPLOAD_ID_ASSIGNED;
+
 /**
  * Created by fabian on 24.10.2017.
  */
@@ -150,18 +152,24 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         if (document == null)
             return;
 
+        boolean editable = document.getRelatedUploadId() == NO_RELATED_UPLOAD_ID_ASSIGNED;
+
         // Title:
         EditText titleEditText = findViewById(R.id.create_series_name_edittext);
-        if (document.getTitle() != null)
+        if (document.getTitle() != null) {
             titleEditText.setText(document.getTitle());
+            if (!editable)
+                titleEditText.setKeyListener(null);
+        }
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
-        boolean showAdvancedFields = sharedPref.getBoolean(getResources().getString(R.string.key_show_advanced_qr_code), false);
+//        boolean showAdvancedFields = sharedPref.getBoolean(getResources().getString(R.string.key_show_advanced_qr_code), false);
+        boolean showAdvancedFields = true;
 
         RelativeLayout layout = findViewById(R.id.create_series_fields_layout);
 
-        fillAdvancedFields(document);
+        fillAdvancedFields(document, editable);
 
         if (showAdvancedFields) {
 //           Show the advanced settings:
@@ -172,7 +180,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     }
 
-    private void fillAdvancedFields(DocumentMetaData document) {
+    private void fillAdvancedFields(DocumentMetaData document, boolean editable) {
         //           // Description:
 //           EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
 //           if (document.getTitle() != null)
@@ -180,18 +188,27 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
         // Signature:
         EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
-        if (document.getSignature() != null)
+        if (document.getSignature() != null) {
             signatureEditText.setText(document.getSignature());
+            if (!editable)
+                signatureEditText.setKeyListener(null);
+        }
 
         // Authority:
         EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
-        if (document.getAuthority() != null)
+        if (document.getAuthority() != null) {
             authorityEditText.setText(document.getAuthority());
+            if (!editable)
+                authorityEditText.setKeyListener(null);
+        }
 
         // Hierarchy:
         EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
-        if (document.getHierarchy() != null)
+        if (document.getHierarchy() != null) {
             hierarchyEditText.setText(document.getHierarchy());
+            if (!editable)
+                hierarchyEditText.setKeyListener(null);
+        }
 
 //           // Uri:
 //           EditText uriEditText = findViewById(R.id.create_series_uri_edittext);

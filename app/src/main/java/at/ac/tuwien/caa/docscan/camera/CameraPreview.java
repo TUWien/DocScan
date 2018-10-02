@@ -49,14 +49,21 @@ import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+
+import static com.google.zxing.BarcodeFormat.QR_CODE;
 
 
 /**
@@ -131,7 +138,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private void initMultiFormatReader() {
         Map<DecodeHintType,Object> hints = new EnumMap<>(DecodeHintType.class);
         List<BarcodeFormat> formats = new ArrayList<>();
-        formats.add(BarcodeFormat.QR_CODE);
+        formats.add(QR_CODE);
         hints.put(DecodeHintType.POSSIBLE_FORMATS, formats);
         mMultiFormatReader = new MultiFormatReader();
         mMultiFormatReader.setHints(hints);
@@ -140,49 +147,99 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     private void detectBarcode(byte[] pixels) {
 
+
         PlanarYUVLuminanceSource source = buildLuminanceSource(pixels);
+        BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+        Result result = null;
 
-        Result rawResult = null;
+        Log.d(CLASS_NAME, "detectBarcode");
 
-        if (source != null) {
-            Log.d(CLASS_NAME, "source not null");
-            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
-            try {
-                rawResult = mMultiFormatReader.decodeWithState(bitmap);
-                Log.d(CLASS_NAME, "rawResult found");
-            } catch (ReaderException re) {
-                // continue
-            } catch (NullPointerException npe) {
-                // This is terrible
-            } catch (ArrayIndexOutOfBoundsException aoe) {
+        Map<DecodeHintType,Object> hintsMap = new EnumMap<>(DecodeHintType.class);
+        hintsMap.put(DecodeHintType.POSSIBLE_FORMATS, EnumSet.of(BarcodeFormat.QR_CODE));
 
-            } finally {
-                mMultiFormatReader.reset();
-            }
-
-            if (rawResult == null) {
-                LuminanceSource invertedSource = source.invert();
-                bitmap = new BinaryBitmap(new HybridBinarizer(invertedSource));
-                try {
-                    rawResult = mMultiFormatReader.decodeWithState(bitmap);
-                    Log.d(CLASS_NAME, "rawResult2");
-                }
-                 catch (NotFoundException e) {
-                    e.printStackTrace();
-                } finally {
-                    mMultiFormatReader.reset();
-                }
-            }
-
-            if (rawResult != null) {
-                Log.d(CLASS_NAME, "rawresult output: " + rawResult.toString());
-            }
-
-            mCVCallback.onQRCode(rawResult);
-
+        try {
+            result = mMultiFormatReader.decode(bitmap, hintsMap);
+            if (result != null)
+                Log.d(CLASS_NAME, "result: " + result.toString());
+            else
+                Log.d(CLASS_NAME, "detectBarcode: no result");
+        } catch (NotFoundException e) {
+            Log.d(CLASS_NAME, "detectBarcode: not found");
+            e.printStackTrace();
         }
 
+        if (result != null) {
+            Log.d(CLASS_NAME, "rawresult output: " + result.toString());
+            mCVCallback.onQRCode(result);
+        }
+        else
+            Log.d(CLASS_NAME, "rawresult still null");
+
     }
+
+//    private void detectBarcode2(byte[] pixels) {
+//
+//
+//        PlanarYUVLuminanceSource source = buildLuminanceSource(pixels);
+//
+//        Result rawResult = null;
+//
+//        if (source != null) {
+//            Log.d(CLASS_NAME, "source not null");
+//            BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
+//            try {
+//                Log.d(CLASS_NAME, "getting raw result!");
+//
+//                Map<DecodeHintType,Object> hintsMap = new EnumMap<>(DecodeHintType.class);
+//                hintsMap.put(DecodeHintType.POSSIBLE_FORMATS, EnumSet.of(BarcodeFormat.QR_CODE));
+//                rawResult = mMultiFormatReader.decode(bitmap, hintsMap);
+//
+//                Log.d(CLASS_NAME, "rawResfult found");
+//            } catch (NotFoundException e) {
+//                Log.d(CLASS_NAME, "error");
+//                // TODO Auto-generated catch block
+//                e.printStackTrace();
+//            } catch (ReaderException re) {
+//                // continue
+//                Log.d(CLASS_NAME, "detect barcode: " + re);
+//            } catch (NullPointerException npe) {
+//                Log.d(CLASS_NAME, "detect barcode: " + npe);
+//                // This is terrible
+//            } catch (ArrayIndexOutOfBoundsException aoe) {
+//                Log.d(CLASS_NAME, "detect barcode: " + aoe);
+//            }
+//
+//            finally {
+//                Log.d(CLASS_NAME, "cleaning up");
+//                mMultiFormatReader.reset();
+//            }
+//
+//            if (rawResult == null) {
+//                Log.d(CLASS_NAME, "rawresult null");
+//                LuminanceSource invertedSource = source.invert();
+//                bitmap = new BinaryBitmap(new HybridBinarizer(invertedSource));
+//                try {
+//                    Log.d(CLASS_NAME, "rawresult2");
+//                    rawResult = mMultiFormatReader.decodeWithState(bitmap);
+//                    Log.d(CLASS_NAME, "rawResult2");
+//                }
+//                 catch (NotFoundException e) {
+//                    Log.d(CLASS_NAME, "exception: " + e);
+//                    e.printStackTrace();
+//                } finally {
+//                    mMultiFormatReader.reset();
+//                }
+//            }
+//
+//            if (rawResult != null) {
+//                Log.d(CLASS_NAME, "rawresult output: " + rawResult.toString());
+//            }
+//
+//            mCVCallback.onQRCode(rawResult);
+//
+//        }
+//
+//    }
 
     public PlanarYUVLuminanceSource buildLuminanceSource(byte[] data) {
 
@@ -210,10 +267,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (pixels == null)
             return;
 
-        if (mIsQRMode)
+        if (mIsQRMode) {
+            Log.d(CLASS_NAME, "detecting qr code");
             detectBarcode(pixels);
-        else
+        }
+        else {
+//            Log.d(CLASS_NAME, "doing cv stuff");
             cvManagerAction(pixels);
+        }
+
 
     }
 

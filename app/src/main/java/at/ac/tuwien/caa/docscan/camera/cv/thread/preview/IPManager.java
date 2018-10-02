@@ -395,8 +395,11 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
     public void receiveFrame(byte[] pixels, int frameWidth, int frameHeight) {
 
+        Log.d(CLASS_NAME, "receiveFrame: mProcessFrame: " + mProcessFrame + " mIsPaused: " + mIsPaused);
+
 //        Check if a thread is running or if we should wait in order to lower CPU usage:
         if (mProcessFrame && !mIsPaused) {
+
 
 //            We are in series mode, capture images automatically, and look for changes:
             if (mIsSeriesMode) {
