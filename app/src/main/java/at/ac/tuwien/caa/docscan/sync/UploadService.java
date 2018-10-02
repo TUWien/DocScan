@@ -83,7 +83,6 @@ public class UploadService extends JobService implements
     private boolean mIsInterrupted;
 
 
-    //        TODO: replace this one
     @Override
     public boolean onStartJob(JobParameters job) {
 

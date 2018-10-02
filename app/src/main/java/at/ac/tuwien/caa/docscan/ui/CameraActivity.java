@@ -516,29 +516,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
 
         if (lastInstalledVersion <= 34)
-            startDocumentMigration();
-
-
-//        if (currentVersion == lastInstalledVersion)
-//            return;
-////        else if ((lastInstalledVersion == Settings.NO_ENTRY) || (lastInstalledVersion <= 11)) {
-//        else if (lastInstalledVersion <= 34) {
-//            startDocumentMigration();
-//            // has the user already seen that the documents can be opened in the actionbar?
-////            boolean isDocumentHintShown = Settings.getInstance().loadBooleanKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY);
-////            if (!isDocumentHintShown) {
-////                showDocumentHint();
-////                Settings.getInstance().saveKey(this, Settings.SettingEnum.DOCUMENT_HINT_SHOWN_KEY, true);
-////            }
-//
-//        }
-
-    }
-
-    private void startDocumentMigration() {
-
-//        showDocumentHint();
-//        DocumentMigrator.migrate(this);
+            DocumentMigrator.migrate(this);
 
     }
 

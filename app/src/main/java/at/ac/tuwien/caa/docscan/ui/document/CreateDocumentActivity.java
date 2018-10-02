@@ -73,6 +73,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                 mMetaData = processQRCode(qrText);
                 String json = mMetaData.toJSON();
                 Log.d(CLASS_NAME, "metadata json: " + json);
+
                 fillViews(mMetaData);
             }
         }
@@ -152,7 +153,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         if (document == null)
             return;
 
-        boolean editable = document.getRelatedUploadId() == NO_RELATED_UPLOAD_ID_ASSIGNED;
+        boolean editable = document.getRelatedUploadId() == null;
 
         // Title:
         EditText titleEditText = findViewById(R.id.create_series_name_edittext);
@@ -162,8 +163,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                 titleEditText.setKeyListener(null);
         }
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
+//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 //        boolean showAdvancedFields = sharedPref.getBoolean(getResources().getString(R.string.key_show_advanced_qr_code), false);
         boolean showAdvancedFields = true;
 

@@ -211,8 +211,7 @@ public class TranskribusUtils  {
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onUnfinishedUploadStatusReceived3: unfinished upload ids size" +
                 SyncStorage.getInstance().getUnfinishedUploadIDs().size());
 
-//        TODO: save here
-//        SyncStorage.saveToDisk(mContext);
+        SyncStorage.saveJSON(mContext);
 
 //        if (areUnfinishedFilesProcessed()) {
 //            mAreUnfinishedFilesPrepared = true;
@@ -497,8 +496,8 @@ public class TranskribusUtils  {
         User.getInstance().setLoggedIn(false);
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onError");
         Log.d(CLASS_NAME, "unfinished size: " + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
-//        TODO: save here
-//        SyncStorage.saveToDisk(mContext);
+
+        SyncStorage.saveJSON(mContext);
 
     }
 
@@ -522,8 +521,7 @@ public class TranskribusUtils  {
     private void removeFromSyncStorageUploadList(String title) {
 
         SyncStorage.getInstance().removeDocument(title);
-//        TODO: save here:
-//        SyncStorage.saveToDisk(mContext);
+        SyncStorage.saveJSON(mContext);
 
     }
 

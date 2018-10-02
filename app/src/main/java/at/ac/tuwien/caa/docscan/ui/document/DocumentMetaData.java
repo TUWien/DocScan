@@ -43,7 +43,7 @@ public class DocumentMetaData {
 
     private String mDescription;
     private Date mDate;
-    private int mRelatedUploadId = NO_RELATED_UPLOAD_ID_ASSIGNED;
+    private Integer mRelatedUploadId;
 
     public String getTitle() { return mTitle; }
     public String getDescription() { return mDescription; }
@@ -52,7 +52,7 @@ public class DocumentMetaData {
     public String getUri() { return mUri; }
     public String getSignature() { return mSignature; }
     public Date getDate() { return mDate; }
-    public int getRelatedUploadId() { return mRelatedUploadId; }
+    public Integer getRelatedUploadId() { return mRelatedUploadId; }
 
     private DocumentMetaData() {
 
