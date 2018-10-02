@@ -25,8 +25,8 @@ public class DocumentMigrator {
 
     public static void migrate(Context context) {
 
-        saveDocuments(context);
-//        saveOnlineStatus(context);
+//        saveDocuments(context);
+        saveOnlineStatus(context);
 
     }
 

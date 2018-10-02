@@ -133,12 +133,6 @@ public class DocumentStorage {
 
     public void addToActiveDocument(File file) {
 
-////        TODO: temporary until the new document structure is done:
-//        if (mActiveDocument == null)
-//            mActiveDocument = new Document(User.getInstance().getDocumentName());
-//        if (mTitle == null)
-//            mTitle = User.getInstance().getDocumentName();
-
         if (mDocuments.isEmpty())
             mDocuments.add(new Document(mTitle));
 
