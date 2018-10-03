@@ -20,12 +20,31 @@ android {
 		// we need vectorDrawables.useSupportLibrary to get rid of this error:
 //		References to other resources are not supported by build-time PNG generation
 		vectorDrawables.useSupportLibrary = true
+
+		externalNativeBuild {
+			cmake {
+//				cppFlags "-frtti -fexceptions"
+				abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
+			}
+		}
 	}
 
 	buildTypes {
 		release {
 			minifyEnabled false
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+		}
+	}
+
+	externalNativeBuild {
+		cmake {
+			path "CMakeLists.txt"
+		}
+	}
+
+	sourceSets {
+		main {
+			jniLibs.srcDirs = ['src/main/jniLibs']
 		}
 	}
 
@@ -45,29 +64,29 @@ android {
 //	sourceSets.main.jni.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
 //	sourceSets.main.jniLibs.srcDir 'src/main/libs'
 
-	sourceSets.main {
-		jni.srcDirs = [] //disable automatic nd k-build call
-	}
-
-	// call regular ndk-build(.cmd) script from app directory
-	task ndkBuild(type: Exec) {
-		workingDir file('src/main')
-		commandLine getNdkBuildCmd(), 'NDK_LIBS_OUT=./jniLibs'
-	}
-
-	task cleanNative(type: Exec, description: 'Clean JNI object files') {
-		commandLine getNdkBuildCmd(),
-				'-C', file('src/main/jni').absolutePath, // Change src/main/jni the relative path to your jni source
-				'clean'
-	}
-
-	clean.dependsOn 'cleanNative'
-
-	tasks.withType(JavaCompile) {
-		compileTask -> compileTask.dependsOn ndkBuild
-	}
-
-	clean.dependsOn cleanNative
+//	sourceSets.main {
+//		jni.srcDirs = [] //disable automatic nd k-build call
+//	}
+//
+//	// call regular ndk-build(.cmd) script from app directory
+//	task ndkBuild(type: Exec) {
+//		workingDir file('src/main')
+//		commandLine getNdkBuildCmd(), 'NDK_LIBS_OUT=./jniLibs'
+//	}
+//
+//	task cleanNative(type: Exec, description: 'Clean JNI object files') {
+//		commandLine getNdkBuildCmd(),
+//				'-C', file('src/main/jni').absolutePath, // Change src/main/jni the relative path to your jni source
+//				'clean'
+//	}
+//
+//	clean.dependsOn 'cleanNative'
+//
+//	tasks.withType(JavaCompile) {
+//		compileTask -> compileTask.dependsOn ndkBuild
+//	}
+//
+//	clean.dependsOn cleanNative
 
 }
 
@@ -115,10 +134,10 @@ dependencies {
 	implementation 'com.firebase:firebase-jobdispatcher:0.8.4'
 	implementation 'com.github.smart-fun:XmlToJson:1.4.0'
 	// necessary for xmltojson
-//	// retrofit - start:
-//	implementation 'com.squareup.retrofit2:retrofit:2.3.0'
-//	implementation 'com.squareup.okhttp3:okhttp:3.6.0'
-//	implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+	//	// retrofit - start:
+	//	implementation 'com.squareup.retrofit2:retrofit:2.3.0'
+	//	implementation 'com.squareup.okhttp3:okhttp:3.6.0'
+	//	implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
 	// necessary for retrofit
 	implementation 'com.squareup.okhttp3:logging-interceptor:3.6.0'
 	// retrofit - end:
@@ -128,10 +147,11 @@ dependencies {
 	implementation 'me.dm7.barcodescanner:zxing:1.9.8'
 	implementation 'com.github.bumptech.glide:glide:4.5.0'
 	annotationProcessor 'com.github.bumptech.glide:compiler:4.5.0'
-	implementation project(':openCVLibrary')
+	//	implementation project(':openCVLibrary')
 	implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.9.0'
-//	implementation 'com.github.chrisbanes:PhotoView:2.0.0'
-//	implementation 'com.fivehundredpx:greedo-layout:1.1.0'
-//	implementation 'com.google.android:flexbox:1.0.0'
-//    implementation 'com.google.android:flexbox:0.3.0-alpha2'
+	//	implementation 'com.github.chrisbanes:PhotoView:2.0.0'
+	//	implementation 'com.fivehundredpx:greedo-layout:1.1.0'
+	//	implementation 'com.google.android:flexbox:1.0.0'
+	//    implementation 'com.google.android:flexbox:0.3.0-alpha2'
+	implementation project(':openCVLibrary')
 }
