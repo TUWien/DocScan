@@ -10,10 +10,10 @@ Markus Diem
 
 ## Build Instructions for Android Studio
 ### Preparation:
-- You need to install Android NDK if you do not have it
+- You need to install Android NDK (with CMake) if you do not have it
 - Download and unzip OpenCV for Android (https://opencv.org/releases.html)
 - Clone the project and open it in Android Studio
-- You will see a dialog "Gradle settings for this project are not configured yet. Would you like the project to use the Gradle wrapper? ..." - click Ok
+
 ### Import the OpenCV module
 - In Android Studio: 'File' -> 'New' -> 'Import Module'
 - Set 'Source directory' to: `{your_local_path}/OpenCV-android-sdk/sdk/java`
@@ -21,10 +21,17 @@ Markus Diem
 - Open 'openCVLibrary/build.gradle'
 - Correct the version numbers of `compileSdkVersion`, `minSdkVersion`, `targetSdkVersion` so that it matches the version numbers in your app build.gradle (You can also delete the buildToolsVersion since this is not needed by gradle anymore)
 
-### Set the OpenCV SDK path
-- copy `\app\src\main\jni\local\AndroidSkel.mk` to `.\app\src\main\jni\local\Android.mk`
-- open `.\app\src\main\jni\local\Android.mk`
-- uncomment and change the following line so that it points to your opencv installation (contains the folders: apk, sample, sdk): `# MY_OPENCVROOT:= C:/somepath/OpenCV-android-sdk` (Do not forget to remove the `#`!)
+### Setup CMake file
+- copy the file `app/src/CMakeListsSkel.txt` and paste it to `app/src/`, name the pasted file `CMakeLists.txt` (do not add it to the git repository!)
+- open `app/src/CMakeLists.txt`
+- change the line `include_directories(enter_your_opencv_path/sdk/native/jni/include)` so that it contains your opencv path
+
+### Copy lib files
+- copy the folder `{your_local_path}/OpenCV-android-sdk/native/libs`
+- paste it to `app/src/main`
+- rename it to `jniLibs`
+
+
 
 ### Sync and build the project
 
