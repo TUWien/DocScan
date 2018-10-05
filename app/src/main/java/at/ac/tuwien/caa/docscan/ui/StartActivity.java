@@ -193,7 +193,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     private void startCamera() {
 
         DocumentStorage.loadJSON(this);
-        DocumentStorage.getInstance().setTitle(Helper.getActiveDocumentTitle(this));
+//        DocumentStorage.getInstance().setTitle(Helper.getActiveDocumentTitle(this));
 
         SyncStorage.loadJSON(this);
 

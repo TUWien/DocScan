@@ -257,11 +257,11 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     private void showHideCropButton() {
 
-//                Check if the file is already cropped.
+////                Check if the file is already cropped.
         RelativeLayout l = findViewById(R.id.page_view_buttons_layout_crop_layout);
-        if (PageDetector.isCropped(mPage.getFile().getAbsolutePath()))
-            l.setVisibility(View.GONE);
-        else
+//        if (PageDetector.isCropped(mPage.getFile().getAbsolutePath()))
+//            l.setVisibility(View.GONE);
+//        else
             l.setVisibility(View.VISIBLE);
 
     }
@@ -312,11 +312,36 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //       Take care that the mButtonsLayout is not overlaid by the navigation bar:
 //       mButtonsLayout.setPadding(0, 0, 0, getNavigationBarHeight());
 
-
+        initGalleryButton();
         initCropButton();
         initDeleteButton();
         initRotateButton();
         initShareButton();
+
+    }
+
+    private void initGalleryButton() {
+
+        ImageView galleryImageView = findViewById(R.id.page_view_buttons_layout_gallery_button);
+        galleryImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startGalleryActivity();
+            }
+        });
+    }
+
+    private void startGalleryActivity() {
+
+        if (mDocument == null)
+            return;
+
+        String documentTitle = mDocument.getTitle();
+        if (documentTitle != null) {
+            Intent intent = new Intent(mContext, GalleryActivity.class);
+            intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
+            mContext.startActivity(intent);
+        }
 
     }
 

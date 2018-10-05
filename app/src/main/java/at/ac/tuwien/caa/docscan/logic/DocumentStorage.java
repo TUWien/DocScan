@@ -14,9 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
-import at.ac.tuwien.caa.docscan.ui.document.DocumentJSONParser;
 
 public class DocumentStorage {
 
@@ -30,7 +28,6 @@ public class DocumentStorage {
     public DocumentStorage() {
 
         mDocuments = new ArrayList<>();
-
 
     }
 
@@ -51,20 +48,6 @@ public class DocumentStorage {
         mTitle = title;
 
     }
-
-    public boolean openDocument(String title) {
-
-        for (Document document : mDocuments) {
-            if (document.getTitle().compareToIgnoreCase(title) == 0) {
-                mTitle = title;
-                return true;
-            }
-        }
-
-        return false;
-
-    }
-
 
     /**
      * Creates a new document inf the title is not already assigned to another document.
@@ -219,6 +202,9 @@ public class DocumentStorage {
 
                 Gson gson = new Gson();
                 sInstance = gson.fromJson(bufferedReader, DocumentStorage.class);
+
+                if (sInstance.getTitle() == null)
+                    sInstance.setTitle(Helper.getActiveDocumentTitle(context));
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

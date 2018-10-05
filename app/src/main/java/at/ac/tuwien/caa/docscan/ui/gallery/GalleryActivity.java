@@ -179,6 +179,9 @@ public class GalleryActivity extends AppCompatActivity implements
             return;
         }
 
+        if (DocumentStorage.getInstance().getTitle().compareTo(mDocument.getTitle()) == 0)
+            DocumentStorage.getInstance().setTitle(newDir);
+
         mFileName = newDir;
         mDocument.setTitle(newDir);
         mToolbar.setTitle(newDir);
@@ -416,6 +419,9 @@ public class GalleryActivity extends AppCompatActivity implements
 
 
     private void initToolbar() {
+
+        if (mDocument == null)
+            return;
 
         mToolbar = findViewById(R.id.main_toolbar);
         mToolbar.setTitle(mDocument.getTitle());

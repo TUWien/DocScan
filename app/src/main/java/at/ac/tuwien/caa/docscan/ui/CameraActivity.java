@@ -115,6 +115,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.document.SelectDocumentActivity;
+import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.AppState;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
@@ -165,10 +166,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private ActionBarDrawerToggle mDrawerToggle;
     private boolean mIsPictureSafe;
     private TextView mTextView;
-    private MenuItem mFlashMenuItem, mDocumentMenuItem;
+    private MenuItem mFlashMenuItem, mDocumentMenuItem, mGalleryMenuItem, mUploadMenuItem;
     private Drawable mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
-    private boolean mHideSeriesDialog;
     private boolean mIsSeriesModePaused = true;
     // We hold here a reference to the popupmenu and the list, because we are not sure what is first initialized:
     private List<String> mFlashModes;
@@ -363,8 +363,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (DocumentStorage.getInstance().getTitle() != null)
             getSupportActionBar().setTitle(DocumentStorage.getInstance().getTitle());
 
-        mHideSeriesDialog = Settings.getInstance().loadBooleanKey(this, HIDE_SERIES_DIALOG_KEY);
-
         showControlsLayout(!mIsQRActive);
 
 		checkProviderInstaller();
@@ -392,14 +390,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             qrCodeVisibility = View.VISIBLE;
         }
 
-        // Show/hide the flash button:
+        // Show/hide the menu buttons:
 //        Weak devices might have no flash, so check if mFlashModes is null:
         if ((mFlashModes != null) && (mFlashMenuItem != null))
             mFlashMenuItem.setVisible(showControls);
-
-        // Show/hide the document button:
         if (mDocumentMenuItem != null)
             mDocumentMenuItem.setVisible(showControls);
+        if (mGalleryMenuItem != null)
+            mGalleryMenuItem.setVisible(showControls);
+        if (mUploadMenuItem != null)
+            mUploadMenuItem.setVisible(showControls);
+
+//        Show/hide the gallery button:
+
 
 //        Deleted the overflow button, so I had to comment this out:
 //        // Show/hide the overflow button:
@@ -596,13 +599,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public boolean onCreateOptionsMenu(Menu menu) {
 
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.actionbar_menu, menu);
+        inflater.inflate(R.menu.camera_menu, menu);
 
         mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
         mDocumentMenuItem = menu.findItem(R.id.document_item);
+        mGalleryMenuItem = menu.findItem(R.id.gallery_item);
+        mUploadMenuItem = menu.findItem(R.id.upload_item);
 
         // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
-        if (mFlashModes != null)
+        if (mFlashModes != null && !mIsSeriesMode)
             mFlashMenuItem.setVisible(true);
 
         return true;
@@ -989,6 +994,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             drawable = R.drawable.ic_photo_camera;
             mIsSeriesModePaused = false;
         }
+
+//        Hide the flash button in series mode:
+        if (mFlashMenuItem != null)
+            mFlashMenuItem.setVisible(!mIsSeriesMode);
 
         if (mCVResult != null)
             mCVResult.setSeriesMode(mIsSeriesMode);
@@ -1874,6 +1883,21 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    public void startGalleryActivity(MenuItem item) {
+
+        String documentTitle = DocumentStorage.getInstance().getTitle();
+        if (documentTitle != null) {
+            if (DocumentStorage.getInstance().getDocument(documentTitle) == null)
+                return;
+
+            Intent intent = new Intent(mContext, GalleryActivity.class);
+            intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
+            mContext.startActivity(intent);
+        }
+
+    }
+
+
     @SuppressWarnings("deprecation")
     private void setupFlashUI() {
 
@@ -2199,6 +2223,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
         return NavigationDrawer.NavigationItemEnum.CAMERA;
     }
+
+
 
 
     /**
