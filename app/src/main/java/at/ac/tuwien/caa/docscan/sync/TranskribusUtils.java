@@ -343,12 +343,13 @@ public class TranskribusUtils  {
         mSelectedDirs = dirs;
         mNumUploadJobs = 0;
 
-        Log.d(CLASS_NAME, "preparing file: " + dirs + " for upload");
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"preparing file: " + dirs + " for upload");
+        Log.d(CLASS_NAME, "uploadDirs: preparing file: " + dirs + " for upload");
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"uploadDirs: preparing file: " + dirs + " for upload");
 
         for (String dir : mSelectedDirs) {
 
             Log.d(CLASS_NAME, "uploadDirs: processing dir: " + dir);
+            DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"uploadDirs: processing dir: " + dir);
 
             // Get the corresponding document:
             Document document = DocumentStorage.getInstance().getDocument(dir);
@@ -363,6 +364,8 @@ public class TranskribusUtils  {
                 //                Create the JSON object:
                 String jsonString = DocumentJSONParser.toJSONString(document);
                 Log.d(CLASS_NAME, "uploadDirs: json: " + jsonString);
+                DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "uploadDirs: json: " + jsonString);
+
                 try {
                     JSONObject jsonObject = new JSONObject(jsonString);
                     new StartUploadRequest(mContext, jsonObject, collectionId);

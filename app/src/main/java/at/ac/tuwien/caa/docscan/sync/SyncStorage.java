@@ -29,7 +29,6 @@ public class SyncStorage {
     private ArrayList<Integer> mUnprocessedUploadIDs;
     private ArrayList<Integer> mUnfinishedUploadIDs;
     private ArrayList<String> mUploadDocumentTitles;
-//    private ArrayList<File> mAwaitingUploadFiles;
 
     public static SyncStorage getInstance() {
 

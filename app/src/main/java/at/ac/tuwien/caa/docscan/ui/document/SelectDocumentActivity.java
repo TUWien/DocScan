@@ -3,10 +3,6 @@ package at.ac.tuwien.caa.docscan.ui.document;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.AppBarLayout;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.AdapterView;
@@ -19,12 +15,8 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.DocumentAdapter;
-import at.ac.tuwien.caa.docscan.ui.syncui.DocumentUploadAdapter;
-import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
 public class SelectDocumentActivity extends BaseNoNavigationActivity implements
         DocumentAdapter.DocumentAdapterCallback {
@@ -68,6 +60,7 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
 
     private void initSelectButton() {
 
+        final Context c = this;
         mSelectButton = findViewById(R.id.document_select_button);
         mSelectButton.setOnClickListener(new View.OnClickListener() {
             @Override
