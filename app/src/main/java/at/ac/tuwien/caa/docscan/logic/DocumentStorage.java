@@ -114,17 +114,40 @@ public class DocumentStorage {
 
     }
 
-    public void addToActiveDocument(File file) {
+    public void generateDocument(File file, Context context) {
 
-        if (mDocuments.isEmpty())
-            mDocuments.add(new Document(mTitle));
+        if (mTitle == null)
+            mTitle = Helper.getActiveDocumentTitle(context);
 
         Document document = getDocument(mTitle);
-        if (document != null)
-            document.getPages().add(new Page(file));
+        if (document == null) {
+            createNewDocument(mTitle);
+            document = getDocument(mTitle);
+        }
 
-//        if (mActiveDocument.getPages() != null)
-//            mActiveDocument.getPages().add(new Page(file));
+        document.getPages().add(new Page(file));
+
+
+    }
+
+    /**
+     * Returns true if a document with the active title (mTitle) is existing and the file is added
+     * to it.
+     * @param file
+     * @return
+     */
+    public boolean addToActiveDocument(File file) {
+
+        if (mDocuments == null || mDocuments.isEmpty() || mTitle == null)
+            return false;
+
+        Document document = getDocument(mTitle);
+        if (document != null) {
+            document.getPages().add(new Page(file));
+            return true;
+        }
+        else
+            return false;
 
     }
 
@@ -136,9 +159,11 @@ public class DocumentStorage {
 
     public Document getDocument(String title) {
 
-        for (Document document : mDocuments) {
-            if (document.getTitle().compareToIgnoreCase(title) == 0)
-                return document;
+        if (mDocuments != null) {
+            for (Document document : mDocuments) {
+                if (document.getTitle() != null && document.getTitle().compareToIgnoreCase(title) == 0)
+                    return document;
+            }
         }
 
         return null;
@@ -231,6 +256,7 @@ public class DocumentStorage {
         }
 
     }
+
 
 }
 

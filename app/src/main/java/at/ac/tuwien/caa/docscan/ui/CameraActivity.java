@@ -2267,9 +2267,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Save exif information (especially the orientation):
                 saveExif(file);
 
-                DocumentStorage.getInstance().addToActiveDocument(file);
-//                DocumentStorage.saveJSON(mContext);
-//                DocumentStorage.saveToDisk(mContext);
+                boolean fileAdded = DocumentStorage.getInstance().addToActiveDocument(file);
+                if (!fileAdded)
+                    DocumentStorage.getInstance().generateDocument(file, mContext);
 
                 mIsPictureSafe = true;
 

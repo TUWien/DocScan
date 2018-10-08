@@ -179,7 +179,8 @@ public class GalleryActivity extends AppCompatActivity implements
             return;
         }
 
-        if (DocumentStorage.getInstance().getTitle().compareTo(mDocument.getTitle()) == 0)
+        if (mDocument.getTitle() != null && DocumentStorage.getInstance().getTitle() != null &&
+                DocumentStorage.getInstance().getTitle().compareTo(mDocument.getTitle()) == 0)
             DocumentStorage.getInstance().setTitle(newDir);
 
         mFileName = newDir;
