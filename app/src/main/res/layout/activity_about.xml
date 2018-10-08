@@ -62,12 +62,32 @@
                     android:layout_below="@id/about_version_textview"
                     android:layout_centerHorizontal="true"
                     />
+                <android.support.v7.widget.AppCompatButton
+                    android:id="@+id/about_guide_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/about_buildtime_textview"
+                    android:layout_centerInParent="true"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    app:backgroundTint="@color/colorAccent"
+                    android:text="@string/about_howto_button_text"
+                    android:drawablePadding="@dimen/activity_horizontal_margin"
+                    android:drawableLeft="@drawable/ic_help_white_24dp"
+                    android:textColor="@color/white" />
+                <!--<TextView-->
+                    <!--android:id="@+id/about_guide_textview"-->
+                    <!--android:layout_marginTop="@dimen/activity_vertical_margin"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_below="@id/about_buildtime_textview"-->
+                    <!--android:text="https://transkribus.eu/wiki/images/e/ed/How_to_use_DocScan_and_ScanTent.pdf"-->
+                    <!--android:autoLink=""/>-->
                 <TextView
                     android:id="@+id/about_website_textview"
                     android:layout_marginTop="@dimen/activity_vertical_margin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/about_buildtime_textview"
+                    android:layout_below="@+id/about_guide_button"
                     android:text="@string/about_scantent_text"
                     android:autoLink="web"/>
                 <TextView

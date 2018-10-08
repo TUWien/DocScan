@@ -1,7 +1,11 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatButton;
+import android.view.View;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -39,6 +43,19 @@ public class AboutActivity extends BaseNavigationActivity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+
+//        Initialize the howto button:
+        AppCompatButton howtoButton = findViewById(R.id.about_guide_button);
+        howtoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String pdfUrl = "https://transkribus.eu/wiki/images/e/ed/How_to_use_DocScan_and_ScanTent.pdf";
+//                String pdfUrl = "https://stackoverflow.com/questions/3004515/sending-an-intent-to-browser-to-open-specific-url";
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                browserIntent.setData(Uri.parse(pdfUrl));
+                startActivity(browserIntent);
+            }
+        });
 
 
     }
