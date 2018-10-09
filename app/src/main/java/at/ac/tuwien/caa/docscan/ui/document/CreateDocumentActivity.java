@@ -1,13 +1,12 @@
 package at.ac.tuwien.caa.docscan.ui.document;
 
-import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatButton;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.View;
@@ -17,17 +16,11 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
-import java.io.File;
-
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
-
-import static at.ac.tuwien.caa.docscan.ui.document.DocumentMetaData.NO_RELATED_UPLOAD_ID_ASSIGNED;
 
 /**
  * Created by fabian on 24.10.2017.
@@ -35,19 +28,17 @@ import static at.ac.tuwien.caa.docscan.ui.document.DocumentMetaData.NO_RELATED_U
 
 public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
-//    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 0;
     private static final String CLASS_NAME = "CreateDocumentActivity";
-    private DocumentMetaData mMetaData = null;
+    private QRCodeParser qrCodeParser = null;
     public static final String DOCUMENT_QR_TEXT = "DOCUMENT_QR_TEXT";
 
-    // Eventually a permission is required for dir creation, hence we store this as member:
-    private File mSubDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_document);
+
 
         Log.d(CLASS_NAME, "oncreate");
 
@@ -70,11 +61,11 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             String qrText = extras.getString(DOCUMENT_QR_TEXT, initString);
             if (!qrText.equals(initString)) {
                 Log.d(getClass().getName(), qrText);
-                mMetaData = processQRCode(qrText);
-                String json = mMetaData.toJSON();
+                qrCodeParser = processQRCode(qrText);
+                String json = qrCodeParser.toJSON();
                 Log.d(CLASS_NAME, "metadata json: " + json);
 
-                fillViews(mMetaData);
+                fillViews(qrCodeParser);
             }
         }
     }
@@ -126,12 +117,12 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         Log.d(CLASS_NAME, "onresume");
     }
 
-    private DocumentMetaData processQRCode(String text) {
+    private QRCodeParser processQRCode(String text) {
 
         // Currently the XML has no root defined (malformed) so we add one manually:
         String qrText = "<root>" + text + "</root>";
         Log.d(getClass().getName(), "parsing document");
-        DocumentMetaData metaData = parseQRCode(qrText);
+        QRCodeParser metaData = parseQRCode(qrText);
 
         Log.d(getClass().getName(), "found document: " + metaData);
 
@@ -139,48 +130,51 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     }
 
-    private DocumentMetaData parseQRCode(String text) {
+    private QRCodeParser parseQRCode(String text) {
 
         Log.d(getClass().getName(), "QR code text: " + text);
 
-        return DocumentMetaData.parseXML(text);
+        return QRCodeParser.parseXML(text);
 
     }
 
     //        Temporarily deactivate the advanced fields:
-    private void fillViews(DocumentMetaData document) {
+    private void fillViews(QRCodeParser qrCodeInfo) {
 
-        if (document == null)
+        if (qrCodeInfo == null)
             return;
 
-        boolean editable = document.getRelatedUploadId() == null;
+        boolean editable = qrCodeInfo.getRelatedUploadId() == null;
 
         // Title:
         EditText titleEditText = findViewById(R.id.create_series_name_edittext);
-        if (document.getTitle() != null) {
-            titleEditText.setText(document.getTitle());
+        if (qrCodeInfo.getTitle() != null) {
+            titleEditText.setText(qrCodeInfo.getTitle());
             if (!editable)
                 titleEditText.setKeyListener(null);
         }
 
-//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-//        boolean showAdvancedFields = sharedPref.getBoolean(getResources().getString(R.string.key_show_advanced_qr_code), false);
         boolean showAdvancedFields = true;
 
         RelativeLayout layout = findViewById(R.id.create_series_fields_layout);
 
-        fillAdvancedFields(document, editable);
+        fillAdvancedFields(qrCodeInfo, editable);
 
         if (showAdvancedFields) {
 //           Show the advanced settings:
             layout.setVisibility(View.VISIBLE);
+//            Hide the link button if we have no link:
+            if (qrCodeInfo.getLink() == null) {
+                AppCompatButton button = findViewById(R.id.create_series_link_button);
+                button.setVisibility(View.GONE);
+            }
         }
         else
             layout.setVisibility(View.INVISIBLE);
 
     }
 
-    private void fillAdvancedFields(DocumentMetaData document, boolean editable) {
+    private void fillAdvancedFields(final QRCodeParser qrCodeParser, boolean editable) {
         //           // Description:
 //           EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
 //           if (document.getTitle() != null)
@@ -188,28 +182,46 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
         // Signature:
         EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
-        if (document.getSignature() != null) {
-            signatureEditText.setText(document.getSignature());
+        if (qrCodeParser.getSignature() != null) {
+            signatureEditText.setText(qrCodeParser.getSignature());
             if (!editable)
                 signatureEditText.setKeyListener(null);
         }
 
         // Authority:
         EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
-        if (document.getAuthority() != null) {
-            authorityEditText.setText(document.getAuthority());
+        if (qrCodeParser.getAuthority() != null) {
+            authorityEditText.setText(qrCodeParser.getAuthority());
             if (!editable)
                 authorityEditText.setKeyListener(null);
         }
 
-        // Hierarchy:
-        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
-        if (document.getHierarchy() != null) {
-            hierarchyEditText.setText(document.getHierarchy());
-            if (!editable)
-                hierarchyEditText.setKeyListener(null);
-        }
+//        // Hierarchy:
+//        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
+//        if (qrCodeParser.getHierarchy() != null) {
+//            hierarchyEditText.setText(qrCodeParser.getHierarchy());
+//            if (!editable)
+//                hierarchyEditText.setKeyListener(null);
+//        }
 
+//        URI button:
+        if (qrCodeParser.getLink() != null) {
+            AppCompatButton linkButton = findViewById(R.id.create_series_link_button);
+            linkButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                        Uri uri = Uri.parse(qrCodeParser.getLink());
+                        browserIntent.setData(uri);
+                        startActivity(browserIntent);
+                    }
+                    catch (ActivityNotFoundException e) {
+                        showUrlNotValidAlert(qrCodeParser.getLink());
+                    }
+                }
+            });
+        }
 //           // Uri:
 //           EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
 //           if (document.getUri() != null)
@@ -253,9 +265,9 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         if (!isDocumentCreated)
             showNoDirCreatedAlert();
 //        Save the metadata:
-        else if (mMetaData != null) {
+        else if (qrCodeParser != null) {
             Document document = DocumentStorage.getInstance().getDocument(title);
-            document.setMetaData(mMetaData);
+            document.setMetaData(qrCodeParser);
         }
 
 
@@ -383,6 +395,26 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                 .setCancelable(true)
                 .setPositiveButton("OK", null)
                 .setMessage(msg);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
+    }
+
+    private void showUrlNotValidAlert(String url) {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        String text = getResources().getString(R.string.document_invalid_url_message) + " " + url;
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.document_invalid_url_title)
+                .setCancelable(true)
+                .setPositiveButton("OK", null)
+                .setMessage(text);
 
         // create alert dialog
         AlertDialog alertDialog = alertDialogBuilder.create();

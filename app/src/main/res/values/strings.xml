@@ -208,6 +208,8 @@
     <string name="document_no_dir_selected_message">Please select a document first.</string>
     <string name="document_no_permission_message">Files cannot be created without permission.</string>
     <string name="document_no_permission_title">Permission required</string>
+    <string name="document_invalid_url_title">Url not valid</string>
+    <string name="document_invalid_url_message">The following URL cannot be opened in browser:</string>
 
     <!-- SelectDocumentActivity -->
     <string name="select_document_title">Select a document</string>
@@ -286,6 +288,7 @@
     <string name="create_series_authority_text">Authority</string>
     <string name="create_series_signature_text">Signature</string>
     <string name="create_series_hierarchy_text">Hierarchy</string>
+    <string name="create_series_link_button_text">Open link in browser</string>
 
     <string name="map_crop_view_title">Warp image</string>
     <string name="map_crop_view_no_transformation_title">Image not transformed</string>

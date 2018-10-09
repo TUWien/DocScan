@@ -40,7 +40,7 @@ public class DocumentJSONParser {
             for (int i = 0; i < document.getPages().size(); i++)
                 pageList.add(new JSONPage(document, i));
         }
-        
+
         return pageList;
 
     }
@@ -127,7 +127,7 @@ public class DocumentJSONParser {
                 setMetaDataValues(document.getMetaData());
         }
 
-        private void setMetaDataValues(DocumentMetaData md) {
+        private void setMetaDataValues(QRCodeParser md) {
 
 //            mTitle = md.getTitle();
             mAuthority = md.getAuthority();

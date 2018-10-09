@@ -93,17 +93,17 @@
                         app:layout_columnWeight="1"
                         />
                     <!-- ==================================================================== -->
-                    <TextView
-                        android:id="@+id/create_series_hierarchy_textview"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/create_series_hierarchy_text"/>
-                    <EditText
-                        android:id="@+id/create_series_hierarchy_edittext"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:inputType="text"
-                        app:layout_columnWeight="1"/>
+                    <!--<TextView-->
+                        <!--android:id="@+id/create_series_hierarchy_textview"-->
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:text="@string/create_series_hierarchy_text"/>-->
+                    <!--<EditText-->
+                        <!--android:id="@+id/create_series_hierarchy_edittext"-->
+                        <!--android:layout_width="0dp"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:inputType="text"-->
+                        <!--app:layout_columnWeight="1"/>-->
                     <!-- ==================================================================== -->
                     <!--<TextView-->
                         <!--android:layout_width="wrap_content"-->
@@ -132,6 +132,19 @@
                         <!--app:layout_columnWeight="1"/>-->
 
                 </android.support.v7.widget.GridLayout>
+
+                <android.support.v7.widget.AppCompatButton
+                    android:id="@+id/create_series_link_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/create_series_fields_grid_layout"
+                    android:layout_centerInParent="true"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    app:backgroundTint="@color/colorAccent"
+                    android:text="@string/create_series_link_button_text"
+                    android:textColor="@color/white" />
+
+
 
 
 
