@@ -18,7 +18,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 public class DocumentStorage {
 
-    private static final String DOCUMENT_STORE_FILE_NAME = "documentstorage.json";
+    public static final String DOCUMENT_STORE_FILE_NAME = "documentstorage.json";
     private static final String CLASS_NAME = "DocumentStorage";
     private static DocumentStorage sInstance;
 

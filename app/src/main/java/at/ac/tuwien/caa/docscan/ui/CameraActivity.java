@@ -172,7 +172,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private boolean mIsSeriesModePaused = true;
     // We hold here a reference to the popupmenu and the list, because we are not sure what is first initialized:
     private List<String> mFlashModes;
-    private PopupMenu mFlashPopupMenu, mSeriesPopupMenu;
+    private PopupMenu mFlashPopupMenu;
     private byte[] mPictureData;
 //    private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
@@ -1838,20 +1838,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     public void showSeriesPopup(MenuItem item) {
 
-        Log.d(CLASS_NAME, "showSeriesPopup");
         View menuItemView = findViewById(R.id.document_item);
         if (menuItemView == null)
             return;
 
-        Log.d(CLASS_NAME, " menu created!");
-        // Create the menu for the first time:
-        if (mSeriesPopupMenu == null) {
-            mSeriesPopupMenu = new PopupMenu(this, menuItemView);
-            mSeriesPopupMenu.setOnMenuItemClickListener(this);
-            Log.d(CLASS_NAME, "setOnMenuItemClickListener created");
-            mSeriesPopupMenu.inflate(R.menu.series_menu);
-}
-        mSeriesPopupMenu.show();
+        PopupMenu seriesPopupMenu = new PopupMenu(this, menuItemView);
+        seriesPopupMenu.setOnMenuItemClickListener(this);
+        seriesPopupMenu.inflate(R.menu.series_menu);
+        seriesPopupMenu.show();
 
     }
 
@@ -1861,16 +1855,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (menuItemView == null)
             return;
 
-        // Create the menu for the first time:
-        if (mFlashPopupMenu == null) {
-            mFlashPopupMenu = new PopupMenu(this, menuItemView);
-            mFlashPopupMenu.setOnMenuItemClickListener(this);
-            mFlashPopupMenu.inflate(R.menu.flash_mode_menu);
+        mFlashPopupMenu = new PopupMenu(this, menuItemView);
+        mFlashPopupMenu.setOnMenuItemClickListener(this);
+        mFlashPopupMenu.inflate(R.menu.flash_mode_menu);
 
-            setupFlashUI();
-        }
-
-
+        setupFlashUI();
 
         mFlashPopupMenu.show();
 

@@ -3,7 +3,6 @@ package at.ac.tuwien.caa.docscan.ui.document;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.SerializedName;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -19,7 +18,7 @@ import java.util.Date;
  * Created by fabian on 28.11.2017.
  */
 
-public class DocumentMetaData {
+public class QRCodeParser {
 
     public static final int NO_RELATED_UPLOAD_ID_ASSIGNED = -1;
 
@@ -34,6 +33,7 @@ public class DocumentMetaData {
     private static final String QR_SIGNATURE =          "callNumber";
     private static final String QR_DESCRIPTION =        "description";
     private static final String QR_DATE =               "date";
+    private static final String QR_BACKLINK =           "backlink";
 
     private String mTitle;
     private String mAuthority;
@@ -43,6 +43,7 @@ public class DocumentMetaData {
 
     private String mDescription;
     private Date mDate;
+    private String mBacklink;
     private Integer mRelatedUploadId;
 
     public String getTitle() { return mTitle; }
@@ -54,7 +55,7 @@ public class DocumentMetaData {
     public Date getDate() { return mDate; }
     public Integer getRelatedUploadId() { return mRelatedUploadId; }
 
-    private DocumentMetaData() {
+    private QRCodeParser() {
 
     }
 
@@ -66,6 +67,10 @@ public class DocumentMetaData {
 
         return json;
 
+    }
+
+    public String getLink() {
+        return mBacklink;
     }
 
     private static class IdentifierValue {
@@ -100,7 +105,7 @@ public class DocumentMetaData {
 
     }
 
-    public static DocumentMetaData parseXML(String text) {
+    public static QRCodeParser parseXML(String text) {
 
         try {
 
@@ -112,7 +117,7 @@ public class DocumentMetaData {
             InputStream stream = new ByteArrayInputStream(escapedText.getBytes(Charset.forName("UTF-8")));
             parser.setInput(stream, null);
 
-            DocumentMetaData documentMetaData = new DocumentMetaData();
+            QRCodeParser qrCodeParser = new QRCodeParser();
 
             while (parser.next() != XmlPullParser.END_TAG) {
                 if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -121,32 +126,34 @@ public class DocumentMetaData {
                 String name = parser.getName();
 
                 if (name.equals(QR_AUTHORITY))
-                    documentMetaData.mAuthority = readTextFromTag(parser, QR_AUTHORITY);
+                    qrCodeParser.mAuthority = readTextFromTag(parser, QR_AUTHORITY);
 
                 else if (name.equals(QR_IDENTIFIER)) {
                     IdentifierValue iv = readIdentifier(parser);
                     if (iv.getIdentifier().equals(QR_TYPE_HIERARCHY))
-                        documentMetaData.mHierarchy = iv.getValue();
+                        qrCodeParser.mHierarchy = iv.getValue();
                     else if (iv.getIdentifier().equals(QR_TYPE_URI))
-                        documentMetaData.mUri = iv.getValue();
+                        qrCodeParser.mUri = iv.getValue();
                 }
                 else if (name.equals(QR_TITLE))
-                    documentMetaData.mTitle = readTextFromTag(parser, QR_TITLE);
+                    qrCodeParser.mTitle = readTextFromTag(parser, QR_TITLE);
                 else if (name.equals(QR_DESCRIPTION))
-                    documentMetaData.mDescription = readTextFromTag(parser, QR_DESCRIPTION);
+                    qrCodeParser.mDescription = readTextFromTag(parser, QR_DESCRIPTION);
                 else if (name.equals(QR_SIGNATURE))
-                    documentMetaData.mSignature = readTextFromTag(parser, QR_SIGNATURE);
+                    qrCodeParser.mSignature = readTextFromTag(parser, QR_SIGNATURE);
                 else if (name.equals(QR_RELATED_UPLOAD_ID)) {
                     String rId = readTextFromTag(parser, QR_RELATED_UPLOAD_ID);
-                    documentMetaData.mRelatedUploadId = Integer.valueOf(rId);
+                    qrCodeParser.mRelatedUploadId = Integer.valueOf(rId);
                 }
+                else if (name.equals(QR_BACKLINK))
+                    qrCodeParser.mBacklink = readTextFromTag(parser, QR_BACKLINK);
+
                 else if (name.equals(QR_DATE))
                     skip(parser);
 
             }
 
-            return documentMetaData;
-
+            return qrCodeParser;
 
         } catch (XmlPullParserException e) {
             e.printStackTrace();
