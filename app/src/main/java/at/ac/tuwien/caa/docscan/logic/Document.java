@@ -65,19 +65,6 @@ public class Document {
 
     }
 
-    //    TODO: temporary
-    public File getDir() {
-
-        if (mPages != null) {
-            if (mPages.size() > 0) {
-                if (mPages.get(0).getFile() != null)
-                    return mPages.get(0).getFile().getParentFile();
-            }
-        }
-
-        return null;
-
-    }
 
     public void setIsAwaitingUpload(boolean isAwaitingUpload) {
 

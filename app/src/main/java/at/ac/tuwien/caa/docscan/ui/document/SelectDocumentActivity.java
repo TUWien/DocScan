@@ -79,7 +79,7 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
 
         if (mContext != null) {
 
-            mDocuments = DocumentStorage.getInstance().getDocuments();
+            mDocuments = Helper.getValidDocuments(DocumentStorage.getInstance().getDocuments());
             mAdapter = new DocumentAdapter(mContext, R.layout.rowlayout, mDocuments);
             if (mListView != null) {
                 mListView.setAdapter(mAdapter);

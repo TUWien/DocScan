@@ -53,24 +53,17 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
 
 
     @Override
-
     public View getView(int position, View convertView, ViewGroup parent) {
 
+        if (mDocuments == null)
+            return null;
+
+        final Document document = mDocuments.get(position);
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.layout_listview_row, null);
-
-//            convertView.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    mCallback.onSelectionChange();
-//                }
-//            });
-
         }
-
-        final Document document = mDocuments.get(position);
 
         TextView titleTextView = convertView.findViewById(R.id.layout_listview_row_title);
         if (titleTextView != null && mDocuments != null) {

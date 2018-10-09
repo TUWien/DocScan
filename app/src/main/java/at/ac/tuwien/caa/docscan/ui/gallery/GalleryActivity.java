@@ -304,12 +304,14 @@ public class GalleryActivity extends AppCompatActivity implements
                     String fileName = intent.getStringExtra(INTENT_FILE_NAME);
 
                     int idx = 0;
-                    for (Page page : mDocument.getPages()) {
-                        if (page.getFile().getAbsolutePath().compareTo(fileName) == 0) {
-                            mAdapter.notifyItemChanged(idx);
-                            break;
+                    if (mDocument.getPages() != null) {
+                        for (Page page : mDocument.getPages()) {
+                            if (page.getFile().getAbsolutePath().compareTo(fileName) == 0) {
+                                mAdapter.notifyItemChanged(idx);
+                                break;
+                            }
+                            idx++;
                         }
-                        idx++;
                     }
                 }
 
@@ -601,7 +603,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void cropSelectedItems() {
 
-        if (mDocument == null || mAdapter == null)
+        if (mDocument == null || mAdapter == null || mDocument.getPages() == null)
             return;
 
         int[] selectionIdx = mAdapter.getSelectionIndices();
@@ -629,7 +631,8 @@ public class GalleryActivity extends AppCompatActivity implements
     }
 
     private void rotateSelectedItems() {
-        if (mDocument == null || mAdapter == null)
+
+        if (mDocument == null || mAdapter == null || mDocument.getPages() == null)
             return;
 
         int[] selections = mAdapter.getSelectionIndices();
@@ -637,17 +640,13 @@ public class GalleryActivity extends AppCompatActivity implements
         for (int i = 0; i < selections.length; i++) {
             if (Helper.rotateExif(mDocument.getPages().get(selections[i]).getFile())) {
                 mAdapter.notifyItemChanged(selections[i]);
-//                The following was necessary with the Greedo layout manager, now we just update
-//                the index:
-//              We need to update ALL items because the layout of the neighboring items probably will change:
-//                mAdapter.notifyDataSetChanged();
             }
         }
     }
 
     private void deleteSelections() {
 
-        if (mDocument == null || mAdapter == null)
+        if (mDocument == null || mAdapter == null || mDocument.getPages() != null)
             return;
 
         int[] selections = mAdapter.getSelectionIndices();

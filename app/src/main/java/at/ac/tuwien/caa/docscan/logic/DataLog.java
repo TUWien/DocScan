@@ -111,8 +111,14 @@ public class DataLog {
 
         File uploadLogPath = new File(activity.getBaseContext().getFilesDir(), UPLOAD_LOG_FILE_NAME);
         File logPath = new File(activity.getBaseContext().getFilesDir(), LOG_FILE_NAME);
-        Uri logUri = FileProvider.getUriForFile(activity.getBaseContext(), "at.ac.tuwien.caa.fileprovider", logPath);
-        Uri uploadLogUri = FileProvider.getUriForFile(activity.getBaseContext(), "at.ac.tuwien.caa.fileprovider", uploadLogPath);
+        File documentPath = new File(activity.getBaseContext().getFilesDir(),
+                DocumentStorage.DOCUMENT_STORE_FILE_NAME);
+        Uri logUri = FileProvider.getUriForFile(activity.getBaseContext(),
+                "at.ac.tuwien.caa.fileprovider", logPath);
+        Uri uploadLogUri = FileProvider.getUriForFile(activity.getBaseContext(),
+                "at.ac.tuwien.caa.fileprovider", uploadLogPath);
+        Uri documentUri = FileProvider.getUriForFile(activity.getBaseContext(),
+                "at.ac.tuwien.caa.fileprovider", documentPath);
 
         String emailSubject =   activity.getBaseContext().getString(R.string.log_email_subject);
         String[] emailTo =      new String[]{activity.getBaseContext().getString(R.string.log_email_to)};
@@ -133,6 +139,7 @@ public class DataLog {
         ArrayList<Uri> uris = new ArrayList();
         uris.add(logUri);
         uris.add(uploadLogUri);
+        uris.add(documentUri);
 //        uris.add(Uri.fromFile(logPath));
         intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
 

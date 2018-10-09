@@ -81,7 +81,7 @@ public class DocumentStorage {
 
         for (Document document : mDocuments) {
 
-            if (title.compareToIgnoreCase(document.getTitle()) == 0)
+            if (document.getTitle() != null && title.compareToIgnoreCase(document.getTitle()) == 0)
                 return true;
         }
 
@@ -120,7 +120,7 @@ public class DocumentStorage {
             mTitle = Helper.getActiveDocumentTitle(context);
 
         Document document = getDocument(mTitle);
-        if (document == null) {
+        if (document == null || document.getPages() == null) {
             createNewDocument(mTitle);
             document = getDocument(mTitle);
         }

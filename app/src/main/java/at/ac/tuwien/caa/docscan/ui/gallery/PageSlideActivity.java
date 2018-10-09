@@ -619,7 +619,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         @Override
         public int getCount() {
 
-            if (mDocument == null)
+            if (mDocument == null || mDocument.getPages() == null)
                 return -1;
             else
                 return mDocument.getPages().size();
