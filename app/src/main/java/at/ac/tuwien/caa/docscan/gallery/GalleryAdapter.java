@@ -102,6 +102,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     @Override
     public void onBindViewHolder(GalleryViewHolder holder, int position) {
 
+        if (mDocument == null || mDocument.getPages() == null)
+            return;
+
         Page page = mDocument.getPages().get(position);
 
         holder.mItemView.getLayoutParams().width = mWidth;
@@ -165,6 +168,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     }
 
     private void initImageView(GalleryViewHolder holder, int position, Page page) {
+
+        if (mDocument == null || mDocument.getPages() == null)
+            return;
 
         ImageView imageView = holder.mImageView;
 
@@ -239,6 +245,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     @Override
     public int getItemCount() {
 
+        if (mDocument == null || mDocument.getPages() == null)
+            return 0;
+
         return mDocument.getPages().size();
 
     }
@@ -248,10 +257,12 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         int[] selectionIndices = new int[getSelectionCount()];
         int index = 0;
 
-        for (int i = 0; i < mDocument.getPages().size(); i++) {
-            if (mSelections.get(i)) {
-                selectionIndices[index] = i;
-                index++;
+        if (mDocument != null && mDocument.getPages() != null) {
+            for (int i = 0; i < mDocument.getPages().size(); i++) {
+                if (mSelections.get(i)) {
+                    selectionIndices[index] = i;
+                    index++;
+                }
             }
         }
 
@@ -300,6 +311,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     private void setAllSelections(boolean isSelected) {
 
+        if (mDocument == null || mDocument.getPages() == null)
+            return;
+
         for (int i = 0; i < mDocument.getPages().size(); i++) {
             mSelections.put(i, isSelected);
         }
@@ -313,6 +327,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     }
 
     public void clearSelection() {
+
+        if (mDocument == null || mDocument.getPages() == null)
+            return;
 
         for (int i = 0; i < mDocument.getPages().size(); i++)
             mSelections.put(i, false);
@@ -371,7 +388,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     private double aspectRatioForIndex(int i) {
 
-        if (mDocument.getPages().size() <= i)
+        if (mDocument == null || mDocument.getPages() == null || mDocument.getPages().size() <= i)
             return 1.0;
 
         String fileName = mDocument.getPages().get(i).getFile().getAbsolutePath();
@@ -409,6 +426,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     private class CountableBooleanArray extends SparseBooleanArray {
 
         private int count() {
+
+            if (mDocument == null || mDocument.getPages() == null)
+                return 0;
 
             int sum = 0;
 

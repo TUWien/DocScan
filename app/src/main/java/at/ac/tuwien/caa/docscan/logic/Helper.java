@@ -399,6 +399,25 @@ public class Helper {
 
     }
 
+    public static ArrayList<Document> getValidDocuments(List<Document> documents) {
+
+        ArrayList<Document> validDocuments = new ArrayList<>();
+
+        if (documents == null || documents.size() == 0)
+            return validDocuments;
+
+        for (Document document : documents) {
+            if (document.getPages() != null && document.getTitle() != null)
+                validDocuments.add(document);
+        }
+
+        // Sort it based on the upload status:
+        java.util.Collections.sort(validDocuments, new DocumentComparator());
+
+        return validDocuments;
+
+    }
+
     public static List<Document> getNonEmptyDocuments(List<Document> documents) {
 
         List<Document> nonEmptyDocuments = new ArrayList<>();
@@ -407,7 +426,7 @@ public class Helper {
             return nonEmptyDocuments;
 
         for (Document document : documents) {
-            if (document.getPages().size() > 0)
+            if (document.getPages() != null && document.getPages().size() > 0)
                 nonEmptyDocuments.add(document);
         }
 

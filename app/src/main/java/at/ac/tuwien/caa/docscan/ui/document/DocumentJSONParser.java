@@ -36,9 +36,11 @@ public class DocumentJSONParser {
 
         ArrayList<JSONPage> pageList = new ArrayList<>();
 
-        for (int i = 0; i < document.getPages().size(); i++)
-            pageList.add(new JSONPage(document, i));
-
+        if (document != null && document.getPages() != null) {
+            for (int i = 0; i < document.getPages().size(); i++)
+                pageList.add(new JSONPage(document, i));
+        }
+        
         return pageList;
 
     }

@@ -561,10 +561,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         ArrayList<String> uploadDirs = new ArrayList<>();
         for (Document document : documents) {
             // Just add the folder if all files contained are not uploaded:
-            if (!document.isUploaded()) {
-                if (document.getDir() != null)
-                    uploadDirs.add(document.getTitle());
-            }
+            if (!document.isUploaded())
+                uploadDirs.add(document.getTitle());
 
         }
 
