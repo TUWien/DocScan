@@ -203,6 +203,8 @@
     <string name="document_no_dir_created_title">No document created</string>
     <string name="document_dir_existing_prefix_message">The folder </string>
     <string name="document_dir_existing_postfix_message">is already created. Please use another name.</string>
+    <string name="document_qr_parse_error_title">QR code invalid</string>
+    <string name="document_qr_parse_error_message">Sorry, the QR code is invalid.</string>
     <string name="document_no_dir_created_message">Could not create the specified folder.</string>
     <string name="document_no_dir_selected_title">No document selected</string>
     <string name="document_no_dir_selected_message">Please select a document first.</string>

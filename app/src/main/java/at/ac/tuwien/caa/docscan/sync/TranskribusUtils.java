@@ -563,50 +563,6 @@ public class TranskribusUtils  {
 
     }
 
-
-    public static JSONObject getJSONObject(String dirName, File[] imgFiles) {
-
-//        File[] imgFiles = getFiles(dir);
-
-        String metaData =   "\"md\": {" +
-                "\"title\": " + "\"" + dirName + "\"" +
-                "},";
-
-// example for the QR code values:
-//        String metaData =   "\"md\": {" +
-//                            "\"title\": " + "\"" + dirName + "\"," +
-//                            "\"externalId\": "+ "\"" + "test_signature" + "\"," +
-//                            "\"authority\": "+ "\"" + "test_authority" + "\"," +
-//                            "\"hierarchy\": "+ "\"" + "test_hierarchy" + "\"" +
-//                            "},";
-
-        String jsonStart =  "{" +
-                metaData +
-                "    \"pageList\": {\"pages\": [";
-        String jsonEnd =    "    ]}" +
-                "}";
-        String jsonMiddle = "";
-
-        int idx = 0;
-        for (File file : imgFiles) {
-            jsonMiddle += getFileString(file, idx+1); // Take care the JSON idx starts with 1.
-            if (idx < imgFiles.length - 1)
-                jsonMiddle += ", ";
-            idx++;
-        }
-
-        JSONObject o = null;
-
-        try {
-            o = new JSONObject(jsonStart + jsonMiddle + jsonEnd);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return o;
-
-    }
-
     private static String getFileString(File file, int pageNr) {
 
         String result =

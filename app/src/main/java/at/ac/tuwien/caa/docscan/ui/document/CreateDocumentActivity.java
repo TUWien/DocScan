@@ -62,10 +62,13 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             if (!qrText.equals(initString)) {
                 Log.d(getClass().getName(), qrText);
                 qrCodeParser = processQRCode(qrText);
-                String json = qrCodeParser.toJSON();
-                Log.d(CLASS_NAME, "metadata json: " + json);
-
-                fillViews(qrCodeParser);
+                if (qrCodeParser != null) {
+                    String json = qrCodeParser.toJSON();
+                    Log.d(CLASS_NAME, "metadata json: " + json);
+                    fillViews(qrCodeParser);
+                }
+                else
+                    showQRCodeErrorAlert();
             }
         }
     }
@@ -415,6 +418,25 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                 .setCancelable(true)
                 .setPositiveButton("OK", null)
                 .setMessage(text);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
+    }
+
+    private void showQRCodeErrorAlert() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.document_qr_parse_error_title)
+                .setCancelable(true)
+                .setPositiveButton("OK", null)
+                .setMessage(R.string.document_qr_parse_error_message);
 
         // create alert dialog
         AlertDialog alertDialog = alertDialogBuilder.create();
