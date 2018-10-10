@@ -1,10 +1,14 @@
 package at.ac.tuwien.caa.docscan.ui.document;
 
+import android.util.Log;
+
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.logic.Document;
@@ -23,7 +27,9 @@ public class DocumentJSONParser {
         JSONDocument jsonDocument = new JSONDocument(document);
 
         Gson gson = new GsonBuilder().setFieldNamingPolicy(
-                FieldNamingPolicy.UPPER_CAMEL_CASE).create();
+                FieldNamingPolicy.UPPER_CAMEL_CASE)
+                .disableHtmlEscaping()
+                .create();
         String json = gson.toJson(jsonDocument);
 
         return json;
@@ -133,7 +139,7 @@ public class DocumentJSONParser {
             mAuthority = md.getAuthority();
             mHierarchy = md.getHierarchy();
             mSignature = md.getSignature();
-            mUri = md.getUri();
+            mUri = md.getLink();
 
         }
     }
