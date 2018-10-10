@@ -281,8 +281,6 @@ namespace dsc {
 			cv::Mat tmp;
 			FM.convertTo(tmp, CV_32F);
 
-			// TODO: check if we need Algorithms.h
-			//double r = (double)dsc::Algorithms::instance().statMomentMat(tmp, cv::Mat(), 0.98f);
 
             double r = 255.0*255.0;
 			//mVal = r > 0 ? m[0] / r : m[0];

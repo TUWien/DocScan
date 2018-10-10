@@ -52,7 +52,6 @@ cv::Mat DkPageSegmentation::getDebugImg() const {
 
 DkPolyRect DkPageSegmentation::getDocumentRect() const {
 
-	// TODO: choose the best rect
 	return getMaxRect();
 }
 

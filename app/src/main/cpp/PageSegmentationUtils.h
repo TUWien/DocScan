@@ -193,7 +193,6 @@ public:
 		if (pts.empty())
 			return DkBox();
 
-		// TODO: write this in dk style
 		int ux = INT_MAX, uy = INT_MAX;
 		int lx = 0, ly = 0;
 

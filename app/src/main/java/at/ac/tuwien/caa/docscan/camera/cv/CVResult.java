@@ -39,7 +39,6 @@ import at.ac.tuwien.caa.docscan.R;
  */
 public class CVResult {
 
-    // TODO: use an enum instead:
 
     // Take care this must be ordered!
     public static final int DOCUMENT_STATE_EMPTY = 1;
