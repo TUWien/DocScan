@@ -131,7 +131,7 @@
 
         <activity
             android:name=".ui.AccountActivity"
-            android:exported="false"
+            android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
 
@@ -161,8 +161,7 @@
             android:configChanges="orientation|keyboard"
             android:launchMode="singleTask">
             <intent-filter>
-                <!-- Change this to be db- followed by your app key -->
-                <data android:scheme="db-p2393aiyn7jdr54" />
+                <data android:scheme="@string/dropbox_api_key" />
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />

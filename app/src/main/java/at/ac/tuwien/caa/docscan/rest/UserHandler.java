@@ -130,6 +130,30 @@ public class UserHandler {
 
     public static boolean loadCredentials(Context context) {
 
+        int connection = loadConnection(context);
+        User.getInstance().setConnection(connection);
+
+        boolean userLoaded = false;
+
+        switch (connection) {
+
+            case User.SYNC_DROPBOX:
+                userLoaded = loadDropboxToken(context);
+                break;
+
+            case User.SYNC_TRANSKRIBUS:
+                userLoaded = initTranskribusUser(context);
+                break;
+
+        }
+
+        return userLoaded;
+
+    }
+
+
+    private static boolean initTranskribusUser(Context context) {
+
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
 

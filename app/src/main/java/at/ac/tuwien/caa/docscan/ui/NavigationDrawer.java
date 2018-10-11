@@ -12,15 +12,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.ActivityUtils;
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
+import at.ac.tuwien.caa.docscan.sync.SyncUtils;
 import at.ac.tuwien.caa.docscan.ui.settings.PreferenceActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
@@ -108,18 +113,29 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
 
         View headerLayout = mNavigationView.getHeaderView(0);
-        TextView userTextView = (TextView) headerLayout.findViewById(R.id.navigation_view_header_user_textview);
-        TextView connectionTextView = (TextView) headerLayout.findViewById(R.id.navigation_view_header_sync_textview);
+        TextView userTextView = headerLayout.findViewById(R.id.navigation_view_header_user_textview);
+        TextView connectionTextView = headerLayout.findViewById(R.id.navigation_view_header_sync_textview);
+        ImageView userImageView = headerLayout.findViewById(R.id.navigation_view_header_user_image_view);
 
         // Set up the account name field:
 
-        // The user is logged in, show the name:
+
         if (User.getInstance().isLoggedIn()) {
+            // The user is logged in, show the name:
             userTextView.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
-            if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
-                connectionTextView.setText(mActivity.getResources().getText(R.string.sync_dropbox_text));
-            else if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS)
-                connectionTextView.setText(mActivity.getResources().getText(R.string.sync_transkribus_text));
+
+//            Show the connection type:
+            String cloudText = SyncUtils.getConnectionText(mActivity, User.getInstance().getConnection());
+            connectionTextView.setText(cloudText);
+
+            String photoUrl = User.getInstance().getPhotoUrl();
+            if (photoUrl != null) {
+                GlideApp.with(mActivity)
+                        .load(photoUrl)
+//                        Make the image view circular:
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(userImageView);
+            }
         }
 
         // The user is not logged in, but was logged in some time before, show the name:

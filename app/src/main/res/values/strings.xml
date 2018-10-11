@@ -173,6 +173,8 @@
     <string name="dropbox_title">Dropbox Authentication</string>
     <string name="dropbox_authenticate_button_text">Start authentication</string>
     <string name="dropbox_loading_text">Authenticating...</string>
+    <string name="dropbox_not_auth_title">Not authenticated</string>
+    <string name="dropbox_not_auth_text">Could not authenticate with Dropbox. If you are a developer, you probably want the API key. In that case, take a look at the readme.</string>
 
     <!-- LogoutActivity -->
     <string name="logout_text">Do you really want to logout? You will have to login again if you want
@@ -185,6 +187,7 @@
     <string name="account_user_textview_text">Name:</string>
     <string name="account_cloud_textview_text">Cloud service:</string>
     <string name="account_setup_text">Set up an account:</string>
+    <string name="account_offline_text">You are currently offline. Please establish a network connection to proceed.</string>
 
     <!-- SyncService -->
     <string name="sync_notification_title">Image upload</string>

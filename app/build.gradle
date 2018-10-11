@@ -33,9 +33,18 @@ android {
 	}
 
 	buildTypes {
+//        The dropbox api key is hidden based on the 2nd example in this post:
+//        https://rammic.github.io/2015/07/28/hiding-secrets-in-android-apps/
+//        If you want to receive the api key, please send a mail to docscan@cvl.tuwien.ac.at
+		debug {
+            buildConfigField "String", "DropboxApiKey", "\"${DropboxApiKey}\""
+            resValue 'string', "dropbox_api_key","\"${DropboxManifestApiKey}\""
+		}
 		release {
 			minifyEnabled false
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "DropboxApiKey", "\"${DropboxApiKey}\""
+            resValue 'string', "dropbox_api_key","\"${DropboxManifestApiKey}\""
 		}
 	}
 

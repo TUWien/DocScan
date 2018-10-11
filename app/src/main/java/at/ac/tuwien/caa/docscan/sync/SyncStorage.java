@@ -203,6 +203,14 @@ public class SyncStorage {
 
     }
 
+    public void addDropboxFile(File file, String documentName) {
+
+        if (mFileSyncList != null)
+            mFileSyncList.add(new DropboxSyncFile(file, documentName));
+
+
+    }
+
     public void removeDocument(String title) {
 
         Document document = DocumentStorage.getInstance().getDocument(title);

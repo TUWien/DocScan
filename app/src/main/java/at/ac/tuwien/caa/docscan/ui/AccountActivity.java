@@ -5,9 +5,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
 
 /**
@@ -22,12 +26,36 @@ public class AccountActivity extends BaseNavigationActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
 
-        // TODO: show here a message if auto login was not successful:
-        if (!User.getInstance().isLoggedIn())
-            hideAccountDetails();
-        else
-            showAccountDetails();
+        initButtons();
 
+    }
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+
+        showAccountDetails();
+        showButtonsLayout(Helper.isOnline(this));
+
+    }
+
+    private void showButtonsLayout(boolean show) {
+
+        LinearLayout buttonsLayout = findViewById(R.id.account_button_layout);
+        TextView offlineTextView = findViewById(R.id.account_offline_textview);
+        if (show) {
+            buttonsLayout.setVisibility(View.VISIBLE);
+            offlineTextView.setVisibility(View.GONE);
+        }
+        else {
+            buttonsLayout.setVisibility(View.GONE);
+            offlineTextView.setVisibility(View.VISIBLE);
+        }
+
+    }
+
+    private void initButtons() {
         Button transkribusButton = (Button) findViewById(R.id.sync_switcher_transkribus_button);
         transkribusButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,7 +74,6 @@ public class AccountActivity extends BaseNavigationActivity {
                 startActivity(intent);
             }
         });
-
     }
 
     private void showAccountDetails() {

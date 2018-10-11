@@ -1,10 +1,8 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
@@ -18,15 +16,22 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
-import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.BuildConfig;
+import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 
-import static android.content.Context.MODE_PRIVATE;
-
 /**
- * Created by fabian on 18.08.2017.
+ * Class used to access Dropbox. The Dropbox API key is not provided in repository and should never
+ * be provided. Instead a not working dummy key is provided in gradle.properties. You can get the
+ * API key if you send a mail to docscan@cvl.tuwien.ac.at. Before you replace the dummy key, assure
+ * that you do not commit the key with the following command:
+ * git update-index --assume-unchanged gradle.properties
+ * Then you just have to replace the dummy key in gradle.properties.
  */
 
 public class DropboxUtils {
@@ -35,6 +40,7 @@ public class DropboxUtils {
     private static DropboxUtils mInstance;
 
     private DbxClientV2 mClient;
+    private TranskribusUtils.TranskribusUtilsCallback mCallback;
 
     public static DropboxUtils getInstance() {
 
@@ -48,9 +54,52 @@ public class DropboxUtils {
 
     }
 
-    public void connectToDropbox(DropboxConnectorCallback callback, String token) {
+    public void startUpload(Context context, TranskribusUtils.TranskribusUtilsCallback callback) {
 
-        new DropboxConnector(callback).execute(token);
+        mCallback = (TranskribusUtils.TranskribusUtilsCallback) context;
+
+        ArrayList<String> titles = SyncStorage.getInstance().getUploadDocumentTitles();
+
+        if (titles != null && !titles.isEmpty()) {
+            for (String title : titles) {
+                if (title != null)
+                    addDocument(title);
+            }
+        }
+
+    }
+
+    private void addDocument(String documentTitle) {
+
+        Document document = DocumentStorage.getInstance().getDocument(documentTitle);
+        if (document != null) {
+            ArrayList<File> files = document.getFiles();
+            if (files != null && !files.isEmpty()) {
+                File[] imageList = files.toArray(new File[files.size()]);
+                for (File file : imageList)
+                    SyncStorage.getInstance().addDropboxFile(file, documentTitle);
+            }
+        }
+
+        mCallback.onFilesPrepared();
+
+    }
+
+
+
+
+    private void uploadDirs(Context context, ArrayList<File> dirs,
+                            TranskribusUtils.TranskribusUtilsCallback callback) {
+
+        for (File dir : dirs) {
+            // Get the image files contained in the directory:
+            File[] imgFiles = Helper.getImageArray(dir);
+            for (File file : imgFiles) {
+                SyncInfo.getInstance().addFile(context, file);
+            }
+        }
+
+        callback.onFilesPrepared();
 
     }
 
@@ -60,126 +109,26 @@ public class DropboxUtils {
 
     }
 
-    public void uploadFile(SyncInfo.Callback callback, SyncInfo.FileSync file) {
+    public void uploadFile(final SyncStorage.Callback callback, DropboxSyncFile file) {
         new UploadFileTask(callback, file).execute();
 
     }
 
-    public void startAuthentication(Context context) {
+    public boolean startAuthentication(Context context) {
 
-        Auth.startOAuth2Authentication(context, context.getString(R.string.sync_dropbox_app_key));
+//        TODO: handle cases in which the user rejects the authentication
 
-    }
-
-
-    public void authenticate(DropboxConnectorCallback callback, Context context) {
-
-
-//        boolean isDropboxLoaded = UserHandler.loadDropboxToken(context);
-//
-//        String accessToken;
-//        if (!isDropboxLoaded) {
-//            // Retrieve the authorization token from the Dropbox developers website:
-//            Auth.startOAuth2Authentication(context, context.getString(R.string.sync_dropbox_app_key));
-//            accessToken = Auth.getOAuth2Token();
-//            if (accessToken != null) {
-//                UserHandler.saveDropboxToken(context);
-//            }
-//        } else {
-//            accessToken = User.getInstance().getDropboxToken();
-//        }
-
-
-        SharedPreferences prefs = context.getSharedPreferences("dropbox-access", MODE_PRIVATE);
-        String accessToken = prefs.getString("access-tokenx", null);
-
-        if (accessToken == null) {
-            // Retrieve the authorization token from the Dropbox developers website:
-
-            Auth.startOAuth2Authentication(context, context.getString(R.string.sync_dropbox_app_key));
-            accessToken = Auth.getOAuth2Token();
-            if (accessToken != null) {
-                prefs.edit().putString("access-token", accessToken).apply();
-//                initAndLoadData(accessToken);
-            }
-        } else {
-//            initAndLoadData(accessToken);
+        try {
+            Auth.startOAuth2Authentication(context, BuildConfig.DropboxApiKey);
+        }
+        catch (Exception e) {
+//                This happens if a wrong api key is provided
+            return false;
         }
 
-
-
-        if (accessToken == null) {
-            Toast.makeText(context, R.string.sync_no_dropbox_access, Toast.LENGTH_LONG);
-            return;
-        }
-
-        // TODO: not sure for what the UID is needed:
-//        String uid = Auth.getUid();
-//        String storedUid = prefs.getString("user-id", null);
-//        if (uid != null && !uid.equals(storedUid)) {
-//            prefs.edit().putString("user-id", uid).apply();
-//        }
-
-//        DbxRequestConfig requestConfig = DbxRequestConfig.newBuilder("DocScan")
-//                .withHttpRequestor(new OkHttp3Requestor(OkHttp3Requestor.defaultOkHttpClient()))
-//                .build();
-
-        // This must be called in an own thread:
-        new DropboxConnector(callback).execute(accessToken);
-
-//        new DropboxConnector(callback).execute(accessToken);
-//        mClient = new DbxClientV2(requestConfig, accessToken);
-
-//        FullAccount account = null;
-//        try {
-//            account = mClient.users().getCurrentAccount();
-//            Log.d(this.getClass().getName(), "dropbox account name: " + account.getName().getDisplayName());
-//
-//            // Get files and folder metadata from Dropbox root directory
-//            ListFolderResult result = mClient.files().listFolder("");
-//            while (true) {
-//                for (Metadata metadata : result.getEntries()) {
-//                    Log.d(this.getClass().getName(), "path: " + metadata.getPathLower());
-//                }
-//
-//                if (!result.getHasMore()) {
-//                    break;
-//                }
-//
-//                result = mClient.files().listFolderContinue(result.getCursor());
-//            }
-//
-//
-//        } catch (DbxException e) {
-//            e.printStackTrace();
-//        }
-//
-//
-//        Log.d(this.getClass().getName(), "token for dropbox: " + accessToken);
-
-
-
-//        DbxAppInfo appInfo = new DbxAppInfo(APP_KEY, APP_SECRET);
-//
-//        DbxRequestConfig config = new DbxRequestConfig(
-//                "JavaTutorial/1.0", Locale.getDefault().toString());
-//        DbxWebAuthNoRedirect webAuth = new DbxWebAuthNoRedirect(config, appInfo);
-//
-//        String authorizeUrl = webAuth.start();
-//
-//        Uri uri = Uri.parse(authorizeUrl);
-//        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-//        context.startActivity(intent);
-
-
+        return true;
 
     }
-
-
-    public interface DropboxConnectorCallback {
-        void onDropboxConnected(User user);
-    }
-
 
     /**
      * Simply connects to the dropbox account. Note this must be done in an own thread cause
@@ -214,6 +163,7 @@ public class DropboxUtils {
                 User.getInstance().setFirstName(account.getName().getGivenName());
                 User.getInstance().setLastName(account.getName().getSurname());
                 User.getInstance().setConnection(User.SYNC_DROPBOX);
+                User.getInstance().setPhotoUrl(account.getProfilePhotoUrl());
 
             } catch (DbxException e) {
                 e.printStackTrace();
@@ -231,72 +181,6 @@ public class DropboxUtils {
         }
     }
 
-    /**
-     * Simply connects to the dropbox account. Note this must be done in an own thread cause
-     * otherwise an android.os.NetworkOnMainThreadException exception is thrown.
-     */
-    private class DropboxConnector extends AsyncTask<String, Void, Boolean> {
-
-        private DropboxConnectorCallback mCallback;
-
-        private DropboxConnector(DropboxConnectorCallback callback) {
-            mCallback = callback;
-        }
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-
-            Log.d(this.getClass().getName(), "connecting to dropbox");
-
-            DbxRequestConfig config = new DbxRequestConfig("dropbox/java-tutorial", "en_US");
-            mClient = new DbxClientV2(config, params[0]);
-
-            if (mClient == null)
-                return false;
-
-            // Get current account info
-            FullAccount account = null;
-            try {
-                account = mClient.users().getCurrentAccount();
-                Log.d(this.getClass().getName(), "dropbox account name: " + account.getName().getDisplayName());
-
-                User.getInstance().setLoggedIn(true);
-//                User.getInstance().setSessionID(id);
-                User.getInstance().setFirstName(account.getName().getGivenName());
-                User.getInstance().setLastName(account.getName().getSurname());
-////            Now update the GUI with the user data:
-                mCallback.onDropboxConnected(User.getInstance());
-//                ((LoginCallback) mRestCallback).onLogin(User.getInstance());
-//
-//                // Get files and folder metadata from Dropbox root directory
-//                ListFolderResult result = mClient.files().listFolder("");
-//                while (true) {
-//                    for (Metadata metadata : result.getEntries()) {
-//                        Log.d(this.getClass().getName(), "path: " + metadata.getPathLower());
-//                    }
-//
-//                    if (!result.getHasMore()) {
-//                        break;
-//                    }
-//
-//                    result = mClient.files().listFolderContinue(result.getCursor());
-//                }
-
-
-            } catch (DbxException e) {
-                e.printStackTrace();
-            }
-
-            return true;
-        }
-
-
-        protected void onPostExecute(Boolean isConnected){
-            if (isConnected)
-                mCallback.onDropboxConnected(User.getInstance());
-//TODO: error handling
-        }
-    }
 
     /**
      * Async task to upload a file to a directory
@@ -304,14 +188,14 @@ public class DropboxUtils {
      */
     private class UploadFileTask extends AsyncTask<Void, Void, FileMetadata> {
 
-        private final SyncInfo.Callback mCallback;
+        private final SyncStorage.Callback mCallback;
         private Exception mException;
-        private SyncInfo.FileSync mFileSync;
+        private DropboxSyncFile mSyncFile;
 
 
-        UploadFileTask(SyncInfo.Callback callback, SyncInfo.FileSync fileSync) {
+        UploadFileTask(SyncStorage.Callback callback, DropboxSyncFile syncFile) {
             mCallback = callback;
-            mFileSync = fileSync;
+            this.mSyncFile = syncFile;
         }
 
         @Override
@@ -322,7 +206,7 @@ public class DropboxUtils {
             } else if (result == null) {
                 mCallback.onError(null);
             } else {
-                mCallback.onUploadComplete(mFileSync);
+                mCallback.onUploadComplete(mSyncFile);
             }
         }
 
@@ -330,10 +214,11 @@ public class DropboxUtils {
         protected FileMetadata doInBackground(Void... params) {
 
 
-            File localFile = mFileSync.getFile();
+            File localFile = mSyncFile.getFile();
 
             if (localFile != null) {
 //                String remoteFolderPath = params[1];
+                String remoteFolderPath = mSyncFile.getDocumentName();
 
                 // Note - this is not ensuring the name is a valid dropbox file name
                 String remoteFileName = localFile.getName();
@@ -342,13 +227,9 @@ public class DropboxUtils {
 
                     InputStream inputStream = new FileInputStream(localFile);
 
-                    return mClient.files().uploadBuilder("/" + remoteFileName)
+                    return mClient.files().uploadBuilder("/" + remoteFolderPath + "/" + remoteFileName)
                             .withMode(WriteMode.OVERWRITE)
                             .uploadAndFinish(inputStream);
-
-//                    return mClient.files().uploadBuilder(remoteFolderPath + "/" + remoteFileName)
-//                            .withMode(WriteMode.OVERWRITE)
-//                            .uploadAndFinish(inputStream);
                 } catch (DbxException | IOException e) {
                     mException = e;
                     Log.d("DropboxUtils", "exception: " + e);

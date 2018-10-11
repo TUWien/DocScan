@@ -627,6 +627,9 @@ public class SyncService extends JobService implements
         String title = getString(R.string.sync_notification_title);
 
         String text = getConnectionText();
+        if (text == null) // This should not happen though
+            return;
+
         String CHANNEL_ID = "docscan_notification_channel";// The id of the channel.
 
         mNotificationBuilder = new NotificationCompat.Builder(this)
@@ -705,14 +708,14 @@ public class SyncService extends JobService implements
 
     private String getConnectionText() {
 
-        String text = "";
-        int connection = UserHandler.loadConnection(this);
-        if (connection == User.SYNC_TRANSKRIBUS)
-            text = getString(R.string.sync_notification_uploading_transkribus_text);
-        else if (connection == User.SYNC_DROPBOX)
-            text = getString(R.string.sync_notification_uploading_dropbox_text);
+        switch (User.getInstance().getConnection()) {
+            case User.SYNC_TRANSKRIBUS:
+                return getString(R.string.sync_notification_uploading_transkribus_text);
+            case User.SYNC_DROPBOX:
+                return getString(R.string.sync_notification_uploading_transkribus_text);
+        }
 
-        return text;
+        return null;
 
     }
 

@@ -120,13 +120,25 @@ public class UploadService extends JobService implements
 
         }
 
-
         return false; // Answers the question: "Is there still work going on?"
+
     }
 
     private void startUpload() {
 
-        TranskribusUtils.getInstance().startUpload(this);
+//        TranskribusUtils.getInstance().startUpload(this);
+
+        switch (User.getInstance().getConnection()) {
+
+            case User.SYNC_TRANSKRIBUS:
+                TranskribusUtils.getInstance().startUpload(this);
+                break;
+            case User.SYNC_DROPBOX:
+                DropboxUtils.getInstance().startUpload(this, this);
+                break;
+            default:
+                Log.d(CLASS_NAME, "startUpload: connection unknown");
+        }
 
     }
 
@@ -426,9 +438,14 @@ public class UploadService extends JobService implements
 
             syncFile.setState(SyncFile.STATE_AWAITING_UPLOAD);
 
-            if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS) {
-                TranskribusUtils.getInstance().uploadFile(this, getApplicationContext(),
-                        (TranskribusSyncFile) syncFile);
+            switch (User.getInstance().getConnection()) {
+                case User.SYNC_TRANSKRIBUS:
+                    TranskribusUtils.getInstance().uploadFile(this, getApplicationContext(),
+                            (TranskribusSyncFile) syncFile);
+                    break;
+                case User.SYNC_DROPBOX:
+                    DropboxUtils.getInstance().uploadFile(this, (DropboxSyncFile) syncFile);
+                    break;
             }
 
         }

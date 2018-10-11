@@ -1,9 +1,12 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.dropbox.core.android.Auth;
@@ -14,6 +17,10 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
+import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
+import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+
+import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 
 /**
  * Created by fabian on 23.08.2017.
@@ -37,9 +44,31 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
         authenticateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DropboxUtils.getInstance().startAuthentication(getApplicationContext());
+                //        TODO: handle cases in which the user rejects the authentication
+                if (!DropboxUtils.getInstance().startAuthentication(getApplicationContext())) {
+                       showNotAuthenticatedDialog();
+                }
             }
         });
+
+    }
+
+    private void showNotAuthenticatedDialog() {
+
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.dropbox_not_auth_title)
+                .setCancelable(true)
+                .setMessage(R.string.dropbox_not_auth_text);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
 
     }
 
@@ -59,6 +88,11 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
 
     @Override
     public void onLogin(User user) {
+
+        String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
+        Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+
+//        TODO: save the user credentials
 
         // Start the CameraActivity and remove everything from the back stack:
         Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
