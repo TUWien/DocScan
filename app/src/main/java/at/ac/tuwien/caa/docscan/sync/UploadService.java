@@ -32,7 +32,6 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
@@ -272,13 +271,7 @@ public class UploadService extends JobService implements
     public void handleRestError(RestRequest request, VolleyError error) {
 
         logRestError(request, error);
-
-//        if (request instanceof UploadStatusRequest) {
-//            ((UploadStatusRequest) request).getUploadID()
-//        }
-
-
-        handleRestUploadError();
+        handleUploadError();
 
     }
 
@@ -316,16 +309,15 @@ public class UploadService extends JobService implements
     /**
      * Handles errors that occur before the first file is uploaded.
      */
-    private void handleRestUploadError() {
+    private void handleUploadError() {
 
         User.getInstance().setLoggedIn(false);
 
-        Log.d(getClass().getName(), "handleRestUploadError");
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "handleRestUploadError");
+        Log.d(getClass().getName(), "handleUploadError");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "handleUploadError");
 
         updateNotification(NOTIFICATION_ERROR);
         sendOfflineErrorIntent();
-
 
         SyncStorage.saveJSON(getApplicationContext());
         SyncUtils.startSyncJob(getApplicationContext(), true);
@@ -440,11 +432,23 @@ public class UploadService extends JobService implements
 
             switch (User.getInstance().getConnection()) {
                 case User.SYNC_TRANSKRIBUS:
-                    TranskribusUtils.getInstance().uploadFile(this, getApplicationContext(),
-                            (TranskribusSyncFile) syncFile);
+//                    Note this should be assured, by deleting the SyncStorage, after the user
+//                    switches the connection:
+                    if (syncFile instanceof  TranskribusSyncFile)
+                        TranskribusUtils.getInstance().uploadFile(this, getApplicationContext(),
+                                (TranskribusSyncFile) syncFile);
+                    else
+                        onUploadComplete(syncFile);
+
                     break;
                 case User.SYNC_DROPBOX:
-                    DropboxUtils.getInstance().uploadFile(this, (DropboxSyncFile) syncFile);
+//                    Note this should be assured, by deleting the SyncStorage, after the user
+//                    switches the connection:
+                    if (syncFile instanceof  DropboxSyncFile)
+                        DropboxUtils.getInstance().uploadFile(this, (DropboxSyncFile) syncFile);
+                    else
+                        onUploadComplete(syncFile);
+
                     break;
             }
 
@@ -514,20 +518,35 @@ public class UploadService extends JobService implements
         @Override
         public void onError(Exception e) {
 
-            Log.d(CLASS_NAME, "onError: unfinished upload ids size: "
-                    + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+            handleUploadError();
 
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
-                    "onError: unfinished upload ids size: "
-                            + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+//            Log.d(CLASS_NAME, "onError: unfinished upload ids size: "
+//                    + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+//
+//            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+//                    "onError: unfinished upload ids size: "
+//                            + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+//
+//            handleError();
+////            TranskribusUtils.getInstance().onError();
+//
+//            SyncUtils.startSyncJob(getApplicationContext(), true);
+//
+//            updateNotification(NOTIFICATION_ERROR);
+//
+//            sendOfflineErrorIntent();
 
-            TranskribusUtils.getInstance().onError();
 
-            SyncUtils.startSyncJob(getApplicationContext(), true);
 
-            updateNotification(NOTIFICATION_ERROR);
+        }
 
-            sendOfflineErrorIntent();
+        private void handleError() {
+
+            User.getInstance().setLoggedIn(false);
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onError");
+            Log.d(CLASS_NAME, "unfinished size: " + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+
+            SyncStorage.saveJSON(getApplicationContext());
 
         }
 
@@ -587,16 +606,17 @@ public class UploadService extends JobService implements
         String title = getString(R.string.sync_notification_title);
 
         String text = getConnectionText();
-        String CHANNEL_ID = "docscan_notification_channel";// The id of the channel.
+        Log.d(CLASS_NAME, "showNotification: text: " + text);
+        if (getConnectionText() == null)
+            return;
 
-        mNotificationBuilder = new NotificationCompat.Builder(this)
+        mNotificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setChannelId(CHANNEL_ID);
 
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
 
         // On Android O we need a NotificationChannel, otherwise the notification is not shown.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -635,7 +655,7 @@ public class UploadService extends JobService implements
 
                 mNotificationBuilder
                         .setContentTitle(getString(R.string.sync_notification_title))
-                        .setContentText(getString(R.string.sync_notification_uploading_transkribus_text))
+                        .setContentText(getConnectionText())
                         .setProgress(100, progress, false);
                 break;
             case NOTIFICATION_FILE_DELETED:
@@ -665,15 +685,13 @@ public class UploadService extends JobService implements
 
     private String getConnectionText() {
 
-        String text = "";
-        int connection = UserHandler.loadConnection(this);
-        if (connection == User.SYNC_TRANSKRIBUS)
-            text = getString(R.string.sync_notification_uploading_transkribus_text);
-        else if (connection == User.SYNC_DROPBOX)
-            text = getString(R.string.sync_notification_uploading_dropbox_text);
-
-        return text;
-
+        switch (User.getInstance().getConnection()) {
+            case User.SYNC_TRANSKRIBUS:
+                return getString(R.string.sync_notification_uploading_transkribus_text);
+            case User.SYNC_DROPBOX:
+                return getString(R.string.sync_notification_uploading_dropbox_text);
+        }
+        return null;
     }
 
 }

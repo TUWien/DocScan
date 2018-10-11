@@ -23,8 +23,8 @@
 
         <ImageView
             android:id="@+id/navigation_view_header_user_image_view"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="6dp"/>
 

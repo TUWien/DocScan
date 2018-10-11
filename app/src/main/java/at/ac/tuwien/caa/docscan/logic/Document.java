@@ -42,6 +42,20 @@ public class Document {
 
     }
 
+    public ArrayList<String> getFileNames() {
+
+        if (mPages == null)
+            return null;
+
+        ArrayList<String> fileNames = new ArrayList<>(mPages.size());
+        for (Page page : mPages) {
+            fileNames.add(page.getFile().getName());
+        }
+
+        return fileNames;
+
+    }
+
     public ArrayList<File> getFiles() {
 
         if (mPages == null)

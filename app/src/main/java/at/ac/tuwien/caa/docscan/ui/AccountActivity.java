@@ -1,18 +1,26 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatImageButton;
 import android.view.View;
 import android.view.ViewManager;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 /**
  * Created by fabian on 22.08.2017.
@@ -56,24 +64,65 @@ public class AccountActivity extends BaseNavigationActivity {
     }
 
     private void initButtons() {
-        Button transkribusButton = (Button) findViewById(R.id.sync_switcher_transkribus_button);
+
+        Button transkribusButton = findViewById(R.id.sync_switcher_transkribus_button);
         transkribusButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                startActivity(intent);
+                showDeleteSyncInfoAlert(LoginActivity.class);
             }
         });
+
+        Class t = DropboxActivity.class;
 
         Button dropboxButon = (Button) findViewById(R.id.sync_switcher_dropbox_button);
         dropboxButon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), DropboxActivity.class);
-                intent.putExtra("test", "withinapp");
-                startActivity(intent);
+                showDeleteSyncInfoAlert(DropboxActivity.class);
             }
         });
+    }
+
+
+    private void showDeleteSyncInfoAlert(final Class proceedingActivity) {
+
+//        Proceed if no file has been uploaded:
+        if (SyncStorage.getInstance().getSyncList() == null ||
+                SyncStorage.getInstance().getSyncList().isEmpty()) {
+            Intent intent = new Intent(getApplicationContext(), proceedingActivity);
+            startActivity(intent);
+            return;
+        }
+
+//        If file(s) have been uploaded, warn the user, before the SyncStorage is deleted:
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.account_delete_sync_storage_title)
+                .setPositiveButton(R.string.sync_confirm_login_button_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)  {
+
+//                        This deletes the sync information:
+                        SyncStorage.clearInstance();
+                        Intent intent = new Intent(getApplicationContext(), proceedingActivity);
+                        startActivity(intent);
+
+                    }
+                })
+                .setNegativeButton(R.string.sync_cancel_login_button_text, null)
+                .setCancelable(true)
+                .setMessage(R.string.account_delete_sync_storage_message);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
+
     }
 
     private void showAccountDetails() {

@@ -82,152 +82,152 @@ public class SyncInfo implements Serializable {
 
     }
 
-    public static boolean isInstanceNull() {
-
-        return (mInstance == null);
-
-    }
-
-    public static void saveToDisk(Context context) {
-
-        File syncPath = context.getFilesDir();
-        File syncFile = new File(syncPath, SYNC_FILE_NAME);
-
-        try {
-            FileOutputStream fos = new FileOutputStream(syncFile);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(mInstance);
-            oos.close();
-        }
-        catch(Exception e) {
-
-        }
-
-    }
-
-    /**
-     * Restart a sync job. This method should only be called after an error occured. We set here a
-     * larger time window to prevent too much server requests.
-     * @param context
-     */
-    public static void restartSyncJob(Context context) {
-
-        DataLog.getInstance().writeUploadLog(context, "SyncInfo", "restartSyncJob");
-
-        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
-
-        String tag = "sync_job";
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-
-        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(R.string.key_upload_mobile_data), false);
-        int[] constraints;
-        if (useMobileConnection)
-            constraints = new int[]{Constraint.ON_ANY_NETWORK};
-        else
-            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
-
-        Job syncJob = dispatcher.newJobBuilder()
-                // the JobService that will be called
-                .setService(SyncService.class)
-                // uniquely identifies the job
-                .setTag(tag)
-                // one-off job
-                .setRecurring(false)
-                // don't persist past a device reboot
-                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
-                // start between 0 and 60 seconds from now
-                .setTrigger(Trigger.executionWindow(30, 50))
-//                .setTrigger(Trigger.executionWindow(1, 7))
-//                .setTrigger(Trigger.NOW)
-                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
-                .setReplaceCurrent(true)
-                // retry with exponential backoff
-                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
-                // constraints that need to be satisfied for the job to run
-//                .setConstraints(
-//                        // only run on an unmetered network
-//                        Constraint.ON_UNMETERED_NETWORK,
-//                        // only run when the device is charging
-//                        Constraint.DEVICE_CHARGING
-//                )
-                .setConstraints(
-                        constraints
-                )
-//                .setConstraints(
-//                        Constraint.ON_ANY_NETWORK
-//                )
-                .build();
-
-
-
-        dispatcher.mustSchedule(syncJob);
-
-    }
-
-
-
-    /**
-     * Starts a new sync job. Note that a current job will not be overwritten.
-     * @param context
-     */
-    public static void startSyncJob(Context context) {
-
-        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
-
-        Log.d("SyncInfo", "startSyncJob");
-        DataLog.getInstance().writeUploadLog(context, "SyncService", "startSyncJob");
-
-        String tag = "sync_job";
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-
-        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(R.string.key_upload_mobile_data), false);
-        int[] constraints;
-        if (useMobileConnection)
-            constraints = new int[]{Constraint.ON_ANY_NETWORK};
-        else
-            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
-
-
+//    public static boolean isInstanceNull() {
+//
+//        return (mInstance == null);
+//
+//    }
+//
+//    public static void saveToDisk(Context context) {
+//
+//        File syncPath = context.getFilesDir();
+//        File syncFile = new File(syncPath, SYNC_FILE_NAME);
+//
+//        try {
+//            FileOutputStream fos = new FileOutputStream(syncFile);
+//            ObjectOutputStream oos = new ObjectOutputStream(fos);
+//            oos.writeObject(mInstance);
+//            oos.close();
+//        }
+//        catch(Exception e) {
+//
+//        }
+//
+//    }
+//
+//    /**
+//     * Restart a sync job. This method should only be called after an error occured. We set here a
+//     * larger time window to prevent too much server requests.
+//     * @param context
+//     */
+//    public static void restartSyncJob(Context context) {
+//
+//        DataLog.getInstance().writeUploadLog(context, "SyncInfo", "restartSyncJob");
+//
+//        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
+//
+//        String tag = "sync_job";
+//
+//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+//
+//        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(R.string.key_upload_mobile_data), false);
+//        int[] constraints;
 //        if (useMobileConnection)
-
-
-        Job syncJob = dispatcher.newJobBuilder()
-                // the JobService that will be called
+//            constraints = new int[]{Constraint.ON_ANY_NETWORK};
+//        else
+//            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
+//
+//        Job syncJob = dispatcher.newJobBuilder()
+//                // the JobService that will be called
 //                .setService(SyncService.class)
-                .setService(UploadService.class)
-                // uniquely identifies the job
-                .setTag(tag)
-                // one-off job
-                .setRecurring(false)
-                // don't persist past a device reboot
-                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
-                // start between 0 and 60 seconds from now
-//                .setTrigger(Trigger.executionWindow(5, 15))
-                .setTrigger(Trigger.executionWindow(1, 7))
-//                .setTrigger(Trigger.NOW)
-                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
-                .setReplaceCurrent(true)
-                // retry with exponential backoff
-                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
-                // constraints that need to be satisfied for the job to run
+//                // uniquely identifies the job
+//                .setTag(tag)
+//                // one-off job
+//                .setRecurring(false)
+//                // don't persist past a device reboot
+//                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
+//                // start between 0 and 60 seconds from now
+//                .setTrigger(Trigger.executionWindow(30, 50))
+////                .setTrigger(Trigger.executionWindow(1, 7))
+////                .setTrigger(Trigger.NOW)
+//                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
+//                .setReplaceCurrent(true)
+//                // retry with exponential backoff
+//                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
+//                // constraints that need to be satisfied for the job to run
+////                .setConstraints(
+////                        // only run on an unmetered network
+////                        Constraint.ON_UNMETERED_NETWORK,
+////                        // only run when the device is charging
+////                        Constraint.DEVICE_CHARGING
+////                )
 //                .setConstraints(
-//                        // only run on an unmetered network
-//                        Constraint.ON_UNMETERED_NETWORK,
-//                        // only run when the device is charging
-//                        Constraint.DEVICE_CHARGING
+//                        constraints
 //                )
-                .setConstraints(
-                        constraints
-                )
-                .build();
+////                .setConstraints(
+////                        Constraint.ON_ANY_NETWORK
+////                )
+//                .build();
+//
+//
+//
+//        dispatcher.mustSchedule(syncJob);
+//
+//    }
 
 
 
-        dispatcher.mustSchedule(syncJob);
-
-    }
+//    /**
+//     * Starts a new sync job. Note that a current job will not be overwritten.
+//     * @param context
+//     */
+//    public static void startSyncJob(Context context) {
+//
+//        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
+//
+//        Log.d("SyncInfo", "startSyncJob");
+//        DataLog.getInstance().writeUploadLog(context, "SyncService", "startSyncJob");
+//
+//        String tag = "sync_job";
+//
+//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+//
+//        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(R.string.key_upload_mobile_data), false);
+//        int[] constraints;
+//        if (useMobileConnection)
+//            constraints = new int[]{Constraint.ON_ANY_NETWORK};
+//        else
+//            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
+//
+//
+////        if (useMobileConnection)
+//
+//
+//        Job syncJob = dispatcher.newJobBuilder()
+//                // the JobService that will be called
+////                .setService(SyncService.class)
+//                .setService(UploadService.class)
+//                // uniquely identifies the job
+//                .setTag(tag)
+//                // one-off job
+//                .setRecurring(false)
+//                // don't persist past a device reboot
+//                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
+//                // start between 0 and 60 seconds from now
+////                .setTrigger(Trigger.executionWindow(5, 15))
+//                .setTrigger(Trigger.executionWindow(1, 7))
+////                .setTrigger(Trigger.NOW)
+//                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
+//                .setReplaceCurrent(true)
+//                // retry with exponential backoff
+//                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
+//                // constraints that need to be satisfied for the job to run
+////                .setConstraints(
+////                        // only run on an unmetered network
+////                        Constraint.ON_UNMETERED_NETWORK,
+////                        // only run when the device is charging
+////                        Constraint.DEVICE_CHARGING
+////                )
+//                .setConstraints(
+//                        constraints
+//                )
+//                .build();
+//
+//
+//
+//        dispatcher.mustSchedule(syncJob);
+//
+//    }
 
 
     public void clearSyncList() {

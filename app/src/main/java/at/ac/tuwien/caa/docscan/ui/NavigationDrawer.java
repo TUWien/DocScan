@@ -118,8 +118,6 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         ImageView userImageView = headerLayout.findViewById(R.id.navigation_view_header_user_image_view);
 
         // Set up the account name field:
-
-
         if (User.getInstance().isLoggedIn()) {
             // The user is logged in, show the name:
             userTextView.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
@@ -128,14 +126,9 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
             String cloudText = SyncUtils.getConnectionText(mActivity, User.getInstance().getConnection());
             connectionTextView.setText(cloudText);
 
-            String photoUrl = User.getInstance().getPhotoUrl();
-            if (photoUrl != null) {
-                GlideApp.with(mActivity)
-                        .load(photoUrl)
-//                        Make the image view circular:
-                        .apply(RequestOptions.circleCropTransform())
-                        .into(userImageView);
-            }
+//            set the user image:
+            showUserImage(userImageView);
+
         }
 
         // The user is not logged in, but was logged in some time before, show the name:
@@ -165,6 +158,28 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
             }
         });
 
+    }
+
+    private void showUserImage(ImageView userImageView) {
+        switch (User.getInstance().getConnection()) {
+            case User.SYNC_DROPBOX:
+                String photoUrl = User.getInstance().getPhotoUrl();
+                if (photoUrl != null) {
+                    GlideApp.with(mActivity)
+                            .load(photoUrl)
+//                        Make the image view circular:
+                            .apply(RequestOptions.circleCropTransform())
+                            .into(userImageView);
+                }
+                break;
+            case User.SYNC_TRANSKRIBUS:
+                GlideApp.with(mActivity)
+                        .load(R.drawable.transkribus)
+//                        Make the image view circular:
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(userImageView);
+                break;
+        }
     }
 
     private void onNavDrawerItemClicked(final NavigationItemEnum item) {
