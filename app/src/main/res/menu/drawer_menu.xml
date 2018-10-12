@@ -33,6 +33,10 @@
             android:id="@+id/about_item"
             android:title=""
             />
+        <item
+            android:id="@+id/help_item"
+            android:title=""
+            />
     </group>
 
     <group
