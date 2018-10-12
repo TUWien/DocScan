@@ -330,12 +330,30 @@ public class SyncStorage {
 
     private boolean isFileUploaded(File file) {
 
-        for (SyncFile fileSync : mUploadedList) {
-            if (file.getAbsolutePath().compareTo(fileSync.getFile().getAbsolutePath()) == 0)
-                return true;
+        for (SyncFile syncFile : mUploadedList) {
+
+//            First check if the file is already uploaded:
+            if (file.getAbsolutePath().compareTo(syncFile.getFile().getAbsolutePath()) == 0) {
+                if (hasChangedSinceUpload(syncFile, file))
+                    return false;
+                else
+                    return true;
+            }
         }
 
         return false;
+    }
+
+    private boolean hasChangedSinceUpload(SyncFile syncFile, File file) {
+
+//        Unfortunately, the modification date was not included in previous versions and hence it is
+//        null. In this case no change is assumed:
+        if (syncFile.getModifiedDate() == null)
+            return false;
+        else {
+            return syncFile.getModifiedDate() != file.lastModified();
+        }
+
     }
 
     public interface Callback {

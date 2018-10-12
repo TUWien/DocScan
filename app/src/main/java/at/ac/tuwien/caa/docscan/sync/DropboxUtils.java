@@ -206,6 +206,8 @@ public class DropboxUtils {
 
             ArrayList<String> remoteFileNames = new ArrayList<>();
 
+//            TODO: check if the directory is existing!
+
             ListFolderResult list = mClient.files().listFolder("/" + mDocument.getTitle());
 
             for (int i = 0; i < list.getEntries().size(); i++) {
