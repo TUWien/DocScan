@@ -646,7 +646,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void deleteSelections() {
 
-        if (mDocument == null || mAdapter == null || mDocument.getPages() != null)
+        if (mDocument == null || mAdapter == null || mDocument.getPages() == null)
             return;
 
         int[] selections = mAdapter.getSelectionIndices();
