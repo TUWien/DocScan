@@ -193,16 +193,31 @@ public class DocumentStorage {
         for (Document document : mDocuments) {
 
             boolean areFilesUploaded = SyncStorage.getInstance().areFilesUploaded(document.getFiles());
-            document.setIsUploaded(areFilesUploaded);
 
-            if (!areFilesUploaded) {
+            boolean areFilesChanged = false;
+            if (areFilesUploaded)
+                areFilesChanged = SyncStorage.getInstance().areFilesChanged(document.getFiles());
+
+            document.setIsUploaded(areFilesUploaded && !areFilesChanged);
+//            document.setIsUploaded(areFilesUploaded);
+
+//            if (!areFilesUploaded || (areFilesUploaded && areFilesChanged)) {
+            if (!document.isUploaded()) {
                 boolean isAwaitingUpload = SyncStorage.getInstance().
                         isDocumentAwaitingUpload(document);
                 document.setIsAwaitingUpload(isAwaitingUpload);
+//            }
             }
+            else
+                document.setIsAwaitingUpload(false);
 
             boolean isDocumentCropped = Helper.areFilesCropped(document);
             document.setIsCropped(isDocumentCropped);
+
+            Log.d(CLASS_NAME, "updateStatus: document: " + document.getTitle());
+            Log.d(CLASS_NAME, "updateStatus: areFilesUploaded: " + areFilesUploaded);
+            Log.d(CLASS_NAME, "updateStatus: areFilesChanged: " + areFilesChanged);
+            Log.d(CLASS_NAME, "updateStatus: isDocumentCropped: " + isDocumentCropped);
 
         }
 
@@ -219,7 +234,6 @@ public class DocumentStorage {
             sInstance = new DocumentStorage();
             DocumentStorage.getInstance().setTitle(Helper.getActiveDocumentTitle(context));
         }
-
 
         else {
             try {

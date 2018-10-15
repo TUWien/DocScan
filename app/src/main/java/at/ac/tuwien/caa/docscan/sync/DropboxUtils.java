@@ -9,6 +9,7 @@ import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
+import com.dropbox.core.v2.files.ListFolderErrorException;
 import com.dropbox.core.v2.files.ListFolderResult;
 import com.dropbox.core.v2.files.Metadata;
 import com.dropbox.core.v2.files.WriteMode;
@@ -206,9 +207,15 @@ public class DropboxUtils {
 
             ArrayList<String> remoteFileNames = new ArrayList<>();
 
-//            TODO: check if the directory is existing!
 
-            ListFolderResult list = mClient.files().listFolder("/" + mDocument.getTitle());
+            ListFolderResult list;
+//            I did not found another way to check the presence of a folder:
+            try {
+                list = mClient.files().listFolder("/" + mDocument.getTitle());
+            }
+            catch(ListFolderErrorException e) {
+                return remoteFileNames;
+            }
 
             for (int i = 0; i < list.getEntries().size(); i++) {
                 Metadata metadata = list.getEntries().get(i);
@@ -220,19 +227,25 @@ public class DropboxUtils {
                 if (!isInDocument(remoteFileName))
                     mClient.files().delete("/" + mDocument.getTitle() + "/" + remoteFileName);
                 else {
-                    try {
-                        int fileIdx = mDocument.getFileNames().indexOf(remoteFileName);
-                        File file = mDocument.getFiles().get(fileIdx);
-                        byte[] b1 = computeHash(file.getAbsolutePath());
-                        String localHash = hex(b1);
-                        String remoteHash = ((FileMetadata) metadata).getContentHash();
-                        if (localHash.compareTo(remoteHash) != 0) {
-                            SyncStorage.getInstance().addDropboxFile(file, mDocument.getTitle());
-                        }
+                    int fileIdx = mDocument.getFileNames().indexOf(remoteFileName);
+                    File file = mDocument.getFiles().get(fileIdx);
+                    if (SyncStorage.getInstance().isFileChanged(file))
+                        SyncStorage.getInstance().addDropboxFile(file, mDocument.getTitle());
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+////                    Else check if the hash of the file has changed:
+//                    try {
+//                        int fileIdx = mDocument.getFileNames().indexOf(remoteFileName);
+//                        File file = mDocument.getFiles().get(fileIdx);
+//                        byte[] b1 = computeHash(file.getAbsolutePath());
+//                        String localHash = hex(b1);
+//                        String remoteHash = ((FileMetadata) metadata).getContentHash();
+//                        if (localHash.compareTo(remoteHash) != 0) {
+//                            SyncStorage.getInstance().addDropboxFile(file, mDocument.getTitle());
+//                        }
+//
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
                 }
             }
 

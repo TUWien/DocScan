@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.ListIterator;
 
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
@@ -269,6 +270,21 @@ public class SyncStorage {
 
     }
 
+    public boolean areFilesChanged(ArrayList<File> files) {
+
+        if (files == null || files.isEmpty())
+            return false;
+
+        // Check if a single file contained in the folder is changed:
+        for (File file : files) {
+            if (isFileChanged(file))
+                return true;
+        }
+
+        return false;
+
+    }
+
     public boolean areFilesUploaded(ArrayList<File> files) {
 
         if (files == null || files.isEmpty())
@@ -308,7 +324,7 @@ public class SyncStorage {
             for (File file : files) {
                 boolean isFileOnList = false;
                 for (SyncFile fileSync : mFileSyncList) {
-                    if (fileSync.getFile().equals(file)) {
+                    if (fileSync.getFile().equals(file) && !isFileChanged(file)) {
                         isFileOnList = true;
                         break;
                     }
@@ -334,27 +350,50 @@ public class SyncStorage {
 
 //            First check if the file is already uploaded:
             if (file.getAbsolutePath().compareTo(syncFile.getFile().getAbsolutePath()) == 0) {
-                if (hasChangedSinceUpload(syncFile, file))
-                    return false;
-                else
-                    return true;
+//                if (hasChangedSinceUpload(syncFile, file))
+//                    return false;
+//                else
+                return true;
             }
         }
 
         return false;
     }
 
-    private boolean hasChangedSinceUpload(SyncFile syncFile, File file) {
+    public boolean isFileChanged(File file) {
 
-//        Unfortunately, the modification date was not included in previous versions and hence it is
-//        null. In this case no change is assumed:
-        if (syncFile.getModifiedDate() == null)
-            return false;
-        else {
-            return syncFile.getModifiedDate() != file.lastModified();
+        for (int i = mUploadedList.size() - 1; i >= 0; i--) {
+            SyncFile syncFile = mUploadedList.get(i);
+            if (file.getAbsolutePath().compareTo(syncFile.getFile().getAbsolutePath()) == 0) {
+//              Unfortunately, the modification date was not included in previous versions and hence it is
+//              null. In this case no change is assumed:
+                if (syncFile.getModifiedDate() == null)
+                    return false;
+                else {
+                    return syncFile.getModifiedDate() != file.lastModified();
+                }
+            }
         }
+        return false;
+
+//        for (SyncFile syncFile : mUploadedList) {
+//
+////            Find the corresponding SyncFile
+//            if (file.getAbsolutePath().compareTo(syncFile.getFile().getAbsolutePath()) == 0) {
+////              Unfortunately, the modification date was not included in previous versions and hence it is
+////              null. In this case no change is assumed:
+//                if (syncFile.getModifiedDate() == null)
+//                    return false;
+//                else {
+//                    return syncFile.getModifiedDate() != file.lastModified();
+//                }
+//            }
+//        }
+//
+//        return false;
 
     }
+
 
     public interface Callback {
         void onUploadComplete(SyncFile syncFile);
