@@ -334,6 +334,8 @@ public class TranskribusUtils  {
 
     private void docScanCollectionFound(int id) {
 
+        Log.d(CLASS_NAME, "docScanCollectionFound: id: " + id);
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"docScanCollectionFound: id: " + id);
         uploadDirs(mSelectedDirs, id);
 
     }
