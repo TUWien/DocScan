@@ -652,14 +652,20 @@ public class GalleryActivity extends AppCompatActivity implements
         int[] selections = mAdapter.getSelectionIndices();
 
         for (int i = selections.length - 1; i >= 0; i--) {
-            mDocument.getPages().get(selections[i]).getFile().delete();
-            mDocument.getPages().remove(selections[i]);
+
+            int selIdx = selections[i];
+
+            Page page = mDocument.getPages().remove(selIdx);
+            String fileName = page.getFile().getAbsolutePath();
+            new File(fileName).delete();
+
+            mAdapter.notifyItemRemoved(selIdx);
+            mAdapter.notifyItemRangeChanged(selIdx, mDocument.getPages().size());
+
         }
 
-        loadDocument();
+        mAdapter.deselectAllItems();
 
-        mAdapter.clearSelection();
-        mAdapter.notifyDataSetChanged();
 
     }
 
