@@ -461,6 +461,8 @@ public class GalleryActivity extends AppCompatActivity implements
                 // did the user cancel the selection?
                 else {
                     mAdapter.deselectAllItems();
+//                    force a redraw of the checkboxes:
+                    mAdapter.notifyDataSetChanged();
                     return true;
                 }
         }
@@ -651,12 +653,19 @@ public class GalleryActivity extends AppCompatActivity implements
 
         int[] selections = mAdapter.getSelectionIndices();
 
+        Log.d(CLASS_NAME, "deleteSelections: selections.length: " + selections.length);
+        for (int i = 0; i < mDocument.getPages().size(); i++) {
+            Log.d(CLASS_NAME, "deleteSelections: listing index: " + i + " file: " + mDocument.getPages().get(i).getFile().getName());
+        }
+
+
         for (int i = selections.length - 1; i >= 0; i--) {
 
             int selIdx = selections[i];
 
             Page page = mDocument.getPages().remove(selIdx);
             String fileName = page.getFile().getAbsolutePath();
+            Log.d(CLASS_NAME, "deleteSelections: deleting index: " + selIdx + " filename: " + fileName);
             new File(fileName).delete();
 
             mAdapter.notifyItemRemoved(selIdx);
