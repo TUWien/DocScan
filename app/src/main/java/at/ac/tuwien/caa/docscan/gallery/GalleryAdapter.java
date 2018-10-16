@@ -167,7 +167,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     }
 
-    private void initImageView(GalleryViewHolder holder, int position, Page page) {
+    private synchronized void initImageView(GalleryViewHolder holder, int position, Page page) {
 
         if (mDocument == null || mDocument.getPages() == null)
             return;
@@ -175,6 +175,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         ImageView imageView = holder.mImageView;
 
         File file = mDocument.getPages().get(position).getFile();
+        if (!file.exists())
+            return;
+
         String fileName = file.getAbsolutePath();
 
         int exifOrientation = -1;
@@ -317,9 +320,6 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         for (int i = 0; i < mDocument.getPages().size(); i++) {
             mSelections.put(i, isSelected);
         }
-
-//        We need to redraw the check boxes:
-        this.notifyDataSetChanged();
 
 //        We need to inform the parent activity that the selection has changed:
         mCallback.onSelectionChange(mSelections.count());
