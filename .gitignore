@@ -49,6 +49,7 @@ app/build
 openCVLibrary310
 import-summary.txt
 camera_view.xml
+/api_info.txt
 
 # msvc
 build2015*

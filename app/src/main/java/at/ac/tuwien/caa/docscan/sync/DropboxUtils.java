@@ -15,8 +15,6 @@ import com.dropbox.core.v2.files.Metadata;
 import com.dropbox.core.v2.files.WriteMode;
 import com.dropbox.core.v2.users.FullAccount;
 
-import org.opencv.imgproc.CLAHE;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
