@@ -7,12 +7,17 @@
     <string name="share_log_item_text">Share log</string>
     <string name="sync_item_text">Upload</string>
     <string name="upload_item_text">Upload</string>
+    <string name="help_item_text">Help</string>
     <string name="camera_item_text">Camera</string>
     <string name="header_text">DocScan</string>
     <string name="account_edit_text">Set up account</string>
     <string name="account_not_logged_in">Anonymous user</string>
     <string name="account_logout">Logout</string>
     <string name="settings_item_text">Settings</string>
+
+    <!-- Navigation drawer alert messages: -->
+    <string name="navigation_offline_text">Device is offline</string>
+    <string name="navigation_offline_message">Internet access is required to download the help document.</string>
 
     <!-- Strings used by multiple activities/dialogs -->
     <string name="dialog_ok_text">OK</string>

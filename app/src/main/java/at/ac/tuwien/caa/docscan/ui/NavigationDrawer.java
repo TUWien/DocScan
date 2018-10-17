@@ -228,6 +228,10 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 //            case SIGN_IN:
 //                mLoginStateListener.onSignInOrCreateAccount();
 //                break;
+            case HELP:
+                openHelpPDF();
+                break;
+
             default:
                 if (item.getClassToLaunch() != null) {
                     ActivityUtils.createBackStack(mActivity,
@@ -239,6 +243,26 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 break;
         }
     }
+
+    private void openHelpPDF() {
+
+        String pdfUrl = "https://transkribus.eu/wiki/images/e/ed/How_to_use_DocScan_and_ScanTent.pdf";
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+        browserIntent.setData(Uri.parse(pdfUrl));
+        mActivity.startActivity(browserIntent);
+
+    }
+
+//    private void showNotOnlineAlert(Context context) {
+//
+//        new AlertDialog.Builder(context)
+//                .setTitle(R.string.navigation_offline_text)
+//                .setPositiveButton("OK", null)
+//                .setMessage(R.string.navigation_offline_message)
+//                .create()
+//                .show();
+//
+//    }
 
 
     private void setAccountGroupVisible(boolean isVisible) {
@@ -322,6 +346,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
         UPLOAD(R.id.sync_item, R.string.upload_item_text,
                 R.drawable.ic_cloud_upload_black_24dp, UploadActivity.class),
+        HELP(R.id.help_item, R.string.help_item_text,
+                R.drawable.ic_help_black_24dp, null),
 //        REST_TEST(R.id.rest_item, R.string.rest_item_text,
 //                R.drawable.ic_weekend_black_24dp, RestTestActivity.class),
         INVALID(-1, 0, 0, null);

@@ -10,9 +10,12 @@ import android.preference.PreferenceManager;
 import android.support.media.ExifInterface;
 import android.text.InputFilter;
 import android.text.Spanned;
+import android.util.Log;
 //import android.util.Size;
 
 import com.android.volley.VolleyError;
+
+import org.opencv.imgproc.CLAHE;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -38,6 +41,7 @@ import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 public class Helper {
 
     private static final String RESERVED_CHARS = "|\\?*<\":>+[]/'";
+    private static final String CLASS_NAME = "Helper";
 
 
     /**
@@ -120,11 +124,16 @@ public class Helper {
     }
 
     public static int getExifOrientation(File outFile) throws IOException {
-        final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
-        if (exif != null) {
-            String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
-            return Integer.valueOf(orientation);
+        if (outFile.exists()) {
+            final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+            if (exif != null) {
+                String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+                return Integer.valueOf(orientation);
+            }
         }
+        else
+            Log.d(CLASS_NAME, "getExifOrientation: not existing: " + outFile);
+
 
         return -1;
 

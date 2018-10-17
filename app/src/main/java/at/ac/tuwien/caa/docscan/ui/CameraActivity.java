@@ -1076,9 +1076,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //        commented, because we are restructuring the document setup:
 //        Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
-        Uri uri = getFileName(getResources().getString(R.string.app_name));
         FileSaver fileSaver = new FileSaver(data);
-        fileSaver.execute(uri);
+        fileSaver.execute();
 
     }
 
@@ -1107,8 +1106,20 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Create a media file name
         mLastTimeStamp = new Date();
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(mLastTimeStamp);
-        File mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                mContext.getString(R.string.img_prefix) + timeStamp + mContext.getString(R.string.img_extension));
+//        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmm").format(mLastTimeStamp);
+        String prefix = mediaStorageDir.getPath() + File.separator +
+                mContext.getString(R.string.img_prefix) + timeStamp;
+        File mediaFile = new File(prefix  + ".jpg");
+
+//        Check if the file is existing:
+        if (mediaFile.exists()) {
+//            add a number at the end:
+            int idx = 2;
+            while (mediaFile.exists()) {
+                mediaFile = new File(prefix + "_" + idx + ".jpg");
+                idx++;
+            }
+        }
 
         return Uri.fromFile(mediaFile);
 
@@ -2219,7 +2230,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     /**
      * Class used to save pictures in an own thread (AsyncTask).
      */
-    private class FileSaver extends AsyncTask<Uri, Void, String> {
+    private class FileSaver extends AsyncTask<Void, Void, String> {
 
         private byte[] mData;
 
@@ -2230,10 +2241,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
 
         @Override
-        protected String doInBackground(Uri... uris) {
+        protected String doInBackground(Void... voids) {
 
+            Uri uri = getFileName(mContext.getString(R.string.app_name));
+            Log.d(CLASS_NAME, "FileSaver: uri " + uri);
 
-            final File file = new File(uris[0].getPath());
+            final File file = new File(uri.getPath());
 
             if (file == null)
                 return null;
@@ -2262,7 +2275,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
                 mIsPictureSafe = true;
 
-                return uris[0].getPath();
+                return uri.getPath();
 
             }
 
@@ -2346,6 +2359,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             }
         }
+
 
 
         protected void onPostExecute(String uri) {
