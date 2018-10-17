@@ -117,8 +117,6 @@ import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.document.SelectDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
-import at.ac.tuwien.caa.docscan.logic.AppState;
-import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
@@ -126,7 +124,6 @@ import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
-import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
 import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUMENT_QR_TEXT;
@@ -236,10 +233,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //            colorStatusBar();
 
 
-        //        Open the log file at app startup:
-        if (AppState.isDataLogged())
-            DataLog.getInstance().readLog(this);
-
         mContext = this;
 
         initActivity();
@@ -275,13 +268,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         savePreferences();
         DocumentStorage.saveJSON(this);
-
-//        // Save the sync info:
-//        SyncInfo.getInstance().saveToDisk(this);
-
-        //        Save the log file:
-        if (AppState.isDataLogged())
-            DataLog.getInstance().writeLog(this);
 
         mPictureData = null;
 
@@ -2347,12 +2333,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
                     exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
                     exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
-                }
-//
-                //                    Log the shot:
-                if (AppState.isDataLogged()) {
-                    GPS gps = new GPS(location);
-                    DataLog.getInstance().logShot(outFile.getAbsolutePath(), gps, mLastTimeStamp, mIsSeriesMode);
                 }
 
                 exif.saveAttributes();

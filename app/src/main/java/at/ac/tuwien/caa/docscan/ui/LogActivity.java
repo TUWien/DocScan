@@ -26,7 +26,6 @@ public class LogActivity extends BaseNavigationActivity {
             @Override
             public void onClick(View v) {
                 DataLog.getInstance().shareLog(activity);
-//                DataLog.getInstance().shareUploadLog(activity);
             }
         });
 

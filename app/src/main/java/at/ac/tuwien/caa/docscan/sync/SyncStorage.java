@@ -14,7 +14,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.ListIterator;
 
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
@@ -196,8 +195,10 @@ public class SyncStorage {
 
     public void addToUploadedList(SyncFile fileSync) {
 
-        if (mUploadedList != null)
+        if (mUploadedList != null) {
             mUploadedList.add(fileSync);
+            Log.d(CLASS_NAME, "addToUploadedList: " + fileSync.getFile());
+        }
 
     }
 
@@ -245,7 +246,7 @@ public class SyncStorage {
     }
 
 
-    private ArrayList<SyncFile> getUploadedList() {
+    public ArrayList<SyncFile> getUploadedList() {
 
         return mUploadedList;
 
@@ -292,8 +293,11 @@ public class SyncStorage {
 
         // Check if every file contained in the folder is already uploaded:
         for (File file : files) {
-            if (!isFileUploaded(file))
+            if (!isFileUploaded(file)) {
+                Log.d(CLASS_NAME, "areFilesUploaded: missing: " + file);
                 return false;
+            }
+
         }
 
         return true;

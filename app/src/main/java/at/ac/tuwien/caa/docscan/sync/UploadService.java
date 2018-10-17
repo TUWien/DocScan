@@ -133,7 +133,7 @@ public class UploadService extends JobService implements
                 TranskribusUtils.getInstance().startUpload(this);
                 break;
             case User.SYNC_DROPBOX:
-                DropboxUtils.getInstance().startUpload(this, this);
+                DropboxUtils.getInstance().startUpload(this);
                 break;
             default:
                 Log.d(CLASS_NAME, "startUpload: connection unknown");
@@ -144,7 +144,7 @@ public class UploadService extends JobService implements
     @Override
     public boolean onStopJob(JobParameters job) {
         Log.d(getClass().getName(), "onStopJob");
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onStopJob");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onStopJob");
         return false;
     }
 
@@ -152,7 +152,7 @@ public class UploadService extends JobService implements
     public void onLogin(User user) {
 
         Log.d(CLASS_NAME, "onLogin");
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onLogin");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onLogin");
         startUpload();
 
     }
@@ -169,7 +169,7 @@ public class UploadService extends JobService implements
     public void onCollections(List<Collection> collections) {
 
         Log.d(CLASS_NAME, "onCollections");
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onCollections");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onCollections");
 
         TranskribusUtils.getInstance().onCollections(collections);
 
@@ -179,7 +179,7 @@ public class UploadService extends JobService implements
     public void onCollectionCreated(String collName) {
 
         Log.d(CLASS_NAME, "onCollectionCreated");
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onCollectionCreated");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onCollectionCreated");
 
         TranskribusUtils.getInstance().onCollectionCreated(collName);
 
@@ -190,7 +190,7 @@ public class UploadService extends JobService implements
 
         Log.d(CLASS_NAME, "onNewUploadIDReceived");
 
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onNewUploadIDReceived");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onNewUploadIDReceived");
 
         TranskribusUtils.getInstance().onNewUploadIDReceived(uploadId, title);
 
@@ -200,7 +200,7 @@ public class UploadService extends JobService implements
     public void onFilesPrepared() {
 
         Log.d(CLASS_NAME, "onFilesPrepared");
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onFilesPrepared");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onFilesPrepared");
 
         uploadFiles();
 
@@ -222,7 +222,7 @@ public class UploadService extends JobService implements
     private void sendFileDeletedErrorIntent() {
 
         Log.d(CLASS_NAME, "sendFileDeletedErrorIntent:");
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "sendFileDeletedErrorIntent");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "sendFileDeletedErrorIntent");
 
         Intent intent = new Intent(INTENT_UPLOAD_ACTION);
         intent.putExtra(UPLOAD_INTEND_TYPE, UPLOAD_FILE_DELETED_ERROR_ID);
@@ -231,32 +231,6 @@ public class UploadService extends JobService implements
 
     }
 
-
-//    @Override
-//    public void onSelectedFilesPrepared() {
-//
-//        Log.d(CLASS_NAME, "onSelectedFilesPrepared");
-//        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onSelectedFilesPrepared");
-//
-//        mAreSelectedFilesPrepared = true;
-//        if (mAreUnfinishedFilesPrepared)
-//            // Start the upload:
-//            uploadFiles();
-//
-//    }
-//
-//    @Override
-//    public void onUnfinishedFilesPrepared() {
-//
-//        Log.d(CLASS_NAME, "onUnfinishedFilesPrepared");
-//        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onUnfinishedFilesPrepared");
-//
-//        mAreUnfinishedFilesPrepared = true;
-//        if (mAreSelectedFilesPrepared)
-//            // Start the upload:
-//            uploadFiles();
-//
-//    }
 
     private void uploadFiles() {
 
@@ -329,7 +303,7 @@ public class UploadService extends JobService implements
     private void sendOfflineErrorIntent() {
 
         Log.d("sender", "Broadcasting message");
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "Broadcasting message");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "Broadcasting message");
 
         Intent intent = new Intent(INTENT_UPLOAD_ACTION);
         intent.putExtra(UPLOAD_INTEND_TYPE, UPLOAD_OFFLINE_ERROR_ID);
@@ -348,7 +322,7 @@ public class UploadService extends JobService implements
     }
 
     /**
-     * This is just called if an upload was already finished before the SyncService job was started.
+     * This is just called if an upload was already finished before the UploadService job was started.
      * Hence we need to take a look if TranskribusUtils is waiting for this upload id, because
      * otherwise it will starve.
      * @param uploadID
@@ -374,7 +348,7 @@ public class UploadService extends JobService implements
             showNotification();
 
             Log.d(CLASS_NAME, "handlemessage");
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "handlemessage");
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "handlemessage");
 
             mFilesUploaded = 0;
 
@@ -400,7 +374,7 @@ public class UploadService extends JobService implements
         private void sendFinishedIntent() {
 
             Log.d(CLASS_NAME, "sendFinishedIntent:");
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "finish intend");
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "finish intend");
 
             Intent intent = new Intent(INTENT_UPLOAD_ACTION);
             intent.putExtra(UPLOAD_INTEND_TYPE, UPLOAD_FINISHED_ID);
@@ -414,7 +388,7 @@ public class UploadService extends JobService implements
         private void sendOfflineErrorIntent() {
 
             Log.d("sender", "sendOfflineErrorIntent");
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "sendOfflineErrorIntent");
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "sendOfflineErrorIntent");
 
             Intent intent = new Intent(INTENT_UPLOAD_ACTION);
             intent.putExtra(UPLOAD_INTEND_TYPE, UPLOAD_OFFLINE_ERROR_ID);
@@ -456,10 +430,14 @@ public class UploadService extends JobService implements
 
         private int getFilesNum() {
 
+            Log.d(CLASS_NAME, "getFilesNum");
+
             int result = 0;
             for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
-                if (syncFile.getState() == SyncFile.STATE_NOT_UPLOADED)
+                if (syncFile.getState() == SyncFile.STATE_NOT_UPLOADED) {
                     result++;
+                    Log.d(CLASS_NAME, "getFilesNum: file missing: " + syncFile.getFile());
+                }
             }
 
             return result;
@@ -470,8 +448,6 @@ public class UploadService extends JobService implements
 
             SyncStorage.getInstance().setUploadDocumentTitles(null);
             SyncStorage.saveJSON(getApplicationContext());
-
-
 
             // Show the finished progressbar for a short time:
             try {
@@ -490,13 +466,14 @@ public class UploadService extends JobService implements
         @Override
         public void onUploadComplete(SyncFile syncFile) {
 
-            //            Log.d("SyncService", "uploaded file: " + fileSync.getFile().getPath());
-            DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService",
-                    "uploaded file: " + syncFile.getFile().getPath());
-
             syncFile.setState(SyncFile.STATE_UPLOADED);
 
             SyncStorage.getInstance().addToUploadedList(syncFile);
+
+            Log.d(CLASS_NAME, "onUploadComplete: uploaded file: " +
+                    syncFile.getFile().getPath());
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                    "onUploadComplete:  uploaded file: " + syncFile.getFile().getPath());
 
             mFilesUploaded++;
 //            updateProgressbar();
@@ -519,24 +496,6 @@ public class UploadService extends JobService implements
         public void onError(Exception e) {
 
             handleUploadError();
-
-//            Log.d(CLASS_NAME, "onError: unfinished upload ids size: "
-//                    + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
-//
-//            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
-//                    "onError: unfinished upload ids size: "
-//                            + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
-//
-//            handleError();
-////            TranskribusUtils.getInstance().onError();
-//
-//            SyncUtils.startSyncJob(getApplicationContext(), true);
-//
-//            updateNotification(NOTIFICATION_ERROR);
-//
-//            sendOfflineErrorIntent();
-
-
 
         }
 
@@ -564,7 +523,7 @@ public class UploadService extends JobService implements
         private void printSyncStatus() {
 
             for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
-                DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService",
+                DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                         syncFile.toString());
             }
 
@@ -577,7 +536,7 @@ public class UploadService extends JobService implements
     public void onCreate() {
 
         Log.d(CLASS_NAME, "oncreate");
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "oncreate");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "oncreate");
 
         // Start up the thread running the service.  Note that we create a
         // separate thread because the service normally runs in the process's
@@ -597,7 +556,7 @@ public class UploadService extends JobService implements
     public void onDestroy() {
 
         Log.d(getClass().getName(), "onDestroy");
-        DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService", "onDestroy");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onDestroy");
 
     }
 

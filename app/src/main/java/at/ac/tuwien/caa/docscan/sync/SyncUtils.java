@@ -60,7 +60,9 @@ public class SyncUtils {
         if (!restart)
             timeWindow = Trigger.executionWindow(1, 7);
         else
-            timeWindow = Trigger.executionWindow(30, 50);
+//            TODO: change this!
+            timeWindow = Trigger.executionWindow(1, 7);
+//            timeWindow = Trigger.executionWindow(30, 50);
 
         Job syncJob = dispatcher.newJobBuilder()
                 // the JobService that will be called

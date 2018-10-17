@@ -15,6 +15,8 @@ import com.dropbox.core.v2.files.Metadata;
 import com.dropbox.core.v2.files.WriteMode;
 import com.dropbox.core.v2.users.FullAccount;
 
+import org.opencv.imgproc.CLAHE;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,6 +25,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.BuildConfig;
+import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Page;
@@ -45,6 +48,7 @@ public class DropboxUtils {
     // Singleton:
     private static DropboxUtils mInstance;
 
+    private Context mContext;
     private DbxClientV2 mClient;
     private TranskribusUtils.TranskribusUtilsCallback mCallback;
 
@@ -60,9 +64,12 @@ public class DropboxUtils {
 
     }
 
-    public void startUpload(Context context, TranskribusUtils.TranskribusUtilsCallback callback) {
+    public void startUpload(Context context) {
 
         mCallback = (TranskribusUtils.TranskribusUtilsCallback) context;
+        mContext = context;
+
+        SyncStorage.getInstance().clearSyncList();
 
         ArrayList<String> titles = SyncStorage.getInstance().getUploadDocumentTitles();
 
@@ -137,6 +144,7 @@ public class DropboxUtils {
         protected Boolean doInBackground(String... params) {
 
             Log.d(CLASS_NAME, "DropboxLogin: doInBackground");
+            DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "login...");
 
             DbxRequestConfig config = new DbxRequestConfig("dropbox/java-tutorial", "en_US");
             mClient = new DbxClientV2(config, params[0]);
@@ -145,9 +153,8 @@ public class DropboxUtils {
                 return false;
 
             // Get current account info
-            FullAccount account = null;
             try {
-                account = mClient.users().getCurrentAccount();
+                FullAccount account = mClient.users().getCurrentAccount();
 
                 User.getInstance().setLoggedIn(true);
                 User.getInstance().setFirstName(account.getName().getGivenName());
@@ -155,11 +162,21 @@ public class DropboxUtils {
                 User.getInstance().setConnection(User.SYNC_DROPBOX);
                 User.getInstance().setPhotoUrl(account.getProfilePhotoUrl());
 
+                Log.d(CLASS_NAME, "DropboxLogin: doInBackground: login success");
+                DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
+                        "DropboxLogin: doInBackground: login success");
+
+                return true;
+
             } catch (DbxException e) {
+                Log.d(CLASS_NAME, "DropboxLogin: doInBackground: login error: " + e);
+                DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
+                        "DropboxLogin: doInBackground: login error: " + e);
                 e.printStackTrace();
+                return false;
             }
 
-            return true;
+
         }
 
 
@@ -326,10 +343,13 @@ public class DropboxUtils {
         protected void onPostExecute(FileMetadata result) {
             super.onPostExecute(result);
             if (mException != null) {
+                Log.d(CLASS_NAME, "UploadFileTask: exception: " + mException + mSyncFile);
                 mCallback.onError(mException);
             } else if (result == null) {
+                Log.d(CLASS_NAME, "UploadFileTask: result null: " + mSyncFile);
                 mCallback.onError(null);
             } else {
+                Log.d(CLASS_NAME, "UploadFileTask: success: " + mSyncFile);
                 mCallback.onUploadComplete(mSyncFile);
             }
         }
