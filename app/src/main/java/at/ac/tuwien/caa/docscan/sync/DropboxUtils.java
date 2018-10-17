@@ -246,23 +246,10 @@ public class DropboxUtils {
                 else {
                     int fileIdx = mDocument.getFileNames().indexOf(remoteFileName);
                     File file = mDocument.getFiles().get(fileIdx);
-                    if (SyncStorage.getInstance().isFileChanged(file))
+                    if (SyncStorage.getInstance().isFileChanged(file) ||
+                            !SyncStorage.getInstance().isInUploadedList(file))
                         SyncStorage.getInstance().addDropboxFile(file, mDocument.getTitle());
 
-////                    Else check if the hash of the file has changed:
-//                    try {
-//                        int fileIdx = mDocument.getFileNames().indexOf(remoteFileName);
-//                        File file = mDocument.getFiles().get(fileIdx);
-//                        byte[] b1 = computeHash(file.getAbsolutePath());
-//                        String localHash = hex(b1);
-//                        String remoteHash = ((FileMetadata) metadata).getContentHash();
-//                        if (localHash.compareTo(remoteHash) != 0) {
-//                            SyncStorage.getInstance().addDropboxFile(file, mDocument.getTitle());
-//                        }
-//
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
                 }
             }
 

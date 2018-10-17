@@ -20,7 +20,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 
 public class SyncStorage {
 
-    private static final String SYNC_STORAGE_FILE_NAME = "syncstorage.json";
+    public static final String SYNC_STORAGE_FILE_NAME = "syncstorage.json";
     private static final String CLASS_NAME = "SyncStorage";
     private static SyncStorage sInstance;
 
@@ -291,15 +291,17 @@ public class SyncStorage {
         if (files == null || files.isEmpty())
             return false;
 
+
         // Check if every file contained in the folder is already uploaded:
         for (File file : files) {
+            Log.d(CLASS_NAME, "areFilesUploaded: " + file.getName());
             if (!isFileUploaded(file)) {
                 Log.d(CLASS_NAME, "areFilesUploaded: missing: " + file);
                 return false;
             }
 
         }
-
+        Log.d(CLASS_NAME, "areFilesUploaded: is uploaded");
         return true;
 
     }
@@ -362,6 +364,17 @@ public class SyncStorage {
         }
 
         return false;
+    }
+
+    public boolean isInUploadedList(File file) {
+
+        for (SyncFile syncFile : mUploadedList) {
+            if (file.getAbsolutePath().compareTo(syncFile.getFile().getAbsolutePath()) == 0)
+                return true;
+        }
+
+        return false;
+
     }
 
     public boolean isFileChanged(File file) {

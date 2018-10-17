@@ -51,6 +51,7 @@ import java.util.Date;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.GPS;
+import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 import static android.content.Intent.ACTION_SEND_MULTIPLE;
 
@@ -79,10 +80,14 @@ public class DataLog {
         File uploadLogPath = new File(activity.getBaseContext().getFilesDir(), UPLOAD_LOG_FILE_NAME);
         File documentPath = new File(activity.getBaseContext().getFilesDir(),
                 DocumentStorage.DOCUMENT_STORE_FILE_NAME);
+        File syncPath = new File(activity.getBaseContext().getFilesDir(),
+                SyncStorage.SYNC_STORAGE_FILE_NAME);
         Uri uploadLogUri = FileProvider.getUriForFile(activity.getBaseContext(),
                 "at.ac.tuwien.caa.fileprovider", uploadLogPath);
         Uri documentUri = FileProvider.getUriForFile(activity.getBaseContext(),
                 "at.ac.tuwien.caa.fileprovider", documentPath);
+        Uri syncUri = FileProvider.getUriForFile(activity.getBaseContext(),
+                "at.ac.tuwien.caa.fileprovider", syncPath);
 
         String emailSubject =   activity.getBaseContext().getString(R.string.log_email_subject);
         String[] emailTo =      new String[]{activity.getBaseContext().getString(R.string.log_email_to)};
@@ -102,6 +107,7 @@ public class DataLog {
         ArrayList<Uri> uris = new ArrayList();
         uris.add(uploadLogUri);
         uris.add(documentUri);
+        uris.add(syncUri);
         intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
 
         activity.startActivity(intent);

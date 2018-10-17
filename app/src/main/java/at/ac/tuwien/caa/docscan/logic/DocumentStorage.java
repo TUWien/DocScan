@@ -192,6 +192,8 @@ public class DocumentStorage {
 
         for (Document document : mDocuments) {
 
+            Log.d(CLASS_NAME, "updateStatus: " + document.getTitle());
+
             boolean areFilesUploaded = SyncStorage.getInstance().areFilesUploaded(document.getFiles());
 
             boolean areFilesChanged = false;
