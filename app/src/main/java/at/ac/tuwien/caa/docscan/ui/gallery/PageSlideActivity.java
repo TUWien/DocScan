@@ -339,8 +339,15 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         String documentTitle = mDocument.getTitle();
         if (documentTitle != null) {
             Intent intent = new Intent(mContext, GalleryActivity.class);
+//            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
+//            Without this flag the activities would all be added to the back stack.
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
             mContext.startActivity(intent);
+//            Finish is necessary, because the current PageSlideActivity can be started from the
+//            CameraActivity, but once we are in the GalleryActivity, we do not want to get back to
+//            PageSlideActivity:
+            finish();
         }
 
     }
