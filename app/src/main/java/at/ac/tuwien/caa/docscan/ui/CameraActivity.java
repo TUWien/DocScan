@@ -2102,14 +2102,23 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void showToastText(int id) {
 
-        String msg = getResources().getString(id);
+        try {
 
-        if (mToast != null)
-            mToast.cancel();
+            String msg = getResources().getString(id);
 
-        mToast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
-        mToast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
-        mToast.show();
+            if (mToast != null)
+                mToast.cancel();
+
+            mToast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
+            mToast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+            mToast.show();
+
+        }
+        catch (WindowManager.BadTokenException e) {
+//            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
+//            this should only happen on API level 25, but I could not reproduce it with a virtual
+//            machine.
+        }
     }
 
     /**
