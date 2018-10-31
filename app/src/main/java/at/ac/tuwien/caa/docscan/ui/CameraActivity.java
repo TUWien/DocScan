@@ -518,7 +518,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Save the current version:
         Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
 
-        if (lastInstalledVersion <= 35)
+        if (lastInstalledVersion <= 35 && lastInstalledVersion != -1)
             DocumentMigrator.migrate(this);
 
     }
@@ -2323,10 +2323,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
                             mProgressBar.setVisibility(View.INVISIBLE);
                             mGalleryButton.setVisibility(View.VISIBLE);
-
-                            GlideApp.with(mContext)
-                                    .load(file.getPath())
-                                    .into(mGalleryButton);
+//                            Check if the activity is closing. This might especially happen on slow
+//                            devices, where it takes some time to process the image and the app
+//                            is closed, before the thumbnail gets shown.
+                            if (!((Activity) mContext).isFinishing())
+                                GlideApp.with(mContext)
+                                        .load(file.getPath())
+                                        .into(mGalleryButton);
 
                         }
                     });

@@ -48,16 +48,13 @@ import at.ac.tuwien.caa.docscan.sync.SyncStorage;
  */
 public class StartActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
-    private static final int PERMISSION_CAMERA = 0;
-    private View mLayout;
+    private AlertDialog mAlertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_container_view);
-        mLayout = findViewById(R.id.main_frame_layout);
-//        showCameraPreview();
 
         askForPermissions();
 
@@ -123,10 +120,11 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
                 .setMessage(alertText);
 
         // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
+        if (mAlertDialog != null && mAlertDialog.isShowing())
+            mAlertDialog.dismiss();
 
-        // show it
-        alertDialog.show();
+        mAlertDialog = alertDialogBuilder.create();
+        mAlertDialog.show();
 
     }
 
