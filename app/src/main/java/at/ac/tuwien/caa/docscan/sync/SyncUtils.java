@@ -46,16 +46,20 @@ public class SyncUtils {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
         boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(
-                R.string.key_upload_mobile_data), false);
+                R.string.key_upload_mobile_data), true);
         int[] constraints;
-        if (useMobileConnection)
+        if (useMobileConnection) {
             constraints = new int[]{Constraint.ON_ANY_NETWORK};
-        else
+            Log.d(CLASS_NAME, "startSyncJob: using mobile connection");
+        }
+        else {
             constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
+            Log.d(CLASS_NAME, "startSyncJob: using just wifi");
+        }
 
         JobTrigger.ExecutionWindowTrigger timeWindow;
         if (!restart)
-            timeWindow = Trigger.executionWindow(1, 7);
+            timeWindow = Trigger.executionWindow(5, 10);
         else
             timeWindow = Trigger.executionWindow(30, 50);
 

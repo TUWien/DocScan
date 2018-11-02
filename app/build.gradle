@@ -30,7 +30,7 @@ android {
 //				abiFilters 'armeabi-v7a'
 			}
 		}
-	}+-
+	}
 
 	buildTypes {
 		release {
@@ -134,7 +134,7 @@ dependencies {
 	implementation 'com.android.support:design:27.0.2'
 	implementation 'com.android.support:gridlayout-v7:27.0.2'
 	implementation 'com.android.volley:volley:1.0.0'
-	implementation 'com.firebase:firebase-jobdispatcher:0.8.4'
+	implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
 	implementation 'com.github.smart-fun:XmlToJson:1.4.0'
 	// necessary for xmltojson
 	//	// retrofit - start:
