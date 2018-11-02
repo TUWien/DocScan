@@ -47,6 +47,12 @@ public class SyncStorage {
 
     }
 
+    public static void clearInstance() {
+
+        sInstance = new SyncStorage();
+
+    }
+
     public static boolean isInstanceNull() {
 
         return sInstance == null;
