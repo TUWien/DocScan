@@ -103,7 +103,7 @@ public class UploadService extends JobService implements
             Log.d(CLASS_NAME, "loaded SyncStorage from disk");
         } else {
             Log.d(CLASS_NAME, "SyncStorage is in RAM");
-            SyncStorage.getInstance().printUnfinishedUploadIDs();
+            SyncStorage.getInstance(getApplicationContext()).printUnfinishedUploadIDs();
             DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "SyncStorage is in RAM");
         }
 
@@ -436,7 +436,7 @@ public class UploadService extends JobService implements
         private int getFilesNum() {
 
             int result = 0;
-            for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
+            for (SyncFile syncFile : SyncStorage.getInstance(getApplicationContext()).getSyncList()) {
                 if (syncFile.getState() == SyncFile.STATE_NOT_UPLOADED)
                     result++;
             }
@@ -447,7 +447,7 @@ public class UploadService extends JobService implements
 
         private void uploadsFinished() {
 
-            SyncStorage.getInstance().setUploadDocumentTitles(null);
+            SyncStorage.getInstance(getApplicationContext()).setUploadDocumentTitles(null);
             SyncStorage.saveJSON(getApplicationContext());
 
 
@@ -475,7 +475,7 @@ public class UploadService extends JobService implements
 
             syncFile.setState(SyncFile.STATE_UPLOADED);
 
-            SyncStorage.getInstance().addToUploadedList(syncFile);
+            SyncStorage.getInstance(getApplicationContext()).addToUploadedList(syncFile);
 
             mFilesUploaded++;
 //            updateProgressbar();
@@ -498,11 +498,11 @@ public class UploadService extends JobService implements
         public void onError(Exception e) {
 
             Log.d(CLASS_NAME, "onError: unfinished upload ids size: "
-                    + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+                    + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
 
             DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                     "onError: unfinished upload ids size: "
-                            + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+                            + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
 
             TranskribusUtils.getInstance().onError();
 
@@ -516,7 +516,7 @@ public class UploadService extends JobService implements
 
         private SyncFile getNextUpload() {
 
-            for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
+            for (SyncFile syncFile : SyncStorage.getInstance(getApplicationContext()).getSyncList()) {
                 if (syncFile.getState() == SyncFile.STATE_NOT_UPLOADED)
                     return syncFile;
             }
@@ -527,7 +527,7 @@ public class UploadService extends JobService implements
 
         private void printSyncStatus() {
 
-            for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
+            for (SyncFile syncFile : SyncStorage.getInstance(getApplicationContext()).getSyncList()) {
                 DataLog.getInstance().writeUploadLog(getApplicationContext(), "SyncService",
                         syncFile.toString());
             }
@@ -595,10 +595,10 @@ public class UploadService extends JobService implements
 
 
         Log.d(CLASS_NAME, "updateNotification: unfinished upload ids size: "
-                + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+                + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                 "updateNotification: unfinished upload ids size: "
-                + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+                + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
 
         if (mNotificationBuilder == null)
             return;

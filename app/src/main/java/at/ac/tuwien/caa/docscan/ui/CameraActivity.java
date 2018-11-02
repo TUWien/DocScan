@@ -360,8 +360,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // update the title of the toolbar:
 //        getSupportActionBar().setTitle(User.getInstance().getDocumentName());
 
-        if (DocumentStorage.getInstance().getTitle() != null)
-            getSupportActionBar().setTitle(DocumentStorage.getInstance().getTitle());
+        if (DocumentStorage.getInstance(this).getTitle() != null)
+            getSupportActionBar().setTitle(DocumentStorage.getInstance(this).getTitle());
 
         showControlsLayout(!mIsQRActive);
 
@@ -702,7 +702,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void openGallery() {
 
-        Document document = DocumentStorage.getInstance().getActiveDocument();
+        Document document = DocumentStorage.getInstance(this).getActiveDocument();
         if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
             Intent intent = new Intent(getApplicationContext(), PageSlideActivity.class);
             intent.putExtra(mContext.getString(R.string.key_document_file_name),
@@ -1885,9 +1885,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     public void startGalleryActivity(MenuItem item) {
 
-        String documentTitle = DocumentStorage.getInstance().getTitle();
+        String documentTitle = DocumentStorage.getInstance(this).getTitle();
         if (documentTitle != null) {
-            if (DocumentStorage.getInstance().getDocument(documentTitle) == null)
+            if (DocumentStorage.getInstance(this).getDocument(documentTitle) == null)
                 return;
 
             Intent intent = new Intent(mContext, GalleryActivity.class);
@@ -2178,7 +2178,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private boolean loadThumbNail() {
 
-        String fileName = DocumentStorage.getInstance().getLastPageFileInActiveDocument();
+        String fileName = DocumentStorage.getInstance(this).getLastPageFileInActiveDocument();
         if (fileName != null) {
             //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
             int exifOrientation = -1;
@@ -2278,9 +2278,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Save exif information (especially the orientation):
                 saveExif(file);
 
-                boolean fileAdded = DocumentStorage.getInstance().addToActiveDocument(file);
+                boolean fileAdded = DocumentStorage.getInstance(mContext).addToActiveDocument(file);
                 if (!fileAdded)
-                    DocumentStorage.getInstance().generateDocument(file, mContext);
+                    DocumentStorage.getInstance(mContext).generateDocument(file, mContext);
 
                 mIsPictureSafe = true;
 

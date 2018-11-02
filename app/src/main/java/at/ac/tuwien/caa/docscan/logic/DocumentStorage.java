@@ -176,10 +176,15 @@ public class DocumentStorage {
 
     }
 
-    public static DocumentStorage getInstance() {
+    public static DocumentStorage getInstance(Context context) {
 
-//        if (sInstance == null)
-//            loadJSON(context);
+//        At first try to read the JSON file: Note that the system might close the app and restart if
+//        without opening StartActivity, where the JSON file is read. So we have to take care that
+//        the JSON file is read if the singleton is null. See also:
+//        https://medium.com/inloopx/android-process-kill-and-the-big-implications-for-your-app-1ecbed4921cb
+
+        if (sInstance == null)
+            loadJSON(context);
 
         if (sInstance == null)
             sInstance = new DocumentStorage();
@@ -188,15 +193,15 @@ public class DocumentStorage {
 
     }
 
-    public void updateStatus() {
+    public void updateStatus(Context context) {
 
         for (Document document : mDocuments) {
 
-            boolean areFilesUploaded = SyncStorage.getInstance().areFilesUploaded(document.getFiles());
+            boolean areFilesUploaded = SyncStorage.getInstance(context).areFilesUploaded(document.getFiles());
             document.setIsUploaded(areFilesUploaded);
 
             if (!areFilesUploaded) {
-                boolean isAwaitingUpload = SyncStorage.getInstance().
+                boolean isAwaitingUpload = SyncStorage.getInstance(context).
                         isDocumentAwaitingUpload(document);
                 document.setIsAwaitingUpload(isAwaitingUpload);
             }
@@ -205,8 +210,6 @@ public class DocumentStorage {
             document.setIsCropped(isDocumentCropped);
 
         }
-
-
 
     }
 
@@ -217,7 +220,7 @@ public class DocumentStorage {
 
         if (!storeFile.exists()) {
             sInstance = new DocumentStorage();
-            DocumentStorage.getInstance().setTitle(Helper.getActiveDocumentTitle(context));
+            sInstance.setTitle(Helper.getActiveDocumentTitle(context));
         }
 
 

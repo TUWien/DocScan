@@ -318,8 +318,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         if (mContext != null) {
 
-            DocumentStorage.getInstance().updateStatus();
-            ArrayList<Document> allDocuments = DocumentStorage.getInstance().getDocuments();
+            DocumentStorage.getInstance(this).updateStatus(this);
+            ArrayList<Document> allDocuments = DocumentStorage.getInstance(this).getDocuments();
             mDocuments = Helper.getNonEmptyDocuments(allDocuments);
 
 
@@ -440,7 +440,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private void deleteSelectedDocuments(ArrayList<Document> documents) {
 
         for (Document document : documents)
-            DocumentStorage.getInstance().getDocuments().remove(document);
+            DocumentStorage.getInstance(this).getDocuments().remove(document);
 
 //        update the UI:
         showDocumentsDeletedSnackbar(documents.size());
@@ -604,7 +604,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
 //        SyncInfo.getInstance().setUploadDirs(mSelectedDirs);
 
-        SyncStorage.getInstance().addUploadDirs(uploadDirs);
+        SyncStorage.getInstance(this).addUploadDirs(uploadDirs);
         SyncUtils.startSyncJob(this, false);
 
     }

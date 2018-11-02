@@ -91,7 +91,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             return;
 
 //        mDocument = getDummyDocument(fileName);
-        mDocument = DocumentStorage.getInstance().getDocument(fileName);
+        mDocument = DocumentStorage.getInstance(this).getDocument(fileName);
 
         mPagerAdapter = new PageSlideAdapter(getSupportFragmentManager(), mDocument);
         mPager.setAdapter(mPagerAdapter);

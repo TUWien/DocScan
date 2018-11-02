@@ -30,75 +30,75 @@ public class DocumentMigrator {
 
     }
 
-    private static void saveOnlineStatus(Context context) {
-
-//        Load the saved sync info:
-        SyncInfo.readFromDisk(context);
-
-        String appName = context.getResources().getString(R.string.app_name);
-        File imgDir = Helper.getMediaStorageDir(appName);
-
-        syncInfoToSyncStorage(imgDir, SyncInfo.getInstance());
-
-    }
-
-    private static void syncInfoToSyncStorage(File imgDir, SyncInfo syncInfo) {
-
-        SyncStorage syncStorage = SyncStorage.getInstance();
-
-        ArrayList<SyncFile> fileSyncList = toSyncFileList(imgDir, syncInfo.getSyncList());
-        syncStorage.setSyncList(fileSyncList);
-
-        ArrayList<SyncFile> uploadedList = toSyncFileList(imgDir, syncInfo.getUploadedList());
-        syncStorage.setUploadedList(uploadedList);
-
-        ArrayList<String> titles = getUploadTitles(syncInfo);
-        syncStorage.setUploadDocumentTitles(titles);
-
-        syncStorage.setUnprocessedUploadIDs(
-                (ArrayList<Integer>) syncInfo.getUnprocessedUploadIDs().clone());
-        syncStorage.setUnfinishedUploadIDs(
-                (ArrayList<Integer>) syncInfo.getUnfinishedUploadIDs().clone());
-
-
-    }
-
-    private static ArrayList<SyncFile> toSyncFileList(File imgDir,
-                                                      ArrayList<SyncInfo.FileSync> fileSyncs) {
-
-        ArrayList<SyncFile> syncFiles = new ArrayList<>();
-
-        if (fileSyncs != null) {
-            for (SyncInfo.FileSync fileSync : fileSyncs) {
-                File file = new File(imgDir, fileSync.getFile().getName());
-                syncFiles.add(new SyncFile(file, fileSync.getState()));
-            }
-        }
-
-        return syncFiles;
-
-    }
-
-    @NonNull
-    private static ArrayList<String> getUploadTitles(SyncInfo syncInfo) {
-        //        Convert the upload dirs to string lists:
-        ArrayList<String> titles = new ArrayList<>();
-
-        if (syncInfo.getUploadDirs() != null) {
-            for (File file : syncInfo.getUploadDirs())
-                titles.add(file.getName());
-        }
-        return titles;
-    }
+//    private static void saveOnlineStatus(Context context) {
+//
+////        Load the saved sync info:
+//        SyncInfo.readFromDisk(context);
+//
+//        String appName = context.getResources().getString(R.string.app_name);
+//        File imgDir = Helper.getMediaStorageDir(appName);
+//
+//        syncInfoToSyncStorage(imgDir, SyncInfo.getInstance());
+//
+//    }
+//
+//    private static void syncInfoToSyncStorage(File imgDir, SyncInfo syncInfo) {
+//
+//        SyncStorage syncStorage = SyncStorage.getInstance();
+//
+//        ArrayList<SyncFile> fileSyncList = toSyncFileList(imgDir, syncInfo.getSyncList());
+//        syncStorage.setSyncList(fileSyncList);
+//
+//        ArrayList<SyncFile> uploadedList = toSyncFileList(imgDir, syncInfo.getUploadedList());
+//        syncStorage.setUploadedList(uploadedList);
+//
+//        ArrayList<String> titles = getUploadTitles(syncInfo);
+//        syncStorage.setUploadDocumentTitles(titles);
+//
+//        syncStorage.setUnprocessedUploadIDs(
+//                (ArrayList<Integer>) syncInfo.getUnprocessedUploadIDs().clone());
+//        syncStorage.setUnfinishedUploadIDs(
+//                (ArrayList<Integer>) syncInfo.getUnfinishedUploadIDs().clone());
+//
+//
+//    }
+//
+//    private static ArrayList<SyncFile> toSyncFileList(File imgDir,
+//                                                      ArrayList<SyncInfo.FileSync> fileSyncs) {
+//
+//        ArrayList<SyncFile> syncFiles = new ArrayList<>();
+//
+//        if (fileSyncs != null) {
+//            for (SyncInfo.FileSync fileSync : fileSyncs) {
+//                File file = new File(imgDir, fileSync.getFile().getName());
+//                syncFiles.add(new SyncFile(file, fileSync.getState()));
+//            }
+//        }
+//
+//        return syncFiles;
+//
+//    }
+//
+//    @NonNull
+//    private static ArrayList<String> getUploadTitles(SyncInfo syncInfo) {
+//        //        Convert the upload dirs to string lists:
+//        ArrayList<String> titles = new ArrayList<>();
+//
+//        if (syncInfo.getUploadDirs() != null) {
+//            for (File file : syncInfo.getUploadDirs())
+//                titles.add(file.getName());
+//        }
+//        return titles;
+//    }
 
     private static void saveDocuments(Context context) {
 
         //        Get a list of 'old' documents:
         ArrayList<Document> documents = documentsFromFolders(context);
-        DocumentStorage.getInstance().setDocuments(documents);
+        DocumentStorage.getInstance(context).setDocuments(documents);
 
         String activeDocumentTitle = Helper.getActiveDocumentTitle(context);
-        DocumentStorage.getInstance().setTitle(activeDocumentTitle);
+        DocumentStorage.getInstance(context).setTitle(activeDocumentTitle);
 
 //        Save the new documents:
         DocumentStorage.saveJSON(context);

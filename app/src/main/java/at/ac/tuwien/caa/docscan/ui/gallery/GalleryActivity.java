@@ -173,15 +173,15 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void renameDir(String newDir) {
 
-        boolean isTitleAssigned = DocumentStorage.getInstance().isTitleAlreadyAssigned(newDir);
+        boolean isTitleAssigned = DocumentStorage.getInstance(this).isTitleAlreadyAssigned(newDir);
         if (isTitleAssigned) {
             showDirExistingCreatedAlert(newDir);
             return;
         }
 
-        if (mDocument.getTitle() != null && DocumentStorage.getInstance().getTitle() != null &&
-                DocumentStorage.getInstance().getTitle().compareTo(mDocument.getTitle()) == 0)
-            DocumentStorage.getInstance().setTitle(newDir);
+        if (mDocument.getTitle() != null && DocumentStorage.getInstance(this).getTitle() != null &&
+                DocumentStorage.getInstance(this).getTitle().compareTo(mDocument.getTitle()) == 0)
+            DocumentStorage.getInstance(this).setTitle(newDir);
 
         mFileName = newDir;
         mDocument.setTitle(newDir);
@@ -415,7 +415,7 @@ public class GalleryActivity extends AppCompatActivity implements
 //            mDocument = Helper.getDocument(mFileName);
 
         if (mFileName != null) {
-            mDocument = DocumentStorage.getInstance().getDocument(mFileName);
+            mDocument = DocumentStorage.getInstance(this).getDocument(mFileName);
         }
 
     }
