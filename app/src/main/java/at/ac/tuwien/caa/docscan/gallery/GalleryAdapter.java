@@ -321,6 +321,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
             mSelections.put(i, isSelected);
         }
 
+        //        We need to redraw the check boxes:
+        this.notifyDataSetChanged();
+
 //        We need to inform the parent activity that the selection has changed:
         mCallback.onSelectionChange(mSelections.count());
 
