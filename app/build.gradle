@@ -8,9 +8,8 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 15
 		targetSdkVersion 27
-
-		versionCode 54
-		versionName "1.4.17"
+		versionCode 56
+		versionName "1.4.18"
 //		versionCode 34
 //		versionName "1.4.2"
 
