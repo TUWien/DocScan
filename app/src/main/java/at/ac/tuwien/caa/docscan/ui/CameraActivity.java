@@ -108,7 +108,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
@@ -126,7 +126,6 @@ import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
-import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.HIDE_SERIES_DIALOG_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
 import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUMENT_QR_TEXT;
@@ -323,9 +322,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Read the sync information:
 //        SyncInfo.getInstance().readFromDisk(this);
 
-//        CropLogger.getInstance().readFromDisk(this);
+//        ImageProcessLogger.getInstance().readFromDisk(this);
 
-        CropManager.initContext(this);
+        ImageProcessor.initContext(this);
 
         mIsPictureSafe = true;
 
@@ -2384,7 +2383,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 updateThumbnail(new File(uri));
 
                 //            Start the page detection on the saved image:
-                CropManager.pageDetection(new File(uri));
+                ImageProcessor.pageDetection(new File(uri));
             }
             else
                 Log.d(CLASS_NAME, "onPostExecute: could not save file!");

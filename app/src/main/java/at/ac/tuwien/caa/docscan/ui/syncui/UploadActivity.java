@@ -44,11 +44,10 @@ import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_ACTION;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_TYPE;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_TYPE_MAP_FINISHED;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_TYPE_PAGE_FINISHED;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_TYPE;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_FINISHED;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_FILE_DELETED_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_FINISHED_ID;
@@ -210,7 +209,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(INTENT_UPLOAD_ACTION));
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_CROP_ACTION));
+                new IntentFilter(INTENT_IMAGE_PROCESS_ACTION));
 
         showNoSelectionToolbar();
 
@@ -884,16 +883,15 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                             break;
                     }
                 }
-                else if (intent.getAction().equals(INTENT_CROP_ACTION)) {
+                else if (intent.getAction().equals(INTENT_IMAGE_PROCESS_ACTION)) {
 
                     int defValue = -1;
-                    int cropType = intent.getIntExtra(INTENT_CROP_TYPE, defValue);
+                    int cropType = intent.getIntExtra(INTENT_IMAGE_PROCESS_TYPE, defValue);
 
 //                    we just handle cases where there is an operation finished:
                     if (cropType != defValue) {
 
-                        if ((cropType == INTENT_CROP_TYPE_MAP_FINISHED ) ||
-                                (cropType == INTENT_CROP_TYPE_PAGE_FINISHED)) {
+                        if (cropType == INTENT_IMAGE_PROCESS_FINISHED) {
 
 //                            find the corresponding document:
                             String fileName = intent.getStringExtra(INTENT_FILE_NAME);

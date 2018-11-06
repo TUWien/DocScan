@@ -37,20 +37,18 @@ import java.io.File;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.gallery.GalleryAdapter;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
-import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_ACTION;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_TYPE;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_TYPE;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 
 
 /**
@@ -272,7 +270,7 @@ public class GalleryActivity extends AppCompatActivity implements
         // with actions named "PROGRESS_INTENT_NAME".
         mMessageReceiver = getReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_CROP_ACTION));
+                new IntentFilter(INTENT_IMAGE_PROCESS_ACTION));
 
 
 //        fixToolbar();
@@ -298,7 +296,7 @@ public class GalleryActivity extends AppCompatActivity implements
             @Override
             public void onReceive(Context context, Intent intent) {
 
-                Log.d(CLASS_NAME, "onReceive: " + intent.getIntExtra(INTENT_CROP_TYPE, -1));
+                Log.d(CLASS_NAME, "onReceive: " + intent.getIntExtra(INTENT_IMAGE_PROCESS_TYPE, -1));
 
                 if (mAdapter != null) {
                     String fileName = intent.getStringExtra(INTENT_FILE_NAME);
@@ -623,7 +621,7 @@ public class GalleryActivity extends AppCompatActivity implements
 ////        TODO: show an error message if selectionIdx.size != uncroppedIdx.length
 
         for (int i = 0; i < selectionIdx.length; i++) {
-                CropManager.mapFile(mDocument.getPages().get(selectionIdx[i]).getFile());
+                ImageProcessor.mapFile(mDocument.getPages().get(selectionIdx[i]).getFile());
         }
 
 //        mAdapter.notifyDataSetChanged();
@@ -640,9 +638,7 @@ public class GalleryActivity extends AppCompatActivity implements
         int[] selections = mAdapter.getSelectionIndices();
 
         for (int i = 0; i < selections.length; i++) {
-            if (Helper.rotateExif(mDocument.getPages().get(selections[i]).getFile())) {
-                mAdapter.notifyItemChanged(selections[i]);
-            }
+            ImageProcessor.rotateFile(mDocument.getPages().get(selections[i]).getFile());
         }
     }
 

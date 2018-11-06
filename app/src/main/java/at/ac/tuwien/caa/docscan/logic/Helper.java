@@ -15,8 +15,6 @@ import android.util.Log;
 
 import com.android.volley.VolleyError;
 
-import org.opencv.imgproc.CLAHE;
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -27,10 +25,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropLogger;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.rest.RestRequest;
-import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
@@ -507,7 +504,7 @@ public class Helper {
             ArrayList<File> files = document.getFiles();
             if (files != null && !files.isEmpty()) {
                 for (File file : files) {
-                    if (CropLogger.isAwaitingCropping(file))
+                    if (ImageProcessLogger.isAwaitingCropping(file))
                         return true;
                 }
             }
@@ -526,7 +523,7 @@ public class Helper {
 
 
         for (File file : fileList) {
-            if (CropLogger.isAwaitingCropping(file))
+            if (ImageProcessLogger.isAwaitingCropping(file))
                 return true;
         }
 

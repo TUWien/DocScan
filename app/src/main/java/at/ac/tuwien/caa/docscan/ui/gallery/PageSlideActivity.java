@@ -49,7 +49,6 @@ import android.widget.RelativeLayout;
 import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
 import at.ac.tuwien.caa.docscan.gallery.PageImageView;
 import at.ac.tuwien.caa.docscan.logic.Document;
@@ -58,8 +57,8 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_FILE_NAME;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_ACTION;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
 
 public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
 
@@ -121,7 +120,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         // with actions named "PROGRESS_INTENT_NAME".
         mMessageReceiver = getReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_CROP_ACTION));
+                new IntentFilter(INTENT_IMAGE_PROCESS_ACTION));
 
 
         if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null))
@@ -237,7 +236,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
 //                if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null)) {
 //                    if (mPagerAdapter.getCurrentFragment().isLoadingViewVisible() &&
-//                            !CropLogger.isAwaitingPageDetection(mPage.getFile())) {
+//                            !ImageProcessLogger.isAwaitingPageDetection(mPage.getFile())) {
 //                        mPagerAdapter.getCurrentFragment().refreshImageView();
 //                        Log.d(CLASS_NAME, "onPageSelected: " + )
 //                    }

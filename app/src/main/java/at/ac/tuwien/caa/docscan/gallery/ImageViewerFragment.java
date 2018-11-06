@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropLogger;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
@@ -110,7 +110,7 @@ public class ImageViewerFragment extends Fragment {
         if (mFileName == null)
             return;
 
-        if (CropLogger.isAwaitingPageDetection(new File(mFileName))) {
+        if (ImageProcessLogger.isAwaitingPageDetection(new File(mFileName))) {
             Log.d(CLASS_NAME, "checkLoadingViewStatus: cropping NOT done: " + mFileName);
             if (mLoadingView != null)
                 mLoadingView.setVisibility(View.VISIBLE);
@@ -154,7 +154,7 @@ public class ImageViewerFragment extends Fragment {
 
         Log.d(CLASS_NAME, "refreshImageView: w: " + imageWidth + " h: " + imageHeight);
 
-        if (CropLogger.isAwaitingPageDetection(file)) {
+        if (ImageProcessLogger.isAwaitingPageDetection(file)) {
             mLoadingView.setVisibility(View.VISIBLE);
         }
         else {

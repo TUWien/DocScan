@@ -1,9 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
-import android.support.v7.preference.PreferenceManager;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -11,10 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropLogger;
-import at.ac.tuwien.caa.docscan.sync.SyncFile;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
-import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 /**
  * A class that is used for a migration of how the old documents (with serialization) are saved to
@@ -282,7 +278,7 @@ public class DocumentMigrator {
 
 
         for (File file : fileList) {
-            if (CropLogger.isAwaitingCropping(file))
+            if (ImageProcessLogger.isAwaitingCropping(file))
                 return true;
         }
 

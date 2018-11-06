@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropLogger;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
@@ -191,7 +191,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
             e.printStackTrace();
         }
 
-        if (CropLogger.isAwaitingMapping(file) || CropLogger.isAwaitingPageDetection(file)) {
+        if (ImageProcessLogger.isAwaitingImageProcessing(file)) {
 
             holder.mCheckBox.setEnabled(false);
 
