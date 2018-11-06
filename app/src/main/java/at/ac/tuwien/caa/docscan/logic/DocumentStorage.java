@@ -215,6 +215,8 @@ public class DocumentStorage {
 
     public static void loadJSON(Context context) {
 
+        Log.d(CLASS_NAME, "loadJSON");
+
         File path = context.getFilesDir();
         File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
 
@@ -222,7 +224,6 @@ public class DocumentStorage {
             sInstance = new DocumentStorage();
             sInstance.setTitle(Helper.getActiveDocumentTitle(context));
         }
-
 
         else {
             try {

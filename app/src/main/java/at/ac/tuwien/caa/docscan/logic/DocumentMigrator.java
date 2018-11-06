@@ -157,6 +157,9 @@ public class DocumentMigrator {
             }
         };
 
+        if (mediaStorageDir == null)
+            return documents;
+
         File[] folders = mediaStorageDir.listFiles(directoryFilter);
         if (folders == null)
             return documents;

@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -49,11 +50,13 @@ import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 public class StartActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private AlertDialog mAlertDialog;
+//    private static final String CLASS_NAME = "StartActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.main_container_view);
 
         askForPermissions();
@@ -88,14 +91,19 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
      * @return
      */
     public static boolean hasPermissions(Context context, String... permissions) {
+
         if (context != null && permissions != null) {
             for (String permission : permissions) {
                 if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
                     return false;
                 }
             }
+
+            return true;
         }
-        return true;
+
+        return false;
+
     }
 
 
@@ -112,7 +120,11 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
                 .setPositiveButton(R.string.start_confirm_button_text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)  {
-                        askForPermissions();
+//                        Restart the activity:
+                        Intent intent = getIntent();
+                        finish();
+                        startActivity(intent);
+
                     }
                 })
                 .setNegativeButton(R.string.start_cancel_button_text, null)
@@ -131,68 +143,33 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
-        boolean permissionsGiven = true;
+//        Note: we ignore here the values passed in grantResults and ask directly for
+//        checkSelfPermissions, although this is a bad style. The reason for this is that if the app
+//        is killed by the system, the grantResults provided are not correct, because the
+//        permissions are asked again:
 
-        for (int i = 0; i < permissions.length; i++) {
-
-            if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
-//                These are the permissions that are definitely needed:
-                if (permissions[i].equals(Manifest.permission.CAMERA)) {
-                    showPermissionRequiredAlert(getResources().getString(
-                            R.string.start_permission_camera_text));
-                    permissionsGiven = false;
-                }
-                else if (permissions[i].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    showPermissionRequiredAlert(getResources().getString(
-                            R.string.start_permission_storage_text));
-                    permissionsGiven = false;
-                }
-
-            }
+        if ((ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED)) {
+            showPermissionRequiredAlert(getResources().getString(
+                    R.string.start_permission_camera_text));
+            return;
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+            showPermissionRequiredAlert(getResources().getString(
+                    R.string.start_permission_storage_text));
+            return;
         }
 
-        if (permissionsGiven)
-            startCamera();
-
+//        If CAMERA and WRITE_EXTERNAL_STORAGE permissions are given start the camera, the GPS
+//        permissions are not required:
+        startCamera();
 
     }
-//
-//    private void showCameraPreview() {
-//        // BEGIN_INCLUDE(startCamera)
-//        // Check if the Camera permission has been granted
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-//                == PackageManager.PERMISSION_GRANTED) {
-//            // Permission is already available, start camera preview
-//            Snackbar.make(mLayout,
-//                    "Camera permission is available. Starting preview.",
-//                    Snackbar.LENGTH_SHORT).show();
-//
-//            startCamera();
-//
-//        } else {
-//            // Permission is missing and must be requested.
-//            requestCameraPermission();
-//        }
-//        // END_INCLUDE(startCamera)
-//    }
-
-//
-//
-//    private void requestCameraPermission() {
-//
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
-//        }
-//        else
-//            startCamera();
-//
-//    }
 
     private void startCamera() {
 
         DocumentStorage.loadJSON(this);
-//        DocumentStorage.getInstance().setTitle(Helper.getActiveDocumentTitle(this));
-
         SyncStorage.loadJSON(this);
 
         Intent intent = new Intent(this, CameraActivity.class);
