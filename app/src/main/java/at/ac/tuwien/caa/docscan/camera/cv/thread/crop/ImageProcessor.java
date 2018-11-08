@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_MAP;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PAGE_DETECTION;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PDF;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_ROTATE;
 
 public class ImageProcessor {
@@ -224,6 +225,12 @@ public class ImageProcessor {
 
     }
 
+    public static void createPdf(File file) {
+
+        executeTask(file, TASK_TYPE_PDF);
+
+    }
+
     public static void mapFile(File file) {
 
         executeTask(file, TASK_TYPE_MAP);
@@ -248,6 +255,9 @@ public class ImageProcessor {
                 imageProcessTask = new RotateTask();
                 ImageProcessLogger.addRotateTask(file);
                 break;
+            case TASK_TYPE_PDF:
+                imageProcessTask = new PdfTask();
+                ImageProcessLogger.addPdfTask(file);
         }
 
         imageProcessTask.initializeTask(sInstance);

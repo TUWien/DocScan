@@ -342,6 +342,7 @@
     <string name="gallery_menu_edit_item_title">Edit document</string>
     <string name="gallery_menu_delete_item_title">Delete item</string>
     <string name="gallery_menu_select_all_item_title">Select all items</string>
+    <string name="gallery_menu_create_pdf_item_title">Create pdf from item</string>
     <string name="gallery_menu_crop_item_title">Crop item</string>
     <string name="gallery_selected">selected</string>
     <string name="gallery_menu_rotate_item_title">Rotate right</string>

@@ -74,6 +74,7 @@ public class GalleryActivity extends AppCompatActivity implements
     private static final int PERMISSION_ROTATE = 0;
     private static final int PERMISSION_DELETE = 1;
     private static final int PERMISSION_CROP = 2;
+    private static final int PERMISSION_PDF = 2;
     private static final String CLASS_NAME = "GalleryActivity";
 
 
@@ -555,6 +556,17 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
+    public void createPdfFromSelectedItem(MenuItem item) {
+
+        // Check if we have the permission to rotate images:
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // ask for permission:
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_PDF);
+        } else
+            createPdfFromSelectedItems();
+
+    }
+
 
 
     private void renameDocument() {
@@ -628,6 +640,18 @@ public class GalleryActivity extends AppCompatActivity implements
         deselectAllItems();
 
 
+    }
+
+    private void createPdfFromSelectedItems() {
+
+        if (mDocument == null || mAdapter == null || mDocument.getPages() == null)
+            return;
+
+        int[] selections = mAdapter.getSelectionIndices();
+
+        for (int i = 0; i < selections.length; i++) {
+            ImageProcessor.createPdf(mDocument.getPages().get(selections[i]).getFile());
+        }
     }
 
     private void rotateSelectedItems() {
