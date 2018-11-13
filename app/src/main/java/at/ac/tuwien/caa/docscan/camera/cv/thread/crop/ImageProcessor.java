@@ -153,6 +153,9 @@ public class ImageProcessor {
                     // Notify other apps and DocScan about the image change:
                     notifyImageChanged(task.getFile());
                 }
+                else if (task instanceof PdfTask){
+                    ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_PDF);
+                }
                 else
                     return false;
 

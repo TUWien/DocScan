@@ -1,22 +1,19 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
-import android.graphics.PointF;
-
-import java.util.ArrayList;
+import java.io.File;
 
 public class PdfRunnable extends CropRunnable{
 
     private static final String CLASS_NAME = "PdfRunnable";
 
-    public PdfRunnable(PdfTask pdfTask) {
-        super(pdfTask);
+    public PdfRunnable(TaskRunnableCropMethods cropTask) {
+        super(cropTask);
     }
 
     @Override
     protected void performTask(String fileName) {
-
-
-        System.out.println("test");
+        File file = new File(fileName);
+        PdfCreator.createPdf(file);
     }
 
 }

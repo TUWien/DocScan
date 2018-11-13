@@ -136,6 +136,7 @@ dependencies {
 	implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
 	implementation 'com.google.firebase:firebase-core:16.0.4'
 	implementation 'com.google.firebase:firebase-ml-vision:18.0.1'
+	implementation 'com.itextpdf:itextg:5.5.10'
 	implementation 'com.github.smart-fun:XmlToJson:1.4.0'
 	// necessary for xmltojson
 	//	// retrofit - start:
