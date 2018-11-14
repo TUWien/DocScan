@@ -22,16 +22,13 @@ Markus Diem
 - Correct the version numbers of `compileSdkVersion`, `minSdkVersion`, `targetSdkVersion` so that it matches the version numbers in your app build.gradle (You can also delete the buildToolsVersion since this is not needed by gradle anymore)
 
 ### Setup CMake file
-- copy the file `app/src/CMakeListsSkel.txt` and paste it to `app/src/`, name the pasted file `CMakeLists.txt` (do not add it to the git repository!)
-- open `app/src/CMakeLists.txt`
-- change the line `include_directories(enter_your_opencv_path/sdk/native/jni/include)` so that it contains your opencv path
+- Copy the file `app/src/CMakeListsSkel.txt` and paste it to `app/src/`, name the pasted file `CMakeLists.txt` (do not add it to the git repository!)
+- Open `app/src/CMakeLists.txt`
+- Change the line `include_directories(enter_your_opencv_path/sdk/native/jni/include)` so that it contains your opencv path
 
-### Copy lib files
-- copy the folder `{your_local_path}/OpenCV-android-sdk/native/libs`
-- paste it to `app/src/main`
-- rename it to `jniLibs`
-
-
+### Create a symlink
+- Create a symlink named `jniLibs` in `app/src/main` that points to `{your_local_path}/OpenCV-android-sdk/native/libs`
+- Fill in your required architecture in `app/build.gradle` under `abiFilters`
 
 ### Sync and build the project
 
