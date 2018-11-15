@@ -19,6 +19,7 @@ public class ImageProcessLogger implements Serializable {
     public static final int TASK_TYPE_MAP = 1;
     public static final int TASK_TYPE_ROTATE = 2;
     public static final int TASK_TYPE_PDF = 3;
+    public static final int TASK_TYPE_PDF_OCR = 4;
     private static final String CROP_FILE_NAME = "crop_log.txt";
     private static final String CLASS_NAME = "ImageProcessLogger";
 
@@ -189,6 +190,12 @@ public class ImageProcessLogger implements Serializable {
     public static void addPdfTask(File file) {
 
         sInstance.addTask(TASK_TYPE_PDF, file);
+
+    }
+
+    public static void addPdfWithOCRTask(File file) {
+
+        sInstance.addTask(TASK_TYPE_PDF_OCR, file);
 
     }
 

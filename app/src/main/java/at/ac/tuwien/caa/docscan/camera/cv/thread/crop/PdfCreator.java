@@ -36,8 +36,12 @@ public class PdfCreator {
     private static final String CLASS_NAME = "PdfCreator";
     private static FirebaseVisionTextRecognizer textRecognizer;
 
-    public static void createPdf(File file){
+    public static void createPdfWithOCR(File file){
         recognizeText(file);
+    }
+
+    public static void createPdf(File file){
+        createPdfFromOCR(null, file);
     }
 
 
@@ -80,31 +84,33 @@ public class PdfCreator {
             Image image = Image.getInstance(imageFile.getAbsolutePath());
             document.add(image);
 
-            // the direct content where we write on
-            // directContentUnder instead of directContent, because then the text is in the background)
-            PdfContentByte cb = writer.getDirectContentUnder();
-            BaseFont bf = BaseFont.createFont();
-            for (FirebaseVisionText.TextBlock textBlock : result.getTextBlocks()) {
-                for (FirebaseVisionText.Line line : textBlock.getLines()) {
-                    for (FirebaseVisionText.Element element : line.getElements()) {
-                        // one FirebaseVisionText.Element corresponds to one word
-                        // the rectangle we want to draw this word corresponds to the elements boundingBox
-                        Rectangle rect = new Rectangle(element.getBoundingBox().left,
-                                document.getPageSize().getHeight() - element.getBoundingBox().top,
-                                element.getBoundingBox().right,
-                                document.getPageSize().getHeight() - element.getBoundingBox().bottom);
-                        String drawText = element.getText();
-                        // try to get max font size that fit in rectangle
-                        int textHeightInGlyphSpace = bf.getAscent(drawText) - bf.getDescent(drawText);
-                        float fontSize = 1000f * rect.getHeight() / textHeightInGlyphSpace;
-                        Phrase phrase = new Phrase(drawText, new Font(bf, fontSize));
-                        // write the text on the pdf
-                        ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, phrase,
-                                // center horizontally
-                                (rect.getLeft() + rect.getRight()) / 2,
-                                // shift baseline based on descent
-                                rect.getBottom() - bf.getDescentPoint(drawText, fontSize),
-                                0);
+            if (result != null) {
+                // the direct content where we write on
+                // directContentUnder instead of directContent, because then the text is in the background)
+                PdfContentByte cb = writer.getDirectContentUnder();
+                BaseFont bf = BaseFont.createFont();
+                for (TextBlock textBlock : result.getTextBlocks()) {
+                    for (FirebaseVisionText.Line line : textBlock.getLines()) {
+                        for (FirebaseVisionText.Element element : line.getElements()) {
+                            // one FirebaseVisionText.Element corresponds to one word
+                            // the rectangle we want to draw this word corresponds to the elements boundingBox
+                            Rectangle rect = new Rectangle(element.getBoundingBox().left,
+                                    document.getPageSize().getHeight() - element.getBoundingBox().top,
+                                    element.getBoundingBox().right,
+                                    document.getPageSize().getHeight() - element.getBoundingBox().bottom);
+                            String drawText = element.getText();
+                            // try to get max font size that fit in rectangle
+                            int textHeightInGlyphSpace = bf.getAscent(drawText) - bf.getDescent(drawText);
+                            float fontSize = 1000f * rect.getHeight() / textHeightInGlyphSpace;
+                            Phrase phrase = new Phrase(drawText, new Font(bf, fontSize));
+                            // write the text on the pdf
+                            ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, phrase,
+                                    // center horizontally
+                                    (rect.getLeft() + rect.getRight()) / 2,
+                                    // shift baseline based on descent
+                                    rect.getBottom() - bf.getDescentPoint(drawText, fontSize),
+                                    0);
+                        }
                     }
                 }
             }

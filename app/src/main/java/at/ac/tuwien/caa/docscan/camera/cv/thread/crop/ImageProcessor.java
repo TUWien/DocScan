@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_MAP;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PAGE_DETECTION;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PDF;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PDF_OCR;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_ROTATE;
 
 public class ImageProcessor {
@@ -156,6 +157,9 @@ public class ImageProcessor {
                 else if (task instanceof PdfTask){
                     ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_PDF);
                 }
+                else if (task instanceof PdfWithOCRTask){
+                    ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_PDF_OCR);
+                }
                 else
                     return false;
 
@@ -228,6 +232,12 @@ public class ImageProcessor {
 
     }
 
+    public static void createPdfWithOCR(File file) {
+
+        executeTask(file, TASK_TYPE_PDF_OCR);
+
+    }
+
     public static void createPdf(File file) {
 
         executeTask(file, TASK_TYPE_PDF);
@@ -261,6 +271,11 @@ public class ImageProcessor {
             case TASK_TYPE_PDF:
                 imageProcessTask = new PdfTask();
                 ImageProcessLogger.addPdfTask(file);
+                break;
+            case TASK_TYPE_PDF_OCR:
+                imageProcessTask = new PdfWithOCRTask();
+                ImageProcessLogger.addPdfWithOCRTask(file);
+                break;
         }
 
         imageProcessTask.initializeTask(sInstance);

@@ -563,7 +563,7 @@ public class GalleryActivity extends AppCompatActivity implements
             // ask for permission:
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_PDF);
         } else
-            createPdfFromSelectedItems();
+            showOCRAlert();
 
     }
 
@@ -613,6 +613,33 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
+    private void showOCRAlert() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.gallery_confirm_ocr_title)
+                .setPositiveButton(R.string.dialog_yes_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        createPdfFromSelectedItems(true);
+                    }
+                })
+                .setNegativeButton(R.string.dialog_no_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        createPdfFromSelectedItems(false);
+                    }
+                })
+                .setCancelable(true)
+                .setMessage(R.string.gallery_confirm_ocr_text);
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+
+    }
+
     private void cropSelectedItems() {
 
         if (mDocument == null || mAdapter == null || mDocument.getPages() == null)
@@ -642,7 +669,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
-    private void createPdfFromSelectedItems() {
+    private void createPdfFromSelectedItems(boolean withOCR) {
 
         if (mDocument == null || mAdapter == null || mDocument.getPages() == null)
             return;
@@ -650,7 +677,11 @@ public class GalleryActivity extends AppCompatActivity implements
         int[] selections = mAdapter.getSelectionIndices();
 
         for (int i = 0; i < selections.length; i++) {
-            ImageProcessor.createPdf(mDocument.getPages().get(selections[i]).getFile());
+            if (withOCR) {
+                ImageProcessor.createPdfWithOCR(mDocument.getPages().get(selections[i]).getFile());
+            } else {
+                ImageProcessor.createPdf(mDocument.getPages().get(selections[i]).getFile());
+            }
         }
     }
 
