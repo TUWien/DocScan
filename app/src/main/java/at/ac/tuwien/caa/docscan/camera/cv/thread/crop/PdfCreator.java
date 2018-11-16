@@ -18,6 +18,7 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.BaseFont;
@@ -69,7 +70,16 @@ public class PdfCreator {
     private static void createPdfFromOCR(FirebaseVisionText result, File imageFile) {
         //get the Bitmap from the file to create document with correct measurements
         Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getPath());
-        Rectangle pageSize = new Rectangle(bitmap.getWidth(), bitmap.getHeight());
+        Rectangle pageSize;
+        if (bitmap.getWidth() > bitmap.getHeight()){
+            //querformat
+            float height = (PageSize.A4.getHeight() / bitmap.getWidth()) * bitmap.getHeight();
+            pageSize = new Rectangle(PageSize.A4.getHeight(), height);
+        } else {
+            //hochformat
+            float height = (PageSize.A4.getWidth() / bitmap.getWidth()) * bitmap.getHeight();
+            pageSize = new Rectangle(PageSize.A4.getWidth(), height);
+        }
         Document document = new Document(pageSize, 0, 0, 0, 0);
 
         //create the pdf with the name of the image file in /storage/emulated/0/Documents/
@@ -82,6 +92,7 @@ public class PdfCreator {
 
             //add the original image to the pdf
             Image image = Image.getInstance(imageFile.getAbsolutePath());
+            image.scaleToFit(pageSize);
             document.add(image);
 
             if (result != null) {
@@ -94,10 +105,14 @@ public class PdfCreator {
                         for (FirebaseVisionText.Element element : line.getElements()) {
                             // one FirebaseVisionText.Element corresponds to one word
                             // the rectangle we want to draw this word corresponds to the elements boundingBox
-                            Rectangle rect = new Rectangle(element.getBoundingBox().left,
-                                    document.getPageSize().getHeight() - element.getBoundingBox().top,
-                                    element.getBoundingBox().right,
-                                    document.getPageSize().getHeight() - element.getBoundingBox().bottom);
+                            float left = ((float) element.getBoundingBox().left / (float) bitmap.getWidth()) * pageSize.getWidth();
+                            float right = ((float) element.getBoundingBox().right / (float) bitmap.getWidth()) * pageSize.getWidth();
+                            float top = ((float) element.getBoundingBox().top / (float) bitmap.getHeight()) * pageSize.getHeight();
+                            float bottom = ((float) element.getBoundingBox().bottom / (float) bitmap.getHeight()) * pageSize.getHeight();
+                            Rectangle rect = new Rectangle(left,
+                                    pageSize.getHeight() - bottom,
+                                    right,
+                                    pageSize.getHeight() - top);
                             String drawText = element.getText();
                             // try to get max font size that fit in rectangle
                             int textHeightInGlyphSpace = bf.getAscent(drawText) - bf.getDescent(drawText);
