@@ -126,7 +126,7 @@ public class PdfCreator {
                         xrect.setBorderWidth(2);
                         cb.rectangle(xrect);
 
-                        //cb = writer.getDirectContentUnder();
+                        cb = writer.getDirectContentUnder();
                         for (FirebaseVisionText.Line line : textBlock.getLines()) {
                             //for (FirebaseVisionText.Element element : line.getElements()) {
                             // one FirebaseVisionText.Element corresponds to one word
@@ -245,23 +245,24 @@ public class PdfCreator {
                 if (!added){
                     List<FirebaseVisionText.TextBlock> blocks = new ArrayList<>();
                     blocks.add(block);
-                    biggestBlocks.add(block);
-                    sortedBlocks.add(blocks);
+                    int i = 0;
+                    while (i < biggestBlocks.size()) {
+                        if (block.getBoundingBox().centerX() > biggestBlocks.get(i).getBoundingBox().centerX()) {
+                            i++;
+                        } else {
+                            break;
+                        }
+                    }
+                    biggestBlocks.add(i, block);
+                    sortedBlocks.add(i, blocks);
                 }
             }
         }
         for (List<TextBlock> textBlocks : sortedBlocks){
             sortedBlocks.set(sortedBlocks.indexOf(textBlocks), sortColumn(textBlocks));
         }
-        List<TextBlock> sortedRows = sortRows(biggestBlocks);
-        List<List<FirebaseVisionText.TextBlock>> sorted = (List<List<TextBlock>>) ((ArrayList<List<TextBlock>>) sortedBlocks).clone();
-        for (List<TextBlock> blocks : sortedBlocks) {
-            int i = sortedBlocks.indexOf(blocks);
-            int j = sortedRows.indexOf(biggestBlocks.get(i));
-            sorted.add(j, blocks);
-        }
         List<TextBlock> result = new ArrayList<>();
-        for (List<TextBlock> textBlocks : sorted){
+        for (List<TextBlock> textBlocks : sortedBlocks){
             result.addAll(textBlocks);
         }
         return result;
@@ -277,27 +278,6 @@ public class PdfCreator {
                 int i = 0;
                 while (i < sortedBlocks.size()) {
                     if (textBlock.getCornerPoints()[0].y > sortedBlocks.get(i).getCornerPoints()[0].y) {
-                        i++;
-                    } else {
-                        break;
-                    }
-                }
-                sortedBlocks.add(i, textBlock);
-            }
-        }
-        return sortedBlocks;
-    }
-
-    @NonNull
-    private static List<TextBlock> sortRows(List<TextBlock> result) {
-        List<FirebaseVisionText.TextBlock> sortedBlocks = new ArrayList<>();
-        for (FirebaseVisionText.TextBlock textBlock : result) {
-            if (sortedBlocks.isEmpty()) {
-                sortedBlocks.add(textBlock);
-            } else {
-                int i = 0;
-                while (i < sortedBlocks.size()) {
-                    if (textBlock.getBoundingBox().centerX() > sortedBlocks.get(i).getBoundingBox().centerX()) {
                         i++;
                     } else {
                         break;
