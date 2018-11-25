@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class PdfWithOCRRunnable extends CropRunnable{
 
@@ -13,10 +14,13 @@ public class PdfWithOCRRunnable extends CropRunnable{
     @Override
     protected void performTask(String documentFiles) {
         String[] fileNames = documentFiles.split(">");
+        ArrayList<File> files = new ArrayList<>();
         for (String fileName : fileNames) {
             File file = new File(fileName);
-            PdfCreator.createPdfWithOCR(file);
+            files.add(file);
+            //PdfCreator.createPdf(file);
         }
+        PdfCreator.testOCR(files);
     }
 
 }

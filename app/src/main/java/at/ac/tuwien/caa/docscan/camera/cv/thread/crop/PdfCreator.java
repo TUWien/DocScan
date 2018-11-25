@@ -38,6 +38,7 @@ public class PdfCreator {
 
     private static final String CLASS_NAME = "PdfCreator";
     private static FirebaseVisionTextRecognizer textRecognizer;
+    private static boolean finished;
 
     public static void createPdfWithOCR(File file) {
         recognizeText(file);
@@ -45,6 +46,163 @@ public class PdfCreator {
 
     public static void createPdf(File file) {
         createPdfFromOCR(null, file);
+    }
+
+    public static void testOCR(final ArrayList<File> files){
+        finished = false;
+        final FirebaseVisionText[] ocrResults = new FirebaseVisionText[files.size()];
+        for (final File file : files){
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
+            int rotationInDegrees = getRotationInDegrees(file);
+            bitmap = getRotatedBitmap(bitmap, rotationInDegrees);
+            FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(bitmap);
+            getTextRecognizer().processImage(image)
+                    .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
+                        @Override
+                        public void onSuccess(FirebaseVisionText result) {
+                            ocrResults[files.indexOf(file)] = result;
+                            boolean f = true;
+                            for (FirebaseVisionText r : ocrResults){
+                                if (r == null){
+                                    f = false;
+                                }
+                            }
+                            if (f){
+                                test(files, ocrResults);
+                            }
+                        }
+                    })
+                    .addOnFailureListener(
+                            new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    // Task failed with an exception
+                                    Log.e(CLASS_NAME, "Failed to recognize text\n" + e.getMessage());
+                                }
+                            });
+        }
+
+    }
+
+    public static void test(ArrayList<File> files, FirebaseVisionText[] ocrResults) {
+        File firstPage = files.get(0);
+        int rotationInDegrees = getRotationInDegrees(firstPage);
+        Bitmap firstPageBitmap = BitmapFactory.decodeFile(firstPage.getPath());
+        firstPageBitmap = getRotatedBitmap(firstPageBitmap, rotationInDegrees);
+        boolean landscapeFirst = firstPageBitmap.getWidth() > firstPageBitmap.getHeight();
+        Rectangle firstPageSize = getPageSize(firstPageBitmap, landscapeFirst);
+        String pdfName = "test.pdf";
+        File outputFile = new File(getDocumentsDir(), pdfName);
+        Document document = new Document(firstPageSize, 0, 0, 0, 0);
+        try {
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputFile));
+            document.open();
+
+            for (int i = 0; i < files.size(); i++) {
+                File file = files.get(i);
+                rotationInDegrees = getRotationInDegrees(file);
+                //add the original image to the pdf and set the DPI of it to 300
+                Image image = Image.getInstance(file.getAbsolutePath());
+                image.setRotationDegrees(-rotationInDegrees);
+                image.scaleAbsolute(document.getPageSize().getWidth(), document.getPageSize().getHeight());
+                image.setDpi(300, 300);
+                document.add(image);
+
+
+                if (ocrResults[i] != null) {
+                    // the direct content where we write on
+                    // directContentUnder instead of directContent, because then the text is in the background)
+                    PdfContentByte cb = writer.getDirectContentUnder();
+                    BaseFont bf = BaseFont.createFont();
+
+                    //sort the result based on the y-Axis so that the markup order is correct
+                    List<FirebaseVisionText.Line> sortedLines = sortLines(ocrResults[i]);
+
+                    Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
+                    bitmap = getRotatedBitmap(bitmap, getRotationInDegrees(file));
+
+                    //for (TextBlock textBlock : result.getTextBlocks()) {
+                    for (FirebaseVisionText.Line line : sortedLines) {
+                        for (FirebaseVisionText.Element element : line.getElements()) {
+                            // one FirebaseVisionText.Element corresponds to one word
+                            // the rectangle we want to draw this word corresponds to the elements boundingBox
+                            float left = ((float) element.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
+                            float right = ((float) element.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
+                            float top = ((float) element.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                            float bottom = ((float) element.getBoundingBox().bottom / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                            Rectangle rect = new Rectangle(left,
+                                    document.getPageSize().getHeight() - bottom,
+                                    right,
+                                    document.getPageSize().getHeight() - top);
+                            String drawText = element.getText();
+                            // try to get max font size that fit in rectangle
+                            int textHeightInGlyphSpace = bf.getAscent(drawText) - bf.getDescent(drawText);
+                            float fontSize = 1000f * rect.getHeight() / textHeightInGlyphSpace;
+                            Phrase phrase = new Phrase(drawText, new Font(bf, fontSize));
+                            // write the text on the pdf
+                            ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, phrase,
+                                    // center horizontally
+                                    (rect.getLeft() + rect.getRight()) / 2,
+                                    // shift baseline based on descent
+                                    rect.getBottom() - bf.getDescentPoint(drawText, fontSize),
+                                    0);
+                        }
+                    }
+                }
+
+
+
+                if (i < files.size() - 1) {
+                    file = files.get(i + 1);
+                    Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
+                    Rectangle pageSize = getPageSize(bitmap, landscapeFirst);
+                    document.setPageSize(pageSize);
+                    document.newPage();
+                }
+            }
+
+            document.close();
+            Log.d(CLASS_NAME, "Document created at " + outputFile.getAbsolutePath());
+        } catch (DocumentException | IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static Rectangle getPageSize(Bitmap bitmap, boolean landscape) {
+        Rectangle pageSize;
+        if (landscape) {
+            //querformat
+            float height = (PageSize.A4.getHeight() / bitmap.getWidth()) * bitmap.getHeight();
+            pageSize = new Rectangle(PageSize.A4.getHeight(), height);
+        } else {
+            //hochformat
+            float height = (PageSize.A4.getWidth() / bitmap.getWidth()) * bitmap.getHeight();
+            pageSize = new Rectangle(PageSize.A4.getWidth(), height);
+        }
+        return pageSize;
+    }
+
+    private static Bitmap getRotatedBitmap(Bitmap bitmap, int rotationInDegrees) {
+        Matrix matrix = new Matrix();
+        if (rotationInDegrees != 0) {
+            matrix.preRotate(rotationInDegrees);
+        }
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        return bitmap;
+    }
+
+    private static int getRotationInDegrees(File file) {
+        //check if the image was rotated and rotate it accordingly
+        ExifInterface exif = null;
+        try {
+            exif = new ExifInterface(file.getAbsolutePath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        return exifToDegrees(rotation);
+
     }
 
 
