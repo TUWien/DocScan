@@ -309,36 +309,6 @@ public class PdfCreator {
         return sortedBlocks;
     }
 
-    private static int getMinIndex(double[] distances) {
-        int index = -1;
-        double minimum = Double.MAX_VALUE;
-        for (int i = 0; i < distances.length; i++) {
-            if (distances[i] < minimum) {
-                minimum = distances[i];
-                index = i;
-            }
-        }
-        return index;
-    }
-
-    private static double getDistance(FirebaseVisionText.Line startLine, FirebaseVisionText.Line testLine) {
-        double minDist = Double.MAX_VALUE;
-        int distanceX = Math.abs(startLine.getCornerPoints()[1].x - testLine.getCornerPoints()[0].x);
-        int distanceY = Math.abs(startLine.getCornerPoints()[1].y - testLine.getCornerPoints()[0].y);
-        double distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
-        if (distance < minDist) {
-            minDist = distance;
-        }
-        distanceX = Math.abs(startLine.getCornerPoints()[0].x - testLine.getCornerPoints()[0].x);
-        distanceY = Math.abs(startLine.getCornerPoints()[0].y - testLine.getCornerPoints()[0].y);
-        distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
-        if (distance < minDist) {
-            minDist = distance;
-        }
-        return minDist;
-    }
-
-
     private static File getDocumentsDir() {
         File docsFolder = new File(Environment.getExternalStorageDirectory() + "/Documents");
         if (!docsFolder.exists()) {
