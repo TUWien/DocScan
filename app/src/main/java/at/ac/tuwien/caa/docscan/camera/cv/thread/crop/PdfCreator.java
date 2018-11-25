@@ -38,20 +38,10 @@ public class PdfCreator {
 
     private static final String CLASS_NAME = "PdfCreator";
     private static FirebaseVisionTextRecognizer textRecognizer;
-    private static boolean finished;
 
-    public static void createPdfWithOCR(File file) {
-        recognizeText(file);
-    }
-
-    public static void createPdf(File file) {
-        createPdfFromOCR(null, file);
-    }
-
-    public static void testOCR(final ArrayList<File> files){
-        finished = false;
+    public static void testOCR(final ArrayList<File> files) {
         final FirebaseVisionText[] ocrResults = new FirebaseVisionText[files.size()];
-        for (final File file : files){
+        for (final File file : files) {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
             int rotationInDegrees = getRotationInDegrees(file);
             bitmap = getRotatedBitmap(bitmap, rotationInDegrees);
@@ -62,12 +52,12 @@ public class PdfCreator {
                         public void onSuccess(FirebaseVisionText result) {
                             ocrResults[files.indexOf(file)] = result;
                             boolean f = true;
-                            for (FirebaseVisionText r : ocrResults){
-                                if (r == null){
+                            for (FirebaseVisionText r : ocrResults) {
+                                if (r == null) {
                                     f = false;
                                 }
                             }
-                            if (f){
+                            if (f) {
                                 test(files, ocrResults);
                             }
                         }
@@ -112,29 +102,44 @@ public class PdfCreator {
                 if (ocrResults[i] != null) {
                     // the direct content where we write on
                     // directContentUnder instead of directContent, because then the text is in the background)
-                    PdfContentByte cb = writer.getDirectContentUnder();
+                    //PdfContentByte cb = writer.getDirectContentUnder();
+                    PdfContentByte cb = writer.getDirectContent();
                     BaseFont bf = BaseFont.createFont();
 
                     //sort the result based on the y-Axis so that the markup order is correct
-                    List<FirebaseVisionText.Line> sortedLines = sortLines(ocrResults[i]);
+                    List<FirebaseVisionText.TextBlock> sortedBlocks = sortBlocks(ocrResults[i]);
 
                     Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
                     bitmap = getRotatedBitmap(bitmap, getRotationInDegrees(file));
 
-                    //for (TextBlock textBlock : result.getTextBlocks()) {
-                    for (FirebaseVisionText.Line line : sortedLines) {
-                        for (FirebaseVisionText.Element element : line.getElements()) {
+                    for (TextBlock textBlock : sortedBlocks) {
+                        cb = writer.getDirectContent();
+                        float xleft = ((float) textBlock.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
+                        float xright = ((float) textBlock.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
+                        float xtop = ((float) textBlock.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                        float xbottom = ((float) textBlock.getBoundingBox().bottom / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                        Rectangle xrect = new Rectangle(xleft,
+                                document.getPageSize().getHeight() - xbottom,
+                                xright,
+                                document.getPageSize().getHeight() - xtop);
+                        xrect.setBorder(Rectangle.BOX);
+                        xrect.setBorderWidth(2);
+                        cb.rectangle(xrect);
+
+                        //cb = writer.getDirectContentUnder();
+                        for (FirebaseVisionText.Line line : textBlock.getLines()) {
+                            //for (FirebaseVisionText.Element element : line.getElements()) {
                             // one FirebaseVisionText.Element corresponds to one word
                             // the rectangle we want to draw this word corresponds to the elements boundingBox
-                            float left = ((float) element.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
-                            float right = ((float) element.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
-                            float top = ((float) element.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
-                            float bottom = ((float) element.getBoundingBox().bottom / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                            float left = ((float) line.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
+                            float right = ((float) line.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
+                            float top = ((float) line.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                            float bottom = ((float) line.getBoundingBox().bottom / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
                             Rectangle rect = new Rectangle(left,
                                     document.getPageSize().getHeight() - bottom,
                                     right,
                                     document.getPageSize().getHeight() - top);
-                            String drawText = element.getText();
+                            String drawText = line.getText();
                             // try to get max font size that fit in rectangle
                             int textHeightInGlyphSpace = bf.getAscent(drawText) - bf.getDescent(drawText);
                             float fontSize = 1000f * rect.getHeight() / textHeightInGlyphSpace;
@@ -149,7 +154,6 @@ public class PdfCreator {
                         }
                     }
                 }
-
 
 
                 if (i < files.size() - 1) {
@@ -205,41 +209,6 @@ public class PdfCreator {
 
     }
 
-
-    private static void recognizeText(final File file) {
-        Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
-        ExifInterface exif = null;
-        try {
-            exif = new ExifInterface(file.getAbsolutePath());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-        int rotationInDegrees = exifToDegrees(rotation);
-        Matrix matrix = new Matrix();
-        if (rotation != 0) {
-            matrix.preRotate(rotationInDegrees);
-        }
-        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-
-        FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(bitmap);
-        getTextRecognizer().processImage(image)
-                .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
-                    @Override
-                    public void onSuccess(FirebaseVisionText result) {
-                        createPdfFromOCR(result, file);
-                    }
-                })
-                .addOnFailureListener(
-                        new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // Task failed with an exception
-                                Log.e(CLASS_NAME, "Failed to recognize text\n" + e.getMessage());
-                            }
-                        });
-    }
-
     private static int exifToDegrees(int exifOrientation) {
         if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
             return 90;
@@ -251,146 +220,124 @@ public class PdfCreator {
         return 0;
     }
 
-    private static void createPdfFromOCR(FirebaseVisionText result, File imageFile) {
-        //get the Bitmap from the file to create document with correct measurements
-        Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getPath());
-
-        try {
-            //check if the image was rotated and rotate it accordingly
-            ExifInterface exif = new ExifInterface(imageFile.getAbsolutePath());
-            int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-            int rotationInDegrees = exifToDegrees(rotation);
-            Matrix matrix = new Matrix();
-            if (rotation != 0) {
-                matrix.preRotate(rotationInDegrees);
-            }
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-
-            //resize the pdf to the image
-            Rectangle pageSize;
-            if (bitmap.getWidth() > bitmap.getHeight()) {
-                //querformat
-                float height = (PageSize.A4.getHeight() / bitmap.getWidth()) * bitmap.getHeight();
-                pageSize = new Rectangle(PageSize.A4.getHeight(), height);
+    @NonNull
+    private static List<FirebaseVisionText.TextBlock> sortBlocks(FirebaseVisionText ocrResult) {
+        List<List<FirebaseVisionText.TextBlock>> sortedBlocks = new ArrayList<>();
+        List<FirebaseVisionText.TextBlock> biggestBlocks = new ArrayList<>();
+        for (FirebaseVisionText.TextBlock block : ocrResult.getTextBlocks()) {
+            if (sortedBlocks.isEmpty()) {
+                List<FirebaseVisionText.TextBlock> blocks = new ArrayList<>();
+                blocks.add(block);
+                biggestBlocks.add(block);
+                sortedBlocks.add(blocks);
             } else {
-                //hochformat
-                float height = (PageSize.A4.getWidth() / bitmap.getWidth()) * bitmap.getHeight();
-                pageSize = new Rectangle(PageSize.A4.getWidth(), height);
-            }
-            Document document = new Document(pageSize, 0, 0, 0, 0);
-
-            //create the pdf with the name of the image file in /storage/emulated/0/Documents/
-            String pdfName = imageFile.getName().split("\\.")[0] + ".pdf";
-            File outputFile = new File(getDocumentsDir(), pdfName);
-
-
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputFile));
-            document.open();
-
-            //add the original image to the pdf and set the DPI of it to 300
-            Image image = Image.getInstance(imageFile.getAbsolutePath());
-            image.setRotationDegrees(-rotationInDegrees);
-            image.scaleToFit(pageSize);
-            image.setDpi(300, 300);
-            document.add(image);
-
-            if (result != null) {
-                // the direct content where we write on
-                // directContentUnder instead of directContent, because then the text is in the background)
-                PdfContentByte cb = writer.getDirectContentUnder();
-                BaseFont bf = BaseFont.createFont();
-
-                //sort the result based on the y-Axis so that the markup order is correct
-                List<FirebaseVisionText.Line> sortedLines = sortLines(result);
-
-                //for (TextBlock textBlock : result.getTextBlocks()) {
-                for (FirebaseVisionText.Line line : sortedLines) {
-                    for (FirebaseVisionText.Element element : line.getElements()) {
-                        // one FirebaseVisionText.Element corresponds to one word
-                        // the rectangle we want to draw this word corresponds to the elements boundingBox
-                        float left = ((float) element.getBoundingBox().left / (float) bitmap.getWidth()) * pageSize.getWidth();
-                        float right = ((float) element.getBoundingBox().right / (float) bitmap.getWidth()) * pageSize.getWidth();
-                        float top = ((float) element.getBoundingBox().top / (float) bitmap.getHeight()) * pageSize.getHeight();
-                        float bottom = ((float) element.getBoundingBox().bottom / (float) bitmap.getHeight()) * pageSize.getHeight();
-                        Rectangle rect = new Rectangle(left,
-                                pageSize.getHeight() - bottom,
-                                right,
-                                pageSize.getHeight() - top);
-                        String drawText = element.getText();
-                        // try to get max font size that fit in rectangle
-                        int textHeightInGlyphSpace = bf.getAscent(drawText) - bf.getDescent(drawText);
-                        float fontSize = 1000f * rect.getHeight() / textHeightInGlyphSpace;
-                        Phrase phrase = new Phrase(drawText, new Font(bf, fontSize));
-                        // write the text on the pdf
-                        ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, phrase,
-                                // center horizontally
-                                (rect.getLeft() + rect.getRight()) / 2,
-                                // shift baseline based on descent
-                                rect.getBottom() - bf.getDescentPoint(drawText, fontSize),
-                                0);
+                boolean added = false;
+                for (TextBlock checkBlock : biggestBlocks) {
+                    if (block.getBoundingBox().centerX() > checkBlock.getBoundingBox().left &&
+                            block.getBoundingBox().centerX() < checkBlock.getBoundingBox().right) {
+                        sortedBlocks.get(biggestBlocks.indexOf(checkBlock)).add(block);
+                        if (block.getBoundingBox().width() > checkBlock.getBoundingBox().width()) {
+                            biggestBlocks.set(biggestBlocks.indexOf(checkBlock), block);
+                        }
+                        added = true;
                     }
                 }
+                if (!added){
+                    List<FirebaseVisionText.TextBlock> blocks = new ArrayList<>();
+                    blocks.add(block);
+                    biggestBlocks.add(block);
+                    sortedBlocks.add(blocks);
+                }
             }
-            //}
-
-            document.close();
-            Log.d(CLASS_NAME, "Document created at " + outputFile.getAbsolutePath());
-        } catch (DocumentException | IOException e) {
-            // Task failed with an exception
-            Log.e(CLASS_NAME, "Failed to create document\n" + e.getMessage());
         }
+        for (List<TextBlock> textBlocks : sortedBlocks){
+            sortedBlocks.set(sortedBlocks.indexOf(textBlocks), sortColumn(textBlocks));
+        }
+        List<TextBlock> sortedRows = sortRows(biggestBlocks);
+        List<List<FirebaseVisionText.TextBlock>> sorted = (List<List<TextBlock>>) ((ArrayList<List<TextBlock>>) sortedBlocks).clone();
+        for (List<TextBlock> blocks : sortedBlocks) {
+            int i = sortedBlocks.indexOf(blocks);
+            int j = sortedRows.indexOf(biggestBlocks.get(i));
+            sorted.add(j, blocks);
+        }
+        List<TextBlock> result = new ArrayList<>();
+        for (List<TextBlock> textBlocks : sorted){
+            result.addAll(textBlocks);
+        }
+        return result;
     }
 
     @NonNull
-    private static List<FirebaseVisionText.Line> sortLines(FirebaseVisionText result) {
-        List<FirebaseVisionText.Line> lines = new ArrayList<>();
-        List<FirebaseVisionText.Line> sortedLines = new ArrayList<>();
-        for (TextBlock textBlock : result.getTextBlocks()) {
-            lines.addAll(textBlock.getLines());
-        }
-        for (FirebaseVisionText.Line line : lines) {
-            if (sortedLines.isEmpty()) {
-                sortedLines.add(line);
+    private static List<TextBlock> sortColumn(List<TextBlock> result) {
+        List<FirebaseVisionText.TextBlock> sortedBlocks = new ArrayList<>();
+        for (FirebaseVisionText.TextBlock textBlock : result) {
+            if (sortedBlocks.isEmpty()) {
+                sortedBlocks.add(textBlock);
             } else {
                 int i = 0;
-                while (i < sortedLines.size()) {
-                    if (line.getCornerPoints()[0].y > sortedLines.get(i).getCornerPoints()[0].y) {
+                while (i < sortedBlocks.size()) {
+                    if (textBlock.getCornerPoints()[0].y > sortedBlocks.get(i).getCornerPoints()[0].y) {
                         i++;
                     } else {
                         break;
                     }
                 }
-                sortedLines.add(i, line);
+                sortedBlocks.add(i, textBlock);
             }
         }
-        return sortedLines;
+        return sortedBlocks;
     }
 
-    //in case we need the text sorted by y-axis
-    private static String orderText(FirebaseVisionText text) {
-        StringBuilder textFix = new StringBuilder();
-        List<TextBlock> textBlocks = text.getTextBlocks();
-        List<FirebaseVisionText.Line> lines = new ArrayList<>();
-        List<FirebaseVisionText.Line> sortedLines = new ArrayList<>();
-        for (TextBlock textBlock : textBlocks) {
-            lines.addAll(textBlock.getLines());
-        }
-        for (FirebaseVisionText.Line line : lines) {
-            if (sortedLines.isEmpty()) {
-                sortedLines.add(line);
+    @NonNull
+    private static List<TextBlock> sortRows(List<TextBlock> result) {
+        List<FirebaseVisionText.TextBlock> sortedBlocks = new ArrayList<>();
+        for (FirebaseVisionText.TextBlock textBlock : result) {
+            if (sortedBlocks.isEmpty()) {
+                sortedBlocks.add(textBlock);
             } else {
                 int i = 0;
-                while (i < sortedLines.size() && line.getCornerPoints()[0].y > sortedLines.get(i).getCornerPoints()[0].y) {
-                    i++;
+                while (i < sortedBlocks.size()) {
+                    if (textBlock.getBoundingBox().centerX() > sortedBlocks.get(i).getBoundingBox().centerX()) {
+                        i++;
+                    } else {
+                        break;
+                    }
                 }
-                sortedLines.add(i, line);
+                sortedBlocks.add(i, textBlock);
             }
         }
-        for (FirebaseVisionText.Line line : sortedLines) {
-            textFix.append(line.getText());
-        }
-        return textFix.toString();
+        return sortedBlocks;
     }
+
+    private static int getMinIndex(double[] distances) {
+        int index = -1;
+        double minimum = Double.MAX_VALUE;
+        for (int i = 0; i < distances.length; i++) {
+            if (distances[i] < minimum) {
+                minimum = distances[i];
+                index = i;
+            }
+        }
+        return index;
+    }
+
+    private static double getDistance(FirebaseVisionText.Line startLine, FirebaseVisionText.Line testLine) {
+        double minDist = Double.MAX_VALUE;
+        int distanceX = Math.abs(startLine.getCornerPoints()[1].x - testLine.getCornerPoints()[0].x);
+        int distanceY = Math.abs(startLine.getCornerPoints()[1].y - testLine.getCornerPoints()[0].y);
+        double distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+        if (distance < minDist) {
+            minDist = distance;
+        }
+        distanceX = Math.abs(startLine.getCornerPoints()[0].x - testLine.getCornerPoints()[0].x);
+        distanceY = Math.abs(startLine.getCornerPoints()[0].y - testLine.getCornerPoints()[0].y);
+        distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
+        if (distance < minDist) {
+            minDist = distance;
+        }
+        return minDist;
+    }
+
 
     private static File getDocumentsDir() {
         File docsFolder = new File(Environment.getExternalStorageDirectory() + "/Documents");
