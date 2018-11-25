@@ -11,9 +11,12 @@ public class PdfRunnable extends CropRunnable{
     }
 
     @Override
-    protected void performTask(String fileName) {
-        File file = new File(fileName);
-        PdfCreator.createPdf(file);
+    protected void performTask(String documentFiles) {
+        String[] fileNames = documentFiles.split(">");
+        for (String fileName : fileNames) {
+            File file = new File(fileName);
+            PdfCreator.createPdf(file);
+        }
     }
 
 }

@@ -556,18 +556,6 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
-    public void createPdfFromSelectedItem(MenuItem item) {
-
-        // Check if we have the permission to rotate images:
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_PDF);
-        } else
-            showOCRAlert();
-
-    }
-
-
 
     private void renameDocument() {
 
@@ -613,33 +601,6 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
-    private void showOCRAlert() {
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(R.string.gallery_confirm_ocr_title)
-                .setPositiveButton(R.string.dialog_yes_text, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        createPdfFromSelectedItems(true);
-                    }
-                })
-                .setNegativeButton(R.string.dialog_no_text, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        createPdfFromSelectedItems(false);
-                    }
-                })
-                .setCancelable(true)
-                .setMessage(R.string.gallery_confirm_ocr_text);
-
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
-
-    }
-
     private void cropSelectedItems() {
 
         if (mDocument == null || mAdapter == null || mDocument.getPages() == null)
@@ -667,22 +628,6 @@ public class GalleryActivity extends AppCompatActivity implements
         deselectAllItems();
 
 
-    }
-
-    private void createPdfFromSelectedItems(boolean withOCR) {
-
-        if (mDocument == null || mAdapter == null || mDocument.getPages() == null)
-            return;
-
-        int[] selections = mAdapter.getSelectionIndices();
-
-        for (int i = 0; i < selections.length; i++) {
-            if (withOCR) {
-                ImageProcessor.createPdfWithOCR(mDocument.getPages().get(selections[i]).getFile());
-            } else {
-                ImageProcessor.createPdf(mDocument.getPages().get(selections[i]).getFile());
-            }
-        }
     }
 
     private void rotateSelectedItems() {

@@ -37,6 +37,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import at.ac.tuwien.caa.docscan.logic.Document;
+
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_MAP;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PAGE_DETECTION;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PDF;
@@ -138,8 +140,10 @@ public class ImageProcessor {
              */
             private boolean finishTask(ImageProcessTask task) {
 
-                ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_ROTATE);
-                sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
+                if (task.getFile() != null) {
+                    ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_ROTATE);
+                    sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
+                }
 
 
                 if (task instanceof PageDetectionTask)
@@ -155,15 +159,17 @@ public class ImageProcessor {
                     notifyImageChanged(task.getFile());
                 }
                 else if (task instanceof PdfTask){
-                    ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_PDF);
+                    ImageProcessLogger.removeTask(task.getDocument(), ImageProcessLogger.TASK_TYPE_PDF);
                 }
                 else if (task instanceof PdfWithOCRTask){
-                    ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_PDF_OCR);
+                    ImageProcessLogger.removeTask(task.getDocument(), ImageProcessLogger.TASK_TYPE_PDF_OCR);
                 }
                 else
                     return false;
 
-                sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
+                if (task.getFile() != null) {
+                    sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
+                }
 
                 return true;
 
@@ -232,15 +238,15 @@ public class ImageProcessor {
 
     }
 
-    public static void createPdfWithOCR(File file) {
+    public static void createPdfWithOCR(Document document) {
 
-        executeTask(file, TASK_TYPE_PDF_OCR);
+        executeTask(document, TASK_TYPE_PDF_OCR);
 
     }
 
-    public static void createPdf(File file) {
+    public static void createPdf(Document document) {
 
-        executeTask(file, TASK_TYPE_PDF);
+        executeTask(document, TASK_TYPE_PDF);
 
     }
 
@@ -268,18 +274,33 @@ public class ImageProcessor {
                 imageProcessTask = new RotateTask();
                 ImageProcessLogger.addRotateTask(file);
                 break;
-            case TASK_TYPE_PDF:
-                imageProcessTask = new PdfTask();
-                ImageProcessLogger.addPdfTask(file);
-                break;
-            case TASK_TYPE_PDF_OCR:
-                imageProcessTask = new PdfWithOCRTask();
-                ImageProcessLogger.addPdfWithOCRTask(file);
-                break;
         }
 
         imageProcessTask.initializeTask(sInstance);
         imageProcessTask.setFile(file);
+
+        sInstance.mProcessThreadPool.execute(imageProcessTask.getRunnable());
+
+    }
+
+    private static void executeTask(Document document, int taskType) {
+
+        ImageProcessTask imageProcessTask = null;
+
+        //        Inform the logger that we got a new file here:
+        switch (taskType) {
+            case TASK_TYPE_PDF:
+                imageProcessTask = new PdfTask();
+                ImageProcessLogger.addPdfTask(document);
+                break;
+            case TASK_TYPE_PDF_OCR:
+                imageProcessTask = new PdfWithOCRTask();
+                ImageProcessLogger.addPdfWithOCRTask(document);
+                break;
+        }
+
+        imageProcessTask.initializeTask(sInstance);
+        imageProcessTask.setDocument(document);
 
         sInstance.mProcessThreadPool.execute(imageProcessTask.getRunnable());
 

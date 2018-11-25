@@ -4,6 +4,8 @@ import android.util.Log;
 
 import java.io.File;
 
+import at.ac.tuwien.caa.docscan.logic.Document;
+
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESSAGE_COMPLETED_TASK;
 
 public abstract class CropRunnable implements Runnable {
@@ -23,6 +25,8 @@ public abstract class CropRunnable implements Runnable {
         void handleState(int state);
         File getFile();
         void setFile(File file);
+        Document getDocument();
+        void setDocument(Document document);
 
     }
 
@@ -50,6 +54,7 @@ public abstract class CropRunnable implements Runnable {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 
         File file = mCropTask.getFile();
+        Document document = mCropTask.getDocument();
 
         try {
             // Before continuing, checks to see that the Thread hasn't been
@@ -58,7 +63,18 @@ public abstract class CropRunnable implements Runnable {
                 throw new InterruptedException();
             }
 
-            String fileName = file.getAbsolutePath();
+            String fileName;
+            if (document != null){
+                StringBuilder sb = new StringBuilder();
+                for (File f : document.getFiles()){
+                    sb.append(f.getAbsolutePath());
+                    sb.append(">");
+                }
+                sb.deleteCharAt(sb.lastIndexOf(">"));
+                fileName = sb.toString();
+            } else {
+                fileName = file.getAbsolutePath();
+            }
 
 //            Perform here the task:
             performTask(fileName);

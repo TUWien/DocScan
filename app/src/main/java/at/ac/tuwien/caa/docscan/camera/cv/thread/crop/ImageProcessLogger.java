@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import at.ac.tuwien.caa.docscan.logic.Document;
+
 public class ImageProcessLogger implements Serializable {
 
 
@@ -92,6 +94,12 @@ public class ImageProcessLogger implements Serializable {
 
     }
 
+    public synchronized static void removeTask(Document document, int type) {
+
+        sInstance.removeTask(type, document);
+
+    }
+
 //    public synchronized static void removeRotateTask(File file) {
 //
 //        sInstance.removeTask(TASK_TYPE_ROTATE, file);
@@ -118,6 +126,21 @@ public class ImageProcessLogger implements Serializable {
         while (iter.hasNext()) {
             TaskLog task = iter.next();
             if ((task.getType() == type) && (task.getFile().equals(file))) {
+                iter.remove();
+                break;
+            }
+        }
+
+    }
+
+    private synchronized void removeTask(int type, Document document) {
+
+//        TODO: check if we might have duplicates here:
+
+        Iterator<TaskLog> iter = mTasks.iterator();
+        while (iter.hasNext()) {
+            TaskLog task = iter.next();
+            if ((task.getType() == type) && (task.getDocument().equals(document))) {
                 iter.remove();
                 break;
             }
@@ -187,15 +210,15 @@ public class ImageProcessLogger implements Serializable {
 
     }
 
-    public static void addPdfTask(File file) {
+    public static void addPdfTask(Document document) {
 
-        sInstance.addTask(TASK_TYPE_PDF, file);
+        sInstance.addTask(TASK_TYPE_PDF, document);
 
     }
 
-    public static void addPdfWithOCRTask(File file) {
+    public static void addPdfWithOCRTask(Document document) {
 
-        sInstance.addTask(TASK_TYPE_PDF_OCR, file);
+        sInstance.addTask(TASK_TYPE_PDF_OCR, document);
 
     }
 
@@ -206,15 +229,29 @@ public class ImageProcessLogger implements Serializable {
 
     }
 
+    private void addTask(int type, Document document) {
+
+        mTasks.add(new TaskLog(type, document));
+
+    }
+
     private class TaskLog {
 
         private int mType;
         private File mFile;
+        private Document mDocument;
 
         private TaskLog(int type, File file) {
 
             mType = type;
             mFile = file;
+
+        }
+
+        private TaskLog(int type, Document document) {
+
+            mType = type;
+            mDocument = document;
 
         }
 
@@ -227,6 +264,12 @@ public class ImageProcessLogger implements Serializable {
         private File getFile() {
 
             return mFile;
+
+        }
+
+        private Document getDocument() {
+
+            return mDocument;
 
         }
 

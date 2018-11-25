@@ -25,12 +25,6 @@
         android:visible="false"
         >
         <item
-            android:icon="@drawable/ic_baseline_picture_as_pdf_24px"
-            android:title="@string/gallery_menu_create_pdf_item_title"
-            android:onClick="createPdfFromSelectedItem"
-            app:showAsAction="always"
-            />
-        <item
             android:icon="@drawable/ic_select_all_black_24dp"
             android:title="@string/gallery_menu_select_all_item_title"
             android:onClick="selectAllItems"

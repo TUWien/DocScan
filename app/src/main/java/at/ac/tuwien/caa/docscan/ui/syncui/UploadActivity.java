@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -388,6 +389,55 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private boolean areAllItemsSelected() {
 
         return mListView.getCount() == getSelectedDocuments().size();
+
+    }
+
+    public void createPdfFromSelectedItem(MenuItem item) {
+
+        showOCRAlertDialog();
+
+    }
+
+    private void showOCRAlertDialog() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.gallery_confirm_ocr_title)
+                .setPositiveButton(R.string.dialog_yes_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        createPdfFromSelectedItem(true);
+                    }
+                })
+                .setNegativeButton(R.string.dialog_no_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        createPdfFromSelectedItem(false);
+                    }
+                })
+                .setCancelable(true)
+                .setMessage(R.string.gallery_confirm_ocr_text);
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+
+    }
+
+    private void createPdfFromSelectedItem(boolean withOCR) {
+
+        if (mContext == null)
+            return;
+
+        final ArrayList<Document> documents = getSelectedDocuments();
+        for (Document document : documents){
+            if (withOCR) {
+                ImageProcessor.createPdfWithOCR(document);
+            } else {
+                ImageProcessor.createPdf(document);
+            }
+        }
 
     }
 
