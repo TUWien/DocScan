@@ -8,8 +8,8 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 15
 		targetSdkVersion 27
-		versionCode 56
-		versionName "1.4.18"
+		versionCode 62
+		versionName "1.4.24"
 //		versionCode 34
 //		versionName "1.4.2"
 
@@ -20,12 +20,13 @@ android {
 //		References to other resources are not supported by build-time PNG generation
 		vectorDrawables.useSupportLibrary = true
 
-		externalNativeBuild {
-			cmake {
-				abiFilters 'armeabi-v7a'
-			}
-		}
-	}
+        ndk {
+            // Specifies the ABI configurations of your native
+            // libraries Gradle should build and package with your APK.
+//            Note this also effects externalNativeBuild.cmake, so we do not to define this anymore:
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+    }
 
 	buildTypes {
 		release {
@@ -55,36 +56,6 @@ android {
 		exclude 'META-INF/NOTICE.txt'
 		exclude 'META-INF/LICENSE.txt'
 	}
-
-// Android NDK configuration, taken from:
-//    https://www.crystax.net/en/blog/3
-
-//	sourceSets.main.jni.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
-//	sourceSets.main.jniLibs.srcDir 'src/main/libs'
-
-//	sourceSets.main {
-//		jni.srcDirs = [] //disable automatic nd k-build call
-//	}
-//
-//	// call regular ndk-build(.cmd) script from app directory
-//	task ndkBuild(type: Exec) {
-//		workingDir file('src/main')
-//		commandLine getNdkBuildCmd(), 'NDK_LIBS_OUT=./jniLibs'
-//	}
-//
-//	task cleanNative(type: Exec, description: 'Clean JNI object files') {
-//		commandLine getNdkBuildCmd(),
-//				'-C', file('src/main/jni').absolutePath, // Change src/main/jni the relative path to your jni source
-//				'clean'
-//	}
-//
-//	clean.dependsOn 'cleanNative'
-//
-//	tasks.withType(JavaCompile) {
-//		compileTask -> compileTask.dependsOn ndkBuild
-//	}
-//
-//	clean.dependsOn cleanNative
 
 }
 
