@@ -103,7 +103,7 @@ public class PdfCreator {
                     // the direct content where we write on
                     // directContentUnder instead of directContent, because then the text is in the background)
                     //PdfContentByte cb = writer.getDirectContentUnder();
-                    PdfContentByte cb = writer.getDirectContent();
+                    PdfContentByte cb = writer.getDirectContentUnder();
                     BaseFont bf = BaseFont.createFont();
 
                     //sort the result based on the y-Axis so that the markup order is correct
@@ -113,20 +113,19 @@ public class PdfCreator {
                     bitmap = getRotatedBitmap(bitmap, getRotationInDegrees(file));
 
                     for (TextBlock textBlock : sortedBlocks) {
-                        cb = writer.getDirectContent();
-                        float xleft = ((float) textBlock.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
-                        float xright = ((float) textBlock.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
-                        float xtop = ((float) textBlock.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
-                        float xbottom = ((float) textBlock.getBoundingBox().bottom / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
-                        Rectangle xrect = new Rectangle(xleft,
-                                document.getPageSize().getHeight() - xbottom,
-                                xright,
-                                document.getPageSize().getHeight() - xtop);
-                        xrect.setBorder(Rectangle.BOX);
-                        xrect.setBorderWidth(2);
-                        cb.rectangle(xrect);
+                        //cb = writer.getDirectContent();
+                        //float xleft = ((float) textBlock.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
+                        //float xright = ((float) textBlock.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
+                        //float xtop = ((float) textBlock.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                        //float xbottom = ((float) textBlock.getBoundingBox().bottom / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                        //Rectangle xrect = new Rectangle(xleft,
+                        //        document.getPageSize().getHeight() - xbottom,
+                        //        xright,
+                        //        document.getPageSize().getHeight() - xtop);
+                        //xrect.setBorder(Rectangle.BOX);
+                        //xrect.setBorderWidth(2);
+                        //cb.rectangle(xrect);
 
-                        cb = writer.getDirectContentUnder();
                         for (FirebaseVisionText.Line line : textBlock.getLines()) {
                             //for (FirebaseVisionText.Element element : line.getElements()) {
                             // one FirebaseVisionText.Element corresponds to one word
@@ -143,6 +142,9 @@ public class PdfCreator {
                             // try to get max font size that fit in rectangle
                             int textHeightInGlyphSpace = bf.getAscent(drawText) - bf.getDescent(drawText);
                             float fontSize = 1000f * rect.getHeight() / textHeightInGlyphSpace;
+                            while (bf.getWidthPoint(drawText, fontSize) > rect.getWidth()){
+                                fontSize--;
+                            }
                             Phrase phrase = new Phrase(drawText, new Font(bf, fontSize));
                             // write the text on the pdf
                             ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, phrase,
