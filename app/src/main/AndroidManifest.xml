@@ -155,6 +155,10 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
+        <activity
+            android:name=".ui.license.LicenseActivity"
+            android:exported="false"
+            />
 
         <activity
             android:name="com.dropbox.core.android.AuthActivity"

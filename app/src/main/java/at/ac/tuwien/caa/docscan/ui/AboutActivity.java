@@ -1,11 +1,11 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.widget.AppCompatButton;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -13,6 +13,7 @@ import java.util.Date;
 
 import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.ui.license.LicenseActivity;
 
 /**
  * Created by fabian on 30.11.2016.
@@ -43,6 +44,24 @@ public class AboutActivity extends BaseNavigationActivity {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+
+        Button licensesButton = findViewById(R.id.about_licenses_button);
+        final Context context = this;
+        licensesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                startActivity(new Intent(context, OssLicensesMenuActivity.class));
+
+                startActivity(new Intent(context, LicenseActivity.class));
+
+//                new LibsBuilder()
+//                        //provide a style (optional) (LIGHT, DARK, LIGHT_DARK_TOOLBAR)
+//                        .withActivityStyle(Libs.ActivityStyle.LIGHT_DARK_TOOLBAR)
+//                        //start the activity
+//                        .start(context);
+
+            }
+        });
 
 ////        Initialize the howto button:
 //        AppCompatButton howtoButton = findViewById(R.id.about_guide_button);

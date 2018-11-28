@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
 
@@ -148,4 +150,8 @@ dependencies {
 	//	implementation 'com.google.android:flexbox:1.0.0'
 	//    implementation 'com.google.android:flexbox:0.3.0-alpha2'
 	implementation project(':openCVLibrary')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+repositories {
+    mavenCentral()
 }
