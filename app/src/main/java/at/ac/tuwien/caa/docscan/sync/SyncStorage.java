@@ -30,7 +30,15 @@ public class SyncStorage {
     private ArrayList<Integer> mUnfinishedUploadIDs;
     private ArrayList<String> mUploadDocumentTitles;
 
-    public static SyncStorage getInstance() {
+    public static SyncStorage getInstance(Context context) {
+
+//        At first try to read the JSON file: Note that the system might close the app and restart if
+//        without opening StartActivity, where the JSON file is read. So we have to take care that
+//        the JSON file is read if the singleton is null. See also:
+//        https://medium.com/inloopx/android-process-kill-and-the-big-implications-for-your-app-1ecbed4921cb
+
+        if (sInstance == null)
+            loadJSON(context);
 
         if (sInstance == null)
             sInstance = new SyncStorage();
@@ -211,6 +219,7 @@ public class SyncStorage {
 
     }
 
+
     public void addDropboxFile(File file, String documentName) {
 
         if (mFileSyncList != null)
@@ -219,9 +228,9 @@ public class SyncStorage {
 
     }
 
-    public void removeDocument(String title) {
+    public void removeDocument(String title, Context context) {
 
-        Document document = DocumentStorage.getInstance().getDocument(title);
+        Document document = DocumentStorage.getInstance(context).getDocument(title);
         if (document != null) {
             ArrayList<File> files = document.getFiles();
             if (files != null && !files.isEmpty()) {

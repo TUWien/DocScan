@@ -176,10 +176,15 @@ public class DocumentStorage {
 
     }
 
-    public static DocumentStorage getInstance() {
+    public static DocumentStorage getInstance(Context context) {
 
-//        if (sInstance == null)
-//            loadJSON(context);
+//        At first try to read the JSON file: Note that the system might close the app and restart if
+//        without opening StartActivity, where the JSON file is read. So we have to take care that
+//        the JSON file is read if the singleton is null. See also:
+//        https://medium.com/inloopx/android-process-kill-and-the-big-implications-for-your-app-1ecbed4921cb
+
+        if (sInstance == null)
+            loadJSON(context);
 
         if (sInstance == null)
             sInstance = new DocumentStorage();
@@ -188,53 +193,36 @@ public class DocumentStorage {
 
     }
 
-    public void updateStatus() {
+    public void updateStatus(Context context) {
 
         for (Document document : mDocuments) {
 
-            Log.d(CLASS_NAME, "updateStatus: " + document.getTitle());
+            boolean areFilesUploaded = SyncStorage.getInstance(context).areFilesUploaded(document.getFiles());
+            document.setIsUploaded(areFilesUploaded);
 
-            boolean areFilesUploaded = SyncStorage.getInstance().areFilesUploaded(document.getFiles());
-
-            boolean areFilesChanged = false;
-            if (areFilesUploaded)
-                areFilesChanged = SyncStorage.getInstance().areFilesChanged(document.getFiles());
-
-            document.setIsUploaded(areFilesUploaded && !areFilesChanged);
-//            document.setIsUploaded(areFilesUploaded);
-
-//            if (!areFilesUploaded || (areFilesUploaded && areFilesChanged)) {
-            if (!document.isUploaded()) {
-                boolean isAwaitingUpload = SyncStorage.getInstance().
+            if (!areFilesUploaded) {
+                boolean isAwaitingUpload = SyncStorage.getInstance(context).
                         isDocumentAwaitingUpload(document);
                 document.setIsAwaitingUpload(isAwaitingUpload);
-//            }
             }
-            else
-                document.setIsAwaitingUpload(false);
 
             boolean isDocumentCropped = Helper.areFilesCropped(document);
             document.setIsCropped(isDocumentCropped);
 
-            Log.d(CLASS_NAME, "updateStatus: document: " + document.getTitle());
-            Log.d(CLASS_NAME, "updateStatus: areFilesUploaded: " + areFilesUploaded);
-            Log.d(CLASS_NAME, "updateStatus: areFilesChanged: " + areFilesChanged);
-            Log.d(CLASS_NAME, "updateStatus: isDocumentCropped: " + isDocumentCropped);
-
         }
-
-
 
     }
 
     public static void loadJSON(Context context) {
+
+        Log.d(CLASS_NAME, "loadJSON");
 
         File path = context.getFilesDir();
         File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
 
         if (!storeFile.exists()) {
             sInstance = new DocumentStorage();
-            DocumentStorage.getInstance().setTitle(Helper.getActiveDocumentTitle(context));
+            sInstance.setTitle(Helper.getActiveDocumentTitle(context));
         }
 
         else {

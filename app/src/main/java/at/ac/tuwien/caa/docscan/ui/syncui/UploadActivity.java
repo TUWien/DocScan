@@ -39,17 +39,15 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
-import at.ac.tuwien.caa.docscan.ui.AccountActivity;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_ACTION;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_TYPE;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_TYPE_MAP_FINISHED;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_CROP_TYPE_PAGE_FINISHED;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_TYPE;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_FINISHED;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_FILE_DELETED_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_FINISHED_ID;
@@ -160,8 +158,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)  {
 //                        Start the LoginActivity
-                        Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
-//                        intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
+                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                        intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
                         startActivity(intent);
                     }
                 })
@@ -211,7 +209,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(INTENT_UPLOAD_ACTION));
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_CROP_ACTION));
+                new IntentFilter(INTENT_IMAGE_PROCESS_ACTION));
 
         showNoSelectionToolbar();
 
@@ -319,8 +317,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         if (mContext != null) {
 
-            DocumentStorage.getInstance().updateStatus();
-            ArrayList<Document> allDocuments = DocumentStorage.getInstance().getDocuments();
+            DocumentStorage.getInstance(this).updateStatus(this);
+            ArrayList<Document> allDocuments = DocumentStorage.getInstance(this).getDocuments();
             mDocuments = Helper.getNonEmptyDocuments(allDocuments);
 
 
@@ -441,7 +439,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private void deleteSelectedDocuments(ArrayList<Document> documents) {
 
         for (Document document : documents)
-            DocumentStorage.getInstance().getDocuments().remove(document);
+            DocumentStorage.getInstance(this).getDocuments().remove(document);
 
 //        update the UI:
         showDocumentsDeletedSnackbar(documents.size());
@@ -605,7 +603,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
 //        SyncInfo.getInstance().setUploadDirs(mSelectedDirs);
 
-        SyncStorage.getInstance().addUploadDirs(uploadDirs);
+        SyncStorage.getInstance(this).addUploadDirs(uploadDirs);
         SyncUtils.startSyncJob(this, false);
 
     }
@@ -885,16 +883,15 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                             break;
                     }
                 }
-                else if (intent.getAction().equals(INTENT_CROP_ACTION)) {
+                else if (intent.getAction().equals(INTENT_IMAGE_PROCESS_ACTION)) {
 
                     int defValue = -1;
-                    int cropType = intent.getIntExtra(INTENT_CROP_TYPE, defValue);
+                    int cropType = intent.getIntExtra(INTENT_IMAGE_PROCESS_TYPE, defValue);
 
 //                    we just handle cases where there is an operation finished:
                     if (cropType != defValue) {
 
-                        if ((cropType == INTENT_CROP_TYPE_MAP_FINISHED ) ||
-                                (cropType == INTENT_CROP_TYPE_PAGE_FINISHED)) {
+                        if (cropType == INTENT_IMAGE_PROCESS_FINISHED) {
 
 //                            find the corresponding document:
                             String fileName = intent.getStringExtra(INTENT_FILE_NAME);

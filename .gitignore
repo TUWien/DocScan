@@ -66,6 +66,8 @@ testimg.jpg
 /result.tif
 bin/
 img/
+api_info.txt
+/app/.externalNativeBuild
 /app/src/main/java/at/ac/tuwien/caa/docscan/camera/MediaSaver.java
 /app/src/main/java/at/ac/tuwien/caa/docscan/camera/Storage.java
 /projectFilesBackup/.idea/workspace.xml

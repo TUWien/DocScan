@@ -12,23 +12,23 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class CropLogger implements Serializable {
+public class ImageProcessLogger implements Serializable {
 
 
     public static final int TASK_TYPE_PAGE_DETECTION = 0;
     public static final int TASK_TYPE_MAP = 1;
-
+    public static final int TASK_TYPE_ROTATE = 2;
     private static final String CROP_FILE_NAME = "crop_log.txt";
-    private static final String CLASS_NAME = "CropLogger";
+    private static final String CLASS_NAME = "ImageProcessLogger";
 
-    private static CropLogger sInstance = null;
+    private static ImageProcessLogger sInstance = null;
 
     private ArrayList<TaskLog> mTasks;
 
 
     static {
 
-        sInstance = new CropLogger();
+        sInstance = new ImageProcessLogger();
 
     }
 
@@ -46,7 +46,7 @@ public class CropLogger implements Serializable {
         try {
             FileInputStream fis = new FileInputStream (cropFile);
             ObjectInputStream ois = new ObjectInputStream(fis);
-            sInstance = (CropLogger) ois.readObject();
+            sInstance = (ImageProcessLogger) ois.readObject();
             ois.close();
         }
         catch(Exception e) {
@@ -73,30 +73,42 @@ public class CropLogger implements Serializable {
     }
 
 
-    public static CropLogger getInstance() {
+    public static ImageProcessLogger getInstance() {
 
         return sInstance;
     }
 
-    private CropLogger() {
+    private ImageProcessLogger() {
 
         mTasks = new ArrayList<>();
 
     }
 
-    public synchronized static void removePageDetectionTask(File file) {
+    public synchronized static void removeTask(File file, int type) {
 
-        sInstance.removeTask(TASK_TYPE_PAGE_DETECTION, file);
-
-    }
-
-    public static void removeMapTask(File file) {
-
-        sInstance.removeTask(TASK_TYPE_MAP, file);
+        sInstance.removeTask(type, file);
 
     }
 
-    private synchronized  void removeTask(int type, File file) {
+//    public synchronized static void removeRotateTask(File file) {
+//
+//        sInstance.removeTask(TASK_TYPE_ROTATE, file);
+//
+//    }
+//
+//    public synchronized static void removePageDetectionTask(File file) {
+//
+//        sInstance.removeTask(TASK_TYPE_PAGE_DETECTION, file);
+//
+//    }
+//
+//    public static void removeMapTask(File file) {
+//
+//        sInstance.removeTask(TASK_TYPE_MAP, file);
+//
+//    }
+
+    private synchronized void removeTask(int type, File file) {
 
 //        TODO: check if we might have duplicates here:
 
@@ -122,6 +134,17 @@ public class CropLogger implements Serializable {
 
     }
 
+    public static boolean isAwaitingImageProcessing(File file) {
+
+        for (TaskLog task : sInstance.mTasks) {
+            if (task.getFile().equals(file))
+                return true;
+        }
+
+        return false;
+
+    }
+
     public static boolean isAwaitingPageDetection(File file) {
 
         for (TaskLog task : sInstance.mTasks) {
@@ -133,16 +156,16 @@ public class CropLogger implements Serializable {
 
     }
 
-    public static boolean isAwaitingMapping(File file) {
-
-        for (TaskLog task : sInstance.mTasks) {
-            if ((task.getType() == TASK_TYPE_MAP) && (task.getFile().equals(file)))
-                return true;
-        }
-
-        return false;
-
-    }
+//    public static boolean isAwaitingMapping(File file) {
+//
+//        for (TaskLog task : sInstance.mTasks) {
+//            if ((task.getType() == TASK_TYPE_MAP) && (task.getFile().equals(file)))
+//                return true;
+//        }
+//
+//        return false;
+//
+//    }
 
     public static void addPageDetectionTask(File file) {
 
@@ -155,6 +178,13 @@ public class CropLogger implements Serializable {
         sInstance.addTask(TASK_TYPE_MAP, file);
 
     }
+
+    public static void addRotateTask(File file) {
+
+        sInstance.addTask(TASK_TYPE_ROTATE, file);
+
+    }
+
 
     private void addTask(int type, File file) {
 

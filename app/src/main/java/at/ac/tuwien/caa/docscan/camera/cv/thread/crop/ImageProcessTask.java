@@ -2,7 +2,7 @@ package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 import java.io.File;
 
-public class CropTask implements CropRunnable.TaskRunnableCropMethods {
+public class ImageProcessTask implements CropRunnable.TaskRunnableCropMethods {
 
     private File mFile;
 
@@ -13,8 +13,8 @@ public class CropTask implements CropRunnable.TaskRunnableCropMethods {
     /*
      * An object that contains the ThreadPool singleton.
      */
-//    private static MapManager sCropManager;
-    private static CropManager sCropManager;
+//    private static MapManager sImageProcessor;
+    private static ImageProcessor sImageProcessor;
 
     @Override
     public void setCropThread(Thread currentThread) {
@@ -23,7 +23,7 @@ public class CropTask implements CropRunnable.TaskRunnableCropMethods {
 
     @Override
     public void handleState(int state) {
-        sCropManager.handleState(this, state);
+        sImageProcessor.handleState(this, state);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class CropTask implements CropRunnable.TaskRunnableCropMethods {
      * notes for getCurrentThread()
      */
     public void setCurrentThread(Thread thread) {
-        synchronized(sCropManager) {
+        synchronized(sImageProcessor) {
             mCurrentThread = thread;
         }
     }
@@ -56,8 +56,8 @@ public class CropTask implements CropRunnable.TaskRunnableCropMethods {
     /**
      * Initializes the task.
      */
-    void initializeTask(CropManager mapManager) {
-        sCropManager = mapManager;
+    void initializeTask(ImageProcessor mapManager) {
+        sImageProcessor = mapManager;
     }
 
     Runnable getRunnable() {

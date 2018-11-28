@@ -32,6 +32,7 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
@@ -102,7 +103,7 @@ public class UploadService extends JobService implements
             Log.d(CLASS_NAME, "loaded SyncStorage from disk");
         } else {
             Log.d(CLASS_NAME, "SyncStorage is in RAM");
-            SyncStorage.getInstance().printUnfinishedUploadIDs();
+            SyncStorage.getInstance(getApplicationContext()).printUnfinishedUploadIDs();
             DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "SyncStorage is in RAM");
         }
 
@@ -433,10 +434,9 @@ public class UploadService extends JobService implements
             Log.d(CLASS_NAME, "getFilesNum");
 
             int result = 0;
-            for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
+            for (SyncFile syncFile : SyncStorage.getInstance(getApplicationContext()).getSyncList()) {
                 if (syncFile.getState() == SyncFile.STATE_NOT_UPLOADED) {
                     result++;
-                    Log.d(CLASS_NAME, "getFilesNum: file missing: " + syncFile.getFile());
                 }
             }
 
@@ -446,7 +446,7 @@ public class UploadService extends JobService implements
 
         private void uploadsFinished() {
 
-            SyncStorage.getInstance().setUploadDocumentTitles(null);
+            SyncStorage.getInstance(getApplicationContext()).setUploadDocumentTitles(null);
             SyncStorage.saveJSON(getApplicationContext());
 
             // Show the finished progressbar for a short time:
@@ -468,7 +468,7 @@ public class UploadService extends JobService implements
 
             syncFile.setState(SyncFile.STATE_UPLOADED);
 
-            SyncStorage.getInstance().addToUploadedList(syncFile);
+            SyncStorage.getInstance(getApplicationContext()).addToUploadedList(syncFile);
 
             Log.d(CLASS_NAME, "onUploadComplete: uploaded file: " +
                     syncFile.getFile().getPath());
@@ -496,6 +496,11 @@ public class UploadService extends JobService implements
         public void onError(Exception e) {
 
             handleUploadError();
+            Log.d(CLASS_NAME, "onError: unfinished upload ids size: "
+                    + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
+            DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                    "onError: unfinished upload ids size: "
+                            + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
 
         }
 
@@ -511,7 +516,7 @@ public class UploadService extends JobService implements
 
         private SyncFile getNextUpload() {
 
-            for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
+            for (SyncFile syncFile : SyncStorage.getInstance(getApplicationContext()).getSyncList()) {
                 if (syncFile.getState() == SyncFile.STATE_NOT_UPLOADED)
                     return syncFile;
             }
@@ -522,7 +527,7 @@ public class UploadService extends JobService implements
 
         private void printSyncStatus() {
 
-            for (SyncFile syncFile : SyncStorage.getInstance().getSyncList()) {
+            for (SyncFile syncFile : SyncStorage.getInstance(getApplicationContext()).getSyncList()) {
                 DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                         syncFile.toString());
             }
@@ -591,10 +596,10 @@ public class UploadService extends JobService implements
 
 
         Log.d(CLASS_NAME, "updateNotification: unfinished upload ids size: "
-                + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+                + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                 "updateNotification: unfinished upload ids size: "
-                + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+                + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
 
         if (mNotificationBuilder == null)
             return;

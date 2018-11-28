@@ -258,18 +258,18 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             return false;
 
         boolean isTitleAlreadyAssigned =
-                DocumentStorage.getInstance().isTitleAlreadyAssigned(title);
+                DocumentStorage.getInstance(this).isTitleAlreadyAssigned(title);
 
         if (isTitleAlreadyAssigned) {
             showDirExistingCreatedAlert(title);
             return false;
         }
-        boolean isDocumentCreated = DocumentStorage.getInstance().createNewDocument(title);
+        boolean isDocumentCreated = DocumentStorage.getInstance(this).createNewDocument(title);
         if (!isDocumentCreated)
             showNoDirCreatedAlert();
 //        Save the metadata:
         else if (qrCodeParser != null) {
-            Document document = DocumentStorage.getInstance().getDocument(title);
+            Document document = DocumentStorage.getInstance(this).getDocument(title);
             document.setMetaData(qrCodeParser);
         }
 

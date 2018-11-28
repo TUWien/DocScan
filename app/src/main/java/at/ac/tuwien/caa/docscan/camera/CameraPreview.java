@@ -345,7 +345,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private void releaseCamera() {
 
         Log.d(CLASS_NAME, "releasing camera");
-
+        isCameraInitialized = false;
         if (mCamera != null) {
             mCamera.stopPreview();
             mCamera.setPreviewCallback(null);
@@ -356,8 +356,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     public void pause() {
 
-        releaseCamera();
         isCameraInitialized = false;
+        releaseCamera();
+
 
     }
 
@@ -742,13 +743,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     public void startAutoFocus() {
 
-        Camera.Parameters params = mCamera.getParameters();
+//        Check here if the camera is still accessible.
+        if (isCameraInitialized && mCamera != null) {
+            Camera.Parameters params = mCamera.getParameters();
 
-        // Use autofocus if available:
-        useAutoFocus(params);
+            // Use autofocus if available:
+            useAutoFocus(params);
 
-        mCamera.setParameters(params);
-
+            mCamera.setParameters(params);
+        }
     }
 
 

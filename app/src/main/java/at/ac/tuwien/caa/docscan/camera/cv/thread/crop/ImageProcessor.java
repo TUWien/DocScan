@@ -37,17 +37,19 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class CropManager {
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_MAP;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PAGE_DETECTION;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_ROTATE;
+
+public class ImageProcessor {
 
     public static final int MESSAGE_COMPLETED_TASK = 0;
 
     public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
 //    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
-    public static final String INTENT_CROP_ACTION = "INTENT_CROP_ACTION";
-    public static final String INTENT_CROP_TYPE = "INTENT_CROP_TYPE";
-    public static final int INTENT_CROP_TYPE_FILE_MAP_STARTED = 0;
-    public static final int INTENT_CROP_TYPE_MAP_FINISHED = 1;
-    public static final int INTENT_CROP_TYPE_PAGE_FINISHED = 2;
+    public static final String INTENT_IMAGE_PROCESS_ACTION = "INTENT_IMAGE_PROCESS_ACTION";
+    public static final String INTENT_IMAGE_PROCESS_TYPE = "INTENT_IMAGE_PROCESS_TYPE";
+    public static final int INTENT_IMAGE_PROCESS_FINISHED = 0;
 
     // Sets the amount of time an idle thread will wait for a task before terminating
     private static final int KEEP_ALIVE_TIME = 1;
@@ -69,12 +71,12 @@ public class CropManager {
      */
     private static int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
 
-    private static final String CLASS_NAME = "CropManager";
+    private static final String CLASS_NAME = "ImageProcessor";
 
     // A queue of Runnables for the page detection
-    private final BlockingQueue<Runnable> mCropQueue;
-    // A managed pool of background crop threads
-    private final ThreadPoolExecutor mCropThreadPool;
+    private final BlockingQueue<Runnable> mProcessQueue;
+    // A managed pool of background threads
+    private final ThreadPoolExecutor mProcessThreadPool;
 //    We use here a weak reference to avoid memory leaks:
 //    @see https://www.androiddesignpatterns.com/2013/01/inner-class-handler-memory-leak.html
     private WeakReference<Context> mContext;
@@ -83,23 +85,23 @@ public class CropManager {
     private Handler mHandler;
 
 //    Singleton:
-    private static CropManager sInstance = null;
+    private static ImageProcessor sInstance = null;
 
     static {
 
         // The time unit for "keep alive" is in seconds
         KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
 
-        sInstance = new CropManager();
+        sInstance = new ImageProcessor();
     }
 
 
-    private CropManager() {
+    private ImageProcessor() {
 
-        mCropQueue = new LinkedBlockingQueue<>();
+        mProcessQueue = new LinkedBlockingQueue<>();
 
-        mCropThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
-                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mCropQueue);
+        mProcessThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
+                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mProcessQueue);
 
         /*
          * Instantiates a new anonymous Handler object and defines its
@@ -115,44 +117,50 @@ public class CropManager {
             public void handleMessage(Message inputMessage) {
 
 //                // Gets the map task from the incoming Message object.
-                CropTask task = (CropTask) inputMessage.obj;
+                ImageProcessTask task = (ImageProcessTask) inputMessage.obj;
                 int messageId = inputMessage.what;
                 boolean isMessageProcessed = false;
 
-                if (task instanceof PageDetectionTask) {
-                    switch (messageId) {
-                        case MESSAGE_COMPLETED_TASK:
-                            Log.d(CLASS_NAME, "handleMessage: PageDetectionTask completed");
-                            Log.d(CLASS_NAME, "handleMessage: file: " + task.getFile());
-//                            Remove the corresponding TaskLog from the logger:
-                            CropLogger.removePageDetectionTask(task.getFile());
-//                            sendPageDetectedIntent(task.getFile().getAbsolutePath());
-                            sendCropIntent(task.getFile().getAbsolutePath(), INTENT_CROP_TYPE_PAGE_FINISHED);
-//                            notifyImageChanged(task.getFile());
-                            isMessageProcessed = true;
-
-                            break;
-                    }
-                }
-                else if (task instanceof MapTask) {
-                    switch (messageId) {
-                        case MESSAGE_COMPLETED_TASK:
-                            Log.d(CLASS_NAME, "handleMessage: MapTask completed");
-
-//                            Remove the corresponding TaskLog from the logger:
-                            CropLogger.removeMapTask(task.getFile());
-                            notifyImageChanged(task.getFile());
-                            sendCropIntent(task.getFile().getAbsolutePath(), INTENT_CROP_TYPE_MAP_FINISHED);
-                            isMessageProcessed = true;
-
-                            break;
-                    }
-                }
+                if (messageId == MESSAGE_COMPLETED_TASK)
+                    isMessageProcessed = finishTask(task);
 
                 if (!isMessageProcessed)
                     super.handleMessage(inputMessage);
 
             }
+
+            /**
+             * Returns true if the task is processed.
+             * @param task
+             * @return
+             */
+            private boolean finishTask(ImageProcessTask task) {
+
+                ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_ROTATE);
+                sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
+
+
+                if (task instanceof PageDetectionTask)
+                    ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_PAGE_DETECTION);
+                else if (task instanceof MapTask) {
+                    ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_MAP);
+                    // Notify other apps and DocScan about the image change:
+                    notifyImageChanged(task.getFile());
+                }
+                else if (task instanceof RotateTask) {
+                    ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_ROTATE);
+                    // Notify other apps and DocScan about the image change:
+                    notifyImageChanged(task.getFile());
+                }
+                else
+                    return false;
+
+                sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
+
+                return true;
+
+            }
+
 
             /**
              * Informs DocScan and other (system) apps that the image has been changed.
@@ -170,11 +178,13 @@ public class CropManager {
                     mContext.get().sendBroadcast(mediaScanIntent);
 
             }
+
         };
 
     }
 
-    public void handleState(CropTask task, int state) {
+
+    public void handleState(ImageProcessTask task, int state) {
 
         Message completeMessage = mHandler.obtainMessage(state, task);
         completeMessage.sendToTarget();
@@ -183,10 +193,10 @@ public class CropManager {
 
 
     /**
-     * Returns the CropManager object
-     * @return The global CropManager object
+     * Returns the ImageProcessor object
+     * @return The global ImageProcessor object
      */
-    public static CropManager getInstance() {
+    public static ImageProcessor getInstance() {
 
         return sInstance;
 
@@ -198,53 +208,61 @@ public class CropManager {
         sInstance.mContext = new WeakReference<>(applicationContext);
 
 //        Load the logger:
-        CropLogger.getInstance().readFromDisk(sInstance.mContext.get());
+        ImageProcessLogger.getInstance().readFromDisk(sInstance.mContext.get());
 
     }
 
-
-
     public static void pageDetection(File file) {
 
-        Log.d(CLASS_NAME, "pageDetection:");
+        executeTask(file, TASK_TYPE_PAGE_DETECTION);
 
-        PageDetectionTask pageDetectionTask = new PageDetectionTask();
-        pageDetectionTask.initializeTask(sInstance);
-        pageDetectionTask.setFile(file);
+    }
 
-//        Inform the logger that we got a new file here:
-        CropLogger.addPageDetectionTask(file);
+    public static void rotateFile(File file) {
 
-        sInstance.mCropThreadPool.execute(pageDetectionTask.getRunnable());
+        executeTask(file, TASK_TYPE_ROTATE);
 
     }
 
     public static void mapFile(File file) {
 
-        Log.d(CLASS_NAME, "mapFile:");
-
-        if (PageDetector.isCropped(file.getAbsolutePath()))
-            return;
-
-        MapTask mapTask = new MapTask();
-        mapTask.initializeTask(sInstance);
-        mapTask.setFile(file);
-
-//        Inform other activities (GalleryActivity, PageSlideActivity) that the mapping started:
-        sInstance.sendCropIntent(file.getAbsolutePath(), INTENT_CROP_TYPE_MAP_FINISHED);
-//        Inform the logger that we got a new file here:
-        CropLogger.addMapTask(file);
-
-        sInstance.mCropThreadPool.execute(mapTask.getRunnable());
+        executeTask(file, TASK_TYPE_MAP);
 
     }
 
-    private void sendCropIntent(String fileName, int type) {
+    private static void executeTask(File file, int taskType) {
 
-        Log.d(CLASS_NAME, "sendCropIntent:");
+        ImageProcessTask imageProcessTask = null;
 
-        Intent intent = new Intent(INTENT_CROP_ACTION);
-        intent.putExtra(INTENT_CROP_TYPE, type);
+        //        Inform the logger that we got a new file here:
+        switch (taskType) {
+            case TASK_TYPE_PAGE_DETECTION:
+                imageProcessTask = new PageDetectionTask();
+                ImageProcessLogger.addPageDetectionTask(file);
+                break;
+            case TASK_TYPE_MAP:
+                imageProcessTask = new MapTask();
+                ImageProcessLogger.addMapTask(file);
+                break;
+            case TASK_TYPE_ROTATE:
+                imageProcessTask = new RotateTask();
+                ImageProcessLogger.addRotateTask(file);
+                break;
+        }
+
+        imageProcessTask.initializeTask(sInstance);
+        imageProcessTask.setFile(file);
+
+        sInstance.mProcessThreadPool.execute(imageProcessTask.getRunnable());
+
+    }
+
+    private void sendIntent(String fileName, int type) {
+
+        Log.d(CLASS_NAME, "sendIntent:");
+
+        Intent intent = new Intent(INTENT_IMAGE_PROCESS_ACTION);
+        intent.putExtra(INTENT_IMAGE_PROCESS_TYPE, type);
         intent.putExtra(INTENT_FILE_NAME, fileName);
 
         if (mContext != null)

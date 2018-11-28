@@ -1,9 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
-import android.support.v7.preference.PreferenceManager;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -11,10 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropLogger;
-import at.ac.tuwien.caa.docscan.sync.SyncFile;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
-import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 /**
  * A class that is used for a migration of how the old documents (with serialization) are saved to
@@ -26,79 +22,79 @@ public class DocumentMigrator {
     public static void migrate(Context context) {
 
         saveDocuments(context);
-        saveOnlineStatus(context);
+//        saveOnlineStatus(context);
 
     }
 
-    private static void saveOnlineStatus(Context context) {
-
-//        Load the saved sync info:
-        SyncInfo.readFromDisk(context);
-
-        String appName = context.getResources().getString(R.string.app_name);
-        File imgDir = Helper.getMediaStorageDir(appName);
-
-        syncInfoToSyncStorage(imgDir, SyncInfo.getInstance());
-
-    }
-
-    private static void syncInfoToSyncStorage(File imgDir, SyncInfo syncInfo) {
-
-        SyncStorage syncStorage = SyncStorage.getInstance();
-
-        ArrayList<SyncFile> fileSyncList = toSyncFileList(imgDir, syncInfo.getSyncList());
-        syncStorage.setSyncList(fileSyncList);
-
-        ArrayList<SyncFile> uploadedList = toSyncFileList(imgDir, syncInfo.getUploadedList());
-        syncStorage.setUploadedList(uploadedList);
-
-        ArrayList<String> titles = getUploadTitles(syncInfo);
-        syncStorage.setUploadDocumentTitles(titles);
-
-        syncStorage.setUnprocessedUploadIDs(
-                (ArrayList<Integer>) syncInfo.getUnprocessedUploadIDs().clone());
-        syncStorage.setUnfinishedUploadIDs(
-                (ArrayList<Integer>) syncInfo.getUnfinishedUploadIDs().clone());
-
-
-    }
-
-    private static ArrayList<SyncFile> toSyncFileList(File imgDir,
-                                                      ArrayList<SyncInfo.FileSync> fileSyncs) {
-
-        ArrayList<SyncFile> syncFiles = new ArrayList<>();
-
-        if (fileSyncs != null) {
-            for (SyncInfo.FileSync fileSync : fileSyncs) {
-                File file = new File(imgDir, fileSync.getFile().getName());
-                syncFiles.add(new SyncFile(file, fileSync.getState()));
-            }
-        }
-
-        return syncFiles;
-
-    }
-
-    @NonNull
-    private static ArrayList<String> getUploadTitles(SyncInfo syncInfo) {
-        //        Convert the upload dirs to string lists:
-        ArrayList<String> titles = new ArrayList<>();
-
-        if (syncInfo.getUploadDirs() != null) {
-            for (File file : syncInfo.getUploadDirs())
-                titles.add(file.getName());
-        }
-        return titles;
-    }
+//    private static void saveOnlineStatus(Context context) {
+//
+////        Load the saved sync info:
+//        SyncInfo.readFromDisk(context);
+//
+//        String appName = context.getResources().getString(R.string.app_name);
+//        File imgDir = Helper.getMediaStorageDir(appName);
+//
+//        syncInfoToSyncStorage(imgDir, SyncInfo.getInstance());
+//
+//    }
+//
+//    private static void syncInfoToSyncStorage(File imgDir, SyncInfo syncInfo) {
+//
+//        SyncStorage syncStorage = SyncStorage.getInstance();
+//
+//        ArrayList<SyncFile> fileSyncList = toSyncFileList(imgDir, syncInfo.getSyncList());
+//        syncStorage.setSyncList(fileSyncList);
+//
+//        ArrayList<SyncFile> uploadedList = toSyncFileList(imgDir, syncInfo.getUploadedList());
+//        syncStorage.setUploadedList(uploadedList);
+//
+//        ArrayList<String> titles = getUploadTitles(syncInfo);
+//        syncStorage.setUploadDocumentTitles(titles);
+//
+//        syncStorage.setUnprocessedUploadIDs(
+//                (ArrayList<Integer>) syncInfo.getUnprocessedUploadIDs().clone());
+//        syncStorage.setUnfinishedUploadIDs(
+//                (ArrayList<Integer>) syncInfo.getUnfinishedUploadIDs().clone());
+//
+//
+//    }
+//
+//    private static ArrayList<SyncFile> toSyncFileList(File imgDir,
+//                                                      ArrayList<SyncInfo.FileSync> fileSyncs) {
+//
+//        ArrayList<SyncFile> syncFiles = new ArrayList<>();
+//
+//        if (fileSyncs != null) {
+//            for (SyncInfo.FileSync fileSync : fileSyncs) {
+//                File file = new File(imgDir, fileSync.getFile().getName());
+//                syncFiles.add(new SyncFile(file, fileSync.getState()));
+//            }
+//        }
+//
+//        return syncFiles;
+//
+//    }
+//
+//    @NonNull
+//    private static ArrayList<String> getUploadTitles(SyncInfo syncInfo) {
+//        //        Convert the upload dirs to string lists:
+//        ArrayList<String> titles = new ArrayList<>();
+//
+//        if (syncInfo.getUploadDirs() != null) {
+//            for (File file : syncInfo.getUploadDirs())
+//                titles.add(file.getName());
+//        }
+//        return titles;
+//    }
 
     private static void saveDocuments(Context context) {
 
         //        Get a list of 'old' documents:
         ArrayList<Document> documents = documentsFromFolders(context);
-        DocumentStorage.getInstance().setDocuments(documents);
+        DocumentStorage.getInstance(context).setDocuments(documents);
 
         String activeDocumentTitle = Helper.getActiveDocumentTitle(context);
-        DocumentStorage.getInstance().setTitle(activeDocumentTitle);
+        DocumentStorage.getInstance(context).setTitle(activeDocumentTitle);
 
 //        Save the new documents:
         DocumentStorage.saveJSON(context);
@@ -156,6 +152,9 @@ public class DocumentMigrator {
                 return file.isDirectory();
             }
         };
+
+        if (mediaStorageDir == null)
+            return documents;
 
         File[] folders = mediaStorageDir.listFiles(directoryFilter);
         if (folders == null)
@@ -279,7 +278,7 @@ public class DocumentMigrator {
 
 
         for (File file : fileList) {
-            if (CropLogger.isAwaitingCropping(file))
+            if (ImageProcessLogger.isAwaitingCropping(file))
                 return true;
         }
 

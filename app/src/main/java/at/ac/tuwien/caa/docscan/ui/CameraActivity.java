@@ -108,7 +108,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.CropManager;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
@@ -309,9 +309,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Read the sync information:
 //        SyncInfo.getInstance().readFromDisk(this);
 
-//        CropLogger.getInstance().readFromDisk(this);
+//        ImageProcessLogger.getInstance().readFromDisk(this);
 
-        CropManager.initContext(this);
+        ImageProcessor.initContext(this);
 
         mIsPictureSafe = true;
 
@@ -346,8 +346,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // update the title of the toolbar:
 //        getSupportActionBar().setTitle(User.getInstance().getDocumentName());
 
-        if (DocumentStorage.getInstance().getTitle() != null)
-            getSupportActionBar().setTitle(DocumentStorage.getInstance().getTitle());
+        if (DocumentStorage.getInstance(this).getTitle() != null)
+            getSupportActionBar().setTitle(DocumentStorage.getInstance(this).getTitle());
 
         showControlsLayout(!mIsQRActive);
 
@@ -504,7 +504,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // Save the current version:
         Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
 
-        if (lastInstalledVersion <= 35)
+        if (lastInstalledVersion <= 35 && lastInstalledVersion != -1)
             DocumentMigrator.migrate(this);
 
     }
@@ -688,7 +688,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void openGallery() {
 
-        Document document = DocumentStorage.getInstance().getActiveDocument();
+        Document document = DocumentStorage.getInstance(this).getActiveDocument();
         if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
             Intent intent = new Intent(getApplicationContext(), PageSlideActivity.class);
             intent.putExtra(mContext.getString(R.string.key_document_file_name),
@@ -1871,9 +1871,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     public void startGalleryActivity(MenuItem item) {
 
-        String documentTitle = DocumentStorage.getInstance().getTitle();
+        String documentTitle = DocumentStorage.getInstance(this).getTitle();
         if (documentTitle != null) {
-            if (DocumentStorage.getInstance().getDocument(documentTitle) == null)
+            if (DocumentStorage.getInstance(this).getDocument(documentTitle) == null)
                 return;
 
             Intent intent = new Intent(mContext, GalleryActivity.class);
@@ -2088,14 +2088,23 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void showToastText(int id) {
 
-        String msg = getResources().getString(id);
+        try {
 
-        if (mToast != null)
-            mToast.cancel();
+            String msg = getResources().getString(id);
 
-        mToast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
-        mToast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
-        mToast.show();
+            if (mToast != null)
+                mToast.cancel();
+
+            mToast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
+            mToast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+            mToast.show();
+
+        }
+        catch (WindowManager.BadTokenException e) {
+//            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
+//            this should only happen on API level 25, but I could not reproduce it with a virtual
+//            machine.
+        }
     }
 
     /**
@@ -2155,7 +2164,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private boolean loadThumbNail() {
 
-        String fileName = DocumentStorage.getInstance().getLastPageFileInActiveDocument();
+        String fileName = DocumentStorage.getInstance(this).getLastPageFileInActiveDocument();
         if (fileName != null) {
             //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
             int exifOrientation = -1;
@@ -2255,9 +2264,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Save exif information (especially the orientation):
                 saveExif(file);
 
-                boolean fileAdded = DocumentStorage.getInstance().addToActiveDocument(file);
+                boolean fileAdded = DocumentStorage.getInstance(mContext).addToActiveDocument(file);
                 if (!fileAdded)
-                    DocumentStorage.getInstance().generateDocument(file, mContext);
+                    DocumentStorage.getInstance(mContext).generateDocument(file, mContext);
 
                 mIsPictureSafe = true;
 
@@ -2300,10 +2309,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
                             mProgressBar.setVisibility(View.INVISIBLE);
                             mGalleryButton.setVisibility(View.VISIBLE);
-
-                            GlideApp.with(mContext)
-                                    .load(file.getPath())
-                                    .into(mGalleryButton);
+//                            Check if the activity is closing. This might especially happen on slow
+//                            devices, where it takes some time to process the image and the app
+//                            is closed, before the thumbnail gets shown.
+                            if (!((Activity) mContext).isFinishing())
+                                GlideApp.with(mContext)
+                                        .load(file.getPath())
+                                        .into(mGalleryButton);
 
                         }
                     });
@@ -2352,7 +2364,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 updateThumbnail(new File(uri));
 
                 //            Start the page detection on the saved image:
-                CropManager.pageDetection(new File(uri));
+                ImageProcessor.pageDetection(new File(uri));
             }
             else
                 Log.d(CLASS_NAME, "onPostExecute: could not save file!");
