@@ -39,7 +39,11 @@ public class PdfCreator {
     private static final String CLASS_NAME = "PdfCreator";
     private static FirebaseVisionTextRecognizer textRecognizer;
 
-    public static void testOCR(final ArrayList<File> files) {
+    public static void createPdfWithoutOCR(final ArrayList<File> files){
+        createPdf(files, null);
+    }
+
+    public static void createPdfWithOCR(final ArrayList<File> files) {
         final FirebaseVisionText[] ocrResults = new FirebaseVisionText[files.size()];
         for (final File file : files) {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
@@ -58,7 +62,7 @@ public class PdfCreator {
                                 }
                             }
                             if (f) {
-                                test(files, ocrResults);
+                                createPdf(files, ocrResults);
                             }
                         }
                     })
@@ -74,14 +78,14 @@ public class PdfCreator {
 
     }
 
-    public static void test(ArrayList<File> files, FirebaseVisionText[] ocrResults) {
+    public static void createPdf(ArrayList<File> files, FirebaseVisionText[] ocrResults) {
         File firstPage = files.get(0);
         int rotationInDegrees = getRotationInDegrees(firstPage);
         Bitmap firstPageBitmap = BitmapFactory.decodeFile(firstPage.getPath());
         firstPageBitmap = getRotatedBitmap(firstPageBitmap, rotationInDegrees);
         boolean landscapeFirst = firstPageBitmap.getWidth() > firstPageBitmap.getHeight();
         Rectangle firstPageSize = getPageSize(firstPageBitmap, landscapeFirst);
-        String pdfName = "test.pdf";
+        String pdfName = "createPdf.pdf";
         File outputFile = new File(getDocumentsDir(), pdfName);
         Document document = new Document(firstPageSize, 0, 0, 0, 0);
         try {

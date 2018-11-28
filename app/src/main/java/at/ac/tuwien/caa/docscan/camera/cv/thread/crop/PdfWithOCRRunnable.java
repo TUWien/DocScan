@@ -20,7 +20,7 @@ public class PdfWithOCRRunnable extends CropRunnable{
             files.add(file);
             //PdfCreator.createPdf(file);
         }
-        PdfCreator.testOCR(files);
+        PdfCreator.createPdfWithOCR(files);
     }
 
 }
