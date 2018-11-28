@@ -39,6 +39,7 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
+import at.ac.tuwien.caa.docscan.ui.AccountActivity;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
@@ -158,7 +159,9 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)  {
 //                        Start the LoginActivity
-                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+//                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+//                        intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
+                        Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
                         intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
                         startActivity(intent);
                     }

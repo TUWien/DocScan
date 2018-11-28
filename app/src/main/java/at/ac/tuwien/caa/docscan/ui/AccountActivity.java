@@ -2,31 +2,29 @@ package at.ac.tuwien.caa.docscan.ui;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.AppCompatImageButton;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewManager;
 import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.rest.LogoutRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.rest.UserHandler;
+import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
+import at.ac.tuwien.caa.docscan.sync.SyncFile;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 /**
  * Created by fabian on 22.08.2017.
  */
 
-public class AccountActivity extends BaseNavigationActivity {
+public class AccountActivity extends BaseNavigationActivity implements DropboxUtils.DropboxCallback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,10 +86,9 @@ public class AccountActivity extends BaseNavigationActivity {
     private void showDeleteSyncInfoAlert(final Class proceedingActivity) {
 
 //        Proceed if no file has been uploaded:
-        if (SyncStorage.getInstance().getSyncList() == null ||
-                SyncStorage.getInstance().getSyncList().isEmpty()) {
-            Intent intent = new Intent(getApplicationContext(), proceedingActivity);
-            startActivity(intent);
+        if (SyncStorage.getInstance(this).getSyncList() == null ||
+                SyncStorage.getInstance(this).getSyncList().isEmpty()) {
+            clearUserAndLogin(proceedingActivity);
             return;
         }
 
@@ -104,12 +101,7 @@ public class AccountActivity extends BaseNavigationActivity {
                 .setPositiveButton(R.string.sync_confirm_login_button_text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)  {
-
-//                        This deletes the sync information:
-                        SyncStorage.clearInstance();
-                        Intent intent = new Intent(getApplicationContext(), proceedingActivity);
-                        startActivity(intent);
-
+                        clearUserAndLogin(proceedingActivity);
                     }
                 })
                 .setNegativeButton(R.string.sync_cancel_login_button_text, null)
@@ -122,19 +114,48 @@ public class AccountActivity extends BaseNavigationActivity {
         // show it
         alertDialog.show();
 
+    }
 
+    private void clearUserAndLogin(Class proceedingActivity) {
+
+        if (proceedingActivity == null)
+            return;
+
+        User.getInstance().setLoggedIn(false);
+
+//        This deletes the sync information:
+        SyncStorage.clearInstance();
+        UserHandler.clearUser(this);
+
+//        startActivity(proceedingActivity);
+
+//        Clear the dropbox token (if it is set). This is done online and might take some time so,
+//        we wait for an event, because otherwise the ui might be blocked:
+        if (proceedingActivity == DropboxActivity.class)
+            DropboxUtils.getInstance().clearAccessToken(this);
+        else {
+            new LogoutRequest(this);
+            startActivity(proceedingActivity);
+        }
+
+    }
+
+    private void startActivity(Class proceedingActivity) {
+        //        Start the proceeding activity:
+        Intent intent = new Intent(getApplicationContext(), proceedingActivity);
+        startActivity(intent);
     }
 
     private void showAccountDetails() {
 
         // Show the first and last name of the user:
-        TextView userTextView = (TextView) findViewById(R.id.account_user_textview);
+        TextView userTextView = findViewById(R.id.account_user_textview);
         String userText = getString(R.string.account_user_textview_text) + " " +
                 User.getInstance().getFirstName() + " " + User.getInstance().getLastName();
         userTextView.setText(userText);
 
         // Show the cloud service:
-        TextView cloudTextView = (TextView) findViewById(R.id.account_cloud_textview);
+        TextView cloudTextView = findViewById(R.id.account_cloud_textview);
         String cloudText = getString(R.string.account_cloud_textview_text) + " ";
         if (User.getInstance().getConnection() == User.SYNC_DROPBOX)
             cloudText += getString(R.string.sync_dropbox_text);
@@ -158,5 +179,11 @@ public class AccountActivity extends BaseNavigationActivity {
     }
 
 
+    @Override
+    public void onAccesTokenCleared(boolean isCleared) {
 
+        if (isCleared)
+            startActivity(DropboxActivity.class);
+
+    }
 }

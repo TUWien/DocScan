@@ -508,7 +508,7 @@ public class UploadService extends JobService implements
 
             User.getInstance().setLoggedIn(false);
             DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onError");
-            Log.d(CLASS_NAME, "unfinished size: " + SyncStorage.getInstance().getUnfinishedUploadIDs().size());
+            Log.d(CLASS_NAME, "unfinished size: " + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
 
             SyncStorage.saveJSON(getApplicationContext());
 

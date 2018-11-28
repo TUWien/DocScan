@@ -38,7 +38,7 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
 
         super.initToolbarTitle(R.string.dropbox_title);
 
-        mIsActitivyJustCreated = true;
+//        mIsActitivyJustCreated = true;
 
         Button authenticateButton = (Button) findViewById(R.id.dropbox_authenticate_button);
         authenticateButton.setOnClickListener(new View.OnClickListener() {
@@ -74,15 +74,28 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
 
     @Override
     protected void onResume() {
+
         super.onResume();
 
         // The dropbox login is done in the onResume method, because if the user authenticates the
         // dropbox access via a web browser intent, this is the entry to the app after accepting in the
         // browser. However onResume is also called if the activity is created by an internal intent.
-        if (!mIsActitivyJustCreated)
-            loginToDropbox();
+        if (UserHandler.loadDropboxToken(this)) // Is there a token existing?
+            DropboxUtils.getInstance().loginToDropbox(this, User.getInstance().getDropboxToken());
+        else {
+            String accessToken = Auth.getOAuth2Token();
+            if (accessToken != null) {
+                showLoadingLayout(true);
+                User.getInstance().setDropboxToken(accessToken);
+                UserHandler.saveDropboxToken(this);
+                DropboxUtils.getInstance().loginToDropbox(this, accessToken);
+            }
 
-        mIsActitivyJustCreated = false;
+        }
+
+
+
+//        mIsActitivyJustCreated = false;
 
     }
 

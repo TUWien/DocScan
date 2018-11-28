@@ -7,6 +7,7 @@ import android.util.Log;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.android.Auth;
+import com.dropbox.core.android.AuthActivity;
 import com.dropbox.core.v2.DbxClientV2;
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.ListFolderErrorException;
@@ -29,6 +30,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.ui.AccountActivity;
 
 /**
  * Class used to access Dropbox. The Dropbox API key is not provided in repository and should never
@@ -67,9 +69,9 @@ public class DropboxUtils {
         mCallback = (TranskribusUtils.TranskribusUtilsCallback) context;
         mContext = context;
 
-        SyncStorage.getInstance().clearSyncList();
+        SyncStorage.getInstance(context).clearSyncList();
 
-        ArrayList<String> titles = SyncStorage.getInstance().getUploadDocumentTitles();
+        ArrayList<String> titles = SyncStorage.getInstance(context).getUploadDocumentTitles();
 
         if (titles != null && !titles.isEmpty()) {
             for (String title : titles) {
@@ -84,7 +86,7 @@ public class DropboxUtils {
 
     private void addDocument(String documentTitle) {
 
-        Document document = DocumentStorage.getInstance().getDocument(documentTitle);
+        Document document = DocumentStorage.getInstance(mContext).getDocument(documentTitle);
         if (document != null) {
 //            ArrayList<File> files = document.getFiles();
 //            if (files != null && !files.isEmpty()) {
@@ -107,6 +109,17 @@ public class DropboxUtils {
 
     public void uploadFile(final SyncStorage.Callback callback, DropboxSyncFile file) {
         new UploadFileTask(callback, file).execute();
+
+    }
+
+    /**
+     * Clears the token, which is similar to logging a user out. See here:
+     * https://github.com/dropbox/dropbox-sdk-java/issues/92
+     * @param callback
+     */
+    public void clearAccessToken(DropboxCallback callback) {
+
+        new ClearAccessToken(callback).execute();
 
     }
 
@@ -213,7 +226,7 @@ public class DropboxUtils {
                 for (File file : mDocument.getFiles()) {
 //                        The file is not on the server:
                     if (!remoteFileNames.contains(file.getName()))
-                        SyncStorage.getInstance().addDropboxFile(file, mDocument.getTitle());
+                        SyncStorage.getInstance(mContext).addDropboxFile(file, mDocument.getTitle());
                 }
             }
         }
@@ -244,9 +257,9 @@ public class DropboxUtils {
                 else {
                     int fileIdx = mDocument.getFileNames().indexOf(remoteFileName);
                     File file = mDocument.getFiles().get(fileIdx);
-                    if (SyncStorage.getInstance().isFileChanged(file) ||
-                            !SyncStorage.getInstance().isInUploadedList(file))
-                        SyncStorage.getInstance().addDropboxFile(file, mDocument.getTitle());
+                    if (SyncStorage.getInstance(mContext).isFileChanged(file) ||
+                            !SyncStorage.getInstance(mContext).isInUploadedList(file))
+                        SyncStorage.getInstance(mContext).addDropboxFile(file, mDocument.getTitle());
 
                 }
             }
@@ -308,6 +321,46 @@ public class DropboxUtils {
         }
     }
 
+    private class ClearAccessToken extends AsyncTask<Void, Void, Boolean> {
+
+
+        DropboxCallback mCallback;
+
+        ClearAccessToken(DropboxCallback callback) {
+            mCallback = callback;
+        }
+
+        /**
+         * Returns true if the token is cleared:
+         * @param voids
+         * @return
+         */
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+
+            try {
+
+                AuthActivity.result = null;
+
+                if (mClient != null)
+                    mClient.auth().tokenRevoke();
+                return true;
+
+            } catch (DbxException e) {
+                return true;
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(Boolean isCleared) {
+
+            mCallback.onAccesTokenCleared(isCleared);
+
+        }
+
+    }
+
     /**
      * Async task to upload a file to a directory
      * Taken from: @see <a href="https://github.com/dropbox/dropbox-sdk-java/blob/master/examples/android/src/main/java/com/dropbox/core/examples/android/UploadFileTask.java"/>
@@ -366,5 +419,9 @@ public class DropboxUtils {
 
             return null;
         }
+    }
+
+    public interface DropboxCallback {
+        void onAccesTokenCleared(boolean isCleared);
     }
 }

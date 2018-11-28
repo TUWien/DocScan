@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import at.ac.tuwien.caa.docscan.R;
-
 import static at.ac.tuwien.caa.docscan.rest.User.SYNC_DROPBOX;
 
 /**
@@ -18,9 +16,24 @@ public class UserHandler {
     private static final String FIRST_NAME_KEY =    "firstName";
     private static final String LAST_NAME_KEY =     "lastName";
     private static final String NAME_KEY =          "userName";
-    private static final String PASSWORD_KEY =      "userPassword";
+    private static final String TRANSKRIBUS_PASSWORD_KEY =      "userPassword";
     private static final String DROPBOX_TOKEN_KEY = "dropboxToken";
     private static final String CONNECTION_KEY =    "connection";
+
+    public static void clearUser(Context context) {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.remove(FIRST_NAME_KEY);
+        editor.remove(LAST_NAME_KEY);
+        editor.remove(NAME_KEY);
+        editor.remove(TRANSKRIBUS_PASSWORD_KEY);
+        editor.remove(DROPBOX_TOKEN_KEY);
+        editor.remove(CONNECTION_KEY);
+        editor.apply();
+        editor.commit();
+
+    }
 
     public static void saveDropboxToken(Context context) {
 
@@ -109,7 +122,7 @@ public class UserHandler {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(NAME_KEY, User.getInstance().getUserName());
-        editor.putString(PASSWORD_KEY, User.getInstance().getPassword());
+        editor.putString(TRANSKRIBUS_PASSWORD_KEY, User.getInstance().getPassword());
         editor.putInt(CONNECTION_KEY, User.getInstance().getConnection());
         editor.apply();
         editor.commit();
@@ -161,7 +174,7 @@ public class UserHandler {
 //        SharedPreferences sharedPref = activity.getApplicationContext().getPreferences(Context.MODE_PRIVATE);
         String name = sharedPref.getString(NAME_KEY, null);
         String defaultPassword = null;
-        String password = sharedPref.getString(PASSWORD_KEY, defaultPassword);
+        String password = sharedPref.getString(TRANSKRIBUS_PASSWORD_KEY, defaultPassword);
 
         if (name == null)
             return false;
