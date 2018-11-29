@@ -13,9 +13,9 @@ class LicenseActivity : BaseNoNavigationActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_licenses)
-        val licenseAdapater = LicenseAdapter(generateLicenses())
+        val licenseAdapter = LicenseAdapter(generateLicenses())
 
-        licenses_recycler_view.adapter = licenseAdapater
+        licenses_recycler_view.adapter = licenseAdapter
         licenses_recycler_view.layoutManager = LinearLayoutManager(this@LicenseActivity)
 
         var toolbar: Toolbar = findViewById(R.id.main_toolbar)

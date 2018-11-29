@@ -12,8 +12,10 @@ import java.util.*
 class LicenseAdapter(private val licenseList: ArrayList<LicenseActivity.License>) : RecyclerView.Adapter<LicenseAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+
         val layoutInflater = LayoutInflater.from(parent.context)
         return ViewHolder(layoutInflater.inflate(R.layout.license_list_item, parent, false))
+
     }
 
     override fun getItemCount(): Int {

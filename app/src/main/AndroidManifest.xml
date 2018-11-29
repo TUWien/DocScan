@@ -22,13 +22,13 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <service
-            android:exported="false"
-            android:name=".sync.SyncService">
-            <intent-filter>
-                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
-            </intent-filter>
-        </service>
+        <!--<service-->
+            <!--android:exported="false"-->
+            <!--android:name=".sync.SyncService">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>-->
+            <!--</intent-filter>-->
+        <!--</service>-->
 
         <service
             android:exported="false"
