@@ -12,15 +12,16 @@ public class PdfRunnable extends CropRunnable{
     }
 
     @Override
-    protected void performTask(String documentFiles) {
-        String[] fileNames = documentFiles.split(">");
+    protected void performTask(String document) {
+        String[] documentData = document.split("<");
+        String[] fileNames = documentData[1].split(">");
         ArrayList<File> files = new ArrayList<>();
         for (String fileName : fileNames) {
             File file = new File(fileName);
             files.add(file);
-            //PdfCreator.createPdf(file);
         }
-        PdfCreator.createPdfWithoutOCR(files);
+        PdfCreator.createPdfWithoutOCR(documentData[0], files, this);
+
     }
 
 }

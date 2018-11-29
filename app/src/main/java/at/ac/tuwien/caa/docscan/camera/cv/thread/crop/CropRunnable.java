@@ -66,6 +66,8 @@ public abstract class CropRunnable implements Runnable {
             String fileName;
             if (document != null){
                 StringBuilder sb = new StringBuilder();
+                sb.append(document.getTitle());
+                sb.append("<");
                 for (File f : document.getFiles()){
                     sb.append(f.getAbsolutePath());
                     sb.append(">");

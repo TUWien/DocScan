@@ -34,16 +34,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESSAGE_CREATED_DOCUMENT;
+
 public class PdfCreator {
 
     private static final String CLASS_NAME = "PdfCreator";
     private static FirebaseVisionTextRecognizer textRecognizer;
 
-    public static void createPdfWithoutOCR(final ArrayList<File> files){
-        createPdf(files, null);
+    public static void createPdfWithoutOCR(String documentName, final ArrayList<File> files, CropRunnable cropRunnable){
+        createPdf(documentName, files, null, cropRunnable);
     }
 
-    public static void createPdfWithOCR(final ArrayList<File> files) {
+    public static void createPdfWithOCR(final String documentName, final ArrayList<File> files, final CropRunnable cropRunnable) {
         final FirebaseVisionText[] ocrResults = new FirebaseVisionText[files.size()];
         for (final File file : files) {
             Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
@@ -62,7 +64,7 @@ public class PdfCreator {
                                 }
                             }
                             if (f) {
-                                createPdf(files, ocrResults);
+                                createPdf(documentName, files, ocrResults, cropRunnable);
                             }
                         }
                     })
@@ -78,14 +80,14 @@ public class PdfCreator {
 
     }
 
-    public static void createPdf(ArrayList<File> files, FirebaseVisionText[] ocrResults) {
+    public static void createPdf(String documentName, ArrayList<File> files, FirebaseVisionText[] ocrResults, CropRunnable cropRunnable) {
         File firstPage = files.get(0);
         int rotationInDegrees = getRotationInDegrees(firstPage);
         Bitmap firstPageBitmap = BitmapFactory.decodeFile(firstPage.getPath());
         firstPageBitmap = getRotatedBitmap(firstPageBitmap, rotationInDegrees);
         boolean landscapeFirst = firstPageBitmap.getWidth() > firstPageBitmap.getHeight();
         Rectangle firstPageSize = getPageSize(firstPageBitmap, landscapeFirst);
-        String pdfName = "createPdf.pdf";
+        String pdfName = documentName + ".pdf";
         File outputFile = new File(getDocumentsDir(), pdfName);
         Document document = new Document(firstPageSize, 0, 0, 0, 0);
         try {
@@ -103,7 +105,7 @@ public class PdfCreator {
                 document.add(image);
 
 
-                if (ocrResults[i] != null) {
+                if (ocrResults != null && ocrResults[i] != null) {
                     // the direct content where we write on
                     // directContentUnder instead of directContent, because then the text is in the background)
                     //PdfContentByte cb = writer.getDirectContentUnder();
@@ -173,8 +175,9 @@ public class PdfCreator {
 
             document.close();
             Log.d(CLASS_NAME, "Document created at " + outputFile.getAbsolutePath());
+            cropRunnable.mCropTask.handleState(MESSAGE_CREATED_DOCUMENT);
         } catch (DocumentException | IOException e) {
-            e.printStackTrace();
+            Log.e(CLASS_NAME, "Failed to create document: " + e.getMessage());
         }
 
     }
@@ -295,8 +298,13 @@ public class PdfCreator {
         return sortedBlocks;
     }
 
-    private static File getDocumentsDir() {
-        File docsFolder = new File(Environment.getExternalStorageDirectory() + "/Documents");
+    public static File getDocumentsDir() {
+        File docsFolder = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+            docsFolder = new File(Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOCUMENTS);
+        } else {
+            docsFolder = new File(Environment.getExternalStorageDirectory() + "/Documents");
+        }
         if (!docsFolder.exists()) {
             docsFolder.mkdir();
         }

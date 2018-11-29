@@ -29,6 +29,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.ImageView;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -48,12 +49,14 @@ import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.
 public class ImageProcessor {
 
     public static final int MESSAGE_COMPLETED_TASK = 0;
+    public static final int MESSAGE_CREATED_DOCUMENT = 1;
 
     public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
 //    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
     public static final String INTENT_IMAGE_PROCESS_ACTION = "INTENT_IMAGE_PROCESS_ACTION";
     public static final String INTENT_IMAGE_PROCESS_TYPE = "INTENT_IMAGE_PROCESS_TYPE";
     public static final int INTENT_IMAGE_PROCESS_FINISHED = 0;
+    public static final int INTENT_PDF_PROCESS_FINISHED = 1;
 
     // Sets the amount of time an idle thread will wait for a task before terminating
     private static final int KEEP_ALIVE_TIME = 1;
@@ -128,9 +131,22 @@ public class ImageProcessor {
                 if (messageId == MESSAGE_COMPLETED_TASK)
                     isMessageProcessed = finishTask(task);
 
+                if (messageId == MESSAGE_CREATED_DOCUMENT)
+                    isMessageProcessed = notifyCreatedDocument(task);
+
                 if (!isMessageProcessed)
                     super.handleMessage(inputMessage);
 
+            }
+
+            private boolean notifyCreatedDocument(ImageProcessTask task){
+                if (task.getDocument() != null) {
+                    String absolutePath = PdfCreator.getDocumentsDir() + "/" + task.getDocument().getTitle() +".pdf";
+                    sendIntent(absolutePath, INTENT_PDF_PROCESS_FINISHED);
+                    return true;
+                } else {
+                    return false;
+                }
             }
 
             /**
