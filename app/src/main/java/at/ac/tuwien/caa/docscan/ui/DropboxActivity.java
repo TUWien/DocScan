@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -102,8 +103,15 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
     @Override
     public void onLogin(User user) {
 
-        String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
-        Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+        try {
+            String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
+            Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+        }
+        catch (WindowManager.BadTokenException e) {
+//            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
+//            this should only happen on API level 25, but I could not reproduce it with a virtual
+//            machine.
+        }
 
 //        TODO: save the user credentials
 

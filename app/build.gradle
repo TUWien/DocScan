@@ -11,10 +11,9 @@ android {
 		minSdkVersion 15
 		targetSdkVersion 27
 
-		versionCode 44
-		versionName "1.4.12"
-//		versionCode 34
-//		versionName "1.4.2"
+		versionCode 64
+		versionName "1.5.1"
+
 
 		multiDexEnabled true
 //		this is used to show the build time in the AboutActivity
