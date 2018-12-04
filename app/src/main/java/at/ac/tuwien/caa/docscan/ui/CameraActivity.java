@@ -114,6 +114,7 @@ import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
+import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.document.SelectDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
@@ -637,6 +638,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 break;
         }
     }
+
 
 
     /**
@@ -1929,6 +1931,16 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             case R.id.series_new_item:
                 startActivity(new Intent(getApplicationContext(), CreateDocumentActivity.class));
+//                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                return true;
+
+            case R.id.series_edit_item:
+                String documentName = DocumentStorage.getInstance(this).getTitle();
+                if (documentName != null) {
+                    Intent intent = new Intent(getApplicationContext(), EditDocumentActivity.class);
+                    intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, documentName);
+                    startActivity(intent);
+                }
 //                startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 return true;
 

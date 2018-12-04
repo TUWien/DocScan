@@ -42,14 +42,14 @@ public class DocumentsMetaDataRequest extends RestRequest.JSONArrayRestRequest {
     public void handleResponse(JSONArray response) {
 
         try {
-            List<TranskribusDocumentMetaData> metaDatas = new ArrayList<TranskribusDocumentMetaData>();
+            List<TranskribusDocumentMetaDataRequest> metaDatas = new ArrayList<TranskribusDocumentMetaDataRequest>();
 
             for (int i = 0; i < response.length(); i++) {
                 JSONObject o = response.getJSONObject(i);
                 int id = o.getInt(ID_ID);
                 String name = o.getString(TITLE_ID);
 
-                TranskribusDocumentMetaData document = new TranskribusDocumentMetaData(id, name, mCollection);
+                TranskribusDocumentMetaDataRequest document = new TranskribusDocumentMetaDataRequest(id, name, mCollection);
                 metaDatas.add(document);
             }
 
@@ -63,7 +63,7 @@ public class DocumentsMetaDataRequest extends RestRequest.JSONArrayRestRequest {
 
     public interface DocumentsMetaDataCallback extends RestRequest.RestCallback{
 
-        void onDocumentsMetaData(List<TranskribusDocumentMetaData> transkribusDocumentMetaData);
+        void onDocumentsMetaData(List<TranskribusDocumentMetaDataRequest> transkribusDocumentMetaDatumRequests);
 
     }
 }

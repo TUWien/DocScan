@@ -120,6 +120,7 @@
     <string name="upload_item">Upload</string>
 
     <string name="series_create">New document</string>
+    <string name="series_edit">Edit document</string>
     <string name="series_switch">Open document</string>
     <string name="series_qr">New document from QR code</string>
 
@@ -297,14 +298,21 @@
     <string name="about_transkribus_text">DocScan features image uploads to Transkribus. Visit the Transkribus website for further information: \nhttps://transkribus.eu</string>
 
 
+    <string name="edit_series_title">Edit document</string>
+    <string name="edit_series_done_button_text">Save changes</string>
+
     <string name="create_series_title">Create new document</string>
     <string name="create_series_name_hint">Document name</string>
     <string name="create_series_done_button_text">Create document</string>
-    <string name="create_series_advanced_options_text">Show metadata fields</string>
+    <string name="create_series_advanced_options_text">Show Transkribus metadata</string>
     <string name="create_series_authority_text">Authority</string>
+    <string name="create_series_transkribus_metadata_text">This metadata is uploaded to Transkribus but not to other cloud storages.</string>
+    <string name="create_series_author_text">Author</string>
+    <string name="create_series_writer_text">Writer</string>
+    <string name="create_series_genre_text">Genre</string>
     <string name="create_series_signature_text">Signature</string>
     <string name="create_series_hierarchy_text">Hierarchy</string>
-    <string name="create_series_link_button_text">Open link in browser</string>
+    <string name="create_series_url_text">URL</string>
 
     <string name="map_crop_view_title">Warp image</string>
     <string name="map_crop_view_no_transformation_title">Image not transformed</string>

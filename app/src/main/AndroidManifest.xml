@@ -96,11 +96,13 @@
             android:exported="false"
             />
 
-        <!--launchMode = "singleInstance" avoids opening the intent twice -->
-        <!--nohistory = "true" creates the activity instead of just resuming it -->
         <activity
             android:name=".ui.document.CreateDocumentActivity"
             android:exported="true"
+            android:configChanges="orientation|screenSize"
+            />
+        <activity
+            android:name=".ui.document.EditDocumentActivity"
             android:configChanges="orientation|screenSize"
             />
 
