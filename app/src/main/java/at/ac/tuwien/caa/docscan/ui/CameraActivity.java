@@ -121,6 +121,7 @@ import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
+import me.drakeet.support.toast.ToastCompat;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
@@ -180,7 +181,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private static Date mLastTimeStamp;
     private DkPolyRect[] mLastDkPolyRects;
 
-    private Toast mToast;
     private OrientationEventListener mOrientationListener;
 
     private boolean mIsQRActive = false;
@@ -2100,23 +2100,31 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void showToastText(int id) {
 
-        try {
+        String msg = getResources().getString(id);
+        ToastCompat toast = ToastCompat.makeText(this, msg, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+        toast.show();
 
-            String msg = getResources().getString(id);
 
-            if (mToast != null)
-                mToast.cancel();
-
-            mToast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
-            mToast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
-            mToast.show();
-
-        }
-        catch (WindowManager.BadTokenException e) {
-//            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
-//            this should only happen on API level 25, but I could not reproduce it with a virtual
-//            machine.
-        }
+//        Old version that cause BadTokenExceptions on API level 25. Could not catch it.
+//        According to https://github.com/drakeet/ToastCompat this is an API 25 bug
+//        try {
+//
+//            String msg = getResources().getString(id);
+//
+//            if (mToast != null)
+//                mToast.cancel();
+//
+//            mToast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
+//            mToast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+//            mToast.show();
+//
+//        }
+//        catch (WindowManager.BadTokenException e) {
+////            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
+////            this should only happen on API level 25, but I could not reproduce it with a virtual
+////            machine.
+//        }
     }
 
     /**

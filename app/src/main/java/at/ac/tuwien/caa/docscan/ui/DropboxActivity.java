@@ -20,6 +20,7 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+import me.drakeet.support.toast.ToastCompat;
 
 import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 
@@ -103,15 +104,20 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
     @Override
     public void onLogin(User user) {
 
-        try {
-            String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
-            Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
-        }
-        catch (WindowManager.BadTokenException e) {
-//            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
-//            this should only happen on API level 25, but I could not reproduce it with a virtual
-//            machine.
-        }
+        String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
+        ToastCompat.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+
+//        Old version that cause BadTokenExceptions on API level 25. Could not catch it.
+//        According to https://github.com/drakeet/ToastCompat this is an API 25 bug
+//        try {
+//            String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
+//            Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+//        }
+//        catch (WindowManager.BadTokenException e) {
+////            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
+////            this should only happen on API level 25, but I could not reproduce it with a virtual
+////            machine.
+//        }
 
 //        TODO: save the user credentials
 
