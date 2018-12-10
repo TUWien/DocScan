@@ -15,6 +15,7 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionText.TextBlock;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
+import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
@@ -41,7 +42,7 @@ public class PdfCreator {
     private static final String CLASS_NAME = "PdfCreator";
     private static FirebaseVisionTextRecognizer textRecognizer;
 
-    public static void createPdfWithoutOCR(String documentName, final ArrayList<File> files, CropRunnable cropRunnable){
+    public static void createPdfWithoutOCR(String documentName, final ArrayList<File> files, CropRunnable cropRunnable) {
         createPdf(documentName, files, null, cropRunnable);
     }
 
@@ -119,10 +120,35 @@ public class PdfCreator {
                     Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
                     bitmap = getRotatedBitmap(bitmap, getRotationInDegrees(file));
 
-                    for (List<TextBlock> column : sortedBlocks){
+                    //int j = 0;
+                    for (List<TextBlock> column : sortedBlocks) {
+                        // Following lines are for debug purposes (to show the recognized text blocks
+                        //    j++;
+                        //for (TextBlock textBlock : column) {
+                        //    cb = writer.getDirectContent();
+                        //    float xleft = ((float) textBlock.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
+                        //    float xright = ((float) textBlock.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
+                        //    float xtop = ((float) textBlock.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                        //    float xbottom = ((float) textBlock.getBoundingBox().bottom / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                        //    Rectangle xrect = new Rectangle(xleft,
+                        //            document.getPageSize().getHeight() - xbottom,
+                        //            xright,
+                        //            document.getPageSize().getHeight() - xtop);
+                        //    xrect.setBorder(Rectangle.BOX);
+                        //    xrect.setBorderWidth(2);
+                        //    cb.rectangle(xrect);
+                        //    Phrase phrase = new Phrase(j + "", new Font(bf, 20f));
+                        //    ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, phrase,
+                        //            // center horizontally
+                        //            (xrect.getLeft() + xrect.getRight()) / 2,
+                        //            // shift baseline based on descent
+                        //            xrect.getBottom() - bf.getDescentPoint(j + "", 20f),
+                        //            0);
+                        //}
+
                         for (FirebaseVisionText.Line line : sortLinesInColumn(column)) {
                             // one FirebaseVisionText.Line corresponds to one line
-                            // the rectangle we want to draw this word corresponds to the lines boundingBox
+                            // the rectangle we want to draw this line corresponds to the lines boundingBox
                             float left = ((float) line.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
                             float right = ((float) line.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
                             float top = ((float) line.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
@@ -135,10 +161,10 @@ public class PdfCreator {
                             // try to get max font size that fit in rectangle
                             int textHeightInGlyphSpace = bf.getAscent(drawText) - bf.getDescent(drawText);
                             float fontSize = 1000f * rect.getHeight() / textHeightInGlyphSpace;
-                            while (bf.getWidthPoint(drawText, fontSize) < rect.getWidth()){
+                            while (bf.getWidthPoint(drawText, fontSize) < rect.getWidth()) {
                                 fontSize++;
                             }
-                            while (bf.getWidthPoint(drawText, fontSize) > rect.getWidth()){
+                            while (bf.getWidthPoint(drawText, fontSize) > rect.getWidth()) {
                                 fontSize = fontSize - 0.1f;
                             }
                             Phrase phrase = new Phrase(drawText, new Font(bf, fontSize));
@@ -243,7 +269,7 @@ public class PdfCreator {
                         break;
                     }
                 }
-                if (!added){
+                if (!added) {
                     List<FirebaseVisionText.TextBlock> blocks = new ArrayList<>();
                     blocks.add(block);
                     int i = 0;
@@ -259,7 +285,7 @@ public class PdfCreator {
                 }
             }
         }
-        for (List<TextBlock> textBlocks : sortedBlocks){
+        for (List<TextBlock> textBlocks : sortedBlocks) {
             sortedBlocks.set(sortedBlocks.indexOf(textBlocks), textBlocks);
         }
         return sortedBlocks;
@@ -274,7 +300,7 @@ public class PdfCreator {
             } else {
                 int i = 0;
                 while (i < sortedBlocks.size()) {
-                    if (textBlock.getBoundingBox().width() > sortedBlocks.get(i).getBoundingBox().width()) {
+                    if (textBlock.getBoundingBox().width() < sortedBlocks.get(i).getBoundingBox().width()) {
                         i++;
                     } else {
                         break;
