@@ -113,29 +113,16 @@ public class PdfCreator {
                     BaseFont bf = BaseFont.createFont();
 
                     //sort the result based on the y-Axis so that the markup order is correct
-                    List<FirebaseVisionText.TextBlock> sortedBlocks = sortBlocks(ocrResults[i]);
+                    List<List<FirebaseVisionText.TextBlock>> sortedBlocks = sortBlocks(ocrResults[i]);
+
 
                     Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
                     bitmap = getRotatedBitmap(bitmap, getRotationInDegrees(file));
 
-                    for (TextBlock textBlock : sortedBlocks) {
-                        //cb = writer.getDirectContent();
-                        //float xleft = ((float) textBlock.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
-                        //float xright = ((float) textBlock.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
-                        //float xtop = ((float) textBlock.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
-                        //float xbottom = ((float) textBlock.getBoundingBox().bottom / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
-                        //Rectangle xrect = new Rectangle(xleft,
-                        //        document.getPageSize().getHeight() - xbottom,
-                        //        xright,
-                        //        document.getPageSize().getHeight() - xtop);
-                        //xrect.setBorder(Rectangle.BOX);
-                        //xrect.setBorderWidth(2);
-                        //cb.rectangle(xrect);
-
-                        for (FirebaseVisionText.Line line : textBlock.getLines()) {
-                            //for (FirebaseVisionText.Element element : line.getElements()) {
-                            // one FirebaseVisionText.Element corresponds to one word
-                            // the rectangle we want to draw this word corresponds to the elements boundingBox
+                    for (List<TextBlock> column : sortedBlocks){
+                        for (FirebaseVisionText.Line line : sortLinesInColumn(column)) {
+                            // one FirebaseVisionText.Line corresponds to one line
+                            // the rectangle we want to draw this word corresponds to the lines boundingBox
                             float left = ((float) line.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
                             float right = ((float) line.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
                             float top = ((float) line.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
@@ -148,8 +135,11 @@ public class PdfCreator {
                             // try to get max font size that fit in rectangle
                             int textHeightInGlyphSpace = bf.getAscent(drawText) - bf.getDescent(drawText);
                             float fontSize = 1000f * rect.getHeight() / textHeightInGlyphSpace;
+                            while (bf.getWidthPoint(drawText, fontSize) < rect.getWidth()){
+                                fontSize++;
+                            }
                             while (bf.getWidthPoint(drawText, fontSize) > rect.getWidth()){
-                                fontSize--;
+                                fontSize = fontSize - 0.1f;
                             }
                             Phrase phrase = new Phrase(drawText, new Font(bf, fontSize));
                             // write the text on the pdf
@@ -230,10 +220,11 @@ public class PdfCreator {
     }
 
     @NonNull
-    private static List<FirebaseVisionText.TextBlock> sortBlocks(FirebaseVisionText ocrResult) {
+    private static List<List<FirebaseVisionText.TextBlock>> sortBlocks(FirebaseVisionText ocrResult) {
         List<List<FirebaseVisionText.TextBlock>> sortedBlocks = new ArrayList<>();
         List<FirebaseVisionText.TextBlock> biggestBlocks = new ArrayList<>();
-        for (FirebaseVisionText.TextBlock block : ocrResult.getTextBlocks()) {
+        List<FirebaseVisionText.TextBlock> blocksSortedByWidth = sortByWidth(ocrResult.getTextBlocks());
+        for (FirebaseVisionText.TextBlock block : blocksSortedByWidth) {
             if (sortedBlocks.isEmpty()) {
                 List<FirebaseVisionText.TextBlock> blocks = new ArrayList<>();
                 blocks.add(block);
@@ -249,6 +240,7 @@ public class PdfCreator {
                             biggestBlocks.set(biggestBlocks.indexOf(checkBlock), block);
                         }
                         added = true;
+                        break;
                     }
                 }
                 if (!added){
@@ -268,17 +260,13 @@ public class PdfCreator {
             }
         }
         for (List<TextBlock> textBlocks : sortedBlocks){
-            sortedBlocks.set(sortedBlocks.indexOf(textBlocks), sortColumn(textBlocks));
+            sortedBlocks.set(sortedBlocks.indexOf(textBlocks), textBlocks);
         }
-        List<TextBlock> result = new ArrayList<>();
-        for (List<TextBlock> textBlocks : sortedBlocks){
-            result.addAll(textBlocks);
-        }
-        return result;
+        return sortedBlocks;
     }
 
     @NonNull
-    private static List<TextBlock> sortColumn(List<TextBlock> result) {
+    private static List<TextBlock> sortByWidth(List<TextBlock> result) {
         List<FirebaseVisionText.TextBlock> sortedBlocks = new ArrayList<>();
         for (FirebaseVisionText.TextBlock textBlock : result) {
             if (sortedBlocks.isEmpty()) {
@@ -286,7 +274,7 @@ public class PdfCreator {
             } else {
                 int i = 0;
                 while (i < sortedBlocks.size()) {
-                    if (textBlock.getCornerPoints()[0].y > sortedBlocks.get(i).getCornerPoints()[0].y) {
+                    if (textBlock.getBoundingBox().width() > sortedBlocks.get(i).getBoundingBox().width()) {
                         i++;
                     } else {
                         break;
@@ -296,6 +284,28 @@ public class PdfCreator {
             }
         }
         return sortedBlocks;
+    }
+
+    @NonNull
+    private static List<FirebaseVisionText.Line> sortLinesInColumn(List<TextBlock> result) {
+        List<FirebaseVisionText.Line> sortedLines = new ArrayList<>();
+        for (FirebaseVisionText.TextBlock textBlock : result) {
+            for (FirebaseVisionText.Line line : textBlock.getLines())
+                if (sortedLines.isEmpty()) {
+                    sortedLines.add(line);
+                } else {
+                    int i = 0;
+                    while (i < sortedLines.size()) {
+                        if (line.getCornerPoints()[0].y > sortedLines.get(i).getCornerPoints()[0].y) {
+                            i++;
+                        } else {
+                            break;
+                        }
+                    }
+                    sortedLines.add(i, line);
+                }
+        }
+        return sortedLines;
     }
 
     public static File getDocumentsDir() {
