@@ -22,13 +22,13 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <service
-            android:exported="false"
-            android:name=".sync.SyncService">
-            <intent-filter>
-                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
-            </intent-filter>
-        </service>
+        <!--<service-->
+            <!--android:exported="false"-->
+            <!--android:name=".sync.SyncService">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>-->
+            <!--</intent-filter>-->
+        <!--</service>-->
 
         <service
             android:exported="false"
@@ -96,11 +96,13 @@
             android:exported="false"
             />
 
-        <!--launchMode = "singleInstance" avoids opening the intent twice -->
-        <!--nohistory = "true" creates the activity instead of just resuming it -->
         <activity
             android:name=".ui.document.CreateDocumentActivity"
             android:exported="true"
+            android:configChanges="orientation|screenSize"
+            />
+        <activity
+            android:name=".ui.document.EditDocumentActivity"
             android:configChanges="orientation|screenSize"
             />
 
@@ -155,14 +157,17 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
+        <activity
+            android:name=".ui.license.LicenseActivity"
+            android:exported="false"
+            />
 
         <activity
             android:name="com.dropbox.core.android.AuthActivity"
             android:configChanges="orientation|keyboard"
             android:launchMode="singleTask">
             <intent-filter>
-                <!-- Change this to be db- followed by your app key -->
-                <data android:scheme="db-xxx" />
+                <data android:scheme="@string/dropbox_api_key" />
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -183,11 +188,11 @@
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-feature android:name="android.hardware.camera"/>
-    <uses-feature android:name="android.hardware.camera.autofocus"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
+    <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-feature android:name="android.hardware.location.gps"/>
 
 </manifest>

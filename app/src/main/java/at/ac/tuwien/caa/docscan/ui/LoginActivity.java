@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -16,6 +17,7 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
+import me.drakeet.support.toast.ToastCompat;
 
 /**
  * Created by fabian on 08.02.2017.
@@ -73,7 +75,20 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
         String pw = pwEdit.getText().toString();
 
         if (email.isEmpty() || pw.isEmpty()) {
-            Toast.makeText(this, R.string.login_check_input_toast, Toast.LENGTH_SHORT).show();
+
+            ToastCompat.makeText(this, R.string.login_check_input_toast, Toast.LENGTH_SHORT)
+                    .show();
+
+//        Old version that cause BadTokenExceptions on API level 25. Could not catch it.
+//        According to https://github.com/drakeet/ToastCompat this is an API 25 bug
+//            try {
+//                Toast.makeText(this, R.string.login_check_input_toast, Toast.LENGTH_SHORT).show();
+//            }
+//            catch (WindowManager.BadTokenException e) {
+////            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
+////            this should only happen on API level 25, but I could not reproduce it with a virtual
+////            machine.
+//            }
             return;
         }
 
@@ -90,7 +105,18 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
     public void onLogin(User user) {
 
         String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
-        Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+        ToastCompat.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+
+//        Old version that cause BadTokenExceptions on API level 25. Could not catch it.
+//        According to https://github.com/drakeet/ToastCompat this is an API 25 bug
+//        try {
+//            Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+//        }
+//        catch (WindowManager.BadTokenException e) {
+////            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
+////            this should only happen on API level 25, but I could not reproduce it with a virtual
+////            machine.
+//        }
 
 //        Save the credentials:
         UserHandler.saveTranskribusCredentials(this);

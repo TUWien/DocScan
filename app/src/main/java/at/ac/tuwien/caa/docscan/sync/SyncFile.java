@@ -11,6 +11,8 @@ public class SyncFile {
 
     private File mFile;
     private int mState;
+    private Long mModifiedDate;
+
 
     public SyncFile(File file) {
 
@@ -49,11 +51,25 @@ public class SyncFile {
 
 
     public int getState() {
+
         return mState;
+
+    }
+
+    public Long getModifiedDate() {
+
+        return mModifiedDate;
+
     }
 
     public void setState(int state) {
+
         mState = state;
+//        Store the modification date at upload time so that we can check for local changes that
+//        should be uploaded:
+        if (state == STATE_UPLOADED)
+            mModifiedDate = mFile.lastModified();
+
     }
 
     public File getFile() {

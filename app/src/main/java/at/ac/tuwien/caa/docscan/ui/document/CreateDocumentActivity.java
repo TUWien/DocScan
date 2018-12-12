@@ -3,10 +3,13 @@ package at.ac.tuwien.caa.docscan.ui.document;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.AppCompatButton;
+import android.support.v7.widget.AppCompatImageButton;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +23,7 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.TranskribusMetaData;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 
 /**
@@ -29,8 +33,9 @@ import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     private static final String CLASS_NAME = "CreateDocumentActivity";
-    private QRCodeParser qrCodeParser = null;
+    private TranskribusMetaData mTranskribusMetaData = null;
     public static final String DOCUMENT_QR_TEXT = "DOCUMENT_QR_TEXT";
+    private static final String SHOW_TRANSKRIBUS_METADATA_KEY = "SHOW_TRANSKRIBUS_METADATA";
 
 
     @Override
@@ -39,12 +44,10 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_document);
 
-
-        Log.d(CLASS_NAME, "oncreate");
-
         super.initToolbarTitle(R.string.create_series_title);
 
         initOkButton();
+        initUrlButton();
         initEditField();
 
 //        Temporarily deactivate the advanced fields:
@@ -60,17 +63,35 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             String initString = "";
             String qrText = extras.getString(DOCUMENT_QR_TEXT, initString);
             if (!qrText.equals(initString)) {
-                Log.d(getClass().getName(), qrText);
-                qrCodeParser = processQRCode(qrText);
-                if (qrCodeParser != null) {
-                    String json = qrCodeParser.toJSON();
-                    Log.d(CLASS_NAME, "metadata json: " + json);
-                    fillViews(qrCodeParser);
-                }
+                mTranskribusMetaData = processQRCode(qrText);
+                if (mTranskribusMetaData != null)
+                    fillViews(mTranskribusMetaData);
                 else
                     showQRCodeErrorAlert();
             }
         }
+    }
+
+    private void initUrlButton() {
+
+        AppCompatImageButton linkButton = findViewById(R.id.create_series_link_button);
+        linkButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText urlEditText = findViewById(R.id.create_series_url_edittext);
+                String url = urlEditText.getText().toString();
+                try {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                    Uri uri = Uri.parse(url);
+                    browserIntent.setData(uri);
+                    startActivity(browserIntent);
+                }
+                catch (ActivityNotFoundException e) {
+                    showUrlNotValidAlert(url);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -90,28 +111,6 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     }
 
-//    /**
-//     * Called after permission has been given or has been rejected. This is necessary on Android M
-//     * and younger Android systems.
-//     *
-//     * @param requestCode Request code
-//     * @param permissions Permission
-//     * @param grantResults results
-//     */
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-//
-//
-//        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
-//        switch (requestCode) {
-//            case PERMISSION_WRITE_EXTERNAL_STORAGE:
-//                if (isPermissionGiven)
-//                    createDir();
-//                else
-//                    showNoPermissionAlert();
-//                break;
-//        }
-//    }
 
     @Override
     public void onResume() {
@@ -120,12 +119,12 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         Log.d(CLASS_NAME, "onresume");
     }
 
-    private QRCodeParser processQRCode(String text) {
+    private TranskribusMetaData processQRCode(String text) {
 
         // Currently the XML has no root defined (malformed) so we add one manually:
         String qrText = "<root>" + text + "</root>";
         Log.d(getClass().getName(), "parsing document");
-        QRCodeParser metaData = parseQRCode(qrText);
+        TranskribusMetaData metaData = parseQRCode(qrText);
 
         Log.d(getClass().getName(), "found document: " + metaData);
 
@@ -133,16 +132,16 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     }
 
-    private QRCodeParser parseQRCode(String text) {
+    private TranskribusMetaData parseQRCode(String text) {
 
         Log.d(getClass().getName(), "QR code text: " + text);
 
-        return QRCodeParser.parseXML(text);
+        return TranskribusMetaData.parseXML(text);
 
     }
 
     //        Temporarily deactivate the advanced fields:
-    private void fillViews(QRCodeParser qrCodeInfo) {
+    private void fillViews(TranskribusMetaData qrCodeInfo) {
 
         if (qrCodeInfo == null)
             return;
@@ -177,62 +176,52 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     }
 
-    private void fillAdvancedFields(final QRCodeParser qrCodeParser, boolean editable) {
+    private void fillAdvancedFields(final TranskribusMetaData metaData, boolean editable) {
         //           // Description:
 //           EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
 //           if (document.getTitle() != null)
 //               descriptionEditText.setText(document.getDescription());
 
+        if (metaData == null)
+            return;
+
+//        Note: The following three fields are not passed via QR code, but we disable them if not
+//        editable:
+        EditText authorEditText = findViewById(R.id.create_series_author_edittext);
+        EditText writerEditText = findViewById(R.id.create_series_writer_edittext);
+        EditText genreEditText = findViewById(R.id.create_series_genre_edittext);
+
         // Signature:
         EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
-        if (qrCodeParser.getSignature() != null) {
-            signatureEditText.setText(qrCodeParser.getSignature());
-            if (!editable)
-                signatureEditText.setKeyListener(null);
-        }
+        if (metaData.getSignature() != null)
+            signatureEditText.setText(metaData.getSignature());
 
         // Authority:
         EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
-        if (qrCodeParser.getAuthority() != null) {
-            authorityEditText.setText(qrCodeParser.getAuthority());
-            if (!editable)
-                authorityEditText.setKeyListener(null);
+        if (metaData.getAuthority() != null)
+            authorityEditText.setText(metaData.getAuthority());
+
+        //        URI button:
+        EditText urlEditText = findViewById(R.id.create_series_url_edittext);
+        if (metaData.getUrl() != null)
+            urlEditText.setText(metaData.getUrl());
+
+//        Check if the document is a special archive document created from QR code:
+
+        if (!editable) {
+            authorEditText.setKeyListener(null);
+            writerEditText.setKeyListener(null);
+            genreEditText.setKeyListener(null);
+            signatureEditText.setKeyListener(null);
+            authorityEditText.setKeyListener(null);
+            urlEditText.setKeyListener(null);
         }
 
-//        // Hierarchy:
-//        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
-//        if (qrCodeParser.getHierarchy() != null) {
-//            hierarchyEditText.setText(qrCodeParser.getHierarchy());
-//            if (!editable)
-//                hierarchyEditText.setKeyListener(null);
-//        }
 
-//        URI button:
-        if (qrCodeParser.getLink() != null) {
-            AppCompatButton linkButton = findViewById(R.id.create_series_link_button);
-            linkButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW);
-                        Uri uri = Uri.parse(qrCodeParser.getLink());
-                        browserIntent.setData(uri);
-                        startActivity(browserIntent);
-                    }
-                    catch (ActivityNotFoundException e) {
-                        showUrlNotValidAlert(qrCodeParser.getLink());
-                    }
-                }
-            });
-        }
-//           // Uri:
-//           EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
-//           if (document.getUri() != null)
-//               uriEditText.setText(document.getUri());
     }
 
 
-    private void initOkButton() {
+    protected void initOkButton() {
 
         Button okButton = findViewById(R.id.create_series_done_button);
         final Context context = this;
@@ -264,35 +253,94 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             showDirExistingCreatedAlert(title);
             return false;
         }
+
+//        Fill the metadata with the field values entered by the user:
+        readFieldValues();
+
         boolean isDocumentCreated = DocumentStorage.getInstance(this).createNewDocument(title);
         if (!isDocumentCreated)
             showNoDirCreatedAlert();
-//        Save the metadata:
-        else if (qrCodeParser != null) {
-            Document document = DocumentStorage.getInstance(this).getDocument(title);
-            document.setMetaData(qrCodeParser);
-        }
 
+        else if (mTranskribusMetaData != null) {
+//        Save the metadata:
+            Document document = DocumentStorage.getInstance(this).getDocument(title);
+            if (document != null) // This should not happen...
+                document.setMetaData(mTranskribusMetaData);
+        }
 
         return isDocumentCreated;
 
     }
 
-    private void initShowFieldsCheckBox() {
-        final RelativeLayout fieldsLayout = (RelativeLayout) findViewById(R.id.create_series_fields_layout);
+    private void readFieldValues() {
+        EditText authorEditText = findViewById(R.id.create_series_author_edittext);
+        String author = authorEditText.getText().toString();
 
-        CheckBox showFieldsCheckBox = (CheckBox) findViewById(R.id.create_series_advanced_options_checkbox);
+        EditText writerEditText = findViewById(R.id.create_series_writer_edittext);
+        String writer = writerEditText.getText().toString();
+
+        EditText genreEditText = findViewById(R.id.create_series_genre_edittext);
+        String genre = genreEditText.getText().toString();
+
+        EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
+        String signature = signatureEditText.getText().toString();
+
+        EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
+        String authority = authorityEditText.getText().toString();
+
+        EditText urlEditText = findViewById(R.id.create_series_url_edittext);
+        String url = urlEditText.getText().toString();
+
+//            We need at least one field that is set to create meta data here:
+        if (!author.isEmpty() || !writer.isEmpty() || !genre.isEmpty() ||
+                !signature.isEmpty() || !authority.isEmpty() || !url.isEmpty()){
+
+            if (mTranskribusMetaData == null)
+                mTranskribusMetaData = new TranskribusMetaData();
+
+            mTranskribusMetaData.setAuthor(author);
+            mTranskribusMetaData.setWriter(writer);
+            mTranskribusMetaData.setGenre(genre);
+            mTranskribusMetaData.setSignature(signature);
+            mTranskribusMetaData.setAuthority(authority);
+            mTranskribusMetaData.setUrl(url);
+        }
+    }
+
+    private void initShowFieldsCheckBox() {
+        final RelativeLayout fieldsLayout = findViewById(R.id.create_series_fields_layout);
+
+        CheckBox showFieldsCheckBox = findViewById(R.id.create_series_advanced_options_checkbox);
+//        set the check state to its previous state:
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean showFields = sharedPref.getBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, true);
+        showFieldsCheckBox.setChecked(showFields);
+
+//        Hide or show the the Transkribus fields:
+        showTranskribusFields(showFields, fieldsLayout);
+
         showFieldsCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                if (isChecked)
-                    fieldsLayout.setVisibility(View.VISIBLE);
-                else
-                    fieldsLayout.setVisibility(View.INVISIBLE);
+                showTranskribusFields(isChecked, fieldsLayout);
+
+//                Remember the check state:
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, isChecked);
+                editor.apply();
+                editor.commit();
+
 
             }
         });
+    }
+
+    private void showTranskribusFields(boolean isChecked, RelativeLayout fieldsLayout) {
+        if (isChecked)
+            fieldsLayout.setVisibility(View.VISIBLE);
+        else
+            fieldsLayout.setVisibility(View.INVISIBLE);
     }
 
 //    /**
@@ -385,7 +433,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 //
 //    }
 
-    private void showDirExistingCreatedAlert(String dirName) {
+    protected void showDirExistingCreatedAlert(String dirName) {
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 

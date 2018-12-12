@@ -27,17 +27,18 @@ public class BootReceiver extends BroadcastReceiver {
 
                 Log.d(CLASS_NAME, "onReceive");
 
-                SyncInfo.readFromDisk(context);
+//                SyncInfo.readFromDisk(context);
+                SyncStorage.loadJSON(context);
 
-                if ((SyncInfo.getInstance().getUploadDirs() != null) &&
-                        (SyncInfo.getInstance().getUploadDirs().size() > 0)) {
+                if (SyncStorage.getInstance(context).getUploadDocumentTitles() != null &&
+                        !SyncStorage.getInstance(context).getUploadDocumentTitles().isEmpty()) {
                     Log.d(CLASS_NAME, "upload dirs are not empty. starting sync job.");
-                    SyncInfo.startSyncJob(context);
+                    SyncUtils.startSyncJob(context, false);
                 }
-                else if ((SyncInfo.getInstance().getUnfinishedUploadIDs() != null) &&
-                    (SyncInfo.getInstance().getUnfinishedUploadIDs().size() > 0)) {
+                else if (SyncStorage.getInstance(context).getUnfinishedUploadIDs() != null &&
+                        !SyncStorage.getInstance(context).getUnfinishedUploadIDs().isEmpty())  {
                     Log.d(CLASS_NAME, "unfinished ids are not empty. starting sync job.");
-                    SyncInfo.startSyncJob(context);
+                    SyncUtils.startSyncJob(context, false);
                 }
 
             }

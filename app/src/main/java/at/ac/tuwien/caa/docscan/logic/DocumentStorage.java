@@ -76,7 +76,6 @@ public class DocumentStorage {
 
     }
 
-
     public boolean isTitleAlreadyAssigned(String title) {
 
         for (Document document : mDocuments) {
@@ -111,6 +110,12 @@ public class DocumentStorage {
     public Document getActiveDocument() {
 
         return getDocument(mTitle);
+
+    }
+
+    public void setActiveDocumentTitle(String title) {
+
+        mTitle = title;
 
     }
 
@@ -156,6 +161,7 @@ public class DocumentStorage {
         return mTitle;
 
     }
+
 
     public Document getDocument(String title) {
 

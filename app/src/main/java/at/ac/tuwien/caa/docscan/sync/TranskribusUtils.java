@@ -25,9 +25,7 @@ import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.ui.document.DocumentJSONParser;
-
-import static android.content.ContentValues.TAG;
+import at.ac.tuwien.caa.docscan.logic.DocumentJSONParser;
 
 /**
  * A class responsible for handling functionality that is connected to Transkribus. Other (more

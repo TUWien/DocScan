@@ -2,9 +2,10 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white">
+    android:background="@color/white"
+    >
 
     <ImageView
         android:layout_width="match_parent"
@@ -13,46 +14,62 @@
         android:scaleType="fitCenter"
         android:adjustViewBounds="true"/>
 
+
     <RelativeLayout
         android:id="@+id/account_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom">
+        android:layout_gravity="bottom"
+        >
 
-        <TextView
-            android:id="@+id/navigation_view_header_user_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/header_text"
-            android:textColor="@color/white"
+        <ImageView
+            android:id="@+id/navigation_view_header_user_image_view"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_alignParentLeft="true"
-            />
+            android:layout_marginBottom="6dp" />
 
-        <TextView
-            android:id="@+id/navigation_view_header_sync_textview"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:layout_below="@id/navigation_view_header_user_textview"
-            android:layout_alignParentLeft="true"
-            />
+            android:layout_below="@id/navigation_view_header_user_image_view"
+            >
 
-        <!-- Note the button is not clickable, because the OnClickListener is applied to the RelativeLayout -->
-        <android.support.v7.widget.AppCompatImageButton
-            android:id="@+id/navigation_view_header_account_setting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_centerInParent="true"
-            android:background="#00000000"
-            app:srcCompat="@drawable/ic_arrow_drop_down_white_24dp"
-            android:clickable="false"/>
+            <TextView
+                android:id="@+id/navigation_view_header_user_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/header_text"
+                android:textColor="@color/white"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_alignParentLeft="true"
+                />
 
+            <TextView
+                android:id="@+id/navigation_view_header_sync_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:layout_below="@id/navigation_view_header_user_textview"
+                android:layout_alignParentLeft="true"
+                />
+
+            <!-- Note the button is not clickable, because the OnClickListener is applied to the RelativeLayout -->
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/navigation_view_header_account_setting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_centerInParent="true"
+                android:background="#00000000"
+                app:srcCompat="@drawable/ic_arrow_drop_down_white_24dp"
+                android:clickable="false"/>
+
+        </RelativeLayout>
     </RelativeLayout>
 
 

@@ -43,6 +43,7 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
+import at.ac.tuwien.caa.docscan.ui.AccountActivity;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.LoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
@@ -53,12 +54,12 @@ import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTE
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_FINISHED;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_PDF_PROCESS_FINISHED;
-import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_ERROR_ID;
-import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_FILE_DELETED_ERROR_ID;
-import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_FINISHED_ID;
-import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_INTEND_TYPE;
-import static at.ac.tuwien.caa.docscan.sync.SyncService.INTENT_UPLOAD_ACTION;
-import static at.ac.tuwien.caa.docscan.sync.SyncService.UPLOAD_OFFLINE_ERROR_ID;
+import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_ERROR_ID;
+import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_FILE_DELETED_ERROR_ID;
+import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_FINISHED_ID;
+import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_INTEND_TYPE;
+import static at.ac.tuwien.caa.docscan.sync.UploadService.INTENT_UPLOAD_ACTION;
+import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_OFFLINE_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 
 
@@ -163,7 +164,9 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)  {
 //                        Start the LoginActivity
-                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+//                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+//                        intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
+                        Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
                         intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
                         startActivity(intent);
                     }

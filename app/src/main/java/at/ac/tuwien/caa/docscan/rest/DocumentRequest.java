@@ -12,14 +12,14 @@ import org.json.JSONObject;
 
 public class DocumentRequest extends RestRequest.JSONObjectRestRequest {
 
-    private TranskribusDocumentMetaData mTranskribusDocumentMetaData;
+    private TranskribusDocumentMetaDataRequest mTranskribusDocumentMetaDataRequest;
 //    JSON method for retrieving documents: https://transkribus.eu/TrpServer/rest/collections/{collection-ID}/{document-ID}/fulldoc
     private final static String[] URL = {"collections/", "/fulldoc"};
 
-    public DocumentRequest(Context context, TranskribusDocumentMetaData transkribusDocumentMetaData) {
+    public DocumentRequest(Context context, TranskribusDocumentMetaDataRequest transkribusDocumentMetaDataRequest) {
         super(context);
         mMethod = Request.Method.GET;
-        mTranskribusDocumentMetaData = transkribusDocumentMetaData;
+        mTranskribusDocumentMetaDataRequest = transkribusDocumentMetaDataRequest;
 
         RequestHandler.processJsonRequest(this);
 
@@ -27,7 +27,7 @@ public class DocumentRequest extends RestRequest.JSONObjectRestRequest {
 
     @Override
     public String getExtendedUrl() {
-        return URL[0] + mTranskribusDocumentMetaData.getCollection().getID() + "/" + mTranskribusDocumentMetaData.getID() + URL[1];
+        return URL[0] + mTranskribusDocumentMetaDataRequest.getCollection().getID() + "/" + mTranskribusDocumentMetaDataRequest.getID() + URL[1];
     }
 
     @Override
@@ -37,7 +37,7 @@ public class DocumentRequest extends RestRequest.JSONObjectRestRequest {
 
 //    public interface DocumentCallback extends RestRequest.RestCallback{
 //
-//        void onDocument(TranskribusDocumentMetaData document);
+//        void onDocument(TranskribusDocumentMetaDataRequest document);
 //
 //    }
 }

@@ -28,7 +28,6 @@ public class LogoutActivity extends BaseNavigationActivity implements LogoutRequ
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: think about logout here:
                 new LogoutRequest(context);
                 User.getInstance().setLoggedIn(false);
                 // Close the activity:

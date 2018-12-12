@@ -44,6 +44,7 @@ import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
+import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
@@ -100,17 +101,12 @@ public class GalleryActivity extends AppCompatActivity implements
         mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
         mDisableRecyleViewLayout = findViewById(R.id.gallery_disable_layout);
         initEditText();
-
-
         mDisableRecyleViewLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showRenameEditText(false);
             }
         });
-
-
-
 
         loadDocument();
         initAdapter();
@@ -265,6 +261,9 @@ public class GalleryActivity extends AppCompatActivity implements
             if (mAdapter != null)
                 mAdapter.notifyDataSetChanged();
         }
+
+//        Set the document title in onResume, because it can be edited in EditDocumentActivity:
+        mToolbar.setTitle(mDocument.getTitle());
 
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents
@@ -525,12 +524,19 @@ public class GalleryActivity extends AppCompatActivity implements
 
     public void editDocument(MenuItem item) {
 
-        // Check if we have the permission to rotate images:
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
-        } else
-            renameDocument();
+        if (mDocument != null && mDocument.getTitle() != null) {
+            Intent intent = new Intent(getApplicationContext(), EditDocumentActivity.class);
+            intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, mDocument.getTitle());
+            startActivity(intent);
+        }
+
+
+//        // Check if we have the permission to rotate images:
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//            // ask for permission:
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
+//        } else
+//            renameDocument();
 
     }
 

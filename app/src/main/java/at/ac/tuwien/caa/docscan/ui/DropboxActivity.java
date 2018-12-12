@@ -1,9 +1,13 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.dropbox.core.android.Auth;
@@ -14,6 +18,11 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
+import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
+import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+import me.drakeet.support.toast.ToastCompat;
+
+import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 
 /**
  * Created by fabian on 23.08.2017.
@@ -31,34 +40,86 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
 
         super.initToolbarTitle(R.string.dropbox_title);
 
-        mIsActitivyJustCreated = true;
+//        mIsActitivyJustCreated = true;
 
         Button authenticateButton = (Button) findViewById(R.id.dropbox_authenticate_button);
         authenticateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DropboxUtils.getInstance().startAuthentication(getApplicationContext());
+                //        TODO: handle cases in which the user rejects the authentication
+                if (!DropboxUtils.getInstance().startAuthentication(getApplicationContext())) {
+                       showNotAuthenticatedDialog();
+                }
             }
         });
 
     }
 
+    private void showNotAuthenticatedDialog() {
+
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.dropbox_not_auth_title)
+                .setCancelable(true)
+                .setMessage(R.string.dropbox_not_auth_text);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
+    }
+
     @Override
     protected void onResume() {
+
         super.onResume();
 
         // The dropbox login is done in the onResume method, because if the user authenticates the
         // dropbox access via a web browser intent, this is the entry to the app after accepting in the
         // browser. However onResume is also called if the activity is created by an internal intent.
-        if (!mIsActitivyJustCreated)
-            loginToDropbox();
+        if (UserHandler.loadDropboxToken(this)) // Is there a token existing?
+            DropboxUtils.getInstance().loginToDropbox(this, User.getInstance().getDropboxToken());
+        else {
+            String accessToken = Auth.getOAuth2Token();
+            if (accessToken != null) {
+                showLoadingLayout(true);
+                User.getInstance().setDropboxToken(accessToken);
+                UserHandler.saveDropboxToken(this);
+                DropboxUtils.getInstance().loginToDropbox(this, accessToken);
+            }
 
-        mIsActitivyJustCreated = false;
+        }
+
+
+
+//        mIsActitivyJustCreated = false;
 
     }
 
     @Override
     public void onLogin(User user) {
+
+        String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
+        ToastCompat.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+
+//        Old version that cause BadTokenExceptions on API level 25. Could not catch it.
+//        According to https://github.com/drakeet/ToastCompat this is an API 25 bug
+//        try {
+//            String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
+//            Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
+//        }
+//        catch (WindowManager.BadTokenException e) {
+////            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
+////            this should only happen on API level 25, but I could not reproduce it with a virtual
+////            machine.
+//        }
+
+//        TODO: save the user credentials
 
         // Start the CameraActivity and remove everything from the back stack:
         Intent intent = new Intent(getApplicationContext(), CameraActivity.class);

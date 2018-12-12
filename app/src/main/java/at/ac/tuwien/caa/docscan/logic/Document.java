@@ -3,8 +3,6 @@ package at.ac.tuwien.caa.docscan.logic;
 import java.io.File;
 import java.util.ArrayList;
 
-import at.ac.tuwien.caa.docscan.ui.document.QRCodeParser;
-
 /**
  * Created by fabian on 01.02.2018.
  */
@@ -17,7 +15,7 @@ public class Document {
     private boolean mIsCropped = false;
     private boolean mIsAwaitingUpload = false;
 
-    private QRCodeParser mMetaData = null;
+    private TranskribusMetaData mMetaData = null;
 
     public Document() {
 
@@ -30,15 +28,29 @@ public class Document {
 
     }
 
-    public void setMetaData(QRCodeParser metaData) {
+    public void setMetaData(TranskribusMetaData metaData) {
 
         mMetaData = metaData;
 
     }
 
-    public QRCodeParser getMetaData() {
+    public TranskribusMetaData getMetaData() {
 
         return mMetaData;
+
+    }
+
+    public ArrayList<String> getFileNames() {
+
+        if (mPages == null)
+            return null;
+
+        ArrayList<String> fileNames = new ArrayList<>(mPages.size());
+        for (Page page : mPages) {
+            fileNames.add(page.getFile().getName());
+        }
+
+        return fileNames;
 
     }
 

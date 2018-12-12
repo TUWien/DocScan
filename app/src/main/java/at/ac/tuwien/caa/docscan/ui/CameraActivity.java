@@ -114,14 +114,14 @@ import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
+import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.document.SelectDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
-import at.ac.tuwien.caa.docscan.logic.AppState;
-import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
+import me.drakeet.support.toast.ToastCompat;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
@@ -181,7 +181,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private static Date mLastTimeStamp;
     private DkPolyRect[] mLastDkPolyRects;
 
-    private Toast mToast;
     private OrientationEventListener mOrientationListener;
 
     private boolean mIsQRActive = false;
@@ -235,10 +234,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //            colorStatusBar();
 
 
-        //        Open the log file at app startup:
-        if (AppState.isDataLogged())
-            DataLog.getInstance().readLog(this);
-
         mContext = this;
 
         initActivity();
@@ -274,13 +269,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         savePreferences();
         DocumentStorage.saveJSON(this);
-
-//        // Save the sync info:
-//        SyncInfo.getInstance().saveToDisk(this);
-
-        //        Save the log file:
-        if (AppState.isDataLogged())
-            DataLog.getInstance().writeLog(this);
 
         mPictureData = null;
 
@@ -650,6 +638,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 break;
         }
     }
+
 
 
     /**
@@ -1945,6 +1934,16 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //                startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 return true;
 
+            case R.id.series_edit_item:
+                String documentName = DocumentStorage.getInstance(this).getTitle();
+                if (documentName != null) {
+                    Intent intent = new Intent(getApplicationContext(), EditDocumentActivity.class);
+                    intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, documentName);
+                    startActivity(intent);
+                }
+//                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                return true;
+
             case R.id.series_switch_item:
 //                startActivity(new Intent(getApplicationContext(), OpenDocumentActivity.class));
                 startActivity(new Intent(getApplicationContext(), SelectDocumentActivity.class));
@@ -2101,23 +2100,31 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void showToastText(int id) {
 
-        try {
+        String msg = getResources().getString(id);
+        ToastCompat toast = ToastCompat.makeText(this, msg, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+        toast.show();
 
-            String msg = getResources().getString(id);
 
-            if (mToast != null)
-                mToast.cancel();
-
-            mToast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
-            mToast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
-            mToast.show();
-
-        }
-        catch (WindowManager.BadTokenException e) {
-//            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
-//            this should only happen on API level 25, but I could not reproduce it with a virtual
-//            machine.
-        }
+//        Old version that cause BadTokenExceptions on API level 25. Could not catch it.
+//        According to https://github.com/drakeet/ToastCompat this is an API 25 bug
+//        try {
+//
+//            String msg = getResources().getString(id);
+//
+//            if (mToast != null)
+//                mToast.cancel();
+//
+//            mToast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT);
+//            mToast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+//            mToast.show();
+//
+//        }
+//        catch (WindowManager.BadTokenException e) {
+////            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
+////            this should only happen on API level 25, but I could not reproduce it with a virtual
+////            machine.
+//        }
     }
 
     /**
@@ -2358,12 +2365,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
                     exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
                     exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
-                }
-//
-                //                    Log the shot:
-                if (AppState.isDataLogged()) {
-                    GPS gps = new GPS(location);
-                    DataLog.getInstance().logShot(outFile.getAbsolutePath(), gps, mLastTimeStamp, mIsSeriesMode);
                 }
 
                 exif.saveAttributes();

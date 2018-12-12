@@ -21,6 +21,9 @@ import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
+import static at.ac.tuwien.caa.docscan.rest.User.SYNC_DROPBOX;
+import static at.ac.tuwien.caa.docscan.rest.User.SYNC_TRANSKRIBUS;
+
 /**
  * Created by fabian on 31.08.2017.
  */
@@ -61,7 +64,9 @@ public class SyncUtils {
         if (!restart)
             timeWindow = Trigger.executionWindow(5, 10);
         else
-            timeWindow = Trigger.executionWindow(30, 50);
+//            TODO: change this!
+            timeWindow = Trigger.executionWindow(1, 7);
+//            timeWindow = Trigger.executionWindow(30, 50);
 
         Job syncJob = dispatcher.newJobBuilder()
                 // the JobService that will be called
@@ -102,14 +107,25 @@ public class SyncUtils {
                 RequestHandler.createRequest(context, RequestHandler.REQUEST_LOGIN);
                 User.getInstance().setAutoLogInDone(true);
             }
-            else if (User.getInstance().getConnection() == User.SYNC_DROPBOX) {
-                if (UserHandler.loadDropboxToken(context)) {
-                    DropboxUtils.getInstance().loginToDropbox(loginCallback, User.getInstance().getDropboxToken());
-                    User.getInstance().setAutoLogInDone(true);
-                }
+            else if (User.getInstance().getConnection() == SYNC_DROPBOX) {
+                DropboxUtils.getInstance().loginToDropbox(loginCallback, User.getInstance().getDropboxToken());
+                User.getInstance().setAutoLogInDone(true);
             }
         }
 
+
+    }
+
+    public static String getConnectionText(Context context, int connection) {
+
+        switch (connection) {
+            case SYNC_TRANSKRIBUS:
+                return context.getResources().getString(R.string.sync_transkribus_text);
+            case SYNC_DROPBOX:
+                return context.getResources().getString(R.string.sync_dropbox_text);
+        }
+
+        return null;
 
     }
 }

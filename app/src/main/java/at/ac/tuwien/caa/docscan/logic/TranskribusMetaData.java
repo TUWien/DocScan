@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.document;
+package at.ac.tuwien.caa.docscan.logic;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -18,7 +18,7 @@ import java.util.Date;
  * Created by fabian on 28.11.2017.
  */
 
-public class QRCodeParser {
+public class TranskribusMetaData {
 
     public static final int NO_RELATED_UPLOAD_ID_ASSIGNED = -1;
 
@@ -39,23 +39,38 @@ public class QRCodeParser {
     private String mAuthority;
     private String mHierarchy;
     private String mSignature;
-    private String mUri;
-
+//    private String mUri;
+    private String mAuthor;
+    private String mGenre;
+    private String mWriter;
     private String mDescription;
     private Date mDate;
-    private String mBacklink;
+    private String mUrl;
     private Integer mRelatedUploadId;
 
     public String getTitle() { return mTitle; }
+    public void setTitle(String title) { mTitle = title; }
     public String getDescription() { return mDescription; }
+    public void setDescription(String description) { mDescription = description; }
     public String getAuthority() { return mAuthority; }
+    public void setAuthority(String authority) { mAuthority = authority; }
     public String getHierarchy() { return mHierarchy; }
-    public String getUri() { return mUri; }
+    public void setHierarchy(String hierarchy) { mHierarchy = hierarchy; }
+//    public String getUri() { return mUri; }
     public String getSignature() { return mSignature; }
+    public void setSignature(String signature) { mSignature = signature; }
     public Date getDate() { return mDate; }
     public Integer getRelatedUploadId() { return mRelatedUploadId; }
+    public String getGenre() { return mGenre; }
+    public void setGenre(String genre) { mGenre = genre; }
+    public String getWriter() { return mWriter; }
+    public void setWriter(String writer) { mWriter = writer; }
+    public String getAuthor() { return mAuthor; }
+    public void setAuthor(String author) { mAuthor = author; }
+    public String getUrl() { return mUrl; }
+    public void setUrl(String url) { mUrl = url; }
 
-    private QRCodeParser() {
+    public TranskribusMetaData() {
 
     }
 
@@ -70,7 +85,7 @@ public class QRCodeParser {
     }
 
     public String getLink() {
-        return mBacklink;
+        return mUrl;
     }
 
     private static class IdentifierValue {
@@ -105,7 +120,7 @@ public class QRCodeParser {
 
     }
 
-    public static QRCodeParser parseXML(String text) {
+    public static TranskribusMetaData parseXML(String text) {
 
         try {
 
@@ -117,7 +132,7 @@ public class QRCodeParser {
             InputStream stream = new ByteArrayInputStream(escapedText.getBytes(Charset.forName("UTF-8")));
             parser.setInput(stream, null);
 
-            QRCodeParser qrCodeParser = new QRCodeParser();
+            TranskribusMetaData transkribusMetaData = new TranskribusMetaData();
 
             while (parser.next() != XmlPullParser.END_TAG) {
                 if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -126,34 +141,34 @@ public class QRCodeParser {
                 String name = parser.getName();
 
                 if (name.equals(QR_AUTHORITY))
-                    qrCodeParser.mAuthority = readTextFromTag(parser, QR_AUTHORITY);
+                    transkribusMetaData.mAuthority = readTextFromTag(parser, QR_AUTHORITY);
 
                 else if (name.equals(QR_IDENTIFIER)) {
                     IdentifierValue iv = readIdentifier(parser);
                     if (iv.getIdentifier().equals(QR_TYPE_HIERARCHY))
-                        qrCodeParser.mHierarchy = iv.getValue();
-                    else if (iv.getIdentifier().equals(QR_TYPE_URI))
-                        qrCodeParser.mUri = iv.getValue();
+                        transkribusMetaData.mHierarchy = iv.getValue();
+//                    else if (iv.getIdentifier().equals(QR_TYPE_URI))
+//                        transkribusMetaData.mUri = iv.getValue();
                 }
                 else if (name.equals(QR_TITLE))
-                    qrCodeParser.mTitle = readTextFromTag(parser, QR_TITLE);
+                    transkribusMetaData.mTitle = readTextFromTag(parser, QR_TITLE);
                 else if (name.equals(QR_DESCRIPTION))
-                    qrCodeParser.mDescription = readTextFromTag(parser, QR_DESCRIPTION);
+                    transkribusMetaData.mDescription = readTextFromTag(parser, QR_DESCRIPTION);
                 else if (name.equals(QR_SIGNATURE))
-                    qrCodeParser.mSignature = readTextFromTag(parser, QR_SIGNATURE);
+                    transkribusMetaData.mSignature = readTextFromTag(parser, QR_SIGNATURE);
                 else if (name.equals(QR_RELATED_UPLOAD_ID)) {
                     String rId = readTextFromTag(parser, QR_RELATED_UPLOAD_ID);
-                    qrCodeParser.mRelatedUploadId = Integer.valueOf(rId);
+                    transkribusMetaData.mRelatedUploadId = Integer.valueOf(rId);
                 }
                 else if (name.equals(QR_BACKLINK))
-                    qrCodeParser.mBacklink = readTextFromTag(parser, QR_BACKLINK);
+                    transkribusMetaData.mUrl = readTextFromTag(parser, QR_BACKLINK);
 
                 else if (name.equals(QR_DATE))
                     skip(parser);
 
             }
 
-            return qrCodeParser;
+            return transkribusMetaData;
 
         } catch (Exception e) {
             return null;

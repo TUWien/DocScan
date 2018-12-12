@@ -1,17 +1,11 @@
-package at.ac.tuwien.caa.docscan.ui.document;
-
-import android.util.Log;
+package at.ac.tuwien.caa.docscan.logic;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.ArrayList;
-
-import at.ac.tuwien.caa.docscan.logic.Document;
 
 /**
  * This class is used to generate JSON strings that can be used for the upload to Transkribus.
@@ -120,12 +114,18 @@ public class DocumentJSONParser {
         private static final String JSON_HIERARCHY =            "hierarchy";
         private static final String JSON_SIGNATURE =            "extid";
         private static final String JSON_URI =                  "backlink";
+        private static final String JSON_WRITER =               "writer";
+        private static final String JSON_AUTHOR =               "author";
+        private static final String JSON_GENRE =                "genre";
 
         @SerializedName(JSON_TITLE)                             private String mTitle;
         @SerializedName(JSON_AUTHORITY)                         private String mAuthority;
         @SerializedName(JSON_HIERARCHY)                         private String mHierarchy;
         @SerializedName(JSON_SIGNATURE)                         private String mSignature;
         @SerializedName(JSON_URI)                               private String mUri;
+        @SerializedName(JSON_WRITER)                            private String mWriter;
+        @SerializedName(JSON_AUTHOR)                            private String mAuthor;
+        @SerializedName(JSON_GENRE)                             private String mGenre;
 
         private JSONMetaData(Document document) {
             mTitle = document.getTitle();
@@ -133,13 +133,16 @@ public class DocumentJSONParser {
                 setMetaDataValues(document.getMetaData());
         }
 
-        private void setMetaDataValues(QRCodeParser md) {
+        private void setMetaDataValues(TranskribusMetaData md) {
 
 //            mTitle = md.getTitle();
             mAuthority = md.getAuthority();
             mHierarchy = md.getHierarchy();
             mSignature = md.getSignature();
             mUri = md.getLink();
+            mWriter = md.getWriter();
+            mAuthor = md.getAuthor();
+            mGenre = md.getGenre();
 
         }
     }

@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
 
@@ -8,10 +10,10 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 15
 		targetSdkVersion 27
-		versionCode 56
-		versionName "1.4.18"
-//		versionCode 34
-//		versionName "1.4.2"
+
+		versionCode 66
+		versionName "1.5.3"
+
 
 		multiDexEnabled true
 //		this is used to show the build time in the AboutActivity
@@ -20,21 +22,29 @@ android {
 //		References to other resources are not supported by build-time PNG generation
 		vectorDrawables.useSupportLibrary = true
 
-		externalNativeBuild {
-			cmake {
-//				cppFlags "-frtti -fexceptions"
-//				abiFilters 'armeabi-v7a'
-				abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
-//				abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
-//				abiFilters 'armeabi-v7a'
-			}
-		}
-	}
+    ndk {
+        // Specifies the ABI configurations of your native
+        // libraries Gradle should build and package with your APK.
+//            Note this also effects externalNativeBuild.cmake, so we do not to define this anymore:
+        abiFilters 'armeabi-v7a', 'arm64-v8a'
+//			abiFilters 'x86'
+      }
+  }
+
 
 	buildTypes {
+//        The dropbox api key is hidden based on the 2nd example in this post:
+//        https://rammic.github.io/2015/07/28/hiding-secrets-in-android-apps/
+//        If you want to receive the api key, please send a mail to docscan@cvl.tuwien.ac.at
+		debug {
+            buildConfigField "String", "DropboxApiKey", "\"${getProps("DropboxApiKey")}\""
+            resValue 'string', "dropbox_api_key", "\"${getProps("DropboxManifestApiKey")}\""
+		}
 		release {
 			minifyEnabled false
 			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "DropboxApiKey", "\"${getProps("DropboxApiKey")}\""
+            resValue 'string', "dropbox_api_key", "\"${getProps("DropboxManifestApiKey")}\""
 		}
 	}
 
@@ -60,38 +70,23 @@ android {
 		exclude 'META-INF/LICENSE.txt'
 	}
 
-// Android NDK configuration, taken from:
-//    https://www.crystax.net/en/blog/3
-
-//	sourceSets.main.jni.srcDirs = [] // disable automatic ndk-build call, which ignore our Android.mk
-//	sourceSets.main.jniLibs.srcDir 'src/main/libs'
-
-//	sourceSets.main {
-//		jni.srcDirs = [] //disable automatic nd k-build call
-//	}
-//
-//	// call regular ndk-build(.cmd) script from app directory
-//	task ndkBuild(type: Exec) {
-//		workingDir file('src/main')
-//		commandLine getNdkBuildCmd(), 'NDK_LIBS_OUT=./jniLibs'
-//	}
-//
-//	task cleanNative(type: Exec, description: 'Clean JNI object files') {
-//		commandLine getNdkBuildCmd(),
-//				'-C', file('src/main/jni').absolutePath, // Change src/main/jni the relative path to your jni source
-//				'clean'
-//	}
-//
-//	clean.dependsOn 'cleanNative'
-//
-//	tasks.withType(JavaCompile) {
-//		compileTask -> compileTask.dependsOn ndkBuild
-//	}
-//
-//	clean.dependsOn cleanNative
-
 }
 
+
+def getProps(String propName) {
+
+	def propsFile = rootProject.file('api_info.txt')
+	if (propsFile.exists()) {
+        def props = new Properties()
+//		if (props.hasProperty(propName)) {
+        props.load(new FileInputStream(propsFile))
+        def prop = props[propName]
+        if (prop != null)
+            return prop
+    }
+    return "default_value"
+
+}
 
 def getNdkDir() {
 	if (System.env.ANDROID_NDK_ROOT != null)
@@ -159,6 +154,11 @@ dependencies {
 	//	implementation 'com.google.android:flexbox:1.0.0'
 	//    implementation 'com.google.android:flexbox:0.3.0-alpha2'
 	implementation project(':openCVLibrary')
+	implementation 'me.drakeet.support:toastcompat:1.1.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
+repositories {
+    mavenCentral()
 }
 
 apply plugin: 'com.google.gms.google-services'

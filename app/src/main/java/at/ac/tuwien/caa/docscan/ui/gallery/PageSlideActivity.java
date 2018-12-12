@@ -535,7 +535,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //
 //        return document;
 //
-////        TranskribusDocumentMetaData document = new TranskribusDocumentMetaData();
+////        TranskribusDocumentMetaDataRequest document = new TranskribusDocumentMetaDataRequest();
 ////        ArrayList<File> fileList = getFileList(fileName);
 ////        ArrayList<Page> pages = filesToPages(fileList);
 ////        document.setPages(pages);
