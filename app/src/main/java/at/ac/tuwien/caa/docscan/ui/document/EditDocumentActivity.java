@@ -132,6 +132,7 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         if (metaData == null)
             return;
 
+
         EditText authorEditText = findViewById(R.id.create_series_author_edittext);
         authorEditText.setText(metaData.getAuthor());
 
@@ -149,6 +150,21 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 
         EditText urlEditText = findViewById(R.id.create_series_url_edittext);
         urlEditText.setText(metaData.getUrl());
+
+//        Check if the document is a special archive document created from QR code:
+        boolean editable = metaData.getRelatedUploadId() == null;
+        if (!editable) {
+
+            titleEditText.setKeyListener(null);
+            authorEditText.setKeyListener(null);
+            writerEditText.setKeyListener(null);
+            genreEditText.setKeyListener(null);
+            signatureEditText.setKeyListener(null);
+            authorityEditText.setKeyListener(null);
+            urlEditText.setKeyListener(null);
+
+        }
+
 
 
     }

@@ -176,58 +176,48 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     }
 
-    private void fillAdvancedFields(final TranskribusMetaData transkribusMetaData, boolean editable) {
+    private void fillAdvancedFields(final TranskribusMetaData metaData, boolean editable) {
         //           // Description:
 //           EditText descriptionEditText = findViewById(R.id.create_series_description_edittext);
 //           if (document.getTitle() != null)
 //               descriptionEditText.setText(document.getDescription());
 
+        if (metaData == null)
+            return;
+
+//        Note: The following three fields are not passed via QR code, but we disable them if not
+//        editable:
+        EditText authorEditText = findViewById(R.id.create_series_author_edittext);
+        EditText writerEditText = findViewById(R.id.create_series_writer_edittext);
+        EditText genreEditText = findViewById(R.id.create_series_genre_edittext);
+
         // Signature:
         EditText signatureEditText = findViewById(R.id.create_series_signature_edittext);
-        if (transkribusMetaData.getSignature() != null) {
-            signatureEditText.setText(transkribusMetaData.getSignature());
-            if (!editable)
-                signatureEditText.setKeyListener(null);
-        }
+        if (metaData.getSignature() != null)
+            signatureEditText.setText(metaData.getSignature());
 
         // Authority:
         EditText authorityEditText = findViewById(R.id.create_series_authority_edittext);
-        if (transkribusMetaData.getAuthority() != null) {
-            authorityEditText.setText(transkribusMetaData.getAuthority());
-            if (!editable)
-                authorityEditText.setKeyListener(null);
+        if (metaData.getAuthority() != null)
+            authorityEditText.setText(metaData.getAuthority());
+
+        //        URI button:
+        EditText urlEditText = findViewById(R.id.create_series_url_edittext);
+        if (metaData.getUrl() != null)
+            urlEditText.setText(metaData.getUrl());
+
+//        Check if the document is a special archive document created from QR code:
+
+        if (!editable) {
+            authorEditText.setKeyListener(null);
+            writerEditText.setKeyListener(null);
+            genreEditText.setKeyListener(null);
+            signatureEditText.setKeyListener(null);
+            authorityEditText.setKeyListener(null);
+            urlEditText.setKeyListener(null);
         }
 
-//        // Hierarchy:
-//        EditText hierarchyEditText = findViewById(R.id.create_series_hierarchy_edittext);
-//        if (mTranskribusMetaData.getHierarchy() != null) {
-//            hierarchyEditText.setText(mTranskribusMetaData.getHierarchy());
-//            if (!editable)
-//                hierarchyEditText.setKeyListener(null);
-//        }
 
-//        URI button:
-        if (transkribusMetaData.getLink() != null) {
-            AppCompatButton linkButton = findViewById(R.id.create_series_link_button);
-            linkButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW);
-                        Uri uri = Uri.parse(transkribusMetaData.getLink());
-                        browserIntent.setData(uri);
-                        startActivity(browserIntent);
-                    }
-                    catch (ActivityNotFoundException e) {
-                        showUrlNotValidAlert(transkribusMetaData.getLink());
-                    }
-                }
-            });
-        }
-//           // Uri:
-//           EditText uriEditText = findViewById(R.id.create_series_uri_edittext);
-//           if (document.getUri() != null)
-//               uriEditText.setText(document.getUri());
     }
 
 
