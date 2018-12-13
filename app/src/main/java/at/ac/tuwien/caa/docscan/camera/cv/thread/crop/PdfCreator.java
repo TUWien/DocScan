@@ -1,9 +1,9 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
-import android.graphics.Bitmap;
+import android.content.Context;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -15,7 +15,6 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionText.TextBlock;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
-import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
@@ -32,8 +31,11 @@ import com.itextpdf.text.pdf.PdfWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+
+import at.ac.tuwien.caa.docscan.logic.Helper;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESSAGE_CREATED_DOCUMENT;
 
@@ -46,13 +48,21 @@ public class PdfCreator {
         createPdf(documentName, files, null, cropRunnable);
     }
 
-    public static void createPdfWithOCR(final String documentName, final ArrayList<File> files, final CropRunnable cropRunnable) {
+    public static void createPdfWithOCR(final String documentName, final ArrayList<File> files,
+                                        final CropRunnable cropRunnable, WeakReference<Context> context) {
+
         final FirebaseVisionText[] ocrResults = new FirebaseVisionText[files.size()];
+
         for (final File file : files) {
-            Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
-            int rotationInDegrees = getRotationInDegrees(file);
-            bitmap = getRotatedBitmap(bitmap, rotationInDegrees);
-            FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(bitmap);
+
+            FirebaseVisionImage image = null;
+            try {
+                image = FirebaseVisionImage.fromFilePath(context.get(), Uri.fromFile(file));
+            } catch (IOException e) {
+                e.printStackTrace();
+//                TODO: error handling here!
+            }
+
             getTextRecognizer().processImage(image)
                     .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
                         @Override
@@ -82,22 +92,23 @@ public class PdfCreator {
     }
 
     public static void createPdf(String documentName, ArrayList<File> files, FirebaseVisionText[] ocrResults, CropRunnable cropRunnable) {
-        File firstPage = files.get(0);
-        int rotationInDegrees = getRotationInDegrees(firstPage);
-        Bitmap firstPageBitmap = BitmapFactory.decodeFile(firstPage.getPath());
-        firstPageBitmap = getRotatedBitmap(firstPageBitmap, rotationInDegrees);
-        boolean landscapeFirst = firstPageBitmap.getWidth() > firstPageBitmap.getHeight();
-        Rectangle firstPageSize = getPageSize(firstPageBitmap, landscapeFirst);
+
+        BitmapSize size = new BitmapSize(files.get(0));
+        boolean landscapeFirst = isLandscape(size);
+        Rectangle firstPageSize = getPageSize(size, landscapeFirst);
+
         String pdfName = documentName + ".pdf";
         File outputFile = new File(getDocumentsDir(), pdfName);
         Document document = new Document(firstPageSize, 0, 0, 0, 0);
+
         try {
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputFile));
             document.open();
 
             for (int i = 0; i < files.size(); i++) {
                 File file = files.get(i);
-                rotationInDegrees = getRotationInDegrees(file);
+                int rotationInDegrees = getRotationInDegrees(file);
+
                 //add the original image to the pdf and set the DPI of it to 300
                 Image image = Image.getInstance(file.getAbsolutePath());
                 image.setRotationDegrees(-rotationInDegrees);
@@ -115,10 +126,7 @@ public class PdfCreator {
 
                     //sort the result based on the y-Axis so that the markup order is correct
                     List<List<FirebaseVisionText.TextBlock>> sortedBlocks = sortBlocks(ocrResults[i]);
-
-
-                    Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
-                    bitmap = getRotatedBitmap(bitmap, getRotationInDegrees(file));
+                    size = new BitmapSize(file);
 
                     //int j = 0;
                     for (List<TextBlock> column : sortedBlocks) {
@@ -149,10 +157,10 @@ public class PdfCreator {
                         for (FirebaseVisionText.Line line : sortLinesInColumn(column)) {
                             // one FirebaseVisionText.Line corresponds to one line
                             // the rectangle we want to draw this line corresponds to the lines boundingBox
-                            float left = ((float) line.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
-                            float right = ((float) line.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
-                            float top = ((float) line.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
-                            float bottom = ((float) line.getBoundingBox().bottom / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+                            float left = ((float) line.getBoundingBox().left / (float) size.mWidth) * document.getPageSize().getWidth();
+                            float right = ((float) line.getBoundingBox().right / (float) size.mWidth) * document.getPageSize().getWidth();
+                            float top = ((float) line.getBoundingBox().top / (float) size.mHeight) * document.getPageSize().getHeight();
+                            float bottom = ((float) line.getBoundingBox().bottom / (float) size.mHeight) * document.getPageSize().getHeight();
                             Rectangle rect = new Rectangle(left,
                                     document.getPageSize().getHeight() - bottom,
                                     right,
@@ -182,8 +190,8 @@ public class PdfCreator {
 
                 if (i < files.size() - 1) {
                     file = files.get(i + 1);
-                    Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
-                    Rectangle pageSize = getPageSize(bitmap, landscapeFirst);
+                    BitmapSize aSize = new BitmapSize(file);
+                    Rectangle pageSize = getPageSize(aSize, landscapeFirst);
                     document.setPageSize(pageSize);
                     document.newPage();
                 }
@@ -198,27 +206,27 @@ public class PdfCreator {
 
     }
 
-    public static Rectangle getPageSize(Bitmap bitmap, boolean landscape) {
+
+
+
+    private static boolean isLandscape(BitmapSize size) {
+
+        return size.mWidth > size.mHeight;
+
+    }
+
+    public static Rectangle getPageSize(BitmapSize size, boolean landscape) {
+
         Rectangle pageSize;
         if (landscape) {
-            //querformat
-            float height = (PageSize.A4.getHeight() / bitmap.getWidth()) * bitmap.getHeight();
+            float height = (PageSize.A4.getHeight() / size.mWidth) * size.mHeight;
             pageSize = new Rectangle(PageSize.A4.getHeight(), height);
         } else {
-            //hochformat
-            float height = (PageSize.A4.getWidth() / bitmap.getWidth()) * bitmap.getHeight();
+            float height = (PageSize.A4.getWidth() / size.mWidth) * size.mHeight;
             pageSize = new Rectangle(PageSize.A4.getWidth(), height);
         }
         return pageSize;
-    }
 
-    private static Bitmap getRotatedBitmap(Bitmap bitmap, int rotationInDegrees) {
-        Matrix matrix = new Matrix();
-        if (rotationInDegrees != 0) {
-            matrix.preRotate(rotationInDegrees);
-        }
-        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-        return bitmap;
     }
 
     private static int getRotationInDegrees(File file) {
@@ -353,4 +361,39 @@ public class PdfCreator {
         }
         return textRecognizer;
     }
+
+
+    private static class BitmapSize {
+
+        private int mWidth, mHeight;
+
+        BitmapSize(File file) {
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            //Returns null, sizes are in the options variable
+            BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+            mWidth = options.outWidth;
+            mHeight = options.outHeight;
+
+            //        Is the image rotated in the metadata?
+            int exifOrientation = -1;
+            try {
+                exifOrientation = Helper.getExifOrientation(file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (exifOrientation == android.support.media.ExifInterface.ORIENTATION_ROTATE_90 ||
+                    exifOrientation == android.support.media.ExifInterface.ORIENTATION_ROTATE_270) {
+                int tmp = mHeight;
+                mHeight = mWidth;
+                mWidth = tmp;
+            }
+
+
+        }
+
+    }
+
 }

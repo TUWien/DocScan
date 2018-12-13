@@ -29,7 +29,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.ImageView;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -174,10 +173,10 @@ public class ImageProcessor {
                     // Notify other apps and DocScan about the image change:
                     notifyImageChanged(task.getFile());
                 }
+//                else if (task instanceof PdfProcessTask){
+//                    ImageProcessLogger.removeTask(task.getDocument(), ImageProcessLogger.TASK_TYPE_PDF);
+//                }
                 else if (task instanceof PdfTask){
-                    ImageProcessLogger.removeTask(task.getDocument(), ImageProcessLogger.TASK_TYPE_PDF);
-                }
-                else if (task instanceof PdfWithOCRTask){
                     ImageProcessLogger.removeTask(task.getDocument(), ImageProcessLogger.TASK_TYPE_PDF_OCR);
                 }
                 else
@@ -303,20 +302,23 @@ public class ImageProcessor {
 
         ImageProcessTask imageProcessTask = null;
 
+        boolean performOCR = false;
         //        Inform the logger that we got a new file here:
         switch (taskType) {
+
             case TASK_TYPE_PDF:
-                imageProcessTask = new PdfTask();
+                performOCR = true;
                 ImageProcessLogger.addPdfTask(document);
                 break;
             case TASK_TYPE_PDF_OCR:
-                imageProcessTask = new PdfWithOCRTask();
                 ImageProcessLogger.addPdfWithOCRTask(document);
                 break;
         }
 
+        imageProcessTask = new PdfProcessTask(performOCR, document.getFiles(), document.getTitle());
+//        We need to pass here the context, because it allows us to generate a FirebaseVisionImage:
+        ((PdfProcessTask)imageProcessTask).setContext(sInstance.mContext);
         imageProcessTask.initializeTask(sInstance);
-        imageProcessTask.setDocument(document);
 
         sInstance.mProcessThreadPool.execute(imageProcessTask.getRunnable());
 

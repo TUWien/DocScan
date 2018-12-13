@@ -151,6 +151,8 @@ public class ImageProcessLogger implements Serializable {
     public static boolean isAwaitingCropping(File file) {
 
         for (TaskLog task : sInstance.mTasks) {
+            if (task == null || task.getFile() == null)
+                continue;
             if (task.getFile().equals(file))
                 return true;
         }
@@ -162,6 +164,8 @@ public class ImageProcessLogger implements Serializable {
     public static boolean isAwaitingImageProcessing(File file) {
 
         for (TaskLog task : sInstance.mTasks) {
+            if (task == null || task.getFile() == null)
+                continue;
             if (task.getFile().equals(file))
                 return true;
         }
@@ -173,6 +177,8 @@ public class ImageProcessLogger implements Serializable {
     public static boolean isAwaitingPageDetection(File file) {
 
         for (TaskLog task : sInstance.mTasks) {
+            if (task == null || task.getFile() == null)
+                continue;
             if ((task.getType() == TASK_TYPE_PAGE_DETECTION) && (task.getFile().equals(file)))
                 return true;
         }

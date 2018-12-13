@@ -1,8 +1,11 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.logic.Document;
 
@@ -14,6 +17,17 @@ public abstract class CropRunnable implements Runnable {
 
     // Defines a field that contains the calling object of type ImageProcessTask.
     final protected TaskRunnableCropMethods mCropTask;
+
+    interface TaskPdfMethods extends TaskRunnableCropMethods{
+
+        void setFiles(ArrayList<File> files);
+        ArrayList<File> getFiles();
+        void setPdfName(String pdfName);
+        String getPdfName();
+        void setContext(WeakReference<Context> context);
+        WeakReference<Context> getContext();
+        boolean getPerformOCR();
+    }
 
     interface TaskRunnableCropMethods {
 
@@ -29,6 +43,8 @@ public abstract class CropRunnable implements Runnable {
         void setDocument(Document document);
 
     }
+
+
 
     protected abstract void performTask(String fileName);
 
@@ -54,7 +70,7 @@ public abstract class CropRunnable implements Runnable {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 
         File file = mCropTask.getFile();
-        Document document = mCropTask.getDocument();
+//        Document document = mCropTask.getDocument();
 
         try {
             // Before continuing, checks to see that the Thread hasn't been
@@ -63,23 +79,35 @@ public abstract class CropRunnable implements Runnable {
                 throw new InterruptedException();
             }
 
-            String fileName;
-            if (document != null){
-                StringBuilder sb = new StringBuilder();
-                sb.append(document.getTitle());
-                sb.append("<");
-                for (File f : document.getFiles()){
-                    sb.append(f.getAbsolutePath());
-                    sb.append(">");
-                }
-                sb.deleteCharAt(sb.lastIndexOf(">"));
-                fileName = sb.toString();
-            } else {
-                fileName = file.getAbsolutePath();
+            if (!(mCropTask instanceof PdfProcessTask))
+                performTask(file.getAbsolutePath());
+            else {
+//                TODO: implement here also no ocr runnable
+                ArrayList<File> files = ((PdfProcessTask) mCropTask).getFiles();
+                String pdfName = ((PdfProcessTask) mCropTask).getPdfName();
+                boolean performOCR = ((PdfProcessTask) mCropTask).getPerformOCR();
+                WeakReference<Context> context = ((PdfProcessTask) mCropTask).getContext();
+                ((PdfRunnable) this).performTask(performOCR, pdfName, files, context);
+
             }
 
-//            Perform here the task:
-            performTask(fileName);
+//            String fileName;
+//            if (document != null){
+//                StringBuilder sb = new StringBuilder();
+//                sb.append(document.getTitle());
+//                sb.append("<");
+//                for (File f : document.getFiles()){
+//                    sb.append(f.getAbsolutePath());
+//                    sb.append(">");
+//                }
+//                sb.deleteCharAt(sb.lastIndexOf(">"));
+//                fileName = sb.toString();
+//            } else {
+//                fileName = file.getAbsolutePath();
+//            }
+//
+////            Perform here the task:
+//            performTask(fileName);
 
             mCropTask.handleState(MESSAGE_COMPLETED_TASK);
 
