@@ -162,6 +162,12 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
     }
 
     private void showUserImage(ImageView userImageView) {
+
+//        If the activity is not active anymore, do nothing, otherwise Glide will raise an
+//        IllegalArgumentException
+        if (mActivity == null || mActivity.isFinishing())
+            return;
+
         switch (User.getInstance().getConnection()) {
             case User.SYNC_DROPBOX:
                 String photoUrl = User.getInstance().getPhotoUrl();
