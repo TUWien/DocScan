@@ -1,5 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui.document;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -112,10 +114,13 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         EditText urlEditText = findViewById(R.id.create_series_url_edittext);
         metaData.setUrl(urlEditText.getText().toString());
 
-
-
 //        DocumentStorage.getInstance(this).replaceDocument(document, mDocumentTitle);
         DocumentStorage.saveJSON(this);
+
+//        Send back the new file name, so that it can be used in the GalleryActivity:
+        Intent data = new Intent();
+        data.setData(Uri.parse(document.getTitle()));
+        setResult(RESULT_OK, data);
 
         finish();
 

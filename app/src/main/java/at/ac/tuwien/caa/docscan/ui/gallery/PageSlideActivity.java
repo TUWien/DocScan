@@ -390,11 +390,14 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             public void onClick(View v) {
                 if (mPage != null) {
 
-                    Uri uri = getImageContentUri(getApplicationContext(), mPage.getFile());
+//                    Uri uri = getImageContentUri(getApplicationContext(), mPage.getFile());
+
+                    Uri uri = Uri.fromFile(mPage.getFile());
 
                     Intent shareIntent = new Intent();
                     shareIntent.setAction(Intent.ACTION_SEND);
                     shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); // temp permission for receiving app to read this file
+//                    check here if the content resolver is null
                     shareIntent.setDataAndType(uri, getContentResolver().getType(uri));
                     shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
                     shareIntent.setType("image/jpg");
@@ -546,30 +549,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //
 //    }
 
-    private void showSystemUI(final boolean show) {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                getWindow().getDecorView().setSystemUiVisibility(show ?
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN :
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-                                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                                | View.SYSTEM_UI_FLAG_IMMERSIVE
-                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-            }
-        });
-
-//        showUI(show);
-    }
-
-    private void showUI(boolean UI) {
-
-    }
 
     @Override
     public void onSingleClick() {

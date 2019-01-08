@@ -17,18 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
             app:layout_scrollFlags="scroll|enterAlways"
-            android:background="@color/colorPrimary"
-            >
-            <EditText
-                android:id="@+id/document_name_edit_text"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:selectAllOnFocus="true"
-                android:imeOptions="actionDone"
-                android:singleLine="true"
-                android:visibility="gone"/>
-        </android.support.v7.widget.Toolbar>
-
+            android:background="@color/colorPrimary"/>
     </android.support.design.widget.AppBarLayout>
 
     <!-- We need the following attribute because without it the toolbar will be overlapping the content: -->
@@ -48,15 +37,6 @@
         android:focusableInTouchMode ="true"
         />
 
-    <FrameLayout
-        android:id="@+id/gallery_disable_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="invisible"
-        android:background="@color/recycle_view_disabled"
-        android:clickable="true"
-        android:focusable="true"
-        />
 
 
 

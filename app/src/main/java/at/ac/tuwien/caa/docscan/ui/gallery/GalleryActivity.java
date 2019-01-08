@@ -68,22 +68,18 @@ public class GalleryActivity extends AppCompatActivity implements
     private String mFileName;
     private SelectionToolbar mSelectionToolbar;
     private BroadcastReceiver mMessageReceiver;
-    private Drawable mNavigationDrawable;
-    private EditText mNameEditText;
-    private MenuItem mRenameDocumentItem;
 
     private static final int PERMISSION_ROTATE = 0;
     private static final int PERMISSION_DELETE = 1;
     private static final int PERMISSION_CROP = 2;
     private static final String CLASS_NAME = "GalleryActivity";
+    private static final int DOCUMENT_RENAMING = 0;
 
 
 //    This is used to determine if some file changes (rotation or deletion) happened outside of the
 //    GalleryActivity (i.e. in the ImageViewerFragment). If something changed we need to reload the
 //    images in onResume.
     private static boolean sFileDeleted, sFileRotated, sFileCropped;
-    private FrameLayout mDisableRecyleViewLayout;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,157 +88,17 @@ public class GalleryActivity extends AppCompatActivity implements
 
         setContentView(R.layout.activity_gallery);
 
-        //        dummy document - start
         mFileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
-//        if (mFileName == null)
-//            mFileName = "/storage/emulated/0/Pictures/DocScan/abc";
 
         mRecyclerView = findViewById(R.id.gallery_images_recyclerview);
-        mDisableRecyleViewLayout = findViewById(R.id.gallery_disable_layout);
-        initEditText();
-        mDisableRecyleViewLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showRenameEditText(false);
-            }
-        });
 
         loadDocument();
-        initAdapter();
-        initToolbar();
-
-
-
+        if (mDocument != null) {
+            initAdapter();
+            initToolbar();
+        }
     }
 
-    private void initEditText() {
-
-        mNameEditText = findViewById(R.id.document_name_edit_text);
-//        Prevent that the user enters a non valid character:
-        InputFilter filter = Helper.getDocumentInputFilter();
-        mNameEditText.setFilters(new InputFilter[] {filter});
-
-        mNameEditText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    renameDir(mNameEditText.getText().toString());
-                    showRenameEditText(false);
-
-                    return true;
-                }
-                return false; //action was not consumed
-            }
-        });
-    }
-
-    private void showRenameEditText(boolean show) {
-
-        if (!show) {
-            mRenameDocumentItem.setVisible(true);
-            mNameEditText.setVisibility(View.GONE);
-//            hide the soft keyboard:
-            InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(mNameEditText.getWindowToken(), 0);
-            mDisableRecyleViewLayout.setVisibility(View.INVISIBLE);
-            mToolbar.setNavigationIcon(mNavigationDrawable);
-        }
-        else {
-
-            mRenameDocumentItem.setVisible(false);
-            mNameEditText.setVisibility(View.VISIBLE);
-            mNameEditText.setText(mDocument.getTitle());
-            mNameEditText.requestFocus();
-            mDisableRecyleViewLayout.setVisibility(View.VISIBLE);
-            mToolbar.setNavigationIcon(android.support.v7.appcompat.R.drawable.abc_ic_clear_material);
-//            show the soft keyboard:
-            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(mNameEditText, InputMethodManager.SHOW_IMPLICIT);
-
-        }
-
-    }
-
-
-    private void renameDir(String newDir) {
-
-        boolean isTitleAssigned = DocumentStorage.getInstance(this).isTitleAlreadyAssigned(newDir);
-        if (isTitleAssigned) {
-            showDirExistingCreatedAlert(newDir);
-            return;
-        }
-
-        if (mDocument.getTitle() != null && DocumentStorage.getInstance(this).getTitle() != null &&
-                DocumentStorage.getInstance(this).getTitle().compareTo(mDocument.getTitle()) == 0)
-            DocumentStorage.getInstance(this).setTitle(newDir);
-
-        mFileName = newDir;
-        mDocument.setTitle(newDir);
-        mToolbar.setTitle(newDir);
-        loadDocument();
-        initAdapter();
-
-
-
-/*
-        File mediaStorageDir = Helper.getMediaStorageDir(getResources().getString(R.string.app_name));
-        File newFile = new File(mediaStorageDir.getAbsolutePath(), newDir);
-
-
-        if (newFile.exists()) {
-            showDirExistingCreatedAlert(newDir);
-            return;
-        }
-
-        if (newFile != null) {
-            boolean success = mDocument.getDir().renameTo(newFile);
-            if (success) {
-//                mDocument.setDir(newFile);
-
-//                User.getInstance().setDocumentName(mSelectedDir.getName());
-//                UserHandler.saveSeriesName(c);
-
-                File oldFile = new File(mFileName);
-                String oldFileName = oldFile.getName();
-
-                if (User.getInstance().getDocumentName().equals(oldFileName))  {
-                    User.getInstance().setDocumentName(newFile.getName());
-                    UserHandler.saveSeriesName(this);
-                }
-
-                mFileName = newFile.getAbsolutePath();
-                mToolbar.setTitle(newDir);
-                loadDocument();
-                initAdapter();
-
-            }
-        }
-*/
-
-    }
-
-    private void showDirExistingCreatedAlert(String dirName) {
-
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-
-        String msg = getResources().getString(R.string.document_dir_existing_prefix_message)+
-                " " + dirName + " " +
-                getResources().getString(R.string.document_dir_existing_postfix_message);
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(R.string.document_no_dir_created_title)
-                .setCancelable(true)
-                .setPositiveButton("OK", null)
-                .setMessage(msg);
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
-
-    }
 
     @Override
     protected void onResume() {
@@ -262,7 +118,7 @@ public class GalleryActivity extends AppCompatActivity implements
         }
 
 //        Set the document title in onResume, because it can be edited in EditDocumentActivity:
-        mToolbar.setTitle(mDocument.getTitle());
+//        mToolbar.setTitle(mDocument.getTitle());
 
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents
@@ -271,10 +127,22 @@ public class GalleryActivity extends AppCompatActivity implements
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(INTENT_IMAGE_PROCESS_ACTION));
 
-
-//        fixToolbar();
-
     }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == DOCUMENT_RENAMING) {
+            if (resultCode == RESULT_OK) {
+                mFileName = data.getData().toString();
+                loadDocument();
+                if (mDocument != null) {
+                    initAdapter();
+                    initToolbar();
+                }
+            }
+//            do nothing if resultCode == RESULT_CANCELED
+        }
+    }
+
 
     @Override
     public void onPause() {
@@ -435,7 +303,6 @@ public class GalleryActivity extends AppCompatActivity implements
 //        Note initialize SelectionToolbar just after setting setDisplayHomeAsUpEnabled, because
 //        SelectionToolbar needs a navigation icon (i.e. back button):
         mSelectionToolbar = new SelectionToolbar(this, mToolbar, appBarLayout);
-        mNavigationDrawable = mToolbar.getNavigationIcon();
 
     }
 
@@ -445,13 +312,7 @@ public class GalleryActivity extends AppCompatActivity implements
         switch (item.getItemId()){
             case android.R.id.home:
                 // did the user cancel the renaming?
-                if (mNameEditText.getVisibility() == View.VISIBLE) {
-                    showRenameEditText(false);
-                    mToolbar.setTitle(mDocument.getTitle());
-                    return true;
-                }
-                // did the user press back?
-                else if (mAdapter.getSelectionCount() == 0) {
+                if (mAdapter.getSelectionCount() == 0) {
                     onBackPressed();
                     return true;
                 }
@@ -475,9 +336,6 @@ public class GalleryActivity extends AppCompatActivity implements
         inflater.inflate(R.menu.gallery_menu, menu);
 
         mMenu = menu;
-
-        mRenameDocumentItem = menu.findItem(R.id.gallery_menu_rename_item);
-
         return true;
 
     }
@@ -526,7 +384,8 @@ public class GalleryActivity extends AppCompatActivity implements
         if (mDocument != null && mDocument.getTitle() != null) {
             Intent intent = new Intent(getApplicationContext(), EditDocumentActivity.class);
             intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, mDocument.getTitle());
-            startActivity(intent);
+//            startActivity(intent);
+            startActivityForResult(intent, DOCUMENT_RENAMING);
         }
 
 
@@ -561,29 +420,6 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
-
-
-    private void renameDocument() {
-
-        showRenameEditText(true);
-//        final EditText editText = findViewById(R.id.document_name_edit_text);
-//        FrameLayout layout = findViewById(R.id.gallery_disable_layout);
-//
-//        if (editText.getVisibility() == View.GONE) {
-//            editText.setVisibility(View.VISIBLE);
-//            editText.setText(mDocument.getTitle());
-//            editText.requestFocus();
-//            layout.setVisibility(View.VISIBLE);
-//            mToolbar.setNavigationIcon(android.support.v7.appcompat.R.drawable.abc_ic_clear_material);
-//            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//            imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
-//        }
-//        else {
-//            editText.setVisibility(View.GONE);
-//            layout.setVisibility(View.INVISIBLE);
-//        }
-
-    }
 
     private void showOverwriteImageAlert() {
 
