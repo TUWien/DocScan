@@ -572,7 +572,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            takePicture();
+            if (mIsPictureSafe)
+                // get an image from the camera
+                takePicture();
         }
         else if (keyCode == KeyEvent.KEYCODE_BACK) {
             super.onBackPressed();
