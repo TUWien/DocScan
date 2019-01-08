@@ -429,15 +429,21 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         mCamera.setParameters(parameters);
 
-        mCamera.autoFocus(new Camera.AutoFocusCallback() {
-            @Override
-            public void onAutoFocus(boolean success, Camera camera) {
-                // Stop the drawing of the auto focus circle anyhow, do not care if the auto focus
-                // was successful -> do not use value of success.
-                mCameraPreviewCallback.onFocusTouchSuccess();
-            }
+        try {
+            mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(boolean success, Camera camera) {
+                    // Stop the drawing of the auto focus circle anyhow, do not care if the auto focus
+                    // was successful -> do not use value of success.
+                    mCameraPreviewCallback.onFocusTouchSuccess();
+                }
 
-        });
+            });
+        }
+        catch (RuntimeException e) {
+//            This can happen if the user touches the CameraPreview, while the preview is not
+//            started. In this case we do nothing.
+        }
 
         return true; //processed
 
