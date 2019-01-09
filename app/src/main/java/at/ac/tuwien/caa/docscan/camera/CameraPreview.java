@@ -426,7 +426,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 parameters.setMeteringAreas(focusAreas);
 
         }
-
+// Use this to keep a stable exposure:
+//        parameters.setAutoExposureLock(false);
         mCamera.setParameters(parameters);
 
         try {
@@ -436,6 +437,12 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     // Stop the drawing of the auto focus circle anyhow, do not care if the auto focus
                     // was successful -> do not use value of success.
                     mCameraPreviewCallback.onFocusTouchSuccess();
+//                    Use this to keep a stable exposure:
+//                    Camera.Parameters parameters = mCamera.getParameters();
+//                    if (parameters != null && parameters.isAutoExposureLockSupported()) {
+//                        parameters.setAutoExposureLock(true);
+//                        mCamera.setParameters(parameters);
+//                    }
                 }
 
             });
