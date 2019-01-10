@@ -34,6 +34,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -269,7 +270,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         mToolbar = findViewById(R.id.image_viewer_toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //       Take care that the mToolbar is not overlaid by the status bar:
         mToolbar.setPadding(0, getStatusBarHeight(), 0, 0);
@@ -286,10 +288,9 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     private void setToolbarTitle(int pos) {
 
-        if (mToolbar != null) {
+        if (mToolbar != null && getSupportActionBar() != null)
             getSupportActionBar().setTitle("#: " + Integer.toString(pos+1) + "/" +
                     Integer.toString(mDocument.getPages().size())+ " - " + mDocument.getTitle());
-        }
     }
 
     // A method to find height of the status bar
@@ -385,15 +386,14 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     private void initShareButton() {
 
         ImageView shareView = findViewById(R.id.page_view_buttons_layout_share_button);
+        final Context context = this;
         shareView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mPage != null) {
 
-//                    Uri uri = getImageContentUri(getApplicationContext(), mPage.getFile());
-
-                    Uri uri = Uri.fromFile(mPage.getFile());
-
+                    Uri uri = FileProvider.getUriForFile(context,
+                            "at.ac.tuwien.caa.fileprovider", mPage.getFile());
                     Intent shareIntent = new Intent();
                     shareIntent.setAction(Intent.ACTION_SEND);
                     shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION); // temp permission for receiving app to read this file
