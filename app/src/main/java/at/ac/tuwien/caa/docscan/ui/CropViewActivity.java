@@ -13,6 +13,8 @@ import android.view.MenuItem;
 
 import com.bumptech.glide.signature.MediaStoreSignature;
 
+import org.opencv.android.OpenCVLoader;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,6 +42,26 @@ public class CropViewActivity extends AppCompatActivity {
     private int mOriginalOrientation;
 
     private static final String CLASS_NAME = "CropViewActivity";
+
+    /**
+     * Static initialization of the OpenCV and docscan-native modules.
+     */
+    static {
+
+        Log.d(CLASS_NAME, "initializing OpenCV");
+
+//         We need this for Android 4:
+        if (!OpenCVLoader.initDebug()) {
+            Log.d(CLASS_NAME, "Error while initializing OpenCV.");
+        } else {
+
+            System.loadLibrary("opencv_java3");
+            System.loadLibrary("docscan-native");
+
+            Log.d(CLASS_NAME, "OpenCV initialized");
+        }
+
+    }
 
 
     @Override

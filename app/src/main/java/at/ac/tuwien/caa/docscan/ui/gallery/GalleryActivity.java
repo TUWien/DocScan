@@ -166,6 +166,7 @@ public class GalleryActivity extends AppCompatActivity implements
                 Log.d(CLASS_NAME, "onReceive: " + intent.getIntExtra(INTENT_IMAGE_PROCESS_TYPE, -1));
 
                 if (mAdapter != null) {
+
                     String fileName = intent.getStringExtra(INTENT_FILE_NAME);
 
                     int idx = 0;
@@ -178,9 +179,11 @@ public class GalleryActivity extends AppCompatActivity implements
                             idx++;
                         }
                     }
+
+                    mAdapter.deselectAllItems();
                 }
 
-                mAdapter.deselectAllItems();
+
             }
         };
 
