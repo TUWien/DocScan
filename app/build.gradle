@@ -1,6 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'io.fabric'
+apply plugin: 'com.google.gms.google-services'
 
 android {
 
@@ -152,6 +154,13 @@ dependencies {
 	implementation project(':openCVLibrary')
 	implementation 'me.drakeet.support:toastcompat:1.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+	// Check for v11.4.2 or higher
+	implementation 'com.google.firebase:firebase-core:16.0.6'
+
+	// Add dependency
+	implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
+
 }
 repositories {
     mavenCentral()

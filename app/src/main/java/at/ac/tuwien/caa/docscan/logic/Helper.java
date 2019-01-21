@@ -11,9 +11,9 @@ import android.support.media.ExifInterface;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
-//import android.util.Size;
 
 import com.android.volley.VolleyError;
+import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -30,6 +30,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+
 
 /**
  * Created by fabian on 26.09.2017.
@@ -53,27 +54,13 @@ public class Helper {
 
     }
 
-//    /**
-//     * Returns the root path to the directory in which the images are saved.
-//     *
-//     * @param appName name of the app, this is used for gathering the directory string.
-//     * @return the path where the images are stored.
-//     */
-//    public static File getMediaStorageUserSubDir(String appName) {
-//
-//        File mediaStorageDir = getMediaStorageDir(appName);
-//        File subDir = mediaStorageDir;
-//        if (mediaStorageDir != null)
-//            if (User.getInstance().getDocumentName() != null) {
-//                subDir = new File(mediaStorageDir, User.getInstance().getDocumentName());
-//                // Check if the directory is existing:
-//                if (!subDir.exists())
-//                    subDir.mkdir();
-//            }
-//
-//        return subDir;
-//
-//    }
+
+    public static void crashlyticsLog(String className, String methodName, String msg) {
+
+        String log = className + ": " + methodName + ": " + msg;
+        Crashlytics.log(log);
+
+    }
 
     /**
      * Returns the root path to the directory in which the images are saved.

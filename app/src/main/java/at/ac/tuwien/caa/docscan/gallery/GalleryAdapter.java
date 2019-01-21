@@ -34,6 +34,8 @@ import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder> {
 
+    private static final String CLASS_NAME = "GalleryAdapter";
+
     private Document mDocument;
     private Context mContext;
 
@@ -60,7 +62,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         mSelections = new CountableBooleanArray();
 
         int paddingDp = 3;
-        float density = mContext.getResources().getDisplayMetrics().density;
+        float density = context.getResources().getDisplayMetrics().density;
         mPaddingPixel = (int)(paddingDp * density);
 
         mColumnCount = 2;
@@ -106,6 +108,10 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
             return;
 
         Page page = mDocument.getPages().get(position);
+        if (page == null) {
+            Helper.crashlyticsLog(CLASS_NAME, "onBindViewHolder", "page == null");
+            return;
+        }
 
         holder.mItemView.getLayoutParams().width = mWidth;
 
@@ -126,23 +132,11 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         else
             holder.itemView.setPadding(mPaddingPixel/2, 0,mPaddingPixel / 2,mPaddingPixel);
 
-
 //        Show the image:
         initImageView(holder, position, page);
 
-
 //      Set the title and init the OnClickListener:
         initCheckBox(holder, position, page);
-
-
-
-//////        TODO: find out why this slows down the caching:
-//        Size imageViewSize = mSizeCalculator.sizeForChildAtPosition(position);
-//        holder.itemView.getLayoutParams().width = imageViewSize.getWidth();
-//        holder.itemView.getLayoutParams().height = imageViewSize.getHeight();
-//
-//        holder.itemView.getLayoutParams().width = 400;
-//        holder.itemView.getLayoutParams().height = 600;
 
     }
 
@@ -157,20 +151,35 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if (mSelections == null) {
+                    Helper.crashlyticsLog(CLASS_NAME, "initCheckBox",
+                            "mSelections == null");
+                    return;
+                }
+
                 mSelections.put(pos, !mSelections.get(pos, false));
                 ((CheckBox)v).setChecked(mSelections.get(pos, false));
-                mCallback.onSelectionChange(mSelections.count());
+                if (mCallback != null)
+                    mCallback.onSelectionChange(mSelections.count());
+                else
+                    Helper.crashlyticsLog(CLASS_NAME, "initCheckBox",
+                            "mCallback == null");
             }
         });
 
-        checkBox.setChecked(mSelections.get(position, false));
+        if (mSelections != null)
+            checkBox.setChecked(mSelections.get(position, false));
 
     }
 
     private synchronized void initImageView(GalleryViewHolder holder, int position, Page page) {
 
-        if (mDocument == null || mDocument.getPages() == null)
+        if (mDocument == null || mDocument.getPages() == null) {
+            Helper.crashlyticsLog(CLASS_NAME, "initImageView",
+                    "mDocument or mDocument.getPages == null ");
             return;
+        }
 
         ImageView imageView = holder.mImageView;
 
@@ -195,12 +204,16 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
             holder.mCheckBox.setEnabled(false);
 
-            GlideApp.with(mContext)
-                    .load(page.getFile().getPath())
-                    //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
-                    .signature(new MediaStoreSignature("", modified, exifOrientation))
-                    .into(imageView);
-
+            if (mContext != null) {
+                GlideApp.with(mContext)
+                        .load(page.getFile().getPath())
+                        //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
+                        .signature(new MediaStoreSignature("", modified, exifOrientation))
+                        .into(imageView);
+            }
+            else
+                Helper.crashlyticsLog(CLASS_NAME, "initImageView",
+                        "mContext == null");
             holder.mProgressBar.setVisibility(View.VISIBLE);
 
             return;
@@ -214,33 +227,46 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 //            Draw the page detection border:
             if (!isCropped) {
 
-
-
-                GlideApp.with(mContext)
-                        .load(page.getFile().getPath())
-                        //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
-                        .signature(new MediaStoreSignature("", modified, exifOrientation))
-                        // TODO: enable disk caching!
-//                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-//                        .skipMemoryCache(true)
-                        .transform(new CropRectTransform(fileName, mContext))
-                        .override(400,400)
-                        .into(imageView);
+                if (mContext != null) {
+                    GlideApp.with(mContext)
+                            .load(page.getFile().getPath())
+                            //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
+                            .signature(new MediaStoreSignature("", modified, exifOrientation))
+                            // TODO: enable disk caching!
+                            //                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            //                        .skipMemoryCache(true)
+                            .transform(new CropRectTransform(fileName, mContext))
+                            .override(400, 400)
+                            .into(imageView);
+                }
+                else
+                    Helper.crashlyticsLog(CLASS_NAME, "initImageView",
+                            "mContext == null");
             }
 //            Image is already cropped, draw no border:
             else {
-                GlideApp.with(mContext)
-                        .load(page.getFile().getPath())
-                        //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
-                        .signature(new MediaStoreSignature("", modified, exifOrientation))
-                        .into(imageView);
+                if (mContext != null) {
+                    GlideApp.with(mContext)
+                            .load(page.getFile().getPath())
+                            //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
+                            .signature(new MediaStoreSignature("", modified, exifOrientation))
+                            .into(imageView);
+                }
+                else
+                    Helper.crashlyticsLog(CLASS_NAME, "initImageView",
+                        "mContext == null");
             }
         }
         else {
 //            Exif data contains no cropping information, simply show the image:
-            GlideApp.with(mContext)
-                    .load(page.getFile().getPath())
-                    .into(imageView);
+            if (mContext != null) {
+                GlideApp.with(mContext)
+                        .load(page.getFile().getPath())
+                        .into(imageView);
+            }
+            else
+                Helper.crashlyticsLog(CLASS_NAME, "initImageView",
+                    "mContext == null");
         }
 
     }
@@ -262,18 +288,24 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
         if (mDocument != null && mDocument.getPages() != null) {
             for (int i = 0; i < mDocument.getPages().size(); i++) {
-                if (mSelections.get(i)) {
+                if (mSelections != null && mSelections.get(i)) {
                     selectionIndices[index] = i;
                     index++;
                 }
             }
         }
+        else
+            Helper.crashlyticsLog(CLASS_NAME, "getSelectionIndices",
+                    "mDocument == null || mDocument.getPages() == null");
 
         return selectionIndices;
 
     }
 
     public int getSelectionCount() {
+
+        if (mSelections == null)
+            return -1;
 
         return mSelections.count();
 
@@ -291,30 +323,9 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     }
 
-    public void setSelections(ArrayList<Integer> indices) {
-
-        for (int i = 0; i < mDocument.getPages().size(); i++) {
-            mSelections.put(i, false);
-            for (Integer idx : indices) {
-                if (idx == i) {
-                    mSelections.put(i, true);
-                    break;
-                }
-            }
-        }
-
-//        We need to redraw the check boxes:
-        this.notifyDataSetChanged();
-
-//        We need to inform the parent activity that the selection has changed:
-        mCallback.onSelectionChange(mSelections.count());
-
-
-    }
-
     private void setAllSelections(boolean isSelected) {
 
-        if (mDocument == null || mDocument.getPages() == null)
+        if (mDocument == null || mDocument.getPages() == null || mSelections == null)
             return;
 
         for (int i = 0; i < mDocument.getPages().size(); i++) {
@@ -324,23 +335,15 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         //        We need to redraw the check boxes:
         this.notifyDataSetChanged();
 
-//        We need to inform the parent activity that the selection has changed:
-        mCallback.onSelectionChange(mSelections.count());
+        if (mCallback != null)
+    //        We need to inform the parent activity that the selection has changed:
+            mCallback.onSelectionChange(mSelections.count());
+        else
+            Helper.crashlyticsLog(CLASS_NAME, "setAllSelections",
+                    "mCallback == null");
 
     }
 
-    public void clearSelection() {
-
-        if (mDocument == null || mDocument.getPages() == null)
-            return;
-
-        for (int i = 0; i < mDocument.getPages().size(); i++)
-            mSelections.put(i, false);
-
-//        We need to inform the parent activity that the selection has changed:
-        mCallback.onSelectionChange(mSelections.count());
-
-    }
 
     public class GalleryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
@@ -382,17 +385,23 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 }
             }
             else {
-                mSelections.put(position, !mSelections.get(position, false));
-                mCheckBox.setChecked(mSelections.get(position, false));
-                mCallback.onSelectionChange(getSelectionCount());
+                if (mSelections != null) {
+                    mSelections.put(position, !mSelections.get(position, false));
+                    mCheckBox.setChecked(mSelections.get(position, false));
+                }
+                if (mCallback != null)
+                    mCallback.onSelectionChange(getSelectionCount());
             }
         }
     }
 
     private double aspectRatioForIndex(int i) {
 
-        if (mDocument == null || mDocument.getPages() == null || mDocument.getPages().size() <= i)
+        if (mDocument == null || mDocument.getPages() == null || mDocument.getPages().size() <= i) {
+            Helper.crashlyticsLog(CLASS_NAME, "aspectRatioForIndex",
+                    "could not retrieve aspect ratio");
             return 1.0;
+        }
 
         String fileName = mDocument.getPages().get(i).getFile().getAbsolutePath();
         BitmapFactory.Options options = new BitmapFactory.Options();

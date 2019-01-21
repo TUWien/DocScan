@@ -1,7 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.gallery;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,8 +8,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -19,19 +18,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.InputFilter;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -48,7 +37,6 @@ import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_TYPE;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 
 
@@ -97,6 +85,8 @@ public class GalleryActivity extends AppCompatActivity implements
             initAdapter();
             initToolbar();
         }
+        else
+            Helper.crashlyticsLog(CLASS_NAME, "onCreate", "mDocument == null");
     }
 
 
@@ -109,20 +99,22 @@ public class GalleryActivity extends AppCompatActivity implements
         if (sFileDeleted) {
             loadDocument(); // get the files contained in the document:
             initAdapter();
-            mAdapter.notifyDataSetChanged();
+            if (mAdapter != null)
+                mAdapter.notifyDataSetChanged();
+            else
+                Helper.crashlyticsLog(CLASS_NAME, "onResume", "mAdapater == null");
         }
 
         if (sFileRotated || sFileCropped) {
             if (mAdapter != null)
                 mAdapter.notifyDataSetChanged();
+            else {
+                loadDocument();
+                initAdapter();
+            }
+
         }
 
-//        Set the document title in onResume, because it can be edited in EditDocumentActivity:
-//        mToolbar.setTitle(mDocument.getTitle());
-
-        // Register to receive messages.
-        // We are registering an observer (mMessageReceiver) to receive Intents
-        // with actions named "PROGRESS_INTENT_NAME".
         mMessageReceiver = getReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(INTENT_IMAGE_PROCESS_ACTION));
@@ -132,14 +124,19 @@ public class GalleryActivity extends AppCompatActivity implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == DOCUMENT_RENAMING) {
             if (resultCode == RESULT_OK) {
-                mFileName = data.getData().toString();
-                loadDocument();
-                if (mDocument != null) {
-                    initAdapter();
-                    initToolbar();
+                if (data.getData() != null) {
+                    mFileName = data.getData().toString();
+                    loadDocument();
+                    if (mDocument != null) {
+                        initAdapter();
+                        initToolbar();
+                    }
                 }
+                else
+                    Helper.crashlyticsLog(CLASS_NAME, "onActivityResult",
+                            "data.getData() == null");
+
             }
-//            do nothing if resultCode == RESULT_CANCELED
         }
     }
 
@@ -159,18 +156,17 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private BroadcastReceiver getReceiver() {
 
-        BroadcastReceiver receiver = new BroadcastReceiver() {
+        return new BroadcastReceiver() {
+
             @Override
             public void onReceive(Context context, Intent intent) {
-
-                Log.d(CLASS_NAME, "onReceive: " + intent.getIntExtra(INTENT_IMAGE_PROCESS_TYPE, -1));
 
                 if (mAdapter != null) {
 
                     String fileName = intent.getStringExtra(INTENT_FILE_NAME);
 
                     int idx = 0;
-                    if (mDocument.getPages() != null) {
+                    if (mDocument != null && mDocument.getPages() != null) {
                         for (Page page : mDocument.getPages()) {
                             if (page.getFile().getAbsolutePath().compareTo(fileName) == 0) {
                                 mAdapter.notifyItemChanged(idx);
@@ -182,26 +178,16 @@ public class GalleryActivity extends AppCompatActivity implements
 
                     mAdapter.deselectAllItems();
                 }
+                else
+                    Helper.crashlyticsLog(CLASS_NAME, "getReceiver",
+                            "mAdapter == null");
 
 
             }
         };
 
-        return receiver;
-
     }
 
-//    /**
-//     * Handles broadcast intents which inform about the upload progress:
-//     */
-//    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//
-//
-//
-//        }
-//    };
 
     /**
      * Called after permission has been given or has been rejected. This is necessary on Android M
@@ -212,7 +198,7 @@ public class GalleryActivity extends AppCompatActivity implements
      * @param grantResults results
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
 
 
         boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
@@ -255,6 +241,11 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void initAdapter() {
 
+        if (mDocument == null) {
+            Helper.crashlyticsLog(CLASS_NAME, "initAdapter", "mDocument == null");
+            return;
+        }
+
         mAdapter = new GalleryAdapter(this, mDocument);
         mAdapter.setFileName(mFileName);
         mRecyclerView.setAdapter(mAdapter);
@@ -272,11 +263,6 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
-    private static int dpToPx(float dp, Context context) {
-        return (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-                context.getResources().getDisplayMetrics());
-    }
-
     private void loadDocument() {
 
 //        if (mFileName != null)
@@ -291,8 +277,10 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void initToolbar() {
 
-        if (mDocument == null)
+        if (mDocument == null) {
+            Helper.crashlyticsLog(CLASS_NAME, "initToolbar", "mDocument == null");
             return;
+        }
 
         mToolbar = findViewById(R.id.main_toolbar);
         mToolbar.setTitle(mDocument.getTitle());
@@ -301,7 +289,11 @@ public class GalleryActivity extends AppCompatActivity implements
 
 //        Enable back navigation in action bar:
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        else
+            Helper.crashlyticsLog(CLASS_NAME, "initToolbar", "getSupportActionBar == null");
+
 
 //        Note initialize SelectionToolbar just after setting setDisplayHomeAsUpEnabled, because
 //        SelectionToolbar needs a navigation icon (i.e. back button):
@@ -387,18 +379,8 @@ public class GalleryActivity extends AppCompatActivity implements
         if (mDocument != null && mDocument.getTitle() != null) {
             Intent intent = new Intent(getApplicationContext(), EditDocumentActivity.class);
             intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, mDocument.getTitle());
-//            startActivity(intent);
             startActivityForResult(intent, DOCUMENT_RENAMING);
         }
-
-
-//        // Check if we have the permission to rotate images:
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-//            // ask for permission:
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
-//        } else
-//            renameDocument();
-
     }
 
 
@@ -477,27 +459,34 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void rotateSelectedItems() {
 
-        if (mDocument == null || mAdapter == null || mDocument.getPages() == null)
+        if (mDocument == null || mAdapter == null || mDocument.getPages() == null) {
+            Helper.crashlyticsLog(CLASS_NAME, "rotateSelectedItems", "null pointer");
             return;
+        }
 
         int[] selections = mAdapter.getSelectionIndices();
 
-        for (int i = 0; i < selections.length; i++) {
+        for (int i = 0; i < selections.length; i++)
             ImageProcessor.rotateFile(mDocument.getPages().get(selections[i]).getFile());
-        }
+
     }
 
     private void deleteSelections() {
 
-        if (mDocument == null || mAdapter == null || mDocument.getPages() == null)
+        if (mDocument == null || mAdapter == null || mDocument.getPages() == null ||
+                mAdapter == null) {
+            Helper.crashlyticsLog(CLASS_NAME, "rotateSelectedItems",
+                    "mDocument == null || mAdapter == null || mDocument.getPages() == null || " +
+                    "                mAdapter == null");
             return;
+        }
 
         int[] selections = mAdapter.getSelectionIndices();
 
-        Log.d(CLASS_NAME, "deleteSelections: selections.length: " + selections.length);
-        for (int i = 0; i < mDocument.getPages().size(); i++) {
-            Log.d(CLASS_NAME, "deleteSelections: listing index: " + i + " file: " + mDocument.getPages().get(i).getFile().getName());
-        }
+//        Log.d(CLASS_NAME, "deleteSelections: selections.length: " + selections.length);
+//        for (int i = 0; i < mDocument.getPages().size(); i++) {
+//            Log.d(CLASS_NAME, "deleteSelections: listing index: " + i + " file: " + mDocument.getPages().get(i).getFile().getName());
+//        }
 
 
         for (int i = selections.length - 1; i >= 0; i--) {
@@ -506,8 +495,12 @@ public class GalleryActivity extends AppCompatActivity implements
 
             Page page = mDocument.getPages().remove(selIdx);
             String fileName = page.getFile().getAbsolutePath();
-            Log.d(CLASS_NAME, "deleteSelections: deleting index: " + selIdx + " filename: " + fileName);
-            new File(fileName).delete();
+//            Log.d(CLASS_NAME, "deleteSelections: deleting index: " + selIdx + " filename: " + fileName);
+
+            boolean isFileDeleted = new File(fileName).delete();
+            if (!isFileDeleted)
+                Helper.crashlyticsLog(CLASS_NAME, "deleteSelections",
+                        "file not deleted");
 
             mAdapter.notifyItemRemoved(selIdx);
             mAdapter.notifyItemRangeChanged(selIdx, mDocument.getPages().size());
@@ -522,6 +515,12 @@ public class GalleryActivity extends AppCompatActivity implements
 
     @Override
     public void onSelectionChange(int selectionCount) {
+
+        if (mAdapter == null) {
+            Helper.crashlyticsLog(CLASS_NAME, "onSelectionChange",
+                    "mAdapter == null");
+            return;
+        }
 
         // No selection - let the toolbar disappear, after scrolling down:
         if (selectionCount == 0) {
@@ -539,6 +538,11 @@ public class GalleryActivity extends AppCompatActivity implements
 
     private void scrollToolbar(int selectionCount) {
 
+        if (mSelectionToolbar == null || mMenu == null) {
+            Helper.crashlyticsLog(CLASS_NAME, "scrollToolbar", "null pointer");
+            return;
+        }
+
         mSelectionToolbar.scrollToolbar(selectionCount);
 
         mMenu.setGroupVisible(R.id.gallery_menu_main, false);
@@ -551,14 +555,23 @@ public class GalleryActivity extends AppCompatActivity implements
 
         if (mSelectionToolbar != null)
             mSelectionToolbar.fixToolbar();
+        else
+            Helper.crashlyticsLog(CLASS_NAME, "fixToolbar",
+                    "mSelectionToolbar == null");
 
         //            Set the action bar title:
-        if (mToolbar != null)
+        if (mToolbar != null && mDocument != null)
             mToolbar.setTitle(mDocument.getTitle());
+        else
+            Helper.crashlyticsLog(CLASS_NAME, "fixToolbar",
+                    "mToolbar or mDocument == null");
+
         if (mMenu != null) {
             mMenu.setGroupVisible(R.id.gallery_menu_selection, false);
             mMenu.setGroupVisible(R.id.gallery_menu_main, true);
         }
+        else
+            Helper.crashlyticsLog(CLASS_NAME, "fixToolbar", "mMenu == null");
 
     }
 
@@ -568,7 +581,9 @@ public class GalleryActivity extends AppCompatActivity implements
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
         String title = getResources().getString(R.string.gallery_confirm_delete_title_prefix);
-        title += " " + mAdapter.getSelectionCount();
+        if (mAdapter != null)
+            title += " " + mAdapter.getSelectionCount();
+
         if (mAdapter.getSelectionCount() == 1)
             title += " " + getResources().getString(R.string.gallery_confirm_delete_title_single_postfix);
         else
@@ -595,48 +610,6 @@ public class GalleryActivity extends AppCompatActivity implements
         alertDialog.show();
 
     }
-
-
-
-//    private ArrayList<File> getFileList(String dir) {
-//
-//        File[] files = getFiles(new File(dir));
-//
-//        ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
-//
-//        return fileList;
-//
-//    }
-//
-//    private ArrayList<Page> filesToPages(ArrayList<File> files) {
-//
-//        ArrayList<Page> pages = new ArrayList<>(files.size());
-//
-//        int idx = 1;
-//        for (File file : files) {
-//            pages.add(new Page(file, Integer.toString(idx)));
-//            idx++;
-//        }
-//
-//        return pages;
-//
-//    }
-//
-//    private File[] getFiles(File dir) {
-//
-//        FileFilter filesFilter = new FileFilter() {
-//            public boolean accept(File file) {
-//                return !file.isDirectory();
-//            }
-//        };
-//        File[] files = dir.listFiles(filesFilter);
-//        Arrays.sort(files);
-//
-//        return files;
-//    }
-
-    //   END of temporary helper methods copied from BaseDocumentAdapter. Replace them.
-
 
 
 }
