@@ -37,13 +37,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import at.ac.tuwien.caa.docscan.logic.Helper;
+
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_MAP;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PAGE_DETECTION;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_ROTATE;
 
 public class ImageProcessor {
 
-    public static final int MESSAGE_COMPLETED_TASK = 0;
+    private static final int MESSAGE_COMPLETED_TASK = 0;
 
     public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
 //    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
@@ -63,13 +65,6 @@ public class ImageProcessor {
     // Sets the maximum threadpool size to 8
     private static final int MAXIMUM_POOL_SIZE = 8;
 
-    /**
-     * NOTE: This is the number of total available cores. On current versions of
-     * Android, with devices that use plug-and-play cores, this will return less
-     * than the total number of cores. The total number of cores is not
-     * available in current Android implementations.
-     */
-    private static int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
 
     private static final String CLASS_NAME = "ImageProcessor";
 
@@ -85,7 +80,7 @@ public class ImageProcessor {
     private Handler mHandler;
 
 //    Singleton:
-    private static ImageProcessor sInstance = null;
+    private static ImageProcessor sInstance;
 
     static {
 
@@ -136,9 +131,6 @@ public class ImageProcessor {
              */
             private boolean finishTask(ImageProcessTask task) {
 
-                ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_ROTATE);
-                sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
-
 
                 if (task instanceof PageDetectionTask)
                     ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_PAGE_DETECTION);
@@ -164,7 +156,7 @@ public class ImageProcessor {
 
             /**
              * Informs DocScan and other (system) apps that the image has been changed.
-             * @param file
+             * @param file The file.
              */
             private void notifyImageChanged(File file) {
 
@@ -250,10 +242,14 @@ public class ImageProcessor {
                 break;
         }
 
-        imageProcessTask.initializeTask(sInstance);
-        imageProcessTask.setFile(file);
-
-        sInstance.mProcessThreadPool.execute(imageProcessTask.getRunnable());
+        if (imageProcessTask != null) {
+            imageProcessTask.initializeTask(sInstance);
+            imageProcessTask.setFile(file);
+            sInstance.mProcessThreadPool.execute(imageProcessTask.getRunnable());
+        }
+        else
+            Helper.crashlyticsLog(CLASS_NAME, "executeTask",
+                    "imageProcessTask == null");
 
     }
 
