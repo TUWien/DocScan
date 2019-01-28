@@ -35,6 +35,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.google.firebase.FirebaseApp;
+
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -60,6 +62,9 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         setContentView(R.layout.main_container_view);
 
         askForPermissions();
+
+        //initialize Firebase for OCR
+        FirebaseApp.initializeApp(this);
 
     }
 

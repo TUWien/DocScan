@@ -1,18 +1,21 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
@@ -31,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -49,6 +53,7 @@ import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTE
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_TYPE;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_FINISHED;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_PDF_PROCESS_FINISHED;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_FILE_DELETED_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_FINISHED_ID;
@@ -391,6 +396,57 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private boolean areAllItemsSelected() {
 
         return mListView.getCount() == getSelectedDocuments().size();
+
+    }
+
+    public void createPdfFromSelectedItem(MenuItem item) {
+
+        showOCRAlertDialog();
+
+    }
+
+    private void showOCRAlertDialog() {
+
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.gallery_confirm_ocr_title)
+                .setPositiveButton(R.string.dialog_yes_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        createPdfFromSelectedItem(true);
+                        deselectListViewItems();
+                    }
+                })
+                .setNegativeButton(R.string.dialog_no_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        createPdfFromSelectedItem(false);
+                        deselectListViewItems();
+                    }
+                })
+                .setCancelable(true)
+                .setMessage(R.string.gallery_confirm_ocr_text);
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+
+    }
+
+    private void createPdfFromSelectedItem(boolean withOCR) {
+
+        if (mContext == null)
+            return;
+
+        final ArrayList<Document> documents = getSelectedDocuments();
+        for (Document document : documents){
+            if (withOCR) {
+                ImageProcessor.createPdfWithOCR(document);
+            } else {
+                ImageProcessor.createPdf(document);
+            }
+        }
 
     }
 
@@ -930,6 +986,26 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                                 }
                             }
 
+                        } else if (cropType == INTENT_PDF_PROCESS_FINISHED){
+                            View parentLayout = findViewById(android.R.id.content);
+                            final String documentName = intent.getStringExtra(INTENT_FILE_NAME);
+                            Snackbar.make(parentLayout, "Document created at: " + documentName, Snackbar.LENGTH_INDEFINITE)
+                                    .setAction("OPEN", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            Uri path = FileProvider.getUriForFile(getApplicationContext(), "at.ac.tuwien.caa.fileprovider", new File(documentName));
+                                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                            intent.setDataAndType(path, "application/pdf");
+                                            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                            try {
+                                                startActivity(intent);
+                                            } catch (ActivityNotFoundException e) {
+
+                                            }
+                                        }
+                                    })
+                                    .show();
                         }
                     }
 

@@ -24,14 +24,15 @@ android {
 //		References to other resources are not supported by build-time PNG generation
 		vectorDrawables.useSupportLibrary = true
 
-        ndk {
-            // Specifies the ABI configurations of your native
-            // libraries Gradle should build and package with your APK.
+    ndk {
+        // Specifies the ABI configurations of your native
+        // libraries Gradle should build and package with your APK.
 //            Note this also effects externalNativeBuild.cmake, so we do not to define this anymore:
-            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        abiFilters 'armeabi-v7a', 'arm64-v8a'
 //			abiFilters 'x86'
-        }
-    }
+      }
+  }
+
 
 	buildTypes {
 //        The dropbox api key is hidden based on the 2nd example in this post:
@@ -130,6 +131,9 @@ dependencies {
 	implementation 'com.android.support:gridlayout-v7:27.0.2'
 	implementation 'com.android.volley:volley:1.0.0'
 	implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
+	implementation 'com.google.firebase:firebase-core:16.0.4'
+	implementation 'com.google.firebase:firebase-ml-vision:18.0.1'
+	implementation 'com.itextpdf:itextg:5.5.10'
 	implementation 'com.github.smart-fun:XmlToJson:1.4.0'
 	// necessary for xmltojson
 	//	// retrofit - start:
@@ -140,7 +144,7 @@ dependencies {
 	implementation 'com.squareup.okhttp3:logging-interceptor:3.6.0'
 	// retrofit - end:
 	implementation 'com.koushikdutta.ion:ion:2.+'
-	implementation 'com.google.android.gms:play-services-auth:11.4.0'
+	implementation 'com.google.android.gms:play-services-auth:16.0.1'
 	// we need this for the ProviderInstaller
 	implementation 'me.dm7.barcodescanner:zxing:1.9.8'
 	implementation 'com.github.bumptech.glide:glide:4.5.0'
@@ -165,3 +169,5 @@ dependencies {
 repositories {
     mavenCentral()
 }
+
+apply plugin: 'com.google.gms.google-services'
