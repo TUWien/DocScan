@@ -39,19 +39,25 @@ import java.util.concurrent.TimeUnit;
 
 import at.ac.tuwien.caa.docscan.logic.Helper;
 
+import at.ac.tuwien.caa.docscan.logic.Document;
+
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_MAP;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PAGE_DETECTION;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PDF;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PDF_OCR;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_ROTATE;
 
 public class ImageProcessor {
 
-    private static final int MESSAGE_COMPLETED_TASK = 0;
+    public static final int MESSAGE_COMPLETED_TASK = 0;
+    public static final int MESSAGE_CREATED_DOCUMENT = 1;
 
     public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
 //    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
     public static final String INTENT_IMAGE_PROCESS_ACTION = "INTENT_IMAGE_PROCESS_ACTION";
     public static final String INTENT_IMAGE_PROCESS_TYPE = "INTENT_IMAGE_PROCESS_TYPE";
     public static final int INTENT_IMAGE_PROCESS_FINISHED = 0;
+    public static final int INTENT_PDF_PROCESS_FINISHED = 1;
 
     // Sets the amount of time an idle thread will wait for a task before terminating
     private static final int KEEP_ALIVE_TIME = 1;
@@ -119,9 +125,22 @@ public class ImageProcessor {
                 if (messageId == MESSAGE_COMPLETED_TASK)
                     isMessageProcessed = finishTask(task);
 
+                if (messageId == MESSAGE_CREATED_DOCUMENT)
+                    isMessageProcessed = notifyCreatedDocument(task);
+
                 if (!isMessageProcessed)
                     super.handleMessage(inputMessage);
 
+            }
+
+            private boolean notifyCreatedDocument(ImageProcessTask task){
+                if (task.getDocument() != null) {
+                    String absolutePath = PdfCreator.getDocumentsDir() + "/" + task.getDocument().getTitle() +".pdf";
+                    sendIntent(absolutePath, INTENT_PDF_PROCESS_FINISHED);
+                    return true;
+                } else {
+                    return false;
+                }
             }
 
             /**
@@ -144,10 +163,18 @@ public class ImageProcessor {
                     // Notify other apps and DocScan about the image change:
                     notifyImageChanged(task.getFile());
                 }
+                else if (task instanceof PdfTask){
+                    ImageProcessLogger.removeTask(task.getDocument(), TASK_TYPE_PDF);
+                }
+                else if (task instanceof PdfWithOCRTask){
+                    ImageProcessLogger.removeTask(task.getDocument(), TASK_TYPE_PDF_OCR);
+                }
                 else
                     return false;
 
-                sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
+                if (task.getFile() != null) {
+                    sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
+                }
 
                 return true;
 
@@ -216,6 +243,18 @@ public class ImageProcessor {
 
     }
 
+    public static void createPdfWithOCR(Document document) {
+
+        executeTask(document, TASK_TYPE_PDF_OCR);
+
+    }
+
+    public static void createPdf(Document document) {
+
+        executeTask(document, TASK_TYPE_PDF);
+
+    }
+
     public static void mapFile(File file) {
 
         executeTask(file, TASK_TYPE_MAP);
@@ -250,6 +289,29 @@ public class ImageProcessor {
         else
             Helper.crashlyticsLog(CLASS_NAME, "executeTask",
                     "imageProcessTask == null");
+
+    }
+
+    private static void executeTask(Document document, int taskType) {
+
+        ImageProcessTask imageProcessTask = null;
+
+        //        Inform the logger that we got a new file here:
+        switch (taskType) {
+            case TASK_TYPE_PDF:
+                imageProcessTask = new PdfTask();
+                ImageProcessLogger.addPdfTask(document);
+                break;
+            case TASK_TYPE_PDF_OCR:
+                imageProcessTask = new PdfWithOCRTask();
+                ImageProcessLogger.addPdfWithOCRTask(document);
+                break;
+        }
+
+        imageProcessTask.initializeTask(sInstance);
+        imageProcessTask.setDocument(document);
+
+        sInstance.mProcessThreadPool.execute(imageProcessTask.getRunnable());
 
     }
 

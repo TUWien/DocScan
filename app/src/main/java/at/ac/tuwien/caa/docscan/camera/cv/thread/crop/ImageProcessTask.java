@@ -2,9 +2,12 @@ package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 import java.io.File;
 
+import at.ac.tuwien.caa.docscan.logic.Document;
+
 public class ImageProcessTask implements CropRunnable.TaskRunnableCropMethods {
 
     private File mFile;
+    private Document mDocument;
 
     Runnable mRunnable;
     // The Thread on which this task is currently running.
@@ -36,6 +39,16 @@ public class ImageProcessTask implements CropRunnable.TaskRunnableCropMethods {
         mFile = file;
     }
 
+    @Override
+    public Document getDocument() {
+        return mDocument;
+    }
+
+    @Override
+    public void setDocument(Document document) {
+        mDocument = document;
+    }
+
     /*
      * Sets the identifier for the current Thread. This must be a synchronized operation; see the
      * notes for getCurrentThread()
@@ -49,6 +62,7 @@ public class ImageProcessTask implements CropRunnable.TaskRunnableCropMethods {
     public void recycle() {
 
         mFile = null;
+        mDocument = null;
 
     }
 
