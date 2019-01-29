@@ -1,6 +1,9 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
+import android.content.Context;
+
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 public class PdfRunnable extends CropRunnable{
@@ -9,19 +12,21 @@ public class PdfRunnable extends CropRunnable{
 
     public PdfRunnable(TaskRunnableCropMethods cropTask) {
         super(cropTask);
+
     }
 
     @Override
-    protected void performTask(String document) {
-        String[] documentData = document.split("<");
-        String[] fileNames = documentData[1].split(">");
-        ArrayList<File> files = new ArrayList<>();
-        for (String fileName : fileNames) {
-            File file = new File(fileName);
-            files.add(file);
-        }
-        PdfCreator.createPdfWithoutOCR(documentData[0], files, this);
+    protected void performTask(String fileName) {
 
+    }
+
+    protected void performTask(boolean performOCR, String pdfName, ArrayList<File> files,
+                               WeakReference<Context> context) {
+
+        if (performOCR)
+            PdfCreator.createPdfWithOCR(pdfName, files, this, context);
+        else
+            PdfCreator.createPdfWithoutOCR(pdfName, files, this, context);
     }
 
 }

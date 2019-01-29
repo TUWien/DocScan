@@ -44,7 +44,7 @@
     <string name="precise_page_seg_text">Use precise page segmentation</string>
     <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
-
+    <string name="force_shoot_button_text">Shoot anyway</string>
     <string name="camera_document_hint_title">Tip for documents</string>
     <string name="camera_document_hint_msg">The document title is shown at the top and you can manipulate documents by clicking on the folder icon next to it.</string>
     <!-- Just used for debugging: -->
@@ -210,6 +210,10 @@
     <string name="sync_notification_error_title">Upload interrupted</string>
     <string name="sync_notification_error_text">Upload postponed.</string>
 
+    <!-- PdfCreator -->
+    <string name="pdf_notification_exporting">Exporting pdf</string>
+    <string name="pdf_notification_done">Pdf exported</string>
+
     <!-- OpenDocumentActivity -->
     <string name="document_title">Select a document</string>
     <string name="document_select_button_text">Use selected document</string>
@@ -370,8 +374,8 @@
     <string name="gallery_confirm_delete_confirm_button_text">Delete</string>
     <string name="gallery_confirm_delete_cancel_button_text">Cancel</string>
     <string name="gallery_confirm_ocr_title">Make PDF machine readable?</string>
-    <string name="gallery_confirm_ocr_text">This will make the text in the picture selectable. If
-        you click "No" the PDF will still be generated.</string>
+    <string name="gallery_confirm_ocr_text">This will apply OCR and make the text in the picture(s)
+        selectable.</string>
     <string name="gallery_confirm_overwrite_title">Replace images?</string>
     <string name="gallery_confirm_overwrite_text">This will replace the original images and cannot
         be undone. Are you sure you want to continue?</string>

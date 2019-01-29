@@ -80,7 +80,6 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     private static final String CLASS_NAME = "UploadActivity";
     private static final int PERMISSION_READ_WRITE_EXTERNAL_STORAGE = 0;
-    private static final int REQUEST_LOGIN = 0;
 
     private BroadcastReceiver mMessageReceiver;
 
@@ -429,7 +428,13 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                 .setCancelable(true)
                 .setMessage(R.string.gallery_confirm_ocr_text);
 
-        AlertDialog alertDialog = alertDialogBuilder.create();
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                alertDialog.cancel();
+            }
+        });
         alertDialog.show();
 
     }
@@ -507,26 +512,6 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     }
 
-//    private void deleteSelectedDocuments(ArrayList<Document> documents) {
-//
-//        boolean isFolderDeleted = true;
-//        for (Document document : documents) {
-//            isFolderDeleted = isFolderDeleted && deleteFolder(document.getDir());
-//        }
-//
-//        showDocumentsDeletedSnackbar(documents.size());
-//
-//        initAdapter();
-//        deselectListViewItems();
-//        // update the selection display:
-////        onSelectionChange();
-//
-//
-//
-//        if (!isFolderDeleted) {
-//            // TODO: show an error message here.
-//        }
-//    }
 
     /**
      * Shows a snackbar indicating that documents have been deleted.
@@ -921,6 +906,9 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
                 Log.d(CLASS_NAME, "onReceive: " + intent);
 
+                if (intent == null || intent.getAction() == null || context == null)
+                    return;
+
                 if (intent.getAction().equals(INTENT_UPLOAD_ACTION)) {
 
                     //            update the list view:
@@ -969,17 +957,6 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                                             document.setIsCropped(false);
                                             isAdapterUpdateRequired = true;
                                         }
-//
-//                                        File documentPath = new File(Helper.getMediaStorageDir(
-//                                                getString(R.string.app_name)), document.getTitle());
-//                                        File filePath = (new File(fileName)).getParentFile();
-//
-//                                        if (documentPath.equals(filePath)) {
-//                                            ArrayList<File> files = document.getFiles();
-//                                            boolean isCropped = Helper.areFilesCropped(files);
-
-
-//                                        }
                                     }
                                 if (isAdapterUpdateRequired)
                                     initAdapter();
@@ -989,7 +966,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                         } else if (cropType == INTENT_PDF_PROCESS_FINISHED){
                             View parentLayout = findViewById(android.R.id.content);
                             final String documentName = intent.getStringExtra(INTENT_FILE_NAME);
-                            Snackbar.make(parentLayout, "Document created at: " + documentName, Snackbar.LENGTH_INDEFINITE)
+                            Snackbar.make(parentLayout, "Document created at: " + documentName, Snackbar.LENGTH_LONG    )
                                     .setAction("OPEN", new View.OnClickListener() {
                                         @Override
                                         public void onClick(View view) {
@@ -1000,7 +977,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                                             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                                             try {
                                                 startActivity(intent);
-                                            } catch (ActivityNotFoundException e) {
+                                            }
+                                            catch (ActivityNotFoundException e) {
 
                                             }
                                         }

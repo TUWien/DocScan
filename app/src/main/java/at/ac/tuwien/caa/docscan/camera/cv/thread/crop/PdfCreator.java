@@ -1,21 +1,26 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
-import android.graphics.Bitmap;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.media.ExifInterface;
+import android.support.media.ExifInterface;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionText.TextBlock;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
-import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
@@ -32,8 +37,14 @@ import com.itextpdf.text.pdf.PdfWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.sync.UploadService;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESSAGE_CREATED_DOCUMENT;
 
@@ -42,67 +53,206 @@ public class PdfCreator {
     private static final String CLASS_NAME = "PdfCreator";
     private static FirebaseVisionTextRecognizer textRecognizer;
 
-    public static void createPdfWithoutOCR(String documentName, final ArrayList<File> files, CropRunnable cropRunnable) {
+    public static void createPdfWithoutOCR(String documentName, final ArrayList<File> files,
+                                           CropRunnable cropRunnable, WeakReference<Context> context) {
+
+        final Context contextF = context.get();
+        final NotificationManager notificationManager = (NotificationManager)
+                contextF.getSystemService(Context.NOTIFICATION_SERVICE);
+        final NotificationCompat.Builder builder = getNotificationBuilder(notificationManager,
+                contextF);
+
         createPdf(documentName, files, null, cropRunnable);
+
+        progressNotification(documentName, -1, notificationManager, contextF,
+                builder);
+
+        successNotification(documentName, notificationManager, contextF, builder);
+
     }
 
-    public static void createPdfWithOCR(final String documentName, final ArrayList<File> files, final CropRunnable cropRunnable) {
+    public static void createPdfWithOCR(final String documentName, final ArrayList<File> files,
+                                        final CropRunnable cropRunnable, WeakReference<Context> context) {
+
         final FirebaseVisionText[] ocrResults = new FirebaseVisionText[files.size()];
-        for (final File file : files) {
-            Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
-            int rotationInDegrees = getRotationInDegrees(file);
-            bitmap = getRotatedBitmap(bitmap, rotationInDegrees);
-            FirebaseVisionImage image = FirebaseVisionImage.fromBitmap(bitmap);
-            getTextRecognizer().processImage(image)
-                    .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
-                        @Override
-                        public void onSuccess(FirebaseVisionText result) {
-                            ocrResults[files.indexOf(file)] = result;
-                            boolean f = true;
-                            for (FirebaseVisionText r : ocrResults) {
-                                if (r == null) {
-                                    f = false;
-                                }
-                            }
-                            if (f) {
-                                createPdf(documentName, files, ocrResults, cropRunnable);
-                            }
+
+        for (final File file : files)
+            processFile(documentName, files, cropRunnable, context, ocrResults, file);
+
+
+    }
+
+    private static void processFile(final String documentName, final ArrayList<File> files,
+                                    final CropRunnable cropRunnable, WeakReference<Context> context,
+                                    final FirebaseVisionText[] ocrResults, final File file) {
+
+
+        try {
+
+            FirebaseVisionImage image = FirebaseVisionImage.fromFilePath(context.get(),
+                    Uri.fromFile(file));
+
+            final Context contextF = context.get();
+            final NotificationManager notificationManager = (NotificationManager)
+                    contextF.getSystemService(Context.NOTIFICATION_SERVICE);
+            final NotificationCompat.Builder builder = getNotificationBuilder(notificationManager,
+                    contextF);
+
+            Task<FirebaseVisionText> task = getTextRecognizer().processImage(image);
+            try {
+                Tasks.await(task);
+
+                task.addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
+                    @Override
+                    public void onSuccess(FirebaseVisionText result) {
+
+                        ocrResults[files.indexOf(file)] = result;
+
+                        int finishCnt = getFinishCnt(ocrResults);
+
+                        int progress = (int) Math.floor(finishCnt / (double) files.size() * 100);
+                        progressNotification(documentName, progress, notificationManager, contextF,
+                                builder);
+
+
+                        if (finishCnt == ocrResults.length) {
+                            createPdf(documentName, files, ocrResults, cropRunnable);
+                            successNotification(documentName, notificationManager, contextF, builder);
                         }
-                    })
-                    .addOnFailureListener(
-                            new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    // Task failed with an exception
-                                    Log.e(CLASS_NAME, "Failed to recognize text\n" + e.getMessage());
-                                }
-                            });
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // Task failed with an exception
+                        Log.e(CLASS_NAME, "Failed to recognize text\n" + e.getMessage());
+                    }
+                });
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+//                TODO: error handling here!
         }
 
     }
 
-    public static void createPdf(String documentName, ArrayList<File> files, FirebaseVisionText[] ocrResults, CropRunnable cropRunnable) {
-        File firstPage = files.get(0);
-        int rotationInDegrees = getRotationInDegrees(firstPage);
-        Bitmap firstPageBitmap = BitmapFactory.decodeFile(firstPage.getPath());
-        firstPageBitmap = getRotatedBitmap(firstPageBitmap, rotationInDegrees);
-        boolean landscapeFirst = firstPageBitmap.getWidth() > firstPageBitmap.getHeight();
-        Rectangle firstPageSize = getPageSize(firstPageBitmap, landscapeFirst);
+    private static int getFinishCnt(FirebaseVisionText[] ocrResults) {
+
+        int finishCnt = 0;
+
+        for (FirebaseVisionText r : ocrResults) {
+            if (r != null)
+                finishCnt++;
+        }
+
+        return finishCnt;
+    }
+
+    private static NotificationCompat.Builder getNotificationBuilder(
+            NotificationManager notificationManager, Context context) {
+
+        String title = context.getString(R.string.sync_notification_title);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context,
+                UploadService.CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_docscan_notification)
+                .setContentTitle(title)
+                .setContentText("asdf")
+                .setChannelId(UploadService.CHANNEL_ID);
+
+        // On Android O we need a NotificationChannel, otherwise the notification is not shown.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // IMPORTANCE_LOW disables the notification sound:
+            int importance = NotificationManager.IMPORTANCE_LOW;
+            NotificationChannel notificationChannel = new NotificationChannel(
+                    UploadService.CHANNEL_ID, UploadService.CHANNEL_NAME, importance);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+
+        return builder;
+    }
+
+    private static void progressNotification(String documentName, int progress,
+                                                  NotificationManager notificationManager,
+                                                  Context context, NotificationCompat.Builder builder) {
+
+        if (builder == null)
+            return;
+
+        if (progress != -1)
+            builder.setContentTitle(context.getString(R.string.pdf_notification_exporting))
+                    .setContentText(documentName)
+                    .setProgress(100, progress, false);
+        else
+            builder.setContentTitle(context.getString(R.string.pdf_notification_exporting))
+                    .setContentText(documentName)
+                    // Removes the progress bar
+                    .setProgress(0, 0, false);
+
+        // show the new notification:
+        notificationManager.notify(25, builder.build());
+
+    }
+
+    private static void successNotification(String documentName,
+                                            NotificationManager notificationManager,
+                                            Context context, NotificationCompat.Builder builder) {
+
+        if (builder == null)
+            return;
+
+        builder.setContentTitle(context.getString(R.string.pdf_notification_done))
+                .setContentText(documentName)
+                // Removes the progress bar
+                .setProgress(0, 0, false);
+
+        // show the new notification:
+        notificationManager.notify(25, builder.build());
+
+    }
+
+
+
+    private static void createPdf(String documentName, ArrayList<File> files,
+                                  FirebaseVisionText[] ocrResults, CropRunnable cropRunnable) {
+
+        BitmapSize size = new BitmapSize(files.get(0));
+        boolean landscapeFirst = isLandscape(size);
+
+        Log.d(CLASS_NAME, "is landscape: " + landscapeFirst);
+        Log.d(CLASS_NAME, "first bm size: " + size.mWidth + "x" + size.mHeight);
+        Rectangle firstPageSize = getPageSize(size, landscapeFirst);
+
+        Log.d(CLASS_NAME, "page size: " + firstPageSize.getWidth() + " " + firstPageSize.getHeight());
+
         String pdfName = documentName + ".pdf";
         File outputFile = new File(getDocumentsDir(), pdfName);
         Document document = new Document(firstPageSize, 0, 0, 0, 0);
+
         try {
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputFile));
             document.open();
 
             for (int i = 0; i < files.size(); i++) {
                 File file = files.get(i);
-                rotationInDegrees = getRotationInDegrees(file);
-                //add the original image to the pdf and set the DPI of it to 300
+                int rotationInDegrees = Helper.getAngleFromExif(Helper.getExifOrientation(file));
+
+                //add the original image to the pdf and set the DPI of it to 600
                 Image image = Image.getInstance(file.getAbsolutePath());
                 image.setRotationDegrees(-rotationInDegrees);
-                image.scaleAbsolute(document.getPageSize().getWidth(), document.getPageSize().getHeight());
-                image.setDpi(300, 300);
+                if (rotationInDegrees == 0 || rotationInDegrees == 180)
+                    image.scaleAbsolute(document.getPageSize().getWidth(),
+                            document.getPageSize().getHeight());
+                else
+                    image.scaleAbsolute(document.getPageSize().getHeight(),
+                            document.getPageSize().getWidth());
+
+                image.setDpi(600, 600);
                 document.add(image);
 
 
@@ -115,10 +265,7 @@ public class PdfCreator {
 
                     //sort the result based on the y-Axis so that the markup order is correct
                     List<List<FirebaseVisionText.TextBlock>> sortedBlocks = sortBlocks(ocrResults[i]);
-
-
-                    Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
-                    bitmap = getRotatedBitmap(bitmap, getRotationInDegrees(file));
+                    size = new BitmapSize(file);
 
                     //int j = 0;
                     for (List<TextBlock> column : sortedBlocks) {
@@ -149,10 +296,14 @@ public class PdfCreator {
                         for (FirebaseVisionText.Line line : sortLinesInColumn(column)) {
                             // one FirebaseVisionText.Line corresponds to one line
                             // the rectangle we want to draw this line corresponds to the lines boundingBox
-                            float left = ((float) line.getBoundingBox().left / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
-                            float right = ((float) line.getBoundingBox().right / (float) bitmap.getWidth()) * document.getPageSize().getWidth();
-                            float top = ((float) line.getBoundingBox().top / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
-                            float bottom = ((float) line.getBoundingBox().bottom / (float) bitmap.getHeight()) * document.getPageSize().getHeight();
+
+                            if (line.getBoundingBox() == null)
+                                continue;
+
+                            float left = ((float) line.getBoundingBox().left / (float) size.mWidth) * document.getPageSize().getWidth();
+                            float right = ((float) line.getBoundingBox().right / (float) size.mWidth) * document.getPageSize().getWidth();
+                            float top = ((float) line.getBoundingBox().top / (float) size.mHeight) * document.getPageSize().getHeight();
+                            float bottom = ((float) line.getBoundingBox().bottom / (float) size.mHeight) * document.getPageSize().getHeight();
                             Rectangle rect = new Rectangle(left,
                                     document.getPageSize().getHeight() - bottom,
                                     right,
@@ -182,8 +333,8 @@ public class PdfCreator {
 
                 if (i < files.size() - 1) {
                     file = files.get(i + 1);
-                    Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
-                    Rectangle pageSize = getPageSize(bitmap, landscapeFirst);
+                    BitmapSize aSize = new BitmapSize(file);
+                    Rectangle pageSize = getPageSize(aSize, landscapeFirst);
                     document.setPageSize(pageSize);
                     document.newPage();
                 }
@@ -198,52 +349,26 @@ public class PdfCreator {
 
     }
 
-    public static Rectangle getPageSize(Bitmap bitmap, boolean landscape) {
+    private static boolean isLandscape(BitmapSize size) {
+
+        return size.mWidth > size.mHeight;
+
+    }
+
+    private static Rectangle getPageSize(BitmapSize size, boolean landscape) {
+
         Rectangle pageSize;
         if (landscape) {
-            //querformat
-            float height = (PageSize.A4.getHeight() / bitmap.getWidth()) * bitmap.getHeight();
+            float height = (PageSize.A4.getHeight() / size.mWidth) * size.mHeight;
             pageSize = new Rectangle(PageSize.A4.getHeight(), height);
         } else {
-            //hochformat
-            float height = (PageSize.A4.getWidth() / bitmap.getWidth()) * bitmap.getHeight();
+            float height = (PageSize.A4.getWidth() / size.mWidth) * size.mHeight;
             pageSize = new Rectangle(PageSize.A4.getWidth(), height);
         }
         return pageSize;
-    }
-
-    private static Bitmap getRotatedBitmap(Bitmap bitmap, int rotationInDegrees) {
-        Matrix matrix = new Matrix();
-        if (rotationInDegrees != 0) {
-            matrix.preRotate(rotationInDegrees);
-        }
-        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-        return bitmap;
-    }
-
-    private static int getRotationInDegrees(File file) {
-        //check if the image was rotated and rotate it accordingly
-        ExifInterface exif = null;
-        try {
-            exif = new ExifInterface(file.getAbsolutePath());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-        return exifToDegrees(rotation);
 
     }
 
-    private static int exifToDegrees(int exifOrientation) {
-        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
-            return 90;
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
-            return 180;
-        } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
-            return 270;
-        }
-        return 0;
-    }
 
     @NonNull
     private static List<List<FirebaseVisionText.TextBlock>> sortBlocks(FirebaseVisionText ocrResult) {
@@ -251,6 +376,10 @@ public class PdfCreator {
         List<FirebaseVisionText.TextBlock> biggestBlocks = new ArrayList<>();
         List<FirebaseVisionText.TextBlock> blocksSortedByWidth = sortByWidth(ocrResult.getTextBlocks());
         for (FirebaseVisionText.TextBlock block : blocksSortedByWidth) {
+
+            if (block.getBoundingBox() == null)
+                continue;
+
             if (sortedBlocks.isEmpty()) {
                 List<FirebaseVisionText.TextBlock> blocks = new ArrayList<>();
                 blocks.add(block);
@@ -259,6 +388,10 @@ public class PdfCreator {
             } else {
                 boolean added = false;
                 for (TextBlock checkBlock : biggestBlocks) {
+
+                    if (checkBlock.getBoundingBox() == null)
+                        continue;
+
                     if (block.getBoundingBox().centerX() > checkBlock.getBoundingBox().left &&
                             block.getBoundingBox().centerX() < checkBlock.getBoundingBox().right) {
                         sortedBlocks.get(biggestBlocks.indexOf(checkBlock)).add(block);
@@ -274,7 +407,8 @@ public class PdfCreator {
                     blocks.add(block);
                     int i = 0;
                     while (i < biggestBlocks.size()) {
-                        if (block.getBoundingBox().centerX() > biggestBlocks.get(i).getBoundingBox().centerX()) {
+                        if (biggestBlocks.get(i).getBoundingBox() == null ||
+                                block.getBoundingBox().centerX() > biggestBlocks.get(i).getBoundingBox().centerX()) {
                             i++;
                         } else {
                             break;
@@ -295,12 +429,17 @@ public class PdfCreator {
     private static List<TextBlock> sortByWidth(List<TextBlock> result) {
         List<FirebaseVisionText.TextBlock> sortedBlocks = new ArrayList<>();
         for (FirebaseVisionText.TextBlock textBlock : result) {
+
+            if (textBlock.getBoundingBox() == null)
+                continue;
+
             if (sortedBlocks.isEmpty()) {
                 sortedBlocks.add(textBlock);
             } else {
                 int i = 0;
                 while (i < sortedBlocks.size()) {
-                    if (textBlock.getBoundingBox().width() < sortedBlocks.get(i).getBoundingBox().width()) {
+                    if (sortedBlocks.get(i).getBoundingBox() == null ||
+                            textBlock.getBoundingBox().width() < sortedBlocks.get(i).getBoundingBox().width()) {
                         i++;
                     } else {
                         break;
@@ -317,6 +456,10 @@ public class PdfCreator {
         List<FirebaseVisionText.Line> sortedLines = new ArrayList<>();
         for (FirebaseVisionText.TextBlock textBlock : result) {
             for (FirebaseVisionText.Line line : textBlock.getLines())
+
+//                if (line.getCornerPoints() == null || line.getCornerPoints().length == 0)
+//                    continue;
+
                 if (sortedLines.isEmpty()) {
                     sortedLines.add(line);
                 } else {
@@ -335,11 +478,13 @@ public class PdfCreator {
     }
 
     public static File getDocumentsDir() {
-        File docsFolder = null;
+        File docsFolder;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            docsFolder = new File(Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOCUMENTS);
+            docsFolder = new File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOCUMENTS);
+//            docsFolder = new File(Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOCUMENTS);
         } else {
-            docsFolder = new File(Environment.getExternalStorageDirectory() + "/Documents");
+            docsFolder = new File(Environment.getExternalStorageDirectory(), "Documents");
+//            docsFolder = new File(Environment.getExternalStorageDirectory() + "/Documents");
         }
         if (!docsFolder.exists()) {
             docsFolder.mkdir();
@@ -353,4 +498,39 @@ public class PdfCreator {
         }
         return textRecognizer;
     }
+
+
+    private static class BitmapSize {
+
+        private int mWidth, mHeight;
+
+        BitmapSize(File file) {
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            //Returns null, sizes are in the options variable
+            BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+            mWidth = options.outWidth;
+            mHeight = options.outHeight;
+
+            //        Is the image rotated in the metadata?
+            int exifOrientation = -1;
+            try {
+                exifOrientation = Helper.getExifOrientation(file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90 ||
+                    exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
+                int tmp = mHeight;
+                mHeight = mWidth;
+                mWidth = tmp;
+            }
+
+
+        }
+
+    }
+
 }

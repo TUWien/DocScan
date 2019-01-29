@@ -65,8 +65,8 @@ public class UploadService extends JobService implements
     private NotificationManager mNotificationManager;
     private int mNotifyID = 68;
 
-    private static final String CHANNEL_ID = "docscan_channel";
-    private static final CharSequence CHANNEL_NAME = "DocScan Channel";// The user-visible name of the channel.
+    public static final String CHANNEL_ID = "docscan_channel";
+    public static final CharSequence CHANNEL_NAME = "DocScan Channel";// The user-visible name of the channel.
 
     // constants for the notifications:
     private static final int NOTIFICATION_PROGRESS_UPDATE = 0;
