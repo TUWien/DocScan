@@ -15,56 +15,73 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
-        <at.ac.tuwien.caa.docscan.camera.CameraPaintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/camera_paint_layout">
+            <at.ac.tuwien.caa.docscan.camera.CameraPaintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/camera_paint_layout">
 
-                <at.ac.tuwien.caa.docscan.camera.CameraPreview
-                    android:id="@+id/camera_view"
+                    <at.ac.tuwien.caa.docscan.camera.CameraPreview
+                        android:id="@+id/camera_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        />
+
+                    <at.ac.tuwien.caa.docscan.camera.PaintView
+                        android:id="@+id/paint_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        />
+            </at.ac.tuwien.caa.docscan.camera.CameraPaintLayout>
+
+            <!--This is necessary because on the Samsung Galaxy Tab 10.1 (Android 4.0.4) the
+            navigation drawer is drawn below the PaintView (=SurfaceView). Got this from:
+            http://stackoverflow.com/questions/20373529/navigationdrawer-under-mapfragment-and-cameraview-surfaceview
+            -->
+            <FrameLayout
+                android:id="@+id/bugfixview"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:background="@android:color/transparent"/>
+
+            <TextView
+                android:id="@+id/counter_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:textColor="@color/button_bg_color"
+                android:gravity="center"
+                android:visibility="invisible"
+                android:textSize="@dimen/draw_view_counter_font_size"
+                />
+            <RelativeLayout
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/instruction_view_margin_bottom"
+                android:layout_gravity="center_vertical|bottom">
+                <TextView
+                    android:id="@+id/instruction_view"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:background="@color/debug_view_bg_color"
+                    android:textSize="16sp"
+                    android:gravity="center"
                     />
-
-                <at.ac.tuwien.caa.docscan.camera.PaintView
-                    android:id="@+id/paint_view"
+                <android.support.v7.widget.AppCompatButton
+                    android:id="@+id/force_shoot_button"
+                    android:visibility="invisible"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    />
-        </at.ac.tuwien.caa.docscan.camera.CameraPaintLayout>
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_below="@id/instruction_view"
+                    android:textSize="16sp"
+                    android:backgroundTint="@color/shoot_button_color"
+                    android:text="@string/force_shoot_button_text"/>
 
-        <!--This is necessary because on the Samsung Galaxy Tab 10.1 (Android 4.0.4) the
-        navigation drawer is drawn below the PaintView (=SurfaceView). Got this from:
-        http://stackoverflow.com/questions/20373529/navigationdrawer-under-mapfragment-and-cameraview-surfaceview
-        -->
-        <FrameLayout
-            android:id="@+id/bugfixview"
-            android:layout_height="match_parent"
-            android:layout_width="match_parent"
-            android:background="@android:color/transparent"/>
+                <!--app:backgroundTint="@color/colorAccent"-->
+                <!--android:background="@color/shoot_button_color"-->
 
-        <TextView
-            android:id="@+id/counter_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|center_horizontal"
-            android:textColor="@color/button_bg_color"
-            android:gravity="center"
-            android:visibility="invisible"
-            android:textSize="@dimen/draw_view_counter_font_size"
-            />
-
-        <TextView
-            android:id="@+id/instruction_view"
-            android:layout_width="160dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|bottom"
-            android:textColor="@color/white"
-            android:background="@color/debug_view_bg_color"
-            android:layout_marginBottom="@dimen/instruction_view_margin_bottom"
-            android:textSize="16sp"
-            android:gravity="center"
-            />
+            </RelativeLayout>
 
         <!--<android.support.design.widget.AppBarLayout-->
             <!--android:id="@+id/toolbar"-->

@@ -54,6 +54,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -150,6 +151,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
     private ImageButton mGalleryButton;
+    private AppCompatButton mForceShootButton;
     private TaskTimer mTaskTimer;
     private CameraPreview mCameraPreview;
     private PaintView mPaintView;
@@ -482,6 +484,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
+
 //        initCameraControlLayout();
 
         initDrawables();
@@ -809,6 +812,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     public void onClick(View v) {
                         if (mIsSeriesMode) {
                             mIsSeriesModePaused = !mIsSeriesModePaused;
+                            if (mIsSeriesMode && mForceShootButton != null)
+                                mForceShootButton.setVisibility(View.INVISIBLE);
                             showShootModeToast();
                             updateMode();
 
@@ -837,6 +842,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         initShootModeSpinner();
         updatePhotoButtonIcon();
         initCancelQRButton();
+        initForceShootButton();
+
+    }
+
+    private void initForceShootButton() {
+
+        mForceShootButton = findViewById(R.id.force_shoot_button);
+        mForceShootButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePicture();
+            }
+        });
 
     }
 
@@ -973,6 +991,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             if (mIsSeriesModePaused) {
                 drawable = R.drawable.ic_play_arrow_24dp;
                 displaySeriesModePaused(); // shows a text in the text view and removes any CVResults shown.
+                if (mForceShootButton != null)
+                    mForceShootButton.setVisibility(View.INVISIBLE);
             }
             else {
                 drawable = R.drawable.ic_pause_24dp;
@@ -983,6 +1003,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //            showToastText(R.string.toast_single);
             drawable = R.drawable.ic_photo_camera;
             mIsSeriesModePaused = false;
+            if (mForceShootButton != null)
+                mForceShootButton.setVisibility(View.INVISIBLE);
         }
 
 //        Hide the flash button in series mode:
@@ -2024,70 +2046,23 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onStatusChange(final int state) {
 
-
-
-//        if (state != CVResult.DOCUMENT_STATE_OK)
         mTextView.setText(getInstructionMessage(state));
+        updateForceShootButton(state);
 
+    }
 
-//        if (mIsSeriesModePaused) {
-//            displaySeriesModePaused();
-//            return;
-//        }
-//
-//        if (mIsFocusMeasured) {
-//            // Check if we need the focus measurement at this point:
-//            if (state == CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-//                //            if (mCVResult.isStable())
-//                mCameraPreview.startFocusMeasurement(true);
-//                //            else
-//                //                mCameraPreview.startFocusMeasurement(false);
-//            }
-//            // TODO: I do not know why this is happening, once the CameraActivity is resumed:
-//            else if (state > CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED && !mCameraPreview.isFocusMeasured()) {
-//                //            if (mCVResult.isStable())
-//                mCameraPreview.startFocusMeasurement(true);
-//                //            else
-//                //                mCameraPreview.startFocusMeasurement(false);
-//            } else if (state < CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED) {
-//                mCameraPreview.startFocusMeasurement(false);
-//            }
-//        }
-//
-//
-//        final String msg;
-//
-//        if (!mIsPictureSafe) {
-//            msg = getResources().getString(R.string.taking_picture_text);
-//        }
-//
-//        else if (!mIsSeriesMode || state != CVResult.DOCUMENT_STATE_OK) {
-//            msg = getInstructionMessage(state);
-//        }
-//
-//        else {
-//
-//            if (mIsSeriesMode) {
-//                mCameraPreview.verifyCapture();
-//                return;
-//            }
-//            else {
-//                msg = getResources().getString(R.string.taking_picture_text);
-//                if (mIsPictureSafe)
-//                    takePicture();
-//            }
-//        }
-//
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                // This code will always run on the UI thread, therefore is safe to modify UI elements.
-//                mTextView.setText(msg);
-//            }
-//        });
-
-
-
+    private void updateForceShootButton(int state) {
+        //        Show or hide the force shoot button:
+        if (mIsSeriesMode) {
+            if (mForceShootButton != null) {
+                if (state == CVResult.DOCUMENT_STATE_UNSHARP ||
+                        state == CVResult.DOCUMENT_STATE_ROTATION ||
+                        state == CVResult.DOCUMENT_STATE_PERSPECTIVE)
+                    mForceShootButton.setVisibility(View.VISIBLE);
+                else
+                    mForceShootButton.setVisibility(View.INVISIBLE);
+            }
+        }
     }
 
     private void displaySeriesModePaused() {
