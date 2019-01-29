@@ -78,3 +78,4 @@ api_info.txt
 /app/src/main/res/drawable/puppy.png
 /openCVLibrary/*
 /app/release
+/app/CMakeLists.txt
