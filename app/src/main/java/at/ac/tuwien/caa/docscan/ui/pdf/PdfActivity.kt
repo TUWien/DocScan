@@ -28,7 +28,7 @@ class PdfActivity : BaseNavigationActivity() {
     override fun onResume() {
         super.onResume()
 
-        //        Acquire the pdfs in the directory:
+        // Acquire the pdfs in the directory:
         val pdfList = getPdfs()
 //        Set the adapter:
         val pdfAdapter = PdfAdapter(this, pdfList)
@@ -60,11 +60,18 @@ class PdfActivity : BaseNavigationActivity() {
             }
         }
 
+//        sort the list based on the last modified date:
+        pdfList.sort()
+
         return pdfList
 
     }
 
-    class Pdf(name: String, path: File, fileSize: String, date: String) {
+    class Pdf(name: String, path: File, fileSize: String, date: String) : Comparable<Pdf> {
+
+        override fun compareTo(other: Pdf): Int {
+            return other.mPath.lastModified().compareTo(mPath.lastModified())
+        }
 
         var mName: String = name
         var mPath: File = path

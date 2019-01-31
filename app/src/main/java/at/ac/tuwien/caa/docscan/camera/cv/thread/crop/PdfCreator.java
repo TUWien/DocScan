@@ -2,7 +2,9 @@ package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.support.media.ExifInterface;
 import android.net.Uri;
@@ -45,6 +47,7 @@ import java.util.concurrent.ExecutionException;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.sync.UploadService;
+import at.ac.tuwien.caa.docscan.ui.pdf.PdfActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESSAGE_CREATED_DOCUMENT;
 
@@ -62,7 +65,7 @@ public class PdfCreator {
         final NotificationCompat.Builder builder = getNotificationBuilder(notificationManager,
                 contextF);
 
-        createPdf(documentName, files, null, cropRunnable);
+        createPdf(documentName, files, null, cropRunnable, contextF);
 
         progressNotification(documentName, -1, notificationManager, contextF,
                 builder);
@@ -116,7 +119,7 @@ public class PdfCreator {
 
 
                         if (finishCnt == ocrResults.length) {
-                            createPdf(documentName, files, ocrResults, cropRunnable);
+                            createPdf(documentName, files, ocrResults, cropRunnable, contextF);
                             successNotification(documentName, notificationManager, contextF, builder);
                         }
                     }
@@ -141,6 +144,21 @@ public class PdfCreator {
 
     }
 
+    private static void notifyImageChanged(File file, Context context) {
+
+        if (file == null || context == null)
+            return;
+
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+
+        Uri contentUri = Uri.fromFile(file);
+        mediaScanIntent.setData(contentUri);
+
+//                Send the broadcast:
+        context.sendBroadcast(mediaScanIntent);
+
+    }
+
     private static int getFinishCnt(FirebaseVisionText[] ocrResults) {
 
         int finishCnt = 0;
@@ -158,11 +176,17 @@ public class PdfCreator {
 
         String title = context.getString(R.string.sync_notification_title);
 
+        //        Create an intent that is started, if the user clicks on the notification:
+        Intent intent = new Intent(context, PdfActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context,
                 UploadService.CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
                 .setContentText("asdf")
+                .setContentIntent(pendingIntent)
                 .setChannelId(UploadService.CHANNEL_ID);
 
         // On Android O we need a NotificationChannel, otherwise the notification is not shown.
@@ -219,7 +243,7 @@ public class PdfCreator {
 
 
     private static void createPdf(String documentName, ArrayList<File> files,
-                                  FirebaseVisionText[] ocrResults, CropRunnable cropRunnable) {
+                                  FirebaseVisionText[] ocrResults, CropRunnable cropRunnable, Context context) {
 
         BitmapSize size = new BitmapSize(files.get(0));
         boolean landscapeFirst = isLandscape(size);
@@ -231,7 +255,7 @@ public class PdfCreator {
         Log.d(CLASS_NAME, "page size: " + firstPageSize.getWidth() + " " + firstPageSize.getHeight());
 
         String pdfName = documentName + ".pdf";
-        File outputFile = new File(getDocumentsDir(), pdfName);
+        File outputFile = new File(Helper.getPDFStorageDir("DocScan"), pdfName);
         Document document = new Document(firstPageSize, 0, 0, 0, 0);
 
         try {
@@ -341,6 +365,8 @@ public class PdfCreator {
             }
 
             document.close();
+
+            notifyImageChanged(outputFile, context);
             Log.d(CLASS_NAME, "Document created at " + outputFile.getAbsolutePath());
             cropRunnable.mCropTask.handleState(MESSAGE_CREATED_DOCUMENT);
         } catch (DocumentException | IOException e) {
@@ -477,20 +503,20 @@ public class PdfCreator {
         return sortedLines;
     }
 
-    public static File getDocumentsDir() {
-        File docsFolder;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
-            docsFolder = new File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOCUMENTS);
-//            docsFolder = new File(Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOCUMENTS);
-        } else {
-            docsFolder = new File(Environment.getExternalStorageDirectory(), "Documents");
-//            docsFolder = new File(Environment.getExternalStorageDirectory() + "/Documents");
-        }
-        if (!docsFolder.exists()) {
-            docsFolder.mkdir();
-        }
-        return docsFolder;
-    }
+//    public static File getDocumentsDir() {
+//        File docsFolder;
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+//            docsFolder = new File(Environment.getExternalStorageDirectory(), Environment.DIRECTORY_DOCUMENTS);
+////            docsFolder = new File(Environment.getExternalStorageDirectory() + "/" + Environment.DIRECTORY_DOCUMENTS);
+//        } else {
+//            docsFolder = new File(Environment.getExternalStorageDirectory(), "Documents");
+////            docsFolder = new File(Environment.getExternalStorageDirectory() + "/Documents");
+//        }
+//        if (!docsFolder.exists()) {
+//            docsFolder.mkdir();
+//        }
+//        return docsFolder;
+//    }
 
     private static FirebaseVisionTextRecognizer getTextRecognizer() {
         if (textRecognizer == null) {
