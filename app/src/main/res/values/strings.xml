@@ -8,6 +8,7 @@
     <string name="sync_item_text">Upload</string>
     <string name="upload_item_text">Upload</string>
     <string name="help_item_text">Help</string>
+    <string name="pdf_item_text">Saved PDFs</string>
     <string name="camera_item_text">Camera</string>
     <string name="header_text">DocScan</string>
     <string name="account_edit_text">Set up account</string>
@@ -109,7 +110,7 @@
     <string name="auto_login_error_text">Sorry, could not login - try to login later again.\n
         Otherwise, you can change your login credentials. Do you want to reenter your credentials?</string>
     <string name="auto_login_cancel_button">Cancel</string>
-    <string name="auto_login_ok_button">Ok</string>
+    <string name="auto_login_ok_button">OK</string>
 
     <!-- Menus -->
     <string name="document_item">Documents</string>

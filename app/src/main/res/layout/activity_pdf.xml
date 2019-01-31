@@ -32,10 +32,10 @@
         <!--android:paddingBottom="80dp"-->
         <!--android:clipToPadding="false"-->
         <ListView
-            android:id="@+id/upload_list_view"
+            android:id="@+id/pdf_list_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:choiceMode="multipleChoice"
+            android:choiceMode="singleChoice"
             android:fadeScrollbars="false"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
             android:paddingBottom="80dp"
@@ -50,7 +50,7 @@
             app:srcCompat="@drawable/ic_camera_alt_black_24dp"
             android:layout_margin="16dp" />
 
-        </android.support.design.widget.CoordinatorLayout>
+    </android.support.design.widget.CoordinatorLayout>
     <include layout="@layout/navigation_view"/>
 
 </android.support.v4.widget.DrawerLayout>

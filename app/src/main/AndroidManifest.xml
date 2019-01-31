@@ -83,6 +83,12 @@
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
             />
+        <activity
+            android:name=".ui.pdf.PdfActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:parentActivityName=".ui.CameraActivity"
+            />
 
         <activity
             android:name=".ui.CameraActivity"

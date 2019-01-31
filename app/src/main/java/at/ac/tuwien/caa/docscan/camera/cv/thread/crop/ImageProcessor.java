@@ -33,13 +33,14 @@ import android.util.Log;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import at.ac.tuwien.caa.docscan.logic.Helper;
-
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_MAP;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PAGE_DETECTION;
@@ -78,6 +79,10 @@ public class ImageProcessor {
     private final BlockingQueue<Runnable> mProcessQueue;
     // A managed pool of background threads
     private final ThreadPoolExecutor mProcessThreadPool;
+
+//    This is a single thread executor, in order to avoid OOM's when opening too many images in
+//    parallel, instead the pdf's are created in serial:
+    private final Executor mPDFExecutor;
 //    We use here a weak reference to avoid memory leaks:
 //    @see https://www.androiddesignpatterns.com/2013/01/inner-class-handler-memory-leak.html
     private WeakReference<Context> mContext;
@@ -100,6 +105,7 @@ public class ImageProcessor {
     private ImageProcessor() {
 
         mProcessQueue = new LinkedBlockingQueue<>();
+        mPDFExecutor = Executors.newSingleThreadExecutor();
 
         mProcessThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
                 KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mProcessQueue);
@@ -134,8 +140,15 @@ public class ImageProcessor {
             }
 
             private boolean notifyCreatedDocument(ImageProcessTask task){
-                if (task.getDocument() != null) {
-                    String absolutePath = PdfCreator.getDocumentsDir() + "/" + task.getDocument().getTitle() +".pdf";
+
+                if (!(task instanceof PdfProcessTask))
+                    return false;
+
+                PdfProcessTask pdfTask = (PdfProcessTask) task;
+                if (pdfTask.getPdfName() != null) {
+                    File pdfFile = new File(Helper.getPDFStorageDir("DocScan").getAbsolutePath(),
+                        pdfTask.getPdfName() + ".pdf");
+                    String absolutePath = pdfFile.getAbsolutePath();
                     sendIntent(absolutePath, INTENT_PDF_PROCESS_FINISHED);
                     return true;
                 } else {
@@ -145,11 +158,13 @@ public class ImageProcessor {
 
             /**
              * Returns true if the task is processed.
-             * @param task
-             * @return
+             * @param task a task
+             * @return true if the task is handled.
              */
             private boolean finishTask(ImageProcessTask task) {
 
+                if (task == null)
+                    return false;
 
                 if (task instanceof PageDetectionTask)
                     ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_PAGE_DETECTION);
@@ -163,11 +178,8 @@ public class ImageProcessor {
                     // Notify other apps and DocScan about the image change:
                     notifyImageChanged(task.getFile());
                 }
-                else if (task instanceof PdfTask){
-                    ImageProcessLogger.removeTask(task.getDocument(), TASK_TYPE_PDF);
-                }
-                else if (task instanceof PdfWithOCRTask){
-                    ImageProcessLogger.removeTask(task.getDocument(), TASK_TYPE_PDF_OCR);
+                else if (task instanceof PdfProcessTask){
+                    ImageProcessLogger.removeTask(task.getDocument(), ImageProcessLogger.TASK_TYPE_PDF);
                 }
                 else
                     return false;
@@ -284,34 +296,35 @@ public class ImageProcessor {
         if (imageProcessTask != null) {
             imageProcessTask.initializeTask(sInstance);
             imageProcessTask.setFile(file);
+
             sInstance.mProcessThreadPool.execute(imageProcessTask.getRunnable());
         }
-        else
-            Helper.crashlyticsLog(CLASS_NAME, "executeTask",
-                    "imageProcessTask == null");
 
     }
 
     private static void executeTask(Document document, int taskType) {
 
-        ImageProcessTask imageProcessTask = null;
+        ImageProcessTask imageProcessTask;
 
+        boolean performOCR = false;
         //        Inform the logger that we got a new file here:
         switch (taskType) {
             case TASK_TYPE_PDF:
-                imageProcessTask = new PdfTask();
+                performOCR = false;
                 ImageProcessLogger.addPdfTask(document);
                 break;
             case TASK_TYPE_PDF_OCR:
-                imageProcessTask = new PdfWithOCRTask();
                 ImageProcessLogger.addPdfWithOCRTask(document);
+                performOCR = true;
                 break;
         }
 
+        imageProcessTask = new PdfProcessTask(performOCR, document.getFiles(), document.getTitle());
+//        We need to pass here the context, because it allows us to generate a FirebaseVisionImage:
+        ((PdfProcessTask)imageProcessTask).setContext(sInstance.mContext);
         imageProcessTask.initializeTask(sInstance);
-        imageProcessTask.setDocument(document);
 
-        sInstance.mProcessThreadPool.execute(imageProcessTask.getRunnable());
+        sInstance.mPDFExecutor.execute(imageProcessTask.getRunnable());
 
     }
 
