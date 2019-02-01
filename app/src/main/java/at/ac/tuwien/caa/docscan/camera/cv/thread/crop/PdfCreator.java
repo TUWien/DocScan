@@ -85,10 +85,10 @@ public class PdfCreator {
             boolean success =
                     processFile(documentName, files, cropRunnable, context, ocrResults, file);
 
-            if (!success) {
-//                TODO: show an  error notification here
+//            No need to show an error message here, because it is shown by processFile
+            if (!success)
                 return;
-            }
+
         }
 
 
