@@ -9,11 +9,11 @@ import android.graphics.BitmapFactory;
 import android.support.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -24,7 +24,6 @@ import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionText.TextBlock;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
 import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Image;
@@ -54,7 +53,7 @@ import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESS
 public class PdfCreator {
 
     private static final String CLASS_NAME = "PdfCreator";
-    private static FirebaseVisionTextRecognizer textRecognizer;
+    private static FirebaseVisionTextRecognizer sTextRecognizer;
 
     public static void createPdfWithoutOCR(String documentName, final ArrayList<File> files,
                                            CropRunnable cropRunnable, WeakReference<Context> context) {
@@ -65,12 +64,15 @@ public class PdfCreator {
         final NotificationCompat.Builder builder = getNotificationBuilder(notificationManager,
                 contextF);
 
-        createPdf(documentName, files, null, cropRunnable, contextF);
-
         progressNotification(documentName, -1, notificationManager, contextF,
                 builder);
 
-        successNotification(documentName, notificationManager, contextF, builder);
+        boolean saved = savePdf(documentName, files, null, cropRunnable, contextF);
+        if (saved)
+            successNotification(documentName, notificationManager, contextF, builder);
+        else
+            errorNotification(documentName, notificationManager, contextF, builder);
+
 
     }
 
@@ -79,16 +81,22 @@ public class PdfCreator {
 
         final FirebaseVisionText[] ocrResults = new FirebaseVisionText[files.size()];
 
-        for (final File file : files)
-            processFile(documentName, files, cropRunnable, context, ocrResults, file);
+        for (final File file : files) {
+            boolean success =
+                    processFile(documentName, files, cropRunnable, context, ocrResults, file);
+
+            if (!success) {
+//                TODO: show an  error notification here
+                return;
+            }
+        }
 
 
     }
 
-    private static void processFile(final String documentName, final ArrayList<File> files,
+    private static boolean processFile(final String documentName, final ArrayList<File> files,
                                     final CropRunnable cropRunnable, WeakReference<Context> context,
                                     final FirebaseVisionText[] ocrResults, final File file) {
-
 
         try {
 
@@ -102,7 +110,9 @@ public class PdfCreator {
                     contextF);
 
             Task<FirebaseVisionText> task = getTextRecognizer().processImage(image);
+
             try {
+
                 Tasks.await(task);
 
                 task.addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
@@ -119,9 +129,14 @@ public class PdfCreator {
 
 
                         if (finishCnt == ocrResults.length) {
-                            createPdf(documentName, files, ocrResults, cropRunnable, contextF);
-                            successNotification(documentName, notificationManager, contextF, builder);
+                            boolean success =
+                                    savePdf(documentName, files, ocrResults, cropRunnable, contextF);
+                            if (success)
+                                successNotification(documentName, notificationManager, contextF, builder);
+                            else
+                                errorNotification(documentName, notificationManager, contextF, builder);
                         }
+
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -131,20 +146,24 @@ public class PdfCreator {
                     }
                 });
             } catch (ExecutionException e) {
+                Crashlytics.logException(e);
                 e.printStackTrace();
             } catch (InterruptedException e) {
+                Crashlytics.logException(e);
                 e.printStackTrace();
             }
 
-
+        } catch (OutOfMemoryError e) {
+            return false;
         } catch (IOException e) {
-            e.printStackTrace();
-//                TODO: error handling here!
+            return false;
         }
+
+        return true;
 
     }
 
-    private static void notifyImageChanged(File file, Context context) {
+    private static void notifyPdfChanged(File file, Context context) {
 
         if (file == null || context == null)
             return;
@@ -240,10 +259,27 @@ public class PdfCreator {
 
     }
 
+    private static void errorNotification(String documentName,
+                                            NotificationManager notificationManager,
+                                            Context context, NotificationCompat.Builder builder) {
+
+        if (builder == null)
+            return;
+
+        builder.setContentTitle(context.getString(R.string.pdf_notification_error))
+                .setContentText(documentName)
+                // Removes the progress bar
+                .setProgress(0, 0, false);
+
+        // show the new notification:
+        notificationManager.notify(25, builder.build());
+
+    }
 
 
-    private static void createPdf(String documentName, ArrayList<File> files,
-                                  FirebaseVisionText[] ocrResults, CropRunnable cropRunnable, Context context) {
+
+    private static boolean savePdf(String documentName, ArrayList<File> files,
+                                FirebaseVisionText[] ocrResults, CropRunnable cropRunnable, Context context) {
 
         BitmapSize size = new BitmapSize(files.get(0));
         boolean landscapeFirst = isLandscape(size);
@@ -366,12 +402,19 @@ public class PdfCreator {
 
             document.close();
 
-            notifyImageChanged(outputFile, context);
+            notifyPdfChanged(outputFile, context);
             Log.d(CLASS_NAME, "Document created at " + outputFile.getAbsolutePath());
             cropRunnable.mCropTask.handleState(MESSAGE_CREATED_DOCUMENT);
-        } catch (DocumentException | IOException e) {
+
+        } catch (Exception e) {
+
+            Crashlytics.logException(e);
             Log.e(CLASS_NAME, "Failed to create document: " + e.getMessage());
+            return false;
         }
+
+
+        return true;
 
     }
 
@@ -519,10 +562,10 @@ public class PdfCreator {
 //    }
 
     private static FirebaseVisionTextRecognizer getTextRecognizer() {
-        if (textRecognizer == null) {
-            textRecognizer = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
+        if (sTextRecognizer == null) {
+            sTextRecognizer = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
         }
-        return textRecognizer;
+        return sTextRecognizer;
     }
 
 
@@ -544,6 +587,7 @@ public class PdfCreator {
             try {
                 exifOrientation = Helper.getExifOrientation(file);
             } catch (IOException e) {
+                Crashlytics.logException(e);
                 e.printStackTrace();
             }
 

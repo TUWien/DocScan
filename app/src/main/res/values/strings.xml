@@ -214,6 +214,7 @@
     <!-- PdfCreator -->
     <string name="pdf_notification_exporting">Exporting pdf</string>
     <string name="pdf_notification_done">Pdf exported</string>
+    <string name="pdf_notification_error">An error happened while creating your pdf, sorry!</string>
 
     <!-- OpenDocumentActivity -->
     <string name="document_title">Select a document</string>
