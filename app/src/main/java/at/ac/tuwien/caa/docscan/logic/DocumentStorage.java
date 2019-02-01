@@ -201,6 +201,9 @@ public class DocumentStorage {
 
     public void updateStatus(Context context) {
 
+//        Check if some files are removed from outside:
+        Helper.cleanDocuments(context);
+
         for (Document document : mDocuments) {
 
             boolean areFilesUploaded = SyncStorage.getInstance(context).areFilesUploaded(document.getFiles());

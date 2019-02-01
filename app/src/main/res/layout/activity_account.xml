@@ -88,10 +88,8 @@
                         android:id="@+id/sync_switcher_transkribus_button"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-
                         android:text="@string/sync_connect_transkribus_button_text"
                         android:textColor="@color/white"
-
                         app:backgroundTint="@color/colorAccent" />
                     <!--android:drawableLeft="@drawable/scalable_transkribus_button_image"-->
                     <!--android:drawableLeft="@drawable/scalable_transkribus_button_image"-->

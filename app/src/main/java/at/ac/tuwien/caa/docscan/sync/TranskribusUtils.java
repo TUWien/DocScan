@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.rest.Collection;
 import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
@@ -152,7 +154,6 @@ public class TranskribusUtils  {
     public void onUnfinishedUploadStatusReceived(Context context, int uploadID, String title,
                                                  ArrayList<String> unfinishedFileNames) {
 
-
         Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived1: unfinished upload ids size" +
                 SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"onUnfinishedUploadStatusReceived1: unfinished upload ids size" +
@@ -187,8 +188,6 @@ public class TranskribusUtils  {
             mCallback.onFilesDeleted();
         }
 
-
-//        mUnfinishedUploadIDsProcessed.add(uploadID);
 
         Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived2: unfinished upload ids size" +
                 SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
@@ -340,6 +339,9 @@ public class TranskribusUtils  {
 
     private void uploadDirs(ArrayList<String> dirs, int collectionId) {
 
+//        Clean the documents, because some files might be deleted:
+        Helper.cleanDocuments(mContext);
+
         mSelectedDirs = dirs;
         mNumUploadJobs = 0;
 
@@ -352,10 +354,8 @@ public class TranskribusUtils  {
             DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"uploadDirs: processing dir: " + dir);
 
             // Get the corresponding document:
+
             Document document = DocumentStorage.getInstance(mContext).getDocument(dir);
-
-
-
 
             if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
 
@@ -447,7 +447,7 @@ public class TranskribusUtils  {
 
 
 
-    public void uploadFile(final SyncStorage.Callback callback, Context context, final TranskribusSyncFile syncFile) {
+    public void uploadFile(final SyncStorage.Callback callback, final Context context, final TranskribusSyncFile syncFile) {
 
         final File file = syncFile.getFile();
 
@@ -484,13 +484,47 @@ public class TranskribusUtils  {
 
                         }
                         else {
-                            callback.onError(e);
+                            if (e instanceof FileNotFoundException) {
+                                DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
+                                        "FileNotFoundException: " + syncFile.getFile().toString());
+                                Log.d(CLASS_NAME, "FileNotFoundException: " +
+                                        syncFile.getFile().toString());
+                                handleMissingFile(syncFile, context);
+                                removeFromSyncStorageUnfinishedList(syncFile.getUploadId());
+                            }
+                            else {
+                                callback.onError(e);
+                            }
                             Log.d(getClass().getName(), "error uploading file with upload ID: " + syncFile.getUploadId() + " fileSync: " + syncFile.toString());
                             DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "error uploading file: " + e);
                         }
 
                     }
                 });
+    }
+
+//    TODO: test what we really need here!
+    private void handleMissingFile(final TranskribusSyncFile syncFile, Context context) {
+
+        mCallback.onFilesDeleted();
+
+        removeFromSyncStorageUnfinishedList(syncFile.getUploadId());
+
+//        Reset the corresponding document(s) containing the file:
+        for (Document document : DocumentStorage.getInstance(context).getDocuments()) {
+
+            for (Page page : document.getPages()) {
+                if (page.getFile().compareTo(syncFile.getFile()) == 0) {
+                    document.setIsAwaitingUpload(false);
+                    document.setIsUploaded(false);
+                    continue;
+                }
+            }
+        }
+
+        SyncStorage.saveJSON(mContext);
+        DocumentStorage.saveJSON(mContext);
+
     }
 
 

@@ -269,10 +269,24 @@ public class SyncStorage {
 
     private void removeFile(File fileRemoved) {
 
+        if (fileRemoved == null)
+            return;
+
         Iterator<SyncFile> iter = mUploadedList.iterator();
         while (iter.hasNext()) {
             File file = iter.next().getFile();
-            if (file.getAbsolutePath().compareToIgnoreCase(fileRemoved.getAbsolutePath()) == 0) {
+            if (file != null &&
+                    file.getAbsolutePath().compareToIgnoreCase(fileRemoved.getAbsolutePath()) == 0) {
+                Log.d(CLASS_NAME, "removeDocument: " + file);
+                iter.remove();
+            }
+        }
+
+        iter = mFileSyncList.iterator();
+        while (iter.hasNext()) {
+            File file = iter.next().getFile();
+            if (file != null &&
+                    file.getAbsolutePath().compareToIgnoreCase(fileRemoved.getAbsolutePath()) == 0) {
                 Log.d(CLASS_NAME, "removeDocument: " + file);
                 iter.remove();
             }

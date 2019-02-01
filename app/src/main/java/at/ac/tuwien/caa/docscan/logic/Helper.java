@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.media.ExifInterface;
@@ -22,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -29,6 +31,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.sync.SyncInfo;
+import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 
@@ -82,6 +85,35 @@ public class Helper {
 
         return mediaStorageDir;
     }
+
+    /**
+     * Returns the root path to the directory in which the pdfs are saved.
+     *
+     * @param appName name of the app, this is used for gathering the directory string.
+     * @return the path where the images are stored.
+     */
+    public static File getPDFStorageDir(String appName) {
+
+        File pdfStorageDir;
+
+        if (Build.VERSION.SDK_INT >= 19) {
+            pdfStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOCUMENTS), appName);
+        }else{
+            pdfStorageDir = new File(Environment.getExternalStorageDirectory(),  "Documents");
+            pdfStorageDir = new File(pdfStorageDir.getAbsolutePath(), appName);
+        }
+
+        // Create the storage directory if it does not exist
+        if (!pdfStorageDir.exists()) {
+            if (!pdfStorageDir.mkdirs()) {
+                return null;
+            }
+        }
+
+        return pdfStorageDir;
+    }
+
 
     /**
      * Returns the angle from an exif orientation
@@ -498,6 +530,33 @@ public class Helper {
         }
 
         return false;
+    }
+
+    /**
+     * Iterates over documents and checks if the files are still existing.
+     * @param context
+     */
+    public static void cleanDocuments(Context context) {
+
+
+        ArrayList<Document> documents = DocumentStorage.getInstance(context).getDocuments();
+        for (Document document : documents) {
+
+            Iterator<Page> iter = document.getPages().iterator();
+
+            while (iter.hasNext()) {
+                Page page = iter.next();
+                File file = page.getFile();
+                if (!file.exists()) {
+                    iter.remove();
+//                    Removes the document from the uploaded list and the awaiting upload list:
+//                    SyncStorage.getInstance(context).removeDocumentFromUploadList(document);
+                    SyncStorage.getInstance(context).removeDocument(document.getTitle(), context);
+                }
+            }
+
+        }
+
     }
 
     public static boolean areFilesCropped(ArrayList<File> fileList) {

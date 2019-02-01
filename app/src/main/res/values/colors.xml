@@ -12,6 +12,7 @@
 
     <color name="navigation_drawer_bg_color">#11111111</color>
     <color name="debug_view_bg_color">#aa666666</color>
+    <color name="shoot_button_color">#aaffffff</color>
     <color name="white">#ffffff</color>
     <color name="black">#000</color>
     <color name="icon_color_navigation_view">#424242</color>

@@ -193,7 +193,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 //    }
 
     private void initFAB() {
-        FloatingActionButton fab = findViewById(R.id.upload_fab);
+        FloatingActionButton fab = findViewById(R.id.camera_fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -970,6 +970,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                                     .setAction("OPEN", new View.OnClickListener() {
                                         @Override
                                         public void onClick(View view) {
+
                                             Uri path = FileProvider.getUriForFile(getApplicationContext(), "at.ac.tuwien.caa.fileprovider", new File(documentName));
                                             Intent intent = new Intent(Intent.ACTION_VIEW);
                                             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
