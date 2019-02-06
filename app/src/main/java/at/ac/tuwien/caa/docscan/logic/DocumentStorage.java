@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.logic;
 import android.content.Context;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -44,6 +45,8 @@ public class DocumentStorage {
     }
 
     public void setTitle(String title) {
+
+        Log.d(CLASS_NAME, "setTitle: " + title);
 
         mTitle = title;
 
@@ -167,6 +170,10 @@ public class DocumentStorage {
 
         if (mDocuments != null) {
             for (Document document : mDocuments) {
+                if (document == null) {
+                    Crashlytics.logException(new Throwable(CLASS_NAME + ": document is null"));
+                    continue;
+                }
                 if (document.getTitle() != null && document.getTitle().compareToIgnoreCase(title) == 0)
                     return document;
             }
@@ -245,6 +252,7 @@ public class DocumentStorage {
                     sInstance.setTitle(Helper.getActiveDocumentTitle(context));
 
             } catch (FileNotFoundException e) {
+                Crashlytics.logException(e);
                 e.printStackTrace();
                 sInstance = new DocumentStorage();
             }
@@ -265,6 +273,7 @@ public class DocumentStorage {
             writer.close();
 
         } catch (IOException e) {
+            Crashlytics.logException(e);
             e.printStackTrace();
         }
 

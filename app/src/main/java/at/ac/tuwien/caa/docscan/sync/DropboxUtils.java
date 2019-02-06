@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.android.Auth;
@@ -131,6 +132,7 @@ public class DropboxUtils {
             Auth.startOAuth2Authentication(context, BuildConfig.DropboxApiKey);
         }
         catch (Exception e) {
+            Crashlytics.logException(e);
 //                This happens if a wrong api key is provided
             return false;
         }
@@ -180,6 +182,7 @@ public class DropboxUtils {
                 return true;
 
             } catch (DbxException e) {
+                Crashlytics.logException(e);
                 Log.d(CLASS_NAME, "DropboxLogin: doInBackground: login error: " + e);
                 DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
                         "DropboxLogin: doInBackground: login error: " + e);
@@ -214,6 +217,7 @@ public class DropboxUtils {
                 ArrayList<String> remoteFileNames = processRemoteFiles();
                 processLocalFiles(remoteFileNames);
             } catch (DbxException e) {
+                Crashlytics.logException(e);
                 e.printStackTrace();
             }
 
@@ -242,6 +246,7 @@ public class DropboxUtils {
                 list = mClient.files().listFolder("/" + mDocument.getTitle());
             }
             catch(ListFolderErrorException e) {
+                Crashlytics.logException(e);
                 return remoteFileNames;
             }
 
@@ -347,6 +352,7 @@ public class DropboxUtils {
                 return true;
 
             } catch (DbxException e) {
+                Crashlytics.logException(e);
                 return true;
             }
 
@@ -412,6 +418,7 @@ public class DropboxUtils {
                             .withMode(WriteMode.OVERWRITE)
                             .uploadAndFinish(inputStream);
                 } catch (DbxException | IOException e) {
+                    Crashlytics.logException(e);
                     mException = e;
                     Log.d(CLASS_NAME, "UploadFileTask: doInBackground: exception: " + mException);
                 }

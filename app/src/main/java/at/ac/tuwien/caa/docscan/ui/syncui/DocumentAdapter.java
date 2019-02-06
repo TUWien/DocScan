@@ -12,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.signature.MediaStoreSignature;
+import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
 import java.io.IOException;
@@ -119,6 +120,7 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
             exifOrientation =  Helper.getExifOrientation(file);
 
         } catch (IOException e) {
+            Crashlytics.logException(e);
             e.printStackTrace();
         }
         if (exifOrientation != -1) {

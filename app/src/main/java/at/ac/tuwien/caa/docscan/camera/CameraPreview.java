@@ -37,6 +37,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
@@ -164,6 +165,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             else
                 Log.d(CLASS_NAME, "detectBarcode: no result");
         } catch (NotFoundException e) {
+            Crashlytics.logException(e);
             Log.d(CLASS_NAME, "detectBarcode: not found");
             e.printStackTrace();
         }
@@ -186,6 +188,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             source = new PlanarYUVLuminanceSource(data, mFrameWidth, mFrameHeight, 0, 0,
                     mFrameWidth, mFrameHeight, false);
         } catch(Exception e) {
+            Crashlytics.logException(e);
         }
 
         return source;
@@ -248,6 +251,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 wait();
             }
             catch (InterruptedException e) {
+                Crashlytics.logException(e);
                 Log.w(CLASS_NAME, "wait was interrupted");
             }
         }
@@ -448,6 +452,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             });
         }
         catch (RuntimeException e) {
+            Crashlytics.logException(e);
 //            This can happen if the user touches the CameraPreview, while the preview is not
 //            started. In this case we do nothing.
         }
@@ -615,6 +620,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.stopPreview();
             Log.d(CLASS_NAME, "Preview stopped.");
         } catch (Exception e) {
+            Crashlytics.logException(e);
             // ignore: tried to stop a non-existent preview
             Log.d(CLASS_NAME, "Error starting camera preview: " + e.getMessage());
         }
@@ -715,6 +721,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             Log.d(CLASS_NAME, "Camera preview started.");
 
         } catch (Exception e) {
+            Crashlytics.logException(e);
             Log.d(CLASS_NAME, "Error starting camera preview: " + e.getMessage());
         }
 

@@ -5,6 +5,7 @@ import com.android.volley.ParseError;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.crashlytics.android.Crashlytics;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,8 +42,10 @@ public class JsonHelperRequest extends JsonObjectRequest {
                     HttpHeaderParser.parseCacheHeaders(response));
 
         } catch (UnsupportedEncodingException e) {
+            Crashlytics.logException(e);
             return Response.error(new ParseError(e));
         } catch (JSONException je) {
+            Crashlytics.logException(je);
             return Response.error(new ParseError(je));
         }
 

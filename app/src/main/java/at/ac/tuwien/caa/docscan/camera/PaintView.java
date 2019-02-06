@@ -37,6 +37,8 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -184,6 +186,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 mDrawerThread.join();
                 retry = false;
             } catch (InterruptedException e) {
+                Crashlytics.logException(e);
                 Log.d(TAG, e.toString());
             }
         }
@@ -453,6 +456,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         try {
                             mCVResult.wait(50);
                         } catch (InterruptedException e) {
+                            Crashlytics.logException(e);
                             Log.d(TAG, e.toString());
                         }
 

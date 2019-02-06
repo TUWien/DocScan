@@ -14,6 +14,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
+import com.crashlytics.android.Crashlytics;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 
@@ -453,6 +454,7 @@ public class UploadService extends JobService implements
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
+                Crashlytics.logException(e);
                 e.printStackTrace();
             }
 

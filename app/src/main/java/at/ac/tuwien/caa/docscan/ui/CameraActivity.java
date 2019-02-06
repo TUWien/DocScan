@@ -78,6 +78,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.signature.MediaStoreSignature;
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -265,8 +266,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mCameraPreview != null)
             mCameraPreview.pause();
 
-        if (mOrientationListener != null && mOrientationListener.canDetectOrientation())
+        if (mOrientationListener != null && mOrientationListener.canDetectOrientation()) {
             mOrientationListener.disable();
+        }
 
 
         savePreferences();
@@ -419,13 +421,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         try {
             ProviderInstaller.installIfNeeded(this);
         } catch (GooglePlayServicesRepairableException e) {
-
+            Crashlytics.logException(e);
             // Indicates that Google Play services is out of date, disabled, etc.
             // Prompt the user to install/update/enable Google Play services.
             GooglePlayServicesUtil.showErrorNotification(
                     e.getConnectionStatusCode(), mContext);
 
         } catch (GooglePlayServicesNotAvailableException e) {
+            Crashlytics.logException(e);
             // Indicates a non-recoverable error; the ProviderInstaller is not able
             // to install an up-to-date Provider.
         }
@@ -2168,6 +2171,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             try {
                 exifOrientation = Helper.getExifOrientation(fileName);
             } catch (IOException e) {
+                Crashlytics.logException(e);
                 e.printStackTrace();
             }
 
@@ -2272,6 +2276,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
 
             catch (Exception e) {
+
+                Crashlytics.logException(e);
 
                 runOnUiThread(new Runnable() {
 
@@ -2388,7 +2394,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             options.inJustDecodeBounds = false;
             return BitmapFactory.decodeStream(new FileInputStream(f), null, options);
 
-        } catch (FileNotFoundException e) {}
+        } catch (FileNotFoundException e) {
+            Crashlytics.logException(e);
+        }
         return null;
     }
 

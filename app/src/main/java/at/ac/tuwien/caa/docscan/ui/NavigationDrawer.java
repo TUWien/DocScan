@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import at.ac.tuwien.caa.docscan.ActivityUtils;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
@@ -50,6 +51,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
     private static final int NAVDRAWER_LAUNCH_DELAY = 250; // Delay to launch nav drawer item, to allow close animation to play
     private static final int MAIN_CONTENT_FADEOUT_DURATION = 50; // Fade in and fade out durations for the main content when switching between different Activities of the app through the Nav Drawer
     private boolean mAccountGroupVisible = false;
+
+    private static final String CLASS_NAME = "NavigationDrawer";
 
     public NavigationDrawer(Activity activity, NavigationItemEnum selfItem) {
 
@@ -166,27 +169,34 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
 //        If the activity is not active anymore, do nothing, otherwise Glide will raise an
 //        IllegalArgumentException
-        if (mActivity == null || mActivity.isFinishing())
-            return;
 
-        switch (User.getInstance().getConnection()) {
-            case User.SYNC_DROPBOX:
-                String photoUrl = User.getInstance().getPhotoUrl();
-                if (photoUrl != null) {
+        try {
+
+            if (mActivity == null || mActivity.isFinishing())
+                return;
+
+            switch (User.getInstance().getConnection()) {
+                case User.SYNC_DROPBOX:
+                    String photoUrl = User.getInstance().getPhotoUrl();
+                    if (photoUrl != null) {
+                        GlideApp.with(mActivity)
+                                .load(photoUrl)
+                                //                        Make the image view circular:
+                                .apply(RequestOptions.circleCropTransform())
+                                .into(userImageView);
+                    }
+                    break;
+                case User.SYNC_TRANSKRIBUS:
                     GlideApp.with(mActivity)
-                            .load(photoUrl)
-//                        Make the image view circular:
+                            .load(R.drawable.transkribus)
+                            //                        Make the image view circular:
                             .apply(RequestOptions.circleCropTransform())
                             .into(userImageView);
-                }
-                break;
-            case User.SYNC_TRANSKRIBUS:
-                GlideApp.with(mActivity)
-                        .load(R.drawable.transkribus)
-//                        Make the image view circular:
-                        .apply(RequestOptions.circleCropTransform())
-                        .into(userImageView);
-                break;
+                    break;
+            }
+        }
+        catch (Exception e) {
+            Helper.crashlyticsLog(CLASS_NAME, "showUserImage", e.toString());
         }
     }
 

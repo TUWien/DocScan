@@ -15,6 +15,8 @@ import android.util.Log;
 
 import com.android.volley.VolleyError;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -353,6 +355,7 @@ public class Helper {
                 return true;
             }
         } catch (IOException e) {
+            Crashlytics.logException(e);
             e.printStackTrace();
         }
 
@@ -707,9 +710,27 @@ public class Helper {
             return body;
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+            Crashlytics.logException(e);
 //            This should not be null, because we should use the proper encoding:
             return null;
         }
+
+    }
+
+    /**
+     * Check the device to make sure it has the Google Play Services APK. Taken from:
+     * https://stackoverflow.com/a/48224404/9827698
+     */
+    public static boolean checkPlayServices(Context context) {
+
+        int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable
+                (context);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            Log.d(CLASS_NAME, "This device does not support Google Play Services. " +
+                    "Push notifications are not supported");
+            return false;
+        }
+        return true;
 
     }
 

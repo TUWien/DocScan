@@ -375,6 +375,8 @@
     <string name="gallery_confirm_delete_text">Are you sure? This cannot be undone.</string>
     <string name="gallery_confirm_delete_confirm_button_text">Delete</string>
     <string name="gallery_confirm_delete_cancel_button_text">Cancel</string>
+    <string name="gallery_confirm_no_ocr_available_title">OCR not available</string>
+    <string name="gallery_confirm_no_ocr_available_text">Sorry, we could not find Google Play services. Try to reinstall the app via Google Play store. Do you want to generate a PDF without OCR?</string>
     <string name="gallery_confirm_ocr_title">Make PDF machine readable?</string>
     <string name="gallery_confirm_ocr_text">This will apply OCR and make the text in the picture(s)
         selectable.</string>

@@ -1,6 +1,9 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
 import android.os.Process;
+
+import com.crashlytics.android.Crashlytics;
+
 import org.opencv.core.Mat;
 
 public abstract class ImageProcessor implements Runnable {
@@ -40,6 +43,7 @@ public abstract class ImageProcessor implements Runnable {
             process();
 
         } catch (InterruptedException e) {
+            Crashlytics.logException(e);
             e.printStackTrace();
         } finally {
             // Clears the Thread's interrupt flag

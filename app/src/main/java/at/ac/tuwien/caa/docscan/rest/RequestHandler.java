@@ -21,6 +21,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.crashlytics.android.Crashlytics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,10 +68,12 @@ public class RequestHandler {
             try {
                 stack = new HurlStack(null, new TLSSocketFactory());
             } catch (KeyManagementException e) {
+                Crashlytics.logException(e);
                 e.printStackTrace();
                 Log.d("Your Wrapper Class", "Could not create new stack for TLS v1.2");
                 stack = new HurlStack();
             } catch (NoSuchAlgorithmException e) {
+                Crashlytics.logException(e);
                 e.printStackTrace();
                 Log.d("Your Wrapper Class", "Could not create new stack for TLS v1.2");
                 stack = new HurlStack();
@@ -294,6 +297,7 @@ public class RequestHandler {
             JSONObject obj = new JSONObject(json);
             trimmedString = obj.getString(key);
         } catch(JSONException e){
+            Crashlytics.logException(e);
             e.printStackTrace();
             return null;
         }

@@ -12,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.bumptech.glide.signature.MediaStoreSignature;
+import com.crashlytics.android.Crashlytics;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -89,6 +90,7 @@ public class CropViewActivity extends AppCompatActivity {
                     PageDetector.savePointsToExif(mFileName, mOriginalPoints);
                     Helper.saveExifOrientation(new File(mFileName), mOriginalOrientation);
                 } catch (IOException e) {
+                    Crashlytics.logException(e);
                     Log.d(CLASS_NAME, "onOptionsItemSelected: " + e.toString());
                     e.printStackTrace();
                 }
@@ -159,6 +161,7 @@ public class CropViewActivity extends AppCompatActivity {
                     mOriginalPoints = points;
 
                 } catch (IOException e) {
+                    Crashlytics.logException(e);
                     e.printStackTrace();
                 }
 

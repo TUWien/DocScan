@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.firebase.jobdispatcher.Constraint;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -77,6 +78,7 @@ public class SyncInfo implements Serializable {
             ois.close();
         }
         catch(Exception e) {
+            Crashlytics.logException(e);
             Log.d(CLASS_NAME, e.toString());
         }
 

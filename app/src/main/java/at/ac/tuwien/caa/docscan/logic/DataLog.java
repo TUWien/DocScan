@@ -33,6 +33,8 @@ import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -142,8 +144,10 @@ public class DataLog {
             fOut.close();
 
         } catch (FileNotFoundException e1) {
+            Crashlytics.logException(e1);
             e1.printStackTrace();
         } catch (IOException e1) {
+            Crashlytics.logException(e1);
             e1.printStackTrace();
         }
 

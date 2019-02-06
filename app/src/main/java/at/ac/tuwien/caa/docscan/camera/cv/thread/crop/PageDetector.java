@@ -6,6 +6,8 @@ import android.os.Looper;
 import android.support.media.ExifInterface;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
+
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -67,6 +69,7 @@ public class PageDetector {
         try {
             savePointsToExif(fileName, points);
         } catch (IOException e) {
+            Crashlytics.logException(e);
             e.printStackTrace();
         }
 
@@ -299,6 +302,7 @@ public class PageDetector {
 
             }
         } catch (IOException e) {
+            Crashlytics.logException(e);
             e.printStackTrace();
         }
 
@@ -346,6 +350,7 @@ public class PageDetector {
             }
 
         } catch (IOException e) {
+            Crashlytics.logException(e);
             e.printStackTrace();
         }
 
@@ -362,6 +367,7 @@ public class PageDetector {
             }
 
         } catch (IOException e) {
+            Crashlytics.logException(e);
             e.printStackTrace();
         }
 
