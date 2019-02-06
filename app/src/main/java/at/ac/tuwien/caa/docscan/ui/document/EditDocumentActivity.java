@@ -7,6 +7,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.crashlytics.android.Crashlytics;
+
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
@@ -15,6 +17,8 @@ import at.ac.tuwien.caa.docscan.logic.TranskribusMetaData;
 public class EditDocumentActivity extends CreateDocumentActivity{
 
     public static final String DOCUMENT_NAME_KEY = "DOCUMENT_NAME";
+
+    private static final String CLASS_NAME = "EditDocumentActivity";
 
     private String mDocumentTitle;
 
@@ -63,14 +67,23 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 
     private void saveChanges() {
 
-        if (mDocumentTitle == null)
+        if (mDocumentTitle == null) {
 //                This should not happen:
             finish();
+            Crashlytics.logException(new Throwable(CLASS_NAME + "saveChanges: mDocumentTitle == null"));
+            return;
+        }
 
         Document document = DocumentStorage.getInstance(this).getDocument(mDocumentTitle);
-        if (document == null)
+
+
+        if (document == null) {
 //            This should not happen:
             finish();
+            Crashlytics.logException(new Throwable(CLASS_NAME + "saveChanges: document == null"));
+            return;
+        }
+
 
         EditText titleEditText = findViewById(R.id.create_series_name_edittext);
         String title = titleEditText.getText().toString();
@@ -87,6 +100,11 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         if (mDocumentTitle.compareToIgnoreCase(
                 DocumentStorage.getInstance(this).getActiveDocument().getTitle()) == 0)
             DocumentStorage.getInstance(this).setTitle(title);
+
+//        This is necessary to handle double clicks, which occurred on Firebase devices and caused
+//        NullPointerExceptions, because the saveChanges method was called twice, but the result
+//        type was different, because mDocumentTitle was not altered in the meantime.
+        mDocumentTitle = title;
 
         document.setTitle(title);
 

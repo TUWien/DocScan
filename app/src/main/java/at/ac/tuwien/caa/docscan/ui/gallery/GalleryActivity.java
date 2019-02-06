@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -74,6 +75,8 @@ public class GalleryActivity extends AppCompatActivity implements
 
         super.onCreate(savedInstanceState);
 
+        Log.d(CLASS_NAME, "onCreate");
+
         setContentView(R.layout.activity_gallery);
 
         mFileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
@@ -94,20 +97,28 @@ public class GalleryActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
 
+        Log.d(CLASS_NAME, "onResume");
+
 //        Just reload the files if some file changes happened in the meantime:
 
         if (sFileDeleted) {
+            Log.d(CLASS_NAME, "onResume: sFileDeleted");
             loadDocument(); // get the files contained in the document:
             initAdapter();
-            if (mAdapter != null)
+            if (mAdapter != null) {
+                Log.d(CLASS_NAME, "onResume: notifyDataSetChanged");
                 mAdapter.notifyDataSetChanged();
+            }
             else
                 Helper.crashlyticsLog(CLASS_NAME, "onResume", "mAdapater == null");
         }
 
         if (sFileRotated || sFileCropped) {
-            if (mAdapter != null)
+            Log.d(CLASS_NAME, "onResume: sFileRotated || sFileCropped");
+            if (mAdapter != null) {
+                Log.d(CLASS_NAME, "onResume: notifyDataSetChanged");
                 mAdapter.notifyDataSetChanged();
+            }
             else {
                 loadDocument();
                 initAdapter();
@@ -122,12 +133,21 @@ public class GalleryActivity extends AppCompatActivity implements
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        Log.d(CLASS_NAME, "onActivityResult");
+
         if (requestCode == DOCUMENT_RENAMING) {
+
+            Log.d(CLASS_NAME, "onActivityResult: DOCUMENT_RENAMING");
+
             if (resultCode == RESULT_OK) {
+                Log.d(CLASS_NAME, "onActivityResult: RESULT_OK");
                 if (data.getData() != null) {
                     mFileName = data.getData().toString();
+                    Log.d(CLASS_NAME, "onActivityResult: mFileName: " + mFileName);
                     loadDocument();
                     if (mDocument != null) {
+                        Log.d(CLASS_NAME, "onActivityResult: mDocument != null");
                         initAdapter();
                         initToolbar();
                     }
@@ -437,19 +457,19 @@ public class GalleryActivity extends AppCompatActivity implements
         ArrayList<Integer> uncroppedIdx = new ArrayList<>();
 
 //        Check if some selected files are already cropped, deselect these:
-        for (int i = 0; i < selectionIdx.length; i++) {
-            String fileName = mDocument.getPages().get(selectionIdx[i]).getFile().getAbsolutePath();
+        for (int aSelectionIdx1 : selectionIdx) {
+            String fileName = mDocument.getPages().get(aSelectionIdx1).getFile().getAbsolutePath();
             if (!PageDetector.isCropped(fileName))
-                uncroppedIdx.add(selectionIdx[i]);
+                uncroppedIdx.add(aSelectionIdx1);
         }
 
 //        if (uncroppedIdx.size() < selectionIdx.length)
 //            mAdapter
 ////        TODO: show an error message if selectionIdx.size != uncroppedIdx.length
 
-        for (int i = 0; i < selectionIdx.length; i++) {
-                ImageProcessor.mapFile(mDocument.getPages().get(selectionIdx[i]).getFile());
-        }
+        for (int aSelectionIdx : selectionIdx)
+            ImageProcessor.mapFile(mDocument.getPages().get(aSelectionIdx).getFile());
+
 
 //        mAdapter.notifyDataSetChanged();
         deselectAllItems();
@@ -466,15 +486,14 @@ public class GalleryActivity extends AppCompatActivity implements
 
         int[] selections = mAdapter.getSelectionIndices();
 
-        for (int i = 0; i < selections.length; i++)
-            ImageProcessor.rotateFile(mDocument.getPages().get(selections[i]).getFile());
+        for (int selection : selections)
+            ImageProcessor.rotateFile(mDocument.getPages().get(selection).getFile());
 
     }
 
     private void deleteSelections() {
 
-        if (mDocument == null || mAdapter == null || mDocument.getPages() == null ||
-                mAdapter == null) {
+        if (mDocument == null || mAdapter == null || mDocument.getPages() == null) {
             Helper.crashlyticsLog(CLASS_NAME, "rotateSelectedItems",
                     "mDocument == null || mAdapter == null || mDocument.getPages() == null || " +
                     "                mAdapter == null");
@@ -581,13 +600,14 @@ public class GalleryActivity extends AppCompatActivity implements
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
         String title = getResources().getString(R.string.gallery_confirm_delete_title_prefix);
-        if (mAdapter != null)
+        if (mAdapter != null) {
             title += " " + mAdapter.getSelectionCount();
 
-        if (mAdapter.getSelectionCount() == 1)
-            title += " " + getResources().getString(R.string.gallery_confirm_delete_title_single_postfix);
-        else
-            title += " " + getResources().getString(R.string.gallery_confirm_delete_title_multiple_postfix);
+            if (mAdapter.getSelectionCount() == 1)
+                title += " " + getResources().getString(R.string.gallery_confirm_delete_title_single_postfix);
+            else
+                title += " " + getResources().getString(R.string.gallery_confirm_delete_title_multiple_postfix);
+        }
 
         // set dialog message
         alertDialogBuilder
