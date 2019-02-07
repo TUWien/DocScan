@@ -290,7 +290,11 @@ public class GalleryActivity extends AppCompatActivity implements
 
         if (mFileName != null) {
             mDocument = DocumentStorage.getInstance(this).getDocument(mFileName);
+            if (mDocument == null)
+                mDocument = DocumentStorage.getInstance(this).getActiveDocument();
         }
+        else
+            mDocument = DocumentStorage.getInstance(this).getActiveDocument();
 
     }
 

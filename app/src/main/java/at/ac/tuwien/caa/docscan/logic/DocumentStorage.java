@@ -174,7 +174,7 @@ public class DocumentStorage {
                     Crashlytics.logException(new Throwable(CLASS_NAME + ": document is null"));
                     continue;
                 }
-                if (document.getTitle() != null && document.getTitle().compareToIgnoreCase(title) == 0)
+                if (document != null && document.getTitle() != null && document.getTitle().compareToIgnoreCase(title) == 0)
                     return document;
             }
         }

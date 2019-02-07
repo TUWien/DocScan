@@ -13,8 +13,8 @@ android {
 		minSdkVersion 15
 		targetSdkVersion 27
 
-		versionCode 71
-		versionName "1.6.2"
+		versionCode 72
+		versionName "1.6.3"
 
 
 		multiDexEnabled true
@@ -28,7 +28,7 @@ android {
         // Specifies the ABI configurations of your native
         // libraries Gradle should build and package with your APK.
 //            Note this also effects externalNativeBuild.cmake, so we do not to define this anymore:
-        abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86'
+        abiFilters 'armeabi-v7a', 'arm64-v8a'
       }
 		testInstrumentationRunner = 'android.support.test.runner.AndroidJUnitRunner'
 	}

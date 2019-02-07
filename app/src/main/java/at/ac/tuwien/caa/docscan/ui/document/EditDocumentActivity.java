@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.ui.document;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,6 +22,8 @@ public class EditDocumentActivity extends CreateDocumentActivity{
     private static final String CLASS_NAME = "EditDocumentActivity";
 
     private String mDocumentTitle;
+    private Document mDocument;
+    private boolean mIsActiveDocument = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,9 +40,13 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         if (extras != null) {
             mDocumentTitle = extras.getString(DOCUMENT_NAME_KEY, null);
             if (mDocumentTitle != null) {
-                Document document = DocumentStorage.getInstance(this).getDocument(mDocumentTitle);
-                if (document != null)
-                    fillViews(document);
+                mDocument = DocumentStorage.getInstance(this).getDocument(mDocumentTitle);
+                if (mDocument != null) {
+                    if (mDocument == DocumentStorage.getInstance(this).getActiveDocument())
+                        mIsActiveDocument = true;
+
+                    fillViews(mDocument);
+                }
                 else
                     finish(); // Nothing to do here, but this should not happen...
 
@@ -59,7 +66,9 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 saveChanges();
+
             }
         });
 
@@ -67,51 +76,76 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 
     private void saveChanges() {
 
-        if (mDocumentTitle == null) {
-//                This should not happen:
-            finish();
-            Crashlytics.logException(new Throwable(CLASS_NAME + "saveChanges: mDocumentTitle == null"));
-            return;
-        }
-
-        Document document = DocumentStorage.getInstance(this).getDocument(mDocumentTitle);
-
-
-        if (document == null) {
-//            This should not happen:
-            finish();
-            Crashlytics.logException(new Throwable(CLASS_NAME + "saveChanges: document == null"));
-            return;
-        }
-
-
         EditText titleEditText = findViewById(R.id.create_series_name_edittext);
         String title = titleEditText.getText().toString();
 
-//        Check if the new title is not already assigned to the remaining documents
-//        (exclude the active one):
-        if (DocumentStorage.getInstance(this).isTitleAlreadyAssigned(title) &&
-                (mDocumentTitle.compareToIgnoreCase(title) != 0)) {
-            showDirExistingCreatedAlert(title);
+        Log.d(CLASS_NAME, "saveChanges: mDocumentTitle: " + mDocumentTitle + " title: " + title);
+        Log.d(CLASS_NAME, "saveChanges: mDocument.getTitle: " + mDocument.getTitle() + " title: " + title);
+
+//        if (mDocumentTitle == null) {
+////                This should not happen:
+//            finish();
+//            Crashlytics.logException(new Throwable(CLASS_NAME + "saveChanges: mDocumentTitle == null"));
+//            return;
+//        }
+        if (mDocument == null || mDocument.getTitle() == null) {
+//                This should not happen:
+            finish();
+            Crashlytics.logException(new Throwable(CLASS_NAME + "saveChanges: mDocument == null || mDocument.getTitle() == null"));
             return;
         }
 
-//        Check if the edited document is the active document (in the CameraActivity):
-        if (mDocumentTitle.compareToIgnoreCase(
-                DocumentStorage.getInstance(this).getActiveDocument().getTitle()) == 0)
-            DocumentStorage.getInstance(this).setTitle(title);
+//        Document document = DocumentStorage.getInstance(this).getDocument(mDocumentTitle);
+//        if (document == null) {
+////            This should not happen:
+//            finish();
+//            Log.d(CLASS_NAME, "document == null");
+//            Crashlytics.logException(new Throwable(CLASS_NAME + "saveChanges: document == null"));
+//            return;
+//        }
+
+        if (mDocument == null) {
+//            This should not happen:
+            finish();
+            Log.d(CLASS_NAME, "document == null");
+            Crashlytics.logException(new Throwable(CLASS_NAME + "saveChanges: mDocument == null"));
+            return;
+        }
+
+////        Check if the new title is not already assigned to the remaining documents
+////        (exclude the active one):
+//        if (DocumentStorage.getInstance(this).isTitleAlreadyAssigned(title) &&
+//                (mDocumentTitle.compareToIgnoreCase(title) != 0)) {
+//            showDirExistingCreatedAlert(title);
+//            return;
+//        }
+
+//        Check if the new title is not already assigned to the remaining documents
+//        (exclude the active one):
+        if (mDocument.getTitle().compareToIgnoreCase(title) != 0) {
+            if (DocumentStorage.getInstance(this).isTitleAlreadyAssigned(title)) {
+                showDirExistingCreatedAlert(title);
+                return;
+            }
+
+        }
+////        Check if the edited document is the active document (in the CameraActivity):
+//        if (mDocumentTitle.compareToIgnoreCase(
+//                DocumentStorage.getInstance(this).getActiveDocument().getTitle()) == 0)
+//            DocumentStorage.getInstance(this).setTitle(title);
+
 
 //        This is necessary to handle double clicks, which occurred on Firebase devices and caused
 //        NullPointerExceptions, because the saveChanges method was called twice, but the result
 //        type was different, because mDocumentTitle was not altered in the meantime.
-        mDocumentTitle = title;
+//        mDocumentTitle = title;
 
-        document.setTitle(title);
+        mDocument.setTitle(title);
 
-        TranskribusMetaData metaData = document.getMetaData();
+        TranskribusMetaData metaData = mDocument.getMetaData();
         if (metaData == null) {
             metaData = new TranskribusMetaData();
-            document.setMetaData(metaData);
+            mDocument.setMetaData(metaData);
         }
 
         EditText authorEditText = findViewById(R.id.create_series_author_edittext);
@@ -135,12 +169,20 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 //        DocumentStorage.getInstance(this).replaceDocument(document, mDocumentTitle);
         DocumentStorage.saveJSON(this);
 
+        //        Check if the edited document is the active document (in the CameraActivity):
+        if (mIsActiveDocument) {
+            Log.d(CLASS_NAME, "setting active document title: " + title);
+            DocumentStorage.getInstance(this).setTitle(title);
+        }
+
 //        Send back the new file name, so that it can be used in the GalleryActivity:
         Intent data = new Intent();
-        data.setData(Uri.parse(document.getTitle()));
+        data.setData(Uri.parse(mDocument.getTitle()));
         setResult(RESULT_OK, data);
 
         finish();
+
+        Log.d(CLASS_NAME, "mDocumentTitle: " + mDocumentTitle);
 
 
     }
