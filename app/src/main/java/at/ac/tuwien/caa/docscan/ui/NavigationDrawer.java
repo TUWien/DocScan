@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
@@ -18,6 +19,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.request.RequestOptions;
+import com.crashlytics.android.Crashlytics;
 
 import java.util.ArrayList;
 
@@ -267,7 +269,13 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         String pdfUrl = "https://transkribus.eu/wiki/images/e/ed/How_to_use_DocScan_and_ScanTent.pdf";
         Intent browserIntent = new Intent(Intent.ACTION_VIEW);
         browserIntent.setData(Uri.parse(pdfUrl));
-        mActivity.startActivity(browserIntent);
+        try {
+            mActivity.startActivity(browserIntent);
+        }
+        catch (ActivityNotFoundException e) {
+            Crashlytics.logException(e);
+            Helper.showActivityNotFoundAlert(mActivity.getApplicationContext());
+        }
 
     }
 

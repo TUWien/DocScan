@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -9,6 +10,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.media.ExifInterface;
+import android.support.v7.app.AlertDialog;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
@@ -714,6 +716,38 @@ public class Helper {
 //            This should not be null, because we should use the proper encoding:
             return null;
         }
+
+    }
+
+    /**
+     * Shows a dialog in case of ActivityNotFoundExceptions. This exceptions happen if the user
+     * wants to share a file with another app and no app is found for that purpose.
+     * @param context
+     */
+    public static void showActivityNotFoundAlert(Context context) {
+
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.activity_not_found_title)
+                .setPositiveButton(R.string.dialog_ok_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .setCancelable(true)
+                .setMessage(R.string.activity_not_found_text);
+
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+//        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.dialog_cancel_text),
+//                new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                alertDialog.cancel();
+//            }
+//        });
+        alertDialog.show();
 
     }
 

@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.pdf
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.support.v4.content.FileProvider
@@ -8,6 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.logic.Helper
+import com.crashlytics.android.Crashlytics
 import kotlinx.android.synthetic.main.layout_pdflist_row.view.*
 import java.io.File
 
@@ -44,7 +47,13 @@ class PdfAdapter(private val context: Context,
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
             intent.setDataAndType(path, "application/pdf")
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            context.startActivity(intent)
+            try {
+                context.startActivity(intent)
+            }
+            catch (e: ActivityNotFoundException) {
+                Crashlytics.logException(e);
+                Helper.showActivityNotFoundAlert(context)
+            }
         }
 
         return rowView

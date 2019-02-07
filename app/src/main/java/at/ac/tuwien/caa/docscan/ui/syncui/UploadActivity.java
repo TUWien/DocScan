@@ -29,6 +29,8 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -297,7 +299,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
-                intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
+                intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName());
                 startActivity(intent);
             }
         });
@@ -400,7 +402,46 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     public void createPdfFromSelectedItem(MenuItem item) {
 
-        showOCRAlertDialog();
+//        Check if the play services are installed first:
+        if (!Helper.checkPlayServices(this))
+            showNoPlayServicesDialog();
+        else
+            showOCRAlertDialog();
+
+    }
+
+    private void showNoPlayServicesDialog() {
+
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.gallery_confirm_no_ocr_available_title)
+                .setPositiveButton(R.string.dialog_yes_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        createPdfFromSelectedItem(false);
+                        deselectListViewItems();
+                    }
+                })
+                .setNegativeButton(R.string.dialog_no_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+                .setCancelable(true)
+                .setMessage(R.string.gallery_confirm_no_ocr_available_text);
+
+        final AlertDialog alertDialog = alertDialogBuilder.create();
+//        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.dialog_cancel_text),
+//                new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                alertDialog.cancel();
+//            }
+//        });
+        alertDialog.show();
 
     }
 
@@ -429,12 +470,13 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                 .setMessage(R.string.gallery_confirm_ocr_text);
 
         final AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                alertDialog.cancel();
-            }
-        });
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.dialog_cancel_text),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        alertDialog.cancel();
+                    }
+                });
         alertDialog.show();
 
     }
@@ -980,7 +1022,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                                                 startActivity(intent);
                                             }
                                             catch (ActivityNotFoundException e) {
-
+                                                Crashlytics.logException(e);
+                                                Helper.showActivityNotFoundAlert(mContext);
                                             }
                                         }
                                     })

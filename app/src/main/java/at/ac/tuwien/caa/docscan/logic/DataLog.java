@@ -24,6 +24,7 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -112,7 +113,13 @@ public class DataLog {
         uris.add(syncUri);
         intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
 
-        activity.startActivity(intent);
+        try {
+            activity.startActivity(intent);
+        }
+        catch (ActivityNotFoundException e) {
+            Crashlytics.logException(e);
+            Helper.showActivityNotFoundAlert(activity.getApplicationContext());
+        }
 
     }
 

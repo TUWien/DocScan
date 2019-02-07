@@ -26,6 +26,9 @@
     <string name="dialog_yes_text">Yes</string>
     <string name="dialog_cancel_text">Cancel</string>
 
+    <string name="activity_not_found_title">No standard app found</string>
+    <string name="activity_not_found_text">Sorry, we could not find an app to open the file.</string>
+
     <!-- StartActivity -->
     <string name="start_permission_title">Permission required</string>
     <string name="start_permission_retry_text">Do you want to give this permission?</string>
