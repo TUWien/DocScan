@@ -12,6 +12,7 @@ Markus Diem
 ### Preparation:
 - You need to install Android NDK (with CMake) if you do not have it
 - Download and unzip OpenCV for Android (https://opencv.org/releases.html)
+- The latest tested version is OpenCV 3.4.5
 - Clone the project and open it in Android Studio
 
 ### Import the OpenCV module
@@ -22,7 +23,7 @@ Markus Diem
 - Correct the version numbers of `compileSdkVersion`, `minSdkVersion`, `targetSdkVersion` so that it matches the version numbers in your app build.gradle (You can also delete the buildToolsVersion since this is not needed by gradle anymore)
 
 ### Setup CMake file
-- Copy the file `app/src/CMakeListsSkel.txt` and paste it to `app/src/`, name the pasted file `CMakeLists.txt` (do not add it to the git repository!)
+- Copy the file `app/CMakeListsSkel.txt` and paste it to `app/`, name the pasted file `CMakeLists.txt` (do not add it to the git repository!)
 - Open `app/src/CMakeLists.txt`
 - Change the line `include_directories(enter_your_opencv_path/sdk/native/jni/include)` so that it contains your opencv path
 
