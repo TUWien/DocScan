@@ -1891,10 +1891,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    public void startSyncActivity(MenuItem item) {
+    public void startUploadActivity(MenuItem item) {
 
-        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
-        startActivity(intent);
+        Document document = DocumentStorage.getInstance(this).getActiveDocument();
+        if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
+            Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
+            intent.putExtra(getString(R.string.key_document_file_name),
+                    document.getTitle());
+            startActivity(intent);
+        }
 
     }
 

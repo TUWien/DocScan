@@ -167,7 +167,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             layout.setVisibility(View.VISIBLE);
 //            Hide the link button if we have no link:
             if (qrCodeInfo.getLink() == null) {
-                AppCompatButton button = findViewById(R.id.create_series_link_button);
+                AppCompatImageButton button = findViewById(R.id.create_series_link_button);
                 button.setVisibility(View.GONE);
             }
         }

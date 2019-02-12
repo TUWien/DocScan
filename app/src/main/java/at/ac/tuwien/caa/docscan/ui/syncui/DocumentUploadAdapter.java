@@ -52,17 +52,17 @@ public class DocumentUploadAdapter extends DocumentAdapter {
 //        fillList();
 //    }
 
-    @Override
-    public boolean isEnabled (int position) {
-
-        Document document = mDocuments.get(position);
-
-        if ((document != null) && (document.isCropped()))
-            return false;
-        else
-            return true;
-
-    }
+//    @Override
+//    public boolean isEnabled (int position) {
+//
+//        Document document = mDocuments.get(position);
+//
+//        if ((document != null) && (document.isCropped()))
+//            return false;
+//        else
+//            return true;
+//
+//    }
 
 
     @Override
@@ -77,6 +77,14 @@ public class DocumentUploadAdapter extends DocumentAdapter {
 //        Show the upload status in the icon:
         ImageView iconView = convertView.findViewById(R.id.layout_listview_row_icon);
         if (iconView != null) {
+
+//            hide a progressbar that may have been shown before:
+            ProgressBar p = convertView.findViewById(R.id.layout_listview_progress_bar);
+            if (p != null)
+                p.setVisibility(View.INVISIBLE);
+//            show the icon, because it may have been hidden before:
+            iconView.setVisibility(View.VISIBLE);
+
             if (document.isUploaded())
                 iconView.setImageResource(R.drawable.ic_cloud_done_black_24dp);
             else if (document.isAwaitingUpload()) {
@@ -89,8 +97,8 @@ public class DocumentUploadAdapter extends DocumentAdapter {
             else if (document.isCropped()) {
 
                 iconView.setVisibility(View.INVISIBLE);
-                ProgressBar p = convertView.findViewById(R.id.layout_listview_progress_bar);
-                p.setVisibility(View.VISIBLE);
+                if (p != null)
+                    p.setVisibility(View.VISIBLE);
 
                 TextView textView = convertView.findViewById(R.id.layout_listview_row_description);
 //                Write that the upload is pending:

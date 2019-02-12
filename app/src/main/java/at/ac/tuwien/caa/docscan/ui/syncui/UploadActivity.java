@@ -215,10 +215,15 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         // Register to receive messages.
         mMessageReceiver = getReceiver();
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_UPLOAD_ACTION));
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_IMAGE_PROCESS_ACTION));
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(INTENT_UPLOAD_ACTION);
+        filter.addAction(INTENT_IMAGE_PROCESS_ACTION);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
+
+//        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+//                new IntentFilter(INTENT_UPLOAD_ACTION));
+//        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+//                new IntentFilter(INTENT_IMAGE_PROCESS_ACTION));
 
         showNoSelectionToolbar();
 
@@ -228,6 +233,43 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 //        See if the user is not logged in but is online:
         checkNetworkStatus();
 
+//        Just select the active document for the first time:
+        selectActiveDocument();
+
+    }
+
+    private void selectActiveDocument() {
+
+        if (getIntent().hasExtra("DONE")) {
+            if (getIntent().getBooleanExtra("DONE", false))
+                return;
+        }
+        String fileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
+//        We just want the selection for the first time the Activity is started, but not for
+//        multiple resumes:
+        getIntent().putExtra("DONE", true);
+
+
+
+        if (fileName != null) {
+            final Document document = DocumentStorage.getInstance(this).getDocument(fileName);
+            if (document != null && mDocuments != null && mListView != null)
+                mListView.post(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        int position = mDocuments.indexOf(document);
+                        if (position != -1) {
+                            mSelectionToolbar.fixToolbar();
+                            // Open the selection toolbar and show that one element is selected:
+                            showSelectionToolbar(1);
+                            mListView.setItemChecked(position, true);
+                            mListView.smoothScrollToPosition(position);
+
+                        }
+                    }
+                });
+        }
     }
 
     @Override
@@ -1001,7 +1043,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                                         }
                                     }
                                 if (isAdapterUpdateRequired)
-                                    initAdapter();
+//                                    initAdapter();
+                                    mAdapter.notifyDataSetChanged();
                                 }
                             }
 

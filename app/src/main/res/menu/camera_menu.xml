@@ -43,7 +43,7 @@
         android:title="@string/upload_item"
         android:visible="true"
         app:showAsAction="always"
-        android:onClick="startSyncActivity"
+        android:onClick="startUploadActivity"
 
         />
 

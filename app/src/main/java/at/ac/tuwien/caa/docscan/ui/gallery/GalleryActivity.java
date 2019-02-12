@@ -196,7 +196,7 @@ public class GalleryActivity extends AppCompatActivity implements
                         }
                     }
 
-                    mAdapter.deselectAllItems();
+//                    mAdapter.deselectAllItems();
                 }
                 else
                     Helper.crashlyticsLog(CLASS_NAME, "getReceiver",
