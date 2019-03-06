@@ -32,6 +32,11 @@ android {
       }
 		testInstrumentationRunner = 'android.support.test.runner.AndroidJUnitRunner'
 	}
+//MyEdit
+	aaptOptions {
+		noCompress "tflite"
+		noCompress "lite"
+	}
 
 
 	buildTypes {
@@ -165,6 +170,9 @@ dependencies {
 
 	// Add dependency
 	implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
+	// myEdit: add tensorflowLite
+//	implementation 'org.tensorflow:tensorflow-lite:+'
+	implementation 'org.tensorflow:tensorflow-lite:0.0.0-nightly'
 	androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2', {
 		exclude group: 'com.android.support', module: 'support-annotations'
 	}
@@ -180,6 +188,10 @@ dependencies {
 
 }
 repositories {
+	//myEdit: add tensorflowLite
+	maven {
+		url 'https://google.bintray.com/tensorflow'
+	}
     mavenCentral()
 }
 

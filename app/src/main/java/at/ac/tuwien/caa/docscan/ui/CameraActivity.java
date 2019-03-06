@@ -123,6 +123,7 @@ import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
+import at.ac.tuwien.caa.docscan.ui.widget.PageSplit;
 import me.drakeet.support.toast.ToastCompat;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
@@ -2269,6 +2270,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
                 // Save exif information (especially the orientation):
                 saveExif(file);
+
+                //PageSplit
+                try {
+                    PageSplit pageSplit = new PageSplit(mContext);
+                    if (pageSplit.applyPageSplit(uri, mContext) == 1) {
+                        Log.d(PageSplit.TAG, "could not apply PageSplit");
+                    } else {
+                        Log.d("PageSplit", "Applied PageSplit");
+                    }
+                    pageSplit.close();
+                } catch (IOException e) {
+                    Log.e("PageSplit", "Failed to initialize PageSplit tflite model.");
+                }
 
                 boolean fileAdded = DocumentStorage.getInstance(mContext).addToActiveDocument(file);
                 if (!fileAdded)
