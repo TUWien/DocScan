@@ -46,7 +46,7 @@ Google Play services need to be installed to use Firebase Jobdispatcher (https:/
 
 -------------------------------------------------------
 
-Matthias, PageSplit:
+### PageSplit
 
 add google-services.json file.
 Create asset folder: File->New->Folder->Assets Folder
