@@ -43,3 +43,11 @@ Markus Diem
 
 ## App Dependencies
 Google Play services need to be installed to use Firebase Jobdispatcher (https://github.com/firebase/firebase-jobdispatcher-android)
+
+-------------------------------------------------------
+
+Matthias, PageSplit:
+
+add google-services.json file.
+Create asset folder: File->New->Folder->Assets Folder
+Add "NAME.tflite" file in assets folder and change MODEL_NAME in PageSplit to NAME.
