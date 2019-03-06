@@ -52,4 +52,4 @@ add google-services.json file.
 
 Create asset folder: File->New->Folder->Assets Folder
 
-Add "NAME.tflite" file in assets folder and change MODEL_NAME in PageSplit to NAME.
+Add "NAME.tflite" file in assets folder and change MODEL_NAME in PageSplit.java to NAME.
