@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="@string/key_exif_artist"
+        android:title="@string/settings_exif_artist_title"
+        android:defaultValue="@string/settings_exif_artist_default_value"
+        android:dialogTitle="Photographer name" />
+
+    <EditTextPreference
+        android:key="@string/key_exif_copyright"
+        android:title="@string/settings_exif_copyright_title"
+        android:defaultValue="@string/settings_exif_copyright_default_value"
+        android:dialogTitle="Copyright information" />
+
+</PreferenceScreen>

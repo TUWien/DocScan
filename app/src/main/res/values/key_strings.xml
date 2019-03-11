@@ -10,13 +10,17 @@
     <string name="key_show_advanced_qr_code">KEY_SHOW_ADVANCED_QR_CODE</string>
     <string name="key_show_focus_values">KEY_SHOW_FOCUS_VALUES</string>
     <string name="key_show_grid">KEY_SHOW_GRID</string>
+    <string name="key_flash_series_mode">KEY_FLASH_SERIES_MODE</string>
     <string name="key_debug_settings">KEY_DEBUG_SETTINGS</string>
+    <string name="key_exif_settings">KEY_EXIF_SETTINGS</string>
     <string name="key_show_debug_view">KEY_SHOW_DEBUG_VIEW</string>
     <string name="key_fragment_image_viewer_file_name">KEY_FRAGMENT_IMAGE_VIEWER_FILE_NAME</string>
     <string name="key_crop_view_activity_file_name">KEY_CROP_VIEW_ACTIVITY_FILE_NAME</string>
     <string name="key_document_file_name">KEY_DOCUMENT_FILE_NAME</string>
     <string name="key_page_position">KEY_PAGE_POSITION</string>
     <string name="key_use_test_server">KEY_USE_DEBUG_SERVER</string>
+    <string name="key_exif_artist">KEY_EXIF_ARTIST</string>
+    <string name="key_exif_copyright">KEY_EXIF_COPYRIGHT</string>
 
 
 </resources>

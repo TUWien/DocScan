@@ -100,17 +100,28 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
 
         logError(error);
 
-        int statusCode = error.networkResponse.statusCode;
-        switch (statusCode) {
-//            TODO: switch to the other status code
-            case HttpURLConnection.HTTP_NOT_FOUND: // 404-
-//            case HttpURLConnection.HTTP_INTERNAL_ERROR:
+        if (error != null && error.networkResponse != null) {
+            int statusCode = error.networkResponse.statusCode;
+            if (statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
                 ((UploadStatusCallback) mRestCallback).onUploadAlreadyFinished(mUploadID);
-                break;
-            default:
-                mRestCallback.handleRestError(this, error);
-                break;
+                return;
+            }
         }
+
+//        Handle other errors:
+        mRestCallback.handleRestError(this, error);
+
+//        int statusCode = error.networkResponse.statusCode;
+//        switch (statusCode) {
+////            TODO: switch to the other status code
+//            case HttpURLConnection.HTTP_NOT_FOUND: // 404-
+////            case HttpURLConnection.HTTP_INTERNAL_ERROR:
+//                ((UploadStatusCallback) mRestCallback).onUploadAlreadyFinished(mUploadID);
+//                break;
+//            default:
+//                mRestCallback.handleRestError(this, error);
+//                break;
+//        }
 
 
 
@@ -120,6 +131,13 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
         DataLog.getInstance().writeUploadLog(getContext(), CLASS_NAME,
                 "handleRestError: request: " + this.toString());
         Log.d(CLASS_NAME, "handleRestError: request: " + this.toString());
+
+        if (error == null || error.getMessage() == null) {
+            DataLog.getInstance().writeUploadLog(getContext(), CLASS_NAME,
+                    "handleRestError: error is null ");
+            Log.d(CLASS_NAME, "handleRestError: error is null");
+            return;
+        }
 
 
         DataLog.getInstance().writeUploadLog(getContext(), CLASS_NAME,

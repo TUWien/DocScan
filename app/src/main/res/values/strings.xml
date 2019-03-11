@@ -346,6 +346,8 @@
     <string name="settings_fast_segmentation_checkbox_summary">Fast page detection with a potential loss of accuracy</string>
     <string name="settings_show_grid_title">Display grid</string>
     <string name="settings_show_grid_summary">Overlays a grid on the camera view</string>
+    <string name="settings_flash_series_title">Flash after imaging</string>
+    <string name="settings_flash_series_summary">Activates the flash for a second to show that a picture has been taken. This applies only to the series mode.</string>
 
     <!-- DebugSettingsFragment -->
     <string name="debug_settings_title">Debug settings</string>
@@ -360,6 +362,15 @@
     <string name="settings_use_transkribus_test_server_title">Use Transkribus test server</string>
     <string name="settings_use_transkribus_test_server_summary">Please restart the app, if you change this. Warning: This setting should only be used for testing the app and the Transkribus server.</string>
 
+    <!-- ExifSettingsFragment -->
+    <string name="exif_settings_title">Exif settings</string>
+    <string name="exif_settings_summary">Default metadata values saved within images</string>
+    <string name="settings_exif_artist_title">Photographer</string>
+    <string name="settings_exif_dialog_artist_title">Name of the photographer</string>
+    <string name="settings_exif_artist_default_value"></string>
+    <string name="settings_exif_copyright_title">Copyright</string>
+    <string name="settings_exif_dialog_copyright_title">Copyright information</string>
+    <string name="settings_exif_copyright_default_value"></string>
 
     <string name="crop_view_title">Crop</string>
 

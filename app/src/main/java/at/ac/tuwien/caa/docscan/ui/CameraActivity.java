@@ -1133,6 +1133,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             @Override
             public void onShutter() {
                 mPaintView.showFlicker();
+
+                SharedPreferences sharedPref =
+                        PreferenceManager.getDefaultSharedPreferences(mContext);
+                boolean flashInSeriesMode = sharedPref.getBoolean(getResources().getString(
+                        R.string.key_flash_series_mode), false);
+
+                if (flashInSeriesMode && mIsSeriesMode)
+                    mCameraPreview.shortFlash();
             }
         };
 
@@ -2594,6 +2602,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //                Save the docscan information:
                 exif.setAttribute(ExifInterface.TAG_SOFTWARE, getString(R.string.app_name));
+
+//                Save the user defined exif tags:
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+                String artist = sharedPref.getString(getResources().getString(R.string.key_exif_artist), "");
+                if (!artist.isEmpty())
+                    exif.setAttribute(ExifInterface.TAG_ARTIST, artist);
+                String copyright = sharedPref.getString(getResources().getString(R.string.key_exif_copyright), "");
+                if (!copyright.isEmpty())
+                    exif.setAttribute(ExifInterface.TAG_COPYRIGHT, copyright);
 
                 // Save the GPS coordinates if available:
                 Location location = LocationHandler.getInstance(mContext).getLocation();

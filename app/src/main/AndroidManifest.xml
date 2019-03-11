@@ -131,7 +131,10 @@
             android:exported="false"
 		/>
 
-
+        <activity
+            android:name=".ui.settings.ExifPreferenceActivity"
+            android:exported="false"
+            />
 
         <activity
             android:name=".ui.LogActivity"

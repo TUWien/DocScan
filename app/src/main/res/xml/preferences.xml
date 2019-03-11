@@ -35,6 +35,21 @@
         android:summary="@string/settings_show_grid_summary"
         android:defaultValue="false" />
 
+    <CheckBoxPreference
+        android:key="@string/key_flash_series_mode"
+        android:title="@string/settings_flash_series_title"
+        android:summary="@string/settings_flash_series_summary"
+        android:defaultValue="false" />
+
+    <!-- opens another nested subscreen -->
+    <Preference
+        android:key="@string/key_exif_settings"
+        android:title="@string/exif_settings_title"
+        android:summary="@string/exif_settings_summary"
+        android:persistent="false">
+
+    </Preference>
+
     <!-- opens another nested subscreen -->
     <Preference
         android:key="@string/key_debug_settings"

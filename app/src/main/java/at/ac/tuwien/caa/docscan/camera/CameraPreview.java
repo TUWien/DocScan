@@ -68,6 +68,8 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
+import static android.hardware.Camera.Parameters.FLASH_MODE_OFF;
+import static android.hardware.Camera.Parameters.FLASH_MODE_TORCH;
 import static com.google.zxing.BarcodeFormat.QR_CODE;
 
 
@@ -123,7 +125,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         IPManager.getInstance().setCVCallback(mCVCallback);
 
 
-        mFlashMode = null;
+        mFlashMode = FLASH_MODE_OFF;
 
         initMultiFormatReader();
 
@@ -225,6 +227,28 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     private void cvManagerAction(byte[] pixels) {
 
         IPManager.getInstance().receiveFrame(pixels, mFrameWidth, mFrameHeight);
+
+    }
+
+    public void shortFlash() {
+
+        new Thread(new Runnable() {
+            public void run(){
+
+                Camera.Parameters params = mCamera.getParameters();
+                params.setFlashMode(FLASH_MODE_TORCH);
+                mCamera.setParameters(params);
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                params.setFlashMode(mFlashMode);
+                mCamera.setParameters(params);
+
+            }
+        }).start();
 
     }
 
