@@ -40,6 +40,9 @@ public class PageDetector {
 
         Mat inputMat = Imgcodecs.imread(fileName);
 
+        if (inputMat.empty())
+            return null;
+
         Mat mg = new Mat();
         Imgproc.cvtColor(inputMat, mg, Imgproc.COLOR_RGBA2RGB);
 

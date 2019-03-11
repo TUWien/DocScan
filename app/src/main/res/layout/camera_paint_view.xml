@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -43,6 +44,43 @@
                 android:layout_width="match_parent"
                 android:background="@android:color/transparent"/>
 
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="60dp"
+                android:layout_gravity="center_horizontal"
+                >
+
+                <TextView
+                    android:id="@+id/lock_exposure_text_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="invisible"
+                    android:padding="3dp"
+                    android:drawableLeft="@drawable/ic_lock_outline_white_24dp"
+                    android:drawablePadding="3dp"
+                    android:text="Locked auto-exposure"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:background="@color/debug_view_bg_color"
+                    />
+
+                <TextView
+                    android:id="@+id/unlock_exposure_text_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="invisible"
+                    android:padding="3dp"
+                    android:drawableLeft="@drawable/ic_unlock_open_black_24dp"
+                    android:drawablePadding="3dp"
+                    android:text="Unlocked auto-exposure"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:background="@color/debug_view_bg_color"
+                    />
+
+            </FrameLayout>
+
             <TextView
                 android:id="@+id/counter_view"
                 android:layout_width="wrap_content"
@@ -62,6 +100,7 @@
                     android:id="@+id/instruction_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:padding="3dp"
                     android:textColor="@color/white"
                     android:background="@color/debug_view_bg_color"
                     android:textSize="16sp"
@@ -78,6 +117,10 @@
                     android:backgroundTint="@color/shoot_button_color"
                     android:text="@string/force_shoot_button_text"/>
 
+
+
+                    android:text="@string/force_shoot_button_text"/>
+                <!--android:backgroundTint="@color/shoot_button_color"-->
                 <!--app:backgroundTint="@color/colorAccent"-->
                 <!--android:background="@color/shoot_button_color"-->
 

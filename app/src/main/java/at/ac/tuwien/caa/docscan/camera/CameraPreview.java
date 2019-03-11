@@ -24,6 +24,7 @@
 package at.ac.tuwien.caa.docscan.camera;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -49,6 +50,7 @@ import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
+import java.security.Policy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -59,9 +61,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
+import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 import static com.google.zxing.BarcodeFormat.QR_CODE;
@@ -278,6 +282,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onMeasuredDimensionChange(int width, int height);
         void onFrameDimensionChange(int width, int height, int cameraOrientation);
         void onFlashModesFound(List<String> modes);
+        void onExposureLockFound(boolean isSupported);
+        void onWhiteBalanceFound(List<String> whiteBalances);
         void onFocusTouch(PointF point);
         void onFocusTouchSuccess();
 
@@ -662,12 +668,14 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mFlashMode != null)
             params.setFlashMode(mFlashMode);
 
+//        params.setAutoExposureLock(true);
         mCamera.setParameters(params);
 
         try {
 
             mCamera.setPreviewDisplay(mHolder);
             mCamera.setPreviewCallback(this);
+
             mCamera.startPreview();
 
             if (params.getFocusMode() == Camera.Parameters.FOCUS_MODE_AUTO) {
@@ -728,7 +736,54 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // Tell the dependent Activity that the frame dimension (might have) change:
         mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
 
+//        Tell the activity if the auto exposure can be locked:
+        mCameraPreviewCallback.onExposureLockFound(params.isAutoExposureLockSupported());
+//        Tell the activity how we can control the white balance:
+        mCameraPreviewCallback.onWhiteBalanceFound(params.getSupportedWhiteBalance());
 
+    }
+
+    public void lockExposure(boolean lock) {
+
+        if (mCamera != null) {
+            Camera.Parameters params = mCamera.getParameters();
+            if (params.isAutoExposureLockSupported()) {
+                params.setAutoExposureLock(lock);
+                mCamera.setParameters(params);
+            }
+        }
+
+    }
+
+    public void lockWhiteBalance(boolean lock) {
+
+        if (mCamera != null) {
+            Camera.Parameters params = mCamera.getParameters();
+            if (params.isAutoExposureLockSupported()) {
+                params.setAutoWhiteBalanceLock(lock);
+                mCamera.setParameters(params);
+            }
+        }
+
+    }
+//    public void setExposureCompensation(int value) {
+//
+//        if (mCamera != null) {
+//            Camera.Parameters params = mCamera.getParameters();
+//            params.setExposureCompensation(value);
+//            params.setAutoExposureLock(true);
+//            mCamera.setParameters(params);
+//        }
+//
+//    }
+
+    public void setWhiteBalance(String value) {
+
+        if (mCamera != null) {
+            Camera.Parameters params = mCamera.getParameters();
+            params.setWhiteBalance(value);
+            mCamera.setParameters(params);
+        }
     }
 
     private void useAutoFocus(Camera.Parameters params) {

@@ -51,6 +51,9 @@
     <string name="force_shoot_button_text">Shoot anyway</string>
     <string name="camera_document_hint_title">Tip for documents</string>
     <string name="camera_document_hint_msg">The document title is shown at the top and you can manipulate documents by clicking on the folder icon next to it.</string>
+    <string name="camera_lock_exposure_title">Locking exposure</string>
+    <string name="camera_lock_exposure_msg">This locks the current exposure and white balance. Please note that we cannot lock these values, after you leave the camera view.</string>
+    <string name="do_not_show_again_text">Do not show this message again.</string>
     <!-- Just used for debugging: -->
 
 
@@ -124,6 +127,11 @@
     <string name="flash_torch_mode">Torch</string>
 
     <string name="upload_item">Upload</string>
+    <string name="lock_exposure_item">Lock exposure and white balance</string>
+    <string name="unlock_exposure_item">Unlock exposure and white balance</string>
+    <string name="white_balance_auto_text">Auto</string>
+    <string name="white_balance_text">Set white balance</string>
+    <string name="white_balance_sunny_text">Daylight</string>
 
     <string name="series_create">New document</string>
     <string name="series_edit">Edit document</string>

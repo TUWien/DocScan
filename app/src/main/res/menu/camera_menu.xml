@@ -44,8 +44,38 @@
         android:visible="true"
         app:showAsAction="always"
         android:onClick="startUploadActivity"
-
         />
+    <item
+        android:id="@+id/lock_exposure_item"
+        android:title="@string/lock_exposure_item"
+        android:visible="true"
+        app:showAsAction="never"
+        android:onClick="lockExposure"
+        />
+    <item
+        android:id="@+id/unlock_exposure_item"
+        android:title="@string/unlock_exposure_item"
+        android:visible="false"
+        app:showAsAction="never"
+        android:onClick="unlockExposure"
+        />
+    <item
+        android:id="@+id/white_balance_item"
+        android:title="@string/white_balance_text"
+        android:visible="true"
+        app:showAsAction="never"
+
+        >
+        <menu></menu>
+    </item>
+    <!--<item-->
+        <!--android:id="@+id/white_balance_sunny_item"-->
+        <!--android:title="@string/white_balance_sunny_text"-->
+        <!--android:visible="true"-->
+        <!--app:showAsAction="never"-->
+        <!--android:onClick="startUploadActivity"-->
+        <!--/>-->
+
 
     <!--// we put the overflow items into a group to make it easy to hide/show the items at once:-->
     <!--<group-->

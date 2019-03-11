@@ -260,6 +260,9 @@ public class UploadService extends JobService implements
                 "handleRestError: RestRequest: " + request);
         Log.d(CLASS_NAME, "handleRestError: RestRequest: " + request);
 
+        if (error == null)
+            return;
+
 //        Log error.getMessage: (but this is usually null)
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                 "handleRestError: error.getMessage: " + error.getMessage());
