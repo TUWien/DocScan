@@ -22,6 +22,12 @@
         android:defaultValue="false" />
 
     <CheckBoxPreference
+        android:key="@string/key_hud_enabled"
+        android:title="@string/settings_hud_title"
+        android:summary="@string/settings_hud_summary"
+        android:defaultValue="false" />
+
+    <CheckBoxPreference
         android:key="@string/key_use_test_server"
         android:title="@string/settings_use_transkribus_test_server_title"
         android:summary="@string/settings_use_transkribus_test_server_summary"

@@ -17,9 +17,10 @@
             android:layout_height="wrap_content">
 
             <at.ac.tuwien.caa.docscan.camera.CameraPaintLayout
+                android:id="@+id/camera_paint_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/camera_paint_layout">
+                >
 
                     <at.ac.tuwien.caa.docscan.camera.CameraPreview
                         android:id="@+id/camera_view"
@@ -42,7 +43,16 @@
                 android:id="@+id/bugfixview"
                 android:layout_height="match_parent"
                 android:layout_width="match_parent"
-                android:background="@android:color/transparent"/>
+                android:background="@android:color/transparent" />
+
+            <android.support.v7.widget.AppCompatImageButton
+                android:id="@+id/hud_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="56dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:background="@color/debug_view_bg_color"
+                app:srcCompat="@drawable/ic_flip_black_24dp" />
 
             <FrameLayout
                 android:layout_width="wrap_content"

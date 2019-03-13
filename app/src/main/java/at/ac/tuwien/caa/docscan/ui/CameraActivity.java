@@ -918,9 +918,66 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         updatePhotoButtonIcon();
         initCancelQRButton();
         initForceShootButton();
+        initHudButton();
 
     }
 
+    private void initHudButton() {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean showHudButton = sharedPref.getBoolean(getResources().getString(R.string.key_hud_enabled), false);
+
+
+        AppCompatImageButton hudButton = findViewById(R.id.hud_button);
+        if (!showHudButton)
+            hudButton.setVisibility(View.INVISIBLE);
+        else {
+            hudButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    mirrorScreen(!isScreenMirrored());
+
+                    //                View mainFrame = findViewById(R.id.main_frame_layout);
+                    //                View cameraView = findViewById(R.id.camera_paint_layout);
+                    //                if (mainFrame.getScaleY() == -1.f) {
+                    //                    cameraView.setScaleY(1.f);
+                    //                    mainFrame.setScaleY(1.f);
+                    //                }
+                    //                else {
+                    //                    cameraView.setScaleY(-1.f);
+                    //                    mainFrame.setScaleY(-1.f);
+                    //                }
+                }
+            });
+        }
+    }
+
+    /**
+     * Returns true if the screen is mirrored on the y-axes.
+     * @return
+     */
+    private boolean isScreenMirrored() {
+
+        return findViewById(R.id.main_frame_layout).getScaleY() == -1.f;
+
+    }
+
+    /**
+     * Mirrors the screen on the y-axes.
+     */
+    private void mirrorScreen(boolean mirror) {
+
+        float scale;
+        if (mirror)
+            scale = -1.f;
+        else
+            scale = 1.f;
+
+        View mainFrame = findViewById(R.id.main_frame_layout);
+        mainFrame.setScaleY(scale);
+
+    }
 
 
     private void initForceShootButton() {
@@ -1308,15 +1365,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mCameraPreview != null)
             mCameraPreview.displayRotated();
 
+//        Rotating a mirrored screen causes some layout errors, so we de-mirror it before:
+        if (isScreenMirrored())
+            mirrorScreen(false);
+
         // Change the layout dynamically: Remove the current camera_controls_layout and add a new
         // one, which is appropriate for the orientation (portrait or landscape xml's).
         ViewGroup appRoot = findViewById(R.id.main_frame_layout);
         if (appRoot == null)
             return;
-
-//        This is for the HUD rotation:
-//        View v = findViewById(R.id.main_frame_layout);
-//        v.setScaleY(-1.f);
 
         View f = findViewById(R.id.camera_controls_layout);
         if (f == null)

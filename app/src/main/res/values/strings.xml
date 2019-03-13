@@ -361,6 +361,8 @@
     <string name="settings_show_advanced_qr_code_checkbox_summary">Show extra fields found in the QR code. Warning: These fields are not saved yet and not used in Transkribus!</string>
     <string name="settings_use_transkribus_test_server_title">Use Transkribus test server</string>
     <string name="settings_use_transkribus_test_server_summary">Please restart the app, if you change this. Warning: This setting should only be used for testing the app and the Transkribus server.</string>
+    <string name="settings_hud_title">Show HUD button</string>
+    <string name="settings_hud_summary">Shows a button in the camera view for mirroring the screen. This is useful if you use a mirror or a Head Up Display (HUD) with your ScanTent.</string>
 
     <!-- ExifSettingsFragment -->
     <string name="exif_settings_title">Exif settings</string>

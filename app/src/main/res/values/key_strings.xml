@@ -21,6 +21,7 @@
     <string name="key_use_test_server">KEY_USE_DEBUG_SERVER</string>
     <string name="key_exif_artist">KEY_EXIF_ARTIST</string>
     <string name="key_exif_copyright">KEY_EXIF_COPYRIGHT</string>
+    <string name="key_hud_enabled">KEY_HUD_ENABLED</string>
 
 
 </resources>

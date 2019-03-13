@@ -386,6 +386,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.release();        // release the camera for other applications
             mCamera = null;
         }
+
     }
 
     public void pause() {
