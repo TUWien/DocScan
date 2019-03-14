@@ -21,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 
 import org.tensorflow.lite.Interpreter;
 
@@ -31,27 +30,39 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
  *   Created by Matthias Wödlinger on 14.02.2019
  */
 
+/**
+ *  This class can be used to apply the page-split trained version of dhSegment (https://arxiv.org/abs/1804.10371)
+ *  to an image file. The constructor will look for a model named MODEL_NAME.tflite in the assets folder.
+ *  After initialization the model can be applied to a bitmap with {@link #applyPageSplit(Uri, Context)}.
+ */
 public class PageSplit {
 
-
-    /** Name of the model file stored in Assets. */
-    private static final String MODEL_NAME = "ps_1_from_resized_images_output";
-    private static final String MODEL_PATH = MODEL_NAME + ".tflite";
-
-    /** Folder where for output */
-    private static final String FOLDER_NAME = "PageSplit";
-
-    /** Log TAG */
     public static final String TAG = "PageSplit";
 
-    /** TfLite model only works for fixed input dimension. Input will be resized. */
-    static final int DIM_IMG_SIZE_X = 300;
-    static final int DIM_IMG_SIZE_Y = 300;
+    /** Name of the model file stored in Assets. */
+    private static final String MODEL_NAME = "mobilenet_1103_1733_from_resized_images_output";
+    private static final String MODEL_PATH = MODEL_NAME + ".tflite";
+
+    /** Output folder */
+    private static final String FOLDER_NAME = "PageSplit";
+
+    /** TfLite model only works for fixed input dimension.
+     *  The input will be resized internally. */
+    static final int DIM_IMG_SIZE_X = 224;
+    static final int DIM_IMG_SIZE_Y = 224;
 
     /** An instance of the TfLite Interpreter */
     private Interpreter mTflite;
 
-    /** Initializes the PageSplit model */
+
+
+    /**
+     *  Initializes the tensorflow-lite model.
+     *
+     *  @param  mContext ... the current context.
+     *  @throws IOException if the model can not be opened.
+     *          It will look for a model named MODEL_NAME.tflite in the assets folder.
+     */
     public PageSplit(Context mContext) throws IOException {
 
         long startTime = SystemClock.uptimeMillis();
@@ -60,6 +71,19 @@ public class PageSplit {
         Log.d(TAG, "Created a Tensorflow Lite model in " + Long.toString((endTime - startTime)) + "ms");
     }
 
+    /**
+     * Applies the page split model to a saved bitmap.
+     * The model produces three bitmaps:    - The output mask of the page split model
+     *                                      - The input bitmap
+     *                                      - An overlay of the output mask and the input bitmap.
+     * The bitmaps will be saved in FOLDER_NAME and are visible in the gallery.
+     *
+     * @param   uri ... the Uri of the bitmap file.
+     * @param   mContext ... the current context. Will be used to access the assets folder.
+     * @return  returns 1 if the tflite model has not been initialized yet.
+     *          Returns 0 after successful run.
+     * @throws  IOException if there is a problem loading the bitmap.
+     */
     public int applyPageSplit(Uri uri, Context mContext) throws IOException {
 
         if (mTflite == null) {
@@ -140,13 +164,11 @@ public class PageSplit {
         paint.setXfermode(new PorterDuffXfermode(android.graphics.PorterDuff.Mode.SCREEN));
         inOutOverlay.drawBitmap(outBitmap, 0, 0, paint);
 
-
-
         final String filename = MODEL_NAME + ".jpg";
 
         saveBitmap(outBitmap, filename, mContext);
         saveBitmap(overlayBitmap, "overlay.jpg", mContext);
-        saveBitmap(inBitmap, "inBitmap.jpg", mContext);
+//        saveBitmap(inBitmap, "inBitmap.jpg", mContext);
 
         endTime = SystemClock.uptimeMillis();
         Log.d(TAG, "Bitmap creation and save in gallery took " + Long.toString((endTime - startTime)) + "ms");
@@ -198,7 +220,9 @@ public class PageSplit {
         return 0;
     }
 
-    /** Closes tflite to release resources. */
+    /**
+     * Closes tflite to release resources.
+     */
     public void close() {
         mTflite.close();
         mTflite = null;
