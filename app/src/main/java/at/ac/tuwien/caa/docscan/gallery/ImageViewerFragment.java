@@ -162,10 +162,12 @@ public class ImageViewerFragment extends Fragment {
 
             if (!PageDetector.isCropped(mFileName)) {
 
-                ArrayList<PointF> points =
+                PageDetector.PageFocusResult result =
                         PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth);
+//                ArrayList<PointF> points =
+//                        PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth).getPoints();
 
-                mImageView.setPoints(points);
+                mImageView.setPoints(result.getPoints(), result.isFocused());
 
 //                ArrayList<PointF> outerPoints = PageDetector.getParallelPoints(points, mFileName);
 //                mImageView.setPoints(points, outerPoints);

@@ -10,6 +10,7 @@ public class Page {
 
     private File mFile;
     private String mTitle;
+    private boolean mIsFocused = true;
 
     public Page() {
 
@@ -32,6 +33,14 @@ public class Page {
 
         return true;
 
+    }
+
+    public boolean isFocused() {
+        return mIsFocused;
+    }
+
+    public void setIsFocused(boolean isFocused) {
+        mIsFocused = isFocused;
     }
 
     public File getFile() {

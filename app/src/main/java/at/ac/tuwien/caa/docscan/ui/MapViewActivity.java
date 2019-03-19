@@ -248,7 +248,7 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
             String fileName = strings[0];
 
-            ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
+            ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName).getPoints();
 
 //            Save the file: We still need the original image at this point, so save it as a temp file:
             File newFile = getTempFileName(fileName);

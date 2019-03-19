@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
@@ -22,6 +23,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -87,11 +89,51 @@ public class GalleryActivity extends AppCompatActivity implements
         if (mDocument != null) {
             initAdapter();
             initToolbar();
+            checkFocus();
         }
         else
             Helper.crashlyticsLog(CLASS_NAME, "onCreate", "mDocument == null");
     }
 
+    /**
+     * Checks if the document is focused and shows a snackbar if not.
+     */
+    private void checkFocus() {
+
+        if (!Helper.isDocumentFocused(mDocument)) {
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.gallery_images_recyclerview),
+                    R.string.gallery_unfocused_snackbar_text, Snackbar.LENGTH_LONG);
+            snackbar.setAction(R.string.gallery_unfocused_info,
+                    new InfoButtonListener(this));
+            snackbar.show();
+        }
+
+    }
+
+    public class InfoButtonListener implements View.OnClickListener{
+
+        AlertDialog mAlertDialog;
+
+        public InfoButtonListener(Context context) {
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+            // set dialog message
+            alertDialogBuilder
+                    .setTitle(R.string.gallery_unfocused_title)
+                    .setPositiveButton("OK", null)
+                    .setMessage(R.string.gallery_unfocused_text);
+            // create alert dialog
+            mAlertDialog = alertDialogBuilder.create();
+
+        }
+
+        @Override
+        public void onClick(View v) {
+
+            mAlertDialog.show();
+
+        }
+    }
 
     @Override
     protected void onResume() {

@@ -44,6 +44,16 @@ public class DocumentStorage {
 
     }
 
+    public void setPageAsUnsharp(String fileName) {
+
+        for (Document document : mDocuments) {
+            int docIdx = document.getFileNames().indexOf(fileName);
+            if (docIdx != -1)
+                document.getPages().get(docIdx).setIsFocused(false);
+        }
+
+    }
+
     public void setTitle(String title) {
 
         Log.d(CLASS_NAME, "setTitle: " + title);

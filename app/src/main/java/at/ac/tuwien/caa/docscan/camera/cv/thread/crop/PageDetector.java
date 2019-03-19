@@ -18,11 +18,16 @@ import java.util.ArrayList;
 import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
+import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 
 public class PageDetector {
 
     private static final String BORDER_COORDS_PREFIX = "<Border><Coords points=\"";
-    private static final String BORDER_COORDS_POSTFIX = "\"/></Border>";
+    private static final String UNFOCUSED_TAG = "<Focused value=\"false\"/>";
+    private static final String BORDER_COORDS_POSTFIX_1 = "\"/>";
+    private static final String BORDER_COORDS_POSTFIX_2 = "</Border>";
+//    private static final String BORDER_COORDS_POSTFIX = "\"/></Border>";
     private static final String CLASS_TAG = "PageDetector";
     private static final String CROPPING_PREFIX = "<Cropping applied=\"true\"/>";
 
@@ -62,15 +67,83 @@ public class PageDetector {
 
     }
 
+    public static PageFocusResult findRectAndFocus(String fileName) {
+
+        Log.d(CLASS_TAG, "findRectAndFocus");
+
+        if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
+            Log.d(CLASS_TAG, "findRect: you should not perform this on the main thread!");
+        }
+
+        Mat inputMat = Imgcodecs.imread(fileName);
+
+//TOD: uncomment:
+        if (inputMat.empty())
+            return null;
+
+        Mat mg = new Mat();
+        Imgproc.cvtColor(inputMat, mg, Imgproc.COLOR_RGBA2RGB);
+
+//        Resize the image:
+        NativeWrapper.resize(mg);
+
+        DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mg);
+
+        PageFocusResult result = null;
+
+        if (polyRects != null && polyRects.length > 0 && polyRects[0] != null)  {
+            ArrayList<PointF> points = normPoints(polyRects[0], mg.width(), mg.height());
+            Patch[] patches = NativeWrapper.getFocusMeasures(mg);
+            boolean isSharp = isSharp(polyRects[0], patches);
+            result = new PageFocusResult(points, isSharp);
+        }
+
+//
+////        Log.d(CLASS_TAG, "issharp: " + isSharp);
+//
+//        if (polyRects.length > 0 && polyRects[0] != null) {
+////            result = normPoints(polyRects[0], mg.width(), mg.height());
+//        }
+
+        mg.release();
+
+        return result;
+
+
+    }
+
+    private static boolean isSharp(DkPolyRect polyRect, Patch[] patches) {
+
+        int sharpCnt = 0;
+        int unsharpCnt = 0;
+
+        for (Patch patch : patches) {
+            if (polyRect != null) {
+                if (patch != null  && patch.getPoint() != null
+                        && patch.getIsForeGround() && polyRect.isInside(patch.getPoint())) {
+                    if (patch.getIsSharp())
+                        sharpCnt++;
+                    else
+                        unsharpCnt++;
+                }
+            }
+        }
+
+        return Math.round(((float) sharpCnt / (sharpCnt + unsharpCnt)) * 100) >= 50;
+
+
+    }
+
     public static void rotate90Degrees(String fileName) {
 
-        ArrayList<PointF> points = getNormedCropPoints(fileName);
-        for (PointF point : points) {
+        PageFocusResult result = getNormedCropPoints(fileName);
+//        ArrayList<PointF> points = getNormedCropPoints(fileName);
+        for (PointF point : result.getPoints()) {
             rotateNormedPoint(point, 90);
         }
 
         try {
-            savePointsToExif(fileName, points);
+            savePointsToExif(fileName, result.getPoints(), result.isFocused());
         } catch (IOException e) {
             Crashlytics.logException(e);
             e.printStackTrace();
@@ -128,12 +201,14 @@ public class PageDetector {
 
     }
 
-    public static void savePointsToExif(String fileName, ArrayList<PointF> points) throws IOException {
+    public static void savePointsToExif(String fileName, ArrayList<PointF> points, boolean isFocused)
+            throws IOException {
+
 
         ExifInterface exif = new ExifInterface(fileName);
         // Save the coordinates of the page detection:
         if (points != null) {
-            String coordString = getCoordString(points);
+            String coordString = getCoordString(points, isFocused);
             if (coordString != null) {
                 exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
                 exif.saveAttributes();
@@ -151,7 +226,7 @@ public class PageDetector {
      * @param points
      * @return
      */
-    private static String getCoordString(ArrayList<PointF> points) {
+    private static String getCoordString(ArrayList<PointF> points, boolean isFocused) {
 
         if (points == null)
             return null;
@@ -163,24 +238,39 @@ public class PageDetector {
 
         int idx = 0;
         for (PointF point : points) {
+
             result += point.x + "," + point.y;
             if (idx < 3)
                 result += " ";
             idx++;
         }
 
-        result += BORDER_COORDS_POSTFIX;
+        result += BORDER_COORDS_POSTFIX_1;
+        if (!isFocused)
+            result += UNFOCUSED_TAG;
+        result += BORDER_COORDS_POSTFIX_2;
 
         return result;
     }
 
 
-    public static ArrayList<PointF> getScaledCropPoints(String fileName, int width, int height) {
+//    public static ArrayList<PointF> getScaledCropPoints(String fileName, int width, int height) {
+//
+////        ArrayList<PointF> points = getNormedCropPoints(fileName);
+//        PageFocusResult result = getNormedCropPoints(fileName);
+//        scalePoints(result.getPoints(), width, height);
+//
+//        return result.getPoints();
+//
+//    }
 
-        ArrayList<PointF> points = getNormedCropPoints(fileName);
-        scalePoints(points, width, height);
+    public static PageFocusResult getScaledCropPoints(String fileName, int width, int height) {
 
-        return points;
+//        ArrayList<PointF> points = getNormedCropPoints(fileName);
+        PageFocusResult result = getNormedCropPoints(fileName);
+        scalePoints(result.getPoints(), width, height);
+
+        return result;
 
     }
 
@@ -276,7 +366,7 @@ public class PageDetector {
      * the attribute is correctly formatted according to the prima PAGE XML definition.
      * @return
      */
-    public static ArrayList<PointF> getNormedCropPoints(String fileName) {
+    public static PageFocusResult getNormedCropPoints(String fileName) {
 
         try {
             ExifInterface exif = new ExifInterface(fileName);
@@ -284,9 +374,10 @@ public class PageDetector {
             if (coordString != null) {
 //  Take care that the string is well formed:
                 if (coordString.startsWith(BORDER_COORDS_PREFIX) &&
-                        coordString.endsWith(BORDER_COORDS_POSTFIX)) {
+                        coordString.endsWith(BORDER_COORDS_POSTFIX_2)) {
                     int idxStart = BORDER_COORDS_PREFIX.length();
-                    int idxEnd = coordString.length() - BORDER_COORDS_POSTFIX.length();
+                    int idxEnd = coordString.indexOf(BORDER_COORDS_POSTFIX_1);
+//                    int idxEnd = coordString.length() - BORDER_COORDS_POSTFIX_1.length();
                     String coords = coordString.substring(idxStart, idxEnd);
 
                     String[] coordPairs = coords.split(" ");
@@ -299,7 +390,9 @@ public class PageDetector {
                         points.add(new PointF(x, y));
                     }
 
-                    return points;
+                    boolean isFocused = !coordString.contains(UNFOCUSED_TAG);
+
+                    return new PageFocusResult(points, isFocused);
 
                 }
 
@@ -310,7 +403,7 @@ public class PageDetector {
         }
 
 //        If no point set is found use the entire image dimension:
-        return getNormedDefaultPoints();
+        return new PageFocusResult(getNormedDefaultPoints(), true);
 
     }
 
@@ -375,6 +468,31 @@ public class PageDetector {
         }
 
         return false;
+
+    }
+
+    public static class PageFocusResult {
+
+        private ArrayList<PointF> mPoints;
+        private boolean mIsFocused;
+
+        public PageFocusResult(ArrayList<PointF> points) {
+            mPoints = points;
+            mIsFocused = true;
+        }
+
+        public PageFocusResult(ArrayList<PointF> points, boolean isFocused) {
+            mPoints = points;
+            mIsFocused = isFocused;
+        }
+
+        public boolean isFocused() {
+            return mIsFocused;
+        }
+
+        public ArrayList<PointF> getPoints() {
+            return mPoints;
+        }
 
     }
 

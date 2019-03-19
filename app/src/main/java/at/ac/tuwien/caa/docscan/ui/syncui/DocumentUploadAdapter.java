@@ -22,6 +22,8 @@ import java.util.List;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 
 /**
@@ -109,11 +111,27 @@ public class DocumentUploadAdapter extends DocumentAdapter {
             else
                 iconView.setImageResource(R.drawable.ic_cloud_queue_black_24dp);
 
+//            Check if we have some unfocused images in the document:
+            if (!Helper.isDocumentFocused(document) && !document.isCropped()) {
+                TextView textView = convertView.findViewById(R.id.layout_listview_row_description);
+//                Write that the upload is pending:
+                if (textView != null) {
+                    textView.append(" " +
+                            mContext.getResources().getString(R.string.sync_not_focused_text));
+                    Drawable img = getContext().getResources().getDrawable(R.drawable.ic_warning_black_18dp);
+                    textView.setCompoundDrawablesWithIntrinsicBounds( img,null,null,null);
+                }
+            }
+
+
+
         }
 
         return convertView;
 
     }
+
+
 
 
 }

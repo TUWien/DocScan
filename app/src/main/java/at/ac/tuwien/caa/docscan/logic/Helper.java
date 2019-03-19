@@ -338,6 +338,17 @@ public class Helper {
 
     }
 
+    public static boolean isDocumentFocused(Document document) {
+
+        for (Page page : document.getPages()) {
+            if (!page.isFocused())
+                return false;
+        }
+
+        return true;
+
+    }
+
     public static boolean rotateExif(File outFile)  {
 
         final ExifInterface exif;
