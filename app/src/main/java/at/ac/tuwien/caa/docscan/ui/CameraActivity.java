@@ -98,6 +98,7 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -390,7 +391,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         updateThumbnail();
 
-        TextView lockExposureTextView = findViewById(R.id.lock_exposure_text_view);
+        LinearLayout lockExposureTextView = findViewById(R.id.lock_exposure_text_view);
         if (lockExposureTextView != null)
             lockExposureTextView.setVisibility(View.INVISIBLE);
 
@@ -1578,24 +1579,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         NavigationView mDrawer = findViewById(R.id.left_drawer);
         setupDrawerContent(mDrawer);
 
-        // Set the item text for the debug view in the naviation drawer:
-        if (mDrawer == null)
-            return;
-
-        Menu menu = mDrawer.getMenu();
-        if (menu == null)
-            return;
-
-        //        Deleted the overflow button, so I had to comment this out:
-//        MenuItem item = menu.findItem(R.id.debug_view_item);
-//        if (item == null)
-//            return;
-//
-//        if (mIsDebugViewEnabled)
-//            item.setTitle(R.string.hide_debug_view_text);
-//        else
-//            item.setTitle(R.string.show_debug_view_text);
-
     }
 
 
@@ -2162,7 +2145,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             if (mUnlockExposureMenuItem != null)
                 mUnlockExposureMenuItem.setVisible(true);
 
-            final TextView lockTextView = findViewById(R.id.lock_exposure_text_view);
+            final LinearLayout lockTextView = findViewById(R.id.lock_exposure_text_view);
             lockTextView.setAlpha(0f);
             lockTextView.setVisibility(View.VISIBLE);
             lockTextView.animate()
@@ -2183,10 +2166,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             if (mUnlockExposureMenuItem != null)
                 mUnlockExposureMenuItem.setVisible(false);
 
-            final TextView lockTextView = findViewById(R.id.lock_exposure_text_view);
+            final LinearLayout lockTextView = findViewById(R.id.lock_exposure_text_view);
             lockTextView.setVisibility(View.INVISIBLE);
 
-            final TextView unlockTextView = findViewById(R.id.unlock_exposure_text_view);
+            final LinearLayout unlockTextView = findViewById(R.id.unlock_exposure_text_view);
             unlockTextView.setAlpha(1f);
             unlockTextView.setVisibility(View.VISIBLE);
             unlockTextView.animate()
@@ -2234,6 +2217,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @SuppressWarnings("deprecation")
     private void setupFlashUI() {
 
+        if (mFlashModes == null)
+            return;
 
         if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO))
             mFlashPopupMenu.getMenu().findItem(R.id.flash_auto_item).setVisible(false);
@@ -2559,6 +2544,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             Uri uri = getFileName(mContext.getString(R.string.app_name));
             Log.d(CLASS_NAME, "FileSaver: uri " + uri);
+
+            if (uri == null)
+                return null;
 
             final File file = new File(uri.getPath());
 
