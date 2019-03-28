@@ -63,7 +63,7 @@ import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTE
 
 public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
 
-    private ViewPager mPager;
+    private HackyViewPager mPager;
     private PageSlideAdapter mPagerAdapter;
     private Page mPage;
     private Toolbar mToolbar;
