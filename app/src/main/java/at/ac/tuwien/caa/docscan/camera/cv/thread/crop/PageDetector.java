@@ -61,6 +61,7 @@ public class PageDetector {
             result = normPoints(polyRects[0], mg.width(), mg.height());
         }
 
+        inputMat.release();
         mg.release();
 
         return result;
@@ -105,6 +106,7 @@ public class PageDetector {
 ////            result = normPoints(polyRects[0], mg.width(), mg.height());
 //        }
 
+        inputMat.release();
         mg.release();
 
         return result;

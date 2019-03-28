@@ -27,20 +27,27 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.firebase.FirebaseApp;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
+import io.fabric.sdk.android.services.common.Crash;
 
 
 /**
@@ -52,6 +59,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 public class StartActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private AlertDialog mAlertDialog;
+    private static final String KEY_FIRST_START_DATE = "KEY_FIRST_START_DATE";
 //    private static final String CLASS_NAME = "StartActivity";
 
     @Override
@@ -60,6 +68,21 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.main_container_view);
+
+//        Log the first start of the app:
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        if (sharedPref != null) {
+            String firstStart = sharedPref.getString(KEY_FIRST_START_DATE, null);
+            if (firstStart == null) {
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+//                Log in the app:
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString(KEY_FIRST_START_DATE, timeStamp);
+                editor.commit();
+//                Save in Crashlytics:
+                Crashlytics.setString(KEY_FIRST_START_DATE, timeStamp);
+            }
+        }
 
         askForPermissions();
 

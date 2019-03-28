@@ -56,6 +56,8 @@ public class Mapper {
 
         }
 
+        transformedMat.release();
+
         return false;
 
     }

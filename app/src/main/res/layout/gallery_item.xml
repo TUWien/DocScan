@@ -31,10 +31,7 @@
             android:layout_height="match_parent"
             android:scaleType="fitCenter"
             android:background="@color/white"
-            android:src="@drawable/doc_scan_header_rotated"
             />
-
-    <!--android:src="@drawable/doc_scan_header_rotated"-->
 
         <CheckBox
             android:id="@+id/page_checkbox"
