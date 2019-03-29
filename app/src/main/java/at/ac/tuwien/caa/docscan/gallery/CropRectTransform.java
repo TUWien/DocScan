@@ -63,7 +63,7 @@ public class CropRectTransform extends BitmapTransformation {
                 original.getWidth(), original.getHeight());
 
         if (!pfResult.isFocused())
-            mQuadPaint.setColor(Color.RED);
+            mQuadPaint.setColor(Color.parseColor("#FF5722"));
         drawQuad(canvas, pfResult.getPoints(), mQuadPath, mQuadPaint);
 
 //        ArrayList<PointF> points = PageDetector.getScaledCropPoints(mFileName,

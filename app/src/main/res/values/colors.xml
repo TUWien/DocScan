@@ -27,6 +27,7 @@
     <color name="cross_color">#96ffaa00</color>
 
     <color name="hud_focus_sharp_rect_color">#a3a3</color>
+    <color name="hud_focus_unsharp_rect_color">#FF5722</color>
     <color name="hud_focus_unssharp_rect_color">#ad00</color>
 
     <color name="hud_state_rect_color">#11111111</color>

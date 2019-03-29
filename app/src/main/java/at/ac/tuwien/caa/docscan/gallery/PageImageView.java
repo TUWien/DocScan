@@ -65,7 +65,7 @@ public class PageImageView extends SubsamplingScaleImageView {
 
         mPoints = points;
         if (!isFocused)
-            mQuadPaint.setColor(Color.RED);
+            mQuadPaint.setColor(getResources().getColor(R.color.hud_focus_unsharp_rect_color));
 
         invalidate();
 
