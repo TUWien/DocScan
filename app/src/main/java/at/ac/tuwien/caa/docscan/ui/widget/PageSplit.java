@@ -21,10 +21,29 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 import org.tensorflow.lite.Interpreter;
 
 import at.ac.tuwien.caa.docscan.logic.Helper;
+
+import static org.opencv.android.Utils.bitmapToMat;
+import static org.opencv.android.Utils.matToBitmap;
+import static org.opencv.core.CvType.CV_8UC1;
 
 /**
  *   Created by Matthias Wödlinger on 14.02.2019
@@ -40,7 +59,7 @@ public class PageSplit {
     public static final String TAG = "PageSplit";
 
     /** Name of the model file stored in Assets. */
-    private static final String MODEL_NAME = "mobilenet_1103_1733_from_resized_images_output";
+    private static final String MODEL_NAME = "mobilenet2_2103_1256_from_resized_images_output";
     private static final String MODEL_PATH = MODEL_NAME + ".tflite";
 
     /** Output folder */
@@ -53,6 +72,8 @@ public class PageSplit {
 
     /** An instance of the TfLite Interpreter */
     private Interpreter mTflite;
+
+    private int counter;
 
 
 
@@ -70,6 +91,7 @@ public class PageSplit {
         long endTime = SystemClock.uptimeMillis();
         Log.d(TAG, "Created a Tensorflow Lite model in " + Long.toString((endTime - startTime)) + "ms");
     }
+
 
     /**
      * Applies the page split model to a saved bitmap.
@@ -95,23 +117,12 @@ public class PageSplit {
         Bitmap inBitmap = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), uri);
         inBitmap = Bitmap.createScaledBitmap(inBitmap, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, true);
 
-        // get bitmap metadata and rotate accordingly. PictureOut will be used for the overlay.
-        //The PageSplit model will be applied to inBitmap.
-        final ExifInterface exif = new ExifInterface(uri.getPath());
-        final int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-        final int rotationInDegrees = exifToDegrees(rotation);
-        Matrix PictureOutMatrix = new Matrix();
-        PictureOutMatrix.postRotate(rotationInDegrees);
-        Log.d(TAG, "rotated by " + rotationInDegrees + " degrees");
-        final Bitmap PictureOut = Bitmap.createBitmap(inBitmap, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, PictureOutMatrix, true);
+        final int rotationInDegrees = getExifAngle(uri);
+        Matrix inMatrix = new Matrix();
+        inMatrix.postRotate(rotationInDegrees+90); // The model needs the book rotated by 90°; TODO: find out why
+//        Log.d(TAG, "rotated by " + rotationInDegrees + " degrees");
+        inBitmap = Bitmap.createBitmap(inBitmap, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, inMatrix, true);
 
-        // The model needs the book rotated by 90°
-        Matrix inBitmapMatrix = new Matrix();
-        inBitmapMatrix.postRotate(90);
-        inBitmap = Bitmap.createBitmap(inBitmap, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, inBitmapMatrix, true);
-
-
-        long startTime = SystemClock.uptimeMillis();
 
         // The TfLite model needs a float array as input.
         // For alternatives see: https://www.tensorflow.org/lite/apis#running_a_model_2
@@ -125,55 +136,361 @@ public class PageSplit {
             }
         }
 
-        long endTime = SystemClock.uptimeMillis();
-        Log.d(TAG, "inBitmap -> inFloat took " + Long.toString((endTime - startTime)) + "ms");
-
         // The output of the model will be stored in outFloat
         float[][][][] outFloat = new float[1][DIM_IMG_SIZE_X][DIM_IMG_SIZE_Y][3];
 
         // Running the model
-        startTime = SystemClock.uptimeMillis();
+        long startTime = SystemClock.uptimeMillis();
         mTflite.run(inFloat, outFloat);
-        endTime = SystemClock.uptimeMillis();
+        long endTime = SystemClock.uptimeMillis();
         Log.d(TAG, "tflite.run took " + Long.toString((endTime - startTime)) + "ms");
 
-        startTime = SystemClock.uptimeMillis();
 
         // Create outBitmap and feed it with the pixels
         Bitmap outBitmap = Bitmap.createBitmap(DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, inBitmap.getConfig());
+        Mat pages = new Mat(DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, CV_8UC1);
+        Mat split = new Mat(DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, CV_8UC1);
+
         for (int x = 0; x < DIM_IMG_SIZE_X; ++x) {
             for (int y = 0; y < DIM_IMG_SIZE_Y; ++y) {
-                int c0 = (int) (255.0 * outFloat[0][x][y][0]);
-                int c1 = (int) (255.0 * outFloat[0][x][y][1]);
-                int c2 = (int) (255.0 * outFloat[0][x][y][2]);
-                outBitmap.setPixel(x, y, Color.argb(255, c0, c1, c2));
+                final int r = (int) (255.0 * outFloat[0][x][y][0]);
+                final int g = (int) (255.0 * outFloat[0][x][y][1]);
+                final int b = (int) (255.0 * outFloat[0][x][y][2]);
+                pages.put(DIM_IMG_SIZE_X-x, y, g);
+                split.put(DIM_IMG_SIZE_X-x, y, b);
+                outBitmap.setPixel(x, y, Color.argb(255, r, g, b));
             }
         }
+//        Rewrite for Bytebuffer:
+//        Mat outMat = new Mat(DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, CvType.CV_32FC3, outFloat);
+        // -----------------------------
 
-        // Rotate the output such that it fits the PictureOut Bitmap for the overlay
-        Matrix afterTfLiteMatrix = new Matrix();
-        afterTfLiteMatrix.postRotate(rotationInDegrees-90);
-        inBitmap = Bitmap.createBitmap(inBitmap, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, afterTfLiteMatrix, true);
-        outBitmap = Bitmap.createBitmap(outBitmap, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, afterTfLiteMatrix, true);
+        // Create binary mask ----------------------------------------------------------------------
+        Log.d(TAG, "Obtain contours for pages");
+        Mat pMask = applyThreshold(pages, -1);
+        pMask = bwClean(pMask, 5);
+        final List<MatOfPoint> pContours = findPolygonalRegions(pMask, 0.01);
+        if (pContours.isEmpty()) {
+            Log.e(TAG, "no contours for pages found");
+            return 1;
+        }
 
-        // Create the overlay
-        Bitmap overlayBitmap = Bitmap.createBitmap(DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, PictureOut.getConfig());
+        List<Point> pCorners = getCorners(pContours);
+
+
+
+        Log.d(TAG, "Obtain contours for split");
+        Mat sMask = applyThreshold(split, -1);
+        sMask = bwClean(sMask, 2);
+        final List<MatOfPoint> sContours = findPolygonalRegions(sMask, 0.001);
+        if (sContours.isEmpty()) {
+            Log.e(TAG, "no contours for split found");
+            return 1;
+        }
+
+        List<Point> sCorners = getCorners(sContours);
+
+        final double pMeanTop = (pCorners.get(0).y + pCorners.get(1).y)/2.0;
+        final double pMeanBottom = (pCorners.get(2).y + pCorners.get(3).y)/2.0;
+        final double sMeanTop = (sCorners.get(0).y + sCorners.get(1).y)/2.0;
+        final double sMeanBottom = (sCorners.get(2).y + sCorners.get(3).y)/2.0;
+
+        double lambda = 0;
+
+        if (Math.abs(pMeanTop-sMeanTop) < Math.abs(pMeanBottom-sMeanBottom)) {
+            final double sMeanX = (sCorners.get(0).x + sCorners.get(1).x)/2;
+            final Point left = pCorners.get(0);
+            final Point right = pCorners.get(1);
+            final Point direction = new Point(right.x-left.x, right.y-left.y);
+            Log.d(TAG, "mean:"+Double.toString(sMeanX));
+            Log.d(TAG, "Left: x: "+Double.toString(left.x)+" y: "+Double.toString(left.y));
+            Log.d(TAG, "Right: x: "+Double.toString(right.x)+" y: "+Double.toString(right.y));
+            Log.d(TAG, "dirX: "+Double.toString(direction.x)+" dirY: "+Double.toString(direction.y));
+
+            for (int i = 0; i < 100; ++i){
+                if ((left.x + lambda*direction.x) > sMeanX) {
+                    break;
+                }
+                lambda = ((double) i)/100;
+            }
+            Log.d(TAG, "lambda: "+Double.toString(lambda));
+
+        } else {
+            final double sMeanX = (sCorners.get(2).x + sCorners.get(3).x)/2;
+            final Point left = pCorners.get(3);
+            final Point right = pCorners.get(2);
+            final Point direction = new Point(right.x-left.x, right.y-left.y);
+            Log.d(TAG, "mean:"+Double.toString(sMeanX));
+            Log.d(TAG, "Left: x: "+Double.toString(left.x)+" y: "+Double.toString(left.y));
+            Log.d(TAG, "Right: x: "+Double.toString(right.x)+" y: "+Double.toString(right.y));
+            Log.d(TAG, "dirX: "+Double.toString(direction.x)+" dirY: "+Double.toString(direction.y));
+
+            for (int i = 0; i < 100; ++i){
+                if ((left.x + lambda*direction.x) > sMeanX) {
+                    break;
+                }
+                lambda = ((double) i)/100;
+            }
+            Log.d(TAG, "lambda: "+Double.toString(lambda));
+        }
+
+        final Point tLeft = pCorners.get(0);
+        final Point tRight = pCorners.get(1);
+        final Point tDirection = new Point(tRight.x-tLeft.x, tRight.y-tLeft.y);
+        final Point sTop = new Point(tLeft.x + lambda*tDirection.x, tLeft.y + lambda*tDirection.y);
+
+        final Point bLeft = pCorners.get(3);
+        final Point bRight = pCorners.get(2);
+        final Point bDirection = new Point(bRight.x-bLeft.x, bRight.y-bLeft.y);
+        final Point sBottom = new Point(bLeft.x + lambda*bDirection.x, bLeft.y + lambda*bDirection.y);
+
+
+//        FIT INTERPOLATED LINE
+//        Mat sepLine = new Mat();
+//        Imgproc.fitLine(sContours.get(0), sepLine, Imgproc.CV_DIST_L2, 0,0.01,0.01);
+
+//        FIT BOUNDING RECTANGLE
+//        RotatedRect pRect = Imgproc.minAreaRect(new MatOfPoint2f(pContours.get(0).toArray()));
+//        Point[] pPoints = new Point[4];
+//        pRect.points(pPoints);
+//
+//        RotatedRect sRect = Imgproc.minAreaRect(new MatOfPoint2f(sContours.get(0).toArray()));
+//        Point[] sPoints = new Point[4];
+//        sRect.points(sPoints);
+
+
+        // -----------------------------------------------------------------------------------------
+
+
+
+        // Draw contours ---------------------------------------------------------------------------
+        Bitmap contourOverlay = inBitmap.copy(inBitmap.getConfig(), true);
+        Mat tmpMat = new Mat();
+
+        Matrix overlayRotMatrix = new Matrix();
+        overlayRotMatrix.postRotate(-90);
+        contourOverlay = Bitmap.createBitmap(contourOverlay, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, overlayRotMatrix, true);
+
+
+
+        bitmapToMat(contourOverlay, tmpMat);
+        //fill mask with pages
+        tmpMat.copyTo(pMask, pMask);
+
+
+//        Imgproc.drawContours(tmpMat, pContours, -1, new Scalar(0,255,0));
+//        Imgproc.drawContours(tmpMat, sContours, -1, new Scalar(0,0,255));
+
+
+        for (int j = 0; j < pCorners.size(); ++j) {
+            Imgproc.circle(tmpMat, pCorners.get(j), 10, new Scalar(255,0,0),2);
+        }
+
+//        Imgproc.rectangle(tmpMat, pCorners.get(0),pCorners.get(2), new Scalar(0,255,0), 2);
+        Imgproc.rectangle(tmpMat, sTop, pCorners.get(3), new Scalar(0,255,0), 2);
+        Imgproc.rectangle(tmpMat, pCorners.get(1), sBottom, new Scalar(0,0,255), 2);
+
+//        for (int j = 0; j < 4; ++j) {
+////            Imgproc.line(tmpMat, pPoints[j], pPoints[(j+1) % 4], new Scalar(0,255,0));
+////            Imgproc.line(tmpMat, corners.get(j), corners.get((j+1) % 4), new Scalar(0,255,0));
+//            Imgproc.line(tmpMat, sPoints[j], sPoints[(j+1) % 4], new Scalar(0,0,255));
+//        }
+
+
+        Log.d(TAG, "contour image -> Mat");
+        matToBitmap(tmpMat, contourOverlay);
+
+
+        // draw masks
+        Log.d(TAG, "Convert mask to bitmap");
+        Bitmap pMaskBitmap = Bitmap.createBitmap(DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, inBitmap.getConfig());
+        matToBitmap(pMask, pMaskBitmap);
+
+        Bitmap sMaskBitmap = Bitmap.createBitmap(DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, inBitmap.getConfig());
+        matToBitmap(sMask, sMaskBitmap);
+        // -----------------------------------------------------------------------------------------
+
+
+        // Creates the overlay ---------------------------------------------------------------------
+        Bitmap overlayBitmap = Bitmap.createBitmap(DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, inBitmap.getConfig());
         Canvas inOutOverlay = new Canvas(overlayBitmap);
         Paint paint = new Paint();
-        inOutOverlay.drawBitmap(PictureOut, 0, 0, paint);
+        inOutOverlay.drawBitmap(inBitmap, 0, 0, paint);
         paint.setXfermode(new PorterDuffXfermode(android.graphics.PorterDuff.Mode.SCREEN));
         inOutOverlay.drawBitmap(outBitmap, 0, 0, paint);
 
+
+        overlayBitmap = Bitmap.createBitmap(overlayBitmap, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, overlayRotMatrix, true);
+        // -----------------------------------------------------------------------------------------
+
         final String filename = MODEL_NAME + ".jpg";
 
+        outBitmap = Bitmap.createBitmap(outBitmap, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, overlayRotMatrix, true);
         saveBitmap(outBitmap, filename, mContext);
-        saveBitmap(overlayBitmap, "overlay.jpg", mContext);
-//        saveBitmap(inBitmap, "inBitmap.jpg", mContext);
+        saveBitmap(contourOverlay, "Contours.jpg", mContext);
+        saveBitmap(overlayBitmap, "Overlay.jpg", mContext);
+        saveBitmap(pMaskBitmap, "Page_mask.jpg", mContext);
+        saveBitmap(sMaskBitmap, "Split_mask.jpg", mContext);
 
-        endTime = SystemClock.uptimeMillis();
-        Log.d(TAG, "Bitmap creation and save in gallery took " + Long.toString((endTime - startTime)) + "ms");
 
         return 0;
+    }
+
+    private List<Point> getCorners(List<MatOfPoint> contours) {
+        Log.d(TAG, "--- get Corners ---");
+        final double angleThreshold = 2*Math.PI/3; // 120 degrees
+//        Log.d(TAG,"threshold: "+Double.toString(angleThreshold));
+        final List<Point> pPolygonList = contours.get(0).toList();
+
+        Point p1 = pPolygonList.get(pPolygonList.size()-1);
+        Point p2 = pPolygonList.get(0);
+        Point p3;
+//        Log.d(TAG, "Polygon size: "+Integer.toString(pPolygonList.size()));
+
+        List<Point> cornerCandidates = new ArrayList<>();
+
+        for (int i = 0; i < pPolygonList.size(); ++i) {
+            if (i == pPolygonList.size()-1) {
+                p3 = pPolygonList.get(0);
+            } else {
+                p3 = pPolygonList.get(i+1);
+            }
+
+            //Calculate angle: compute p1-p2 and p3-p2 to obtain vector to the points p1,p3 from p2.
+            //then calculate the dot product and compute the angle with the arccos function.
+            //cos(alpha) = dot(v1,v3)/(length(v1)*length(v3))
+
+            final Point v1 = new Point(p1.x-p2.x, p1.y-p2.y);
+            final Point v3 = new Point(p3.x-p2.x, p3.y-p2.y);
+            final double l1 = Math.sqrt(Math.pow(v1.x,2) + Math.pow(v1.y,2));
+            final double l3 = Math.sqrt(Math.pow(v3.x,2) + Math.pow(v3.y,2));
+
+            final double alpha = Math.acos((v1.x*v3.x + v1.y*v3.y)/(l1*l3));
+
+            if (Math.abs(alpha) < angleThreshold) {
+                cornerCandidates.add(p2);
+            }
+
+            Log.d(TAG, "x:"+Double.toString(p2.x)+"y:"+Double.toString(p2.y)+ " and angle: "+Double.toString(alpha));
+            p1 = p2;
+            p2 = p3;
+        }
+
+        final Point c1 = new Point(0,0);
+        final Point c2 = new Point(DIM_IMG_SIZE_X,0);
+        final Point c3 = new Point(DIM_IMG_SIZE_X,DIM_IMG_SIZE_Y);
+        final Point c4 = new Point(0,DIM_IMG_SIZE_Y);
+        final List<Point> imageCorners = new ArrayList<Point>(Arrays.asList(c1,c2,c3,c4));
+
+        List<Point> corners = new ArrayList<>();
+
+        for (Point c: imageCorners) {
+            boolean first = true;
+            double distOld = DIM_IMG_SIZE_X+DIM_IMG_SIZE_Y;
+            for (Point cornerCandidate: cornerCandidates) {
+                double distNew = Math.sqrt(Math.pow(c.x-cornerCandidate.x,2) + Math.pow(c.y-cornerCandidate.y,2));
+                if (first) {
+                    corners.add(cornerCandidate);
+                    distOld = distNew;
+                    first = false;
+                } else if (distNew < distOld) {
+                    corners.remove(corners.size()-1);
+                    corners.add(cornerCandidate);
+                    distOld = distNew;
+                }
+            }
+        }
+
+        for (Point c: corners) {
+            p2 = c;
+            Log.d(TAG, "x:"+Double.toString(p2.x)+"y:"+Double.toString(p2.y));
+        }
+
+        return corners;
+    }
+
+    private List<MatOfPoint> findPolygonalRegions(Mat mask, double minArea) {
+        Log.d(TAG, "--- find Polygonal Regions ---");
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE );
+
+        Log.d(TAG, "remove small contours");
+        final double minA = minArea*DIM_IMG_SIZE_X*DIM_IMG_SIZE_Y;
+        for (int i = contours.size(); i > 0; --i) {
+            if (Imgproc.contourArea(contours.get(i-1)) < minA) {
+                contours.remove(contours.get(i-1));
+            }
+        }
+
+        Log.d(TAG, "sort "+ Integer.toString(contours.size())+" contours by area");
+        //sort by area: https://stackoverflow.com/questions/18939856/using-comparator-without-adding-class
+        Collections.sort(contours, new Comparator<MatOfPoint>() {
+            @Override
+            public int compare(MatOfPoint c1, MatOfPoint c2) {
+                return (int) (Imgproc.contourArea(c1) - Imgproc.contourArea(c2));
+            }
+        });
+
+
+        Log.d(TAG, "compute convex hull");
+        List<MatOfPoint> hulls = new ArrayList<MatOfPoint>(contours.size());
+        for (MatOfPoint c: contours) {
+            MatOfInt h = new MatOfInt();
+            Imgproc.convexHull(c, h);
+
+            MatOfPoint mopOut = new MatOfPoint();
+            mopOut.create((int)h.size().height,1, CvType.CV_32SC2);
+
+            for(int i = 0; i < h.size().height ; ++i)
+            {
+                int index = (int)h.get(i, 0)[0];
+                double[] point = new double[] {
+                        c.get(index, 0)[0], c.get(index, 0)[1]
+                };
+                mopOut.put(i, 0, point);
+            }
+            hulls.add(mopOut);
+        }
+
+        Log.d(TAG, "find polygon");
+        List<MatOfPoint> pApproxPolys = new ArrayList<MatOfPoint>();
+        for (MatOfPoint c: hulls) {
+            MatOfPoint2f pApproxPoly2f = new MatOfPoint2f();
+            Imgproc.approxPolyDP(new MatOfPoint2f(c.toArray()), pApproxPoly2f, 5, true);
+            MatOfPoint pApproxPoly = new MatOfPoint(pApproxPoly2f.toArray());
+            pApproxPolys.add(pApproxPoly);
+        }
+
+//        MatOfPoint pPolygon = pApproxPolys.get(0);
+
+        Log.d(TAG, "return");
+        return pApproxPolys;
+    }
+
+    private Mat bwClean(Mat mask, int size) {
+        final Mat kernel = new Mat(new Size(size,size), CV_8UC1, new Scalar(255));
+        Mat tmp = new Mat();
+        Mat out = new Mat();
+
+        Imgproc.morphologyEx(mask, tmp, Imgproc.MORPH_OPEN, kernel);
+        Imgproc.morphologyEx(tmp, out, Imgproc.MORPH_CLOSE, kernel);
+
+        return out;
+    }
+
+    private Mat applyThreshold(Mat img, int threshold) {
+        Mat mask = new Mat();
+
+        if (threshold < 0) {
+            Log.d(TAG, "threshold < 0");
+            Imgproc.threshold(img, mask, 0, 255, Imgproc.THRESH_BINARY + Imgproc.THRESH_OTSU);
+        } else {
+            Log.d(TAG, "threshold >= 0");
+            Imgproc.threshold(img, mask, 0, 255, Imgproc.THRESH_BINARY);
+        }
+
+        return mask;
     }
 
     /** Save Bitmap in seperate folder named FOLDER_NAME shown in gallery */
@@ -195,7 +512,7 @@ public class PageSplit {
             Log.e(TAG, "Failed to save the file");
         }
         mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(file)));
-        Log.d(TAG, "PageSplit outPut image saved under " + filename);
+        Log.d(TAG, "PageSplit output image saved under " + filename);
     }
 
     /** Memory-map the model file in Assets. */
@@ -209,15 +526,20 @@ public class PageSplit {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
     }
 
-    private static int exifToDegrees(int exifOrientation) {
+    private static int getExifAngle(Uri uri) throws IOException {
+        final ExifInterface exif = new ExifInterface(uri.getPath());
+        final int exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        int rotation = 0;
+
         if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
-            return 90;
+            rotation = 90;
         } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
-            return 180;
+            rotation =  180;
         } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {
-            return 270;
+            rotation =  270;
         }
-        return 0;
+
+        return rotation;
     }
 
     /**
