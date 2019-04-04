@@ -34,8 +34,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.View;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.firebase.FirebaseApp;
@@ -45,9 +43,7 @@ import java.util.Date;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
-import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
-import io.fabric.sdk.android.services.common.Crash;
 
 
 /**
@@ -60,7 +56,6 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 
     private AlertDialog mAlertDialog;
     private static final String KEY_FIRST_START_DATE = "KEY_FIRST_START_DATE";
-//    private static final String CLASS_NAME = "StartActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,13 +1,10 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
-import android.util.JsonReader;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,9 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.List;
 
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
@@ -52,9 +47,11 @@ public class DocumentStorage {
     public void setPageAsUnsharp(String fileName) {
 
         for (Document document : mDocuments) {
-            int docIdx = document.getFileNames().indexOf(fileName);
-            if (docIdx != -1)
-                document.getPages().get(docIdx).setIsFocused(false);
+            if (document != null) {
+                int docIdx = document.getFileNames().indexOf(fileName);
+                if (docIdx != -1)
+                    document.getPages().get(docIdx).setIsFocused(false);
+            }
         }
 
     }

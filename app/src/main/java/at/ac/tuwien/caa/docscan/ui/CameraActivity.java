@@ -20,28 +20,6 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
-/*********************************************************************************
- *  DocScan is a Android app for document scanning.
- *
- *  Author:         Fabian Hollaus, Florian Kleber, Markus Diem
- *  Organization:   TU Wien, Computer Vision Lab
- *  Date created:   21. July 2016
- *
- *  This file is part of DocScan.
- *
- *  DocScan is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU Lesser General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  DocScan is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
- *********************************************************************************/
 
 package at.ac.tuwien.caa.docscan.ui;
 
@@ -101,7 +79,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -574,7 +551,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         final SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.
                 getDefaultSharedPreferences(this);
         boolean showDialog = sharedPref.getBoolean(KEY_SHOW_EXPOSURE_LOCK_WARNING, true);
-
         if (!showDialog)
             return;
 
@@ -928,7 +904,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         boolean showHudButton = sharedPref.getBoolean(getResources().getString(R.string.key_hud_enabled), false);
 
-
         AppCompatImageButton hudButton = findViewById(R.id.hud_button);
         if (!showHudButton)
             hudButton.setVisibility(View.INVISIBLE);
@@ -936,19 +911,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             hudButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
                     mirrorScreen(!isScreenMirrored());
-
-                    //                View mainFrame = findViewById(R.id.main_frame_layout);
-                    //                View cameraView = findViewById(R.id.camera_paint_layout);
-                    //                if (mainFrame.getScaleY() == -1.f) {
-                    //                    cameraView.setScaleY(1.f);
-                    //                    mainFrame.setScaleY(1.f);
-                    //                }
-                    //                else {
-                    //                    cameraView.setScaleY(-1.f);
-                    //                    mainFrame.setScaleY(-1.f);
-                    //                }
                 }
             });
         }
@@ -979,7 +942,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mainFrame.setScaleY(scale);
 
     }
-
 
     private void initForceShootButton() {
 
@@ -2284,8 +2246,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 showControlsLayout(false);
                 mCVResult.clearResults();
                 mCameraPreview.startQrMode(true);
-//                String text = getString(R.string.instruction_searching_qr);
-//                setInstructionText(text);
 
                 IPManager.getInstance().setIsPaused(true);
                 return true;

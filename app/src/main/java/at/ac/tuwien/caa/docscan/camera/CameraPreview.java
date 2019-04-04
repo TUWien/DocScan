@@ -24,7 +24,6 @@
 package at.ac.tuwien.caa.docscan.camera;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -42,30 +41,21 @@ import com.crashlytics.android.Crashlytics;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
-import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.PlanarYUVLuminanceSource;
-import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
-import java.security.Policy;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
-import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 import static android.hardware.Camera.Parameters.FLASH_MODE_OFF;
@@ -235,7 +225,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         new Thread(new Runnable() {
             public void run(){
 
+                if (mCamera == null)
+                    return;
+
                 Camera.Parameters params = mCamera.getParameters();
+                if (params == null)
+                    return;
+
                 params.setFlashMode(FLASH_MODE_TORCH);
                 mCamera.setParameters(params);
 
@@ -386,7 +382,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.release();        // release the camera for other applications
             mCamera = null;
         }
-
     }
 
     public void pause() {
@@ -700,7 +695,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
             mCamera.setPreviewDisplay(mHolder);
             mCamera.setPreviewCallback(this);
-
             mCamera.startPreview();
 
             if (params.getFocusMode() == Camera.Parameters.FOCUS_MODE_AUTO) {
@@ -772,7 +766,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         if (mCamera != null) {
             Camera.Parameters params = mCamera.getParameters();
-            if (params.isAutoExposureLockSupported()) {
+            if (params != null && params.isAutoExposureLockSupported()) {
                 params.setAutoExposureLock(lock);
                 mCamera.setParameters(params);
             }
@@ -784,30 +778,23 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         if (mCamera != null) {
             Camera.Parameters params = mCamera.getParameters();
-            if (params.isAutoExposureLockSupported()) {
+            if (params != null && params.isAutoWhiteBalanceLockSupported()) {
                 params.setAutoWhiteBalanceLock(lock);
                 mCamera.setParameters(params);
             }
         }
 
     }
-//    public void setExposureCompensation(int value) {
-//
-//        if (mCamera != null) {
-//            Camera.Parameters params = mCamera.getParameters();
-//            params.setExposureCompensation(value);
-//            params.setAutoExposureLock(true);
-//            mCamera.setParameters(params);
-//        }
-//
-//    }
+
 
     public void setWhiteBalance(String value) {
 
         if (mCamera != null) {
             Camera.Parameters params = mCamera.getParameters();
-            params.setWhiteBalance(value);
-            mCamera.setParameters(params);
+            if (params != null) {
+                params.setWhiteBalance(value);
+                mCamera.setParameters(params);
+            }
         }
     }
 

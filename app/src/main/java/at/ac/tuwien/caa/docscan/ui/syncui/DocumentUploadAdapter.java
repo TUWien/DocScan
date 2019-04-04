@@ -4,27 +4,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
-import android.support.v4.widget.CircularProgressDrawable;
-import android.support.v7.content.res.AppCompatResources;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.io.File;
-import java.util.Comparator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.logic.Page;
-import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 
 /**
  * Created by fabian on 4/5/2018.
@@ -41,30 +31,8 @@ public class DocumentUploadAdapter extends DocumentAdapter {
 
         mContext = context;
         mDocuments = documents;
-//        mCallback = (DocumentAdapterCallback) context;
 
     }
-
-
-//    public DocumentAdapter(@NonNull Context context, int resource) {
-//        super(context, resource);
-//
-//        mContext = context;
-//
-//        fillList();
-//    }
-
-//    @Override
-//    public boolean isEnabled (int position) {
-//
-//        Document document = mDocuments.get(position);
-//
-//        if ((document != null) && (document.isCropped()))
-//            return false;
-//        else
-//            return true;
-//
-//    }
 
 
     @Override

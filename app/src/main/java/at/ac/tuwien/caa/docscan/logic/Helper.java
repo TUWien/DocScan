@@ -340,6 +340,9 @@ public class Helper {
 
     public static boolean isDocumentFocused(Document document) {
 
+        if (document == null)
+            return true;
+
         for (Page page : document.getPages()) {
             if (!page.isFocused())
                 return false;

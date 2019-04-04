@@ -139,6 +139,9 @@ public class PageDetector {
     public static void rotate90Degrees(String fileName) {
 
         PageFocusResult result = getNormedCropPoints(fileName);
+        if (result == null)
+            return;
+
 //        ArrayList<PointF> points = getNormedCropPoints(fileName);
         for (PointF point : result.getPoints()) {
             rotateNormedPoint(point, 90);
@@ -323,6 +326,7 @@ public class PageDetector {
 
     }
 
+
     private static PointF getIntersection(PointF p1, PointF p2, PointF p3, float offset) {
 
         DkVector vl = new DkVector(p1, p2);
@@ -477,11 +481,6 @@ public class PageDetector {
 
         private ArrayList<PointF> mPoints;
         private boolean mIsFocused;
-
-        public PageFocusResult(ArrayList<PointF> points) {
-            mPoints = points;
-            mIsFocused = true;
-        }
 
         public PageFocusResult(ArrayList<PointF> points, boolean isFocused) {
             mPoints = points;

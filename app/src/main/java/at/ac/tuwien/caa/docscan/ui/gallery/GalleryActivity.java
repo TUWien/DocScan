@@ -100,7 +100,7 @@ public class GalleryActivity extends AppCompatActivity implements
      */
     private void checkFocus() {
 
-        if (!Helper.isDocumentFocused(mDocument)) {
+        if (mDocument != null && !Helper.isDocumentFocused(mDocument)) {
             Snackbar snackbar = Snackbar.make(findViewById(R.id.gallery_images_recyclerview),
                     R.string.gallery_unfocused_snackbar_text, Snackbar.LENGTH_LONG);
             snackbar.setAction(R.string.gallery_unfocused_info,
