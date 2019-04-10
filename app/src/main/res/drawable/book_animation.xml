@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:drawable="@drawable/ic_scantent_book">
+
+    <target
+        android:animation="@anim/book_animator"
+        android:name="book" />
+
+</animated-vector>

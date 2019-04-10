@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:drawable="@drawable/ic_scantent_pages">
+
+
+
+    <target android:name="page_0"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_1"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_2"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_3"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_4"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_5"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_6"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_7"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_8"
+        android:animation="@anim/page_animator"/>
+
+    <target android:name="phone_1"
+        android:animation="@anim/phone_capture_animator"/>
+    <target android:name="phone_2"
+        android:animation="@anim/phone_capture_animator"/>
+    <target android:name="phone_3"
+        android:animation="@anim/phone_capture_animator"/>
+    <target android:name="phone_4"
+        android:animation="@anim/phone_capture_animator"/>
+    <!--<target android:name="page_1"-->
+        <!--android:animation="@anim/page_animator"/>-->
+
+
+    <!--<target-->
+        <!--android:name="page_1" >-->
+        <!--<aapt:attr name="android:animation">-->
+            <!--<set>-->
+                <!--<set android:ordering="sequentially">-->
+                    <!--<objectAnimator-->
+                        <!--android:duration="2000"-->
+                        <!--android:propertyName="fillAlpha"-->
+                        <!--android:repeatCount="5"-->
+                        <!--android:repeatMode="restart"-->
+                        <!--android:valueFrom="0"-->
+                        <!--android:valueTo="1" />-->
+
+                <!--</set>-->
+            <!--</set>-->
+        <!--</aapt:attr>-->
+    <!--</target>-->
+
+    <!--<target-->
+        <!--android:name="135degpath" >-->
+        <!--<aapt:attr name="android:animation">-->
+            <!--<set>-->
+                <!--<set android:ordering="sequentially">-->
+                    <!--<objectAnimator-->
+                        <!--android:startOffset="1000"-->
+                        <!--android:duration="2000"-->
+                        <!--android:propertyName="fillAlpha"-->
+                        <!--android:repeatCount="1"-->
+                        <!--android:repeatMode="restart"-->
+                        <!--android:valueFrom="0"-->
+                        <!--android:valueTo="1" />-->
+                    <!--&lt;!&ndash;<objectAnimator&ndash;&gt;-->
+                    <!--&lt;!&ndash;android:startOffset="2000"&ndash;&gt;-->
+                    <!--&lt;!&ndash;android:duration="1"&ndash;&gt;-->
+                    <!--&lt;!&ndash;android:propertyName="translateY"&ndash;&gt;-->
+                    <!--&lt;!&ndash;android:repeatCount="infinite"&ndash;&gt;-->
+                    <!--&lt;!&ndash;android:valueFrom="0"&ndash;&gt;-->
+                    <!--&lt;!&ndash;android:valueTo="-1000" />&ndash;&gt;-->
+                <!--</set>-->
+            <!--</set>-->
+        <!--</aapt:attr>-->
+    <!--</target>-->
+
+
+    <!--<target-->
+        <!--android:name="phone" >-->
+        <!--<aapt:attr name="android:animation">-->
+
+            <!--<objectAnimator-->
+                <!--android:startOffset="3000"-->
+                <!--android:duration="3000"-->
+                <!--android:propertyName="translateY"-->
+                <!--android:repeatMode="reverse"-->
+                <!--android:repeatCount="infinite"-->
+                <!--android:valueFrom="-400"-->
+                <!--android:valueTo="0"-->
+                <!--/>-->
+        <!--&lt;!&ndash;android:animation="@anim/phone_animator"&ndash;&gt;-->
+
+        <!--</aapt:attr>-->
+
+    <!--</target>-->
+
+</animated-vector>

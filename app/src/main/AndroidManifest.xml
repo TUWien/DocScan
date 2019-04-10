@@ -46,6 +46,11 @@
             />
 
         <activity
+            android:name=".ui.intro.IntroActivity"
+            android:exported="true"
+            />
+
+        <activity
             android:name=".ui.document.SelectDocumentActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
