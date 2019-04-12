@@ -2246,7 +2246,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         protected String doInBackground(Void... voids) {
 
             Uri uri = getFileName(mContext.getString(R.string.app_name));
-            Log.d(CLASS_NAME, "FileSaver: uri " + uri);
 
             final File file = new File(uri.getPath());
 
@@ -2272,8 +2271,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 saveExif(file);
 
                 //PageSplit
-
-
 
                 try {
 
