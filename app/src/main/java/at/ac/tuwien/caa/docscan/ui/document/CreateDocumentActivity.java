@@ -234,8 +234,15 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
 //                The error handling is done in createNewDocument
                 boolean isDocumentCreated = createNewDocument(title);
-                if (isDocumentCreated)
+                if (isDocumentCreated) {
                     Helper.startCameraActivity(context);
+
+                    //        Send back the new file name, so that it can be used in the GalleryActivity:
+                    Intent data = new Intent();
+                    setResult(RESULT_OK, data);
+
+                    finish();
+                }
             }
         });
 
@@ -313,7 +320,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         CheckBox showFieldsCheckBox = findViewById(R.id.create_series_advanced_options_checkbox);
 //        set the check state to its previous state:
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean showFields = sharedPref.getBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, true);
+        boolean showFields = sharedPref.getBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, false);
         showFieldsCheckBox.setChecked(showFields);
 
 //        Hide or show the the Transkribus fields:

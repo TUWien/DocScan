@@ -1,22 +1,15 @@
 package at.ac.tuwien.caa.docscan.ui.intro;
 
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Animatable;
-import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-
-import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.GlideException;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.target.Target;
+import android.widget.TextView;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
@@ -28,7 +21,7 @@ public class IntroFragment extends Fragment {
     private Drawable mDrawable;
     private int mNum;
 
-    protected static IntroFragment newInstance(int num) {
+    public static IntroFragment newInstance(int num) {
 
         IntroFragment fragment = new IntroFragment();
 
@@ -74,55 +67,59 @@ public class IntroFragment extends Fragment {
 
         if (mNum == 2) {
 
-            rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_4, container, false);
+            rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_3, container, false);
 
             ImageView imageView = rootView.findViewById(R.id.intro_imageview);
-
             GlideApp.with(this)
-                    .load(R.drawable.animated_series)
+                    .load(R.drawable.screenshot)
                     .into(imageView);
 
 
-
-            
-
-//            rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_4, container, false);
-
-//            RelativeLayout imageViewContainer = rootView.findViewById(R.id.container_layout);
-//            ViewGroup.LayoutParams params = imageViewContainer.getLayoutParams();
-//            float scaleFactor = 400.f / 755.f; // 755 is the sum of the widths of both imageviews
-//            params.height = Math.round(params.width * scaleFactor);
-//            imageViewContainer.setLayoutParams(params);
-
-//            ImageView imageView = rootView.findViewById(R.id.intro_imageview_left);
+        }
+//        else if (mNum == 4) {
+//
+//            rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_5, container, false);
+//            final ImageView transkribusImageView = rootView.findViewById(R.id.transkribus_imageview);
 //            GlideApp.with(this)
-//                    .load(R.drawable.left)
-//                    .into(imageView);
+//                    .load(R.drawable.transkribus)
+//                    .fitCenter()
+//                    .into(transkribusImageView);
 //
-////            ImageView imageViewRight = rootView.findViewById(R.id.intro_imageview_right);
-////            imageViewRight.setImageResource(R.drawable.series_animation);
-////            // Get the background, which has been compiled to an AnimationDrawable object.
-////            AnimationDrawable frameAnimation = (AnimationDrawable) imageViewRight.getDrawable();
-//////            imageViewRight.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-//////            imageViewRight.setAdjustViewBounds(true);
-////
-////            // Start the animation (looped playback by default).
-////            frameAnimation.start();
+//            final ImageView dropboxImageView = rootView.findViewById(R.id.dropbox_imageview);
+//            GlideApp.with(this)
+//                    .load(R.drawable.dropbox_glyph_blue)
+//                    .fitCenter()
+//                    .into(dropboxImageView);
 //
-//            imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-//            imageView.setAdjustViewBounds(true);
+//        }
+        else if (mNum == 4) {
+
+            rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_5, container, false);
+            final ImageView uploadImageView = rootView.findViewById(R.id.upload_imageview);
+            GlideApp.with(this)
+                    .load(R.drawable.upload_screenshot)
+                    .fitCenter()
+                    .into(uploadImageView);
+            final ImageView documentImageView = rootView.findViewById(R.id.document_imageview);
+            GlideApp.with(this)
+                    .load(R.drawable.document_screenshot)
+                    .fitCenter()
+                    .into(documentImageView);
         }
         else {
 
             switch (mNum) {
                 case 0:
                     rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_1, container, false);
+//                    Make the link clickable, found this here: https://stackoverflow.com/a/2746708
+                    TextView textView = rootView.findViewById(R.id.intro_1_textview);
+                    textView.setMovementMethod(LinkMovementMethod.getInstance());
                     break;
                 case 1:
                     rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_2, container, false);
                     break;
                 case 3:
-                    rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_3, container, false);
+                    rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_4, container, false);
                     break;
             }
 

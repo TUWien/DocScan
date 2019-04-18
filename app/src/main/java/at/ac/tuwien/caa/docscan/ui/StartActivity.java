@@ -31,9 +31,17 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatButton;
+import android.util.Log;
+import android.view.View;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.firebase.FirebaseApp;
@@ -43,7 +51,12 @@ import java.util.Date;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
+import at.ac.tuwien.caa.docscan.logic.Settings;
+import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
+import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
+import at.ac.tuwien.caa.docscan.ui.intro.IntroFragment;
+import at.ac.tuwien.caa.docscan.ui.intro.ZoomOutPageTransformer;
 
 
 /**
@@ -56,15 +69,100 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 
     private AlertDialog mAlertDialog;
     private static final String KEY_FIRST_START_DATE = "KEY_FIRST_START_DATE";
+    private static final int CREATE_DOCUMENT = 0;
+    private boolean mDocumentCreateRequest = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.main_container_view);
+        logFirstAppStart();
 
-//        Log the first start of the app:
+        int lastInstalledVersion = Settings.getInstance().loadIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY);
+//        The user has already started the app:
+        if (lastInstalledVersion != Settings.NO_ENTRY)
+            startAppNoIntro();
+        else
+            startIntro();
+
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+//        In case the user created a document, close the intro, the CameraActivity is already started:
+        if (requestCode == CREATE_DOCUMENT && resultCode == RESULT_OK)
+            finish();
+
+    }
+
+    private void startIntro() {
+
+        setContentView(R.layout.activity_intro);
+
+        final PageSlideAdapter pagerAdapter = new PageSlideAdapter(getSupportFragmentManager());
+        final ViewPager pager = findViewById(R.id.intro_viewpager);
+//        pager.setPageTransformer(true, new DepthPageTransformer());
+        pager.setPageTransformer(true, new ZoomOutPageTransformer());
+        pager.setAdapter(pagerAdapter);
+        TabLayout tabLayout = findViewById(R.id.tabDots);
+        tabLayout.setupWithViewPager(pager, true);
+
+        AppCompatButton skipButton = findViewById(R.id.intro_skip_button);
+        skipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                    startAppNoIntro();
+            }
+        });
+
+
+    }
+
+
+    public void createDocument(View view) {
+
+        mDocumentCreateRequest = true;
+        askForPermissions();
+
+    }
+
+
+
+
+    private class PageSlideAdapter extends FragmentPagerAdapter {
+
+//        private IntroFragment mCurrentFragment;
+
+        public PageSlideAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return IntroFragment.newInstance(position);
+        }
+
+        @Override
+        public int getCount() {
+            return 5;
+        }
+
+    }
+
+
+    private void startAppNoIntro() {
+
+        setContentView(R.layout.main_container_view);
+        askForPermissions();
+
+        //initialize Firebase for OCR
+        FirebaseApp.initializeApp(this);
+
+    }
+
+    private void logFirstAppStart() {
+        //        Log the first start of the app:
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         if (sharedPref != null) {
             String firstStart = sharedPref.getString(KEY_FIRST_START_DATE, null);
@@ -78,13 +176,8 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
                 Crashlytics.setString(KEY_FIRST_START_DATE, timeStamp);
             }
         }
-
-        askForPermissions();
-
-        //initialize Firebase for OCR
-        FirebaseApp.initializeApp(this);
-
     }
+
 
     /**
      * Asks for permissions that are really needed. If they are not given, the app is unusable.
@@ -101,8 +194,16 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         if(!hasPermissions(this, PERMISSIONS)){
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         }
-        else
-            startCamera();
+        else {
+//            The user wants to create a document and has already given the permissions:
+            if (mDocumentCreateRequest) {
+                Intent intent = new Intent(this, CreateDocumentActivity.class);
+                startActivityForResult(intent, CREATE_DOCUMENT);
+            }
+            else
+                startCamera();
+        }
+
 
     }
 
@@ -184,9 +285,14 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
             return;
         }
 
-//        If CAMERA and WRITE_EXTERNAL_STORAGE permissions are given start the camera, the GPS
-//        permissions are not required:
-        startCamera();
+        if (mDocumentCreateRequest) {
+            Intent intent = new Intent(this, CreateDocumentActivity.class);
+            startActivityForResult(intent, CREATE_DOCUMENT);
+        }
+        else
+    //        If CAMERA and WRITE_EXTERNAL_STORAGE permissions are given start the camera, the GPS
+    //        permissions are not required:
+            startCamera();
 
     }
 

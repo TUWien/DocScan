@@ -47,7 +47,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
 import at.ac.tuwien.caa.docscan.ui.AccountActivity;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
-import at.ac.tuwien.caa.docscan.ui.LoginActivity;
+import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
@@ -62,7 +62,7 @@ import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_FINISHED_ID;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_INTEND_TYPE;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.INTENT_UPLOAD_ACTION;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_OFFLINE_ERROR_ID;
-import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
+import static at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME;
 
 
 /**
@@ -164,11 +164,11 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                 .setPositiveButton(R.string.sync_confirm_login_button_text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i)  {
-//                        Start the LoginActivity
-//                        Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+//                        Start the TranskribusLoginActivity
+//                        Intent intent = new Intent(getApplicationContext(), TranskribusLoginActivity.class);
 //                        intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
                         Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
-                        intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
+                        intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName());
                         startActivity(intent);
                     }
                 })
@@ -336,11 +336,11 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private void showActivityNotLoggedIn() {
         setContentView(R.layout.activity_not_logged_in);
 
-        Button loginButton = (Button) findViewById(R.id.sync_not_logged_in_button);
+        Button loginButton = findViewById(R.id.sync_not_logged_in_button);
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                Intent intent = new Intent(getApplicationContext(), TranskribusLoginActivity.class);
                 intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName());
                 startActivity(intent);
             }
@@ -773,8 +773,6 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private void showUploadingSnackbar(int selCnt) {
 
         String selText = selCnt + " " + Helper.getDocumentSingularPlural(this, selCnt);
-        if (selText == null)
-            return;
 
         String snackbarText =
                 getResources().getString(R.string.sync_snackbar_uploading_prefix_text) + " " +

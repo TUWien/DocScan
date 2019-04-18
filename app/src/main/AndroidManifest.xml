@@ -45,10 +45,6 @@
             android:parentActivityName=".ui.CameraActivity"
             />
 
-        <activity
-            android:name=".ui.intro.IntroActivity"
-            android:exported="true"
-            />
 
         <activity
             android:name=".ui.document.SelectDocumentActivity"
@@ -70,7 +66,7 @@
             />
 
         <activity
-            android:name=".ui.LoginActivity"
+            android:name=".ui.TranskribusLoginActivity"
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
             />
@@ -137,7 +133,7 @@
             />
 
         <activity
-            android:name=".ui.DropboxActivity"
+            android:name=".ui.DropboxLoginActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />

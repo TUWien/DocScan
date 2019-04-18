@@ -22,7 +22,7 @@ import me.drakeet.support.toast.ToastCompat;
 /**
  * Created by fabian on 08.02.2017.
  */
-public class LoginActivity extends BaseNoNavigationActivity implements LoginRequest.LoginCallback {
+public class TranskribusLoginActivity extends BaseNoNavigationActivity implements LoginRequest.LoginCallback {
 
     private Class mParentClass;
     public static final String PARENT_ACTIVITY_NAME = "PARENT_ACTIVITY_NAME";
@@ -35,7 +35,7 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
 
         super.initToolbarTitle(R.string.login_title);
 
-        Button loginButton = (Button) findViewById(R.id.login_button);
+        Button loginButton = findViewById(R.id.login_button);
         loginButton.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -58,18 +58,13 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
 
     }
 
-//    @Override
-//    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-//        return NavigationDrawer.NavigationItemEnum.LOGIN;
-//    }
-
     private void login() {
 
 //        Check out this for com.android.volley.NoConnectionError: javax.net.ssl.SSLHandshakeException: Handshake failed
 //        https://stackoverflow.com/questions/31269425/how-do-i-tell-the-tls-version-in-android-volley
 
-        EditText emailEdit = (EditText) findViewById(R.id.username_edittext);
-        EditText pwEdit = (EditText) findViewById(R.id.password_edittext);
+        EditText emailEdit = findViewById(R.id.username_edittext);
+        EditText pwEdit = findViewById(R.id.password_edittext);
 
         String email = emailEdit.getText().toString();
         String pw = pwEdit.getText().toString();
@@ -79,16 +74,6 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
             ToastCompat.makeText(this, R.string.login_check_input_toast, Toast.LENGTH_SHORT)
                     .show();
 
-//        Old version that cause BadTokenExceptions on API level 25. Could not catch it.
-//        According to https://github.com/drakeet/ToastCompat this is an API 25 bug
-//            try {
-//                Toast.makeText(this, R.string.login_check_input_toast, Toast.LENGTH_SHORT).show();
-//            }
-//            catch (WindowManager.BadTokenException e) {
-////            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
-////            this should only happen on API level 25, but I could not reproduce it with a virtual
-////            machine.
-//            }
             return;
         }
 
@@ -106,18 +91,6 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
 
         String welcomeText = getResources().getString(R.string.login_welcome_text) + " " + user.getFirstName();
         ToastCompat.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
-
-//        Old version that cause BadTokenExceptions on API level 25. Could not catch it.
-//        According to https://github.com/drakeet/ToastCompat this is an API 25 bug
-//        try {
-//            Toast.makeText(this, welcomeText, Toast.LENGTH_SHORT).show();
-//        }
-//        catch (WindowManager.BadTokenException e) {
-////            Ignore the bad token exception, according to https://github.com/drakeet/ToastCompat
-////            this should only happen on API level 25, but I could not reproduce it with a virtual
-////            machine.
-//        }
-
 //        Save the credentials:
         UserHandler.saveTranskribusCredentials(this);
         UserHandler.saveUserName(this);
@@ -133,7 +106,7 @@ public class LoginActivity extends BaseNoNavigationActivity implements LoginRequ
 
         showLoadingLayout(false);
 
-        EditText pwEdit = (EditText) findViewById(R.id.password_edittext);
+        EditText pwEdit = findViewById(R.id.password_edittext);
         pwEdit.setError(getResources().getString(R.string.login_error_text));
 
     }

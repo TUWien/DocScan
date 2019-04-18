@@ -11,13 +11,11 @@
     <android.support.v4.view.ViewPager
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/intro_viewpager"
-        android:paddingTop="32dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottom_layout"
-        android:layout_centerInParent="true"
+        android:layout_gravity="center_vertical"
         android:theme="@style/AppDarkTheme"
-        android:background="@color/light_gray"
         />
     <RelativeLayout
         android:id="@+id/bottom_layout"

@@ -1,39 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/light_gray"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/intro_2_textview"
-        android:layout_marginBottom="@dimen/activity_vertical_margin">
-        <ImageView
-            android:id="@+id/intro_imageview"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            app:srcCompat="@drawable/entire_screenshot" />
-        <ImageView
-            android:id="@+id/intro_detail_imageview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_below="@id/intro_imageview"
-
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-             />
-    </RelativeLayout>
-
-    <TextView
-        android:id="@+id/intro_2_textview"
-        android:layout_alignParentBottom="true"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:layout_marginBottom="150dp"
-        android:text="Start the series mode"/>
+        android:orientation="vertical"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        >
+
+        <ImageView
+            android:id="@+id/intro_imageview"
+            android:layout_gravity="center"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:layout_weight="2"
+            app:srcCompat="@drawable/ic_scantent_pages" />
+        <TextView
+            android:id="@+id/intro_1_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:text="@string/intro_text_4"/>
+    </LinearLayout>
 
 </RelativeLayout>

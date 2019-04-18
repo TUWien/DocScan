@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewManager;
 import android.widget.Button;
@@ -17,7 +16,6 @@ import at.ac.tuwien.caa.docscan.rest.LogoutRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
-import at.ac.tuwien.caa.docscan.sync.SyncFile;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 /**
@@ -67,17 +65,17 @@ public class AccountActivity extends BaseNavigationActivity implements DropboxUt
         transkribusButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showDeleteSyncInfoAlert(LoginActivity.class);
+                showDeleteSyncInfoAlert(TranskribusLoginActivity.class);
             }
         });
 
-        Class t = DropboxActivity.class;
+        Class t = DropboxLoginActivity.class;
 
-        Button dropboxButon = (Button) findViewById(R.id.sync_switcher_dropbox_button);
+        Button dropboxButon = findViewById(R.id.sync_switcher_dropbox_button);
         dropboxButon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showDeleteSyncInfoAlert(DropboxActivity.class);
+                showDeleteSyncInfoAlert(DropboxLoginActivity.class);
             }
         });
     }
@@ -131,7 +129,7 @@ public class AccountActivity extends BaseNavigationActivity implements DropboxUt
 
 //        Clear the dropbox token (if it is set). This is done online and might take some time so,
 //        we wait for an event, because otherwise the ui might be blocked:
-        if (proceedingActivity == DropboxActivity.class)
+        if (proceedingActivity == DropboxLoginActivity.class)
             DropboxUtils.getInstance().clearAccessToken(this);
         else {
             new LogoutRequest(this);
@@ -183,7 +181,7 @@ public class AccountActivity extends BaseNavigationActivity implements DropboxUt
     public void onAccesTokenCleared(boolean isCleared) {
 
         if (isCleared)
-            startActivity(DropboxActivity.class);
+            startActivity(DropboxLoginActivity.class);
 
     }
 }

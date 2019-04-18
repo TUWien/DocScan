@@ -1,11 +1,9 @@
 package at.ac.tuwien.caa.docscan.ui;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -18,17 +16,13 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
-import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
-import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 import me.drakeet.support.toast.ToastCompat;
-
-import static at.ac.tuwien.caa.docscan.ui.LoginActivity.PARENT_ACTIVITY_NAME;
 
 /**
  * Created by fabian on 23.08.2017.
  */
 
-public class DropboxActivity extends BaseNoNavigationActivity implements LoginRequest.LoginCallback{
+public class DropboxLoginActivity extends BaseNoNavigationActivity implements LoginRequest.LoginCallback{
 
     private boolean mIsActitivyJustCreated;
 
@@ -42,7 +36,7 @@ public class DropboxActivity extends BaseNoNavigationActivity implements LoginRe
 
 //        mIsActitivyJustCreated = true;
 
-        Button authenticateButton = (Button) findViewById(R.id.dropbox_authenticate_button);
+        Button authenticateButton = findViewById(R.id.dropbox_authenticate_button);
         authenticateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

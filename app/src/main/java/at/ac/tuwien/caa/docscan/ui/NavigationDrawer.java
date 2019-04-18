@@ -86,7 +86,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
     private void setupNavigationDrawer() {
 
-        mDrawerLayout = (DrawerLayout) mActivity.findViewById(R.id.drawer_layout);
+        mDrawerLayout = mActivity.findViewById(R.id.drawer_layout);
         if (mDrawerLayout == null) {
             return;
         }
@@ -107,7 +107,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(drawerToggle);
 
-        mNavigationView = (NavigationView) mActivity.findViewById(R.id.left_drawer);
+        mNavigationView = mActivity.findViewById(R.id.left_drawer);
         mNavigationView.setNavigationItemSelectedListener(this);
 
         createNavDrawerItems(NavigationItemEnum.values());
@@ -149,8 +149,8 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         }
 
         // Add a callback to the account settings layout:
-        final ImageButton button = (ImageButton) headerLayout.findViewById(R.id.navigation_view_header_account_setting);
-        RelativeLayout layout = (RelativeLayout) headerLayout.findViewById(R.id.account_layout);
+        final ImageButton button = headerLayout.findViewById(R.id.navigation_view_header_account_setting);
+        RelativeLayout layout = headerLayout.findViewById(R.id.account_layout);
         layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -358,7 +358,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         CAMERA(R.id.camera_item, R.string.camera_item_text,
                 R.drawable.ic_camera_alt_black_24dp, CameraActivity.class),
 //        LOGIN(R.id.login_item, R.string.login_item_text,
-//                R.drawable.ic_arrow_forward_black_24dp, LoginActivity.class),
+//                R.drawable.ic_arrow_forward_black_24dp, TranskribusLoginActivity.class),
         ABOUT(R.id.about_item, R.string.about_item_text,
                 R.drawable.ic_info_black_24dp, AboutActivity.class),
         SHARE_LOG(R.id.share_log_item, R.string.share_log_item_text,
