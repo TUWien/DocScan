@@ -190,6 +190,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private boolean mIsQRActive = false;
 
 
+
     /**
      * Static initialization of the OpenCV and docscan-native modules.
      */
@@ -236,7 +237,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //        //    just for markus oneplus:
 //        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
 //            colorStatusBar();
-
 
         mContext = this;
 
@@ -2246,7 +2246,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         protected String doInBackground(Void... voids) {
 
             Uri uri = getFileName(mContext.getString(R.string.app_name));
-            Log.d(CLASS_NAME, "FileSaver: uri " + uri);
 
             final File file = new File(uri.getPath());
 
@@ -2272,17 +2271,20 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 saveExif(file);
 
                 //PageSplit
+
                 try {
-                    PageSplit pageSplit = new PageSplit(mContext);
-                    if (pageSplit.applyPageSplit(uri, mContext) == 1) {
+
+                    PageSplit mPageSplit = new PageSplit(mContext);
+                    if (mPageSplit.applyPageSplit(uri, mContext) == 1) {
                         Log.d(PageSplit.TAG, "could not apply PageSplit");
                     } else {
                         Log.d("PageSplit", "Applied PageSplit");
                     }
-                    pageSplit.close();
+                    mPageSplit.close();
                 } catch (IOException e) {
-                    Log.e("PageSplit", "Failed to initialize PageSplit tflite model.");
+                    Log.e("PageSplit", "Failed to apply PageSplit");
                 }
+
 
                 boolean fileAdded = DocumentStorage.getInstance(mContext).addToActiveDocument(file);
                 if (!fileAdded)
