@@ -52,7 +52,6 @@ import java.util.Date;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Settings;
-import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.intro.IntroFragment;
@@ -71,6 +70,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     private static final String KEY_FIRST_START_DATE = "KEY_FIRST_START_DATE";
     private static final int CREATE_DOCUMENT = 0;
     private boolean mDocumentCreateRequest = false;
+    private static final String CLASS_NAME = "StartActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +78,11 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         super.onCreate(savedInstanceState);
 
         logFirstAppStart();
+
+        //initialize Firebase
+        FirebaseApp a = FirebaseApp.initializeApp(this);
+        if (a == null || a.getOptions().getApiKey().isEmpty())
+            Log.d(CLASS_NAME, getString(R.string.start_firebase_not_auth_text));
 
         int lastInstalledVersion = Settings.getInstance().loadIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY);
 //        The user has already started the app:
@@ -134,7 +139,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 
 //        private IntroFragment mCurrentFragment;
 
-        public PageSlideAdapter(FragmentManager fm) {
+        private PageSlideAdapter(FragmentManager fm) {
             super(fm);
         }
 
@@ -156,10 +161,8 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         setContentView(R.layout.main_container_view);
         askForPermissions();
 
-        //initialize Firebase for OCR
-        FirebaseApp.initializeApp(this);
-
     }
+
 
     private void logFirstAppStart() {
         //        Log the first start of the app:

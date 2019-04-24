@@ -36,6 +36,8 @@
     <string name="start_permission_storage_text">The app requires permission to access your files, otherwise it will not work.</string>
     <string name="start_confirm_button_text">OK</string>
     <string name="start_cancel_button_text">Cancel</string>
+    <string name="start_firebase_not_auth_title">Not authenticated</string>
+    <string name="start_firebase_not_auth_text">Could not authenticate with Firebase / google-services. If you are a developer, you probably want the API key. In that case, take a look at the readme.</string>
 
     <!--CameraActivity-->
 

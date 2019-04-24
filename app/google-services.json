@@ -1,0 +1,48 @@
+{
+    "project_info": {
+        "project_number": "123456789000",
+        "firebase_url": "https://docscan-1234.firebaseio.com",
+        "project_id": "docscan-1234",
+        "storage_bucket": "https://mockproject-1234.firebaseio.com"
+    },
+    "client": [{
+        "client_info": {
+            "mobilesdk_app_id": "1:123456789000:android:f1bf012572b04064",
+            "android_client_info": {
+                "package_name": "at.ac.tuwien.caa.docscan"
+            }
+        },
+        "oauth_client": [{
+                "client_id": "123456789000",
+                "client_type": 1,
+                "android_info": {
+                    "package_name": "at.ac.tuwien.caa.docscan",
+                    "certificate_hash": "4C20644DE36B8F89D25650C7D1FF9FBAE650FDF6"
+                }
+            },
+            {
+                "client_id": "123456789000",
+                "client_type": 3
+            }
+        ],
+        "api_key": [{
+            "current_key": ""
+        }],
+        "services": {
+            "analytics_service": {
+                "status": 1
+            },
+            "appinvite_service": {
+                "status": 2,
+                "other_platform_oauth_client": [{
+                    "client_id": "123456789000",
+                    "client_type": 3
+                }]
+            },
+            "ads_service": {
+                "status": 2
+            }
+        }
+    }],
+    "configuration_version": "1"
+}
