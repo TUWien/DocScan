@@ -73,6 +73,10 @@ android {
 		exclude 'META-INF/LICENSE.txt'
 	}
 
+	lintOptions {
+		abortOnError false
+	}
+
 }
 
 
