@@ -21,3 +21,6 @@ android:
     # if you need to run emulator(s) during your tests
     - sys-img-x86-android-27
     - sys-img-armeabi-v7a-android-27
+before_install:
+  - chmod +x gradle/wrapper/gradle-wrapper.jar
+  - chmod +x gradlew
