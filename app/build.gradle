@@ -6,12 +6,12 @@ apply plugin: 'com.google.gms.google-services'
 
 android {
 
-	compileSdkVersion 28
+	compileSdkVersion 27
 
 	defaultConfig {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 15
-		targetSdkVersion 28
+		targetSdkVersion 27
 
 		versionCode 84
 		versionName "1.6.16"
