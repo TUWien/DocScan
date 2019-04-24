@@ -109,7 +109,7 @@ def getNdkDir() {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.0'
+    gradleVersion = '5.4'
 }
 
 /*def getNdkBuildCmd() {
