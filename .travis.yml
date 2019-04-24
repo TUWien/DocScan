@@ -28,4 +28,5 @@ android:
 script:
     - ./gradlew build check
 before_install:
+- chmod +x gradle/wrapper/gradle-wrapper.jar
 - chmod +x gradlew
