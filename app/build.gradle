@@ -108,6 +108,10 @@ def getNdkDir() {
 	return ndkdir
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.0'
+}
+
 /*def getNdkBuildCmd() {
 	def ndkbuild = getNdkDir() + "/ndk-build"
 //    if (Os.isFamily(Os.FAMILY_WINDOWS))
