@@ -13,13 +13,13 @@
             }
         },
         "oauth_client": [{
-                "client_id": "123456789000",
-                "client_type": 1,
-                "android_info": {
-                    "package_name": "at.ac.tuwien.caa.docscan",
-                    "certificate_hash": "4C20644DE36B8F89D25650C7D1FF9FBAE650FDF6"
-                }
-            },
+            "client_id": "123456789000",
+            "client_type": 1,
+            "android_info": {
+                "package_name": "at.ac.tuwien.caa.docscan",
+                "certificate_hash": "4C20644DE36B8F89D25650C7D1FF9FBAE650FDF6"
+            }
+        },
             {
                 "client_id": "123456789000",
                 "client_type": 3
