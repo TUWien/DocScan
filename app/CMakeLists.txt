@@ -14,7 +14,8 @@ cmake_minimum_required(VERSION 3.4.1)
 ##set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${pathToOpenCv}/sdk/native/libs/${ANDROID_ABI}/libopencv_java3.so)
 #set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${pathToOpenCv}/sdk/native/libs/${ANDROID_ABI}/libopencv_java3.so)
 
-include_directories(C:/Users/fabian/Downloads/opencv-3.4.3-android-sdk/OpenCV-android-sdk/sdk/native/jni/include)
+#include_directories(C:/Users/fabian/Downloads/opencv-3.4.3-android-sdk/OpenCV-android-sdk/sdk/native/jni/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/main/includes/)
 add_library( lib_opencv SHARED IMPORTED )
 set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}/libopencv_java3.so)
 

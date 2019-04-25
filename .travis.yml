@@ -35,6 +35,7 @@ before_script:
   - git clone https://github.com/hollaus/opencv_libs.git opencv_libs
   - cd app/src/main
   - ln -s ../../../opencv_libs/sdk/native/libs jniLibs
+  - ln -s ../../../opencv_libs/sdk/native/jni/include includes
   - cd ../../..
 install:
   - echo y | sdkmanager "ndk-bundle"
