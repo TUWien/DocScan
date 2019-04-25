@@ -28,8 +28,10 @@ addons:
 before_install:
   - chmod +x gradle/wrapper/gradle-wrapper.jar
   - chmod +x gradlew
-#before_script:
-#  - git clone https://github.com/hollaus/MSTEx-CVL-matlab.git somestuff
+before_script:
+  - ls -lh
+  - git clone https://github.com/hollaus/opencv_libs.git opencv_libs
+#  - ln -s opencv_libs
 install:
   - echo y | sdkmanager "ndk-bundle"
   - echo y | sdkmanager "cmake;3.6.4111459"
