@@ -31,9 +31,6 @@ before_install:
 before_script:
   - ls -lh
   - git clone https://github.com/hollaus/opencv_libs.git OpenCV-android-sdk
-  - cd app/src/main
-  - ln -s ../../../opencv_libs jniLibs
-  - cd ../../../
 install:
   - echo y | sdkmanager "ndk-bundle"
   - echo y | sdkmanager "cmake;3.6.4111459"
