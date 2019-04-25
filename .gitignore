@@ -73,6 +73,6 @@ api_info.txt
 /app/src/main/res/layout/test_activity.xml
 /app/src/main/res/drawable/cat.png
 /app/src/main/res/drawable/puppy.png
-/openCVLibrary/*
+
 /app/release
 /app/CMakeLists.txt
