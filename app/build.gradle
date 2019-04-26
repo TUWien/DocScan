@@ -11,6 +11,7 @@ android {
 		minSdkVersion 15
 		targetSdkVersion 27
 
+
 		versionCode 84
 		versionName "1.6.16"
 
@@ -118,6 +119,7 @@ def getNdkBuildCmd() {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
+	implementation 'com.github.hollaus:OpenCVLibrary:1.0'
     implementation 'com.android.support:appcompat-v7:27.0.2'
     implementation 'com.dropbox.core:dropbox-core-sdk:3.0.3'
     implementation 'com.android.support:exifinterface:27.0.2'
@@ -153,7 +155,7 @@ dependencies {
     //	implementation 'com.fivehundredpx:greedo-layout:1.1.0'
     //	implementation 'com.google.android:flexbox:1.0.0'
     //    implementation 'com.google.android:flexbox:0.3.0-alpha2'
-    implementation project(':openCVLibrary')
+//    implementation project(':openCVLibrary')
     implementation 'me.drakeet.support:toastcompat:1.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     // Check for v11.4.2 or higher
