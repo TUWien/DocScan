@@ -1,4 +1,14 @@
 language: android
+
+sudo: false
+
+jdk:
+  - oraclejdk8
+
+env:
+  global:
+  - ADB_INSTALL_TIMEOUT=8
+
 android:
   components:
     # Uncomment the lines below if you want to
@@ -37,6 +47,9 @@ before_script:
   - ln -s ../../../opencv_libs/sdk/native/libs jniLibs
   - ln -s ../../../opencv_libs/sdk/native/jni/include includes
   - cd ../../..
+#  unfortunately we do not have abi for android-27. Tested images can be found here:
+#  https://stackoverflow.com/questions/45100298/how-to-setup-an-emulator-running-api-25-using-a-build-matrix-on-travis-ci
+#  TODO: test other images as well
   - echo no | android create avd --force -n test -t android-24 --abi armeabi-v7a -c 100M
   - emulator -avd test -no-audio -no-window &
   - android-wait-for-emulator
@@ -54,6 +67,6 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
     - $HOME/.android/build-cache
-branches:
-  only:
-    - ci
+
+notifications:
+  email: false
