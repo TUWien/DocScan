@@ -17,18 +17,18 @@ For the native part you have to clone this repo:
 git clone https://github.com/hollaus/opencv_libs.git opencv_native
 ```
 ### Add native library to the project
-Next you have to copy two folders from the native library to the project. Alternatively you can also create symlinks.
+Next you have to copy two folders from the native library to the project.
 - copy `opencv_native/sdk/native/libs` to `app/src/main/jniLibs`
 - copy `opencv_native/sdk/native/jni/include` to `app/src/main/include`
 
-If you want to create symlinks you can copy paste the following two statements. It is assumed that your project root folder (DocScan) and the opencv_native folder are on the same hierarchy level.
+Alternatively, you can create symlinks - as written below. It is assumed that your project root folder (DocScan) and the opencv_native folder are on the same hierarchy level.
 
 Windows:
 
 ```shell
 cd app/src/main
-mklink /d jniLibs ..\..\..\..\opencv_libs\sdk\native\libs
-mklink /d include ..\..\..\..\opencv_libs\sdk\native\jni\include
+mklink /d jniLibs ..\..\..\..\opencv_native\sdk\native\libs
+mklink /d include ..\..\..\..\opencv_native\sdk\native\jni\include
 ```
 
 Linux:
