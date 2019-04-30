@@ -9,15 +9,37 @@ Florian Kleber,
 Markus Diem
 
 ## Build Instructions
-DocScan makes use of native (C++) OpenCV and OpenCV Java API. For the native part you have to download the prebuilt library:
-```shell
-git clone https://github.com/hollaus/opencv_libs.git opencv_libs
-```
-Next you have to create two symlinks that are used in `app/CMakeLists.txt`:
-- Create a symlink named `jniLib` in `app/src/main` that points to `opencv_libs/sdk/native/libs`
-- Create a symlink named `include` in `app/src/main` that points to `opencv_libs/sdk/native/jni/include`
+DocScan makes use of native (C++) OpenCV and OpenCV Java API. The Java part is automatically downloaded after syncing.
+### Download native library
+For the native part you have to clone this repo:
 
-Sync and build the project
+```shell
+git clone https://github.com/hollaus/opencv_libs.git opencv_native
+```
+### Add native library to the project
+Next you have to copy two folders from the native library to the project. Alternatively you can also create symlinks.
+- copy `opencv_native/sdk/native/libs` to `app/src/main/jniLibs`
+- copy `opencv_native/sdk/native/jni/include` to `app/src/main/include`
+
+If you want to create symlinks you can copy paste the following two statements. It is assumed that your project root folder (DocScan) and the opencv_native folder are on the same hierarchy level.
+
+Windows:
+
+```shell
+cd app/src/main
+mklink /d jniLibs ..\..\..\..\opencv_libs\sdk\native\libs
+mklink /d include ..\..\..\..\opencv_libs\sdk\native\jni\include
+```
+
+Linux:
+```shell
+cd app/src/main
+ln -s ../../../opencv_native/sdk/native/libs jniLibs
+ln -s ../../../opencv_native/sdk/native/jni/include include
+```
+
+
+### Sync and build the project
 
 ## API keys
 The app makes use of two APIs that require keys which are not published in the repository and should never be provided to the public. Instead not working dummy keys are provided in the following files:
