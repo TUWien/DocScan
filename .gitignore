@@ -76,3 +76,5 @@ api_info.txt
 /openCVLibrary/*
 /app/release
 /app/CMakeLists.txt
+/app/src/main/jniLibs
+/app/src/main/include
