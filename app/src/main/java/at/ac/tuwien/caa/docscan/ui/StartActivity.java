@@ -77,6 +77,13 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 
         super.onCreate(savedInstanceState);
 
+        if (getIntent().hasExtra("KEY_SHOW_INTRO")) {
+            if (getIntent().getBooleanExtra("KEY_SHOW_INTRO", false)) {
+                startIntro();
+                return;
+            }
+        }
+
         logFirstAppStart();
 
         //initialize Firebase

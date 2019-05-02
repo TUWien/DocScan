@@ -80,13 +80,23 @@
                     android:text="@string/about_transkribus_text"/>
 
                 <Button
+                    android:id="@+id/about_intro_button"
+                    android:text="@string/about_intro_text"
+                    android:layout_centerHorizontal="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_below="@id/about_transkribus_textview"
+                    />
+
+                <Button
                     android:id="@+id/about_licenses_button"
                     android:text="@string/about_licenses_text"
                     android:layout_centerHorizontal="true"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:layout_below="@id/about_transkribus_textview"
+                    android:layout_below="@id/about_intro_button"
                     />
 
             </RelativeLayout>
