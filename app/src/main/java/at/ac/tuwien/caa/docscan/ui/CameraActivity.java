@@ -137,6 +137,8 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
 import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUMENT_QR_TEXT;
+import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IDX;
+import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IMAGE;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -165,6 +167,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private PaintView mPaintView;
     private TextView mCounterView;
     private boolean mShowCounter = true;
+    private int mRetakeIdx;
+    private boolean mRetakeMode = false;
     private CVResult mCVResult;
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
@@ -371,6 +375,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         LinearLayout lockExposureTextView = findViewById(R.id.lock_exposure_text_view);
         if (lockExposureTextView != null)
             lockExposureTextView.setVisibility(View.INVISIBLE);
+
+//        Should an image be retaken?
+//        This is just done if the user hit the button in PageSlideActivity:
+        mRetakeMode = getIntent().getBooleanExtra(KEY_RETAKE_IMAGE, false);
+        if (mRetakeMode) {
+            mRetakeIdx = getIntent().getIntExtra(KEY_RETAKE_IDX, -1);
+//            Clear the extra. This prevents that mRetakeMode is still true if the activity is
+//            resumed after another activity has closed. For example: The user hits 'Retake image'
+//            in the PageSlidActivity and does not hit the shoot button, but instead opens
+//            the gallery. After pressing back the CameraActivity is opened. If the intent extra
+//            is not cleared, the user would be still in retake mode.
+            getIntent().removeExtra(KEY_RETAKE_IMAGE);
+        }
 
     }
 
@@ -742,18 +759,25 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    /**
-     * Opens the MediaScanner (if permission is given) to scan for saved pictures.
-     */
+
     private void openGallery() {
 
         Document document = DocumentStorage.getInstance(this).getActiveDocument();
         if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
+//            Show the last (most recent) image in the gallery:
+            openGallery(document.getPages().size()-1);
+        }
+
+    }
+
+    private void openGallery(int idx) {
+
+        Document document = DocumentStorage.getInstance(this).getActiveDocument();
+        if (document != null && document.getPages() != null && document.getPages().size() >= idx+1) {
             Intent intent = new Intent(getApplicationContext(), PageSlideActivity.class);
             intent.putExtra(mContext.getString(R.string.key_document_file_name),
                     document.getTitle());
-            intent.putExtra(mContext.getString(R.string.key_page_position),
-                    document.getPages().size()-1);
+            intent.putExtra(mContext.getString(R.string.key_page_position), idx);
             mContext.startActivity(intent);
         }
 
@@ -827,7 +851,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 mTimerCallbacks.onTimerStopped(FLIP_SHOT_TIME);
 
                 // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
-                if (mCameraPreview.getCamera() != null) {
+                if (mCameraPreview.getCamera() != null && !mRetakeMode) {
                     mCameraPreview.getCamera().startPreview();
                     mCameraPreview.startAutoFocus();
                 }
@@ -2439,13 +2463,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
 
             if (exifOrientation != -1) {
-                GlideApp.with(mContext)
+                GlideApp.with(getApplicationContext())
                         .load(fileName)
                         .signature(new MediaStoreSignature("", 0, exifOrientation))
                         .into(mGalleryButton);
             }
             else {
-                GlideApp.with(mContext)
+                GlideApp.with(getApplicationContext())
                         .load(fileName)
                         .into(mGalleryButton);
             }
@@ -2531,9 +2555,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Save exif information (especially the orientation):
                 saveExif(file);
 
-                boolean fileAdded = DocumentStorage.getInstance(mContext).addToActiveDocument(file);
-                if (!fileAdded)
-                    DocumentStorage.getInstance(mContext).generateDocument(file, mContext);
+                if (mRetakeMode) {
+                    DocumentStorage.getInstance(mContext).getActiveDocument().replacePage(file, mRetakeIdx);
+                }
+                else {
+                    boolean fileAdded = DocumentStorage.getInstance(mContext).addToActiveDocument(file);
+                    if (!fileAdded)
+                        DocumentStorage.getInstance(mContext).generateDocument(file, mContext);
+                }
 
                 mIsPictureSafe = true;
 
@@ -2647,6 +2676,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
                 //            Start the page detection on the saved image:
                 ImageProcessor.pageDetection(new File(uri));
+
+                if (mRetakeMode) {
+                    openGallery(mRetakeIdx);
+                    GalleryActivity.fileRotated();
+                    finish();
+                }
             }
             else
                 Log.d(CLASS_NAME, "onPostExecute: could not save file!");

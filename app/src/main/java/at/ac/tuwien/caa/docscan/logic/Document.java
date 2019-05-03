@@ -28,6 +28,20 @@ public class Document {
 
     }
 
+    public void replacePage(File file, int index) {
+
+        if (mPages != null && mPages.size() >= index + 1 && mPages.get(index) != null) {
+
+            Page page = mPages.get(index);
+            page.getFile().delete();
+            page.setFile(file);
+
+            mIsUploaded = false;
+
+        }
+
+    }
+
     public void setMetaData(TranskribusMetaData metaData) {
 
         mMetaData = metaData;

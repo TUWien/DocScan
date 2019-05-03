@@ -57,6 +57,8 @@ import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.intro.IntroFragment;
 import at.ac.tuwien.caa.docscan.ui.intro.ZoomOutPageTransformer;
 
+import static at.ac.tuwien.caa.docscan.ui.AboutActivity.KEY_SHOW_INTRO;
+
 
 /**
  * Activity called after the app is started. This activity is responsible for requesting the camera
@@ -77,8 +79,8 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 
         super.onCreate(savedInstanceState);
 
-        if (getIntent().hasExtra("KEY_SHOW_INTRO")) {
-            if (getIntent().getBooleanExtra("KEY_SHOW_INTRO", false)) {
+        if (getIntent().hasExtra(KEY_SHOW_INTRO)) {
+            if (getIntent().getBooleanExtra(KEY_SHOW_INTRO, false)) {
                 startIntro();
                 return;
             }

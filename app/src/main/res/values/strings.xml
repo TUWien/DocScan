@@ -401,6 +401,12 @@
     <string name="page_slide_fragment_confirm_delete_cancel_text">Cancel</string>
     <string name="page_slide_fragment_share_choose_app_text">Choose an app</string>
     <string name="page_slide_fragment_loading_text">Please wait while the page is detected</string>
+    <string name="page_slide_fragment_retake_image_item_text">Retake image</string>
+    <string name="page_slide_fragment_show_gallery_item_text">Show gallery</string>
+    <string name="page_slide_fragment_retake_image_dialog_title">Retake image</string>
+    <string name="page_slide_fragment_retake_image_dialog_text">Do you really want to replace this image with a new one? This cannot be undone.</string>
+    <string name="page_slide_fragment_retake_image_dialog_confirm_text">Retake</string>
+    <string name="page_slide_fragment_retake_image_dialog_cancel_text">Cancel</string>
 
     <!-- GalleryActivity -->
     <string name="gallery_menu_edit_item_title">Edit document</string>

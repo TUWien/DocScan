@@ -18,21 +18,21 @@
         android:paddingEnd="16dp"
         android:paddingStart="16dp">
 
-        <RelativeLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
+        <!--<RelativeLayout-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_weight="1">-->
 
-            <ImageView
-                android:id="@+id/page_view_buttons_layout_gallery_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:layout_marginBottom="8dp"
-                android:layout_marginTop="8dp"
-                android:padding="8dp"
-                app:srcCompat="@drawable/ic_collections_white_24dp" />
-        </RelativeLayout>
+            <!--<ImageView-->
+                <!--android:id="@+id/page_view_buttons_layout_gallery_button"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_centerInParent="true"-->
+                <!--android:layout_marginBottom="8dp"-->
+                <!--android:layout_marginTop="8dp"-->
+                <!--android:padding="8dp"-->
+                <!--app:srcCompat="@drawable/ic_collections_white_24dp" />-->
+        <!--</RelativeLayout>-->
 
         <RelativeLayout
             android:layout_width="0dp"

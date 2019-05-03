@@ -22,6 +22,8 @@ import at.ac.tuwien.caa.docscan.ui.license.LicenseActivity;
  */
 public class AboutActivity extends BaseNavigationActivity {
 
+    public static String KEY_SHOW_INTRO = "KEY_SHOW_INTRO";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -55,7 +57,7 @@ public class AboutActivity extends BaseNavigationActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(context, StartActivity.class);
-                intent.putExtra("KEY_SHOW_INTRO", true);
+                intent.putExtra(KEY_SHOW_INTRO, true);
                 startActivity(intent);
             }
         });

@@ -41,6 +41,9 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -56,6 +59,7 @@ import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
+import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
@@ -71,6 +75,9 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     private LinearLayout mButtonsLayout;
     private Context mContext;
     private BroadcastReceiver mMessageReceiver;
+
+    public static final String KEY_RETAKE_IMAGE = "KEY_RETAKE_IMAGE";
+    public static final String KEY_RETAKE_IDX = "KEY_RETAKE_IDX";
 
     private static final int PERMISSION_ROTATE = 0;
     private static final int PERMISSION_DELETE = 1;
@@ -140,6 +147,16 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         mMessageReceiver = null;
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.page_slide_menu, menu);
+
+        return true;
 
     }
 
@@ -306,13 +323,55 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-   private void initButtons() {
+    public void retakeImage(MenuItem item) {
+
+        final int idx;
+        if (mDocument != null && mDocument.getPages() != null && mPage != null)
+            idx = mDocument.getPages().indexOf(mPage);
+        else
+//        Nothing to do here. TODO: add an error message
+            return;
+
+
+        final Context context = this;
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(getString(R.string.page_slide_fragment_retake_image_dialog_title))
+                .setNegativeButton(getString(R.string.page_slide_fragment_retake_image_dialog_cancel_text), null)
+                .setPositiveButton(getString(R.string.page_slide_fragment_retake_image_dialog_confirm_text),
+                        new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)  {
+
+                        Intent intent = new Intent(context, CameraActivity.class);
+//                        Define which image / page should be replaced:
+                        intent.putExtra(KEY_RETAKE_IMAGE, true);
+                        intent.putExtra(KEY_RETAKE_IDX, idx);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
+                        finish();
+
+                    }
+                })
+                .setCancelable(true)
+                .setMessage(getString(R.string.page_slide_fragment_retake_image_dialog_text));
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+    }
+
+
+    private void initButtons() {
 
        mButtonsLayout = findViewById(R.id.page_view_buttons_layout);
-//       Take care that the mButtonsLayout is not overlaid by the navigation bar:
-//       mButtonsLayout.setPadding(0, 0, 0, getNavigationBarHeight());
+    //       Take care that the mButtonsLayout is not overlaid by the navigation bar:
+    //       mButtonsLayout.setPadding(0, 0, 0, getNavigationBarHeight());
 
-        initGalleryButton();
+    //        initGalleryButton();
         initCropButton();
         initDeleteButton();
         initRotateButton();
@@ -320,16 +379,22 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-    private void initGalleryButton() {
+    public void showGallery(MenuItem item) {
 
-        ImageView galleryImageView = findViewById(R.id.page_view_buttons_layout_gallery_button);
-        galleryImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startGalleryActivity();
-            }
-        });
+        startGalleryActivity();
+
     }
+
+//    private void initGalleryButton() {
+//
+//        ImageView galleryImageView = findViewById(R.id.page_view_buttons_layout_gallery_button);
+//        galleryImageView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                startGalleryActivity();
+//            }
+//        });
+//    }
 
     private void startGalleryActivity() {
 
