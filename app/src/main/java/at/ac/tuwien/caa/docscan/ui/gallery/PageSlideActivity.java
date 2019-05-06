@@ -348,9 +348,9 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //                        Define which image / page should be replaced:
                         intent.putExtra(KEY_RETAKE_IMAGE, true);
                         intent.putExtra(KEY_RETAKE_IDX, idx);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                         startActivity(intent);
-                        finish();
+//                        finish();
 
                     }
                 })

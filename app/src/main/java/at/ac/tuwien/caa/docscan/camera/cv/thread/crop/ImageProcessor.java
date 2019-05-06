@@ -169,12 +169,22 @@ public class ImageProcessor {
                     return false;
 
                 if (task instanceof PageDetectionTask) {
-                    ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_PAGE_DETECTION);
+                    ImageProcessLogger.removeTask(task.getFile(),
+                            ImageProcessLogger.TASK_TYPE_PAGE_DETECTION);
+
 //                    Check if the page is unfocused:
-                    if (mContext != null && mContext.get() != null &&
-                            !PageDetector.getNormedCropPoints(task.getFile().getAbsolutePath()).isFocused())
-                        DocumentStorage.getInstance(mContext.get()).setPageAsUnsharp(
-                                task.getFile().getName());
+                    if (mContext != null && mContext.get() != null) {
+                        boolean isFocused = PageDetector.getNormedCropPoints(task.getFile().
+                                getAbsolutePath()).isFocused();
+                        DocumentStorage.getInstance(mContext.get()).setPageFocused(
+                                task.getFile().getName(), isFocused);
+                    }
+
+////                    Check if the page is unfocused:
+//                    if (mContext != null && mContext.get() != null &&
+//                            !PageDetector.getNormedCropPoints(task.getFile().getAbsolutePath()).isFocused())
+//                        DocumentStorage.getInstance(mContext.get()).setPageAsUnsharp(
+//                                task.getFile().getName());
 
                 }
                 else if (task instanceof MapTask) {

@@ -50,6 +50,7 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.media.ExifInterface;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -102,6 +103,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.ActivityUtils;
 import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
@@ -775,10 +777,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         Document document = DocumentStorage.getInstance(this).getActiveDocument();
         if (document != null && document.getPages() != null && document.getPages().size() >= idx+1) {
             Intent intent = new Intent(getApplicationContext(), PageSlideActivity.class);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.putExtra(mContext.getString(R.string.key_document_file_name),
                     document.getTitle());
             intent.putExtra(mContext.getString(R.string.key_page_position), idx);
-            mContext.startActivity(intent);
+//            mContext.startActivity(intent);
+
+            ActivityUtils.createBackStack(this, intent);
+//            startActivity(intent);
+//            finish();
+
+//            TaskStackBuilder builder = TaskStackBuilder.create(this);
+//            builder.addNextIntentWithParentStack(intent);
+//            builder.startActivities();
         }
 
     }

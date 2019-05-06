@@ -44,17 +44,29 @@ public class DocumentStorage {
 
     }
 
-    public void setPageAsUnsharp(String fileName) {
+    public void setPageFocused(String fileName, boolean isFocused) {
 
         for (Document document : mDocuments) {
             if (document != null) {
                 int docIdx = document.getFileNames().indexOf(fileName);
                 if (docIdx != -1)
-                    document.getPages().get(docIdx).setIsFocused(false);
+                    document.getPages().get(docIdx).setIsFocused(isFocused);
             }
         }
 
     }
+
+//    public void setPageAsUnsharp(String fileName) {
+//
+//        for (Document document : mDocuments) {
+//            if (document != null) {
+//                int docIdx = document.getFileNames().indexOf(fileName);
+//                if (docIdx != -1)
+//                    document.getPages().get(docIdx).setIsFocused(false);
+//            }
+//        }
+//
+//    }
 
     public void setTitle(String title) {
 
