@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -86,7 +87,7 @@ public class DocumentUploadAdapter extends DocumentAdapter {
                 if (textView != null) {
                     textView.append(" " +
                             mContext.getResources().getString(R.string.sync_not_focused_text));
-                    Drawable img = getContext().getResources().getDrawable(R.drawable.ic_warning_black_18dp);
+                    Drawable img = AppCompatResources.getDrawable(mContext, R.drawable.ic_warning_black_18dp);
                     textView.setCompoundDrawablesWithIntrinsicBounds( img,null,null,null);
                 }
             }
