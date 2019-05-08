@@ -2271,16 +2271,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 saveExif(file);
 
                 //PageSplit
-
                 try {
 
-                    PageSplit mPageSplit = new PageSplit(mContext);
-                    if (mPageSplit.applyPageSplit(uri, mContext) == 1) {
+                    if (PageSplit.getInstance(mContext).applyPageSplit(uri, mContext) == 1) {
                         Log.d(PageSplit.TAG, "could not apply PageSplit");
                     } else {
                         Log.d("PageSplit", "Applied PageSplit");
                     }
-                    mPageSplit.close();
                 } catch (IOException e) {
                     Log.e("PageSplit", "Failed to apply PageSplit");
                 }
