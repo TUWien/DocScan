@@ -129,6 +129,9 @@
     <string name="flash_auto_mode">Flash auto</string>
     <string name="flash_on_mode">Flash on</string>
     <string name="flash_torch_mode">Torch</string>
+    <string name="show_grid_item_title">Show grid</string>
+    <string name="hide_grid_item_title">Hide grid</string>
+    <string name="gallery_item_title">Open gallery</string>
 
     <string name="upload_item">Upload</string>
     <string name="lock_exposure_item">Lock exposure and white balance</string>
@@ -327,8 +330,9 @@
     <string name="intro_text_1">This app is especially designed for the <a href="https://scantent.eu/">ScanTent</a>.\nIf you own a ScanTent: Please put your document inside.</string>
     <string name="intro_text_2">Place your phone on the ScanTent</string>
     <string name="intro_text_3">Start the series mode in the app</string>
-    <string name="intro_text_4">Flip pages - images are captured automatically</string>
+    <string name="intro_text_4">Flip pages - images are captured automatically.\n</string>
     <string name="intro_text_5">Your scanned images are grouped into documents.\nDocuments can be exported as PDF and uploaded.</string>
+    <string name="intro_trigger_flash_text">Trigger flash after automatic imaging to show that an image has been taken.</string>
     <string name="intro_create_document_button_text">Create a document now</string>
     <string name="intro_skip_button_text">Skip</string>
 

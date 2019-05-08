@@ -182,7 +182,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private boolean mIsPictureSafe;
     private TextView mTextView;
     private MenuItem mFlashMenuItem, mDocumentMenuItem, mGalleryMenuItem, mUploadMenuItem,
-            mWhiteBalanceMenuItem, mLockExposureMenuItem, mUnlockExposureMenuItem;
+            mLockExposureMenuItem, mUnlockExposureMenuItem;
     private Drawable mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
     private boolean mIsSeriesModePaused = true;
@@ -663,15 +663,25 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mDocumentMenuItem = menu.findItem(R.id.document_item);
         mGalleryMenuItem = menu.findItem(R.id.gallery_item);
         mUploadMenuItem = menu.findItem(R.id.upload_item);
-        mWhiteBalanceMenuItem = menu.findItem(R.id.white_balance_item);
+//        mWhiteBalanceMenuItem = menu.findItem(R.id.white_balance_item);
         mLockExposureMenuItem = menu.findItem(R.id.lock_exposure_item);
         mUnlockExposureMenuItem = menu.findItem(R.id.unlock_exposure_item);
 
-        inflater.inflate(R.menu.white_balance_menu, mWhiteBalanceMenuItem.getSubMenu());
+//        inflater.inflate(R.menu.white_balance_menu, mWhiteBalanceMenuItem.getSubMenu());
 
         // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
         if (mFlashModes != null && !mIsSeriesMode)
             mFlashMenuItem.setVisible(true);
+
+        MenuItem item = menu.findItem(R.id.grid_item);
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean showGrid = sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
+
+        if (showGrid)
+            item.setTitle(getString(R.string.hide_grid_item_title));
+        else
+            item.setTitle(getString(R.string.show_grid_item_title));
 
         return true;
 
@@ -1864,21 +1874,21 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
 
-    @Override
-    public void onWhiteBalanceFound(List<String> whiteBalances) {
-
-//        if (mWhiteBalancePopupMenu == null) // Menu is not created yet
-//            return;
+//    @Override
+//    public void onWhiteBalanceFound(List<String> whiteBalances) {
 //
-////        At least one white balance mode found must be handled by the UI:
-//        boolean isWBSupported = false;
-//        for (String whiteBalance : whiteBalances)
-//            isWBSupported |= enableWBItem(whiteBalance);
-//
-////        Otherwise hide the WB item:
-//        if (!isWBSupported)
-//            mWhiteBalanceMenuItem.setVisible(false);
-    }
+////        if (mWhiteBalancePopupMenu == null) // Menu is not created yet
+////            return;
+////
+//////        At least one white balance mode found must be handled by the UI:
+////        boolean isWBSupported = false;
+////        for (String whiteBalance : whiteBalances)
+////            isWBSupported |= enableWBItem(whiteBalance);
+////
+//////        Otherwise hide the WB item:
+////        if (!isWBSupported)
+////            mWhiteBalanceMenuItem.setVisible(false);
+//    }
 
 //    /**
 //     * Returns true if the whiteBalance is handled in the UI.
@@ -2113,6 +2123,25 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    public void showGrid(MenuItem item) {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean showGrid = !sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
+        mPaintView.drawGrid(showGrid);
+
+//        Save the new setting:
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(getResources().getString(R.string.key_show_grid), showGrid);
+        editor.commit();
+
+//        Change the item text:
+        if (showGrid)
+            item.setTitle(getString(R.string.hide_grid_item_title));
+        else
+            item.setTitle(getString(R.string.show_grid_item_title));
+
+    }
+
 
     public void startGalleryActivity(MenuItem item) {
 
@@ -2190,26 +2219,26 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    public void whiteBalanceAuto(MenuItem item) {
-
-        if (mCameraPreview != null)
-            mCameraPreview.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_AUTO);
-
-    }
-
-    public void whiteBalanceDaylight(MenuItem item) {
-
-        if (mCameraPreview != null)
-            mCameraPreview.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_DAYLIGHT);
-
-    }
-
-    public void whiteBalanceCloudy(MenuItem item) {
-
-        if (mCameraPreview != null)
-            mCameraPreview.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_FLUORESCENT);
-
-    }
+//    public void whiteBalanceAuto(MenuItem item) {
+//
+//        if (mCameraPreview != null)
+//            mCameraPreview.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_AUTO);
+//
+//    }
+//
+//    public void whiteBalanceDaylight(MenuItem item) {
+//
+//        if (mCameraPreview != null)
+//            mCameraPreview.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_DAYLIGHT);
+//
+//    }
+//
+//    public void whiteBalanceCloudy(MenuItem item) {
+//
+//        if (mCameraPreview != null)
+//            mCameraPreview.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_FLUORESCENT);
+//
+//    }
 
     @SuppressWarnings("deprecation")
     private void setupFlashUI() {

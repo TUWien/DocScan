@@ -303,7 +303,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onFrameDimensionChange(int width, int height, int cameraOrientation);
         void onFlashModesFound(List<String> modes);
         void onExposureLockFound(boolean isSupported);
-        void onWhiteBalanceFound(List<String> whiteBalances);
+//        void onWhiteBalanceFound(List<String> whiteBalances);
         void onFocusTouch(PointF point);
         void onFocusTouchSuccess();
 
@@ -757,8 +757,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 //        Tell the activity if the auto exposure can be locked:
         mCameraPreviewCallback.onExposureLockFound(params.isAutoExposureLockSupported());
-//        Tell the activity how we can control the white balance:
-        mCameraPreviewCallback.onWhiteBalanceFound(params.getSupportedWhiteBalance());
+////        Tell the activity how we can control the white balance:
+//        mCameraPreviewCallback.onWhiteBalanceFound(params.getSupportedWhiteBalance());
 
     }
 

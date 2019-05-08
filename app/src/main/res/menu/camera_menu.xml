@@ -29,11 +29,19 @@
         />
 
     <item
+        android:id="@+id/grid_item"
+        android:title="@string/show_grid_item_title"
+        android:visible="true"
+        app:showAsAction="never"
+        android:onClick="showGrid"
+        />
+
+    <item
         android:id="@+id/gallery_item"
         android:icon="@drawable/ic_collections_white_24dp"
-        android:title="@string/flash_mode"
+        android:title="@string/gallery_item_title"
         android:visible="true"
-        app:showAsAction="always"
+        app:showAsAction="never"
         android:onClick="startGalleryActivity"
         />
 
@@ -59,15 +67,21 @@
         app:showAsAction="never"
         android:onClick="unlockExposure"
         />
-    <item
-        android:id="@+id/white_balance_item"
-        android:title="@string/white_balance_text"
-        android:visible="true"
-        app:showAsAction="never"
-
-        >
-        <menu></menu>
-    </item>
+    <!--<item-->
+        <!--android:id="@+id/show_grid_item"-->
+        <!--android:title="@string/unlock_exposure_item"-->
+        <!--android:visible="false"-->
+        <!--app:showAsAction="never"-->
+        <!--android:onClick="unlockExposure"-->
+        <!--/>-->
+    <!--<item-->
+        <!--android:id="@+id/white_balance_item"-->
+        <!--android:title="@string/white_balance_text"-->
+        <!--android:visible="true"-->
+        <!--app:showAsAction="never"-->
+        <!--&gt;-->
+        <!--<menu></menu>-->
+    <!--</item>-->
 
 
 </menu>
