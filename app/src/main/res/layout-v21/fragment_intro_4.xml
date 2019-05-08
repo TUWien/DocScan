@@ -3,7 +3,8 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:theme="@style/AppTheme">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,11 +26,19 @@
             android:id="@+id/intro_1_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="@color/black"
             android:layout_weight="0"
             android:textAlignment="center"
-            android:textColor="@color/black"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:text="@string/intro_text_4"/>
+        <CheckBox
+            android:id="@+id/intro_4_trigger_flash_checkbox"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:onClick="triggerFlash"
+            android:text="@string/intro_trigger_flash_text" />
     </LinearLayout>
 
 </RelativeLayout>

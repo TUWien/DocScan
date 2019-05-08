@@ -42,6 +42,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.util.Log;
 import android.view.View;
+import android.widget.CheckBox;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.firebase.FirebaseApp;
@@ -141,7 +142,15 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 
     }
 
+    public void triggerFlash(View view) {
 
+        CheckBox checkBox = (CheckBox) view;
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(getString(R.string.key_flash_series_mode), checkBox.isChecked());
+        editor.commit();
+
+    }
 
 
     private class PageSlideAdapter extends FragmentPagerAdapter {

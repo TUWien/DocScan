@@ -1,13 +1,16 @@
 package at.ac.tuwien.caa.docscan.ui.intro;
 
+import android.content.SharedPreferences;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -120,6 +123,15 @@ public class IntroFragment extends Fragment {
                     break;
                 case 3:
                     rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_4, container, false);
+//                    Initialize the trigger flash checkbox. Note that the button is checkbox can be
+//                    checked in case the user starts the intro from the AboutActivity
+
+                    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(
+                            getContext());
+                    boolean check = sharedPref.getBoolean(getString(R.string.key_flash_series_mode),
+                            false);
+                    CheckBox checkBox = rootView.findViewById(R.id.intro_4_trigger_flash_checkbox);
+                    checkBox.setChecked(check);
                     break;
             }
 
