@@ -2,7 +2,6 @@
 <resources>
 
     <color name="colorPrimary">#607d8b</color>
-    <color name="colorPrimaryDark">#263238</color>
     <color name="colorAccent">#ff9800</color>
     <color name="colorAccentLight">#ffb84d</color>
 
@@ -17,9 +16,6 @@
     <color name="black">#000</color>
     <color name="icon_color_navigation_view">#424242</color>
 
-    <color name="recycle_view_disabled">#96000000</color>
-
-    <color name="button_dark_gray">#90000000</color>
     <!--<color name="button_view_bg_color">#333</color>-->
 
     <color name="hud_page_rect_color">#dfa0</color>

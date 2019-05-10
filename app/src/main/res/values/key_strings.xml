@@ -7,7 +7,6 @@
     <string name="key_upload_mobile_data">KEY_UPLOAD_MOBILE_DATA</string>
     <string name="key_fast_segmentation">KEY_FAST_SEGMENTATION</string>
     <string name="key_focus_measure">KEY_FOCUS_MEASURE</string>
-    <string name="key_show_advanced_qr_code">KEY_SHOW_ADVANCED_QR_CODE</string>
     <string name="key_show_focus_values">KEY_SHOW_FOCUS_VALUES</string>
     <string name="key_show_grid">KEY_SHOW_GRID</string>
     <string name="key_flash_series_mode">KEY_FLASH_SERIES_MODE</string>

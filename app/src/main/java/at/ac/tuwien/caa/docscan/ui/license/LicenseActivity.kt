@@ -1,8 +1,8 @@
 package at.ac.tuwien.caa.docscan.ui.license
 
 import android.os.Bundle
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.Toolbar
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.appcompat.widget.Toolbar
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity
 import kotlinx.android.synthetic.main.activity_licenses.*

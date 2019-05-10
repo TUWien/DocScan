@@ -3,9 +3,9 @@ package at.ac.tuwien.caa.docscan.ui;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.os.Bundle;
-import android.support.media.ExifInterface;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.exifinterface.media.ExifInterface;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -110,7 +110,7 @@ public class CropViewActivity extends AppCompatActivity {
 
 //        Enable back navigation in action bar:
         setSupportActionBar(mToolbar);
-        mToolbar.setNavigationIcon(android.support.v7.appcompat.R.drawable.abc_ic_clear_material);
+        mToolbar.setNavigationIcon(R.drawable.ic_clear_black_24dp);
 
     }
 

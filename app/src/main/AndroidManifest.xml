@@ -7,12 +7,12 @@
         android:icon="@mipmap/ic_launcher_adaptive"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:name="android.support.multidex.MultiDexApplication"
+        android:name="androidx.multidex.MultiDexApplication"
         android:theme="@style/AppTheme" >
 
         <!-- We need a file provider to enable a sharing of the log file (which is saved in internal memory) -->
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="at.ac.tuwien.caa.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">

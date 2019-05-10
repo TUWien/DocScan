@@ -45,7 +45,7 @@
                 android:layout_width="match_parent"
                 android:background="@android:color/transparent" />
 
-            <android.support.v7.widget.AppCompatImageButton
+            <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/hud_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -74,7 +74,7 @@
                     android:visibility="invisible"
                     android:background="@color/debug_view_bg_color"
                     android:padding="3dp">
-                    <android.support.v7.widget.AppCompatImageView
+                    <androidx.appcompat.widget.AppCompatImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         app:srcCompat="@drawable/ic_lock_outline_white_24dp"/>
@@ -97,7 +97,7 @@
                     android:visibility="invisible"
                     android:background="@color/debug_view_bg_color"
                     android:padding="3dp">
-                    <android.support.v7.widget.AppCompatImageView
+                    <androidx.appcompat.widget.AppCompatImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         app:srcCompat="@drawable/ic_unlock_open_black_24dp"/>
@@ -139,7 +139,7 @@
                     android:textSize="16sp"
                     android:gravity="center"
                     />
-                <android.support.v7.widget.AppCompatButton
+                <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/force_shoot_button"
                     android:visibility="invisible"
                     android:layout_width="match_parent"

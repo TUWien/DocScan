@@ -3,7 +3,7 @@ package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.os.Looper;
-import android.support.media.ExifInterface;
+import androidx.exifinterface.media.ExifInterface;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
@@ -19,7 +19,6 @@ import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 
 public class PageDetector {
 

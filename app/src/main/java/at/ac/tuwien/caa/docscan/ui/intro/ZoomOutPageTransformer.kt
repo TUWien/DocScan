@@ -1,6 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.intro
 
-import android.support.v4.view.ViewPager
+import androidx.viewpager.widget.ViewPager
 import android.view.View
 
 private const val MIN_SCALE = 0.85f

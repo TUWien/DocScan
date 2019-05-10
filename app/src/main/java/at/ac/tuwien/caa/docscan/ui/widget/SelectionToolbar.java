@@ -2,10 +2,10 @@ package at.ac.tuwien.caa.docscan.ui.widget;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.appbar.AppBarLayout;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import at.ac.tuwien.caa.docscan.R;
 
@@ -46,7 +46,7 @@ public class SelectionToolbar {
         mToolbar.setTitle(Integer.toString(selectionCount) + " "
                 + mContext.getResources().getString(R.string.gallery_selected));
 //            Set custom home button:
-        mToolbar.setNavigationIcon(android.support.v7.appcompat.R.drawable.abc_ic_clear_material);
+        mToolbar.setNavigationIcon(R.drawable.ic_clear_black_24dp);
         mToolbar.setBackgroundColor(mContext.getResources().getColor(R.color.colorAccent));
 
         mAppBarLayout.setLayoutParams(mCoordinatorLayoutParams);
