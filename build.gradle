@@ -10,14 +10,14 @@ buildscript {
 
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.0'
+        classpath 'com.android.tools.build:gradle:3.4.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // Check for v3.1.2 or higher
         classpath 'com.google.gms:google-services:4.2.0'
 
         // Add dependency
-        classpath 'io.fabric.tools:gradle:1.26.1'
+        classpath 'io.fabric.tools:gradle:1.28.0'
 
 
         // NOTE: Do not place your application dependencies here; they belong
