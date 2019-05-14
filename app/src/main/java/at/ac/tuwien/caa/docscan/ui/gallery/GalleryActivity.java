@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.AppBarLayout;
@@ -24,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -35,6 +37,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity;
+import at.ac.tuwien.caa.docscan.ui.widget.PageSplit;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
@@ -357,6 +360,24 @@ public class GalleryActivity extends AppCompatActivity implements
         mMenu = menu;
         return true;
 
+    }
+
+    public void applyPageSplit(MenuItem item){
+        int[] selectionIdx = mAdapter.getSelectionIndices();
+        Log.d("PageSplit", "length of selectionIdx = "+Integer.toString(selectionIdx.length));
+        if (selectionIdx.length > 3) {
+            return;
+        }
+        for (int aSelectionIdx : selectionIdx)
+            try {
+                if (PageSplit.getInstance(this).applyPageSplit(Uri.fromFile(mDocument.getPages().get(aSelectionIdx).getFile()), this) == 1) {
+                    Log.d(PageSplit.TAG, "could not apply PageSplit");
+                } else {
+                    Log.d("PageSplit", "Applied PageSplit");
+                }
+            } catch (IOException e) {
+                Log.e("PageSplit", "Failed to apply PageSplit");
+            }
     }
 
     public void selectAllItems(MenuItem item) {

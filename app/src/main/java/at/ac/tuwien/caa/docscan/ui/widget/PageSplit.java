@@ -6,24 +6,21 @@ import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.PointF;
-import android.graphics.PorterDuffXfermode;
+import android.os.Message;
+import android.provider.MediaStore;
 import android.support.media.ExifInterface;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.provider.MediaStore;
 import android.util.Log;
+import android.util.Xml;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.io.StringWriter;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -32,7 +29,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -42,23 +38,21 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.primaresearch.dla.page.Page;
 import org.tensorflow.lite.Interpreter;
+import org.xmlpull.v1.XmlSerializer;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 
 import static org.opencv.android.Utils.bitmapToMat;
 import static org.opencv.android.Utils.matToBitmap;
 import static org.opencv.core.CvType.CV_32FC1;
-import static org.opencv.core.CvType.CV_32FC3;
-import static org.opencv.core.CvType.CV_32SC3;
-import static org.opencv.core.CvType.CV_64FC1;
 import static org.opencv.core.CvType.CV_8UC1;
+
 
 /**
  *   Created by Matthias Wödlinger on 14.02.2019
@@ -137,36 +131,38 @@ public class PageSplit {
             return 1;
         }
 
-        int[] id = {R.drawable.book_1,
-                R.drawable.book_2,
-                R.drawable.book_3,
-                R.drawable.book_4,
-                R.drawable.book_5,
-                R.drawable.book_6,
-                R.drawable.book_7,
-                R.drawable.book_8,
-                R.drawable.book_9,
-                R.drawable.book_10,
-                R.drawable.book_11,
-                R.drawable.book_12};
+//        int[] id = {R.drawable.book_1,
+//                R.drawable.book_2,
+//                R.drawable.book_3,
+//                R.drawable.book_4,
+//                R.drawable.book_5,
+//                R.drawable.book_6,
+//                R.drawable.book_7,
+//                R.drawable.book_8,
+//                R.drawable.book_9,
+//                R.drawable.book_10,
+//                R.drawable.book_11,
+//                R.drawable.book_12};
 
-        for (int book = 0; book < 12; ++book) {
-            book_c = book;
+//        for (int book = 5; book < 12; ++book) {
+//            book_c = book;
+
+
+
             // Load input bitmap
+
+
+        Bitmap bmp = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), uri);
 //        Bitmap inBitmap = Bitmap.createScaledBitmap(bmp, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, true);
+        long timeBegin = SystemClock.uptimeMillis();
+        Bitmap inBitmap = decodeSampledBitmapFromUri(uri, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y);
+        inBitmap = Bitmap.createScaledBitmap(inBitmap, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, true);
 
-
-//        Bitmap bmp = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), uri);
-            long timeBegin = SystemClock.uptimeMillis();
-//        Bitmap inBitmap = decodeSampledBitmapFromUri(uri, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y);
-//        inBitmap = Bitmap.createScaledBitmap(inBitmap, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, true);
-
-
-            Bitmap bmp = decodeSampledBitmapFromResource(mContext.getResources(),
-                    id[book], DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y);
-            Bitmap inBitmap = Bitmap.createScaledBitmap(
-                    decodeSampledBitmapFromResource(mContext.getResources(), id[book], DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y),
-                    DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, true);
+//            Bitmap bmp = decodeSampledBitmapFromResource(mContext.getResources(),
+//                    id[book], DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y);
+//            Bitmap inBitmap = Bitmap.createScaledBitmap(
+//                    decodeSampledBitmapFromResource(mContext.getResources(), id[book], DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y),
+//                    DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, true);
 
 
             // Rotate the Bitmap
@@ -175,13 +171,13 @@ public class PageSplit {
             inMatrix.postRotate(rotationInDegrees + 90); // The model needs the book rotated by 90°; TODO: find out why
             inBitmap = Bitmap.createBitmap(inBitmap, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, inMatrix, true);
 
+            saveBitmap(inBitmap, "test123", mContext);
 
             // The TfLite model needs a float array as input and output
             // For alternatives see: https://www.tensorflow.org/lite/apis#running_a_model_2
             float[][][][] outFloat = new float[1][DIM_IMG_SIZE_X][DIM_IMG_SIZE_Y][3];
             float[][][][] inFloat = new float[1][DIM_IMG_SIZE_X][DIM_IMG_SIZE_Y][3];
             bitmapToFloatArray(inBitmap, inFloat);
-
             // Running the model
             long startTime = SystemClock.uptimeMillis();
             mTflite.run(inFloat, outFloat);
@@ -215,40 +211,254 @@ public class PageSplit {
             split.release();
             sMask = bwClean(sMask, 3);//3
             int cPoints =  countConfidentPoints(sMask,100);
-            Log.d(TAG,"COUNTER: " + Integer.toString(cPoints));
+//            Log.d(TAG,"COUNTER: " + Integer.toString(cPoints));
 
             Point sTop = new Point();
             Point sBottom = new Point();
-            if (cPoints < 10) {//countConfidentPoints(sMask,240) < 50) {
-                sTop.x = pCorners.get(0).x;
-                sTop.y = pCorners.get(0).y;
-                sBottom.x = pCorners.get(3).x;
-                sBottom.y = pCorners.get(3).y;
+            if (cPoints < 10) {
+                writeCornersToXML(pCorners, uri);
             } else {
                 final List<MatOfPoint> sContours = findPolygonalRegions(sMask, 0.001,
                         1, false);
                 if (sContours.isEmpty()) {
                     Log.e(TAG, "no contours for split found");
-                    continue;//TODO: change
-//                return 1;
+//                    continue;//TODO: remove
+                return 1;
                 }
 
                 // Fit a line to the seperator
                 Core.rotate(sMask, sMask, Core.ROTATE_90_CLOCKWISE);
                 interpolateSeperator(sContours, sMask, pCorners, sTop, sBottom);
-                checkIfSinglePage(pCorners, sTop, sBottom, 0.3);
+                final int pageType = checkIfSinglePage(pCorners, sTop, sBottom, 0.3);//-1: only left page; 0: single page; 1 only right page
+                Log.d(TAG, "pageType = " + Integer.toString(pageType));
+
+                if (pageType == -1) {
+                    final List<Point> lCorners = new ArrayList<>();
+
+                    lCorners.add(pCorners.get(0));
+                    lCorners.add(sTop);
+                    lCorners.add(sBottom);
+                    lCorners.add(pCorners.get(3));
+
+                    writeCornersToXML(lCorners, uri);
+                } else if (pageType == 1) {
+                    final List<Point> rCorners = new ArrayList<>();
+
+                    rCorners.add(sTop);
+                    rCorners.add(pCorners.get(1));
+                    rCorners.add(pCorners.get(2));
+                    rCorners.add(sBottom);
+
+                    writeCornersToXML(rCorners, uri);
+                } else {
+                    final List<Point> lCorners = new ArrayList<>();
+
+                    lCorners.add(pCorners.get(0));
+                    lCorners.add(sTop);
+                    lCorners.add(sBottom);
+                    lCorners.add(pCorners.get(3));
+
+                    final List<Point> rCorners = new ArrayList<>();
+
+                    rCorners.add(sTop);
+                    rCorners.add(pCorners.get(1));
+                    rCorners.add(pCorners.get(2));
+                    rCorners.add(sBottom);
+
+                    writeCornersToXML(lCorners, rCorners, uri);
+                }
+
             }
+
+            final ExifInterface exif123 = new ExifInterface(uri.getPath());
+            Log.d(TAG, "EXIF: " + exif123.getAttribute(ExifInterface.TAG_MAKER_NOTE));
 
 
             long timeEnd = SystemClock.uptimeMillis();
             Log.d(TAG, "Total time cost: " + Long.toString((timeEnd - timeBegin)) + "ms");
 
             rescaleCorners(bmp, uri, pCorners, sTop, sBottom);
-            helperDrawTrapezoid(bmp, mContext, uri, pCorners, sTop, sBottom, 10, "Bounding_trapezoid_" + Integer.toString(book));
-            saveBitmap(outBitmap, "pagesplit_" + Integer.toString(book) + MODEL_NAME, mContext);
+            helperDrawTrapezoid(bmp, mContext, uri, pCorners, sTop, sBottom, 10, "Bounding_trapezoid_");
+            saveBitmap(outBitmap, "pagesplit_" + MODEL_NAME, mContext);
 
-        }
+
+//            helperDrawTrapezoid(bmp, mContext, uri, pCorners, sTop, sBottom, 10, "Bounding_trapezoid_" + Integer.toString(book));
+//            saveBitmap(outBitmap, "pagesplit_" + Integer.toString(book) + MODEL_NAME, mContext);
+
+//        }
         return 0;
+    }
+
+
+//    static public List<Point> getCornersFromPageXML(Uri uri) {
+//
+//    }
+
+
+
+
+
+    private String writeCornersToXML(List<Point> pCorners, Uri uri) throws IOException {
+        final ExifInterface exif = new ExifInterface(uri.getPath());
+
+        String creator = exif.getAttribute(ExifInterface.TAG_ARTIST);
+        if (creator == null) {
+            creator = "DocScan App";
+        }
+        final String created = exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL);
+        final String lastChange = exif.getAttribute(ExifInterface.TAG_DATETIME);
+        final String imageFilename = uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
+        final String imageWidth = exif.getAttribute(ExifInterface.TAG_IMAGE_WIDTH);
+        final String imageHeight = exif.getAttribute(ExifInterface.TAG_IMAGE_LENGTH);
+
+        final String tagPcGts = "PcGts";
+        final String tagCreator = "Creator";
+        final String tagCreated = "Created";
+        final String tagLastChange = "lastChange";
+        final String tagMetadata = "Metadata";
+        final String tagPage = "Page";
+        final String tagCustomRegion = "CustomRegion";
+        final String tagCoords = "Coords";
+        final String attributePcGtsId = "pcGtsId";
+        final String attributeImageFilename = "imageFilename";
+        final String attributeImageWidth = "imageWidth";
+        final String attributeImageHeight = "imageHeight";
+        final String attributePoints = "points";
+
+        XmlSerializer serializer = Xml.newSerializer();
+        StringWriter writer = new StringWriter();
+        Log.d(TAG, "start xml creation");
+        try {
+            serializer.setOutput(writer);
+            serializer.startDocument("UTF-8", true);
+            serializer.startTag("", tagPcGts);
+            serializer.attribute("", "xmlns", "http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15");
+//            serializer.attribute("", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+//            serializer.attribute("", "xsi:schemaLocation", "http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15 http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15/pagecontent.xsd");
+            serializer.attribute("", attributePcGtsId, "DocScan");
+            serializer.startTag("", tagMetadata);
+            serializer.startTag("", tagCreator);
+            serializer.text(creator);
+            serializer.endTag("", tagCreator);
+            serializer.startTag("", tagCreated);
+            serializer.text(created);
+            serializer.endTag("", tagCreated);
+            serializer.startTag("", tagLastChange);
+            serializer.text(lastChange);
+            serializer.endTag("", tagLastChange);
+            serializer.endTag("", tagMetadata);
+            serializer.startTag("", tagPage);
+            serializer.attribute("", attributeImageFilename, imageFilename);
+            serializer.attribute("", attributeImageWidth, imageWidth);
+            serializer.attribute("", attributeImageHeight, imageHeight);
+
+            serializer.startTag("", tagCustomRegion);
+            serializer.attribute("", "id", "l1");
+            serializer.startTag("", tagCoords);
+            serializer.attribute("", attributePoints, Integer.toString((int) pCorners.get(0).x) + "," + Integer.toString((int) pCorners.get(0).y) + " "
+                    + Integer.toString((int) pCorners.get(1).x) + "," + Integer.toString((int) pCorners.get(1).y) + " "
+                    + Integer.toString((int) pCorners.get(2).x) + "," + Integer.toString((int) pCorners.get(2).y) + " "
+                    + Integer.toString((int) pCorners.get(3).x) + "," + Integer.toString((int) pCorners.get(3).y));
+            serializer.endTag("", tagCoords);
+            serializer.endTag("", tagCustomRegion);
+            serializer.endTag("", tagPage);
+            serializer.endTag("", tagPcGts);
+            serializer.endDocument();
+
+            exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, writer.toString());
+            exif.saveAttributes();
+
+            return writer.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private String writeCornersToXML(List<Point> lCorners, List<Point> rCorners, Uri uri) throws IOException {
+        final ExifInterface exif = new ExifInterface(uri.getPath());
+
+        String creator = exif.getAttribute(ExifInterface.TAG_ARTIST);
+        if (creator == null) {
+            creator = "DocScan App";
+        }
+        final String created = exif.getAttribute(ExifInterface.TAG_DATETIME_ORIGINAL);
+        final String lastChange = exif.getAttribute(ExifInterface.TAG_DATETIME);
+        final String imageFilename = uri.getPath().substring(uri.getPath().lastIndexOf("/")+1);
+        final String imageWidth = exif.getAttribute(ExifInterface.TAG_IMAGE_WIDTH);
+        final String imageHeight = exif.getAttribute(ExifInterface.TAG_IMAGE_LENGTH);
+
+        final String tagPcGts = "PcGts";
+        final String tagCreator = "Creator";
+        final String tagCreated = "Created";
+        final String tagLastChange = "lastChange";
+        final String tagMetadata = "Metadata";
+        final String tagPage = "Page";
+        final String tagCustomRegion = "CustomRegion";
+        final String tagCoords = "Coords";
+        final String attributePcGtsId = "pcGtsId";
+        final String attributeImageFilename = "imageFilename";
+        final String attributeImageWidth = "imageWidth";
+        final String attributeImageHeight = "imageHeight";
+        final String attributePoints = "points";
+
+        XmlSerializer serializer = Xml.newSerializer();
+        StringWriter writer = new StringWriter();
+        Log.d(TAG, "start xml creation");
+        try {
+            serializer.setOutput(writer);
+            serializer.startDocument("UTF-8", true);
+            serializer.startTag("", tagPcGts);
+            serializer.attribute("", "xmlns", "http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15");
+//            serializer.attribute("", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+//            serializer.attribute("", "xsi:schemaLocation", "http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15 http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15/pagecontent.xsd");
+            serializer.attribute("", attributePcGtsId, "DocScan");
+                serializer.startTag("", tagMetadata);
+                    serializer.startTag("", tagCreator);
+                        serializer.text(creator);
+                    serializer.endTag("", tagCreator);
+                    serializer.startTag("", tagCreated);
+                        serializer.text(created);
+                    serializer.endTag("", tagCreated);
+                    serializer.startTag("", tagLastChange);
+                        serializer.text(lastChange);
+                    serializer.endTag("", tagLastChange);
+                serializer.endTag("", tagMetadata);
+                serializer.startTag("", tagPage);
+                    serializer.attribute("", attributeImageFilename, imageFilename);
+                    serializer.attribute("", attributeImageWidth, imageWidth);
+                    serializer.attribute("", attributeImageHeight, imageHeight);
+
+                    serializer.startTag("", tagCustomRegion);
+                        serializer.attribute("", "id", "l1");
+                        serializer.startTag("", tagCoords);
+                            serializer.attribute("", attributePoints, Integer.toString((int) lCorners.get(0).x) + "," + Integer.toString((int) lCorners.get(0).y) + " "
+                                    + Integer.toString((int) lCorners.get(1).x) + "," + Integer.toString((int) lCorners.get(1).y) + " "
+                                    + Integer.toString((int) lCorners.get(2).x) + "," + Integer.toString((int) lCorners.get(2).y) + " "
+                                    + Integer.toString((int) lCorners.get(3).x) + "," + Integer.toString((int) lCorners.get(3).y));
+                        serializer.endTag("", tagCoords);
+                    serializer.endTag("", tagCustomRegion);
+
+                    serializer.startTag("", tagCustomRegion);
+                    serializer.attribute("", "id", "r1");
+                    serializer.startTag("", tagCoords);
+                    serializer.attribute("", attributePoints, Integer.toString((int) rCorners.get(0).x) + "," + Integer.toString((int) rCorners.get(0).y) + " "
+                            + Integer.toString((int) rCorners.get(1).x) + "," + Integer.toString((int) rCorners.get(1).y) + " "
+                            + Integer.toString((int) rCorners.get(2).x) + "," + Integer.toString((int) rCorners.get(2).y) + " "
+                            + Integer.toString((int) rCorners.get(3).x) + "," + Integer.toString((int) rCorners.get(3).y));
+                    serializer.endTag("", tagCoords);
+                    serializer.endTag("", tagCustomRegion);
+                serializer.endTag("", tagPage);
+            serializer.endTag("", tagPcGts);
+            serializer.endDocument();
+
+            exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, writer.toString());
+            exif.saveAttributes();
+
+            return writer.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
@@ -444,33 +654,19 @@ public class PageSplit {
         return BitmapFactory.decodeResource(res, resId, options);
     }
 
-    private void checkIfSinglePage(List<Point> pCorners, Point sTop, Point sBottom, double threshold) {
+    // Returns -1 if only left page
+    private int checkIfSinglePage(List<Point> pCorners, Point sTop, Point sBottom, double threshold) {
         final double diffLeft = Math.abs(pCorners.get(0).x - sTop.x) + Math.abs(pCorners.get(3).x - sBottom.x);
         final double diffRight = Math.abs(pCorners.get(1).x - sTop.x) + Math.abs(pCorners.get(2).x - sBottom.x);
         final double diffTot = Math.abs(pCorners.get(0).x - pCorners.get(1).x) + Math.abs(pCorners.get(2).x - pCorners.get(3).x);
 
         if (diffLeft < threshold*diffTot) {
-            pCorners.get(0).x = sTop.x;
-            pCorners.get(0).y = sTop.y;
-            pCorners.get(3).x = sBottom.x;
-            pCorners.get(3).y = sBottom.y;
+            return 1;
         } else if (diffRight < threshold*diffTot) {
-            pCorners.get(1).x = sTop.x;
-            pCorners.get(1).y = sTop.y;
-            pCorners.get(2).x = sBottom.x;
-            pCorners.get(2).y = sBottom.y;
-        } else if (pCorners.get(0).x < sTop.x && pCorners.get(1).x < sTop.x) {
-            pCorners.get(1).x = sTop.x;
-            pCorners.get(1).y = sTop.y;
-            pCorners.get(2).x = sBottom.x;
-            pCorners.get(2).y = sBottom.y;
-        } else if (pCorners.get(0).x > sTop.x && pCorners.get(1).x > sTop.x) {
-            pCorners.get(0).x = sTop.x;
-            pCorners.get(0).y = sTop.y;
-            pCorners.get(3).x = sBottom.x;
-            pCorners.get(3).y = sBottom.y;
+            return -1;
+        } else {
+            return 0;
         }
-
     }
 
     private void interpolateSeperator(List<MatOfPoint> sContours, Mat sMask, List<Point> pCorners,
@@ -563,13 +759,22 @@ public class PageSplit {
 
         bitmapToMat(bmp, tmpOriginMat);
 
-        Imgproc.line(tmpOriginMat, pCorners.get(0), sTop, new Scalar(0, 255, 0), thickness);
-        Imgproc.line(tmpOriginMat, sBottom, pCorners.get(3), new Scalar(0, 255, 0), thickness);
-        Imgproc.line(tmpOriginMat, pCorners.get(0), pCorners.get(3), new Scalar(0, 255, 0), thickness);
-        Imgproc.line(tmpOriginMat, sTop, pCorners.get(1), new Scalar(0, 255, 0), thickness);
+//        Imgproc.line(tmpOriginMat, pCorners.get(0), sTop, new Scalar(0, 255, 0), thickness);
+//        Imgproc.line(tmpOriginMat, sBottom, pCorners.get(3), new Scalar(0, 255, 0), thickness);
+//        Imgproc.line(tmpOriginMat, pCorners.get(0), pCorners.get(3), new Scalar(0, 255, 0), thickness);
+//        Imgproc.line(tmpOriginMat, sTop, pCorners.get(1), new Scalar(0, 255, 0), thickness);
+//        Imgproc.line(tmpOriginMat, pCorners.get(1), pCorners.get(2), new Scalar(0, 255, 0), thickness);
+//        Imgproc.line(tmpOriginMat, sBottom, pCorners.get(2), new Scalar(0, 255, 0), thickness);
+//        Imgproc.line(tmpOriginMat, sTop, sBottom, new Scalar(0, 0, 255), thickness);
+
+
+
+        Imgproc.line(tmpOriginMat, pCorners.get(0), pCorners.get(1), new Scalar(0, 255, 0), thickness);
         Imgproc.line(tmpOriginMat, pCorners.get(1), pCorners.get(2), new Scalar(0, 255, 0), thickness);
-        Imgproc.line(tmpOriginMat, sBottom, pCorners.get(2), new Scalar(0, 255, 0), thickness);
+        Imgproc.line(tmpOriginMat, pCorners.get(2), pCorners.get(3), new Scalar(0, 255, 0), thickness);
+        Imgproc.line(tmpOriginMat, pCorners.get(3), pCorners.get(0), new Scalar(0, 255, 0), thickness);
         Imgproc.line(tmpOriginMat, sTop, sBottom, new Scalar(0, 0, 255), thickness);
+
         matToBitmap(tmpOriginMat, bmp);
 
         saveBitmap(bmp, filename, mContext);
@@ -798,12 +1003,12 @@ public class PageSplit {
             rotation =  270;
         }
 
-//        return rotation;
-        if (book_c < 3 || book_c == 6 || book_c == 10 || book_c == 11) {//TODO: change back to the line above
-            return 180;
-        } else {
-            return 90;
-        }
+        return rotation;
+//        if (book_c < 3 || book_c == 6 || book_c == 10 || book_c == 11) {//TODO: change back to the line above
+//            return 180;
+//        } else {
+//            return 90;
+//        }
     }
 
     /**
