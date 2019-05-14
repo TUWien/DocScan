@@ -369,6 +369,7 @@
     <string name="gallery_menu_select_all_item_title">Select all items</string>
     <string name="gallery_menu_create_pdf_item_title">Create pdf from item</string>
     <string name="gallery_menu_crop_item_title">Crop item</string>
+    <string name="gallery_menu_detect_pages_title">Detect pages</string>
     <string name="gallery_selected">selected</string>
     <string name="gallery_menu_rotate_item_title">Rotate right</string>
     <string name="gallery_menu_document_item_title">Document</string>

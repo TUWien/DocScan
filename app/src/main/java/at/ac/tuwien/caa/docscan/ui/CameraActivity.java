@@ -2270,17 +2270,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Save exif information (especially the orientation):
                 saveExif(file);
 
-                //PageSplit
-                try {
-
-                    if (PageSplit.getInstance(mContext).applyPageSplit(uri, mContext) == 1) {
-                        Log.d(PageSplit.TAG, "could not apply PageSplit");
-                    } else {
-                        Log.d("PageSplit", "Applied PageSplit");
-                    }
-                } catch (IOException e) {
-                    Log.e("PageSplit", "Failed to apply PageSplit");
-                }
+//                //PageSplit
+//                try {
+//
+//                    if (PageSplit.getInstance(mContext).applyPageSplit(uri, mContext) == 1) {
+//                        Log.d(PageSplit.TAG, "could not apply PageSplit");
+//                    } else {
+//                        Log.d("PageSplit", "Applied PageSplit");
+//                    }
+//                } catch (IOException e) {
+//                    Log.e("PageSplit", "Failed to apply PageSplit");
+//                }
 
 
                 boolean fileAdded = DocumentStorage.getInstance(mContext).addToActiveDocument(file);
