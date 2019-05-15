@@ -1748,8 +1748,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             return;
         }
 
-        if (mCVResult != null && patches != null && patches.length > 0)
+        if (mCVResult != null)
             mCVResult.setPatches(patches);
+
+//        if (mCVResult != null && patches != null && patches.length > 0)
+//            mCVResult.setPatches(patches);
 
 //        CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
 

@@ -252,8 +252,10 @@ public class CVResult {
      */
     private void updatePatches() {
 
-        if (mPatches == null)
+        if (mPatches == null) {
+            mRatioSharpUnsharp = 100;
             return;
+        }
 
 //        Patch patch;
         PointF screenPoint, framePoint;
@@ -442,11 +444,8 @@ public class CVResult {
 
     public int getCVState() {
 
-//        return DOCUMENT_STATE_OK;
-
         if (mDKPolyRects == null)
             return DOCUMENT_STATE_EMPTY;
-
 
         if (mDKPolyRects.length == 0)
             return DOCUMENT_STATE_EMPTY;
@@ -465,10 +464,10 @@ public class CVResult {
         if (!isRotationCorrect(polyRect))
             return DOCUMENT_STATE_ROTATION;
 
-        if (mIsFocusMeasured) {
+        if (mIsFocusMeasured && mPatches != null) {
 
-            if (mPatches == null)
-                return DOCUMENT_STATE_NO_FOCUS_MEASURED;
+//            if (mPatches == null)
+//                return DOCUMENT_STATE_NO_FOCUS_MEASURED;
 
             if (mPatches.length == 0)
                 return DOCUMENT_STATE_NO_FOCUS_MEASURED;

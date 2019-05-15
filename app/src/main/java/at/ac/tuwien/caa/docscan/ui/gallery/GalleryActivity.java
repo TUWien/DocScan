@@ -25,6 +25,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.opencv.android.OpenCVLoader;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -71,6 +73,27 @@ public class GalleryActivity extends AppCompatActivity implements
 //    GalleryActivity (i.e. in the ImageViewerFragment). If something changed we need to reload the
 //    images in onResume.
     private static boolean sFileDeleted, sFileRotated, sFileCropped;
+
+    /**
+     * Static initialization of the OpenCV and docscan-native modules.
+     */
+    static {
+
+        Log.d(CLASS_NAME, "initializing OpenCV");
+
+//         We need this for Android 4:
+        if (!OpenCVLoader.initDebug()) {
+            Log.d(CLASS_NAME, "Error while initializing OpenCV.");
+        } else {
+
+            System.loadLibrary("opencv_java3");
+            System.loadLibrary("docscan-native");
+
+            Log.d(CLASS_NAME, "OpenCV initialized");
+        }
+
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
