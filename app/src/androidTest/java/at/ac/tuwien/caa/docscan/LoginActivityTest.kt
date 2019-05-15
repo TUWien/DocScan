@@ -31,4 +31,13 @@ class LoginActivityTest {
 //        assertThat(getIntents().first())
 //                .hasComponentClass(HomeActivity::class.java)
     }
+
+    val isRunningTest : Boolean by lazy {
+        try {
+            Class.forName("android.support.test.espresso.Espresso")
+            true
+        } catch (e: ClassNotFoundException) {
+            false
+        }
+    }
 }
