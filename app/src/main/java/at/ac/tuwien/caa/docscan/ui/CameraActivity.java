@@ -871,12 +871,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 mTimerCallbacks.onTimerStarted(SHOT_TIME);
                 mTimerCallbacks.onTimerStopped(FLIP_SHOT_TIME);
 
-                // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
-                if (mCameraPreview.getCamera() != null && !mRetakeMode) {
-                    mCameraPreview.getCamera().startPreview();
-                    mCameraPreview.startAutoFocus();
+                try {
+                    // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
+                    if (mCameraPreview.getCamera() != null && !mRetakeMode) {
+                        mCameraPreview.getCamera().startPreview();
+                        mCameraPreview.startAutoFocus();
+                    }
                 }
-
+                catch (RuntimeException e) {
+//                    We catch this to avoid:
+//                    java.lang.RuntimeException: Camera is being used after Camera.release() was called
+                }
 
 
 //                try {
@@ -1408,6 +1413,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         View v = ((Activity) mContext).findViewById(R.id.camera_controls_layout);
 
         WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        if (wm == null || wm.getDefaultDisplay() == null)
+            return new Point();
+
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
@@ -2572,7 +2580,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             Uri uri = getFileName(mContext.getString(R.string.app_name));
             Log.d(CLASS_NAME, "FileSaver: uri " + uri);
 
-            if (uri == null)
+            if (uri == null || uri.getPath() == null)
                 return null;
 
             final File file = new File(uri.getPath());

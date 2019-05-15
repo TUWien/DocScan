@@ -50,6 +50,7 @@ import com.google.firebase.FirebaseApp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Settings;
@@ -112,6 +113,10 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     }
 
     private void startIntro() {
+
+        //        We save the version here, so that the intro is shown just once also in case the intro has stopped:
+        int currentVersion = BuildConfig.VERSION_CODE;
+        Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
 
         setContentView(R.layout.activity_intro);
 
