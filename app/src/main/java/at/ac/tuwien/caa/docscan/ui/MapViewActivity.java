@@ -5,9 +5,11 @@ import android.graphics.PointF;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.media.ExifInterface;
-import android.support.v7.app.AlertDialog;
+import androidx.annotation.NonNull;
+import androidx.exifinterface.media.ExifInterface;
+import androidx.appcompat.app.AlertDialog;
+
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -16,6 +18,8 @@ import android.view.View;
 import com.crashlytics.android.Crashlytics;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+
+import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,6 +48,27 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
     private MenuItem mSaveMenuItem;
     private String mFileName;
     private boolean mIsMapTaskRunning;
+
+//    /**
+//     * Static initialization of the OpenCV and docscan-native modules.
+//     */
+//    static {
+//
+////        Log.d(CLASS_NAME, "initializing OpenCV");
+//
+////         We need this for Android 4:
+//        if (!OpenCVLoader.initDebug()) {
+////            Log.d(CLASS_NAME, "Error while initializing OpenCV.");
+//        } else {
+//
+//            System.loadLibrary("opencv_java3");
+//            System.loadLibrary("docscan-native");
+//
+////            Log.d(CLASS_NAME, "OpenCV initialized");
+//        }
+//
+//    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -248,7 +273,7 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
             String fileName = strings[0];
 
-            ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName);
+            ArrayList<PointF> points = PageDetector.getNormedCropPoints(fileName).getPoints();
 
 //            Save the file: We still need the original image at this point, so save it as a temp file:
             File newFile = getTempFileName(fileName);

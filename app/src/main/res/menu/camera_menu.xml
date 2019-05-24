@@ -29,11 +29,19 @@
         />
 
     <item
+        android:id="@+id/grid_item"
+        android:title="@string/show_grid_item_title"
+        android:visible="true"
+        app:showAsAction="never"
+        android:onClick="showGrid"
+        />
+
+    <item
         android:id="@+id/gallery_item"
         android:icon="@drawable/ic_collections_white_24dp"
-        android:title="@string/flash_mode"
+        android:title="@string/gallery_item_title"
         android:visible="true"
-        app:showAsAction="always"
+        app:showAsAction="never"
         android:onClick="startGalleryActivity"
         />
 
@@ -44,48 +52,36 @@
         android:visible="true"
         app:showAsAction="always"
         android:onClick="startUploadActivity"
-
         />
-
-    <!--// we put the overflow items into a group to make it easy to hide/show the items at once:-->
-    <!--<group-->
-        <!--android:id="@+id/overflow_menu_group">-->
-
-        <!--<item-->
-            <!--android:id="@+id/debug_view_item"-->
-            <!--android:title="@string/debug_view_item_show"-->
-            <!--android:visible="true"-->
-            <!--app:showAsAction="never"-->
-            <!--/>-->
-
-        <!--<item-->
-            <!--android:id="@+id/use_lab_item"-->
-            <!--android:title="@string/fast_page_seg_text"-->
-            <!--android:visible="true"-->
-            <!--app:showAsAction="never"-->
-            <!--/>-->
-
-        <!--<item-->
-            <!--android:id="@+id/show_guide_item"-->
-            <!--android:title="@string/show_guide_text"-->
-            <!--android:visible="true"-->
-            <!--app:showAsAction="never"-->
-            <!--/>-->
-
-        <!--<item-->
-            <!--android:id="@+id/show_fm_values_item"-->
-            <!--android:title="@string/show_fm_values_text"-->
-            <!--android:visible="true"-->
-            <!--app:showAsAction="never"-->
-            <!--/>-->
-
-    <!--</group>-->
-
+    <item
+        android:id="@+id/lock_exposure_item"
+        android:title="@string/lock_exposure_item"
+        android:visible="true"
+        app:showAsAction="never"
+        android:onClick="lockExposure"
+        />
+    <item
+        android:id="@+id/unlock_exposure_item"
+        android:title="@string/unlock_exposure_item"
+        android:visible="false"
+        app:showAsAction="never"
+        android:onClick="unlockExposure"
+        />
     <!--<item-->
-        <!--android:id="@+id/threading_item"-->
-        <!--android:title="@string/multi_thread_text"-->
+        <!--android:id="@+id/show_grid_item"-->
+        <!--android:title="@string/unlock_exposure_item"-->
+        <!--android:visible="false"-->
+        <!--app:showAsAction="never"-->
+        <!--android:onClick="unlockExposure"-->
+        <!--/>-->
+    <!--<item-->
+        <!--android:id="@+id/white_balance_item"-->
+        <!--android:title="@string/white_balance_text"-->
         <!--android:visible="true"-->
         <!--app:showAsAction="never"-->
-        <!--/>-->
+        <!--&gt;-->
+        <!--<menu></menu>-->
+    <!--</item>-->
+
 
 </menu>

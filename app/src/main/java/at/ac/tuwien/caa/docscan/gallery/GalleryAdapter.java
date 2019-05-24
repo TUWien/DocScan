@@ -3,7 +3,7 @@ package at.ac.tuwien.caa.docscan.gallery;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +16,6 @@ import com.bumptech.glide.signature.MediaStoreSignature;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;

@@ -48,6 +48,18 @@ public class PreferenceActivity extends BaseNavigationActivity {
                 }
 
             } );
+
+            String exifKey = getResources().getString(R.string.key_exif_settings);
+            findPreference(exifKey).setOnPreferenceClickListener( new android.preference.Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(android.preference.Preference preference) {
+                    Intent intent = new Intent(getActivity().getApplicationContext(), ExifPreferenceActivity.class);
+                    startActivity(intent);
+//                    getFragmentManager().beginTransaction().replace( R.id.settings_framelayout, new NestedSettingsFragment() ).addToBackStack( NestedSettingsFragment.class.getSimpleName() ).commit();
+                    return true;
+                }
+
+            } );
         }
     }
 

@@ -12,10 +12,6 @@
 
     </style>
 
-    <style name="CircularProgress" parent="Theme.AppCompat.Light">
-        <item name="colorAccent">@color/black</item>
-    </style>
-
 
     <!--This theme is used for the image viewer (in viewpager) -->
     <style name="AppDarkTheme" parent="Theme.AppCompat.Light.DarkActionBar">

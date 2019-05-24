@@ -17,8 +17,6 @@
     <string name="settings_item_text">Settings</string>
 
     <!-- Navigation drawer alert messages: -->
-    <string name="navigation_offline_text">Device is offline</string>
-    <string name="navigation_offline_message">Internet access is required to download the help document.</string>
 
     <!-- Strings used by multiple activities/dialogs -->
     <string name="dialog_ok_text">OK</string>
@@ -36,21 +34,18 @@
     <string name="start_permission_storage_text">The app requires permission to access your files, otherwise it will not work.</string>
     <string name="start_confirm_button_text">OK</string>
     <string name="start_cancel_button_text">Cancel</string>
+    <string name="start_firebase_not_auth_text">Could not authenticate with Firebase / google-services. If you are a developer, you probably want the API key. In that case, take a look at the readme.</string>
 
     <!--CameraActivity-->
 
-    <string name="show_debug_view_text">Show debug view</string>
-    <string name="hide_debug_view_text">Hide debug view</string>
-    <string name="show_fm_values_text">Show focus values</string>
-    <string name="show_guide_text">Show guide lines</string>
-    <string name="hide_guide_text">Hide guide lines</string>
-    <string name="fast_page_seg_text">Use fast page segmentation</string>
-    <string name="precise_page_seg_text">Use precise page segmentation</string>
-    <string name="hide_fm_values_text">Hide focus values</string>
     <string name="taking_picture_text">Taking picture</string>
     <string name="force_shoot_button_text">Shoot anyway</string>
+    <string name="locked_exposure_text">Locked auto-exposure</string>
+    <string name="unlocked_exposure_text">Unlocked auto-exposure</string>
     <string name="camera_document_hint_title">Tip for documents</string>
-    <string name="camera_document_hint_msg">The document title is shown at the top and you can manipulate documents by clicking on the folder icon next to it.</string>
+    <string name="camera_lock_exposure_title">Locking exposure</string>
+    <string name="camera_lock_exposure_msg">This locks the current exposure and white balance. Please note that we cannot lock these values, after you leave the camera view.</string>
+    <string name="do_not_show_again_text">Do not show this message again.</string>
     <!-- Just used for debugging: -->
 
 
@@ -99,7 +94,7 @@
     <string name="toast_single">Images are taken manually</string>
 
 
-    <!-- LoginActivity -->
+    <!-- TranskribusLoginActivity -->
     <string name="login_email_hint">Email</string>
     <string name="login_password_hint">Password</string>
     <string name="login_button_text">Login</string>
@@ -110,10 +105,6 @@
     <string name="login_title">Login to Transkribus</string>
 
     <!-- AutoLoginActivity -->
-    <string name="auto_login_error_text">Sorry, could not login - try to login later again.\n
-        Otherwise, you can change your login credentials. Do you want to reenter your credentials?</string>
-    <string name="auto_login_cancel_button">Cancel</string>
-    <string name="auto_login_ok_button">OK</string>
 
     <!-- Menus -->
     <string name="document_item">Documents</string>
@@ -122,31 +113,30 @@
     <string name="flash_auto_mode">Flash auto</string>
     <string name="flash_on_mode">Flash on</string>
     <string name="flash_torch_mode">Torch</string>
+    <string name="show_grid_item_title">Show grid</string>
+    <string name="hide_grid_item_title">Hide grid</string>
+    <string name="gallery_item_title">Open gallery</string>
 
     <string name="upload_item">Upload</string>
+    <string name="lock_exposure_item">Lock exposure and white balance</string>
+    <string name="unlock_exposure_item">Unlock exposure and white balance</string>
 
     <string name="series_create">New document</string>
     <string name="series_edit">Edit document</string>
     <string name="series_switch">Open document</string>
     <string name="series_qr">New document from QR code</string>
 
-    <string name="debug_view_item_show">Show debug view</string>
-
     <string name="crop_view_item_rotate">Rotate 90 degrees</string>
     <string name="crop_view_item_map">Preview mapping</string>
-    <string name="crop_view_item_apply">Apply changes</string>
 
     <!-- MapViewActivity -->
     <string name="map_view_item_save">Save image</string>
     <string name="map_view_loading_text">Please wait</string>
 
     <!-- Preferences -->
-    <string name="pref_precise_page_detection">Use precise page detection</string>
-    <string name="pref_precise_page_detection_summary">Use precise page detection</string>
 
     <!-- Image naming -->
     <string name="img_prefix">IMG_</string>
-    <string name="img_extension">.jpg</string>
 
     <!-- Log  -->
     <string name="log_activity_text">Improve DocScan by sending us a log.
@@ -167,19 +157,14 @@
     <string name="picture_save_error_text">Unfortunately, the image was not saved. Please take care that it is captured.</string>
     <string name="picture_save_error_title">Image saving error</string>
 
-    <string name="debug_collections_button_text">Collections</string>
-
     <!-- Sync: -->
-    <string name="sync_start_service_button_text">Start sync</string>
     <string name="sync_connect_dropbox_button_text">Dropbox</string>
     <string name="sync_connect_transkribus_button_text">Transkribus</string>
-    <string name="sync_dropbox_app_key">-</string>
-    <string name="sync_no_dropbox_access">Sorry your dropbox account is not accessible.</string>
     <string name="sync_dropbox_text">Dropbox</string>
     <string name="sync_transkribus_text">Transkribus</string>
     <string name="sync_not_connected_text">Offline</string>
 
-    <!-- DropboxActivity: -->
+    <!-- DropboxLoginActivity: -->
     <string name="dropbox_text">It is necessary to allow DocScan to access your Dropbox
         account. This authentication will be done in your browser.</string>
     <string name="dropbox_title">Dropbox Authentication</string>
@@ -220,18 +205,12 @@
     <string name="pdf_notification_error">An error happened while creating your pdf, sorry!</string>
 
     <!-- OpenDocumentActivity -->
-    <string name="document_title">Select a document</string>
-    <string name="document_select_button_text">Use selected document</string>
     <string name="document_no_dir_created_title">No document created</string>
     <string name="document_dir_existing_prefix_message">The folder </string>
     <string name="document_dir_existing_postfix_message">is already created. Please use another name.</string>
     <string name="document_qr_parse_error_title">QR code invalid</string>
     <string name="document_qr_parse_error_message">Sorry, the QR code is invalid.</string>
     <string name="document_no_dir_created_message">Could not create the specified folder.</string>
-    <string name="document_no_dir_selected_title">No document selected</string>
-    <string name="document_no_dir_selected_message">Please select a document first.</string>
-    <string name="document_no_permission_message">Files cannot be created without permission.</string>
-    <string name="document_no_permission_title">Permission required</string>
     <string name="document_invalid_url_title">Url not valid</string>
     <string name="document_invalid_url_message">The following URL cannot be opened in browser:</string>
 
@@ -242,7 +221,6 @@
     <!-- SyncActivity -->
     <string name="sync_no_dir_selected_title">No directory selected</string>
     <string name="sync_no_dir_selected_message">Please select at least one folder.</string>
-    <string name="sync_selection_initial_text">Nothing selected</string>
     <string name="sync_selection_many_documents_text">documents</string>
     <string name="sync_selection_single_document_text">document</string>
     <string name="sync_snackbar_uploading_prefix_text">Uploading\</string>
@@ -259,54 +237,52 @@
     <string name="sync_confirm_delete_title">Delete</string>
     <string name="sync_confirm_delete_prefix_text">Are you sure you want to delete</string>
     <string name="sync_confirm_delete_postfix_text">from your device?\n\nHint: Documents already uploaded are not deleted from the server, but you cannot add new images to uploaded documents.</string>
-    <string name="sync_snackbar_error_upload_text">Could not upload all files. Please try again!</string>
     <string name="sync_snackbar_finished_upload_text">Finished upload.</string>
-    <string name="sync_snackbar_offline_prefix_text">Your device is currently offline.</string>
-    <string name="sync_snackbar_offline_postfix_text">will be uploaded, once the device is online again.</string>
     <string name="sync_snackbar_offline_text">Your device is currently offline. Upload postponed.</string>
     <string name="sync_snackbar_disconnected_text">Could not login on the server. Upload postponed.</string>
-    <string name="sync_snackbar_more_button_text">More</string>
     <string name="sync_snackbar_no_permissions">Files cannot be uploaded without permission.</string>
     <string name="sync_snackbar_files_deleted_prefix">Deleted</string>
-    <string name="sync_server_changed_title">Upload server changed</string>
-    <string name="sync_server_changed_text">Please note that from now on, your images are uploaded to the standard Transkribus server (https://transkribus.eu/TrpServer).</string>
     <string name="sync_dir_pending_text">(upload pending)</string>
     <string name="sync_dir_cropping_text">(processed)</string>
+    <string name="sync_not_focused_text">- partially blurred</string>
     <string name="sync_menu_upload_item_title">Start upload</string>
     <string name="sync_menu_delete_item_title">Delete item</string>
     <string name="sync_menu_select_all_item_title">Select all items</string>
     <string name="sync_pages_text">Images:</string>
-    <string name="sync_dialog_not_logged_in_text">In order to connect to the server, it is required that you login. Do you want to login now?</string>
     <string name="sync_cancel_login_button_text">Cancel</string>
     <string name="sync_confirm_login_button_text">Login</string>
     <string name="sync_not_logged_in_title">Cannot start upload</string>
     <string name="sync_not_logged_in_text">You are currently not logged in, please log in first.</string>
     <string name="sync_not_logged_in_button_text">Log in</string>
 
+
     <!-- UploadingActivity -->
-    <string name="uploading_text">Uploading</string>
 
     <!-- SeriesGeneralActivity -->
-    <string name="series_general_heading_text">Current document:</string>
-    <string name="series_general_keep_series_text">Use current document</string>
-    <string name="series_general_other_series_text">Use other document:</string>
-    <string name="series_general_start_text">Start new document</string>
-    <string name="series_general_select_text">Select existing document</string>
-    <string name="series_general_hide_dialog_text">Do not show this dialog after starting the series mode.</string>
-    <string name="series_general_title">Documents</string>
 
     <!-- LicenseActivity  -->
     <string name="license_title">Open Source Licenses</string>
 
     <!-- AboutActivity -->
-    <string name="about_heading_text">DocScan 2018</string>
-    <string name="about_help_text">Help</string>
+    <string name="about_heading_text">DocScan 2019</string>
     <string name="about_version_prefix_text">Version:</string>
     <string name="about_buildtime_prefix_text">Built:</string>
-    <string name="about_howto_button_text">HOWTO</string>
+    <string name="about_intro_text">Show DocScan intro</string>
     <string name="about_licenses_text">Open Source Licenses</string>
-    <string name="about_scantent_text">DocScan is developed together with the ScanTent device. Visit our website for more information: \nhttps://scantent.cvl.tuwien.ac.at</string>
-    <string name="about_transkribus_text">DocScan features image uploads to Transkribus. Visit the Transkribus website for further information: \nhttps://transkribus.eu</string>
+    <string name="about_scantent_text">DocScan is developed together with the ScanTent device. Visit our website for more information: \nhttps://scantent.eu</string>
+    <string name="about_transkribus_text">DocScan features image uploads to Transkribus. Visit the Transkribus website for further information: \nhttps://transkribus.eu</string>#
+
+    <!-- IntroActivity -->
+    <string name="intro_text_1">This app is especially designed for the <a href="https://scantent.eu/">ScanTent</a>.\nIf you own a ScanTent: Please put your document inside.</string>
+    <string name="intro_text_2">Place your phone on the ScanTent</string>
+    <string name="intro_text_3">Start the series mode in the app</string>
+    <string name="intro_text_4">Flip pages - images are captured automatically.\n</string>
+    <string name="intro_text_5">Your scanned images are grouped into documents.\nDocuments can be exported as PDF and uploaded.</string>
+    <string name="intro_trigger_flash_text">Trigger flash after automatic imaging to show that an image has been taken.</string>
+    <string name="intro_create_document_button_text">Create a document now</string>
+    <string name="intro_skip_button_text">Skip</string>
+
+
 
 
     <string name="edit_series_title">Edit document</string>
@@ -322,7 +298,6 @@
     <string name="create_series_writer_text">Writer</string>
     <string name="create_series_genre_text">Genre</string>
     <string name="create_series_signature_text">Signature</string>
-    <string name="create_series_hierarchy_text">Hierarchy</string>
     <string name="create_series_url_text">URL</string>
 
     <string name="map_crop_view_title">Warp image</string>
@@ -338,6 +313,8 @@
     <string name="settings_fast_segmentation_checkbox_summary">Fast page detection with a potential loss of accuracy</string>
     <string name="settings_show_grid_title">Display grid</string>
     <string name="settings_show_grid_summary">Overlays a grid on the camera view</string>
+    <string name="settings_flash_series_title">Flash after imaging</string>
+    <string name="settings_flash_series_summary">Activates the flash for a second to show that a picture has been taken. This applies only to the series mode.</string>
 
     <!-- DebugSettingsFragment -->
     <string name="debug_settings_title">Debug settings</string>
@@ -347,11 +324,18 @@
     <string name="settings_show_debug_view_checkbox_summary">Show computation time of several tasks on top of the camera preview.</string>
     <string name="settings_show_debug_settings_title">Debug settings</string>
     <string name="settings_show_debug_settings_summary">Settings used mainly for development and measurement of the app performance.</string>
-    <string name="settings_show_advanced_qr_code_checkbox_title">Show QR code details</string>
-    <string name="settings_show_advanced_qr_code_checkbox_summary">Show extra fields found in the QR code. Warning: These fields are not saved yet and not used in Transkribus!</string>
     <string name="settings_use_transkribus_test_server_title">Use Transkribus test server</string>
     <string name="settings_use_transkribus_test_server_summary">Please restart the app, if you change this. Warning: This setting should only be used for testing the app and the Transkribus server.</string>
+    <string name="settings_hud_title">Show HUD button</string>
+    <string name="settings_hud_summary">Shows a button in the camera view for mirroring the screen. This is useful if you use a mirror or a Head Up Display (HUD) with your ScanTent.</string>
 
+    <!-- ExifSettingsFragment -->
+    <string name="exif_settings_title">Exif settings</string>
+    <string name="exif_settings_summary">Default metadata values saved within images</string>
+    <string name="settings_exif_artist_title">Photographer</string>
+    <string name="settings_exif_artist_default_value"></string>
+    <string name="settings_exif_copyright_title">Copyright</string>
+    <string name="settings_exif_copyright_default_value"></string>
 
     <string name="crop_view_title">Crop</string>
 
@@ -362,6 +346,12 @@
     <string name="page_slide_fragment_confirm_delete_cancel_text">Cancel</string>
     <string name="page_slide_fragment_share_choose_app_text">Choose an app</string>
     <string name="page_slide_fragment_loading_text">Please wait while the page is detected</string>
+    <string name="page_slide_fragment_retake_image_item_text">Retake image</string>
+    <string name="page_slide_fragment_show_gallery_item_text">Show gallery</string>
+    <string name="page_slide_fragment_retake_image_dialog_title">Retake image</string>
+    <string name="page_slide_fragment_retake_image_dialog_text">Do you really want to replace this image with a new one? This cannot be undone.</string>
+    <string name="page_slide_fragment_retake_image_dialog_confirm_text">Retake</string>
+    <string name="page_slide_fragment_retake_image_dialog_cancel_text">Cancel</string>
 
     <!-- GalleryActivity -->
     <string name="gallery_menu_edit_item_title">Edit document</string>
@@ -372,7 +362,6 @@
     <string name="gallery_menu_detect_pages_title">Detect pages</string>
     <string name="gallery_selected">selected</string>
     <string name="gallery_menu_rotate_item_title">Rotate right</string>
-    <string name="gallery_menu_document_item_title">Document</string>
     <string name="gallery_confirm_delete_title_prefix">Delete</string>
     <string name="gallery_confirm_delete_title_single_postfix">document?</string>
     <string name="gallery_confirm_delete_title_multiple_postfix">documents?</string>
@@ -387,6 +376,10 @@
     <string name="gallery_confirm_overwrite_title">Replace images?</string>
     <string name="gallery_confirm_overwrite_text">This will replace the original images and cannot
         be undone. Are you sure you want to continue?</string>
+    <string name="gallery_unfocused_snackbar_text">Images are partially not focused</string>
+    <string name="gallery_unfocused_info">Info</string>
+    <string name="gallery_unfocused_title">Focus issues</string>
+    <string name="gallery_unfocused_text">Some images appear to be not focused and should be checked and eventually be replaced. These images are marked with a red rectangle.</string>
 
 
 </resources>

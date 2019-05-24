@@ -1,28 +1,20 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
-import android.support.v4.widget.CircularProgressDrawable;
-import android.support.v7.content.res.AppCompatResources;
-import android.util.Log;
-import android.view.LayoutInflater;
+import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.io.File;
-import java.util.Comparator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Document;
-import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 
 /**
  * Created by fabian on 4/5/2018.
@@ -39,30 +31,8 @@ public class DocumentUploadAdapter extends DocumentAdapter {
 
         mContext = context;
         mDocuments = documents;
-//        mCallback = (DocumentAdapterCallback) context;
 
     }
-
-
-//    public DocumentAdapter(@NonNull Context context, int resource) {
-//        super(context, resource);
-//
-//        mContext = context;
-//
-//        fillList();
-//    }
-
-//    @Override
-//    public boolean isEnabled (int position) {
-//
-//        Document document = mDocuments.get(position);
-//
-//        if ((document != null) && (document.isCropped()))
-//            return false;
-//        else
-//            return true;
-//
-//    }
 
 
     @Override
@@ -109,11 +79,27 @@ public class DocumentUploadAdapter extends DocumentAdapter {
             else
                 iconView.setImageResource(R.drawable.ic_cloud_queue_black_24dp);
 
+//            Check if we have some unfocused images in the document:
+            if (!Helper.isDocumentFocused(document) && !document.isCropped()) {
+                TextView textView = convertView.findViewById(R.id.layout_listview_row_description);
+//                Write that the upload is pending:
+                if (textView != null) {
+                    textView.append(" " +
+                            mContext.getResources().getString(R.string.sync_not_focused_text));
+                    Drawable img = AppCompatResources.getDrawable(mContext, R.drawable.ic_warning_black_18dp);
+                    textView.setCompoundDrawablesWithIntrinsicBounds( img,null,null,null);
+                }
+            }
+
+
+
         }
 
         return convertView;
 
     }
+
+
 
 
 }

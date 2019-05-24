@@ -48,7 +48,7 @@ import at.ac.tuwien.caa.docscan.R;
 
  */
 
-public class CropView extends android.support.v7.widget.AppCompatImageView {
+public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     private static final int TRANSPARENT = 0x00000000;
     private static final int TRANSLUCENT_BLACK = 0xBB000000;

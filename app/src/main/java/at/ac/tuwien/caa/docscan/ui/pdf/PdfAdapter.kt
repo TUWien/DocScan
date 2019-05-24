@@ -3,7 +3,7 @@ package at.ac.tuwien.caa.docscan.ui.pdf
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.support.v4.content.FileProvider
+import androidx.core.content.FileProvider
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

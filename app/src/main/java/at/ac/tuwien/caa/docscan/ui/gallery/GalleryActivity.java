@@ -9,20 +9,25 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.AppBarLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.core.app.ActivityCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+
+import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,6 +78,27 @@ public class GalleryActivity extends AppCompatActivity implements
 //    images in onResume.
     private static boolean sFileDeleted, sFileRotated, sFileCropped;
 
+    /**
+     * Static initialization of the OpenCV and docscan-native modules.
+     */
+    static {
+
+        Log.d(CLASS_NAME, "initializing OpenCV");
+
+//         We need this for Android 4:
+        if (!OpenCVLoader.initDebug()) {
+            Log.d(CLASS_NAME, "Error while initializing OpenCV.");
+        } else {
+
+            System.loadLibrary("opencv_java3");
+            System.loadLibrary("docscan-native");
+
+            Log.d(CLASS_NAME, "OpenCV initialized");
+        }
+
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -90,11 +116,51 @@ public class GalleryActivity extends AppCompatActivity implements
         if (mDocument != null) {
             initAdapter();
             initToolbar();
+            checkFocus();
         }
         else
             Helper.crashlyticsLog(CLASS_NAME, "onCreate", "mDocument == null");
     }
 
+    /**
+     * Checks if the document is focused and shows a snackbar if not.
+     */
+    private void checkFocus() {
+
+        if (mDocument != null && !Helper.isDocumentFocused(mDocument)) {
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.gallery_images_recyclerview),
+                    R.string.gallery_unfocused_snackbar_text, Snackbar.LENGTH_LONG);
+            snackbar.setAction(R.string.gallery_unfocused_info,
+                    new InfoButtonListener(this));
+            snackbar.show();
+        }
+
+    }
+
+    public class InfoButtonListener implements View.OnClickListener{
+
+        AlertDialog mAlertDialog;
+
+        public InfoButtonListener(Context context) {
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+            // set dialog message
+            alertDialogBuilder
+                    .setTitle(R.string.gallery_unfocused_title)
+                    .setPositiveButton("OK", null)
+                    .setMessage(R.string.gallery_unfocused_text);
+            // create alert dialog
+            mAlertDialog = alertDialogBuilder.create();
+
+        }
+
+        @Override
+        public void onClick(View v) {
+
+            mAlertDialog.show();
+
+        }
+    }
 
     @Override
     protected void onResume() {
@@ -363,21 +429,29 @@ public class GalleryActivity extends AppCompatActivity implements
     }
 
     public void applyPageSplit(MenuItem item){
-        int[] selectionIdx = mAdapter.getSelectionIndices();
-        Log.d("PageSplit", "length of selectionIdx = "+Integer.toString(selectionIdx.length));
-        if (selectionIdx.length > 3) {
-            return;
-        }
-        for (int aSelectionIdx : selectionIdx)
-            try {
-                if (PageSplit.getInstance(this).applyPageSplit(Uri.fromFile(mDocument.getPages().get(aSelectionIdx).getFile()), this) == 1) {
-                    Log.d(PageSplit.TAG, "could not apply PageSplit");
-                } else {
-                    Log.d("PageSplit", "Applied PageSplit");
+        final int[] selectionIdx = mAdapter.getSelectionIndices();
+        final Context galleryActivityContext = this;
+
+        Log.d("PageSplit", "Number of pictures selected = "+selectionIdx.length);
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (int aSelectionIdx : selectionIdx) {
+                    try {
+                        if (PageSplit.getInstance(galleryActivityContext).applyPageSplit(
+                                Uri.fromFile(mDocument.getPages().get(aSelectionIdx).getFile()),
+                                galleryActivityContext) == 1) {
+                            Log.d(PageSplit.TAG, "could not apply PageSplit");
+                        } else {
+                            Log.d("PageSplit", "Applied PageSplit");
+                        }
+                    } catch (IOException e) {
+                        Log.e("PageSplit", "Failed to apply PageSplit");
+                    }
                 }
-            } catch (IOException e) {
-                Log.e("PageSplit", "Failed to apply PageSplit");
             }
+        });
     }
 
     public void selectAllItems(MenuItem item) {

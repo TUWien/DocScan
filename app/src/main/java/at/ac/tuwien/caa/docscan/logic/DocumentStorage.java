@@ -44,6 +44,30 @@ public class DocumentStorage {
 
     }
 
+    public void setPageFocused(String fileName, boolean isFocused) {
+
+        for (Document document : mDocuments) {
+            if (document != null) {
+                int docIdx = document.getFileNames().indexOf(fileName);
+                if (docIdx != -1)
+                    document.getPages().get(docIdx).setIsFocused(isFocused);
+            }
+        }
+
+    }
+
+//    public void setPageAsUnsharp(String fileName) {
+//
+//        for (Document document : mDocuments) {
+//            if (document != null) {
+//                int docIdx = document.getFileNames().indexOf(fileName);
+//                if (docIdx != -1)
+//                    document.getPages().get(docIdx).setIsFocused(false);
+//            }
+//        }
+//
+//    }
+
     public void setTitle(String title) {
 
         Log.d(CLASS_NAME, "setTitle: " + title);
@@ -244,9 +268,14 @@ public class DocumentStorage {
         else {
             try {
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(storeFile));
-
                 Gson gson = new Gson();
                 sInstance = gson.fromJson(bufferedReader, DocumentStorage.class);
+//                I do not know why this is sometimes happening...
+                if (sInstance == null) {
+                    Crashlytics.log("could not read json");
+                    Crashlytics.logException(new Throwable());
+                    sInstance = new DocumentStorage();
+                }
 
                 if (sInstance.getTitle() == null)
                     sInstance.setTitle(Helper.getActiveDocumentTitle(context));
@@ -269,7 +298,7 @@ public class DocumentStorage {
             BufferedWriter writer = new BufferedWriter(new FileWriter(storeFile));
             String documentStorage = new Gson().toJson(sInstance);
             Log.d(CLASS_NAME, "json: " + documentStorage);
-                writer.write(documentStorage);
+            writer.write(documentStorage);
             writer.close();
 
         } catch (IOException e) {

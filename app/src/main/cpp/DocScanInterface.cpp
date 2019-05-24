@@ -94,37 +94,37 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWra
 
 JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetFocusMeasures(JNIEnv * env, jclass cls, jlong src) {
 
+    try {
+        // call the main function:
+        std::vector<dsc::Patch> patches = dsc::FocusEstimation::apply(*((cv::Mat *) src));
 
-    // call the main function:
-    std::vector<dsc::Patch> patches = dsc::FocusEstimation::apply(*((cv::Mat*)src));
+        // find the Java Patch class and its constructor:
+        jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/camera/cv/Patch");
 
-    // find the Java Patch class and its constructor:
-    jclass patchClass = env->FindClass("at/ac/tuwien/caa/docscan/camera/cv/Patch");
-
-    // JNI type signatures: http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
-    // "(FFIIDZZ)V" -> (float float int int double boolean boolean) return void
-    jmethodID cnstrctr = env->GetMethodID(patchClass, "<init>", "(FFIIDZZ)V");
-
-
-    // convert the patches vector to a Java array:
-    jobjectArray outJNIArray = env->NewObjectArray(patches.size(), patchClass, NULL);
-
-    //jobject patch1 = env->NewObject(patchClass, cnstrctr, 1, 42, 3, 4, 5.4);
-    jobject patch;
-
-    for (int i = 0; i < patches.size(); i++) {
-        patch = env->NewObject(patchClass, cnstrctr, patches[i].centerX(), patches[i].centerY(),
-            patches[i].width(), patches[i].height(), patches[i].fm(),
-            patches[i].isSharp(), patches[i].foreground());
-        env->SetObjectArrayElement(outJNIArray, i, patch);
-    }
+        // JNI type signatures: http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
+        // "(FFIIDZZ)V" -> (float float int int double boolean boolean) return void
+        jmethodID cnstrctr = env->GetMethodID(patchClass, "<init>", "(FFIIDZZ)V");
 
 
+        // convert the patches vector to a Java array:
+        jobjectArray outJNIArray = env->NewObjectArray(patches.size(), patchClass, NULL);
 
-    // set the returned array:
+        //jobject patch1 = env->NewObject(patchClass, cnstrctr, 1, 42, 3, 4, 5.4);
+        jobject patch;
+
+        for (int i = 0; i < patches.size(); i++) {
+            patch = env->NewObject(patchClass, cnstrctr, patches[i].centerX(), patches[i].centerY(),
+                                   patches[i].width(), patches[i].height(), patches[i].fm(),
+                                   patches[i].isSharp(), patches[i].foreground());
+            env->SetObjectArrayElement(outJNIArray, i, patch);
+        }
 
 
-    //setObjectArrayElement(env*, outJNIArray, 0, patch1);
+
+        // set the returned array:
+
+
+        //setObjectArrayElement(env*, outJNIArray, 0, patch1);
 
 /*
     if (cnstrctr == 0)
@@ -134,8 +134,15 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWra
         __android_log_write(ANDROID_LOG_INFO, "FocusMeasure", "found constructor!");
 */
 
-    //return env->NewObject(c, cnstrctr, 1, 2, 3, 4, 5.4);
-    return outJNIArray;
+        //return env->NewObject(c, cnstrctr, 1, 2, 3, 4, 5.4);
+        return outJNIArray;
+
+    }
+    catch (std::exception e) {
+
+        return NULL;
+
+    }
 
 }
 

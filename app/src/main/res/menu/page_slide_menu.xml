@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:title="@string/page_slide_fragment_show_gallery_item_text"
+        android:visible="true"
+        app:showAsAction="never"
+        android:onClick="showGallery"
+        />
+
+    <item
+        android:title="@string/page_slide_fragment_retake_image_item_text"
+        android:visible="true"
+        app:showAsAction="never"
+        android:onClick="retakeImage"
+        />
+
+</menu>

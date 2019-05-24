@@ -9,7 +9,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.provider.MediaStore;
-import android.support.media.ExifInterface;
+import androidx.exifinterface.media.ExifInterface;
+//import android.support.media.ExifInterface;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.util.Log;
@@ -70,7 +71,6 @@ public class PageSplit {
 
     /** Output folder */
     private static final String FOLDER_NAME = "PageSplit";
-    private static int book_c;//TODO: delete
 
     /** TfLite model only works for fixed input dimension.
      *  The input will be resized internally. */
@@ -127,24 +127,6 @@ public class PageSplit {
             Log.e(TAG, "PageSplit has not been initialized; Skipped.");
             return 1;
         }
-
-//        int[] id = {R.drawable.book_1,
-//                R.drawable.book_2,
-//                R.drawable.book_3,
-//                R.drawable.book_4,
-//                R.drawable.book_5,
-//                R.drawable.book_6,
-//                R.drawable.book_7,
-//                R.drawable.book_8,
-//                R.drawable.book_9,
-//                R.drawable.book_10,
-//                R.drawable.book_11,
-//                R.drawable.book_12};
-
-//        for (int book = 5; book < 12; ++book) {
-//            book_c = book;
-
-
 
             // Load input bitmap
         Bitmap bmp = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), uri);
@@ -276,7 +258,6 @@ public class PageSplit {
 //            helperDrawTrapezoid(bmp, mContext, uri, pCorners, sTop, sBottom, 10, "Bounding_trapezoid_" + Integer.toString(book));
 //            saveBitmap(outBitmap, "pagesplit_" + Integer.toString(book) + MODEL_NAME, mContext);
 
-//        }
         return 0;
     }
 
@@ -324,8 +305,8 @@ public class PageSplit {
             serializer.startDocument("UTF-8", true);
             serializer.startTag("", tagPcGts);
             serializer.attribute("", "xmlns", "http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15");
-//            serializer.attribute("", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-//            serializer.attribute("", "xsi:schemaLocation", "http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15 http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15/pagecontent.xsd");
+            serializer.attribute("", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            serializer.attribute("", "xsi:schemaLocation", "http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15 http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15/pagecontent.xsd");
             serializer.attribute("", attributePcGtsId, "DocScan");
             serializer.startTag("", tagMetadata);
             serializer.startTag("", tagCreator);
@@ -346,7 +327,8 @@ public class PageSplit {
             serializer.startTag("", tagCustomRegion);
             serializer.attribute("", "id", "l1");
             serializer.startTag("", tagCoords);
-            serializer.attribute("", attributePoints, Integer.toString((int) pCorners.get(0).x) + "," + Integer.toString((int) pCorners.get(0).y) + " "
+            serializer.attribute("", attributePoints,
+                    Integer.toString((int) pCorners.get(0).x) + "," + Integer.toString((int) pCorners.get(0).y) + " "
                     + Integer.toString((int) pCorners.get(1).x) + "," + Integer.toString((int) pCorners.get(1).y) + " "
                     + Integer.toString((int) pCorners.get(2).x) + "," + Integer.toString((int) pCorners.get(2).y) + " "
                     + Integer.toString((int) pCorners.get(3).x) + "," + Integer.toString((int) pCorners.get(3).y));
@@ -401,8 +383,8 @@ public class PageSplit {
             serializer.startDocument("UTF-8", true);
             serializer.startTag("", tagPcGts);
             serializer.attribute("", "xmlns", "http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15");
-//            serializer.attribute("", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-//            serializer.attribute("", "xsi:schemaLocation", "http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15 http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15/pagecontent.xsd");
+            serializer.attribute("", "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+            serializer.attribute("", "xsi:schemaLocation", "http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15 http://schema.primaresearch.org/PAGE/gts/pagecontent/2018-07-15/pagecontent.xsd");
             serializer.attribute("", attributePcGtsId, "DocScan");
                 serializer.startTag("", tagMetadata);
                     serializer.startTag("", tagCreator);

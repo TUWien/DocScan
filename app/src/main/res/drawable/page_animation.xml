@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:drawable="@drawable/ic_scantent_pages"
+    tools:targetApi="lollipop">
+
+    <target android:name="book"
+        android:animation="@anim/page_animator"/>
+
+    <target android:name="page_0"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_1"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_2"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_3"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_4"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_5"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_6"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_7"
+        android:animation="@anim/page_animator"/>
+    <target android:name="page_8"
+        android:animation="@anim/page_animator"/>
+
+    <target android:name="phone_1"
+        android:animation="@anim/phone_capture_animator"/>
+    <target android:name="phone_2"
+        android:animation="@anim/phone_capture_animator"/>
+    <target android:name="phone_3"
+        android:animation="@anim/phone_capture_animator"/>
+    <target android:name="phone_4"
+        android:animation="@anim/phone_capture_animator"/>
+
+</animated-vector>

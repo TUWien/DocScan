@@ -24,6 +24,8 @@
 package at.ac.tuwien.caa.docscan.ui;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -45,22 +47,25 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.NavigationView;
-import android.support.media.ExifInterface;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatButton;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.navigation.NavigationView;
+import androidx.exifinterface.media.ExifInterface;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.TaskStackBuilder;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -70,7 +75,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -96,6 +103,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import at.ac.tuwien.caa.docscan.ActivityUtils;
 import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
@@ -123,7 +131,6 @@ import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
-import at.ac.tuwien.caa.docscan.ui.widget.PageSplit;
 import me.drakeet.support.toast.ToastCompat;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
@@ -132,6 +139,8 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
 import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUMENT_QR_TEXT;
+import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IDX;
+import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IMAGE;
 
 /**
  * The main class of the app. It is responsible for creating the other views and handling
@@ -145,6 +154,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private static final String CLASS_NAME = "CameraActivity";
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
+    private static final String KEY_SHOW_EXPOSURE_LOCK_WARNING = "KEY_SHOW_EXPOSURE_LOCK_WARNING";
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
@@ -159,6 +169,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private PaintView mPaintView;
     private TextView mCounterView;
     private boolean mShowCounter = true;
+    private int mRetakeIdx;
+    private boolean mRetakeMode = false;
     private CVResult mCVResult;
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
@@ -169,13 +181,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private ActionBarDrawerToggle mDrawerToggle;
     private boolean mIsPictureSafe;
     private TextView mTextView;
-    private MenuItem mFlashMenuItem, mDocumentMenuItem, mGalleryMenuItem, mUploadMenuItem;
+    private MenuItem mFlashMenuItem, mDocumentMenuItem, mGalleryMenuItem, mUploadMenuItem,
+            mLockExposureMenuItem, mUnlockExposureMenuItem;
     private Drawable mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
     private boolean mIsSeriesModePaused = true;
     // We hold here a reference to the popupmenu and the list, because we are not sure what is first initialized:
     private List<String> mFlashModes;
-    private PopupMenu mFlashPopupMenu;
+    private PopupMenu mFlashPopupMenu, mWhiteBalancePopupMenu;
     private byte[] mPictureData;
 //    private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
@@ -188,7 +201,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private OrientationEventListener mOrientationListener;
 
     private boolean mIsQRActive = false;
-
 
 
     /**
@@ -237,6 +249,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //        //    just for markus oneplus:
 //        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
 //            colorStatusBar();
+
 
         mContext = this;
 
@@ -361,9 +374,22 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         updateThumbnail();
 
-//        CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
+        LinearLayout lockExposureTextView = findViewById(R.id.lock_exposure_text_view);
+        if (lockExposureTextView != null)
+            lockExposureTextView.setVisibility(View.INVISIBLE);
 
-//        MovementDetector.getInstance(this.getApplicationContext()).start();
+//        Should an image be retaken?
+//        This is just done if the user hit the button in PageSlideActivity:
+        mRetakeMode = getIntent().getBooleanExtra(KEY_RETAKE_IMAGE, false);
+        if (mRetakeMode) {
+            mRetakeIdx = getIntent().getIntExtra(KEY_RETAKE_IDX, -1);
+//            Clear the extra. This prevents that mRetakeMode is still true if the activity is
+//            resumed after another activity has closed. For example: The user hits 'Retake image'
+//            in the PageSlidActivity and does not hit the shoot button, but instead opens
+//            the gallery. After pressing back the CameraActivity is opened. If the intent extra
+//            is not cleared, the user would be still in retake mode.
+            getIntent().removeExtra(KEY_RETAKE_IMAGE);
+        }
 
     }
 
@@ -537,6 +563,42 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+
+
+    private void showLockedExposureDialog() {
+
+        final SharedPreferences sharedPref = androidx.preference.PreferenceManager.
+                getDefaultSharedPreferences(this);
+        boolean showDialog = sharedPref.getBoolean(KEY_SHOW_EXPOSURE_LOCK_WARNING, true);
+        if (!showDialog)
+            return;
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        LayoutInflater adbInflater = LayoutInflater.from(this);
+        View eulaLayout = adbInflater.inflate(R.layout.locked_exposure_dialog, null);
+
+        final CheckBox checkBox = eulaLayout.findViewById(R.id.skip);
+        alertDialog.setView(eulaLayout);
+        alertDialog.setTitle(R.string.camera_lock_exposure_title);
+        alertDialog.setMessage(R.string.camera_lock_exposure_msg);
+
+        alertDialog.setPositiveButton(getString(R.string.button_ok),
+                new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                if (checkBox.isChecked()) {
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putBoolean(KEY_SHOW_EXPOSURE_LOCK_WARNING, false);
+                    editor.commit();
+                }
+            }
+        });
+
+        alertDialog.show();
+
+    }
+
     private void loadPreferences() {
 
 
@@ -601,10 +663,25 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mDocumentMenuItem = menu.findItem(R.id.document_item);
         mGalleryMenuItem = menu.findItem(R.id.gallery_item);
         mUploadMenuItem = menu.findItem(R.id.upload_item);
+//        mWhiteBalanceMenuItem = menu.findItem(R.id.white_balance_item);
+        mLockExposureMenuItem = menu.findItem(R.id.lock_exposure_item);
+        mUnlockExposureMenuItem = menu.findItem(R.id.unlock_exposure_item);
+
+//        inflater.inflate(R.menu.white_balance_menu, mWhiteBalanceMenuItem.getSubMenu());
 
         // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
         if (mFlashModes != null && !mIsSeriesMode)
             mFlashMenuItem.setVisible(true);
+
+        MenuItem item = menu.findItem(R.id.grid_item);
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean showGrid = sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
+
+        if (showGrid)
+            item.setTitle(getString(R.string.hide_grid_item_title));
+        else
+            item.setTitle(getString(R.string.show_grid_item_title));
 
         return true;
 
@@ -694,19 +771,35 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    /**
-     * Opens the MediaScanner (if permission is given) to scan for saved pictures.
-     */
+
     private void openGallery() {
 
         Document document = DocumentStorage.getInstance(this).getActiveDocument();
         if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
+//            Show the last (most recent) image in the gallery:
+            openGallery(document.getPages().size()-1);
+        }
+
+    }
+
+    private void openGallery(int idx) {
+
+        Document document = DocumentStorage.getInstance(this).getActiveDocument();
+        if (document != null && document.getPages() != null && document.getPages().size() >= idx+1) {
             Intent intent = new Intent(getApplicationContext(), PageSlideActivity.class);
+//            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.putExtra(mContext.getString(R.string.key_document_file_name),
                     document.getTitle());
-            intent.putExtra(mContext.getString(R.string.key_page_position),
-                    document.getPages().size()-1);
-            mContext.startActivity(intent);
+            intent.putExtra(mContext.getString(R.string.key_page_position), idx);
+//            mContext.startActivity(intent);
+
+            ActivityUtils.createBackStack(this, intent);
+//            startActivity(intent);
+//            finish();
+
+//            TaskStackBuilder builder = TaskStackBuilder.create(this);
+//            builder.addNextIntentWithParentStack(intent);
+//            builder.startActivities();
         }
 
     }
@@ -778,12 +871,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 mTimerCallbacks.onTimerStarted(SHOT_TIME);
                 mTimerCallbacks.onTimerStopped(FLIP_SHOT_TIME);
 
-                // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
-                if (mCameraPreview.getCamera() != null) {
-                    mCameraPreview.getCamera().startPreview();
-                    mCameraPreview.startAutoFocus();
+                try {
+                    // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
+                    if (mCameraPreview.getCamera() != null && !mRetakeMode) {
+                        mCameraPreview.getCamera().startPreview();
+                        mCameraPreview.startAutoFocus();
+                    }
                 }
-
+                catch (RuntimeException e) {
+//                    We catch this to avoid:
+//                    java.lang.RuntimeException: Camera is being used after Camera.release() was called
+                }
 
 
 //                try {
@@ -847,6 +945,51 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         updatePhotoButtonIcon();
         initCancelQRButton();
         initForceShootButton();
+        initHudButton();
+
+    }
+
+    private void initHudButton() {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean showHudButton = sharedPref.getBoolean(getResources().getString(R.string.key_hud_enabled), false);
+
+        AppCompatImageButton hudButton = findViewById(R.id.hud_button);
+        if (!showHudButton)
+            hudButton.setVisibility(View.INVISIBLE);
+        else {
+            hudButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mirrorScreen(!isScreenMirrored());
+                }
+            });
+        }
+    }
+
+    /**
+     * Returns true if the screen is mirrored on the y-axes.
+     * @return
+     */
+    private boolean isScreenMirrored() {
+
+        return findViewById(R.id.main_frame_layout).getScaleY() == -1.f;
+
+    }
+
+    /**
+     * Mirrors the screen on the y-axes.
+     */
+    private void mirrorScreen(boolean mirror) {
+
+        float scale;
+        if (mirror)
+            scale = -1.f;
+        else
+            scale = 1.f;
+
+        View mainFrame = findViewById(R.id.main_frame_layout);
+        mainFrame.setScaleY(scale);
 
     }
 
@@ -1060,6 +1203,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             @Override
             public void onShutter() {
                 mPaintView.showFlicker();
+
+                SharedPreferences sharedPref =
+                        PreferenceManager.getDefaultSharedPreferences(mContext);
+                boolean flashInSeriesMode = sharedPref.getBoolean(getResources().getString(
+                        R.string.key_flash_series_mode), false);
+
+                if (flashInSeriesMode && mIsSeriesMode)
+                    mCameraPreview.shortFlash();
             }
         };
 
@@ -1227,6 +1378,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mCameraPreview != null)
             mCameraPreview.displayRotated();
 
+//        Rotating a mirrored screen causes some layout errors, so we de-mirror it before:
+        if (isScreenMirrored())
+            mirrorScreen(false);
+
         // Change the layout dynamically: Remove the current camera_controls_layout and add a new
         // one, which is appropriate for the orientation (portrait or landscape xml's).
         ViewGroup appRoot = findViewById(R.id.main_frame_layout);
@@ -1258,6 +1413,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         View v = ((Activity) mContext).findViewById(R.id.camera_controls_layout);
 
         WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+        if (wm == null || wm.getDefaultDisplay() == null)
+            return new Point();
+
         Display display = wm.getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
@@ -1436,24 +1594,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         NavigationView mDrawer = findViewById(R.id.left_drawer);
         setupDrawerContent(mDrawer);
 
-        // Set the item text for the debug view in the naviation drawer:
-        if (mDrawer == null)
-            return;
-
-        Menu menu = mDrawer.getMenu();
-        if (menu == null)
-            return;
-
-        //        Deleted the overflow button, so I had to comment this out:
-//        MenuItem item = menu.findItem(R.id.debug_view_item);
-//        if (item == null)
-//            return;
-//
-//        if (mIsDebugViewEnabled)
-//            item.setTitle(R.string.hide_debug_view_text);
-//        else
-//            item.setTitle(R.string.show_debug_view_text);
-
     }
 
 
@@ -1616,8 +1756,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             return;
         }
 
-        if (mCVResult != null && patches != null && patches.length > 0)
+        if (mCVResult != null)
             mCVResult.setPatches(patches);
+
+//        if (mCVResult != null && patches != null && patches.length > 0)
+//            mCVResult.setPatches(patches);
 
 //        CVManager.getInstance().setNextTask(TASK_TYPE_MOVE);
 
@@ -1725,6 +1868,92 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             mFlashMenuItem.setVisible(true);
 
     }
+
+    @Override
+    public void onExposureLockFound(boolean isSupported) {
+
+        if (mUnlockExposureMenuItem != null && mUnlockExposureMenuItem.isVisible())
+            mUnlockExposureMenuItem.setVisible(false);
+        if (mLockExposureMenuItem != null) {
+            if (isSupported)
+                mLockExposureMenuItem.setVisible(true);
+            else
+                mLockExposureMenuItem.setVisible(false);
+        }
+
+
+    }
+
+
+//    @Override
+//    public void onWhiteBalanceFound(List<String> whiteBalances) {
+//
+////        if (mWhiteBalancePopupMenu == null) // Menu is not created yet
+////            return;
+////
+//////        At least one white balance mode found must be handled by the UI:
+////        boolean isWBSupported = false;
+////        for (String whiteBalance : whiteBalances)
+////            isWBSupported |= enableWBItem(whiteBalance);
+////
+//////        Otherwise hide the WB item:
+////        if (!isWBSupported)
+////            mWhiteBalanceMenuItem.setVisible(false);
+//    }
+
+//    /**
+//     * Returns true if the whiteBalance is handled in the UI.
+//     * @param whiteBalance
+//     * @return
+//     */
+//    private boolean enableWBItem(String whiteBalance) {
+//
+//        switch (whiteBalance) {
+//            case Camera.Parameters.WHITE_BALANCE_AUTO:
+//                mWhiteBalancePopupMenu.getMenu().findItem(R.id.white_balance_auto_item)
+//                        .setVisible(true);
+//                return true;
+//            case Camera.Parameters.WHITE_BALANCE_DAYLIGHT:
+//                mWhiteBalancePopupMenu.getMenu().findItem(R.id.white_balance_sunny_item)
+//                        .setVisible(true);
+//                return true;
+//            default:
+//                return false;
+//        }
+//
+//    }
+
+//    private void enableWBButton(final String whiteBalance) {
+//
+//        AppCompatButton button = null;
+//        switch(whiteBalance) {
+//            case Camera.Parameters.WHITE_BALANCE_AUTO:
+//                button = findViewById(R.id.wb_auto_button);
+//                break;
+//            case Camera.Parameters.WHITE_BALANCE_INCANDESCENT:
+//                button = findViewById(R.id.wb_incandescent_button);
+//                break;
+//            case Camera.Parameters.WHITE_BALANCE_FLUORESCENT:
+//                button = findViewById(R.id.wb_iridescent_button);
+//                break;
+//            case Camera.Parameters.WHITE_BALANCE_DAYLIGHT:
+//                button = findViewById(R.id.wb_sunny_button);
+//        }
+//
+//        if (button != null) {
+//            button.setVisibility(View.VISIBLE);
+//            button.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    if (mCameraPreview != null)
+//                        mCameraPreview.setWhiteBalance(whiteBalance);
+//                }
+//            });
+//        }
+//
+//    }
+
+//    private void enableWB
 
     @Override
     public void onFocusTouch(PointF point) {
@@ -1895,14 +2124,35 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public void startUploadActivity(MenuItem item) {
 
         Document document = DocumentStorage.getInstance(this).getActiveDocument();
-        if (document != null && document.getPages() != null && !document.getPages().isEmpty()) {
-            Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
-            intent.putExtra(getString(R.string.key_document_file_name),
-                    document.getTitle());
-            startActivity(intent);
-        }
+        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
+
+//        If the document contains already images, select it in the UploadActivity:
+        if (document != null && document.getPages() != null && !document.getPages().isEmpty())
+            intent.putExtra(getString(R.string.key_document_file_name), document.getTitle());
+
+        startActivity(intent);
 
     }
+
+    public void showGrid(MenuItem item) {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean showGrid = !sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
+        mPaintView.drawGrid(showGrid);
+
+//        Save the new setting:
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(getResources().getString(R.string.key_show_grid), showGrid);
+        editor.commit();
+
+//        Change the item text:
+        if (showGrid)
+            item.setTitle(getString(R.string.hide_grid_item_title));
+        else
+            item.setTitle(getString(R.string.show_grid_item_title));
+
+    }
+
 
     public void startGalleryActivity(MenuItem item) {
 
@@ -1918,10 +2168,94 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    public void lockExposure(MenuItem item) {
+
+        if (mCameraPreview != null) {
+
+            showLockedExposureDialog();
+
+            mCameraPreview.lockExposure(true);
+            mCameraPreview.lockWhiteBalance(true);
+
+            if (mLockExposureMenuItem != null)
+                mLockExposureMenuItem.setVisible(false);
+            if (mUnlockExposureMenuItem != null)
+                mUnlockExposureMenuItem.setVisible(true);
+
+            final LinearLayout lockTextView = findViewById(R.id.lock_exposure_text_view);
+            lockTextView.setAlpha(0f);
+            lockTextView.setVisibility(View.VISIBLE);
+            lockTextView.animate()
+                    .alpha(1f)
+                    .setDuration(1000);
+        }
+
+    }
+
+    public void unlockExposure(MenuItem item) {
+
+        if (mCameraPreview != null) {
+            mCameraPreview.lockExposure(false);
+            mCameraPreview.lockWhiteBalance(false);
+
+            if (mLockExposureMenuItem != null)
+                mLockExposureMenuItem.setVisible(true);
+            if (mUnlockExposureMenuItem != null)
+                mUnlockExposureMenuItem.setVisible(false);
+
+            final LinearLayout lockTextView = findViewById(R.id.lock_exposure_text_view);
+            lockTextView.setVisibility(View.INVISIBLE);
+
+            final LinearLayout unlockTextView = findViewById(R.id.unlock_exposure_text_view);
+            unlockTextView.setAlpha(1f);
+            unlockTextView.setVisibility(View.VISIBLE);
+            unlockTextView.animate()
+                    .alpha(0f)
+                    .setDuration(1000)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            unlockTextView.setVisibility(View.INVISIBLE);
+                        }
+                    });
+
+//            final TextView lockTextView = findViewById(R.id.lock_exposure_text_view);
+//            lockTextView.setAlpha(0.f);
+//            lockTextView.setVisibility(View.VISIBLE);
+//            lockTextView.animate()
+//                    .alpha(1f)
+//                    .setDuration(500);
+
+        }
+
+    }
+
+//    public void whiteBalanceAuto(MenuItem item) {
+//
+//        if (mCameraPreview != null)
+//            mCameraPreview.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_AUTO);
+//
+//    }
+//
+//    public void whiteBalanceDaylight(MenuItem item) {
+//
+//        if (mCameraPreview != null)
+//            mCameraPreview.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_DAYLIGHT);
+//
+//    }
+//
+//    public void whiteBalanceCloudy(MenuItem item) {
+//
+//        if (mCameraPreview != null)
+//            mCameraPreview.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_FLUORESCENT);
+//
+//    }
 
     @SuppressWarnings("deprecation")
     private void setupFlashUI() {
 
+        if (mFlashModes == null)
+            return;
 
         if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO))
             mFlashPopupMenu.getMenu().findItem(R.id.flash_auto_item).setVisible(false);
@@ -1987,8 +2321,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 showControlsLayout(false);
                 mCVResult.clearResults();
                 mCameraPreview.startQrMode(true);
-//                String text = getString(R.string.instruction_searching_qr);
-//                setInstructionText(text);
 
                 IPManager.getInstance().setIsPaused(true);
                 return true;
@@ -2182,13 +2514,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
 
             if (exifOrientation != -1) {
-                GlideApp.with(mContext)
+                GlideApp.with(getApplicationContext())
                         .load(fileName)
                         .signature(new MediaStoreSignature("", 0, exifOrientation))
                         .into(mGalleryButton);
             }
             else {
-                GlideApp.with(mContext)
+                GlideApp.with(getApplicationContext())
                         .load(fileName)
                         .into(mGalleryButton);
             }
@@ -2246,6 +2578,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         protected String doInBackground(Void... voids) {
 
             Uri uri = getFileName(mContext.getString(R.string.app_name));
+            Log.d(CLASS_NAME, "FileSaver: uri " + uri);
+
+            if (uri == null || uri.getPath() == null)
+                return null;
 
             final File file = new File(uri.getPath());
 
@@ -2270,22 +2606,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 // Save exif information (especially the orientation):
                 saveExif(file);
 
-//                //PageSplit
-//                try {
-//
-//                    if (PageSplit.getInstance(mContext).applyPageSplit(uri, mContext) == 1) {
-//                        Log.d(PageSplit.TAG, "could not apply PageSplit");
-//                    } else {
-//                        Log.d("PageSplit", "Applied PageSplit");
-//                    }
-//                } catch (IOException e) {
-//                    Log.e("PageSplit", "Failed to apply PageSplit");
-//                }
-
-
-                boolean fileAdded = DocumentStorage.getInstance(mContext).addToActiveDocument(file);
-                if (!fileAdded)
-                    DocumentStorage.getInstance(mContext).generateDocument(file, mContext);
+                if (mRetakeMode) {
+                    DocumentStorage.getInstance(mContext).getActiveDocument().replacePage(file, mRetakeIdx);
+                }
+                else {
+                    boolean fileAdded = DocumentStorage.getInstance(mContext).addToActiveDocument(file);
+                    if (!fileAdded)
+                        DocumentStorage.getInstance(mContext).generateDocument(file, mContext);
+                }
 
                 mIsPictureSafe = true;
 
@@ -2349,12 +2677,25 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
         private void saveExif(File outFile) throws IOException {
+
             final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
             if (exif != null) {
                 // Save the orientation of the image:
                 int orientation = getExifOrientation();
                 String exifOrientation = Integer.toString(orientation);
                 exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+
+//                Save the docscan information:
+                exif.setAttribute(ExifInterface.TAG_SOFTWARE, getString(R.string.app_name));
+
+//                Save the user defined exif tags:
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+                String artist = sharedPref.getString(getResources().getString(R.string.key_exif_artist), "");
+                if (!artist.isEmpty())
+                    exif.setAttribute(ExifInterface.TAG_ARTIST, artist);
+                String copyright = sharedPref.getString(getResources().getString(R.string.key_exif_copyright), "");
+                if (!copyright.isEmpty())
+                    exif.setAttribute(ExifInterface.TAG_COPYRIGHT, copyright);
 
                 // Save the GPS coordinates if available:
                 Location location = LocationHandler.getInstance(mContext).getLocation();
@@ -2386,6 +2727,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
                 //            Start the page detection on the saved image:
                 ImageProcessor.pageDetection(new File(uri));
+
+                if (mRetakeMode) {
+                    openGallery(mRetakeIdx);
+                    GalleryActivity.fileRotated();
+                    finish();
+                }
             }
             else
                 Log.d(CLASS_NAME, "onPostExecute: could not save file!");

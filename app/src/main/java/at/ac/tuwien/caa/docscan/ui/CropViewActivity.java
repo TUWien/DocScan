@@ -3,9 +3,9 @@ package at.ac.tuwien.caa.docscan.ui;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.os.Bundle;
-import android.support.media.ExifInterface;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.exifinterface.media.ExifInterface;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,6 +39,7 @@ public class CropViewActivity extends AppCompatActivity {
     private String mFileName;
 //    used to restore previous state - in case the user cancels cropping:
     private ArrayList<PointF> mOriginalPoints;
+    private boolean mIsFocused;
 //    used to restore previous state - in case the user cancels cropping:
     private int mOriginalOrientation;
 
@@ -87,7 +88,7 @@ public class CropViewActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case android.R.id.home:
                 try {
-                    PageDetector.savePointsToExif(mFileName, mOriginalPoints);
+                    PageDetector.savePointsToExif(mFileName, mOriginalPoints, mIsFocused);
                     Helper.saveExifOrientation(new File(mFileName), mOriginalOrientation);
                 } catch (IOException e) {
                     Crashlytics.logException(e);
@@ -109,7 +110,7 @@ public class CropViewActivity extends AppCompatActivity {
 
 //        Enable back navigation in action bar:
         setSupportActionBar(mToolbar);
-        mToolbar.setNavigationIcon(android.support.v7.appcompat.R.drawable.abc_ic_clear_material);
+        mToolbar.setNavigationIcon(R.drawable.ic_clear_black_24dp);
 
     }
 
@@ -148,7 +149,9 @@ public class CropViewActivity extends AppCompatActivity {
 
                 loadBitmap();
 
-                ArrayList<PointF> points = PageDetector.getNormedCropPoints(mFileName);
+                PageDetector.PageFocusResult result = PageDetector.getNormedCropPoints(mFileName);
+                ArrayList<PointF> points = result.getPoints();
+                mIsFocused = result.isFocused();
 
                 if (points == null)
                     Log.d(CLASS_NAME, "initCropView: points are null");
@@ -197,7 +200,7 @@ public class CropViewActivity extends AppCompatActivity {
 
         ArrayList<PointF> cropPoints = mCropView.getCropPoints();
         try {
-            PageDetector.savePointsToExif(mFileName, cropPoints);
+            PageDetector.savePointsToExif(mFileName, cropPoints, mIsFocused);
             GalleryActivity.fileCropped();
             finish();
         } catch (IOException e) {
@@ -211,7 +214,7 @@ public class CropViewActivity extends AppCompatActivity {
         ArrayList<PointF> cropPoints = mCropView.getCropPoints();
 
         try {
-            PageDetector.savePointsToExif(mFileName, cropPoints);
+            PageDetector.savePointsToExif(mFileName, cropPoints, mIsFocused);
 
             Intent intent = new Intent(getApplicationContext(), MapViewActivity.class);
             intent.putExtra(getString(R.string.key_crop_view_activity_file_name), mFileName);

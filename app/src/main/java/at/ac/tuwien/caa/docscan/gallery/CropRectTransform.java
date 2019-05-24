@@ -3,10 +3,11 @@ package at.ac.tuwien.caa.docscan.gallery;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
@@ -58,10 +59,17 @@ public class CropRectTransform extends BitmapTransformation {
         // Draw the original Bitmap onto the result Bitmap with a transformation:
         canvas.drawBitmap(resized, 0, 0, paint);
 
-        ArrayList<PointF> points = PageDetector.getScaledCropPoints(mFileName,
+        PageDetector.PageFocusResult pfResult = PageDetector.getScaledCropPoints(mFileName,
                 original.getWidth(), original.getHeight());
 
-        drawQuad(canvas, points, mQuadPath, mQuadPaint);
+        if (!pfResult.isFocused())
+            mQuadPaint.setColor(Color.parseColor("#FF5722"));
+        drawQuad(canvas, pfResult.getPoints(), mQuadPath, mQuadPaint);
+
+//        ArrayList<PointF> points = PageDetector.getScaledCropPoints(mFileName,
+//                original.getWidth(), original.getHeight());
+//        drawQuad(canvas, points, mQuadPath, mQuadPaint);
+
 
         return result;
     }

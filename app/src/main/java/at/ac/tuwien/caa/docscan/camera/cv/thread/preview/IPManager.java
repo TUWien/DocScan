@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -7,8 +8,11 @@ import android.os.Message;
 import android.os.Parcelable;
 import android.util.Log;
 
+import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.concurrent.Executor;
@@ -59,6 +63,16 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
     private boolean mIsPaused = false;
     private boolean mIsFocusMeasured;
     private boolean mIsAlreadyChanged = true;
+
+//    used for testing with artificial created mats:
+    private boolean mIsTesting = false;
+    public static final int TEST_STATE_NO_PAGE = 0;
+    public enum TestState {
+        TEST_STATE_NO_PAGE,
+        TEST_STATE_PAGE_A,
+        TEST_STATE_PAGE_B
+    }
+    private TestState mTestState = TestState.TEST_STATE_NO_PAGE;
 
     //    Singleton:
     private static IPManager sInstance;
@@ -450,7 +464,137 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
     }
 
+    public void setTestState(TestState state) {
+
+        mTestState = state;
+
+    }
+
+    public void setIsTesting(boolean isTesting) {
+
+        mIsTesting = isTesting;
+
+    }
+
+    private Mat getTestMat(int frameWidth, int frameHeight) {
+
+        Mat result = new Mat(frameHeight, frameWidth, CvType.CV_8UC3);
+        Mat page, submat;
+
+        switch (mTestState) {
+
+            case TEST_STATE_PAGE_A:
+                page = new Mat(200, 200, CvType.CV_8UC3);
+                page.setTo(new Scalar(255, 0, 0));
+                Imgproc.putText(page, "Don't judge a book on its cover\nsadfsadfsadf\nsadfsadfsadfsadf\nasdfasdfsadfsadfsadf\nasdfasdfsadfsadfsadf\nasdfasdfsadfsadfsadf\nasdfasdfsadfsadfsadf\nasdfasdfsadfsadfsadf",
+                        new Point(0, 0), 3, 1, new Scalar(0, 0, 0), 2);
+                result.setTo(new Scalar(0, 255, 0));
+                submat = result.submat(new org.opencv.core.Rect(20, 20, page.cols(), page.rows()));
+                page.copyTo(submat);
+                break;
+
+            case TEST_STATE_PAGE_B:
+                page = new Mat(200, 200, CvType.CV_8UC3);
+                page.setTo(new Scalar(0, 0, 255));
+                Imgproc.putText(page, "Don't judge a book on its cover\nsadfsadfsadf\nsadfsadfsadfsadf\nasdfasdfsadfsadfsadf\nasdfasdfsadfsadfsadf\nasdfasdfsadfsadfsadf\nasdfasdfsadfsadfsadf\nasdfasdfsadfsadfsadf",
+                        new Point(0, 0), 3, 1, new Scalar(0, 0, 0), 2);
+                result.setTo(new Scalar(0, 255, 0));
+                submat = result.submat(new org.opencv.core.Rect(20, 20, page.cols(), page.rows()));
+                page.copyTo(submat);
+                break;
+
+            case TEST_STATE_NO_PAGE:
+                result.setTo(new Scalar(0, 255, 0));
+                break;
+        }
+
+//        Use this to show the mat:
+//        bmp = Bitmap.createBitmap(result.cols(), result.rows(), Bitmap.Config.ARGB_8888);
+//        Utils.matToBitmap(result, bmp);
+
+        return result;
+
+//        if (mTestState == TEST_STATE_PAGE) {
+//
+////            Mat result = new Mat(frameHeight, frameWidth, CvType.CV_8UC3);
+//
+//            Mat page = new Mat(200, 200, CvType.CV_8UC3);
+//            page.setTo(new Scalar(255, 0, 0));
+//            Imgproc.putText(page, "Don't judge a book on its cover", new Point(0, page.cols() / 2), 3, 1, new Scalar(0, 0, 0), 2);
+//
+//            result.setTo(new Scalar(0, 255, 0));
+//            Mat submat = result.submat(new org.opencv.core.Rect(20, 20, page.cols(), page.rows()));
+//            page.copyTo(submat);
+//
+//            //        Use this to show the mat:
+//            Bitmap bmp = Bitmap.createBitmap(result.cols(), result.rows(), Bitmap.Config.ARGB_8888);
+//            Utils.matToBitmap(result, bmp);
+//
+//            return result;
+//        }
+//        else if (mTestState == TEST_STATE_NO_PAGE) {
+//
+//        }
+    }
+
+//    This is just for testing purposes:
+    public static byte[] mat2Byte(Mat mat) {
+
+        byte[] return_buff = new byte[(int) (mat.total() *
+                mat.channels())];
+
+        return return_buff;
+
+    }
+
+    private static byte[] fakeByteMat(int frameWidth, int frameHeight) {
+
+        Mat result = new Mat(frameHeight, frameWidth, CvType.CV_8UC3);
+
+        Mat page = new Mat(200, 200, CvType.CV_8UC3);
+        page.setTo(new Scalar(255, 0, 0));
+        Imgproc.putText(page, "Don't judge a book on its cover", new Point(0, page.cols() / 2.f), 3, 1, new Scalar(0, 0, 0), 2);
+
+
+//        Core.putText(image, "Edited by me", new Point(rect.x,rect.y),
+//                Core.FONT_HERSHEY_PLAIN, 1.0 ,new  Scalar(0,255,255));
+//        Mat resultSub = result.submat(0,0, 500, 500);
+//        page.setTo(new Scalar(0, 0, 0));
+//        page.copyTo(resultSub);
+
+        result.setTo(new Scalar(0, 255, 0));
+        Mat submat= result.submat(new org.opencv.core.Rect(20,20, page.cols(), page.rows()));
+        page.copyTo(submat);
+
+        Bitmap bmp = Bitmap.createBitmap(result.cols(), result.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(result, bmp);
+
+        Mat yuv = new Mat((int) (frameHeight * 1.5), frameWidth, CvType.CV_8UC1);
+        Imgproc.cvtColor(result, yuv, Imgproc.COLOR_RGB2YUV);
+
+        Bitmap bmpYuv = Bitmap.createBitmap(yuv.cols(), yuv.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(result, bmpYuv);
+
+
+
+//        ByteBuffer byteBuffer = ByteBuffer.allocate(bmpYuv.getByteCount());
+//        bmpYuv.copyPixelsToBuffer(byteBuffer);
+//        byte[] bytes = byteBuffer.array();
+
+        int length = (int) (yuv.total() * 1.5);
+        byte[] buffer = new byte[length];
+        yuv.get(0, 0, buffer);
+
+        return buffer;
+
+
+    }
+
     private static Mat byte2Mat(byte[] pixels, int frameWidth, int frameHeight) {
+
+        if (sInstance.mIsTesting)
+            return sInstance.getTestMat(frameWidth, frameHeight);
+
 
         Mat yuv = new Mat((int) (frameHeight * 1.5), frameWidth, CvType.CV_8UC1);
         yuv.put(0, 0, pixels);
@@ -459,6 +603,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
         Imgproc.cvtColor(yuv, result, Imgproc.COLOR_YUV2RGB_NV21);
 
         return result;
+
     }
 
 

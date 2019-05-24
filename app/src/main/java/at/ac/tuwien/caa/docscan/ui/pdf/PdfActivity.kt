@@ -1,7 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui.pdf
 
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Helper
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity
