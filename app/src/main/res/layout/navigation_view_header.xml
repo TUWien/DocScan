@@ -57,7 +57,7 @@
                 />
 
             <!-- Note the button is not clickable, because the OnClickListener is applied to the RelativeLayout -->
-            <android.support.v7.widget.AppCompatImageButton
+            <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/navigation_view_header_account_setting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

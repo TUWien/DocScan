@@ -27,7 +27,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.io.File;
@@ -40,8 +40,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_FOCUS_MEASURE;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_MAP;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PAGE_DETECTION;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_PDF;
@@ -166,8 +168,25 @@ public class ImageProcessor {
                 if (task == null)
                     return false;
 
-                if (task instanceof PageDetectionTask)
-                    ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_PAGE_DETECTION);
+                if (task instanceof PageDetectionTask) {
+                    ImageProcessLogger.removeTask(task.getFile(),
+                            ImageProcessLogger.TASK_TYPE_PAGE_DETECTION);
+
+//                    Check if the page is unfocused:
+                    if (mContext != null && mContext.get() != null) {
+                        boolean isFocused = PageDetector.getNormedCropPoints(task.getFile().
+                                getAbsolutePath()).isFocused();
+                        DocumentStorage.getInstance(mContext.get()).setPageFocused(
+                                task.getFile().getName(), isFocused);
+                    }
+
+////                    Check if the page is unfocused:
+//                    if (mContext != null && mContext.get() != null &&
+//                            !PageDetector.getNormedCropPoints(task.getFile().getAbsolutePath()).isFocused())
+//                        DocumentStorage.getInstance(mContext.get()).setPageAsUnsharp(
+//                                task.getFile().getName());
+
+                }
                 else if (task instanceof MapTask) {
                     ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_MAP);
                     // Notify other apps and DocScan about the image change:
@@ -249,6 +268,12 @@ public class ImageProcessor {
 
     }
 
+    public static void focusMeasure(File file) {
+
+        executeTask(file, TASK_TYPE_FOCUS_MEASURE);
+
+    }
+
     public static void rotateFile(File file) {
 
         executeTask(file, TASK_TYPE_ROTATE);
@@ -291,6 +316,9 @@ public class ImageProcessor {
                 imageProcessTask = new RotateTask();
                 ImageProcessLogger.addRotateTask(file);
                 break;
+            case TASK_TYPE_FOCUS_MEASURE:
+                imageProcessTask = new RotateTask();
+                ImageProcessLogger.addRotateTask(file);
         }
 
         if (imageProcessTask != null) {

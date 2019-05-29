@@ -42,9 +42,6 @@
 /captures
 Android.mk
 /.idea/*
-/gradle/wrapper*
-gradlew
-gradlew.bat
 app/build
 openCVLibrary310
 import-summary.txt
@@ -79,3 +76,5 @@ api_info.txt
 /openCVLibrary/*
 /app/release
 /app/CMakeLists.txt
+/app/src/main/jniLibs
+/app/src/main/include

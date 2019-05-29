@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout
+<androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -8,25 +8,25 @@
     android:id="@+id/drawer_layout"
     >
 
-    <android.support.design.widget.CoordinatorLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/sync_coordinatorlayout"
         >
 
-        <android.support.design.widget.AppBarLayout
+        <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/gallery_appbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             >
-            <android.support.v7.widget.Toolbar
+            <androidx.appcompat.widget.Toolbar
                 android:id="@+id/main_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?android:attr/actionBarSize"
                 app:layout_scrollFlags="scroll|enterAlways"
                 android:background="@color/colorPrimary"
                 />
-        </android.support.design.widget.AppBarLayout>
+        </com.google.android.material.appbar.AppBarLayout>
 
         <!--The following attributes are required for a footer, so the FAB is not overlapping:-->
         <!--android:paddingBottom="80dp"-->
@@ -37,12 +37,12 @@
             android:layout_height="match_parent"
             android:choiceMode="singleChoice"
             android:fadeScrollbars="false"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
             android:paddingBottom="80dp"
             android:clipToPadding="false"
             />
 
-        <android.support.design.widget.FloatingActionButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/camera_fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -50,8 +50,8 @@
             app:srcCompat="@drawable/ic_camera_alt_black_24dp"
             android:layout_margin="16dp" />
 
-    </android.support.design.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
     <include layout="@layout/navigation_view"/>
 
-</android.support.v4.widget.DrawerLayout>
+</androidx.drawerlayout.widget.DrawerLayout>
 

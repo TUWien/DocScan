@@ -16,17 +16,43 @@ public class PageDetectionRunnable extends CropRunnable {
     @Override
     protected void performTask(String fileName) {
 
-        ArrayList<PointF> points = PageDetector.findRect(fileName);
+        PageDetector.PageFocusResult result = PageDetector.findRectAndFocus(fileName);
+
         try {
-            if (points != null && points.size() > 0)
-                PageDetector.savePointsToExif(fileName, points);
+            if (result != null && result.getPoints() != null && result.getPoints().size() > 0)
+                PageDetector.savePointsToExif(fileName, result.getPoints(), result.isFocused());
             else
                 PageDetector.savePointsToExif(fileName,
-                        PageDetector.getNormedDefaultPoints());
+                        PageDetector.getNormedDefaultPoints(), true);
+
         }
         catch (IOException e) {
 
         }
+
+
     }
+
+//    @Override
+//    protected void performTask(String fileName) {
+//
+//        ArrayList<PointF> points = PageDetector.findRect(fileName);
+//
+//        try {
+//            if (points != null && points.size() > 0)
+//                PageDetector.savePointsToExif(fileName, points);
+//            else
+//                PageDetector.savePointsToExif(fileName,
+//                        PageDetector.getNormedDefaultPoints());
+//
+////            Focus measurement:
+//
+//        }
+//        catch (IOException e) {
+//
+//        }
+//
+//
+//    }
 
 }

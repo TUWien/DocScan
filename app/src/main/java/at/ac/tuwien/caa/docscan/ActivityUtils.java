@@ -17,7 +17,7 @@ package at.ac.tuwien.caa.docscan;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
-import android.support.v4.app.TaskStackBuilder;
+import androidx.core.app.TaskStackBuilder;
 
 /**
  * Utility methods for activities management.

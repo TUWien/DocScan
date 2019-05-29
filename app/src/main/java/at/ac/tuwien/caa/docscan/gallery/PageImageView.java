@@ -60,9 +60,12 @@ public class PageImageView extends SubsamplingScaleImageView {
 
     }
 
-    public void setPoints(ArrayList<PointF> points) {
+    public void setPoints(ArrayList<PointF> points, boolean isFocused) {
 
         mPoints = points;
+        if (!isFocused && mQuadPaint != null)
+            mQuadPaint.setColor(getResources().getColor(R.color.hud_focus_unsharp_rect_color));
+
         invalidate();
 
     }

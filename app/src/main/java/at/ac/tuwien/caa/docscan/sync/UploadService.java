@@ -9,8 +9,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.android.volley.VolleyError;
@@ -33,7 +33,6 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.rest.UserHandler;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
@@ -259,6 +258,9 @@ public class UploadService extends JobService implements
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                 "handleRestError: RestRequest: " + request);
         Log.d(CLASS_NAME, "handleRestError: RestRequest: " + request);
+
+        if (error == null)
+            return;
 
 //        Log error.getMessage: (but this is usually null)
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,

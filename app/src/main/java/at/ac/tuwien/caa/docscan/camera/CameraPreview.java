@@ -41,29 +41,25 @@ import com.crashlytics.android.Crashlytics;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
-import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.PlanarYUVLuminanceSource;
-import com.google.zxing.ReaderException;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
+import static android.hardware.Camera.Parameters.FLASH_MODE_OFF;
+import static android.hardware.Camera.Parameters.FLASH_MODE_TORCH;
 import static com.google.zxing.BarcodeFormat.QR_CODE;
 
 
@@ -119,7 +115,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         IPManager.getInstance().setCVCallback(mCVCallback);
 
 
-        mFlashMode = null;
+        mFlashMode = FLASH_MODE_OFF;
 
         initMultiFormatReader();
 
@@ -224,6 +220,34 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    public void shortFlash() {
+
+        new Thread(new Runnable() {
+            public void run(){
+
+                if (mCamera == null)
+                    return;
+
+                Camera.Parameters params = mCamera.getParameters();
+                if (params == null)
+                    return;
+
+                params.setFlashMode(FLASH_MODE_TORCH);
+                mCamera.setParameters(params);
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                params.setFlashMode(mFlashMode);
+                mCamera.setParameters(params);
+
+            }
+        }).start();
+
+    }
+
 
     private class CameraHandlerThread extends HandlerThread {
 
@@ -278,6 +302,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onMeasuredDimensionChange(int width, int height);
         void onFrameDimensionChange(int width, int height, int cameraOrientation);
         void onFlashModesFound(List<String> modes);
+        void onExposureLockFound(boolean isSupported);
+//        void onWhiteBalanceFound(List<String> whiteBalances);
         void onFocusTouch(PointF point);
         void onFocusTouchSuccess();
 
@@ -662,6 +688,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mFlashMode != null)
             params.setFlashMode(mFlashMode);
 
+//        params.setAutoExposureLock(true);
         mCamera.setParameters(params);
 
         try {
@@ -728,7 +755,47 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         // Tell the dependent Activity that the frame dimension (might have) change:
         mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, orientation);
 
+//        Tell the activity if the auto exposure can be locked:
+        mCameraPreviewCallback.onExposureLockFound(params.isAutoExposureLockSupported());
+////        Tell the activity how we can control the white balance:
+//        mCameraPreviewCallback.onWhiteBalanceFound(params.getSupportedWhiteBalance());
 
+    }
+
+    public void lockExposure(boolean lock) {
+
+        if (mCamera != null) {
+            Camera.Parameters params = mCamera.getParameters();
+            if (params != null && params.isAutoExposureLockSupported()) {
+                params.setAutoExposureLock(lock);
+                mCamera.setParameters(params);
+            }
+        }
+
+    }
+
+    public void lockWhiteBalance(boolean lock) {
+
+        if (mCamera != null) {
+            Camera.Parameters params = mCamera.getParameters();
+            if (params != null && params.isAutoWhiteBalanceLockSupported()) {
+                params.setAutoWhiteBalanceLock(lock);
+                mCamera.setParameters(params);
+            }
+        }
+
+    }
+
+
+    public void setWhiteBalance(String value) {
+
+        if (mCamera != null) {
+            Camera.Parameters params = mCamera.getParameters();
+            if (params != null) {
+                params.setWhiteBalance(value);
+                mCamera.setParameters(params);
+            }
+        }
     }
 
     private void useAutoFocus(Camera.Parameters params) {

@@ -1,8 +1,8 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 import android.graphics.PointF;
-import android.support.annotation.NonNull;
-import android.support.media.ExifInterface;
+import androidx.annotation.NonNull;
+import androidx.exifinterface.media.ExifInterface;
 import android.util.Log;
 
 import org.opencv.core.Mat;
@@ -55,6 +55,8 @@ public class Mapper {
 
 
         }
+
+        transformedMat.release();
 
         return false;
 

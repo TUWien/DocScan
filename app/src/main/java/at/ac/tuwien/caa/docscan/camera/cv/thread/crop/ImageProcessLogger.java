@@ -22,6 +22,7 @@ public class ImageProcessLogger implements Serializable {
     public static final int TASK_TYPE_ROTATE = 2;
     public static final int TASK_TYPE_PDF = 3;
     public static final int TASK_TYPE_PDF_OCR = 4;
+    public static final int TASK_TYPE_FOCUS_MEASURE = 5;
     private static final String CROP_FILE_NAME = "crop_log.txt";
     private static final String CLASS_NAME = "ImageProcessLogger";
 

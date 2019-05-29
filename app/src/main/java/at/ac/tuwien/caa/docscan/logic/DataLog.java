@@ -28,35 +28,23 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.v4.app.ShareCompat;
-import android.support.v4.content.FileProvider;
-import android.util.JsonReader;
-import android.util.JsonWriter;
-import android.util.Log;
+import androidx.core.app.ShareCompat;
+import androidx.core.content.FileProvider;
 
 import com.crashlytics.android.Crashlytics;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.GPS;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
-
-import static android.content.Intent.ACTION_SEND_MULTIPLE;
 
 
 public class DataLog {

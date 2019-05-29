@@ -8,30 +8,47 @@ Fabian Hollaus,
 Florian Kleber,
 Markus Diem
 
-## Build Instructions for Android Studio
-### Preparation:
-- You need to install Android NDK (with CMake) if you do not have it
-- Download and unzip OpenCV for Android (https://opencv.org/releases.html)
-- The latest tested version is OpenCV 3.4.5
-- Clone the project and open it in Android Studio
+## Build Instructions
+DocScan makes use of native (C++) OpenCV and OpenCV Java API. The Java part is automatically downloaded after syncing.
+### Download native library
+For the native part you have to clone this repo:
 
-### Import the OpenCV module
-- In Android Studio: 'File' -> 'New' -> 'Import Module'
-- Set 'Source directory' to: `{your_local_path}/OpenCV-android-sdk/sdk/java`
-- Set 'Module name' to: `openCVLibrary` (Note: Do not include any version number here. If Android studio is saying that there is such a module existing, delete the auto generated openCVLibrary folder in the app root folder.)
-- Open 'openCVLibrary/build.gradle'
-- Correct the version numbers of `compileSdkVersion`, `minSdkVersion`, `targetSdkVersion` so that it matches the version numbers in your app build.gradle (You can also delete the buildToolsVersion since this is not needed by gradle anymore)
+```shell
+git clone https://github.com/hollaus/opencv_libs.git opencv_native
+```
+### Add native library to the project
+Next you have to copy two folders from the native library to the project.
+- copy `opencv_native/sdk/native/libs` to `app/src/main/jniLibs`
+- copy `opencv_native/sdk/native/jni/include` to `app/src/main/include`
 
-### Setup CMake file
-- Copy the file `app/CMakeListsSkel.txt` and paste it to `app/`, name the pasted file `CMakeLists.txt` (do not add it to the git repository!)
-- Open `app/src/CMakeLists.txt`
-- Change the line `include_directories(enter_your_opencv_path/sdk/native/jni/include)` so that it contains your opencv path
+Alternatively, you can create symlinks - as written below. It is assumed that your project root folder (DocScan) and the opencv_native folder are on the same hierarchy level.
 
-### Create a symlink
-- Create a symlink named `jniLibs` in `app/src/main` that points to `{your_local_path}/OpenCV-android-sdk/native/libs`
-- Fill in your required architecture in `app/build.gradle` under `abiFilters`
+Windows:
+
+```shell
+cd app/src/main
+mklink /d jniLibs ..\..\..\..\opencv_native\sdk\native\libs
+mklink /d include ..\..\..\..\opencv_native\sdk\native\jni\include
+```
+
+Linux:
+```shell
+cd app/src/main
+ln -s ../../../opencv_native/sdk/native/libs jniLibs
+ln -s ../../../opencv_native/sdk/native/jni/include include
+```
+
 
 ### Sync and build the project
+
+## API keys
+The app makes use of two APIs that require keys which are not published in the repository and should never be provided to the public. Instead not working dummy keys are provided in the following files:
+- `gradle.properties`: contains the key for Dropbox integration
+- `google-services.json`: contains the key for Firebase integration (needed for OCR)
+
+You can get the API key if you send a mail to docscan@cvl.tuwien.ac.at. Before you replace the dummy keys, assure that you do not commit the keys with the following commands:
+- `git update-index --assume-unchanged google-services.json`
+- `git update-index --assume-unchanged gradle.properties`
 
 ## Visual Studio Project (C++ Library)
 - Optional for testing the C++ module

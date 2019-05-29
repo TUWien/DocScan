@@ -22,6 +22,8 @@ import at.ac.tuwien.caa.docscan.ui.license.LicenseActivity;
  */
 public class AboutActivity extends BaseNavigationActivity {
 
+    public static String KEY_SHOW_INTRO = "KEY_SHOW_INTRO";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -48,37 +50,25 @@ public class AboutActivity extends BaseNavigationActivity {
             e.printStackTrace();
         }
 
-        Button licensesButton = findViewById(R.id.about_licenses_button);
         final Context context = this;
-        licensesButton.setOnClickListener(new View.OnClickListener() {
+
+        Button introButton = findViewById(R.id.about_intro_button);
+        introButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                startActivity(new Intent(context, OssLicensesMenuActivity.class));
-
-                startActivity(new Intent(context, LicenseActivity.class));
-
-//                new LibsBuilder()
-//                        //provide a style (optional) (LIGHT, DARK, LIGHT_DARK_TOOLBAR)
-//                        .withActivityStyle(Libs.ActivityStyle.LIGHT_DARK_TOOLBAR)
-//                        //start the activity
-//                        .start(context);
-
+                Intent intent = new Intent(context, StartActivity.class);
+                intent.putExtra(KEY_SHOW_INTRO, true);
+                startActivity(intent);
             }
         });
 
-////        Initialize the howto button:
-//        AppCompatButton howtoButton = findViewById(R.id.about_guide_button);
-//        howtoButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                String pdfUrl = "https://transkribus.eu/wiki/images/e/ed/How_to_use_DocScan_and_ScanTent.pdf";
-////                String pdfUrl = "https://stackoverflow.com/questions/3004515/sending-an-intent-to-browser-to-open-specific-url";
-//                Intent browserIntent = new Intent(Intent.ACTION_VIEW);
-//                browserIntent.setData(Uri.parse(pdfUrl));
-//                startActivity(browserIntent);
-//            }
-//        });
-
+        Button licensesButton = findViewById(R.id.about_licenses_button);
+        licensesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(context, LicenseActivity.class));
+            }
+        });
 
     }
 

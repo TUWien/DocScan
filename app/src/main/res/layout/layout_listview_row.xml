@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/list_view_multi_selector"
-    android:padding="8dp">
+    android:padding="6dp">
 
 
     <RelativeLayout
@@ -60,11 +60,12 @@
         android:layout_below="@+id/layout_listview_row_title"
         />
 
+
     <RelativeLayout
         android:id="@+id/layout_listview_image_frame_layout"
         android:layout_alignParentRight="true"
-        android:layout_width="60dp"
-        android:layout_height="60dp">
+        android:layout_width="70dp"
+        android:layout_height="70dp">
 
         <ImageView
             android:id="@+id/layout_listview_row_thumbnail"

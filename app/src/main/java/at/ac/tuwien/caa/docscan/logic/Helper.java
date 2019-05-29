@@ -9,8 +9,8 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.support.media.ExifInterface;
-import android.support.v7.app.AlertDialog;
+import androidx.exifinterface.media.ExifInterface;
+import androidx.appcompat.app.AlertDialog;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
@@ -338,6 +338,20 @@ public class Helper {
 
     }
 
+    public static boolean isDocumentFocused(Document document) {
+
+        if (document == null)
+            return true;
+
+        for (Page page : document.getPages()) {
+            if (!page.isFocused())
+                return false;
+        }
+
+        return true;
+
+    }
+
     public static boolean rotateExif(File outFile)  {
 
         final ExifInterface exif;
@@ -513,7 +527,7 @@ public class Helper {
 
     public static String getActiveDocumentTitle(Context context) {
 
-        SharedPreferences sharedPref = android.support.v7.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences sharedPref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context);
         String seriesName = sharedPref.getString(
                 context.getResources().getString(R.string.series_name_key),
                 context.getResources().getString(R.string.series_name_default));

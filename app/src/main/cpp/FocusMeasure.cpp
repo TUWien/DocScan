@@ -494,6 +494,9 @@ namespace dsc {
 		if (mSrcImg.empty())
 			return false;
 
+//		testing out of memory:
+//		cv::Mat m(1000000000, 1000000000, CV_8UC3);
+
 		cv::Mat binImg;
 		mSrcImg.convertTo(binImg, CV_8U);
 		cv::threshold(binImg, binImg, 0, 255, CV_THRESH_BINARY_INV | CV_THRESH_OTSU);
