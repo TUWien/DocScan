@@ -39,6 +39,7 @@ public class PageDetector {
 
     //Matthias
     private static final String CROPPING_APPLIED = "Cropping applied=\"true\"";
+    private static final String IS_FOCUSED = "Focused value=\"true\"";
     private static final String IS_UNFOCUSED = "Focused value=\"false\"";
 
     /**
@@ -249,7 +250,7 @@ public class PageDetector {
      * @return
      */
     private static String getCoordString(ArrayList<PointF> points, boolean isFocused, String filename) throws IOException {
-        Log.d("PD","getCoordString");
+        Log.d(CLASS_TAG,"getCoordString");
 
         if (points == null)
             return null;
@@ -319,10 +320,15 @@ public class PageDetector {
 //            serializer.startTag("", "Comments");
 //            serializer.text(CROPPING_APPLIED);
 //            serializer.endTag("", "Comments");
-            if (!isFocused)
+            if (!isFocused) {
                 serializer.startTag("", "Comments");
                 serializer.text(IS_UNFOCUSED);
                 serializer.endTag("", "Comments");
+            } else {
+                serializer.startTag("", "Comments");
+                serializer.text(IS_FOCUSED);
+                serializer.endTag("", "Comments");
+            }
             serializer.endTag("", tagMetadata);
             serializer.startTag("", tagPage);
             serializer.attribute("", attributeImageFilename, imageFilename);
@@ -467,7 +473,7 @@ public class PageDetector {
             String XMLString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
             if (XMLString != null) {
 //  Take care that the string is well formed:
-                if (XMLString.startsWith(BORDER_COORDS_PREFIX) &&
+                if (XMLString.startsWith(BORDER_COORDS_PREFIX) &&//TODO: startsWith or contains?
                         XMLString.endsWith(BORDER_COORDS_POSTFIX_2)) {
                     int idxStart = BORDER_COORDS_PREFIX.length();
                     int idxEnd = XMLString.indexOf(BORDER_COORDS_POSTFIX_1);
@@ -498,28 +504,39 @@ public class PageDetector {
                         int eventType = xpp.getEventType();
                         ArrayList<PointF> points = new ArrayList<>();
 
-
+                        Log.d("XMLParser", "START PARSER");
                         while (eventType != XmlPullParser.END_DOCUMENT) {
-                            if(eventType == XmlPullParser.START_TAG) {
-                                final String coords = xpp.getAttributeValue(0);
-                                String[] coordPairs = coords.split(" ");
+                            String name = xpp.getName();
+                            Log.d("XMLParser", "name = " + name);
+                            switch (eventType) {
+                                case XmlPullParser.START_TAG:
+                                    break;
+                                case XmlPullParser.END_TAG:
+                                    if (name.equals("Coords")) {
+                                        Log.d("XMLParser", "Coord tag");
+                                        final String coords = xpp.getAttributeValue(null, "points");
+                                        Log.d("XMLParser", "Coords: " + coords);
+                                        String[] coordPairs = coords.split(" ");
 
-                                for (String coordPair : coordPairs) {
-                                    String[] coord = coordPair.split(",");
-                                    float x = Float.parseFloat(coord[0]);
-                                    float y = Float.parseFloat(coord[1]);
-                                    points.add(new PointF(x, y));
-                                }
+                                        for (String coordPair : coordPairs) {
+                                            String[] coord = coordPair.split(",");
+                                            float x = Float.parseFloat(coord[0]);
+                                            float y = Float.parseFloat(coord[1]);
+                                            points.add(new PointF(x, y));
+                                        }
+                                    }
                             }
+
                             eventType = xpp.next();
                         }
+
                         boolean isFocused = !XMLString.contains(IS_UNFOCUSED);
 
                         return new PageFocusResult(points, isFocused);
 
                     }
                     catch (XmlPullParserException e) {
-                        Log.e(CLASS_TAG, "Could create XmlPullParser Instance");
+                        Log.e(CLASS_TAG, "Could not create XmlPullParser Instance");
                     }
                 }
 
@@ -562,14 +579,21 @@ public class PageDetector {
     }
 
     public static void saveAsCropped(String fileName) {
-        Log.d("PD","saveAsCropped");
         try {
             ExifInterface exif = new ExifInterface(fileName);
-            String coordString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
-            if (coordString != null) {
-                coordString = CROPPING_PREFIX + coordString;
-                exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
-                exif.saveAttributes();
+            String XMLString = exif.getAttribute(ExifInterface.TAG_MAKER_NOTE);
+            if (XMLString != null) {
+                if (XMLString.contains(BORDER_COORDS_PREFIX)) {
+                    XMLString = CROPPING_PREFIX + XMLString;
+                    exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, XMLString);
+                    exif.saveAttributes();
+                } else if (XMLString.startsWith("<?xml")) {
+                    XMLString = XMLString + "<!-- " + CROPPING_APPLIED + " -->";
+                    exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, XMLString);
+                    exif.saveAttributes();
+                } else {
+                    Log.e(CLASS_TAG, "Invalid XML format");
+                }
             }
 
         } catch (IOException e) {

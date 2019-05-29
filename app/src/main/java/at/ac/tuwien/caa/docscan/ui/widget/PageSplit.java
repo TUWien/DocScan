@@ -206,47 +206,17 @@ public class PageSplit {
             // Fit a line to the seperator
             Core.rotate(sMask, sMask, Core.ROTATE_90_CLOCKWISE);
             interpolateSeperator(sContours, sMask, pCorners, sTop, sBottom);
-            final int pageType = checkIfSinglePage(pCorners, sTop, sBottom, 0.3);//-1: only left page; 0: single page; 1 only right page
-            Log.d(TAG, "pageType = " + Integer.toString(pageType));
-
-            rescaleCorners(uri, pCorners, sTop, sBottom, originalHeight, originalWidth);
-            if (pageType == -1) {
-                final List<Point> lCorners = new ArrayList<>();
-
-                lCorners.add(pCorners.get(0));
-                lCorners.add(sTop);
-                lCorners.add(sBottom);
-                lCorners.add(pCorners.get(3));
-
-                writeCornersToXML(lCorners, uri);
-            } else if (pageType == 1) {
-                final List<Point> rCorners = new ArrayList<>();
-
-                rCorners.add(sTop);
-                rCorners.add(pCorners.get(1));
-                rCorners.add(pCorners.get(2));
-                rCorners.add(sBottom);
-
-                writeCornersToXML(rCorners, uri);
-            } else {
-                final List<Point> lCorners = new ArrayList<>();
-
-                lCorners.add(pCorners.get(0));
-                lCorners.add(sTop);
-                lCorners.add(sBottom);
-                lCorners.add(pCorners.get(3));
-
-                final List<Point> rCorners = new ArrayList<>();
-
-                rCorners.add(sTop);
-                rCorners.add(pCorners.get(1));
-                rCorners.add(pCorners.get(2));
-                rCorners.add(sBottom);
-
-                writeCornersToXML(lCorners, rCorners, uri);
-            }
 
         }
+
+        try {
+            writeXML(pCorners, sTop, sBottom, uri);
+        }
+        catch (IOException e) {
+            Log.e(TAG, "cant write XML file");
+        }
+
+
 
         long timeEnd = SystemClock.uptimeMillis();
         Log.d(TAG, "Total time cost: " + Long.toString((timeEnd - timeBegin)) + "ms");
@@ -267,7 +237,50 @@ public class PageSplit {
 //    }
 
 
+    private void writeXML(List<Point> pCorners, Point sTop, Point sBottom, Uri uri) throws IOException {
+        final int pageType = checkIfSinglePage(pCorners, sTop, sBottom, 0.3);//-1: only left page; 0: single page; 1 only right page
+        Log.d(TAG, "pageType = " + Integer.toString(pageType));
 
+//            rescaleCorners(uri, pCorners, sTop, sBottom, originalHeight, originalWidth);
+        normCorners(pCorners, sTop, sBottom);
+        if (pageType == -1) {
+            final List<Point> lCorners = new ArrayList<>();
+
+            lCorners.add(pCorners.get(0));
+            lCorners.add(sTop);
+            lCorners.add(sBottom);
+            lCorners.add(pCorners.get(3));
+
+            writeCornersToXML(lCorners, uri);
+
+        } else if (pageType == 1) {
+            final List<Point> rCorners = new ArrayList<>();
+
+            rCorners.add(sTop);
+            rCorners.add(pCorners.get(1));
+            rCorners.add(pCorners.get(2));
+            rCorners.add(sBottom);
+
+            writeCornersToXML(rCorners, uri);
+        } else {
+            final List<Point> lCorners = new ArrayList<>();
+
+            lCorners.add(pCorners.get(0));
+            lCorners.add(sTop);
+            lCorners.add(sBottom);
+            lCorners.add(pCorners.get(3));
+
+            final List<Point> rCorners = new ArrayList<>();
+
+            rCorners.add(sTop);
+            rCorners.add(pCorners.get(1));
+            rCorners.add(pCorners.get(2));
+            rCorners.add(sBottom);
+
+            writeCornersToXML(lCorners, rCorners, uri);
+        }
+
+    }
 
 
     private String writeCornersToXML(List<Point> pCorners, Uri uri) throws IOException {
@@ -405,20 +418,20 @@ public class PageSplit {
                     serializer.startTag("", tagCustomRegion);
                         serializer.attribute("", "id", "l1");
                         serializer.startTag("", tagCoords);
-                            serializer.attribute("", attributePoints, Integer.toString((int) lCorners.get(0).x) + "," + Integer.toString((int) lCorners.get(0).y) + " "
-                                    + Integer.toString((int) lCorners.get(1).x) + "," + Integer.toString((int) lCorners.get(1).y) + " "
-                                    + Integer.toString((int) lCorners.get(2).x) + "," + Integer.toString((int) lCorners.get(2).y) + " "
-                                    + Integer.toString((int) lCorners.get(3).x) + "," + Integer.toString((int) lCorners.get(3).y));
+                            serializer.attribute("", attributePoints, lCorners.get(0).x + "," + lCorners.get(0).y + " "
+                                    + lCorners.get(1).x + "," + lCorners.get(1).y + " "
+                                    + lCorners.get(2).x + "," + lCorners.get(2).y + " "
+                                    + lCorners.get(3).x + "," + lCorners.get(3).y);
                         serializer.endTag("", tagCoords);
                     serializer.endTag("", tagCustomRegion);
 
                     serializer.startTag("", tagCustomRegion);
                     serializer.attribute("", "id", "r1");
                     serializer.startTag("", tagCoords);
-                    serializer.attribute("", attributePoints, Integer.toString((int) rCorners.get(0).x) + "," + Integer.toString((int) rCorners.get(0).y) + " "
-                            + Integer.toString((int) rCorners.get(1).x) + "," + Integer.toString((int) rCorners.get(1).y) + " "
-                            + Integer.toString((int) rCorners.get(2).x) + "," + Integer.toString((int) rCorners.get(2).y) + " "
-                            + Integer.toString((int) rCorners.get(3).x) + "," + Integer.toString((int) rCorners.get(3).y));
+                    serializer.attribute("", attributePoints, rCorners.get(0).x + "," + rCorners.get(0).y + " "
+                            + rCorners.get(1).x + "," + rCorners.get(1).y + " "
+                            + rCorners.get(2).x + "," + rCorners.get(2).y + " "
+                            + rCorners.get(3).x + "," + rCorners.get(3).y);
                     serializer.endTag("", tagCoords);
                     serializer.endTag("", tagCustomRegion);
                 serializer.endTag("", tagPage);
@@ -691,6 +704,18 @@ public class PageSplit {
 
         sBottom.x = xs;
         sBottom.y = ys;
+    }
+
+    private void normCorners(List<Point> pCorners, Point sTop, Point sBottom) {
+        for (Point c: pCorners) {
+            c.x = c.x/DIM_IMG_SIZE_X;
+            c.y = c.y/DIM_IMG_SIZE_Y;
+        }
+
+        sTop.x = sTop.x/DIM_IMG_SIZE_X;
+        sTop.y = sTop.y/DIM_IMG_SIZE_Y;
+        sBottom.x = sBottom.x/DIM_IMG_SIZE_X;
+        sBottom.y = sBottom.y/DIM_IMG_SIZE_Y;
     }
 
     private void rescaleCorners(Uri uri, List<Point> pCorners,

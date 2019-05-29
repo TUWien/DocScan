@@ -7,6 +7,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
@@ -109,19 +111,63 @@ public class CropRectTransform extends BitmapTransformation {
         path.reset();
         boolean isStartSet = false;
 
-        for (PointF point : points) {
-
-            if (!isStartSet) {
-                path.moveTo(point.x, point.y);
-                isStartSet = true;
-            } else {
-                path.lineTo(point.x, point.y);
+        Log.d("PageSplit", "len(points) = " + points.size());
+        //Matthias START
+        if (points.size() == 8) {
+            Log.d("PageSplit", "in loop");
+            for (int i = 0; i < 4; ++i) {
+                if (!isStartSet) {
+                    path.moveTo(points.get(i).x, points.get(i).y);
+                    isStartSet = true;
+                } else
+                    path.lineTo(points.get(i).x, points.get(i).y);
             }
+            path.close();
+            canvas.drawPath(path, paint);
 
+            path.reset();
+            isStartSet = false;
+            for (int i = 4; i < 8; ++i) {
+                if (!isStartSet) {
+                    path.moveTo(points.get(i).x, points.get(i).y);
+                    isStartSet = true;
+                } else
+                    path.lineTo(points.get(i).x, points.get(i).y);
+            }
+            path.close();
+            canvas.drawPath(path, paint);
+        } else { //Matthias END
+            for (PointF point : points) {
+
+                if (!isStartSet) {
+                    path.moveTo(point.x, point.y);
+                    isStartSet = true;
+                } else
+                    path.lineTo(point.x, point.y);
+
+                // draw the circle around the corner:
+//            Log.d(CLASS_NAME, "drawQuad: point: " + point);
+//            canvas.drawCircle(point.x, point.y, CORNER_CIRCLE_RADIUS, mCirclePaint);
+
+            }
         }
 
         path.close();
         canvas.drawPath(path, paint);
+
+//        for (PointF point : points) {
+//
+//            if (!isStartSet) {
+//                path.moveTo(point.x, point.y);
+//                isStartSet = true;
+//            } else {
+//                path.lineTo(point.x, point.y);
+//            }
+//
+//        }
+//
+//        path.close();
+//        canvas.drawPath(path, paint);
 
     }
 
