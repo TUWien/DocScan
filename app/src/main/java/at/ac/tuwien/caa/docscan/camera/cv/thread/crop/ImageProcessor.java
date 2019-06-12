@@ -173,12 +173,13 @@ public class ImageProcessor {
                             ImageProcessLogger.TASK_TYPE_PAGE_DETECTION);
 
 //                    Check if the page is unfocused:
-                    if (mContext != null && mContext.get() != null) {
-                        boolean isFocused = PageDetector.getNormedCropPoints(task.getFile().
-                                getAbsolutePath()).isFocused();
-                        DocumentStorage.getInstance(mContext.get()).setPageFocused(
-                                task.getFile().getName(), isFocused);
-                    }
+//                    if (mContext != null && mContext.get() != null) {
+//                        boolean isFocused = PageDetector.getNormedCropPoints(task.getFile().
+//                                getAbsolutePath()).isFocused();
+////                        This caused me sometimes ConcurrentModificationException:
+////                        DocumentStorage.getInstance(mContext.get()).setPageFocused(
+////                                task.getFile().getName(), isFocused);
+//                    }
 
 ////                    Check if the page is unfocused:
 //                    if (mContext != null && mContext.get() != null &&
@@ -264,19 +265,22 @@ public class ImageProcessor {
 
     public static void pageDetection(File file) {
 
-        executeTask(file, TASK_TYPE_PAGE_DETECTION);
+        if (file.exists())
+            executeTask(file, TASK_TYPE_PAGE_DETECTION);
 
     }
 
     public static void focusMeasure(File file) {
 
-        executeTask(file, TASK_TYPE_FOCUS_MEASURE);
+        if (file.exists())
+            executeTask(file, TASK_TYPE_FOCUS_MEASURE);
 
     }
 
     public static void rotateFile(File file) {
 
-        executeTask(file, TASK_TYPE_ROTATE);
+        if (file.exists())
+            executeTask(file, TASK_TYPE_ROTATE);
 
     }
 
@@ -294,7 +298,8 @@ public class ImageProcessor {
 
     public static void mapFile(File file) {
 
-        executeTask(file, TASK_TYPE_MAP);
+        if (file.exists())
+            executeTask(file, TASK_TYPE_MAP);
 
     }
 

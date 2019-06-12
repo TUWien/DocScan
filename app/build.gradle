@@ -10,8 +10,8 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 15
 		targetSdkVersion 28
-		versionCode 85
-		versionName "1.6.17"
+		versionCode 92
+		versionName "1.6.24"
 
 		multiDexEnabled true
 //		this is used to show the build time in the AboutActivity
@@ -29,6 +29,9 @@ android {
 		}
 		testInstrumentationRunner = 'androidx.test.runner.AndroidJUnitRunner'
 	}
+
+	ext.enableCrashlytics = true
+
 	buildTypes {
 //        The dropbox api key is hidden based on the 2nd example in this post:
 //        https://rammic.github.io/2015/07/28/hiding-secrets-in-android-apps/
@@ -66,6 +69,32 @@ android {
 	lintOptions {
 		abortOnError false
 	}
+
+	useLibrary 'android.test.runner'
+
+	testOptions {
+		// Encapsulates options for local unit tests.
+		unitTests {
+			// By default, local unit tests throw an exception any time the code you are testing tries to access
+			// Android platform APIs (unless you mock Android dependencies yourself or with a testing
+			// framework like Mockito). However, you can enable the following property so that the test
+			// returns either null or zero when accessing platform APIs, rather than throwing an exception.
+			returnDefaultValues true
+
+			// Encapsulates options for controlling how Gradle executes local unit tests. For a list
+			// of all the options you can specify, read Gradle's reference documentation.
+			all {
+				// Sets JVM argument(s) for the test JVM(s).
+				jvmArgs '-XX:MaxPermSize=256m'
+
+				// You can also check the task name to apply options to only the tests you specify.
+				if (it.name == 'testDebugUnitTest') {
+					systemProperty 'debug', 'true'
+				}
+			}
+		}
+	}
+
 //	buildToolsVersion '27.0.3'
 }
 
@@ -88,8 +117,8 @@ def getProps(String propName) {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-//    testImplementation 'junit:junit:4.12'
-//	testImplementation 'androidx.test:core:1.0.0'
+    testImplementation 'junit:junit:4.12'
+	androidTestImplementation 'androidx.test:core:1.0.0'
 
 //    Took this lines from:
 //    https://medium.com/androiddevelopers/write-once-run-everywhere-tests-on-android-88adb2ba20c5
@@ -99,6 +128,7 @@ dependencies {
 	androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0')
 	androidTestImplementation('androidx.test.ext:truth:1.0.0')
 	testImplementation('org.robolectric:robolectric:4.0')
+	testImplementation ('org.robolectric:robolectric:4.0')
 
 	android {
 		testOptions.unitTests.includeAndroidResources = true

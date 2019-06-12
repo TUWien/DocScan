@@ -94,12 +94,12 @@ public class PageDetector {
         if (polyRects != null && polyRects.length > 0 && polyRects[0] != null)  {
             ArrayList<PointF> points = normPoints(polyRects[0], mg.width(), mg.height());
 
-            Patch[] patches = NativeWrapper.getFocusMeasures(mg);
+//            Patch[] patches = NativeWrapper.getFocusMeasures(mg);
 //            In case an error happened the result is null and we assume that the image is sharp:
             boolean isSharp = true;
 //            Otherwise use the real patches result:
-            if (patches != null)
-                isSharp = isSharp(polyRects[0], patches);
+//            if (patches != null)
+//                isSharp = isSharp(polyRects[0], patches);
 
             result = new PageFocusResult(points, isSharp);
         }
