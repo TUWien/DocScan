@@ -331,6 +331,8 @@ public class GalleryActivity extends AppCompatActivity implements
             return;
         }
 
+        mDocument.validatePages();
+
         mAdapter = new GalleryAdapter(this, mDocument);
         mAdapter.setFileName(mFileName);
         mRecyclerView.setAdapter(mAdapter);

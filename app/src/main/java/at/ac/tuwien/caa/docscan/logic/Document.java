@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.logic;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by fabian on 01.02.2018.
@@ -25,6 +26,19 @@ public class Document {
 
         mTitle = title;
         mPages = new ArrayList<>();
+
+    }
+
+    public void validatePages() {
+
+
+        Iterator<Page> it = mPages.iterator();
+        while (it.hasNext()) {
+            Page page = it.next();
+            if (page == null || page.getFile() == null || !page.getFile().exists()) {
+                it.remove();
+            }
+        }
 
     }
 
