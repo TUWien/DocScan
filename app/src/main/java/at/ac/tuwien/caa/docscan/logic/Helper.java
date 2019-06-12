@@ -722,6 +722,8 @@ public class Helper {
     public static String getNetworkResponse(VolleyError error) {
 
         try {
+            if (error == null || error.networkResponse == null || error.networkResponse.data == null)
+                return "error is null";
             String body = new String(error.networkResponse.data, "UTF-8");
             return body;
         } catch (UnsupportedEncodingException e) {

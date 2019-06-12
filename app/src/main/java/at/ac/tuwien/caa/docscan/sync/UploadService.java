@@ -268,7 +268,9 @@ public class UploadService extends JobService implements
         Log.d(CLASS_NAME, "handleRestError: error.getMessage: " + error.getMessage());
 
 //        Log the status code:
-        String statusCode = String.valueOf(error.networkResponse.statusCode);
+        String statusCode = "error is null";
+        if (error != null && error.networkResponse != null)
+            statusCode = String.valueOf(error.networkResponse.statusCode);
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                 "handleRestError: statusCode: " + statusCode);
         Log.d(CLASS_NAME, "handleRestError: statusCode: " + statusCode);
