@@ -59,7 +59,7 @@ import static org.opencv.core.CvType.CV_8UC1;
 /**
  *  This class can be used to apply the page-split trained version of dhSegment (https://arxiv.org/abs/1804.10371)
  *  to an image file. The constructor will look for a model named MODEL_NAME.tflite in the assets folder.
- *  After initialization the model can be applied to a bitmap with {@link #applyPageSplit(Uri, Context)}.
+ *  After initialization the model can be applied to a bitmap with {@link #applyPageSplit(Uri)}.
  */
 public class PageSplit {
 
@@ -81,28 +81,28 @@ public class PageSplit {
     private Interpreter mTflite;
 
     private static PageSplit pageSplitInstance = null;
+    private Context mContext;
 
 
+    public PageSplit(Context context) throws IOException {
 
-
-    public PageSplit(Context mContext) throws IOException {
-
+        mContext = context;
         long startTime = SystemClock.uptimeMillis();
-        mTflite = new Interpreter(loadModelFile(mContext));
+        mTflite = new Interpreter(loadModelFile());
         long endTime = SystemClock.uptimeMillis();
         Log.d(TAG, "Created a Tensorflow Lite model in " + Long.toString((endTime - startTime)) + "ms");
     }
 
     /**
-     *  Initializes the tensorflow-lite model and return the PageSplit object.
+     *  Initializes the tensorflow-lite model and returns the PageSplit object.
      *
-     *  @param  mContext ... the current context.
+     *  @param  context ... the current context.
      *  @throws IOException if the model can not be opened.
      *          It will look for a model named MODEL_NAME.tflite in the assets folder.
      */
-    public static PageSplit getInstance(Context mContext) throws IOException {
+    public static PageSplit getInstance(Context context) throws IOException {
         if (pageSplitInstance == null) {
-            pageSplitInstance = new PageSplit(mContext);
+            pageSplitInstance = new PageSplit(context);
         }
 
         return pageSplitInstance;
@@ -116,39 +116,35 @@ public class PageSplit {
      * The bitmaps will be saved in FOLDER_NAME and are visible in the gallery.
      *
      * @param   uri ... the Uri of the bitmap file.
-     * @param   mContext ... the current context. Will be used to access the assets folder.
      * @return  returns 1 if the tflite model has not been initialized yet.
      *          Returns 0 after successful run.
      * @throws  IOException if there is a problem loading the bitmap.
      */
-    public int applyPageSplit(Uri uri, Context mContext) throws IOException {
+    public int applyPageSplit(Uri uri) throws IOException {
 
         if (mTflite == null) {
             Log.e(TAG, "PageSplit has not been initialized; Skipped.");
             return 1;
         }
+//            // Load input bitmap
+//        Bitmap bmp = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), uri);
 
-            // Load input bitmap
-        Bitmap bmp = MediaStore.Images.Media.getBitmap(mContext.getContentResolver(), uri);
+
 //        Bitmap inBitmap = Bitmap.createScaledBitmap(bmp, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, true);
         long timeBegin = SystemClock.uptimeMillis();
+        Bitmap inBitmap = loadBitmap(uri);
 
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(uri.getPath(), options);
-        final int originalHeight = options.outHeight;
-        final int originalWidth = options.outWidth;
 
-        Bitmap inBitmap = decodeSampledBitmapFromUri(uri, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y);
-        inBitmap = Bitmap.createScaledBitmap(inBitmap, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, true);
+//        final BitmapFactory.Options options = new BitmapFactory.Options();
+//        options.inJustDecodeBounds = true;
+//        BitmapFactory.decodeFile(uri.getPath(), options);
+//        final int originalHeight = options.outHeight;
+//        final int originalWidth = options.outWidth;
 
-        // Rotate the Bitmap
-        final int rotationInDegrees = getExifAngle(uri);
-        Matrix inMatrix = new Matrix();
-        inMatrix.postRotate(rotationInDegrees + 90); // The model needs the book rotated by 90°; TODO: find out why
-        inBitmap = Bitmap.createBitmap(inBitmap, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, inMatrix, true);
+        //Load Bitmap
 
-        saveBitmap(inBitmap, "test123", mContext);
+
+//        saveBitmap(inBitmap, "input", mContext);//TODO: delete
 
         // The TfLite model needs a float array as input and output
         // For alternatives see: https://www.tensorflow.org/lite/apis#running_a_model_2
@@ -166,38 +162,47 @@ public class PageSplit {
         // Transform the output to two Mats with the red and green channels as page and seperator
         Bitmap outBitmap = Bitmap.createBitmap(DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, inBitmap.getConfig());
         List<Mat> outChannels = floatArrayToMats(outFloat, outBitmap); //TODO: outBitmap as input is not necessary
+        saveBitmap(outBitmap, "pagesplit_" + MODEL_NAME);
         Mat pages = outChannels.get(1);
         Mat split = outChannels.get(2);
         outChannels.clear();
 
 
-        List<Point> pCorners = new ArrayList<>();
-        if (getCorners(pages, pCorners, 50) == 1) {
-            Mat pMask = applyThreshold(pages, -1);
-            pMask = bwClean(pMask, 3);//5
-            final List<MatOfPoint> pContours = findPolygonalRegions(pMask, 0.01,
-                    1, true);
-            if (pContours.isEmpty()) {
-                Log.e(TAG, "No page found!");
-                return 1;
-            }
-            pCorners = getCorners2(pContours);
-        }
+        // Get page contours
+
+        List<Point> pCorners = getPageCorners(pages);
         pages.release();
+        if (pCorners.size() < 4) {
+            Log.e(TAG, "No page found!");
+            return 1;
+        }
 
         // Get page seperator contours
-        Mat sMask = applyThreshold(split, 100);
-        split.release();
+        Mat sMask = applyThreshold(split, -2);
         sMask = bwClean(sMask, 3);//3
-        int cPoints =  countConfidentPoints(sMask,100);
+        int cPoints =  countConfidentPoints(sMask,150);
 
+        matToBitmap(sMask, outBitmap);
+//        saveBitmap(outBitmap, "sMask");
         Point sTop = new Point();
         Point sBottom = new Point();
+        Log.d(TAG, "cPoints: " + cPoints);
+
         if (cPoints < 10) {
-            writeCornersToXML(pCorners, uri);
+            normCorners(pCorners);
+
+            try {
+                writeCornersToXML(pCorners, uri);
+            }
+            catch (IOException e) {
+                Log.e(TAG, "cant write XML file");
+            }
         } else {
+
             final List<MatOfPoint> sContours = findPolygonalRegions(sMask, 0.001,
                     1, false);
+            Log.d(TAG, "area = " + Imgproc.contourArea(sContours.get(0)));
+
             if (sContours.isEmpty()) {
                 Log.e(TAG, "no contours for split found");
                 return 1;
@@ -206,23 +211,27 @@ public class PageSplit {
             // Fit a line to the seperator
             Core.rotate(sMask, sMask, Core.ROTATE_90_CLOCKWISE);
             interpolateSeperator(sContours, sMask, pCorners, sTop, sBottom);
+            normCorners(pCorners, sTop, sBottom);
 
+            try {
+                writeXML(pCorners, sTop, sBottom, uri);
+            }
+            catch (IOException e) {
+                Log.e(TAG, "can't write XML file");
+            }
         }
 
-        try {
-            writeXML(pCorners, sTop, sBottom, uri);
-        }
-        catch (IOException e) {
-            Log.e(TAG, "cant write XML file");
-        }
+        split.release();
+        sMask.release();
+
+
 
 
 
         long timeEnd = SystemClock.uptimeMillis();
         Log.d(TAG, "Total time cost: " + Long.toString((timeEnd - timeBegin)) + "ms");
 
-        helperDrawTrapezoid(bmp, mContext, uri, pCorners, sTop, sBottom, 10, "Bounding_trapezoid_");
-        saveBitmap(outBitmap, "pagesplit_" + MODEL_NAME, mContext);
+//        helperDrawTrapezoid(bmp, mContext, uri, pCorners, sTop, sBottom, 10, "Bounding_trapezoid_");
 
 
 //            helperDrawTrapezoid(bmp, mContext, uri, pCorners, sTop, sBottom, 10, "Bounding_trapezoid_" + Integer.toString(book));
@@ -232,17 +241,54 @@ public class PageSplit {
     }
 
 
-//    static public List<Point> getCornersFromPageXML(Uri uri) {
-//
-//    }
+    /**
+     * Approximates the page mask with a rectangle.
+     * To do this the function getCorners is called that calls the function NativeWrapper.getPageSegmentation.
+     * If getCorners cannot find a rectangle the function getCorners2 is called (performs slightly worse
+     * but more consistently)
+     * @param pages the result of the page segmentation
+     * @return corners of the rectangle
+     */
+    private List<Point> getPageCorners(Mat pages) {
+        List<Point> pCorners = new ArrayList<>();
+        if (getCorners(pages, pCorners, 50) == 1) {
+            Mat pMask = applyThreshold(pages, -1);
+            pMask = bwClean(pMask, 3);//5
+            final List<MatOfPoint> pContours = findPolygonalRegions(pMask, 0.01,
+                    1, true);
+            pMask.release();
+            pCorners = getCorners2(pContours);
+        }
+
+        return pCorners;
+    }
 
 
+    private Bitmap loadBitmap(Uri uri) throws IOException {
+        Bitmap inBitmap = decodeSampledBitmapFromUri(uri, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y);
+        inBitmap = Bitmap.createScaledBitmap(inBitmap, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, true);
+
+        // Rotate the Bitmap
+        final int rotationInDegrees = getExifAngle(uri);
+        Matrix inMatrix = new Matrix();
+        inMatrix.postRotate(rotationInDegrees + 90); // The model needs the book rotated by 90°; TODO: find out why
+        return Bitmap.createBitmap(inBitmap, 0, 0, DIM_IMG_SIZE_X, DIM_IMG_SIZE_Y, inMatrix, true);
+    }
+
+
+    /**
+     * Performs a check if single or double page and calls function for creating appropriate XML file and write in metadata.
+     * @param pCorners Page corners
+     * @param sTop Top coordinates of the page split
+     * @param sBottom Bottom coordinates of the page split
+     * @param uri Uri of file
+     * @throws IOException
+     */
     private void writeXML(List<Point> pCorners, Point sTop, Point sBottom, Uri uri) throws IOException {
         final int pageType = checkIfSinglePage(pCorners, sTop, sBottom, 0.3);//-1: only left page; 0: single page; 1 only right page
         Log.d(TAG, "pageType = " + Integer.toString(pageType));
 
 //            rescaleCorners(uri, pCorners, sTop, sBottom, originalHeight, originalWidth);
-        normCorners(pCorners, sTop, sBottom);
         if (pageType == -1) {
             final List<Point> lCorners = new ArrayList<>();
 
@@ -282,7 +328,13 @@ public class PageSplit {
 
     }
 
-
+    /**
+     * Generates the XML file and write to metadata. Single page version.
+     * @param pCorners Page Corners
+     * @param uri Uri of file
+     * @return The XML String
+     * @throws IOException
+     */
     private String writeCornersToXML(List<Point> pCorners, Uri uri) throws IOException {
         final ExifInterface exif = new ExifInterface(uri.getPath());
 
@@ -341,10 +393,10 @@ public class PageSplit {
             serializer.attribute("", "id", "l1");
             serializer.startTag("", tagCoords);
             serializer.attribute("", attributePoints,
-                    Integer.toString((int) pCorners.get(0).x) + "," + Integer.toString((int) pCorners.get(0).y) + " "
-                    + Integer.toString((int) pCorners.get(1).x) + "," + Integer.toString((int) pCorners.get(1).y) + " "
-                    + Integer.toString((int) pCorners.get(2).x) + "," + Integer.toString((int) pCorners.get(2).y) + " "
-                    + Integer.toString((int) pCorners.get(3).x) + "," + Integer.toString((int) pCorners.get(3).y));
+                    pCorners.get(0).x + "," + pCorners.get(0).y + " "
+                    + pCorners.get(1).x + "," + pCorners.get(1).y + " "
+                    + pCorners.get(2).x + "," + pCorners.get(2).y + " "
+                    + pCorners.get(3).x + "," + pCorners.get(3).y);
             serializer.endTag("", tagCoords);
             serializer.endTag("", tagCustomRegion);
             serializer.endTag("", tagPage);
@@ -360,7 +412,14 @@ public class PageSplit {
         }
     }
 
-
+    /**
+     * Generates the XML file and write to metadata. Double page version.
+     * @param lCorners Left page Corners
+     * @param rCorners Right page Corners
+     * @param uri Uri of file
+     * @return The XML String
+     * @throws IOException
+     */
     private String writeCornersToXML(List<Point> lCorners, List<Point> rCorners, Uri uri) throws IOException {
         final ExifInterface exif = new ExifInterface(uri.getPath());
 
@@ -448,6 +507,12 @@ public class PageSplit {
     }
 
 
+    /**
+     * Counts pixels with value above certain treshold
+     * @param binaryMask Input image
+     * @param threshold Threshold
+     * @return
+     */
     private int countConfidentPoints(Mat binaryMask, int threshold) {
         Mat mask = binaryMask.clone();
         mask.convertTo(mask, CV_32FC1);
@@ -468,7 +533,19 @@ public class PageSplit {
         return counter;
     }
 
-
+    /**
+     * Approximates the page segmentation with a rectangle and saves the result in "corners".
+     * Returns 1 if rectangle has been found.
+     * The order is:
+     * 1) top left corner
+     * 2) top right corner
+     * 3) bottom right corner
+     * 4) bottom left corner
+     * @param pages Page mask
+     * @param corners The result is saved in this list
+     * @param threshold Threshold for preprocessing
+     * @return 1 if no rectangle found, 0 otherwise
+     */
     private int getCorners(Mat pages, List<Point> corners, int threshold) {
         Mat mg = applyThreshold(pages, threshold);
         Imgproc.cvtColor(mg, mg, Imgproc.COLOR_GRAY2RGB);
@@ -477,6 +554,7 @@ public class PageSplit {
         NativeWrapper.resize(mg);
 
         DkPolyRect[] polyRects = NativeWrapper.getPageSegmentation(mg);
+        mg.release();
         if (polyRects.length == 0) {
             Log.e(TAG, "no rectangle found");
             return 1;
@@ -571,7 +649,13 @@ public class PageSplit {
     }
 
 
-    private MatOfPoint getPointsFromMask(Mat mask) {
+    /**
+     * Returns all points in bitmap with value above a certain threshold
+     * @param mask segmentation mask
+     * @param threshold Threshold
+     * @return
+     */
+    private MatOfPoint getPointsFromMask(Mat mask, int threshold) {
         mask.convertTo(mask, CV_32FC1);
         final float[] pixels = new float[mask.width()*mask.height()];
         mask.get(0,0,pixels);
@@ -580,7 +664,7 @@ public class PageSplit {
         for (int x = 0; x < mask.width(); ++x) {
             for (int y = 0; y < mask.height(); ++y) {
                 final float value = pixels[y + mask.width()*x];
-                if (value > 100) {
+                if (value > threshold) {
                     points.add(new Point(x,y));
                 }
             }
@@ -616,6 +700,7 @@ public class PageSplit {
     }
 
 
+    // Load bitmap
     private Bitmap decodeSampledBitmapFromUri(Uri uri, int reqWidth, int reqHeight) {
 
         // First decode with inJustDecodeBounds=true to check dimensions
@@ -633,21 +718,21 @@ public class PageSplit {
     }
 
 
-    private Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
-                                                         int reqWidth, int reqHeight) {
-
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeResource(res, resId, options);
-
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight); //TODO: find out why factor 4 would be needed
-
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeResource(res, resId, options);
-    }
+//    private Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
+//                                                         int reqWidth, int reqHeight) {
+//
+//        // First decode with inJustDecodeBounds=true to check dimensions
+//        final BitmapFactory.Options options = new BitmapFactory.Options();
+//        options.inJustDecodeBounds = true;
+//        BitmapFactory.decodeResource(res, resId, options);
+//
+//        // Calculate inSampleSize
+//        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+//
+//        // Decode bitmap with inSampleSize set
+//        options.inJustDecodeBounds = false;
+//        return BitmapFactory.decodeResource(res, resId, options);
+//    }
 
 
     // Returns -1 if only left page and 1 if onl right page, otherwise returns 0
@@ -665,11 +750,21 @@ public class PageSplit {
         }
     }
 
+
+    /**
+     * Computes the two corners of the page seperator.
+     * The result is saved in the arguments sTop and sBottom.
+     * @param sContours The contours of the page seperator (old version, see commented line)
+     * @param sMask Page Seperator mask
+     * @param pCorners Page Corners
+     * @param sTop Top corner will be saved here
+     * @param sBottom Bottom corner will be saved here
+     */
     private void interpolateSeperator(List<MatOfPoint> sContours, Mat sMask, List<Point> pCorners,
                                       Point sTop, Point sBottom) {
         Mat sepLine = new Mat();
-//        Imgproc.fitLine(sContours.get(0), sepLine, Imgproc.CV_DIST_L2, 0,0.01,0.01); //TODO: check what is better
-        MatOfPoint sPoints = getPointsFromMask(sMask);
+//        Imgproc.fitLine(sContours.get(0), sepLine, Imgproc.CV_DIST_L2, 0,0.01,0.01);
+        MatOfPoint sPoints = getPointsFromMask(sMask, 150); //TODO: check what is better
         Imgproc.fitLine(sPoints, sepLine, Imgproc.CV_DIST_L2, 0,0.01,0.01);
 
         double x1 = sepLine.get(2,0)[0];
@@ -704,7 +799,9 @@ public class PageSplit {
 
         sBottom.x = xs;
         sBottom.y = ys;
+        sepLine.release();
     }
+
 
     private void normCorners(List<Point> pCorners, Point sTop, Point sBottom) {
         for (Point c: pCorners) {
@@ -718,42 +815,50 @@ public class PageSplit {
         sBottom.y = sBottom.y/DIM_IMG_SIZE_Y;
     }
 
-    private void rescaleCorners(Uri uri, List<Point> pCorners,
-                                Point sTop, Point sBottom, int height, int width) throws IOException {
-        final double heightRatio;
-        final double widthRatio;
-        final int rotationInDegrees = getExifAngle(uri);
 
-        if (rotationInDegrees == 90 || rotationInDegrees == 270) {
-            heightRatio = ((double) width)/DIM_IMG_SIZE_X;
-            widthRatio = ((double) height)/DIM_IMG_SIZE_Y;
-        } else {
-            heightRatio = ((double) height)/DIM_IMG_SIZE_Y;
-            widthRatio = ((double) width)/DIM_IMG_SIZE_X;
-        }
-
+    private void normCorners(List<Point> pCorners) {
         for (Point c: pCorners) {
-            c.x = c.x*widthRatio + widthRatio/2.0;
-            c.y = c.y*heightRatio + heightRatio/2.0;
+            c.x = c.x/DIM_IMG_SIZE_X;
+            c.y = c.y/DIM_IMG_SIZE_Y;
         }
-
-        sTop.x = sTop.x*widthRatio + widthRatio/2.0;
-        sTop.y = sTop.y*heightRatio + heightRatio/2.0;
-        sBottom.x = sBottom.x*widthRatio + widthRatio/2.0;
-        sBottom.y = sBottom.y*heightRatio + heightRatio/2.0;
     }
+
+
+//    private void rescaleCorners(Uri uri, List<Point> pCorners,
+//                                Point sTop, Point sBottom, int height, int width) throws IOException {
+//        final double heightRatio;
+//        final double widthRatio;
+//        final int rotationInDegrees = getExifAngle(uri);
+//
+//        if (rotationInDegrees == 90 || rotationInDegrees == 270) {
+//            heightRatio = ((double) width)/DIM_IMG_SIZE_X;
+//            widthRatio = ((double) height)/DIM_IMG_SIZE_Y;
+//        } else {
+//            heightRatio = ((double) height)/DIM_IMG_SIZE_Y;
+//            widthRatio = ((double) width)/DIM_IMG_SIZE_X;
+//        }
+//
+//        for (Point c: pCorners) {
+//            c.x = c.x*widthRatio + widthRatio/2.0;
+//            c.y = c.y*heightRatio + heightRatio/2.0;
+//        }
+//
+//        sTop.x = sTop.x*widthRatio + widthRatio/2.0;
+//        sTop.y = sTop.y*heightRatio + heightRatio/2.0;
+//        sBottom.x = sBottom.x*widthRatio + widthRatio/2.0;
+//        sBottom.y = sBottom.y*heightRatio + heightRatio/2.0;
+//    }
 
     /**
      * Draws a trapezoid around each page
      * @param bmp The input bitmap (full size)
-     * @param mContext The current context
      * @param uri Uri from input file
      * @param pCorners The four corner points of the pages
      * @param sTop The top corner point of the seperator
      * @param sBottom The bottom corner point of the seperator
      * @throws IOException
      */
-    private void helperDrawTrapezoid(Bitmap bmp, Context mContext, Uri uri,
+    private void helperDrawTrapezoid(Bitmap bmp, Uri uri,
                                      List<Point> pCorners,
                                      Point sTop, Point sBottom, int thickness,
                                      String filename) throws IOException {
@@ -783,18 +888,29 @@ public class PageSplit {
         Imgproc.line(tmpOriginMat, sTop, sBottom, new Scalar(0, 0, 255), thickness);
 
         matToBitmap(tmpOriginMat, bmp);
+        tmpOriginMat.release();
 
-        saveBitmap(bmp, filename, mContext);
+        saveBitmap(bmp, filename);
     }
 
-    //old corner detection algorithm, used as a backup, in case getCorners can not find anything
+    //old corner detection algorithm, used as a backup in case getCorners can't find anything
+    /**
+     * Approximates the page segmentation with a rectangle and returns the corners.
+     * The order of the corners is:
+     * 1) top left corner
+     * 2) top right corner
+     * 3) bottom right corner
+     * 4) bottom left corner
+     * @param contours Page contours
+     * @return corners
+     */
     private List<Point> getCorners2(List<MatOfPoint> contours) {
 
         final double angleThreshold = Math.PI; // 180 degrees
         final List<Point> pPolygonList = contours.get(0).toList();
         List<Point> cornerCandidates = new ArrayList<>();
 
-        if (pPolygonList.size() > 2) {
+        if (pPolygonList.size() > 3) {
             Point p1 = pPolygonList.get(pPolygonList.size()-1);
             Point p2 = pPolygonList.get(0);
             Point p3;
@@ -825,11 +941,12 @@ public class PageSplit {
                 p1 = p2;
                 p2 = p3;
             }
-        } else if (pPolygonList.size() == 2){
+        } else{
             cornerCandidates.add(pPolygonList.get(0));
-            cornerCandidates.add(pPolygonList.get(1));
-        } else {
-            cornerCandidates.add(pPolygonList.get(0));
+        }
+
+        if (cornerCandidates.size() < 4) {
+            return cornerCandidates;
         }
 
         final Point c1 = new Point(0,0);
@@ -865,6 +982,15 @@ public class PageSplit {
         return corners;
     }
 
+
+    /**
+     * Approximates a segmentation mask with a polygon.
+     * @param mask Segmentation mask
+     * @param minArea minimal Area of polygon
+     * @param epsilon determines the amount deviation from the true contours that are allowed
+     * @param polygon Approximate with polygon (true) or return exact contours (false)
+     * @return contour/polygon
+     */
     private List<MatOfPoint> findPolygonalRegions(Mat mask, double minArea, int epsilon, boolean polygon) {
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hierarchy = new Mat();
@@ -936,13 +1062,16 @@ public class PageSplit {
                 pApproxPolys.add(pApproxPoly);
             }
 
+            hierarchy.release();
             return pApproxPolys;
         } else {
+            hierarchy.release();
             return contours;
         }
 
     }
 
+    // Clean mask
     private Mat bwClean(Mat mask, int size) {
         final Mat kernel = new Mat(new Size(size,size), CV_8UC1, new Scalar(255));
         Mat tmp = new Mat();
@@ -950,13 +1079,18 @@ public class PageSplit {
 
         Imgproc.morphologyEx(mask, tmp, Imgproc.MORPH_OPEN, kernel);
         Imgproc.morphologyEx(tmp, out, Imgproc.MORPH_CLOSE, kernel);
+        tmp.release();
+        kernel.release();
 
         return out;
     }
 
+
     private Mat applyThreshold(Mat img, int threshold) {
         Mat mask = new Mat();
-        if (threshold < 0) {
+        if (threshold < -1.5) {
+            Imgproc.threshold(img, mask, 0, 255, Imgproc.THRESH_TOZERO+ Imgproc.THRESH_OTSU);
+        } else if (threshold < 0) {
             Imgproc.threshold(img, mask, 0, 255, Imgproc.THRESH_BINARY+ Imgproc.THRESH_OTSU);
         } else {
             Imgproc.threshold(img, mask, threshold, 255, Imgproc.THRESH_TOZERO);
@@ -966,7 +1100,7 @@ public class PageSplit {
     }
 
     /** Save Bitmap in seperate folder named FOLDER_NAME shown in gallery */
-    private void saveBitmap(final Bitmap bitmap, final String name, Context mContext) {
+    private void saveBitmap(final Bitmap bitmap, final String name) {
         final String filename = name+".jpg";
         File mediaDir = Helper.getMediaStorageDir(FOLDER_NAME);//mContext.getString(R.string.app_name));
 
@@ -988,7 +1122,7 @@ public class PageSplit {
     }
 
     /** Memory-map the model file in Assets. */
-    private static MappedByteBuffer loadModelFile(Context mContext) throws IOException {
+    private MappedByteBuffer loadModelFile() throws IOException {
         AssetFileDescriptor fileDescriptor = mContext.getAssets().openFd(MODEL_PATH);
         FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
         FileChannel fileChannel = inputStream.getChannel();

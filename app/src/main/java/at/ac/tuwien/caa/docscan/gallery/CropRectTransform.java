@@ -111,30 +111,22 @@ public class CropRectTransform extends BitmapTransformation {
         path.reset();
         boolean isStartSet = false;
 
-        Log.d("PageSplit", "len(points) = " + points.size());
         //Matthias START
-        if (points.size() == 8) {
-            Log.d("PageSplit", "in loop");
-            for (int i = 0; i < 4; ++i) {
+        if (points.size() == 6) {
+            for (PointF point : points) {
                 if (!isStartSet) {
-                    path.moveTo(points.get(i).x, points.get(i).y);
+                    path.moveTo(point.x, point.y);
                     isStartSet = true;
                 } else
-                    path.lineTo(points.get(i).x, points.get(i).y);
-            }
-            path.close();
-            canvas.drawPath(path, paint);
+                    path.lineTo(point.x, point.y);
 
-            path.reset();
-            isStartSet = false;
-            for (int i = 4; i < 8; ++i) {
-                if (!isStartSet) {
-                    path.moveTo(points.get(i).x, points.get(i).y);
-                    isStartSet = true;
-                } else
-                    path.lineTo(points.get(i).x, points.get(i).y);
             }
             path.close();
+
+
+            path.moveTo(points.get(1).x, points.get(1).y);
+            path.lineTo(points.get(4).x, points.get(4).y);
+
             canvas.drawPath(path, paint);
         } else { //Matthias END
             for (PointF point : points) {

@@ -440,18 +440,27 @@ public class GalleryActivity extends AppCompatActivity implements
                 for (int aSelectionIdx : selectionIdx) {
                     try {
                         if (PageSplit.getInstance(galleryActivityContext).applyPageSplit(
-                                Uri.fromFile(mDocument.getPages().get(aSelectionIdx).getFile()),
-                                galleryActivityContext) == 1) {
+                                Uri.fromFile(mDocument.getPages().get(aSelectionIdx).getFile())) == 1) {
                             Log.d(PageSplit.TAG, "could not apply PageSplit");
                         } else {
                             Log.d("PageSplit", "Applied PageSplit");
+
                         }
                     } catch (IOException e) {
                         Log.e("PageSplit", "Failed to apply PageSplit");
                     }
                 }
+                Snackbar snackbar = Snackbar.make(findViewById(R.id.gallery_images_recyclerview),
+                        R.string.gallery_pagesplit_snackbar_text, Snackbar.LENGTH_SHORT);
+                snackbar.show();
+
+                //TODO: add notifyDataSetChanged(); has trouble running in AsyncTask
+//                if (mAdapter != null) {
+//                    mAdapter.notifyDataSetChanged();
+//                }
             }
         });
+
     }
 
     public void selectAllItems(MenuItem item) {

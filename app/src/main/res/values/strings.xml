@@ -377,6 +377,7 @@
     <string name="gallery_confirm_overwrite_text">This will replace the original images and cannot
         be undone. Are you sure you want to continue?</string>
     <string name="gallery_unfocused_snackbar_text">Images are partially not focused</string>
+    <string name="gallery_pagesplit_snackbar_text">Page detection completed.</string>
     <string name="gallery_unfocused_info">Info</string>
     <string name="gallery_unfocused_title">Focus issues</string>
     <string name="gallery_unfocused_text">Some images appear to be not focused and should be checked and eventually be replaced. These images are marked with a red rectangle.</string>

@@ -481,30 +481,23 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
         path.reset();
         boolean isStartSet = false;
-        Log.d("PageSplit", "len(points) = " + points.size());
-        //Matthias START
-        if (points.size() == 8) {
-            Log.d("PageSplit", "in loop");
-            for (int i = 0; i < 4; ++i) {
-                if (!isStartSet) {
-                    path.moveTo(points.get(i).x, points.get(i).y);
-                    isStartSet = true;
-                } else
-                    path.lineTo(points.get(i).x, points.get(i).y);
-            }
-            path.close();
-            canvas.drawPath(path, paint);
 
-            path.reset();
-            isStartSet = false;
-            for (int i = 4; i < 8; ++i) {
+        //Matthias START
+        if (points.size() == 6) {
+            for (PointF point : points) {
                 if (!isStartSet) {
-                    path.moveTo(points.get(i).x, points.get(i).y);
+                    path.moveTo(point.x, point.y);
                     isStartSet = true;
                 } else
-                    path.lineTo(points.get(i).x, points.get(i).y);
+                    path.lineTo(point.x, point.y);
+
             }
             path.close();
+
+
+            path.moveTo(points.get(1).x, points.get(1).y);
+            path.lineTo(points.get(4).x, points.get(4).y);
+
             canvas.drawPath(path, paint);
         } else { //Matthias END
             for (PointF point : points) {
@@ -515,15 +508,17 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
                 } else
                     path.lineTo(point.x, point.y);
 
+
+
                 // draw the circle around the corner:
 //            Log.d(CLASS_NAME, "drawQuad: point: " + point);
 //            canvas.drawCircle(point.x, point.y, CORNER_CIRCLE_RADIUS, mCirclePaint);
 
             }
+            path.close();
+            canvas.drawPath(path, paint);
         }
 
-        path.close();
-        canvas.drawPath(path, paint);
 
     }
 
@@ -723,29 +718,63 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
         ArrayList<PointF> viewPoints = new ArrayList<>();
 
-        int numPts = 8;
-        float[] imgPointsArray = new float[numPts];
+        //Matthias START
+        if (imgPoints.size() ==6) {
+            int numPts = 12;
+            float[] imgPointsArray = new float[numPts];
 
-        imgPointsArray[0] = imgPoints.get(0).x;
-        imgPointsArray[1] = imgPoints.get(0).y;
+            imgPointsArray[0] = imgPoints.get(0).x;
+            imgPointsArray[1] = imgPoints.get(0).y;
 
-        imgPointsArray[2] = imgPoints.get(1).x;
-        imgPointsArray[3] = imgPoints.get(1).y;
+            imgPointsArray[2] = imgPoints.get(1).x;
+            imgPointsArray[3] = imgPoints.get(1).y;
 
-        imgPointsArray[4] = imgPoints.get(2).x;
-        imgPointsArray[5] = imgPoints.get(2).y;
+            imgPointsArray[4] = imgPoints.get(2).x;
+            imgPointsArray[5] = imgPoints.get(2).y;
 
-        imgPointsArray[6] = imgPoints.get(3).x;
-        imgPointsArray[7] = imgPoints.get(3).y;
+            imgPointsArray[6] = imgPoints.get(3).x;
+            imgPointsArray[7] = imgPoints.get(3).y;
 
-        mMatrix.mapPoints(imgPointsArray);
+            imgPointsArray[8] = imgPoints.get(4).x;
+            imgPointsArray[9] = imgPoints.get(4).y;
 
-        viewPoints.add(new PointF(imgPointsArray[0], imgPointsArray[1]));
-        viewPoints.add(new PointF(imgPointsArray[2], imgPointsArray[3]));
-        viewPoints.add(new PointF(imgPointsArray[4], imgPointsArray[5]));
-        viewPoints.add(new PointF(imgPointsArray[6], imgPointsArray[7]));
+            imgPointsArray[10] = imgPoints.get(5).x;
+            imgPointsArray[11] = imgPoints.get(5).y;
+
+            mMatrix.mapPoints(imgPointsArray);
+
+            viewPoints.add(new PointF(imgPointsArray[0], imgPointsArray[1]));
+            viewPoints.add(new PointF(imgPointsArray[2], imgPointsArray[3]));
+            viewPoints.add(new PointF(imgPointsArray[4], imgPointsArray[5]));
+            viewPoints.add(new PointF(imgPointsArray[6], imgPointsArray[7]));
+            viewPoints.add(new PointF(imgPointsArray[8], imgPointsArray[9]));
+            viewPoints.add(new PointF(imgPointsArray[10], imgPointsArray[11]));
+        } else {//Matthias END
+            int numPts = 8;
+            float[] imgPointsArray = new float[numPts];
+
+            imgPointsArray[0] = imgPoints.get(0).x;
+            imgPointsArray[1] = imgPoints.get(0).y;
+
+            imgPointsArray[2] = imgPoints.get(1).x;
+            imgPointsArray[3] = imgPoints.get(1).y;
+
+            imgPointsArray[4] = imgPoints.get(2).x;
+            imgPointsArray[5] = imgPoints.get(2).y;
+
+            imgPointsArray[6] = imgPoints.get(3).x;
+            imgPointsArray[7] = imgPoints.get(3).y;
+
+            mMatrix.mapPoints(imgPointsArray);
+
+            viewPoints.add(new PointF(imgPointsArray[0], imgPointsArray[1]));
+            viewPoints.add(new PointF(imgPointsArray[2], imgPointsArray[3]));
+            viewPoints.add(new PointF(imgPointsArray[4], imgPointsArray[5]));
+            viewPoints.add(new PointF(imgPointsArray[6], imgPointsArray[7]));
 
 //        mCropQuad.setViewPoints(viewPoints);
+        }
+
 
         return viewPoints;
     }

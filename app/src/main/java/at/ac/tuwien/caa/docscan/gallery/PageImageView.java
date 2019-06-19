@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
@@ -118,21 +119,52 @@ public class PageImageView extends SubsamplingScaleImageView {
         path.reset();
         boolean isStartSet = false;
 
-        for (PointF point : points) {
 
-            PointF transPoint = new PointF();
-            sourceToViewCoord(point, transPoint);
+        Log.d("PageSplit", "len(points) = " + points.size());
+        //Matthias START
+        if (points.size() == 6) {
+            for (PointF point : points) {
 
-            if (!isStartSet) {
-                path.moveTo(transPoint.x, transPoint.y);
-                isStartSet = true;
-            } else
-                path.lineTo(transPoint.x, transPoint.y);
+                PointF transPoint = new PointF();
+                sourceToViewCoord(point, transPoint);
 
+                if (!isStartSet) {
+                    path.moveTo(transPoint.x, transPoint.y);
+                    isStartSet = true;
+                } else
+                    path.lineTo(transPoint.x, transPoint.y);
+
+
+
+            }
+            path.close();
+
+            PointF pTop = new PointF();
+            PointF pBottom = new PointF();
+            sourceToViewCoord(points.get(1), pTop);
+            sourceToViewCoord(points.get(4), pBottom);
+
+            path.moveTo(pTop.x, pTop.y);
+            path.lineTo(pBottom.x, pBottom.y);
+
+            canvas.drawPath(path, paint);
+        } else { //Matthias END
+            for (PointF point : points) {
+
+                PointF transPoint = new PointF();
+                sourceToViewCoord(point, transPoint);
+
+                if (!isStartSet) {
+                    path.moveTo(transPoint.x, transPoint.y);
+                    isStartSet = true;
+                } else
+                    path.lineTo(transPoint.x, transPoint.y);
+
+            }
+            path.close();
+            canvas.drawPath(path, paint);
         }
 
-        path.close();
-        canvas.drawPath(path, paint);
 
     }
 
