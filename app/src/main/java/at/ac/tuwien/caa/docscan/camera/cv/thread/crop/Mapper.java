@@ -12,6 +12,7 @@ import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -51,12 +52,9 @@ public class Mapper {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
+            transformedMat.release();
 
         }
-
-        transformedMat.release();
 
         return false;
 
@@ -94,6 +92,9 @@ public class Mapper {
 //    }
 
     private static Mat cropAndTransform(String fileName, ArrayList<PointF> srcPoints) {
+
+        if (!new File(fileName).exists())
+            return null;
 
         Mat inputMat = Imgcodecs.imread(fileName);
 

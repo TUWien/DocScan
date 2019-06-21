@@ -100,6 +100,7 @@ public class PdfCreator {
 
         try {
 
+
             FirebaseVisionImage image = FirebaseVisionImage.fromFilePath(context.get(),
                     Uri.fromFile(file));
 
@@ -156,6 +157,8 @@ public class PdfCreator {
         } catch (OutOfMemoryError e) {
             return false;
         } catch (IOException e) {
+            return false;
+        } catch (Exception e) {
             return false;
         }
 

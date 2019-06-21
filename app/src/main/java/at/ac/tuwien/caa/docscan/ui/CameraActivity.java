@@ -2648,6 +2648,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
 
         private void updateThumbnail(final File file) {
+
             MediaScannerConnection.scanFile(getApplicationContext(), new String[]{file.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
 
                 public void onScanCompleted(String path, Uri uri) {
