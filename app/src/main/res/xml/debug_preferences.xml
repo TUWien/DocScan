@@ -8,6 +8,8 @@
             android:title="@string/settings_show_focus_values_checkbox_title"
             android:defaultValue="false" />
 
+
+
         <CheckBoxPreference
             android:key="@string/key_show_debug_view"
             android:title="@string/settings_show_debug_view_checkbox_title"
@@ -20,6 +22,12 @@
         <!--android:title="@string/settings_show_advanced_qr_code_checkbox_title"-->
         <!--android:summary="@string/settings_show_advanced_qr_code_checkbox_summary"-->
         <!--android:defaultValue="false" />-->
+
+    <CheckBoxPreference
+        android:key="@string/key_aggressive_autofocus"
+        android:title="@string/settings_aggressive_auto_focus_title"
+        android:summary="@string/settings_aggressive_auto_focus_summary"
+        android:defaultValue="false" />
 
     <CheckBoxPreference
         android:key="@string/key_hud_enabled"

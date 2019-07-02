@@ -86,7 +86,8 @@
     <string name="instruction_none"></string>
     <string name="instruction_series_started">series mode started</string>
     <string name="instruction_series_paused">series mode paused</string>
-    <string name="instruction_searching_qr">Searching QR code</string>
+    <string name="instruction_searching_qr">searching QR code</string>
+    <string name="instruction_no_auto_focus">auto-focusing</string>
 
     <!-- Toasts -->
     <string name="toast_series_paused">Automated imaging paused</string>
@@ -320,12 +321,19 @@
     <string name="debug_settings_title">Debug settings</string>
     <string name="settings_preview_title">Live preview</string>
     <string name="settings_show_focus_values_checkbox_title">Show focus values</string>
+
     <string name="settings_show_debug_view_checkbox_title">Show debug view</string>
     <string name="settings_show_debug_view_checkbox_summary">Show computation time of several tasks on top of the camera preview.</string>
+
     <string name="settings_show_debug_settings_title">Debug settings</string>
     <string name="settings_show_debug_settings_summary">Settings used mainly for development and measurement of the app performance.</string>
+
     <string name="settings_use_transkribus_test_server_title">Use Transkribus test server</string>
     <string name="settings_use_transkribus_test_server_summary">Please restart the app, if you change this. Warning: This setting should only be used for testing the app and the Transkribus server.</string>
+
+    <string name="settings_aggressive_auto_focus_title">Use aggressive auto-focus</string>
+    <string name="settings_aggressive_auto_focus_summary">Every new page is auto-focused in series mode.</string>
+
     <string name="settings_hud_title">Show HUD button</string>
     <string name="settings_hud_summary">Shows a button in the camera view for mirroring the screen. This is useful if you use a mirror or a Head Up Display (HUD) with your ScanTent.</string>
 

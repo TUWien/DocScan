@@ -85,9 +85,9 @@
                         android:text="@string/locked_exposure_text"
                         android:textColor="@color/white"
                         android:textSize="14sp"
-
                         />
                 </LinearLayout>
+
 
                 <LinearLayout
                     android:id="@+id/unlock_exposure_text_view"

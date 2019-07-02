@@ -28,6 +28,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.Camera;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
@@ -47,6 +48,8 @@ import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -60,6 +63,8 @@ import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 import static android.hardware.Camera.Parameters.FLASH_MODE_OFF;
 import static android.hardware.Camera.Parameters.FLASH_MODE_TORCH;
+import static android.hardware.Camera.Parameters.FOCUS_MODE_AUTO;
+import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
 import static com.google.zxing.BarcodeFormat.QR_CODE;
 
 
@@ -90,11 +95,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
    // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
+
     private boolean isCameraInitialized;
     private String mFlashMode; // This is used to save the current flash mode, during Activity lifecycle.
     private boolean mIsPreviewFitting = false;
 
     private MultiFormatReader mMultiFormatReader;
+    private PointF mLastTouchPoint;
 
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
@@ -113,7 +120,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
 //        CVManager.getInstance().setCVCallback(mCVCallback);
         IPManager.getInstance().setCVCallback(mCVCallback);
-
 
         mFlashMode = FLASH_MODE_OFF;
 
@@ -227,24 +233,89 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
                 if (mCamera == null)
                     return;
-
-                Camera.Parameters params = mCamera.getParameters();
-                if (params == null)
-                    return;
-
-                params.setFlashMode(FLASH_MODE_TORCH);
-                mCamera.setParameters(params);
-
                 try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                params.setFlashMode(mFlashMode);
-                mCamera.setParameters(params);
+                    Camera.Parameters params = mCamera.getParameters();
+                    if (params == null)
+                        return;
 
+                    params.setFlashMode(FLASH_MODE_TORCH);
+                    mCamera.setParameters(params);
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    params.setFlashMode(mFlashMode);
+                    mCamera.setParameters(params);
+                }
+                catch (RuntimeException e) {
+
+                }
             }
         }).start();
+
+    }
+
+    public void startContinousFocus() {
+
+        Log.d(CLASS_NAME, "starting continous focus");
+        try {
+            if (mCamera != null) {
+                Camera.Parameters params = mCamera.getParameters();
+                if (params.getSupportedFocusModes().contains(FOCUS_MODE_CONTINUOUS_PICTURE)) {
+                    Log.d(CLASS_NAME, "contains continous focus");
+//                    We must cancel the autofocus, because otherwise continuous focus is not possible
+                    mCamera.cancelAutoFocus();
+                    params.setFocusMode(FOCUS_MODE_CONTINUOUS_PICTURE);
+                    mCamera.setParameters(params);
+                    Log.d(CLASS_NAME, "continous focus started");
+                }
+                else if (params.getSupportedFocusModes().contains(FOCUS_MODE_AUTO))
+                    startAutoFocus();
+            }
+        }
+        catch (RuntimeException e) {
+//            Nothing to do here, probably camera.release has been called from somewhere.
+            Log.d(CLASS_NAME, "catched RuntimeException");
+        }
+
+    }
+
+    public void startAutoFocus() {
+
+        Log.d(CLASS_NAME, "starting auto focus");
+        try {
+            if (mCamera != null) {
+                Camera.Parameters params = mCamera.getParameters();
+                if (params.getSupportedFocusModes().contains(FOCUS_MODE_AUTO)) {
+                    params.setFocusMode(FOCUS_MODE_AUTO);
+                    mLastTouchPoint = null;
+                    focusOnPoint();
+                }
+//                In case we have no auto focus, try out the continuous focus (I am not sure, if
+//                this might ever happen):
+                else if (params.getSupportedFocusModes().contains(FOCUS_MODE_CONTINUOUS_PICTURE))
+                    startContinousFocus();
+
+            }
+        }
+        catch (RuntimeException e) {
+//            Nothing to do here, probably camera.release has been called from somewhere.
+            Log.d(CLASS_NAME, "catched RuntimeException");
+        }
+
+
+    }
+
+    private PointF getCenterPoint() {
+
+        Log.d(CLASS_NAME, "getCenterPoint: " + getWidth() + " " + getHeight());
+        PointF point = new PointF();
+        point.x = getWidth() / 2;
+        point.y = getHeight() / 2;
+
+        return point;
 
     }
 
@@ -287,7 +358,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onFocusMeasured(Patch[] patches);
         void onPageSegmented(DkPolyRect[] polyRects);
         void onMovement(boolean moved);
-        void onWaitingForDoc(boolean waiting);
+        void onWaitingForDoc(boolean waiting, boolean doAutoFocus);
         void onCaptureVerified();
         void onQRCode(Result result);
 
@@ -303,6 +374,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         void onFrameDimensionChange(int width, int height, int cameraOrientation);
         void onFlashModesFound(List<String> modes);
         void onExposureLockFound(boolean isSupported);
+        void onFocused(boolean focused);
 //        void onWhiteBalanceFound(List<String> whiteBalances);
         void onFocusTouch(PointF point);
         void onFocusTouchSuccess();
@@ -377,10 +449,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         Log.d(CLASS_NAME, "releasing camera");
         isCameraInitialized = false;
         if (mCamera != null) {
-            mCamera.stopPreview();
-            mCamera.setPreviewCallback(null);
-            mCamera.release();        // release the camera for other applications
-            mCamera = null;
+            try {
+                mCamera.stopPreview();
+                mCamera.setPreviewCallback(null);
+                mCamera.release();        // release the camera for other applications
+                mCamera = null;
+            }
+            catch (RuntimeException e) {
+
+            }
         }
     }
 
@@ -409,10 +486,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mCamera == null)
             return true;
 
-        // Do nothing in the auto (series) mode:
-//        if (!mManualFocus)
-//            return true;
-
         // We wait until the finger is up again:
         if (event.getAction() != MotionEvent.ACTION_UP)
             return true;
@@ -421,80 +494,97 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         float touchY = event.getY();
 
         final PointF screenPoint = new PointF(touchX, touchY);
+
+//        final PointF screenPoint = getTouchPoint(event);
+
+        Log.d(CLASS_NAME, "onTouchEvent: " + event);
+
+        mLastTouchPoint = screenPoint;
         mCameraPreviewCallback.onFocusTouch(screenPoint);
 
-        Rect focusRect = getFocusRect(screenPoint);
-        if (focusRect == null) {
-            Log.d(CLASS_NAME, "focus rectangle is not valid!");
-            return true;
-        }
+        boolean processed = focusOnScreenPoint(screenPoint);
 
-        Camera.Area focusArea = new Camera.Area(focusRect, 750);
-        List<Camera.Area> focusAreas = new ArrayList<>();
-        focusAreas.add(focusArea);
-
-        mCamera.cancelAutoFocus();
-
-        Camera.Parameters parameters = mCamera.getParameters();
-        parameters.setJpegQuality(100);
-// Use autofocus if available:
-//        useAutoFocus(parameters);
-
-
-        if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)
-            && parameters.getFocusMode() != Camera.Parameters.FOCUS_MODE_AUTO)
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-
-        if (parameters.getMaxNumFocusAreas() > 0) {
-
-            if (mCamera.getParameters().getMaxNumFocusAreas() > 0)
-                parameters.setFocusAreas(focusAreas);
-
-//            Tested devices supporting metering areas:         Nexus 5X
-//            Tested devices that do no support metering areas: Samsung S6
-            if (mCamera.getParameters().getMaxNumMeteringAreas() > 0)
-                parameters.setMeteringAreas(focusAreas);
-
-        }
-// Use this to keep a stable exposure:
-//        parameters.setAutoExposureLock(false);
-        mCamera.setParameters(parameters);
-
-        try {
-            mCamera.autoFocus(new Camera.AutoFocusCallback() {
-                @Override
-                public void onAutoFocus(boolean success, Camera camera) {
-                    // Stop the drawing of the auto focus circle anyhow, do not care if the auto focus
-                    // was successful -> do not use value of success.
-                    mCameraPreviewCallback.onFocusTouchSuccess();
-//                    Use this to keep a stable exposure:
-//                    Camera.Parameters parameters = mCamera.getParameters();
-//                    if (parameters != null && parameters.isAutoExposureLockSupported()) {
-//                        parameters.setAutoExposureLock(true);
-//                        mCamera.setParameters(parameters);
-//                    }
-                }
-
-            });
-        }
-        catch (RuntimeException e) {
-            Crashlytics.logException(e);
-//            This can happen if the user touches the CameraPreview, while the preview is not
-//            started. In this case we do nothing.
-        }
-
-        return true; //processed
+        return processed;
 
     }
+
+    private boolean focusOnScreenPoint(PointF screenPoint) {
+
+        if (screenPoint == null || mCamera == null)
+            return false;
+
+        try {
+
+            mCamera.cancelAutoFocus();
+
+            Camera.Parameters parameters = mCamera.getParameters();
+
+            Rect focusRect = getFocusRect(screenPoint);
+            if (focusRect == null) {
+                Log.d(CLASS_NAME, "focus rectangle is not valid!");
+                return true;
+            }
+
+            Camera.Area focusArea = new Camera.Area(focusRect, 750);
+            List<Camera.Area> focusAreas = new ArrayList<>();
+            focusAreas.add(focusArea);
+
+//            Meterting:
+            //            Tested devices supporting metering areas:         Nexus 5X
+            //            Tested devices that do no support metering areas: Samsung S6
+            if (mCamera.getParameters().getMaxNumMeteringAreas() > 0) {
+                parameters.setMeteringAreas(focusAreas);
+                mCamera.setParameters(parameters);
+            }
+
+            boolean focusSupported = false;
+            if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)
+                && parameters.getFocusMode() != Camera.Parameters.FOCUS_MODE_AUTO) {
+
+                parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+
+                if (parameters.getMaxNumFocusAreas() > 0) {
+                    parameters.setFocusAreas(focusAreas);
+                    mCamera.setParameters(parameters);
+                    focusSupported = true;
+                    mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                        @Override
+                        public void onAutoFocus(boolean success, Camera camera) {
+                            // Stop the drawing of the auto focus circle anyhow, do not care if the auto focus
+                            // was successful -> do not use value of success.
+                            if (success)
+                                mCameraPreviewCallback.onFocusTouchSuccess();
+
+                            mCameraPreviewCallback.onFocused(success);
+                        }
+
+                    });
+                }
+            }
+//            In case the phone does not support auto-focus, fake the focus procedure.
+//            Otherwise in series mode, the imaging is blocked.
+            if (!focusSupported) {
+                mCameraPreviewCallback.onFocusTouchSuccess();
+                mCameraPreviewCallback.onFocused(true);
+            }
+
+        } catch (RuntimeException e) {
+            //            This can happen if the user touches the CameraPreview, while the preview is not
+            //            started. In this case we do nothing.
+            Crashlytics.logException(e);
+        }
+
+
+        return false;
+    }
+
 
     private Rect getFocusRect(PointF touchScreen) {
 
         // The camera field of view is normalized so that -1000,-1000 is top left and 1000, 1000 is
         // bottom right. Note that multiple areas are possible, but currently only one is used.
 
-        // Get the rotation of the screen to adjust the preview image accordingly.
-        int displayOrientation = CameraActivity.getDisplayRotation();
-        int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
+        int orientation = calculatePreviewOrientation(mCameraInfo);
 
         // Transform the point:
         PointF rotatedPoint = rotatePoint(touchScreen, orientation);
@@ -591,48 +681,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
-    /**
-     * Transforms screen coordinates to the camera field of view
-     * @param centerScreen
-     * @param touchScreen
-     * @param offSetX
-     * @param offSetY
-     * @return
-     */
-    private Point transformPoint(PointF centerScreen, PointF touchScreen, float offSetX, float offSetY) {
-
-        // Translate the point:
-        PointF normalizedPoint = new PointF(touchScreen.x, touchScreen.y);
-//        normalizedPoint.offset(offSetX, offSetY);
-
-        normalizedPoint.offset(-centerScreen.x, -centerScreen.y);
-
-        // Scale the point between -1 and 1:
-        normalizedPoint.x = normalizedPoint.x / centerScreen.x;
-        normalizedPoint.y = normalizedPoint.y / centerScreen.y;
-
-        normalizedPoint.offset(offSetX, offSetY);
-
-        // Scale the point between -1000 and 1000:
-        normalizedPoint.x = normalizedPoint.x * FOCUS_HALF_AREA;
-        normalizedPoint.y = normalizedPoint.y * FOCUS_HALF_AREA;
-
-        Point result = new Point(Math.round(normalizedPoint.x), Math.round(normalizedPoint.y));
-
-        // Clamp the values if necessary:
-        if (result.x < -FOCUS_HALF_AREA)
-            result.x = -FOCUS_HALF_AREA;
-        else if (result.x > FOCUS_HALF_AREA)
-            result.x = FOCUS_HALF_AREA;
-
-        if (result.y < -FOCUS_HALF_AREA)
-            result.y = -FOCUS_HALF_AREA;
-        else if (result.y > FOCUS_HALF_AREA)
-            result.y = FOCUS_HALF_AREA;
-
-        return result;
-
-    }
 
     public boolean isPreviewFitting() {
         return mIsPreviewFitting;
@@ -648,105 +696,25 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         } catch (Exception e) {
             Crashlytics.logException(e);
             // ignore: tried to stop a non-existent preview
-            Log.d(CLASS_NAME, "Error starting camera preview: " + e.getMessage());
+            Log.d(CLASS_NAME, "Error stoppings camera preview: " + e.getMessage());
         }
+
+        Log.d(CLASS_NAME, "initPreview");
 
         if (mCamera == null)
             return;
 
-        // Get the rotation of the screen to adjust the preview image accordingly.
-        int displayOrientation = CameraActivity.getDisplayRotation();
-        int orientation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
+        int orientation = calculatePreviewOrientation(mCameraInfo);
         mCamera.setDisplayOrientation(orientation);
 
-        Camera.Parameters params = mCamera.getParameters();
-        List<Camera.Size> cameraSizes = params.getSupportedPreviewSizes();
+        Camera.Parameters params = initParameters();
+//        useAutoFocus(params);
 
-        Camera.Size pictureSize = getLargestPictureSize();
-        params.setPictureSize(pictureSize.width, pictureSize.height);
-
-//        if (!mPreviewSizeSet) {
-//            Camera.Size bestSize = getBestFittingSize(cameraSizes, orientation);
-//
-//            mFrameWidth = bestSize.width;
-//            mFrameHeight = bestSize.height;
-//            mPreviewSizeSet = true;
-//        }
-        Camera.Size previewSize = getPreviewSize(cameraSizes, pictureSize);
-        mFrameWidth = previewSize.width;
-        mFrameHeight = previewSize.height;
-        mIsPreviewFitting = isPreviewFitting(previewSize);
-        useAutoFocus(params);
-
-
-        params.setPreviewSize(mFrameWidth, mFrameHeight);
-
-        List<String> flashModes = params.getSupportedFlashModes();
-        mCameraPreviewCallback.onFlashModesFound(flashModes);
-
-        // Restore the last used flash mode - if available:
-        if (mFlashMode != null)
-            params.setFlashMode(mFlashMode);
-
-//        params.setAutoExposureLock(true);
-        mCamera.setParameters(params);
-
+//        Now start the preview:
         try {
-
             mCamera.setPreviewDisplay(mHolder);
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();
-
-            if (params.getFocusMode() == Camera.Parameters.FOCUS_MODE_AUTO) {
-
-                float centerX = getMeasuredWidth() / 2;
-                float centerY = getMeasuredHeight() / 2;
-                PointF centerScreen = new PointF(centerX, centerY);
-
-                float touchX = centerX;
-                float touchY = centerY;
-                PointF touchScreen = new PointF(touchX, touchY);
-
-                // The camera field of view is normalized so that -1000,-1000 is top left and 1000, 1000 is
-                // bottom right. Not that multiple areas are possible, but currently only one is used.
-
-                float focusRectHalfSize = .2f;
-
-                // Normalize the coordinates of the touch event:
-                Point upperLeft = transformPoint(centerScreen, touchScreen, -focusRectHalfSize, -focusRectHalfSize);
-                Point lowerRight = transformPoint(centerScreen, touchScreen, focusRectHalfSize, focusRectHalfSize);
-
-                Rect focusRect = new Rect(upperLeft.x, upperLeft.y, lowerRight.x, lowerRight.y);
-
-                Camera.Area focusArea = new Camera.Area(focusRect, 750);
-                List<Camera.Area> focusAreas = new ArrayList<>();
-                focusAreas.add(focusArea);
-
-                mCamera.cancelAutoFocus();
-
-                if (params.getMaxNumFocusAreas() > 0) {
-
-//                    params.setFocusAreas(focusAreas);
-//                    params.setMeteringAreas(focusAreas);
-                    params.setFocusAreas(focusAreas);
-                    params.setMeteringAreas(focusAreas);
-
-//            mCamera.setParameters(parameters);
-                }
-
-
-                mCamera.setParameters(params);
-
-                mCamera.autoFocus(new Camera.AutoFocusCallback() {
-                    @Override
-                    public void onAutoFocus(boolean success, Camera camera) {
-
-                    }
-
-                });
-            }
-            Log.d(CLASS_NAME, "Camera preview started.");
-
         } catch (Exception e) {
             Crashlytics.logException(e);
             Log.d(CLASS_NAME, "Error starting camera preview: " + e.getMessage());
@@ -760,6 +728,46 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 ////        Tell the activity how we can control the white balance:
 //        mCameraPreviewCallback.onWhiteBalanceFound(params.getSupportedWhiteBalance());
 
+    }
+
+    @NotNull
+    private Camera.Parameters initParameters() {
+
+        //        Load the camera parameters:
+        Camera.Parameters params = mCamera.getParameters();
+//        And change the camera parameters:
+        Camera.Size pictureSize = initPictureSize(params);
+        initPreviewSize(params, pictureSize);
+        initFlashModes(params);
+        params.setJpegQuality(100);
+        mCamera.setParameters(params);
+
+        return params;
+    }
+
+    private void initFlashModes(Camera.Parameters params) {
+        List<String> flashModes = params.getSupportedFlashModes();
+        mCameraPreviewCallback.onFlashModesFound(flashModes);
+
+        // Restore the last used flash mode - if available:
+        if (mFlashMode != null)
+            params.setFlashMode(mFlashMode);
+    }
+
+    @NotNull
+    private Camera.Size initPictureSize(Camera.Parameters params) {
+        Camera.Size pictureSize = getLargestPictureSize();
+        params.setPictureSize(pictureSize.width, pictureSize.height);
+        return pictureSize;
+    }
+
+    private void initPreviewSize(Camera.Parameters params, Camera.Size pictureSize) {
+        List<Camera.Size> cameraSizes = params.getSupportedPreviewSizes();
+        Camera.Size previewSize = getPreviewSize(cameraSizes, pictureSize);
+        mFrameWidth = previewSize.width;
+        mFrameHeight = previewSize.height;
+        mIsPreviewFitting = isPreviewFitting(previewSize);
+        params.setPreviewSize(mFrameWidth, mFrameHeight);
     }
 
     public void lockExposure(boolean lock) {
@@ -787,26 +795,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
-    public void setWhiteBalance(String value) {
-
-        if (mCamera != null) {
-            Camera.Parameters params = mCamera.getParameters();
-            if (params != null) {
-                params.setWhiteBalance(value);
-                mCamera.setParameters(params);
-            }
-        }
-    }
-
-    private void useAutoFocus(Camera.Parameters params) {
-        // Use autofocus if available:
-        if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-        else if (params.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        }
-    }
-
     private Camera.Size getLargestPictureSize() {
 
         Camera.Size size = null;
@@ -827,20 +815,20 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     }
 
+    public void focusOnPoint() {
 
-    public void startAutoFocus() {
+        PointF focusPoint;
+        if (mLastTouchPoint == null)
+            focusPoint = getCenterPoint();
+        else
+            focusPoint = mLastTouchPoint;
 
-//        Check here if the camera is still accessible.
-        if (isCameraInitialized && mCamera != null) {
-            Camera.Parameters params = mCamera.getParameters();
-
-            // Use autofocus if available:
-            useAutoFocus(params);
-
-            mCamera.setParameters(params);
+        if (focusPoint != null && mCameraPreviewCallback != null) {
+            mCameraPreviewCallback.onFocusTouch(focusPoint);
+            focusOnScreenPoint(focusPoint);
         }
-    }
 
+    }
 
     @SuppressWarnings("deprecation")
     private boolean isPreviewFitting(Camera.Size previewSize) {
@@ -916,7 +904,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
      * {@link Camera#setDisplayOrientation(int)}.
      */
     @SuppressWarnings("deprecation")
-    public static int calculatePreviewOrientation(Camera.CameraInfo info, int rotation) {
+    public static int calculatePreviewOrientation(Camera.CameraInfo info) {
+
+        // Get the rotation of the screen to adjust the preview image accordingly.
+        int rotation = CameraActivity.getDisplayRotation();
 
         int degrees = 0;
 
@@ -953,12 +944,16 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     @SuppressWarnings("deprecation")
     public void setFlashMode(String flashMode) {
 
-        Camera.Parameters params = mCamera.getParameters();
-        params.setFlashMode(flashMode);
-        mCamera.setParameters(params);
+        try {
+            Camera.Parameters params = mCamera.getParameters();
+            params.setFlashMode(flashMode);
+            mCamera.setParameters(params);
 
-        mFlashMode = flashMode;
+            mFlashMode = flashMode;
+        }
+        catch(RuntimeException e) {
 
+        }
     }
 
 
@@ -1006,16 +1001,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mCamera == null)
             return;
 
-        // Get the rotation of the screen to adjust the preview image accordingly.
-        int displayOrientation = CameraActivity.getDisplayRotation();
-        int cameraOrienation = calculatePreviewOrientation(mCameraInfo, displayOrientation);
+        int cameraOrienation = calculatePreviewOrientation(mCameraInfo);
         mCamera.setDisplayOrientation(cameraOrienation);
+
+        mLastTouchPoint = null;
 
         // Tell the dependent Activity that the frame dimension (might have) change:
         mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, cameraOrienation);
-
-        Log.d(CLASS_NAME, "display orientation changed: " + displayOrientation);
-        Log.d(CLASS_NAME, "changed camera orientation: " + cameraOrienation);
 
     }
 

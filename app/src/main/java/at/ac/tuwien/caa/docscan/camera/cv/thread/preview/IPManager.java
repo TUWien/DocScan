@@ -39,6 +39,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
     private static final int CHANGE_TASK_CHECK_MOVEMENT = 0;
     private static final int CHANGE_TASK_CHECK_VERIFY_FRAME = 2;
+    private static final int CHANGE_TASK_START_PAGE_DETECTION = 3;
 
     private static final long MIN_STEADY_TIME = 500;        // The time in which there must be no movement.
     private static final long FRAME_TIME_DIFF = 300;
@@ -59,9 +60,11 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
     private long mLastFrameReceivedTime = NO_TIME_SET;
 
     private boolean mIsSeriesMode = false;
+    private boolean mIsAutoFocusDone = false;
     private boolean mProcessFrame = true;
     private boolean mIsPaused = false;
     private boolean mIsFocusMeasured;
+//    private boolean mIsAggressiveAutoFocus = false;
     private boolean mIsAlreadyChanged = true;
 
 //    used for testing with artificial created mats:
@@ -133,6 +136,8 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                             mIsAlreadyChanged = true;
                             Log.d(CLASS_NAME, "handleMessage: onMovement: true");
 
+                            mIsAutoFocusDone = false;
+
                             mCVCallback.onMovement(true);
                             releaseMat(mat);
                             mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
@@ -152,7 +157,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                                     Log.d(CLASS_NAME, "handleMessage: FAKE onWaitingForDoc: true");
 
-                                    mCVCallback.onWaitingForDoc(true);
+                                    mCVCallback.onWaitingForDoc(true, false);
 
                                     mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                                     releaseMat(mat);
@@ -189,7 +194,6 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                                     Log.d(CLASS_NAME, "no movement: min cycle num passed");
 
                                 mLastSteadyTime = NO_TIME_SET;
-//                                createDuplicateProcessor(mat);
                                 createProcessor(mat, ImageProcessor.ProcessorType.DUPLICATE);
                             }
 //                              There has been no movement but we better do some more checks to be sure:
@@ -204,7 +208,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                             Log.d(CLASS_NAME, "handleMessage: onWaitingForDoc: true");
 
-                            mCVCallback.onWaitingForDoc(true);
+                            mCVCallback.onWaitingForDoc(true, false);
 
                             mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                             releaseMat(mat);
@@ -216,11 +220,18 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                             Log.d(CLASS_NAME, "handleMessage: onWaitingForDoc: false");
 
-                            mCVCallback.onWaitingForDoc(false);
+//                            In case we are in aggressive auto focus mode, wait for focus and after
+//                            focus is found start the page detection:
+                            if (mIsSeriesMode && !mIsAutoFocusDone) {
+                                mIsAutoFocusDone = true;
+                                mCVCallback.onWaitingForDoc(false, true);
+                                mCheckState = CHANGE_TASK_START_PAGE_DETECTION;
+                                releaseMat(mat);
+                            }
+                            else
+//                                Start the page detection:
+                                createProcessor(mat, ImageProcessor.ProcessorType.PAGE);
 
-                            //                    Start the page detection:
-//                            createPageProcessor(mat);
-                            createProcessor(mat, ImageProcessor.ProcessorType.PAGE);
                             break;
 
                         case MESSAGE_PAGE_DETECTED:
@@ -233,8 +244,6 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                                 mCVCallback.onPageSegmented(polyRects);
 
                             //                    Start the focus measurement:
-//                            createFocusProcessor(mat);
-
                             if (mIsFocusMeasured)
                                 createProcessor(mat, ImageProcessor.ProcessorType.FOCUS);
                             else {
@@ -434,10 +443,10 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                 mLastFrameReceivedTime = System.currentTimeMillis();
                 if (mCheckState == CHANGE_TASK_CHECK_MOVEMENT)
                     createProcessor(mat, ImageProcessor.ProcessorType.CHANGE);
-//                    createChangeProcessor(mat);
                 else if (mCheckState == CHANGE_TASK_CHECK_VERIFY_FRAME)
                     createProcessor(mat, ImageProcessor.ProcessorType.VERIFY);
-//                    createVerificationProcessor(mat);
+                else if (mCheckState == CHANGE_TASK_START_PAGE_DETECTION)
+                    createProcessor(mat, ImageProcessor.ProcessorType.PAGE);
             }
 
 //            We are in single mode, just perform page detection and focus measurement:
@@ -454,7 +463,6 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                 mLastFrameReceivedTime = System.currentTimeMillis();
 
                 createProcessor(mat, ImageProcessor.ProcessorType.PAGE);
-//                createPageProcessor(mat);
 
             }
 
@@ -636,36 +644,6 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
     }
 
-//    private void createPageProcessor(Mat mat) {
-//
-//        mExecutor.execute(new PageProcessor(this, mat));
-//
-//    }
-//
-//    private void createFocusProcessor(Mat mat) {
-//
-//        mExecutor.execute(new FocusProcessor(this, mat));
-//
-//    }
-//
-//    private void createDuplicateProcessor(Mat mat) {
-//
-//        mExecutor.execute(new DuplicateProcessor(this, mat));
-//
-//    }
-//
-//    private void createChangeProcessor(Mat mat) {
-//
-//        mExecutor.execute(new ChangeProcessor(this, mat));
-//
-//    }
-//
-//    private void createVerificationProcessor(Mat mat) {
-//
-//        mExecutor.execute(new VerificationProcessor(this, mat));
-//    }
-
-
 
     @Override
     public void handleObject(int type, Object[] object, Mat mat) {
@@ -702,4 +680,10 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
         mIsFocusMeasured = isFocusMeasured;
         
     }
+
+//    public void setIsAggressiveAutoFocus(boolean isAggressive) {
+//
+//        mIsAggressiveAutoFocus = isAggressive;
+//
+//    }
 }
