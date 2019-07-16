@@ -47,10 +47,12 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.TaskStackBuilder;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBar;
@@ -90,6 +92,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
+import com.google.android.material.tabs.TabLayout;
 import com.google.zxing.Result;
 
 import org.opencv.android.OpenCVLoader;
@@ -100,6 +103,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -108,6 +112,7 @@ import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
+import at.ac.tuwien.caa.docscan.camera.CameraSheetDialog;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
 import at.ac.tuwien.caa.docscan.camera.GPS;
 import at.ac.tuwien.caa.docscan.camera.LocationHandler;
@@ -116,6 +121,7 @@ import at.ac.tuwien.caa.docscan.camera.PaintView;
 import at.ac.tuwien.caa.docscan.camera.TaskTimer;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.camera.cv.OrientationManager;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
@@ -149,7 +155,7 @@ import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_I
 
 public class CameraActivity extends BaseNavigationActivity implements TaskTimer.TimerCallbacks,
         CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
-        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemSelectedListener {
+        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemSelectedListener, OrientationManager.OrientationListener {
 
     private static final String CLASS_NAME = "CameraActivity";
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
@@ -197,8 +203,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private static Date mLastTimeStamp;
     private DkPolyRect[] mLastDkPolyRects;
-
-    private OrientationEventListener mOrientationListener;
+    private OrientationManager mOrientationManager;
 
     private boolean mIsQRActive = false;
 
@@ -281,11 +286,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mCameraPreview != null)
             mCameraPreview.pause();
 
-        if (mOrientationListener != null && mOrientationListener.canDetectOrientation()) {
-            mOrientationListener.disable();
-        }
-
-
         savePreferences();
         DocumentStorage.saveJSON(this);
 
@@ -318,12 +318,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         super.onResume();
 
         Log.d(getClass().getName(), "onResume");
-
-//        Stop receiving orientation change events:
-        if (mOrientationListener != null && mOrientationListener.canDetectOrientation())
-            mOrientationListener.enable();
-        else
-            mOrientationListener.disable();
 
 
         // Read the sync information:
@@ -514,6 +508,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mCameraPreview = findViewById(R.id.camera_view);
 
+        mOrientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL, this);
+        mOrientationManager.enable();
+
         mPaintView = findViewById(R.id.paint_view);
         if (mPaintView != null)
             mPaintView.setCVResult(mCVResult);
@@ -532,7 +529,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         setupNavigationDrawer();
         setupDebugView();
 
-        initOrientationListener();
+//        initOrientationListener();
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
@@ -546,8 +543,70 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         requestLocation();
 
+//        TODO: this is not that beautiful...
+        TabLayout t = findViewById(R.id.camera_tablayout);
+        t.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+//                TODO: replace with static int
+                if (tab.getPosition() == 0)
+                    startAutomaticMode(false);
+                else if (tab.getPosition() == 1)
+                    startAutomaticMode(true);
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
 //        Check app version:
         checkAppVersion();
+
+        FloatingActionButton fab = findViewById(R.id.document_fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ArrayList<CameraSheetDialog.SheetAction> actions = new ArrayList<>();
+                actions.add(new CameraSheetDialog.SheetAction(42,
+                        "new document", R.drawable.ic_folder_open_gray_24dp));
+                getSupportFragmentManager().beginTransaction().add(new CameraSheetDialog(actions),
+                        "TAG").commit();
+            }
+        });
+
+    }
+
+    @Override
+    public void onOrientationChange(OrientationManager.ScreenOrientation screenOrientation) {
+
+        float rotation = -1;
+
+//        TODO: this covers not all cases:
+        switch (screenOrientation) {
+            case LANDSCAPE:
+                rotation = 90;
+                break;
+            case PORTRAIT:
+                rotation = 0;
+                break;
+        }
+
+//        TODO: use less or more member fields:
+        ImageButton photoButton = findViewById(R.id.photo_button);
+        FloatingActionButton fab = findViewById(R.id.document_fab);
+        if (mGalleryButton != null)
+            mGalleryButton.setRotation(rotation);
+        if (photoButton != null)
+            photoButton.setRotation(rotation);
+        if (fab != null)
+            fab.setRotation(rotation);
 
     }
 
@@ -1067,6 +1126,26 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    public void startAutomaticMode(boolean automatic) {
+
+        if (automatic) {
+            mIsSeriesMode = true;
+            mIsSeriesModePaused = false;
+            if (mCameraPreview != null)
+                mCameraPreview.startAutoFocus();
+        }
+        else {
+            mIsSeriesMode = false;
+            if (mCameraPreview != null)
+                mCameraPreview.startContinousFocus();
+            if (mPaintView != null)
+                mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
+        }
+
+        updateMode();
+
+    }
+
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
@@ -1374,29 +1453,29 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      * Initializes an OrientEventListener that is used to detect orientation changes that are not
      * detected by onConfigurationChanged (e.g. landscape to reverse landscape and portrait to reverse portrait).
      */
-    private void initOrientationListener() {
-
-        mOrientationListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_NORMAL) {
-            @Override
-            public void onOrientationChanged(int orientation) {
-
-                int displayRotation = getDisplayRotation();
-
-//                Catch the display rotation changes that are not covered by configuration changes
-//                (e.g. landscape to reverse landscape and portrait to reverse portrait):
-                if ((mLastDisplayRotation == Surface.ROTATION_0 && displayRotation == Surface.ROTATION_180) ||
-                        (mLastDisplayRotation == Surface.ROTATION_180 && displayRotation == Surface.ROTATION_0) ||
-                        (mLastDisplayRotation == Surface.ROTATION_90 && displayRotation == Surface.ROTATION_270) ||
-                        (mLastDisplayRotation == Surface.ROTATION_270 && displayRotation == Surface.ROTATION_90)) {
-                    if (mCameraPreview != null)
-                        mCameraPreview.displayRotated();
-                }
-
-                mLastDisplayRotation = displayRotation;
-
-            }
-        };
-    }
+//    private void initOrientationListener() {
+//
+//        mOrientationListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_NORMAL) {
+//            @Override
+//            public void onOrientationChanged(int orientation) {
+//
+//                int displayRotation = getDisplayRotation();
+//
+////                Catch the display rotation changes that are not covered by configuration changes
+////                (e.g. landscape to reverse landscape and portrait to reverse portrait):
+//                if ((mLastDisplayRotation == Surface.ROTATION_0 && displayRotation == Surface.ROTATION_180) ||
+//                        (mLastDisplayRotation == Surface.ROTATION_180 && displayRotation == Surface.ROTATION_0) ||
+//                        (mLastDisplayRotation == Surface.ROTATION_90 && displayRotation == Surface.ROTATION_270) ||
+//                        (mLastDisplayRotation == Surface.ROTATION_270 && displayRotation == Surface.ROTATION_90)) {
+//                    if (mCameraPreview != null)
+//                        mCameraPreview.displayRotated();
+//                }
+//
+//                mLastDisplayRotation = displayRotation;
+//
+//            }
+//        };
+//    }
 
     private void rotateCameraAndLayout() {
 
@@ -2577,11 +2656,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 GlideApp.with(getApplicationContext())
                         .load(fileName)
                         .signature(new MediaStoreSignature("", 0, exifOrientation))
+                        .apply(RequestOptions.circleCropTransform())
                         .into(mGalleryButton);
             }
             else {
                 GlideApp.with(getApplicationContext())
                         .load(fileName)
+                        .apply(RequestOptions.circleCropTransform())
                         .into(mGalleryButton);
             }
 
@@ -2713,7 +2794,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             mProgressBar.setVisibility(View.INVISIBLE);
                             mGalleryButton.setVisibility(View.VISIBLE);
 //                            Check if the activity is closing. This might especially happen on slow
@@ -2722,8 +2802,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                             if (!((Activity) mContext).isFinishing())
                                 GlideApp.with(mContext)
                                         .load(file.getPath())
+                                        .apply(RequestOptions.circleCropTransform())
                                         .into(mGalleryButton);
-
                         }
                     });
 

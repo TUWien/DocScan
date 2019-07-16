@@ -8,37 +8,40 @@
     android:layout_alignParentBottom="true"
     >
 
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/camera_tablayout"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Manual"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Automatic"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"/>
+
+    </com.google.android.material.tabs.TabLayout>
+
     <RelativeLayout
         android:id="@+id/controls_layout"
+        android:layout_below="@id/camera_tablayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <Spinner
-            android:id="@+id/shoot_mode_spinner"
-            android:layout_width="@dimen/shoot_mode_spinner_size"
-            android:layout_height="@dimen/shoot_mode_spinner_size"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="@dimen/gallery_button_size"
+            android:layout_height="@dimen/gallery_button_size"
             android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"
             android:layout_marginLeft="@dimen/activity_vertical_margin"
-            android:popupBackground="@color/button_bg_color"
-            android:theme="@style/customSpinnerTheme"
-            android:background="@drawable/spinner_selector"
-            android:dropDownWidth="@dimen/spinner_dropdown_width"
-            />
-
-
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:layout_centerInParent="true"
-            android:id="@+id/photo_button"
-            android:layout_width="@dimen/photo_button_size"
-            android:layout_height="@dimen/photo_button_size"
-            android:src="@drawable/ic_photo_camera"
-            android:background="@drawable/photo_shoot_button_selector"
-            />
-        <RelativeLayout
-            android:layout_width="@dimen/photo_button_size"
-            android:layout_height="@dimen/photo_button_size"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
             android:layout_marginRight="@dimen/activity_horizontal_margin"
             >
 
@@ -62,6 +65,42 @@
                 />
 
         </RelativeLayout>
+
+        <Spinner
+            android:id="@+id/shoot_mode_spinner"
+            android:visibility="invisible"
+            android:layout_width="@dimen/shoot_mode_spinner_size"
+            android:layout_height="@dimen/shoot_mode_spinner_size"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="@dimen/activity_vertical_margin"
+            android:popupBackground="@color/button_bg_color"
+            android:theme="@style/customSpinnerTheme"
+            android:background="@drawable/spinner_selector"
+            android:dropDownWidth="@dimen/spinner_dropdown_width"
+            />
+
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:layout_centerInParent="true"
+            android:id="@+id/photo_button"
+            android:layout_width="@dimen/photo_button_size"
+            android:layout_height="@dimen/photo_button_size"
+            android:src="@drawable/ic_photo_camera"
+            android:background="@drawable/photo_shoot_button_selector"
+            />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/document_fab"
+            app:srcCompat="@drawable/ic_folder_black_24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="@dimen/activity_vertical_margin"
+            />
+
 
     </RelativeLayout>
 

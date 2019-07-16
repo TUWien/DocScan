@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sheet_dialog_recyclerview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <!--<androidx.appcompat.widget.AppCompatImageButton-->
+    <!--android:id="@+id/document_button"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_centerHorizontal="true"-->
+    <!--android:background="@null"-->
+    <!--app:srcCompat="@drawable/ic_folder_open_gray_24dp"/>-->
+
+</RelativeLayout>
+
+<!--<?xml version="1.0" encoding="utf-8"?>-->
+<!--<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--xmlns:app="http://schemas.android.com/apk/res-auto"-->
+    <!--android:orientation="vertical"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:columnCount="2">-->
+
+    <!--<RelativeLayout-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:onClick="lockExposure">-->
+
+        <!--<androidx.appcompat.widget.AppCompatImageButton-->
+            <!--android:id="@+id/document_button"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_centerHorizontal="true"-->
+            <!--android:background="@null"-->
+            <!--app:srcCompat="@drawable/ic_folder_open_gray_24dp"-->
+            <!--/>-->
+        <!--<TextView-->
+            <!--android:layout_below="@id/document_button"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="new document"/>-->
+
+        <!--&lt;!&ndash;<androidx.appcompat.widget.AppCompatButton&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_height="wrap_content"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:layout_width="wrap_content"            &ndash;&gt;-->
+            <!--&lt;!&ndash;android:drawableTop="@drawable/ic_folder_open_gray_24dp"&ndash;&gt;-->
+            <!--&lt;!&ndash;android:text="New document"&ndash;&gt;-->
+            <!--&lt;!&ndash;/>&ndash;&gt;-->
+
+    <!--</RelativeLayout>-->
+
+
+
+
+<!--</GridLayout>-->
