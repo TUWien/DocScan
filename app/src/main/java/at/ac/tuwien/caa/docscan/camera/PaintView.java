@@ -294,7 +294,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         Log.d(TAG, "focus tocuhed");
     }
 
-    public void drawFocusTouchSuccess() {
+    public void hideFocusCircle() {
 
         mDrawFocusTouch = false;
 

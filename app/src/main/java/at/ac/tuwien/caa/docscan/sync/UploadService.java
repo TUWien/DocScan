@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.sync;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -33,6 +34,8 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.ui.pdf.PdfActivity;
+import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
@@ -580,11 +583,17 @@ public class UploadService extends JobService implements
         if (getConnectionText() == null)
             return;
 
+        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, intent, 0);
+
         mNotificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
                 .setContentText(text)
-                .setChannelId(CHANNEL_ID);
+                .setChannelId(CHANNEL_ID)
+                .setContentIntent(pendingIntent);
 
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 

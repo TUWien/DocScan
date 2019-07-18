@@ -50,7 +50,6 @@ import android.preference.PreferenceManager;
 import com.google.android.material.navigation.NavigationView;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.core.app.ActivityCompat;
-import androidx.core.app.TaskStackBuilder;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBar;
@@ -1078,19 +1077,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         else if (position != SERIES_POS && mIsSeriesMode) {
             mIsSeriesMode = false;
             mCameraPreview.startContinousFocus();
+            mPaintView.hideFocusCircle();
             mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
         }
 
         // Show a toast and update the mode, but just if he selected the spinner manually:
         if (!mItemSelectedAutomatically) {
             showShootModeToast();
+            mPaintView.hideFocusCircle();
             updateMode();
 
         }
 
         mItemSelectedAutomatically = false;
-
-
 
     }
 
@@ -2012,7 +2011,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
         if (mPaintView != null)
-            mPaintView.drawFocusTouchSuccess();
+            mPaintView.hideFocusCircle();
 
     }
 

@@ -31,6 +31,7 @@ import static at.ac.tuwien.caa.docscan.rest.User.SYNC_TRANSKRIBUS;
 public class SyncUtils {
 
     private static final String CLASS_NAME = "SyncUtils";
+    private static final String JOB_TAG = "sync_job";
 
     /**
      * Starts a new sync job. Note that a current job will not be overwritten. If restart is true
@@ -43,8 +44,6 @@ public class SyncUtils {
 
         Log.d(CLASS_NAME, "startSyncJob");
         DataLog.getInstance().writeUploadLog(context, CLASS_NAME, "startSyncJob");
-
-        String tag = "sync_job";
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -73,7 +72,7 @@ public class SyncUtils {
 //                .setService(SyncService.class)
                 .setService(UploadService.class)
                 // uniquely identifies the job
-                .setTag(tag)
+                .setTag(JOB_TAG)
                 // one-off job
                 .setRecurring(false)
                 // don't persist past a device reboot
@@ -90,7 +89,15 @@ public class SyncUtils {
 
 
 
+
         dispatcher.mustSchedule(syncJob);
+
+    }
+
+    public static void cancel(Context context) {
+
+        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
+        dispatcher.cancelAll();
 
     }
 

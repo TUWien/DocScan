@@ -115,6 +115,15 @@ public class SyncStorage {
 
     }
 
+    public void clearPendingUploads() {
+
+        mUploadDocumentTitles = new ArrayList<>();
+        mUnfinishedUploadIDs = new ArrayList<>();
+        mUnprocessedUploadIDs = new ArrayList<>();
+        mFileSyncList = new ArrayList<>();
+
+    }
+
     public void setUploadDocumentTitles(ArrayList<String> titles) {
 
         mUploadDocumentTitles = titles;

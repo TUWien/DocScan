@@ -452,6 +452,35 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     }
 
+    public void deleteSyncInfo(MenuItem item) {
+
+        //        If file(s) have been uploaded, warn the user, before the SyncStorage is deleted:
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(R.string.account_delete_sync_storage_title)
+                .setPositiveButton(R.string.dialog_yes_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i)  {
+                        SyncStorage.clearInstance();
+                        SyncUtils.cancel(getApplicationContext());
+                        deselectListViewItems();
+                        initAdapter();
+                    }
+                })
+                .setNegativeButton(R.string.dialog_cancel_text, null)
+                .setCancelable(true)
+                .setMessage(R.string.account_delete_sync_storage_message);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
+
+    }
+
     private void showNoPlayServicesDialog() {
 
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -772,6 +801,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     private void showUploadingSnackbar(int selCnt) {
 
+
         String selText = selCnt + " " + Helper.getDocumentSingularPlural(this, selCnt);
 
         String snackbarText =
@@ -780,7 +810,17 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         closeSnackbar();
         mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_INDEFINITE);
+                snackbarText, Snackbar.LENGTH_INDEFINITE)
+                .setAction("CANCEL", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                SyncStorage.getInstance(getApplicationContext()).clearPendingUploads();
+//                                update the adapter and deselect all items:
+                                deselectListViewItems();
+                                initAdapter();
+                                SyncUtils.cancel(getApplicationContext());
+                            }
+                        });
         mSnackbar.show();
 
     }
@@ -833,8 +873,10 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
             mSelectionToolbar.fixToolbar();
 
         getToolbar().setTitle(R.string.sync_item_text);
-        if (mMenu != null)
+        if (mMenu != null) {
+            mMenu.setGroupVisible(R.id.sync_menu_main, true);
             mMenu.setGroupVisible(R.id.sync_menu_selection, false);
+        }
 
     }
 
@@ -842,8 +884,10 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         if (mSelectionToolbar != null)
             mSelectionToolbar.scrollToolbar(selectionCount);
-        if (mMenu != null)
+        if (mMenu != null) {
+            mMenu.setGroupVisible(R.id.sync_menu_main, false);
             mMenu.setGroupVisible(R.id.sync_menu_selection, true);
+        }
 
     }
 
