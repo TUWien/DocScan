@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'io.fabric'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'kotlin-kapt'
 
 android {
 	compileSdkVersion 28
@@ -155,7 +156,7 @@ dependencies {
     // we need this for the ProviderInstaller
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
     implementation 'com.github.bumptech.glide:glide:4.9.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
+	kapt 'com.github.bumptech.glide:compiler:4.9.0'
 	annotationProcessor 'androidx.annotation:annotation:1.0.0'
     //	implementation project(':openCVLibrary')
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.9.0'

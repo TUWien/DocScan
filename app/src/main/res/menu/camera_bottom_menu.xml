@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--This is actually not used, I just needed the id's...-->
+    <item
+        android:id="@+id/action_document_new_item"
+        android:title="@string/action_document_create_title"
+        android:icon="@drawable/ic_folder_open_gray_24dp"
+        />
+    <item
+        android:id="@+id/action_document_qr_item"
+        android:title="@string/action_document_qr_title"
+        android:icon="@drawable/ic_folder_open_gray_24dp"
+        />
+    <item
+        android:id="@+id/action_document_select_item"
+        android:title="@string/action_document_select_title"
+        android:icon="@drawable/ic_folder_open_gray_24dp"
+        />
+    <item
+        android:id="@+id/action_document_upload_item"
+        android:title="@string/action_document_upload_document"
+        android:icon="@drawable/ic_folder_open_gray_24dp"
+        />
+
+
+</menu>

@@ -71,7 +71,6 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
@@ -95,6 +94,7 @@ import com.google.android.gms.security.ProviderInstaller;
 import com.google.android.material.tabs.TabLayout;
 import com.google.zxing.Result;
 
+import org.jetbrains.annotations.NotNull;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
@@ -112,7 +112,7 @@ import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
-import at.ac.tuwien.caa.docscan.camera.CameraSheetDialog;
+import at.ac.tuwien.caa.docscan.camera.ActionSheet;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
 import at.ac.tuwien.caa.docscan.camera.GPS;
 import at.ac.tuwien.caa.docscan.camera.LocationHandler;
@@ -204,6 +204,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private static Date mLastTimeStamp;
     private DkPolyRect[] mLastDkPolyRects;
     private OrientationManager mOrientationManager;
+    private int mLastTabPosition;
 
     private boolean mIsQRActive = false;
 
@@ -544,15 +545,29 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         requestLocation();
 
 //        TODO: this is not that beautiful...
-        TabLayout t = findViewById(R.id.camera_tablayout);
+        final TabLayout t = findViewById(R.id.camera_tablayout);
+
         t.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
 //                TODO: replace with static int
-                if (tab.getPosition() == 0)
+//                We have to remember the last tab selection, because when setting is selected, we
+//                have to restore the last selection:
+                if (tab.getPosition() == 0) {
                     startAutomaticMode(false);
-                else if (tab.getPosition() == 1)
+                    mLastTabPosition = 0;
+                }
+                else if (tab.getPosition() == 1) {
                     startAutomaticMode(true);
+                    mLastTabPosition = 1;
+                }
+                else if (tab.getPosition() == 2) {
+                    openSettings();
+                    TabLayout.Tab restoredTab = t.getTabAt(mLastTabPosition);
+                    t.setScrollPosition(mLastTabPosition, 0f, true);
+                    restoredTab.select();
+                }
+
             }
 
             @Override
@@ -573,14 +588,136 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ArrayList<CameraSheetDialog.SheetAction> actions = new ArrayList<>();
-                actions.add(new CameraSheetDialog.SheetAction(42,
-                        "new document", R.drawable.ic_folder_open_gray_24dp));
-                getSupportFragmentManager().beginTransaction().add(new CameraSheetDialog(actions),
+
+                ArrayList<ActionSheet.SheetAction> actions = getFABSheetActions();
+
+                ActionSheet.SheetSelection s = new ActionSheet.SheetSelection() {
+                    @Override
+                    public void onSheetSelected(ActionSheet.SheetAction action) {
+
+                        switch(action.getID()) {
+                            case R.id.action_document_new_item:
+                                startActivity(new Intent(getApplicationContext(), CreateDocumentActivity.class));
+                                break;
+                            case R.id.action_document_select_item:
+                                startActivity(new Intent(getApplicationContext(), SelectDocumentActivity.class));
+                                break;
+                            case R.id.action_document_upload_item:
+                                uploadActiveDocument();
+                                break;
+                        }
+                    }
+                };
+                getSupportFragmentManager().beginTransaction().add(new ActionSheet(actions, s),
                         "TAG").commit();
+
             }
         });
 
+    }
+
+    private void openSettings() {
+
+        ArrayList<ActionSheet.SheetAction> actions = getSettingsSheetActions();
+
+        ActionSheet.SheetSelection s = new ActionSheet.SheetSelection() {
+            @Override
+            public void onSheetSelected(ActionSheet.SheetAction action) {
+
+                switch(action.getID()) {
+                    case R.id.action_show_grid_item:
+                        showGrid(true);
+                        break;
+                    case R.id.action_hide_grid_item:
+                        showGrid(false);
+                        break;
+                    case R.id.action_show_gallery_item:
+                        startGalleryActivity();
+                        break;
+                    case R.id.action_lock_wb_item:
+                        lockExposure();
+                        break;
+                    case R.id.action_unlock_wb_item:
+                        unlockExposure();
+                        break;
+                    case R.id.action_document_select_item:
+                        startActivity(new Intent(getApplicationContext(), SelectDocumentActivity.class));
+                        break;
+                    case R.id.action_document_upload_item:
+                        startActivity(new Intent(getApplicationContext(), UploadActivity.class));
+                        break;
+                }
+            }
+        };
+        getSupportFragmentManager().beginTransaction().add(new ActionSheet(actions, s),
+                "TAG").commit();
+
+    }
+
+    @NotNull
+    private ArrayList<ActionSheet.SheetAction> getSettingsSheetActions() {
+        ArrayList<ActionSheet.SheetAction> actions = new ArrayList<>();
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+//        Gallery action:
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_show_gallery_item,
+                getString(R.string.action_setting_show_gallery),
+                R.drawable.ic_photo_library_gray_24dp));
+
+//        Grid action:
+        boolean showGrid = sharedPref.getBoolean(getResources().getString(
+                R.string.key_show_grid), false);
+        if (showGrid)
+            actions.add(new ActionSheet.SheetAction(
+                    R.id.action_hide_grid_item,
+                    getString(R.string.action_setting_hide_grid),
+                    R.drawable.ic_grid_off_gray_24dp));
+        else
+            actions.add(new ActionSheet.SheetAction(
+                    R.id.action_show_grid_item,
+                    getString(R.string.action_setting_show_grid),
+                    R.drawable.ic_grid_on_gray_24dp));
+
+//        White balance:
+//        This is dirty, but at the moment I do not want another member:
+        boolean wbLocked =
+                findViewById(R.id.lock_exposure_text_view).getVisibility() == View.VISIBLE;
+        if (wbLocked)
+            actions.add(new ActionSheet.SheetAction(
+                    R.id.action_unlock_wb_item,
+                    getString(R.string.action_setting_unlock_wb),
+                    R.drawable.ic_lock_open_gray_24dp));
+        else
+            actions.add(new ActionSheet.SheetAction(
+                    R.id.action_lock_wb_item,
+                    getString(R.string.action_setting_lock_wb),
+                    R.drawable.ic_lock_outline_gray_24dp));
+
+        return actions;
+    }
+
+    @NotNull
+    private ArrayList<ActionSheet.SheetAction> getFABSheetActions() {
+        ArrayList<ActionSheet.SheetAction> actions = new ArrayList<>();
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_document_new_item,
+                getString(R.string.action_document_create_title),
+                R.drawable.ic_folder_gray_24dp));
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_document_qr_item,
+                getString(R.string.action_document_qr_title),
+                R.drawable.ic_qr_code_gray));
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_document_select_item,
+                getString(R.string.action_document_select_title),
+                R.drawable.ic_folder_open_gray_24dp));
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_document_upload_item,
+                getString(R.string.action_document_upload_document),
+                R.drawable.ic_cloud_upload_gray_24dp));
+        return actions;
     }
 
     @Override
@@ -2250,6 +2387,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    private void uploadActiveDocument() {
+
+        Document document = DocumentStorage.getInstance(this).getActiveDocument();
+        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
+
+//        If the document contains already images, select it in the UploadActivity:
+        if (document != null && document.getPages() != null && !document.getPages().isEmpty())
+            intent.putExtra(getString(R.string.key_document_file_name), document.getTitle());
+
+        startActivity(intent);
+    }
+
     public void startUploadActivity(MenuItem item) {
 
         Document document = DocumentStorage.getInstance(this).getActiveDocument();
@@ -2260,6 +2409,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             intent.putExtra(getString(R.string.key_document_file_name), document.getTitle());
 
         startActivity(intent);
+
+    }
+
+    private void showGrid(boolean showGrid) {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        mPaintView.drawGrid(showGrid);
+
+//        Save the new setting:
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(getResources().getString(R.string.key_show_grid), showGrid);
+        editor.commit();
 
     }
 
@@ -2282,6 +2443,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    private void startGalleryActivity() {
+        String documentTitle = DocumentStorage.getInstance(this).getTitle();
+        if (documentTitle != null) {
+            if (DocumentStorage.getInstance(this).getDocument(documentTitle) == null)
+                return;
+
+            Intent intent = new Intent(mContext, GalleryActivity.class);
+            intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
+            mContext.startActivity(intent);
+        }
+    }
 
     public void startGalleryActivity(MenuItem item) {
 
@@ -2296,6 +2468,69 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
 
     }
+
+    private void lockExposure() {
+
+        if (mCameraPreview != null) {
+
+            showLockedExposureDialog();
+
+            mCameraPreview.lockExposure(true);
+            mCameraPreview.lockWhiteBalance(true);
+
+            if (mLockExposureMenuItem != null)
+                mLockExposureMenuItem.setVisible(false);
+            if (mUnlockExposureMenuItem != null)
+                mUnlockExposureMenuItem.setVisible(true);
+
+            final LinearLayout lockTextView = findViewById(R.id.lock_exposure_text_view);
+            lockTextView.setAlpha(0f);
+            lockTextView.setVisibility(View.VISIBLE);
+            lockTextView.animate()
+                    .alpha(1f)
+                    .setDuration(1000);
+        }
+
+    }
+
+    private void unlockExposure() {
+
+        if (mCameraPreview != null) {
+            mCameraPreview.lockExposure(false);
+            mCameraPreview.lockWhiteBalance(false);
+
+            if (mLockExposureMenuItem != null)
+                mLockExposureMenuItem.setVisible(true);
+            if (mUnlockExposureMenuItem != null)
+                mUnlockExposureMenuItem.setVisible(false);
+
+            final LinearLayout lockTextView = findViewById(R.id.lock_exposure_text_view);
+            lockTextView.setVisibility(View.INVISIBLE);
+
+            final LinearLayout unlockTextView = findViewById(R.id.unlock_exposure_text_view);
+            unlockTextView.setAlpha(1f);
+            unlockTextView.setVisibility(View.VISIBLE);
+            unlockTextView.animate()
+                    .alpha(0f)
+                    .setDuration(1000)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            unlockTextView.setVisibility(View.INVISIBLE);
+                        }
+                    });
+
+//            final TextView lockTextView = findViewById(R.id.lock_exposure_text_view);
+//            lockTextView.setAlpha(0.f);
+//            lockTextView.setVisibility(View.VISIBLE);
+//            lockTextView.animate()
+//                    .alpha(1f)
+//                    .setDuration(500);
+
+        }
+
+    }
+
 
     public void lockExposure(MenuItem item) {
 

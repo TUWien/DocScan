@@ -388,5 +388,17 @@
     <string name="gallery_unfocused_title">Focus issues</string>
     <string name="gallery_unfocused_text">Some images appear to be not focused and should be checked and eventually be replaced. These images are marked with a red rectangle.</string>
 
+    <string name="action_document_create_title">New document</string>
+    <string name="action_document_select_title">Select document</string>
+    <string name="action_document_qr_title">Document from QR code</string>
+    <string name="action_document_upload_document">Upload document</string>
+
+    <string name="action_setting_show_gallery">Show gallery</string>
+    <string name="action_setting_show_grid">Show grid</string>
+    <string name="action_setting_hide_grid">Hide grid</string>
+    <string name="action_setting_lock_wb">Lock white balance and exposure</string>
+    <string name="action_setting_unlock_wb">Lock white balance and exposure</string>
+    <string name="action_setting_flash_series">Flash after automated imaging</string>
+    <string name="action_setting_no_flash_series">No flash after automated imaging</string>
 
 </resources>
