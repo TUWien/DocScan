@@ -63,8 +63,6 @@ public class SyncUtils {
         if (!restart)
             timeWindow = Trigger.executionWindow(5, 10);
         else
-//            TODO: change this!
-//            timeWindow = Trigger.executionWindow(1, 7);
             timeWindow = Trigger.executionWindow(30, 50);
 
         Job syncJob = dispatcher.newJobBuilder()

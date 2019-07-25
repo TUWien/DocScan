@@ -76,6 +76,7 @@ public class UploadService extends JobService implements
     private static final int NOTIFICATION_ERROR = 1;
     private static final int NOTIFICATION_SUCCESS = 2;
     private static final int NOTIFICATION_FILE_DELETED = 3;
+    private static final int NOTIFICATION_CANCEL = 4;
 
     public static final String SERVICE_ALONE_KEY = "SERVICE_ALONE_KEY";
     private static final String CLASS_NAME = "UploadService";
@@ -92,6 +93,7 @@ public class UploadService extends JobService implements
         Log.d(CLASS_NAME, "================= service starting =================");
 
         mIsInterrupted = false;
+        SyncStorage.getInstance(getApplicationContext()).setCanceled(false);
 
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "================= service starting =================");
 
@@ -475,6 +477,12 @@ public class UploadService extends JobService implements
         @Override
         public void onUploadComplete(SyncFile syncFile) {
 
+            if (SyncStorage.getInstance(getApplicationContext()).isUploadCanceled()) {
+                SyncStorage.saveJSON(getApplicationContext());
+                updateNotification(NOTIFICATION_CANCEL);
+                return;
+            }
+
             syncFile.setState(SyncFile.STATE_UPLOADED);
 
             SyncStorage.getInstance(getApplicationContext()).addToUploadedList(syncFile);
@@ -654,6 +662,17 @@ public class UploadService extends JobService implements
                         // Removes the progress bar
                         .setProgress(0, 0, false);
                 break;
+            case NOTIFICATION_CANCEL:
+                Log.d(CLASS_NAME, "updateNotification: NOTIFICATION_CANCEL");
+                DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                        "updateNotification: NOTIFICATION_CANCEL");
+                mNotificationBuilder
+                        .setContentTitle(getString(R.string.sync_notification_uploading_canceled_title))
+                        .setContentText(getString(R.string.sync_notification_uploading_canceled_text))
+                        // Removes the progress bar
+                        .setProgress(0, 0, false);
+                break;
+
 
         }
 

@@ -62,6 +62,7 @@
                 android:textColor="@color/black"
                 android:text="@string/intro_text_5"/>
             <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/document_create_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="createDocument"

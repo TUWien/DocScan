@@ -6,8 +6,14 @@
         android:id="@+id/sync_menu_main"
         >
         <item
+            android:id="@+id/sync_menu_cancel_upload"
+            android:title="@string/gallery_menu_cancel_upload"
+            app:showAsAction="never"
+            android:onClick="cancelUpload"
+            />
+        <item
             android:id="@+id/sync_menu_clear_sync_data"
-            android:title="Clear sync data"
+            android:title="@string/gallery_menu_clear_sync"
             app:showAsAction="never"
             android:onClick="deleteSyncInfo"
             />
@@ -24,8 +30,14 @@
             app:showAsAction="never"
             />
         <item
+            android:id="@+id/sync_menu_selection_cancel_upload"
+            android:title="@string/gallery_menu_cancel_upload"
+            app:showAsAction="never"
+            android:onClick="cancelUpload"
+            />
+        <item
             android:id="@+id/sync_menu_selection_clear_sync_data"
-            android:title="Clear sync data"
+            android:title="@string/gallery_menu_clear_sync"
             app:showAsAction="never"
             android:onClick="deleteSyncInfo"
             />

@@ -37,6 +37,7 @@ import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
+import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -810,18 +811,35 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         closeSnackbar();
         mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_INDEFINITE)
-                .setAction("CANCEL", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                SyncStorage.getInstance(getApplicationContext()).clearPendingUploads();
-//                                update the adapter and deselect all items:
-                                deselectListViewItems();
-                                initAdapter();
-                                SyncUtils.cancel(getApplicationContext());
-                            }
-                        });
+                snackbarText, Snackbar.LENGTH_INDEFINITE);
+//                .setAction("CANCEL", new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View view) {
+//                                cancelUpload();
+//                            }
+//                        });
         mSnackbar.show();
+
+    }
+
+    public void cancelUpload(MenuItem item) {
+
+        DataLog.getInstance().writeUploadLog(mContext,
+                "user canceled upload");
+        SyncStorage.getInstance(getApplicationContext()).setCanceled(true);
+        SyncStorage.getInstance(getApplicationContext()).clearPendingUploads();
+        DocumentStorage.saveJSON(getApplicationContext());
+//        Save the state:
+        SyncStorage.saveJSON(getApplicationContext());
+
+//        update the adapter and deselect all items:
+        deselectListViewItems();
+        initAdapter();
+        SyncUtils.cancel(getApplicationContext());
+
+//        Close the snackbar:
+        if (mSnackbar != null)
+            mSnackbar.dismiss();
 
     }
 

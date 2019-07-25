@@ -24,6 +24,7 @@ public class SyncStorage {
     private static final String CLASS_NAME = "SyncStorage";
     private static SyncStorage sInstance;
 
+    private boolean mUploadCanceled = false;
     private ArrayList<SyncFile> mFileSyncList;
     private ArrayList<SyncFile> mUploadedList;
     private ArrayList<Integer> mUnprocessedUploadIDs;
@@ -107,7 +108,16 @@ public class SyncStorage {
 
     }
 
+    public void setCanceled(boolean canceled) {
 
+        mUploadCanceled = canceled;
+
+    }
+
+    public boolean isUploadCanceled() {
+
+        return mUploadCanceled;
+    }
 
     public void clearSyncList() {
 
