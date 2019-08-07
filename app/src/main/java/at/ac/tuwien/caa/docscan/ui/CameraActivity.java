@@ -68,8 +68,6 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
@@ -81,7 +79,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -114,6 +111,7 @@ import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.ActionSheet;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
+import at.ac.tuwien.caa.docscan.camera.FixedActionSheet;
 import at.ac.tuwien.caa.docscan.camera.GPS;
 import at.ac.tuwien.caa.docscan.camera.LocationHandler;
 import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
@@ -205,6 +203,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private DkPolyRect[] mLastDkPolyRects;
     private OrientationManager mOrientationManager;
     private int mLastTabPosition;
+    private int mTextOrientation = 0;
 
     private boolean mIsQRActive = false;
 
@@ -446,8 +445,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //            mOptionsMenu.setGroupVisible(R.id.overflow_menu_group, showControls);
 
         RelativeLayout l = findViewById(R.id.controls_layout);
-        if (l != null)
+        TabLayout t = findViewById(R.id.camera_tablayout);
+        if (l != null) {
             l.setVisibility(controlsVisibility);
+            t.setVisibility(controlsVisibility);
+        }
 
         RelativeLayout qrLayout = findViewById(R.id.qr_controls_layout);
         if (qrLayout != null)
@@ -562,7 +564,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     mLastTabPosition = 1;
                 }
                 else if (tab.getPosition() == 2) {
-                    openSettings();
+                    openSettingsMenu();
                     TabLayout.Tab restoredTab = t.getTabAt(mLastTabPosition);
                     t.setScrollPosition(mLastTabPosition, 0f, true);
                     restoredTab.select();
@@ -605,6 +607,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                             case R.id.action_document_upload_item:
                                 uploadActiveDocument();
                                 break;
+                            case R.id.action_document_qr_item:
+                                startQRMode();
+                                break;
                         }
                     }
                 };
@@ -616,7 +621,60 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    private void openSettings() {
+    private void openRotateTextDirMenu() {
+
+        ArrayList<ActionSheet.SheetAction> actions = getRotateTextDirSheetActions();
+
+        ActionSheet.SheetSelection s = new ActionSheet.SheetSelection() {
+            @Override
+            public void onSheetSelected(ActionSheet.SheetAction action) {
+
+                switch(action.getID()) {
+                    case R.id.action_rotate_text_dir_left:
+                        mTextOrientation = (mTextOrientation - 90) % 360;
+                        break;
+                    case R.id.action_rotate_text_dir_right:
+                        mTextOrientation = (mTextOrientation + 90) % 360;
+                        break;
+                }
+                if (mTextOrientation < 0)
+                    mTextOrientation += 360;
+                mPaintView.setTextOrientation(mTextOrientation);
+            }
+        };
+
+        FixedActionSheet.DialogStatus f = new FixedActionSheet.DialogStatus() {
+            @Override
+            public void onShown() {
+                mPaintView.drawTextOrientationLarge(true);
+            }
+
+            @Override
+            public void onDismiss() {
+                mPaintView.drawTextOrientationLarge(false);
+            }
+        };
+
+        getSupportFragmentManager().beginTransaction().add(new FixedActionSheet(actions, s, f),
+                "TAG").commit();
+
+    }
+
+    @NotNull
+    private ArrayList<ActionSheet.SheetAction> getRotateTextDirSheetActions() {
+        ArrayList<ActionSheet.SheetAction> actions = new ArrayList<>();
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_rotate_text_dir_left,
+                getString(R.string.action_rotate_left_title),
+                R.drawable.ic_rotate_left_gray_24dp));
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_rotate_text_dir_right,
+                getString(R.string.action_rotate_right_title),
+                R.drawable.ic_rotate_right_gray_24dp));
+        return actions;
+    }
+
+    private void openSettingsMenu() {
 
         ArrayList<ActionSheet.SheetAction> actions = getSettingsSheetActions();
 
@@ -639,12 +697,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                         break;
                     case R.id.action_unlock_wb_item:
                         unlockExposure();
-                        break;
-                    case R.id.action_document_select_item:
-                        startActivity(new Intent(getApplicationContext(), SelectDocumentActivity.class));
-                        break;
-                    case R.id.action_document_upload_item:
-                        startActivity(new Intent(getApplicationContext(), UploadActivity.class));
+                    case R.id.action_rotate_text_dir_item:
+                        openRotateTextDirMenu();
                         break;
                 }
             }
@@ -659,6 +713,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         ArrayList<ActionSheet.SheetAction> actions = new ArrayList<>();
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+//        Text orientation action:
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_rotate_text_dir_item,
+                getString(R.string.action_setting_rotate_text_dir),
+                R.drawable.ic_rotate_text_gray_24px));
 
 //        Gallery action:
         actions.add(new ActionSheet.SheetAction(
@@ -694,6 +754,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     R.id.action_lock_wb_item,
                     getString(R.string.action_setting_lock_wb),
                     R.drawable.ic_lock_outline_gray_24dp));
+
 
         return actions;
     }
@@ -829,7 +890,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         showShootModeToast();
         updateMode();
-        updateShootModeSpinner();
+//        updateShootModeSpinner();
 
     }
 
@@ -872,39 +933,39 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.camera_menu, menu);
-
-        mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
-        mDocumentMenuItem = menu.findItem(R.id.document_item);
-        mGalleryMenuItem = menu.findItem(R.id.gallery_item);
-        mUploadMenuItem = menu.findItem(R.id.upload_item);
-//        mWhiteBalanceMenuItem = menu.findItem(R.id.white_balance_item);
-        mLockExposureMenuItem = menu.findItem(R.id.lock_exposure_item);
-        mUnlockExposureMenuItem = menu.findItem(R.id.unlock_exposure_item);
-
-//        inflater.inflate(R.menu.white_balance_menu, mWhiteBalanceMenuItem.getSubMenu());
-
-        // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
-        if (mFlashModes != null && !mIsSeriesMode)
-            mFlashMenuItem.setVisible(true);
-
-        MenuItem item = menu.findItem(R.id.grid_item);
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean showGrid = sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
-
-        if (showGrid)
-            item.setTitle(getString(R.string.hide_grid_item_title));
-        else
-            item.setTitle(getString(R.string.show_grid_item_title));
-
-        return true;
-
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.camera_menu, menu);
+//
+//        mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
+//        mDocumentMenuItem = menu.findItem(R.id.document_item);
+//        mGalleryMenuItem = menu.findItem(R.id.gallery_item);
+//        mUploadMenuItem = menu.findItem(R.id.upload_item);
+////        mWhiteBalanceMenuItem = menu.findItem(R.id.white_balance_item);
+//        mLockExposureMenuItem = menu.findItem(R.id.lock_exposure_item);
+//        mUnlockExposureMenuItem = menu.findItem(R.id.unlock_exposure_item);
+//
+////        inflater.inflate(R.menu.white_balance_menu, mWhiteBalanceMenuItem.getSubMenu());
+//
+//        // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
+//        if (mFlashModes != null && !mIsSeriesMode)
+//            mFlashMenuItem.setVisible(true);
+//
+//        MenuItem item = menu.findItem(R.id.grid_item);
+//
+//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+//        boolean showGrid = sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
+//
+//        if (showGrid)
+//            item.setTitle(getString(R.string.hide_grid_item_title));
+//        else
+//            item.setTitle(getString(R.string.show_grid_item_title));
+//
+//        return true;
+//
+//    }
 
     @SuppressWarnings("deprecation")
     private void initDrawables() {
@@ -1162,7 +1223,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         initPhotoButton();
         initGalleryCallback();
-        initShootModeSpinner();
+//        initShootModeSpinner();
         updatePhotoButtonIcon();
         initCancelQRButton();
         initForceShootButton();
@@ -1228,10 +1289,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void initCancelQRButton() {
 
-        ImageButton button = findViewById(R.id.cancel_qr_button);
-        button.setOnClickListener(new View.OnClickListener() {
+//        ImageButton button = findViewById(R.id.cancel_qr_button);
+//        button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                resumeFromQRMode();
+//            }
+//        });
+
+        FloatingActionButton fab = findViewById(R.id.cancel_qr_button);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 resumeFromQRMode();
             }
         });
@@ -1246,22 +1315,21 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         showControlsLayout(!mIsQRActive);
     }
 
-    private void initShootModeSpinner() {
-
-        // TODO: define the text and the icons in an enum, to ensure that they have the same order.
-        // Spinner for shoot mode:
-        Spinner shootModeSpinner = findViewById(R.id.shoot_mode_spinner);
-        String[] shootModeText = getResources().getStringArray(R.array.shoot_mode_array);
-        Integer[] shootModeIcons = new Integer[]{R.drawable.ic_photo_vector, R.drawable.ic_burst_mode_vector};
-        shootModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, shootModeText, shootModeIcons));
-        shootModeSpinner.setOnItemSelectedListener(this);
-
-//        Used to prevent firing the onItemSelected method:
-        mItemSelectedAutomatically = true;
-        if (mIsSeriesMode)
-            shootModeSpinner.setSelection(SERIES_POS);
-
-    }
+//    private void initShootModeSpinner() {
+//
+//        // Spinner for shoot mode:
+//        Spinner shootModeSpinner = findViewById(R.id.shoot_mode_spinner);
+//        String[] shootModeText = getResources().getStringArray(R.array.shoot_mode_array);
+//        Integer[] shootModeIcons = new Integer[]{R.drawable.ic_photo_vector, R.drawable.ic_burst_mode_vector};
+//        shootModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, shootModeText, shootModeIcons));
+//        shootModeSpinner.setOnItemSelectedListener(this);
+//
+////        Used to prevent firing the onItemSelected method:
+//        mItemSelectedAutomatically = true;
+//        if (mIsSeriesMode)
+//            shootModeSpinner.setSelection(SERIES_POS);
+//
+//    }
 
     public void startAutomaticMode(boolean automatic) {
 
@@ -1326,15 +1394,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         showToastText(msg);
     }
 
-    private void updateShootModeSpinner() {
-
-        Spinner shootModeSpinner = findViewById(R.id.shoot_mode_spinner);
-        if (mIsSeriesMode)
-            shootModeSpinner.setSelection(SERIES_POS);
-        else
-            shootModeSpinner.setSelection(SINGLE_POS);
-
-    }
+//    private void updateShootModeSpinner() {
+//
+//        Spinner shootModeSpinner = findViewById(R.id.shoot_mode_spinner);
+//        if (mIsSeriesMode)
+//            shootModeSpinner.setSelection(SERIES_POS);
+//        else
+//            shootModeSpinner.setSelection(SINGLE_POS);
+//
+//    }
 
     private void updatePhotoButtonIcon() {
 
@@ -1637,8 +1705,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         appRoot.removeView(f);
 
         getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
-        View view = findViewById(R.id.camera_controls_layout);
-        view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
+//        View view = findViewById(R.id.camera_controls_layout);
+//        view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
 
         showControlsLayout(!mIsQRActive);
 
@@ -2695,6 +2763,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
     }
 
+    private void startQRMode() {
+
+        mIsQRActive = true;
+        showControlsLayout(false);
+        mCVResult.clearResults();
+        mCameraPreview.startQrMode(true);
+
+    }
+
 
     /**
      * Called after the dimension of the camera frame is set. The dimensions are necessary to convert
@@ -3052,39 +3129,39 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         private void saveExif(File outFile) throws IOException {
 
             final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
-            if (exif != null) {
-                // Save the orientation of the image:
-                int orientation = getExifOrientation();
-                String exifOrientation = Integer.toString(orientation);
-                exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+
+            // Save the orientation of the image:
+            int orientation = getExifOrientation();
+            String exifOrientation = Integer.toString(orientation);
+            exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
 
 //                Save the docscan information:
-                exif.setAttribute(ExifInterface.TAG_SOFTWARE, getString(R.string.app_name));
+            exif.setAttribute(ExifInterface.TAG_SOFTWARE, getString(R.string.app_name));
 
 //                Save the user defined exif tags:
-                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-                String artist = sharedPref.getString(getResources().getString(R.string.key_exif_artist), "");
-                if (!artist.isEmpty())
-                    exif.setAttribute(ExifInterface.TAG_ARTIST, artist);
-                String copyright = sharedPref.getString(getResources().getString(R.string.key_exif_copyright), "");
-                if (!copyright.isEmpty())
-                    exif.setAttribute(ExifInterface.TAG_COPYRIGHT, copyright);
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+            String artist = sharedPref.getString(getResources().getString(R.string.key_exif_artist), "");
+            if (!artist.isEmpty())
+                exif.setAttribute(ExifInterface.TAG_ARTIST, artist);
+            String copyright = sharedPref.getString(getResources().getString(R.string.key_exif_copyright), "");
+            if (!copyright.isEmpty())
+                exif.setAttribute(ExifInterface.TAG_COPYRIGHT, copyright);
 
-                // Save the GPS coordinates if available:
-                Location location = LocationHandler.getInstance(mContext).getLocation();
-                if (location != null) {
-                    double latitude = location.getLatitude();
-                    double longitude = location.getLongitude();
+            // Save the GPS coordinates if available:
+            Location location = LocationHandler.getInstance(mContext).getLocation();
+            if (location != null) {
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
 //                        Taken from http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android (post by fabien):
-                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
-                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
-                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
-                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
-                }
-
-                exif.saveAttributes();
-
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
             }
+
+            exif.saveAttributes();
+
+
         }
 
 

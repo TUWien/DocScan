@@ -30,6 +30,7 @@
     <color name="hud_helper_line_color">#bb636363</color>
     <color name="grid_color">#bb636363</color>
     <color name="flicker_color">#bb636363</color>
+    <color name="textdir_bg_color">#D9FFFFFF</color>
     <color name="focus_touch_circle_fill">#aa666666</color>
     <color name="focus_touch_circle_outline">#96ffffff</color>
 

@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.camera
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,10 +10,10 @@ import at.ac.tuwien.caa.docscan.R
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.sheet_dialog_camera.*
 
-class ActionSheet: BottomSheetDialogFragment {
+open class ActionSheet: BottomSheetDialogFragment {
 
     private val sheetActions: ArrayList<SheetAction>
-    private var listener: SheetSelection? = null
+    protected var listener: SheetSelection? = null
     private val CLASS_NAME = "ActionSheet"
 
     constructor(sheetActions: ArrayList<SheetAction>, listener : SheetSelection) {
@@ -39,7 +40,7 @@ class ActionSheet: BottomSheetDialogFragment {
         }
     }
 
-    private fun sheetClicked(sheetAction: SheetAction) {
+    open fun sheetClicked(sheetAction: SheetAction) {
 
 //        Close the BottomSheetDialogFragment:
         listener?.onSheetSelected(sheetAction)

@@ -28,6 +28,11 @@
         android:title="@string/action_setting_unlock_wb"
         android:icon="@drawable/ic_lock_open_gray_24dp"
         />
+    <item
+        android:id="@+id/action_rotate_text_dir_item"
+        android:title="@string/action_setting_unlock_wb"
+        android:icon="@drawable/ic_rotate_text_gray_24px"
+        />
 
     <!--<item-->
         <!--android:id="@+id/action_unlock_wb_item"-->
