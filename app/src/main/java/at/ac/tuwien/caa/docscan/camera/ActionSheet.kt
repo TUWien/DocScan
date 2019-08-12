@@ -14,12 +14,14 @@ open class ActionSheet: BottomSheetDialogFragment {
 
     private val sheetActions: ArrayList<SheetAction>
     protected var listener: SheetSelection? = null
+    protected var dialogListener: DialogStatus? = null
     private val CLASS_NAME = "ActionSheet"
 
-    constructor(sheetActions: ArrayList<SheetAction>, listener : SheetSelection) {
+    constructor(sheetActions: ArrayList<SheetAction>, listener: SheetSelection, dialogListener: DialogStatus) {
 
         this.sheetActions = sheetActions
         this.listener = listener
+        this.dialogListener = dialogListener
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -47,6 +49,20 @@ open class ActionSheet: BottomSheetDialogFragment {
         dismiss()
     }
 
+//    override fun onDismiss(dialog: DialogInterface?) {
+//        super.onDismiss(dialog)
+//    }
+
+    override fun onResume() {
+        super.onResume()
+        dialogListener?.onShown()
+    }
+
+    override fun onDismiss(dialog: DialogInterface?) {
+        super.onDismiss(dialog)
+        dialogListener?.onDismiss()
+    }
+
     class SheetAction(id: Int, text: String, icon: Int) {
 
         val mId = id
@@ -63,5 +79,12 @@ open class ActionSheet: BottomSheetDialogFragment {
     interface SheetSelection {
         fun onSheetSelected(sheetAction: SheetAction)
     }
+
+    interface DialogStatus {
+        fun onShown()
+        fun onDismiss()
+    }
+
+
 
 }

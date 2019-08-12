@@ -46,6 +46,7 @@
     <string name="camera_lock_exposure_title">Locking exposure</string>
     <string name="camera_lock_exposure_msg">This locks the current exposure and white balance. Please note that we cannot lock these values, after you leave the camera view.</string>
     <string name="do_not_show_again_text">Do not show this message again.</string>
+    <string name="camera_status_title_prefix">Status:</string>
 
     <string name="camera_tab_manual">Manual</string>
     <string name="camera_tab_auto">Automatic</string>
@@ -74,24 +75,46 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
-    <!-- PaintView -->
     <string name="instruction_empty">no page found</string>
+    <string name="instruction_empty_detail">Could not find a page.\n\nSolution: Place the document on another background with a higher contrast to the document.</string>
+
     <string name="instruction_small">move closer</string>
+    <string name="instruction_small_detail">The document is too small.\n\nSolution: Decrease the distance between camera and document.</string>
+
     <string name="instruction_perspective">change perspective</string>
+    <string name="instruction_perspective_detail">The document boundary is not rectangular.\n\nSolution:\n(1) Get the document as parallel to the phone as possible.\n(2) Check if the boundary found is correct.</string>
+
     <string name="instruction_rotation">rotate</string>
+    <string name="instruction_rotation_detail">The document is rotated.\n\nSolution:\nRotate the document.</string>
+
+    <string name="instruction_series_fix">"If you cannot fix the issue in automatic mode, switch to manual mode and take a picture manually."</string>
+
     <string name="instruction_no_focus_measured">calculating focus</string>
+    <string name="instruction_no_focus_measured_detail">Focus measure is currently calculated.</string>
     <string name="instruction_unsharp">not focused</string>
+    <string name="instruction_unsharp_detail">The document appears to be not in focus.\n\nSolution:\nChange the focus point, by tapping on a part of the document that should be focused.
+    </string>
     <string name="instruction_no_illumination_measured">calculating illumination</string>
+    <string name="instruction_no_illumination_measured_detail">calculating illumination</string>
     <string name="instruction_no_changes">page already scanned</string>
+    <string name="instruction_no_changes_detail">The page is already imaged.</string>
     <string name="instruction_bad_illumination">change illumination</string>
+    <string name="instruction_bad_illumination_detail">change illumination</string>
     <string name="instruction_ok">OK</string>
+    <string name="instruction_ok_detail">The document quality is fine for imaging.</string>
     <string name="instruction_unknown">state unknown</string>
+    <string name="instruction_unknown_detail">state unknown</string>
     <string name="instruction_movement">movement detected</string>
-    <string name="instruction_none"></string>
+    <string name="instruction_movement_detail">The image content or the phone is moving.\n\nSolution:\n(1) Hold still or (2) make sure the ScanTent or phone are not moving.</string>
+    <string name="instruction_none"> </string>
     <string name="instruction_series_started">series mode started</string>
+    <string name="instruction_series_started_detail">series mode started</string>
     <string name="instruction_series_paused">series mode paused</string>
+    <string name="instruction_series_paused_detail">series mode paused</string>
     <string name="instruction_searching_qr">searching QR code</string>
+    <string name="instruction_searching_qr_detail">searching QR code</string>
     <string name="instruction_no_auto_focus">auto-focusing</string>
+    <string name="instruction_no_auto_focus_detail">auto-focusing</string>
 
     <!-- Toasts -->
     <string name="toast_series_paused">Automated imaging paused</string>
@@ -286,8 +309,6 @@
     <string name="intro_trigger_flash_text">Trigger flash after automatic imaging to show that an image has been taken.</string>
     <string name="intro_create_document_button_text">Create a document now</string>
     <string name="intro_skip_button_text">Skip</string>
-
-
 
 
     <string name="edit_series_title">Edit document</string>

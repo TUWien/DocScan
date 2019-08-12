@@ -51,6 +51,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 /**
  * Class responsible for drawing the results of the page segmentation and focus measurement tasks.
@@ -78,7 +79,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     private CVResult mCVResult;
     private boolean mDrawGrid = false;
 //    This is basically the exif orientation, but we do not name it this way in the UI
-    private int mTextOrientation = 0;
+    private int mTextOrientation = CameraActivity.IMG_ORIENTATION_0;
     private boolean mDrawTextDirLarge = false;
 
     /**
@@ -586,6 +587,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             if (mCVResult != null) {
 
+                ArrayList<PointF> points = null;
+                if (mCVResult.getDKPolyRects() != null && mCVResult.getDKPolyRects().length > 0)
+                    points = mCVResult.getDKPolyRects()[0].getScreenPoints();
+
+                drawTextOrientation(canvas, points);
                 // Page segmentation:
                 if (mCVResult.getDKPolyRects() != null) {
                     drawPageSegmentation(canvas);
@@ -660,6 +666,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
          */
         private void drawPageSegmentation(Canvas canvas) {
 
+
             for (DkPolyRect dkPolyRect : mCVResult.getDKPolyRects()) {
 
                 mSegmentationPath.reset();
@@ -669,7 +676,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 if (screenPoints == null)
                     return;
 
-                drawTextOrientation(canvas, screenPoints);
 
 //                int idx = 0; // used for the drawing of the corner numbers
                 for (PointF point : screenPoints) {
@@ -705,47 +711,67 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         private void drawTextOrientation(Canvas canvas, ArrayList<PointF> screenPoints) {
 
-            int csIdx = getTopLeftTextIdx(screenPoints);
+            double angle;
+            PointF tl;
+            if (screenPoints == null) {
+                angle = getTextAngle(mTextOrientation);
+                if (angle == -1)
+                    return;
+                tl = new PointF(getWidth() / 2f, getHeight() / 2f);
+            }
+            else {
+                int csIdx = getTopLeftTextIdx(screenPoints);
 
-            if (csIdx == -1)
-                return;
+                if (csIdx == -1)
+                    return;
 
-            int ceIdx = (csIdx+1) % 4;
+                int ceIdx = (csIdx + 1) % 4;
 
-            PointF s = screenPoints.get(csIdx);
-            PointF e = screenPoints.get(ceIdx);
+                PointF s = screenPoints.get(csIdx);
+                PointF e = screenPoints.get(ceIdx);
 
-            Log.d(CLASS_NAME, "s: " + s + " e: " + e);
+                Log.d(CLASS_NAME, "s: " + s + " e: " + e);
 
 //            Determine the angle of the text rotation:
-            DkVector v = new DkVector(e, s);
-            DkVector y = new DkVector(1,0);
+                DkVector v = new DkVector(e, s);
+                DkVector y = new DkVector(1, 0);
+                if (v.y < 0)
+                    angle = (360 - v.angle(y)) % 360;
+                else
+                    angle = v.angle(y) % 360;
 
-            double angle;
-            if (v.y < 0)
-                angle = (360 - v.angle(y)) % 360;
-            else
-                angle = v.angle(y) % 360;
+                Log.d(CLASS_NAME, "angle: " + angle);
 
-            Log.d(CLASS_NAME, "angle: " + angle);
-
-            PointF tl = screenPoints.get(csIdx);
+                tl = screenPoints.get(csIdx);
 //            Make a deep copy, because we will modify the point:
-            tl = new PointF(tl.x, tl.y);
+                tl = new PointF(tl.x, tl.y);
 
-            if (Float.isNaN((float)angle))
-                return;
+                if (Float.isNaN((float) angle))
+                    return;
+            }
 
+            drawTextDirBitmap(canvas, (float) angle, tl, screenPoints != null);
+
+        }
+
+        /**
+         * Draws the text dir bitmap
+         * @param canvas
+         * @param angle
+         * @param tl
+         */
+        private void drawTextDirBitmap(Canvas canvas, float angle, PointF tl, boolean drawInPage) {
             Bitmap bm;
             if (mDrawTextDirLarge)
                 bm = mTextDirLargeBitmap;
             else
                 bm = mTextDirBitmap;
 
+
             if ((bm != null) && (bm.getWidth() > 0) && (bm.getHeight() > 0)) {
 
                 Matrix matrix = new Matrix();
-                matrix.setRotate((float) angle);
+                matrix.setRotate(angle);
 
                 Bitmap rotatedBitmap = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
                 if (rotatedBitmap == null)
@@ -754,22 +780,39 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 //                Determine the offset, not used currently:
 //                DkVector half = new DkVector(v.x + lv.x / 2.f, v.y + lv.y / 2.f);
 //                DkVector offset = half.norm().multiply(30);
-
-                if (mTextOrientation == 90) {
-                    tl.x -= rotatedBitmap.getWidth();
+                if (drawInPage) {
+                    if (mTextOrientation == CameraActivity.IMG_ORIENTATION_90) {
+                        tl.x -= rotatedBitmap.getWidth();
+                    } else if (mTextOrientation == CameraActivity.IMG_ORIENTATION_180) {
+                        tl.x -= rotatedBitmap.getWidth();
+                        tl.y -= rotatedBitmap.getHeight();
+                    } else if (mTextOrientation == CameraActivity.IMG_ORIENTATION_270) {
+                        tl.y -= rotatedBitmap.getHeight();
+                    }
                 }
-                else if (mTextOrientation == 180) {
-                    tl.x -= rotatedBitmap.getWidth();
-                    tl.y -= rotatedBitmap.getHeight();
+                else {
+                    tl.x -= rotatedBitmap.getWidth() / 2f;
+                    tl.y -= rotatedBitmap.getHeight() / 2f;
                 }
-                else if (mTextOrientation == 270) {
-                    tl.y -= rotatedBitmap.getHeight();
-                }
-
                 canvas.drawBitmap(rotatedBitmap, tl.x, tl.y, new Paint());
 
             }
+        }
 
+        private int getTextAngle(int textOrientation) {
+
+            switch (textOrientation) {
+                case CameraActivity.IMG_ORIENTATION_0:
+                    return 0;
+                case CameraActivity.IMG_ORIENTATION_90:
+                    return 90;
+                case CameraActivity.IMG_ORIENTATION_180:
+                    return 180;
+                case CameraActivity.IMG_ORIENTATION_270:
+                    return 270;
+                default:
+                    return -1;
+            }
         }
 
         private int getTopLeftTextIdx(ArrayList<PointF> screenPoints) {
@@ -783,23 +826,23 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             if (tlIdx == -1)
                 return -1;
 
-            int offset;
-            switch (mTextOrientation) {
-                default:
-                    offset = 0;
-                    break;
-                case 90:
-                    offset = 1;
-                    break;
-                case 180:
-                    offset = 2;
-                    break;
-                case 270:
-                    offset = 3;
-                    break;
-            }
+//            int offset;
+//            switch (mTextOrientation) {
+//                default:
+//                    offset = 0;
+//                    break;
+//                case 90:
+//                    offset = 1;
+//                    break;
+//                case 180:
+//                    offset = 2;
+//                    break;
+//                case 270:
+//                    offset = 3;
+//                    break;
+//            }
 
-            return (tlIdx + offset) % 4;
+            return (tlIdx + mTextOrientation) % 4;
         }
 
         /**

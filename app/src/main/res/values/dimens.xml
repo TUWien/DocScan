@@ -13,6 +13,7 @@
     <dimen name="focus_short_length">12dp</dimen>
     <dimen name="focus_touch_circle_radius_start">50dp</dimen>
     <dimen name="focus_touch_circle_radius_end">30dp</dimen>
+    <dimen name="camera_text_overlay_height">36dp</dimen>
 
     <dimen name="crop_circle_radius">10dp</dimen>
     <dimen name="crop_detail_width">30dp</dimen>

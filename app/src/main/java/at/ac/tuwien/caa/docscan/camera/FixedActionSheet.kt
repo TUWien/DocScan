@@ -1,11 +1,37 @@
 package at.ac.tuwien.caa.docscan.camera
 
 import android.content.DialogInterface
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.appcompat.widget.AppCompatButton
+import at.ac.tuwien.caa.docscan.R
 
 class FixedActionSheet(sheetActions: ArrayList<SheetAction>, selectionListener: SheetSelection,
-                       var dialogListener: DialogStatus?) :
-        ActionSheet(sheetActions, selectionListener) {
+                       dialogListener: DialogStatus, var confirmListener: DialogConfirm) :
+        ActionSheet(sheetActions, selectionListener, dialogListener) {
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+
+        val view = inflater.inflate(R.layout.fixed_sheet_dialog_camera, container, false)
+
+        val okButton = view.findViewById<AppCompatButton>(R.id.fixed_sheet_ok_button)
+        okButton.setOnClickListener {
+            dismiss()
+        }
+
+        val cancelButton = view.findViewById<AppCompatButton>(R.id.fixed_sheet_cancel_button)
+        cancelButton.setOnClickListener {
+            dismiss()
+            confirmListener.onCancel()
+        }
+
+        return view
+//        return inflater.inflate(R.layout.sheet_dialog_camera, container, false)
+    }
 
     override fun sheetClicked(sheetAction: SheetAction) {
 //        super.sheetClicked(sheetAction)
@@ -21,24 +47,19 @@ class FixedActionSheet(sheetActions: ArrayList<SheetAction>, selectionListener: 
         windowParams.dimAmount = 0f
         windowParams.flags = windowParams.flags or WindowManager.LayoutParams.FLAG_DIM_BEHIND
         window.attributes = windowParams
-
-//        dialogListener?.onShown()
     }
 
-    override fun onResume() {
-        super.onResume()
-        dialogListener?.onShown()
+
+    interface DialogConfirm {
+        fun onOk()
+        fun onCancel()
     }
 
-    override fun onDismiss(dialog: DialogInterface?) {
-        super.onDismiss(dialog)
-        dialogListener?.onDismiss()
-    }
 
-    interface DialogStatus {
-        fun onShown()
-        fun onDismiss()
-    }
+//    interface DialogStatus {
+//        fun onShown()
+//        fun onDismiss()
+//    }
 
 
 }

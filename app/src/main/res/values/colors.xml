@@ -7,10 +7,11 @@
 
     <color name="control_background_color">#37474f</color>
     <color name="control_background_color_transparent">#4f37474f</color>
+    <color name="test">#0000</color>
     <color name="button_bg_color">#c8455a64</color>
 
     <color name="navigation_drawer_bg_color">#11111111</color>
-    <color name="debug_view_bg_color">#aa666666</color>
+    <color name="debug_view_bg_color">#A6000000</color>
     <color name="shoot_button_color">#aaffffff</color>
     <color name="white">#ffffff</color>
     <color name="black">#000</color>
