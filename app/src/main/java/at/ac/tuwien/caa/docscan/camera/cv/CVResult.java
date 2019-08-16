@@ -47,8 +47,8 @@ public class CVResult {
     public static final int DOCUMENT_STATE_ROTATION = 4;
     public static final int DOCUMENT_STATE_NO_FOCUS_MEASURED = 5;
     public static final int DOCUMENT_STATE_UNSHARP = 6;
-    public static final int DOCUMENT_STATE_NO_ILLUMINATION_MEASURED = 7;
-    public static final int DOCUMENT_STATE_BAD_ILLUMINATION = 8;
+//    public static final int DOCUMENT_STATE_NO_ILLUMINATION_MEASURED = 7;
+//    public static final int DOCUMENT_STATE_BAD_ILLUMINATION = 8;
 
     public static final int DOCUMENT_STATE_OK = 10;
 

@@ -43,7 +43,6 @@
                 android:id="@+id/instruction_view"
                 android:layout_toRightOf="@+id/camera_info_button"
                 android:layout_marginLeft="5dp"
-                android:text="fabian hollaus"
                 android:layout_centerHorizontal="true"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/camera_text_overlay_height"
@@ -53,7 +52,6 @@
                 android:textColor="@color/white"
                 android:background="@drawable/camera_text_overlay_bg"
                 android:textSize="16sp"
-
                 />
         </RelativeLayout>
 

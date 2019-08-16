@@ -714,6 +714,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             double angle;
             PointF tl;
             if (screenPoints == null) {
+//                In case of no page segmentation result, draw the text orientation only, if the
+//                user requests to change the text orientation:
+                if (!mDrawTextDirLarge)
+                    return;
+
                 angle = getTextAngle(mTextOrientation);
                 if (angle == -1)
                     return;

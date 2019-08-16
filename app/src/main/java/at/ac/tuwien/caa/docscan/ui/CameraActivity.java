@@ -421,6 +421,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void showControlsLayout(boolean showControls) {
 
+        Log.d(CLASS_NAME, "showControlsLayout");
 
         int controlsVisibility, qrCodeVisibility;
 
@@ -459,6 +460,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             l.setVisibility(controlsVisibility);
             t.setVisibility(controlsVisibility);
         }
+
+        if (mIsSeriesMode)
+            mLastTabPosition = 1;
+        else
+            mLastTabPosition = 0;
+        if (t.getSelectedTabPosition() != mLastTabPosition)
+            restoreLastTab();
+
 
         RelativeLayout qrLayout = findViewById(R.id.qr_controls_layout);
         if (qrLayout != null)
@@ -546,6 +555,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
+        mTextView = findViewById(R.id.instruction_view);
+        if (mIsSeriesMode && mIsSeriesModePaused)
+            setInstructionText(getString(R.string.instruction_series_paused));
 
 //        initCameraControlLayout();
 
@@ -990,6 +1002,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mIsSeriesMode = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_ACTIVE_KEY);
         mIsSeriesModePaused = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_PAUSED_KEY);
 
+        if (mIsSeriesMode && mIsSeriesModePaused)
+            setInstructionText(getString(R.string.instruction_series_paused));
+
 //        UserHandler.loadSeriesName(this);
 
 //        showShootModeToast();
@@ -1301,6 +1316,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //                            if (mIsSeriesMode && mForceShootButton != null)
 //                                mForceShootButton.setVisibility(View.INVISIBLE);
 //                            showShootModeToast();
+                            if (mIsSeriesModePaused)
+                                setInstructionText(getString(R.string.instruction_series_paused));
                             updateMode();
 
 //                            // Show the SeriesGeneralActivity just if the user started the series mode and the hide
@@ -1365,7 +1382,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
                 String text = getInstructionDetail(statusText);
 
-                if (mIsSeriesMode)
+                boolean showSeriesModeHint = isHintForSeriesModeRequired(statusText);
+                if (showSeriesModeHint)
                     text += "\n\n" + getString(R.string.instruction_series_fix);
 
 
@@ -1394,6 +1412,23 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 alertDialog.show();
             }
         });
+
+    }
+
+    private boolean isHintForSeriesModeRequired(String statusText) {
+
+        if (!mIsSeriesMode)
+            return false;
+
+        if (    statusText.equalsIgnoreCase(getString(R.string.instruction_unsharp)) ||
+                statusText.equalsIgnoreCase(getString(R.string.instruction_no_changes)) ||
+                statusText.equalsIgnoreCase(getString(R.string.instruction_movement)) ||
+                statusText.equalsIgnoreCase(getString(R.string.instruction_perspective)) ||
+                statusText.equalsIgnoreCase(getString(R.string.instruction_rotation)) ||
+                statusText.equalsIgnoreCase(getString(R.string.instruction_empty)))
+            return true;
+        else
+            return false;
 
     }
 
@@ -1654,7 +1689,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         photoButton.setImageResource(drawable);
 
-        // TODO: put this into a method used for restoring generic states:
         if (mIsSeriesMode)
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -2051,7 +2085,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
         mTimerCallbacks = this;
-        mTextView = findViewById(R.id.instruction_view);
 
         mIsDebugViewEnabled = (mDebugViewFragment == null);
         if (mDebugViewFragment == null)
@@ -2216,8 +2249,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         if (moved) {
             mCVResult.clearResults();
-            setTextViewText(R.string.instruction_movement);
+            setInstructionText(getString(R.string.instruction_movement));
         }
+
 //        else {
 //            // This forces an update of the textview if it is still showing the R.string.instruction_movement text
 //            if (mTextView.getText() == getResources().getString(R.string.instruction_movement))
@@ -2377,8 +2411,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         if (!focused)
             setInstructionText(getString(R.string.instruction_no_auto_focus));
-        else
-            setInstructionText("");
+//        else
+//            setInstructionText("");
 
         if (mIsSeriesMode && focused)
             IPManager.getInstance().setProcessFrame(true);
@@ -2490,7 +2524,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //            mCameraPreview.focusOnPoint();
 
         if (waiting)
-            setTextViewText(R.string.instruction_no_changes);
+            setInstructionText(getString(R.string.instruction_no_changes));
+//            setTextViewText(R.string.instruction_no_changes);
         else if (doAutoFocus)
             mCameraPreview.focusOnPoint();
 
@@ -2550,7 +2585,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mTextView.setText(text);
+                if (mTextView == null)
+                    return;
+//                Check if the series mode is paused - in that case, do not draw other text:
+                if (mIsSeriesMode && mIsSeriesModePaused) {
+                    clearCVResult();
+                    mTextView.setText(getString(R.string.instruction_series_paused));
+                }
+                else
+                    mTextView.setText(text);
             }
         });
     }
@@ -2575,13 +2618,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //
 //    }
 
-    private void setTextViewText(int msg) {
-
-        String msgText = getResources().getString(msg);
-        if (mTextView != null)
-            mTextView.setText(msgText);
-
-    }
+//    private void setTextViewText(int msg) {
+//
+//        String msgText = getResources().getString(msg);
+//        if (mTextView != null)
+//            mTextView.setText(msgText);
+//
+//    }
 
 //    public void showSeriesPopup(MenuItem item) {
 //
@@ -3045,15 +3088,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    private void displaySeriesModePaused() {
-        if (mCVResult != null)
-            mCVResult.clearResults();
 
-        if (mPaintView != null)
-            mPaintView.clearScreen();
-
-        setTextViewText(R.string.instruction_series_paused);
-    }
+//    private void displaySeriesModePaused() {
+//
+//        if (mCVResult != null)
+//            mCVResult.clearResults();
+//
+//        if (mPaintView != null)
+//            mPaintView.clearScreen();
+//
+//        setInstructionText(R.string.instruction_series_paused);
+//    }
 
     private void showToastText(int id) {
 
@@ -3117,8 +3162,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         else if (msgText.equals(getString(R.string.instruction_searching_qr)))
             return getString(R.string.instruction_searching_qr_detail);
 
-        else if (msgText.equals(getString(R.string.instruction_series_started)))
-            return getString(R.string.instruction_series_started_detail);
+//        else if (msgText.equals(getString(R.string.instruction_series_started)))
+//            return getString(R.string.instruction_series_started_detail);
 
         else if (msgText.equals(getString(R.string.instruction_small)))
             return getString(R.string.instruction_small_detail);
@@ -3190,8 +3235,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             case CVResult.DOCUMENT_STATE_UNSHARP:
                 return getResources().getString(R.string.instruction_unsharp);
 
-            case CVResult.DOCUMENT_STATE_BAD_ILLUMINATION:
-                return getResources().getString(R.string.instruction_bad_illumination);
+//            case CVResult.DOCUMENT_STATE_BAD_ILLUMINATION:
+//                return getResources().getString(R.string.instruction_bad_illumination);
 
             case CVResult.DOCUMENT_STATE_ROTATION:
                 return getResources().getString(R.string.instruction_rotation);
@@ -3199,8 +3244,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             case CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED:
                 return getResources().getString(R.string.instruction_no_focus_measured);
 
-            case CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED:
-                return getResources().getString(R.string.instruction_no_illumination_measured);
+//            case CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED:
+//                return getResources().getString(R.string.instruction_no_illumination_measured);
 
         }
 
