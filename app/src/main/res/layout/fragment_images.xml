@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--The following attributes are required for a footer, so the FAB is not overlapping:-->
+    <!--android:paddingBottom="80dp"-->
+    <!--android:clipToPadding="false"-->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/images_list"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>

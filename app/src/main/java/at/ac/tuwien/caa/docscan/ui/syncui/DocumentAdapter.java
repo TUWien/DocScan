@@ -66,7 +66,7 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
             convertView = inflater.inflate(R.layout.layout_listview_row, null);
         }
 
-        TextView titleTextView = convertView.findViewById(R.id.layout_listview_row_title);
+        TextView titleTextView = convertView.findViewById(R.id.document_title_text);
         if (titleTextView != null && mDocuments != null) {
             String text = document.getTitle();
             titleTextView.setText(text);
@@ -82,7 +82,7 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
 
 
 //        Load the first image in the document into the thumbnail preview:
-        ImageView thumbNail = convertView.findViewById(R.id.layout_listview_row_thumbnail);
+        ImageView thumbNail = convertView.findViewById(R.id.document_thumbnail_imageview);
         if (thumbNail != null && mDocuments != null) {
 
             if (document.getPages().size() >= 1) {

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -379,6 +381,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                     //                Start the image viewer:
                     Intent intent = new Intent(mContext, PageSlideActivity.class);
                     intent.putExtra(mContext.getString(R.string.key_document_file_name), mFileName);
+                    Log.d(CLASS_NAME, "onClick: " + mFileName);
                     intent.putExtra(mContext.getString(R.string.key_page_position), position);
                     mContext.startActivity(intent);
                 }

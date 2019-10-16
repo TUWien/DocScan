@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:id="@+id/drawer_layout"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/sync_coordinatorlayout"
+            >
+
+            <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/gallery_appbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/main_toolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="?android:attr/actionBarSize"
+                    app:layout_scrollFlags="scroll|enterAlways"
+                    android:background="@color/colorPrimary"
+                    />
+            </com.google.android.material.appbar.AppBarLayout>
+
+            <!--This is where the fragments are placed:-->
+            <FrameLayout
+                android:id="@+id/viewer_fragment_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+                />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/viewer_camera_fab"
+                android:onClick="startCamera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|bottom"
+                app:srcCompat="@drawable/ic_camera_alt_black_24dp"
+                android:layout_margin="16dp" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/viewer_add_fab"
+                android:onClick="newDocument"
+                android:background="@color/light_gray"
+                android:backgroundTint="@color/light_gray"
+                app:borderWidth="0dp"
+                app:srcCompat="@drawable/ic_add_circle_black_24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_marginBottom="0dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0dp"
+                app:useCompatPadding="true"
+                app:layout_anchor="@id/viewer_camera_fab"
+                app:layout_anchorGravity="top" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/viewer_edit_fab"
+                android:visibility="invisible"
+                android:onClick="openDocumentOptions"
+                android:background="@color/light_gray"
+                android:backgroundTint="@color/light_gray"
+                app:borderWidth="0dp"
+                app:srcCompat="@drawable/ic_edit_black_24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_marginBottom="0dp"
+                android:layout_marginEnd="0dp"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0dp"
+                app:useCompatPadding="true"
+                app:layout_anchor="@id/viewer_camera_fab"
+                app:layout_anchorGravity="top" />
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/viewer_navigation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="bottom"
+                android:background="@color/colorPrimary"
+                app:itemIconTint="@color/white"
+                app:itemTextColor="@color/white"
+                app:menu="@menu/document_navigation_menu"
+                app:layout_insetEdge="bottom"/>
+
+
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
+    </RelativeLayout>
+
+    <include layout="@layout/navigation_view"/>
+
+</androidx.drawerlayout.widget.DrawerLayout>
+

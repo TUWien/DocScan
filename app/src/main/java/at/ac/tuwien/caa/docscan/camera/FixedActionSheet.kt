@@ -34,7 +34,6 @@ class FixedActionSheet(sheetActions: ArrayList<SheetAction>, selectionListener: 
     }
 
     override fun sheetClicked(sheetAction: SheetAction) {
-//        super.sheetClicked(sheetAction)
 //        Just tell the listener, but do not close the dialog. So do not call super.sheetClicked
         listener?.onSheetSelected(sheetAction)
     }

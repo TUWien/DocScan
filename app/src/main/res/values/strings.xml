@@ -278,7 +278,8 @@
     <string name="sync_menu_upload_item_title">Start upload</string>
     <string name="sync_menu_delete_item_title">Delete item</string>
     <string name="sync_menu_select_all_item_title">Select all items</string>
-    <string name="sync_pages_text">Images:</string>
+    <string name="sync_pages_text">Images: </string>
+    <string name="sync_doc_active_text"> - active document</string>
     <string name="sync_cancel_login_button_text">Cancel</string>
     <string name="sync_confirm_login_button_text">Login</string>
     <string name="sync_not_logged_in_title">Cannot start upload</string>
@@ -287,6 +288,11 @@
 
 
     <!-- UploadingActivity -->
+
+    <!-- document_navigation_menu -->
+    <string name="document_navigation_documents">Documents</string>
+    <string name="document_navigation_images">Images</string>
+    <string name="document_navigation_pdfs">PDFs</string>
 
     <!-- SeriesGeneralActivity -->
 
@@ -417,8 +423,14 @@
 
     <string name="action_document_create_title">New document</string>
     <string name="action_document_select_title">Select document</string>
+    <string name="action_document_crop_title">Crop images</string>
     <string name="action_document_qr_title">Document from QR code</string>
-    <string name="action_document_upload_document">Upload document</string>
+    <string name="action_document_upload_document">Upload</string>
+    <string name="action_document_pdf_title">Save as PDF</string>
+    <string name="action_document_delete_document">Delete</string>
+    <string name="action_document_edit_document">Edit</string>
+    <string name="action_document_continue_document">Continue imaging</string>
+
 
     <string name="action_rotate_left_title">Rotate left</string>
     <string name="action_rotate_right_title">Rotate right</string>
@@ -431,5 +443,6 @@
     <string name="action_setting_rotate_text_dir">Change text orientation</string>
     <string name="action_setting_flash_series">Flash after automated imaging</string>
     <string name="action_setting_no_flash_series">No flash after automated imaging</string>
+
 
 </resources>

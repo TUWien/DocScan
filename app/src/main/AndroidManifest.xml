@@ -95,6 +95,13 @@
             android:exported="true"
             android:configChanges="orientation|screenSize"
             />
+
+        <!--<activity-->
+            <!--android:name=".ui.docviewer.NewDocumentActivity"-->
+            <!--android:exported="true"-->
+            <!--android:configChanges="orientation|screenSize"-->
+            <!--/>-->
+
         <activity
             android:name=".ui.document.EditDocumentActivity"
             android:configChanges="orientation|screenSize"
@@ -156,6 +163,11 @@
         <activity
             android:name=".ui.license.LicenseActivity"
             android:exported="false"
+            />
+
+        <activity
+            android:name=".ui.docviewer.ViewerActivity"
+            android:exported="true"
             />
 
         <activity

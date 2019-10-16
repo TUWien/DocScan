@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.syncui;
+package at.ac.tuwien.caa.docscan.ui.docviewer;
 
 import android.Manifest;
 import android.content.ActivityNotFoundException;
@@ -11,25 +11,29 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.crashlytics.android.Crashlytics;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -47,20 +51,22 @@ import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
 import at.ac.tuwien.caa.docscan.ui.AccountActivity;
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
-import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
+import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity;
+import at.ac.tuwien.caa.docscan.ui.syncui.DocumentAdapter;
+import at.ac.tuwien.caa.docscan.ui.syncui.DocumentUploadAdapter;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_TYPE;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_FINISHED;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_FINISHED;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_TYPE;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_PDF_PROCESS_FINISHED;
+import static at.ac.tuwien.caa.docscan.sync.UploadService.INTENT_UPLOAD_ACTION;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_FILE_DELETED_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_FINISHED_ID;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_INTEND_TYPE;
-import static at.ac.tuwien.caa.docscan.sync.UploadService.INTENT_UPLOAD_ACTION;
 import static at.ac.tuwien.caa.docscan.sync.UploadService.UPLOAD_OFFLINE_ERROR_ID;
 import static at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME;
 
@@ -69,7 +75,7 @@ import static at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVI
  * Created by fabian on 4/5/2018.
  */
 
-public class UploadActivity extends BaseNavigationActivity implements DocumentAdapter.DocumentAdapterCallback {
+public class UploadFragment extends Fragment implements DocumentAdapter.DocumentAdapterCallback {
 
     private Context mContext;
     private ListView mListView;
@@ -86,39 +92,27 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private BroadcastReceiver mMessageReceiver;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
+        View view = inflater.inflate(R.layout.fragment_documents, container, false);
+        mContext = getContext();
 
-        super.onCreate(savedInstanceState);
-
-        Log.d(CLASS_NAME, "onCreate");
-
-        mContext = this;
-
-//        if (Helper.isOnline(this) && !User.getInstance().isLoggedIn()) {
-////            If the user is not online show the corresponding activity and do nothing else:
-//            showActivityNotLoggedIn();
-//            return;
-//        }
-
-
-        setContentView(R.layout.activity_upload);
-
-//        By default hiding toolbar is not working with ListView in a CoordinatorLayout.
+        //        By default hiding toolbar is not working with ListView in a CoordinatorLayout.
 //        Got this from: https://stackoverflow.com/questions/37450660/hiding-toolbar-with-listview-android
-        mListView = findViewById(R.id.upload_list_view);
+        mListView = view.findViewById(R.id.upload_list_view);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mListView.setNestedScrollingEnabled(true);
         }
 
-        initToolbar();
+//        initToolbar();
 
         // Read the upload information:
 //        SyncStorage.loadJSON(this);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{
+            ActivityCompat.requestPermissions(getActivity(), new String[]{
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
                     Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_WRITE_EXTERNAL_STORAGE);
         } else {
@@ -128,18 +122,65 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         initFAB();
 
+
+        return view;
     }
+
+//    @Override
+//    protected void onCreate(Bundle savedInstanceState) {
+//
+//
+//        super.onCreate(savedInstanceState);
+//
+//        Log.d(CLASS_NAME, "onCreate");
+//
+//        mContext = this;
+//
+////        if (Helper.isOnline(this) && !User.getInstance().isLoggedIn()) {
+//////            If the user is not online show the corresponding activity and do nothing else:
+////            showActivityNotLoggedIn();
+////            return;
+////        }
+//
+//
+//        setContentView(R.layout.activity_upload);
+//
+////        By default hiding toolbar is not working with ListView in a CoordinatorLayout.
+////        Got this from: https://stackoverflow.com/questions/37450660/hiding-toolbar-with-listview-android
+//        mListView = findViewById(R.id.upload_list_view);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            mListView.setNestedScrollingEnabled(true);
+//        }
+//
+//        initToolbar();
+//
+//        // Read the upload information:
+////        SyncStorage.loadJSON(this);
+//
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//            // ask for permission:
+//            ActivityCompat.requestPermissions(this, new String[]{
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+//                    Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_READ_WRITE_EXTERNAL_STORAGE);
+//        } else {
+//            // Sets the adapter, note: This fills the list.
+//            initAdapter();
+//        }
+//
+//        initFAB();
+//
+//    }
 
     private void checkNetworkStatus() {
 
         //        The user has not logged in yet:
         if (!User.getInstance().isLoggedIn()) {
 //            But has internet access:
-            if (Helper.isOnline(this)) {
+            if (Helper.isOnline(mContext)) {
 //                We know the user credentials so log in automatically:
-                if (UserHandler.loadCredentials(this))
+                if (UserHandler.loadCredentials(mContext))
 //                    So do the auto login:
-                    RequestHandler.createRequest(this, RequestHandler.REQUEST_LOGIN);
+                    RequestHandler.createRequest(mContext, RequestHandler.REQUEST_LOGIN);
                 else {
 //                    We show here nothing, just if the user clicks on the upload button
                     mIsUserCredentialsKnown = false;
@@ -167,7 +208,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 //                        Start the TranskribusLoginActivity
 //                        Intent intent = new Intent(getApplicationContext(), TranskribusLoginActivity.class);
 //                        intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName().toString());
-                        Intent intent = new Intent(getApplicationContext(), AccountActivity.class);
+                        Intent intent = new Intent(mContext, AccountActivity.class);
                         intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName());
                         startActivity(intent);
                     }
@@ -195,21 +236,21 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 //    }
 
     private void initFAB() {
-        FloatingActionButton fab = findViewById(R.id.viewer_camera_fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish(); // close the activity
-            }
-        });
+//        FloatingActionButton fab = findViewById(R.id.camera_fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                finish(); // close the activity
+//            }
+//        });
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
 
         super.onResume();
 
-        if (ActivityCompat.checkSelfPermission(this,
+        if (ActivityCompat.checkSelfPermission(mContext,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
             initAdapter();
 
@@ -218,7 +259,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         IntentFilter filter = new IntentFilter();
         filter.addAction(INTENT_UPLOAD_ACTION);
         filter.addAction(INTENT_IMAGE_PROCESS_ACTION);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, filter);
+        LocalBroadcastManager.getInstance(mContext).registerReceiver(mMessageReceiver, filter);
 
 //        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
 //                new IntentFilter(INTENT_UPLOAD_ACTION));
@@ -228,7 +269,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         showNoSelectionToolbar();
 
 //        update the navigation drawer, because the user might have logged in in the meantime:
-        mNavigationDrawer.setupDrawerHeader();
+//        TODO: not sure how access mNavigationDrawer at this point:
+//        mNavigationDrawer.setupDrawerHeader();
 
 //        See if the user is not logged in but is online:
         checkNetworkStatus();
@@ -240,36 +282,36 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     private void selectActiveDocument() {
 
-        if (getIntent().hasExtra("DONE")) {
-            if (getIntent().getBooleanExtra("DONE", false))
-                return;
-        }
-        String fileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
-//        We just want the selection for the first time the Activity is started, but not for
-//        multiple resumes:
-        getIntent().putExtra("DONE", true);
-
-
-
-        if (fileName != null) {
-            final Document document = DocumentStorage.getInstance(this).getDocument(fileName);
-            if (document != null && mDocuments != null && mListView != null)
-                mListView.post(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        int position = mDocuments.indexOf(document);
-                        if (position != -1) {
-                            mSelectionToolbar.fixToolbar();
-                            // Open the selection toolbar and show that one element is selected:
-                            showSelectionToolbar(1);
-                            mListView.setItemChecked(position, true);
-                            mListView.smoothScrollToPosition(position);
-
-                        }
-                    }
-                });
-        }
+//        if (getIntent().hasExtra("DONE")) {
+//            if (getIntent().getBooleanExtra("DONE", false))
+//                return;
+//        }
+//        String fileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
+////        We just want the selection for the first time the Activity is started, but not for
+////        multiple resumes:
+//        getIntent().putExtra("DONE", true);
+//
+//
+//
+//        if (fileName != null) {
+//            final Document document = DocumentStorage.getInstance(this).getDocument(fileName);
+//            if (document != null && mDocuments != null && mListView != null)
+//                mListView.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//
+//                        int position = mDocuments.indexOf(document);
+//                        if (position != -1) {
+//                            mSelectionToolbar.fixToolbar();
+//                            // Open the selection toolbar and show that one element is selected:
+//                            showSelectionToolbar(1);
+//                            mListView.setItemChecked(position, true);
+//                            mListView.smoothScrollToPosition(position);
+//
+//                        }
+//                    }
+//                });
+//        }
     }
 
     @Override
@@ -279,10 +321,10 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         Log.d(CLASS_NAME, "onPause: ");
 
-        DocumentStorage.saveJSON(this);
-        SyncStorage.saveJSON(this);
+        DocumentStorage.saveJSON(mContext);
+        SyncStorage.saveJSON(mContext);
 
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mMessageReceiver);
         Log.d(CLASS_NAME, "unregisterReceiver: ");
         mMessageReceiver = null;
 
@@ -321,10 +363,10 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                     showNoSelectionToolbar();
                 }
 
-                else {
-//                    We need to show the navigation drawer manually in this case:
-                    mNavigationDrawer.showNavigation();
-                }
+//                else {
+////                    We need to show the navigation drawer manually in this case:
+//                    mNavigationDrawer.showNavigation();
+//                }
 
 
         }
@@ -333,32 +375,32 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     }
 
-    private void showActivityNotLoggedIn() {
-        setContentView(R.layout.activity_not_logged_in);
+//    private void showActivityNotLoggedIn() {
+//        setContentView(R.layout.activity_not_logged_in);
+//
+//        Button loginButton = findViewById(R.id.sync_not_logged_in_button);
+//        loginButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Intent intent = new Intent(getApplicationContext(), TranskribusLoginActivity.class);
+//                intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName());
+//                startActivity(intent);
+//            }
+//        });
+//    }
 
-        Button loginButton = findViewById(R.id.sync_not_logged_in_button);
-        loginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), TranskribusLoginActivity.class);
-                intent.putExtra(PARENT_ACTIVITY_NAME, this.getClass().getName());
-                startActivity(intent);
-            }
-        });
-    }
-
-    private void initToolbar() {
-
-        Toolbar toolbar = findViewById(R.id.main_toolbar);
-        AppBarLayout appBarLayout = findViewById(R.id.gallery_appbar);
-
-        mSelectionToolbar = new SelectionToolbar(this, toolbar, appBarLayout);
-
-//        Enable back navigation in action bar:
-        setSupportActionBar(toolbar);
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-    }
+//    private void initToolbar() {
+//
+//        Toolbar toolbar = findViewById(R.id.main_toolbar);
+//        AppBarLayout appBarLayout = findViewById(R.id.gallery_appbar);
+//
+//        mSelectionToolbar = new SelectionToolbar(this, toolbar, appBarLayout);
+//
+////        Enable back navigation in action bar:
+//        setSupportActionBar(toolbar);
+////        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//
+//    }
 
 
     /**
@@ -368,8 +410,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
         if (mContext != null) {
 
-            DocumentStorage.getInstance(this).updateStatus(this);
-            ArrayList<Document> allDocuments = DocumentStorage.getInstance(this).getDocuments();
+            DocumentStorage.getInstance(mContext).updateStatus(mContext);
+            ArrayList<Document> allDocuments = DocumentStorage.getInstance(mContext).getDocuments();
             mDocuments = Helper.getNonEmptyDocuments(allDocuments);
 
 
@@ -389,25 +431,25 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.sync_menu, menu);
-
-        mMenu = menu;
-
-        return true;
-
-    }
-
-
-
-    @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.UPLOAD;
-    }
-
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.sync_menu, menu);
+//
+//        mMenu = menu;
+//
+//        return true;
+//
+//    }
+//
+//
+//
+//    @Override
+//    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
+//        return NavigationDrawer.NavigationItemEnum.UPLOAD;
+//    }
+//
 
     @Override
     public void onSelectionChange() {
@@ -442,19 +484,19 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     }
 
-    public void createPdfFromSelectedItem(MenuItem item) {
-
-//        Check if the play services are installed first:
-        if (!Helper.checkPlayServices(this))
-            showNoPlayServicesDialog();
-        else
-            showOCRAlertDialog();
-
-    }
+//    public void createPdfFromSelectedItem(MenuItem item) {
+//
+////        Check if the play services are installed first:
+//        if (!Helper.checkPlayServices(this))
+//            showNoPlayServicesDialog();
+//        else
+//            showOCRAlertDialog();
+//
+//    }
 
     private void showNoPlayServicesDialog() {
 
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
 
         // set dialog message
         alertDialogBuilder
@@ -489,7 +531,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     private void showOCRAlertDialog() {
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(mContext);
 
         // set dialog message
         alertDialogBuilder
@@ -560,7 +602,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         String deleteText = getResources().getString(R.string.sync_confirm_delete_prefix_text);
         final ArrayList<Document> documents = getSelectedDocuments();
         deleteText += " " + Integer.toString(documents.size());
-        deleteText += " " + Helper.getDocumentSingularPlural(this, documents.size());
+        deleteText += " " + Helper.getDocumentSingularPlural(mContext, documents.size());
         deleteText += " " + getResources().getString(R.string.sync_confirm_delete_postfix_text);
 
         // set dialog message
@@ -587,7 +629,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private void deleteSelectedDocuments(ArrayList<Document> documents) {
 
         for (Document document : documents)
-            DocumentStorage.getInstance(this).getDocuments().remove(document);
+            DocumentStorage.getInstance(mContext).getDocuments().remove(document);
 
 //        update the UI:
         showDocumentsDeletedSnackbar(documents.size());
@@ -602,19 +644,19 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     private void showDocumentsDeletedSnackbar(int numDoc) {
 
-        String snackbarText =
-                getResources().getString(R.string.sync_snackbar_files_deleted_prefix);
-        snackbarText += " " + Integer.toString(numDoc) + " ";
-        snackbarText += Helper.getDocumentSingularPlural(this, numDoc);
-//        if (numDoc > 1)
-//            snackbarText += getResources().getString(R.string.sync_selection_many_documents_text);
-//        else
-//            snackbarText += getResources().getString(R.string.sync_selection_single_document_text);
-
-        closeSnackbar();
-        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_LONG);
-        mSnackbar.show();
+//        String snackbarText =
+//                getResources().getString(R.string.sync_snackbar_files_deleted_prefix);
+//        snackbarText += " " + Integer.toString(numDoc) + " ";
+//        snackbarText += Helper.getDocumentSingularPlural(mContext, numDoc);
+////        if (numDoc > 1)
+////            snackbarText += getResources().getString(R.string.sync_selection_many_documents_text);
+////        else
+////            snackbarText += getResources().getString(R.string.sync_selection_single_document_text);
+//
+//        closeSnackbar();
+//        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+//                snackbarText, Snackbar.LENGTH_LONG);
+//        mSnackbar.show();
 
     }
 
@@ -698,7 +740,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
         }
         else {
 
-            if (Helper.isOnline(this))
+            if (Helper.isOnline(mContext))
                 showUploadingSnackbar(documents.size()); // tell the user that the uploaded started
             else
                 showOfflineSnackbar();
@@ -714,13 +756,13 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      * Adds some space to the end of the list, so that the overlapping RelativeLayout is not
      * overlapping in case the user scrolls to the end of the list.
      */
-    private void addFooter() {
-        View footer = new View(this);
-        int footerHeight = (int) getResources().getDimension(R.dimen.sync_footer_height);
-        footer.setMinimumHeight(footerHeight);
-        mListView.addFooterView(footer);
-
-    }
+//    private void addFooter() {
+//        View footer = new View(this);
+//        int footerHeight = (int) getResources().getDimension(R.dimen.sync_footer_height);
+//        footer.setMinimumHeight(footerHeight);
+//        mListView.addFooterView(footer);
+//
+//    }
 
 
     /**
@@ -731,38 +773,38 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
 //        SyncInfo.getInstance().setUploadDirs(mSelectedDirs);
 
-        SyncStorage.getInstance(this).addUploadDirs(uploadDirs);
-        SyncUtils.startSyncJob(this, false);
+        SyncStorage.getInstance(mContext).addUploadDirs(uploadDirs);
+        SyncUtils.startSyncJob(mContext, false);
 
     }
 
-    /**
-     * Shows a snackbar indicating that the device is offline.
-     */
-    private void showNotConnectedSnackbar() {
-
-        String snackbarText =
-                getResources().getString(R.string.sync_snackbar_disconnected_text);
-
-        closeSnackbar();
-        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_LONG);
-        mSnackbar.show();
-
-    }
+//    /**
+//     * Shows a snackbar indicating that the device is offline.
+//     */
+//    private void showNotConnectedSnackbar() {
+//
+//        String snackbarText =
+//                getResources().getString(R.string.sync_snackbar_disconnected_text);
+//
+//        closeSnackbar();
+//        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+//                snackbarText, Snackbar.LENGTH_LONG);
+//        mSnackbar.show();
+//
+//    }
 
     /**
      * Shows a snackbar indicating that the device is offline.
      */
     private void showOfflineSnackbar() {
 
-        String snackbarText =
-                getResources().getString(R.string.sync_snackbar_offline_text);
-
-        closeSnackbar();
-        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_LONG);
-        mSnackbar.show();
+//        String snackbarText =
+//                getResources().getString(R.string.sync_snackbar_offline_text);
+//
+//        closeSnackbar();
+//        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+//                snackbarText, Snackbar.LENGTH_LONG);
+//        mSnackbar.show();
 
     }
 
@@ -772,16 +814,16 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     private void showUploadingSnackbar(int selCnt) {
 
-        String selText = selCnt + " " + Helper.getDocumentSingularPlural(this, selCnt);
-
-        String snackbarText =
-                getResources().getString(R.string.sync_snackbar_uploading_prefix_text) + " " +
-                        selText + ".";
-
-        closeSnackbar();
-        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_INDEFINITE);
-        mSnackbar.show();
+//        String selText = selCnt + " " + Helper.getDocumentSingularPlural(mContext, selCnt);
+//
+//        String snackbarText =
+//                getResources().getString(R.string.sync_snackbar_uploading_prefix_text) + " " +
+//                        selText + ".";
+//
+//        closeSnackbar();
+//        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+//                snackbarText, Snackbar.LENGTH_INDEFINITE);
+//        mSnackbar.show();
 
     }
 
@@ -790,19 +832,19 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     private void showAlreadyUploadedSnackbar(int selCnt) {
 
-        String snackbarText = getResources().getString(R.string.sync_snackbar_already_uploaded_prefix_text);
-
-        snackbarText += " " + Helper.getDocumentSingularPlural(this, selCnt);
-        if (selCnt == 1)
-            snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_singular_text);
-        else
-            snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_plural_text);
-        snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_postfix_text);
-
-        closeSnackbar();
-        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_INDEFINITE);
-        mSnackbar.show();
+//        String snackbarText = getResources().getString(R.string.sync_snackbar_already_uploaded_prefix_text);
+//
+//        snackbarText += " " + Helper.getDocumentSingularPlural(this, selCnt);
+//        if (selCnt == 1)
+//            snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_singular_text);
+//        else
+//            snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_plural_text);
+//        snackbarText += " " + getResources().getString(R.string.sync_snackbar_already_uploaded_postfix_text);
+//
+//        closeSnackbar();
+//        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+//                snackbarText, Snackbar.LENGTH_INDEFINITE);
+//        mSnackbar.show();
 
     }
 
@@ -829,12 +871,13 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     private void showNoSelectionToolbar() {
 
-        if (mSelectionToolbar != null)
-            mSelectionToolbar.fixToolbar();
-
-        getToolbar().setTitle(R.string.sync_item_text);
-        if (mMenu != null)
-            mMenu.setGroupVisible(R.id.sync_menu_selection, false);
+//        TODO: we need this later!
+//        if (mSelectionToolbar != null)
+//            mSelectionToolbar.fixToolbar();
+//
+//        getToolbar().setTitle(R.string.sync_item_text);
+//        if (mMenu != null)
+//            mMenu.setGroupVisible(R.id.sync_menu_selection, false);
 
     }
 
@@ -895,20 +938,20 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     }
 
-    /**
-     * Shows a snackbar indicating that the we have no permission for file reading.
-     */
-    private void showNoPermissionSnackbar() {
-
-        String snackbarText =
-                getResources().getString(R.string.sync_snackbar_no_permissions);
-
-        closeSnackbar();
-        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_LONG);
-        mSnackbar.show();
-
-    }
+//    /**
+//     * Shows a snackbar indicating that the we have no permission for file reading.
+//     */
+//    private void showNoPermissionSnackbar() {
+//
+//        String snackbarText =
+//                getResources().getString(R.string.sync_snackbar_no_permissions);
+//
+//        closeSnackbar();
+//        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+//                snackbarText, Snackbar.LENGTH_LONG);
+//        mSnackbar.show();
+//
+//    }
 
     private void closeSnackbar() {
 
@@ -966,13 +1009,13 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
      */
     private void showUploadFinishedSnackbar() {
 
-        String snackbarText =
-                getResources().getString(R.string.sync_snackbar_finished_upload_text);
-
-        closeSnackbar();
-        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_LONG);
-        mSnackbar.show();
+//        String snackbarText =
+//                getResources().getString(R.string.sync_snackbar_finished_upload_text);
+//
+//        closeSnackbar();
+//        mSnackbar = Snackbar.make(findViewById(R.id.sync_coordinatorlayout),
+//                snackbarText, Snackbar.LENGTH_LONG);
+//        mSnackbar.show();
 
 
     }
@@ -1047,28 +1090,28 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
                             }
 
                         } else if (cropType == INTENT_PDF_PROCESS_FINISHED){
-                            View parentLayout = findViewById(android.R.id.content);
-                            final String documentName = intent.getStringExtra(INTENT_FILE_NAME);
-                            Snackbar.make(parentLayout, "Document created at: " + documentName, Snackbar.LENGTH_LONG    )
-                                    .setAction("OPEN", new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-
-                                            Uri path = FileProvider.getUriForFile(getApplicationContext(), "at.ac.tuwien.caa.fileprovider", new File(documentName));
-                                            Intent intent = new Intent(Intent.ACTION_VIEW);
-                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                            intent.setDataAndType(path, "application/pdf");
-                                            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                            try {
-                                                startActivity(intent);
-                                            }
-                                            catch (ActivityNotFoundException e) {
-                                                Crashlytics.logException(e);
-                                                Helper.showActivityNotFoundAlert(mContext);
-                                            }
-                                        }
-                                    })
-                                    .show();
+//                            View parentLayout = findViewById(android.R.id.content);
+//                            final String documentName = intent.getStringExtra(INTENT_FILE_NAME);
+//                            Snackbar.make(parentLayout, "Document created at: " + documentName, Snackbar.LENGTH_LONG    )
+//                                    .setAction("OPEN", new View.OnClickListener() {
+//                                        @Override
+//                                        public void onClick(View view) {
+//
+//                                            Uri path = FileProvider.getUriForFile(getApplicationContext(), "at.ac.tuwien.caa.fileprovider", new File(documentName));
+//                                            Intent intent = new Intent(Intent.ACTION_VIEW);
+//                                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                                            intent.setDataAndType(path, "application/pdf");
+//                                            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//                                            try {
+//                                                startActivity(intent);
+//                                            }
+//                                            catch (ActivityNotFoundException e) {
+//                                                Crashlytics.logException(e);
+//                                                Helper.showActivityNotFoundAlert(mContext);
+//                                            }
+//                                        }
+//                                    })
+//                                    .show();
                         }
                     }
 

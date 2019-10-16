@@ -18,7 +18,7 @@ class PdfActivity : BaseNavigationActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pdf)
 
-        val fab: FloatingActionButton? = findViewById(R.id.camera_fab)
+        val fab: FloatingActionButton? = findViewById(R.id.viewer_camera_fab)
         fab?.setOnClickListener{
             Helper.startCameraActivity(this)
         }

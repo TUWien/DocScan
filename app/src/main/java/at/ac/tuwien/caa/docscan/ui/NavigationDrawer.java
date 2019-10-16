@@ -30,6 +30,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
+import at.ac.tuwien.caa.docscan.ui.docviewer.ViewerActivity;
 import at.ac.tuwien.caa.docscan.ui.pdf.PdfActivity;
 import at.ac.tuwien.caa.docscan.ui.settings.PreferenceActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
@@ -374,10 +375,10 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_cloud_upload_black_24dp, UploadActivity.class),
         HELP(R.id.help_item, R.string.help_item_text,
                 R.drawable.ic_help_black_24dp, null),
+//        PDF(R.id.pdf_item, R.string.pdf_item_text,
+//                R.drawable.ic_baseline_picture_as_pdf_24px, PdfActivity.class),
         PDF(R.id.pdf_item, R.string.pdf_item_text,
-                R.drawable.ic_baseline_picture_as_pdf_24px, PdfActivity.class),
-//        REST_TEST(R.id.rest_item, R.string.rest_item_text,
-//                R.drawable.ic_weekend_black_24dp, RestTestActivity.class),
+            R.drawable.ic_baseline_picture_as_pdf_24px, ViewerActivity.class),
         INVALID(-1, 0, 0, null);
 
         private int id;

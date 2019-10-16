@@ -5,10 +5,38 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.logic.Document
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.sheet_dialog_camera.*
+
+open class DocumentActionSheet(private var document: Document, sheetActions: ArrayList<SheetAction>,
+                               private var docListener: DocumentSheetSelection, dialogListener: DialogStatus) :
+        ActionSheet(sheetActions, null, dialogListener) {
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+
+        return inflater.inflate(R.layout.titled_sheet_dialog_camera, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val titleField: TextView = view.findViewById(R.id.sheet_dialog_title)
+        titleField.text = document.title
+    }
+
+    override fun sheetClicked(sheetAction: SheetAction) {
+
+//        Close the BottomSheetDialogFragment:
+        docListener?.onDocumentSheetSelected(document, sheetAction)
+        dismiss()
+    }
+
+}
 
 open class ActionSheet: BottomSheetDialogFragment {
 
@@ -17,7 +45,7 @@ open class ActionSheet: BottomSheetDialogFragment {
     protected var dialogListener: DialogStatus? = null
     private val CLASS_NAME = "ActionSheet"
 
-    constructor(sheetActions: ArrayList<SheetAction>, listener: SheetSelection, dialogListener: DialogStatus) {
+    constructor(sheetActions: ArrayList<SheetAction>, listener: SheetSelection?, dialogListener: DialogStatus) {
 
         this.sheetActions = sheetActions
         this.listener = listener
@@ -75,6 +103,9 @@ open class ActionSheet: BottomSheetDialogFragment {
     }
 
 
+    interface DocumentSheetSelection {
+        fun onDocumentSheetSelected(document: Document, sheetAction: SheetAction)
+    }
 
     interface SheetSelection {
         fun onSheetSelected(sheetAction: SheetAction)
