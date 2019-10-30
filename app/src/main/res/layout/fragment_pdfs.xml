@@ -10,10 +10,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:choiceMode="singleChoice"
-        android:fadeScrollbars="false"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
         android:clipToPadding="false"
-        android:paddingBottom="140dp"
+        android:paddingBottom="300dp"
         />
     <!-- Removed this: -->
     <!--android:paddingBottom="80dp"-->

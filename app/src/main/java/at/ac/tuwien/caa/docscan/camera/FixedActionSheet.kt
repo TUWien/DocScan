@@ -41,7 +41,7 @@ class FixedActionSheet(sheetActions: ArrayList<SheetAction>, selectionListener: 
     override fun onStart() {
 //        Don't dim the background, because we need to see what is happening there:
         super.onStart()
-        val window = dialog.window
+        val window = dialog?.window
         val windowParams = window!!.attributes
         windowParams.dimAmount = 0f
         windowParams.flags = windowParams.flags or WindowManager.LayoutParams.FLAG_DIM_BEHIND

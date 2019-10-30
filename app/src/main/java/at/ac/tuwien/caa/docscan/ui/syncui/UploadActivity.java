@@ -69,7 +69,8 @@ import static at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVI
  * Created by fabian on 4/5/2018.
  */
 
-public class UploadActivity extends BaseNavigationActivity implements DocumentAdapter.DocumentAdapterCallback {
+public class UploadActivity extends BaseNavigationActivity implements DocumentAdapter.DocumentAdapterCallback,
+        SelectionToolbar.SelectionToolbarCallback {
 
     private Context mContext;
     private ListView mListView;
@@ -260,7 +261,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
                         int position = mDocuments.indexOf(document);
                         if (position != -1) {
-                            mSelectionToolbar.fixToolbar();
+                            mSelectionToolbar.resetToolbar();
                             // Open the selection toolbar and show that one element is selected:
                             showSelectionToolbar(1);
                             mListView.setItemChecked(position, true);
@@ -830,7 +831,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private void showNoSelectionToolbar() {
 
         if (mSelectionToolbar != null)
-            mSelectionToolbar.fixToolbar();
+            mSelectionToolbar.resetToolbar();
 
         getToolbar().setTitle(R.string.sync_item_text);
         if (mMenu != null)
@@ -841,7 +842,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     private void showSelectionToolbar(int selectionCount) {
 
         if (mSelectionToolbar != null)
-            mSelectionToolbar.scrollToolbar(selectionCount);
+            mSelectionToolbar.selectToolbar(selectionCount);
         if (mMenu != null)
             mMenu.setGroupVisible(R.id.sync_menu_selection, true);
 
@@ -1080,4 +1081,8 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
     }
 
 
+    @Override
+    public void onSelectionActivated(boolean activated) {
+
+    }
 }

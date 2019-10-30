@@ -10,10 +10,10 @@
         android:id="@+id/document_thumbnail_imageview"
         android:foregroundGravity="left"
         android:layout_centerVertical="true"
-        android:background="@color/second_light_gray"
         android:scaleType="center"
         android:layout_width="80dp"
-        android:layout_height="80dp" />
+        android:layout_height="80dp"
+        android:layout_marginLeft="6dp"/>
 
     <RelativeLayout
         android:layout_width="wrap_content"
@@ -35,11 +35,11 @@
 
         <TextView
             android:id="@+id/document_description_textview"
-            android:text="one two three four five six seven eight nine ten eleve asdfn"
+            android:text="one two three four\n five six seven eight nine ten eleve asdfn"
             android:layout_toRightOf="@id/layout_listview_row_icon_layout"
-            android:layout_marginLeft="6dp"
+            android:layout_alignBaseline="@id/layout_listview_row_icon_layout"
             android:textSize="14sp"
-            android:maxLines="1"
+            android:maxLines="2"
             android:ellipsize="end"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -50,10 +50,11 @@
             android:id="@+id/layout_listview_row_icon_layout"
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:layout_marginLeft="6dp"
             android:layout_below="@+id/document_title_text"
             >
             <ImageView
-                android:id="@+id/layout_listview_row_icon"
+                android:id="@+id/document_upload_state_icon"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 />

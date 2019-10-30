@@ -17,15 +17,16 @@
         <item name="textAllCaps">false</item>
     </style>
 
-    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">#263238</item>
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar" >
         <item name="colorAccent">@color/colorAccent</item>
         <item name="windowActionBar">false</item>
         <item name="windowActionBarOverlay">true</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="preferenceTheme">@style/Preference</item>
+        <item name="colorControlActivated">#00f</item>
+        <item name="colorControlHighlight">#0f0</item>
+        <item name="colorControlNormal">#f00</item>
 
     </style>
 
@@ -41,7 +42,6 @@
         <item name="android:textColorPrimary">@color/white</item>
         <item name="actionMenuTextColor">@color/white</item>
         <item name="android:textColorSecondary">@color/white</item>
-
     </style>
 
     <style name="Toolbar.TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">

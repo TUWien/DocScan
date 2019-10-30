@@ -1,10 +1,12 @@
-package at.ac.tuwien.caa.docscan.ui.widget;
+package at.ac.tuwien.caa.docscan.ui.docviewer;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import com.google.android.material.appbar.AppBarLayout;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+
+import com.google.android.material.appbar.AppBarLayout;
 
 import at.ac.tuwien.caa.docscan.R;
 
@@ -12,7 +14,7 @@ import at.ac.tuwien.caa.docscan.R;
  * Created by fabian on 3/1/2018.
  */
 
-public class SelectionToolbar {
+public class SelectableToolbar {
 
     private final Context mContext;
     private Toolbar mToolbar;
@@ -22,9 +24,9 @@ public class SelectionToolbar {
     private Drawable mNavigationDrawable;
     private CharSequence mLastTitle;
     private boolean mIsSelectMode = false;
-    private SelectionToolbarCallback mCallback;
+    private SelectableToolbarCallback mCallback;
 
-    public SelectionToolbar(Context context, Toolbar toolbar, AppBarLayout appBarLayout) {
+    public SelectableToolbar(Context context, Toolbar toolbar, AppBarLayout appBarLayout) {
 
         mContext = context;
 
@@ -34,7 +36,7 @@ public class SelectionToolbar {
         mAppBarLayout = appBarLayout;
         mAppBarLayoutParams = (AppBarLayout.LayoutParams) mToolbar.getLayoutParams();
         mCoordinatorLayoutParams = (CoordinatorLayout.LayoutParams) mAppBarLayout.getLayoutParams();
-        mCallback = (SelectionToolbarCallback) context;
+        mCallback = (SelectableToolbarCallback) context;
 
     }
 
@@ -119,9 +121,9 @@ public class SelectionToolbar {
         mAppBarLayout.setLayoutParams(mCoordinatorLayoutParams);
     }
 
-    public interface SelectionToolbarCallback {
+    public interface SelectableToolbarCallback {
 
-        public void onSelectionActivated(boolean activated);
+        void onSelectionActivated(boolean activated);
     }
 
 }

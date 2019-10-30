@@ -352,6 +352,7 @@ public class Helper {
 
     }
 
+
     public static boolean rotateExif(File outFile)  {
 
         final ExifInterface exif;
@@ -534,6 +535,21 @@ public class Helper {
 
         return seriesName;
 
+    }
+
+    public static boolean isDocumentCropped(Document document) {
+
+        if (document != null) {
+            ArrayList<File> files = document.getFiles();
+            if (files != null && !files.isEmpty()) {
+                for (File file : files) {
+                    if (!PageDetector.isCropped(file.getAbsolutePath()))
+                        return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public static boolean areFilesCropped(Document document) {

@@ -35,9 +35,9 @@ class PdfActivity : BaseNavigationActivity() {
         pdf_list_view.adapter = pdfAdapter
     }
 
-    override fun getSelfNavDrawerItem(): NavigationDrawer.NavigationItemEnum {
-        return NavigationDrawer.NavigationItemEnum.PDF
-    }
+//    override fun getSelfNavDrawerItem(): NavigationDrawer.NavigationItemEnum {
+//        return NavigationDrawer.NavigationItemEnum.PDF
+//    }
 
 
     private fun getPdfs() : MutableList<Pdf> {

@@ -16,11 +16,14 @@ import kotlinx.android.synthetic.main.document_row_layout.view.*
 import java.io.File
 import java.io.IOException
 import java.util.*
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.request.RequestOptions
 
 class DocAdapter(private val documents: ArrayList<Document>,
                  private val clickListener: (Document) -> Unit,
                  private val optionsListener: (Document) -> Unit,
-                 private val activeDocument: Document) :
+                 private val activeDocument: Document?) :
         RecyclerView.Adapter<DocAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -48,8 +51,10 @@ class DocAdapter(private val documents: ArrayList<Document>,
 
             if (document.pages != null && !document.pages.isEmpty())
                 loadThumbnail(thumbnail, document.pages[0].file, itemView.context)
-            else
+            else {
                 thumbnail.setImageResource(R.drawable.ic_do_not_disturb_black_24dp)
+                thumbnail.setBackgroundColor(itemView.resources.getColor(R.color.second_light_gray))
+            }
 
 //            Show the number of pages:
             var desc = "${itemView.context.getText(R.string.sync_pages_text)} ${document.pages.size}"
@@ -60,6 +65,31 @@ class DocAdapter(private val documents: ArrayList<Document>,
                 desc = "$desc ${itemView.context.getText(R.string.sync_doc_active_text)}"
                 description.setTextColor(itemView.resources.getColor(R.color.text_selection))
             }
+
+
+//            Show the upload state:
+            if (document.isUploaded) {
+                if (document == activeDocument)
+                    iconView.setImageResource(R.drawable.ic_cloud_done_blue_24dp)
+                else
+                    iconView.setImageResource(R.drawable.ic_cloud_done_gray_24dp)
+            }
+            else if (document.isAwaitingUpload) {
+                if (document == activeDocument)
+                    iconView.setImageResource(R.drawable.ic_cloud_upload_blue_24dp)
+                else
+                    iconView.setImageResource(R.drawable.ic_cloud_upload_gray_24dp)
+//                Write that the upload is pending:
+                desc += "\n${itemView.context.getText(R.string.sync_dir_pending_text)}"
+            }
+            else {
+                if (document == activeDocument)
+                    iconView.setImageResource(R.drawable.ic_cloud_queue_blue_24dp)
+                else
+                    iconView.setImageResource(R.drawable.ic_cloud_queue_gray_24dp)
+            }
+
+
 
             description.text = "$desc"
 
@@ -80,14 +110,19 @@ class DocAdapter(private val documents: ArrayList<Document>,
             e.printStackTrace()
         }
 
+        var requestOptions = RequestOptions()
+        val radius = context.resources.getDimensionPixelSize(R.dimen.document_preview_corner_radius)
+        requestOptions = requestOptions.transforms(CenterCrop(), RoundedCorners(radius))
         if (exifOrientation != -1) {
             GlideApp.with(context)
                     .load(file?.path)
                     .signature(MediaStoreSignature("", 0, exifOrientation))
+                    .apply(requestOptions)
                     .into(thumbnail)
         } else {
             GlideApp.with(context)
                     .load(file)
+                    .apply(requestOptions)
                     .into(thumbnail)
         }
 
@@ -98,6 +133,7 @@ class DocAdapter(private val documents: ArrayList<Document>,
         val thumbnail = view.document_thumbnail_imageview
         val title = view.document_title_text
         val description = view.document_description_textview
+        val iconView = view.document_upload_state_icon
         val moreButton = view.document_more_button
 
     }

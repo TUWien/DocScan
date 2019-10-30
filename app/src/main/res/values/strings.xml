@@ -9,6 +9,7 @@
     <string name="upload_item_text">Upload</string>
     <string name="help_item_text">Help</string>
     <string name="pdf_item_text">Saved PDFs</string>
+    <string name="documents_item_text">Documents</string>
     <string name="camera_item_text">Camera</string>
     <string name="header_text">DocScan</string>
     <string name="account_edit_text">Set up account</string>
@@ -266,12 +267,15 @@
     <string name="sync_cancel_delete_button_text">Cancel</string>
     <string name="sync_confirm_delete_title">Delete</string>
     <string name="sync_confirm_delete_prefix_text">Are you sure you want to delete</string>
+    <string name="sync_confirm_delete_doc_prefix_text">Are you sure you want to delete the document? This cannot be undone.</string>
     <string name="sync_confirm_delete_postfix_text">from your device?\n\nHint: Documents already uploaded are not deleted from the server, but you cannot add new images to uploaded documents.</string>
     <string name="sync_snackbar_finished_upload_text">Finished upload.</string>
     <string name="sync_snackbar_offline_text">Your device is currently offline. Upload postponed.</string>
     <string name="sync_snackbar_disconnected_text">Could not login on the server. Upload postponed.</string>
     <string name="sync_snackbar_no_permissions">Files cannot be uploaded without permission.</string>
     <string name="sync_snackbar_files_deleted_prefix">Deleted</string>
+    <string name="sync_snackbar_file_deleted_postfix">file</string>
+    <string name="sync_snackbar_files_deleted_postfix">files</string>
     <string name="sync_dir_pending_text">(upload pending)</string>
     <string name="sync_dir_cropping_text">(processed)</string>
     <string name="sync_not_focused_text">- partially blurred</string>
@@ -405,6 +409,8 @@
     <string name="gallery_confirm_delete_title_prefix">Delete</string>
     <string name="gallery_confirm_delete_title_single_postfix">document?</string>
     <string name="gallery_confirm_delete_title_multiple_postfix">documents?</string>
+    <string name="gallery_confirm_delete_images_title_single_postfix">image?</string>
+    <string name="gallery_confirm_delete_images_title_multiple_postfix">images?</string>
     <string name="gallery_confirm_delete_text">Are you sure? This cannot be undone.</string>
     <string name="gallery_confirm_delete_confirm_button_text">Delete</string>
     <string name="gallery_confirm_delete_cancel_button_text">Cancel</string>
@@ -428,7 +434,7 @@
     <string name="action_document_upload_document">Upload</string>
     <string name="action_document_pdf_title">Save as PDF</string>
     <string name="action_document_delete_document">Delete</string>
-    <string name="action_document_edit_document">Edit</string>
+    <string name="action_document_edit_document">Change title</string>
     <string name="action_document_continue_document">Continue imaging</string>
 
 
@@ -444,5 +450,13 @@
     <string name="action_setting_flash_series">Flash after automated imaging</string>
     <string name="action_setting_no_flash_series">No flash after automated imaging</string>
 
+    <string name="viewer_crop_confirm_title">Crop</string>
+    <string name="viewer_crop_confirm_text">Are you sure you want to crop all images in the document?
+        This cannot be undone.</string>
+    <string name="viewer_selected">selected</string>
+    <string name="viewer_not_cropped_confirm_title">Uncropped images in</string>
+    <string name="viewer_not_cropped_confirm_text">This document contains images that are not cropped.\nDo you still want to proceed with the</string>
+    <string name="viewer_not_cropped_pdf">PDF export</string>
+    <string name="viewer_not_cropped_upload">upload</string>
 
 </resources>

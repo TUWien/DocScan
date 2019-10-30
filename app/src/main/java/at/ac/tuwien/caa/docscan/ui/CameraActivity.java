@@ -763,9 +763,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     case R.id.action_hide_grid_item:
                         showGrid(false);
                         break;
-                    case R.id.action_show_gallery_item:
-                        startGalleryActivity();
-                        break;
                     case R.id.action_lock_wb_item:
                         lockExposure();
                         break;
@@ -830,12 +827,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 R.id.action_rotate_text_dir_item,
                 getString(R.string.action_setting_rotate_text_dir),
                 R.drawable.ic_rotate_text_gray_24px));
-
-//        Gallery action:
-        actions.add(new ActionSheet.SheetAction(
-                R.id.action_show_gallery_item,
-                getString(R.string.action_setting_show_gallery),
-                R.drawable.ic_photo_library_gray_24dp));
 
 //        Grid action:
         boolean showGrid = sharedPref.getBoolean(getResources().getString(

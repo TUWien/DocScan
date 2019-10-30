@@ -56,9 +56,9 @@ public class DocumentUploadAdapter extends DocumentAdapter {
             iconView.setVisibility(View.VISIBLE);
 
             if (document.isUploaded())
-                iconView.setImageResource(R.drawable.ic_cloud_done_black_24dp);
+                iconView.setImageResource(R.drawable.ic_cloud_done_gray_24dp);
             else if (document.isAwaitingUpload()) {
-                iconView.setImageResource(R.drawable.ic_cloud_upload_black_24dp);
+                iconView.setImageResource(R.drawable.ic_cloud_upload_gray_24dp);
                 TextView textView = convertView.findViewById(R.id.layout_listview_row_description);
 //                Write that the upload is pending:
                 if (textView != null)
@@ -77,7 +77,7 @@ public class DocumentUploadAdapter extends DocumentAdapter {
 
             }
             else
-                iconView.setImageResource(R.drawable.ic_cloud_queue_black_24dp);
+                iconView.setImageResource(R.drawable.ic_cloud_queue_gray_24dp);
 
 //            Check if we have some unfocused images in the document:
             if (!Helper.isDocumentFocused(document) && !document.isCropped()) {

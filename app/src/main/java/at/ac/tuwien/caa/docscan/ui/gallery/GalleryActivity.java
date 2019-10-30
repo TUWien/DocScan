@@ -199,6 +199,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+        super.onActivityResult(requestCode, resultCode, data);
         Log.d(CLASS_NAME, "onActivityResult");
 
         if (requestCode == DOCUMENT_RENAMING) {
@@ -216,8 +217,7 @@ public class GalleryActivity extends AppCompatActivity implements
                         initAdapter();
                         initToolbar();
                     }
-                }
-                else
+                } else
                     Helper.crashlyticsLog(CLASS_NAME, "onActivityResult",
                             "data.getData() == null");
 
@@ -629,11 +629,11 @@ public class GalleryActivity extends AppCompatActivity implements
     private void scrollToolbar(int selectionCount) {
 
         if (mSelectionToolbar == null || mMenu == null) {
-            Helper.crashlyticsLog(CLASS_NAME, "scrollToolbar", "null pointer");
+            Helper.crashlyticsLog(CLASS_NAME, "selectToolbar", "null pointer");
             return;
         }
 
-        mSelectionToolbar.scrollToolbar(selectionCount);
+        mSelectionToolbar.selectToolbar(selectionCount);
 
         mMenu.setGroupVisible(R.id.gallery_menu_main, false);
         mMenu.setGroupVisible(R.id.gallery_menu_selection, true);
@@ -644,16 +644,16 @@ public class GalleryActivity extends AppCompatActivity implements
 
 
         if (mSelectionToolbar != null)
-            mSelectionToolbar.fixToolbar();
+            mSelectionToolbar.resetToolbar();
         else
-            Helper.crashlyticsLog(CLASS_NAME, "fixToolbar",
+            Helper.crashlyticsLog(CLASS_NAME, "resetToolbar",
                     "mSelectionToolbar == null");
 
         //            Set the action bar title:
         if (mToolbar != null && mDocument != null)
             mToolbar.setTitle(mDocument.getTitle());
         else
-            Helper.crashlyticsLog(CLASS_NAME, "fixToolbar",
+            Helper.crashlyticsLog(CLASS_NAME, "resetToolbar",
                     "mToolbar or mDocument == null");
 
         if (mMenu != null) {
@@ -661,7 +661,7 @@ public class GalleryActivity extends AppCompatActivity implements
             mMenu.setGroupVisible(R.id.gallery_menu_main, true);
         }
         else
-            Helper.crashlyticsLog(CLASS_NAME, "fixToolbar", "mMenu == null");
+            Helper.crashlyticsLog(CLASS_NAME, "resetToolbar", "mMenu == null");
 
     }
 

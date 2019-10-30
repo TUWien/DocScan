@@ -168,6 +168,7 @@
         <activity
             android:name=".ui.docviewer.ViewerActivity"
             android:exported="true"
+            android:parentActivityName=".ui.CameraActivity"
             />
 
         <activity

@@ -11,8 +11,8 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 15
 		targetSdkVersion 28
-		versionCode 102
-		versionName "1.7.0"
+		versionCode 103
+		versionName "1.7.1"
 
 		multiDexEnabled true
 //		this is used to show the build time in the AboutActivity
@@ -141,7 +141,9 @@ dependencies {
     implementation 'androidx.exifinterface:exifinterface:1.0.0'
     implementation 'androidx.preference:preference:1.0.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.0.0'
+//	TODO: check here for a stable version. The reason we switch here to beta is badge support:
+//	https://github.com/material-components/material-components-android/releases
+    implementation 'com.google.android.material:material:1.1.0-beta01'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'com.android.volley:volley:1.1.0'
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'

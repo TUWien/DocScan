@@ -3,9 +3,10 @@
 
     <item
         android:id="@+id/viewer_documents"
-        android:icon="@drawable/ic_folder_white_24dp"
+        android:icon="@drawable/ic_library_books_black_24dp"
         android:title="@string/document_navigation_documents"
         />
+    <!--Previous: android:icon="@drawable/ic_folder_white_24dp"-->
     <item
         android:id="@+id/viewer_images"
         android:icon="@drawable/ic_photo_library_white_24dp"

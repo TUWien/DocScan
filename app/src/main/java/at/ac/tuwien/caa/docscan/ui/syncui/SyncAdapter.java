@@ -238,18 +238,18 @@ public class SyncAdapter extends BaseDocumentAdapter {
         //        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
         Drawable d;
         if (isUploaded) {
-            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_done_black_24dp);
+            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_done_gray_24dp);
 //            isCheckBoxEnabled = false;
 //            The checkbox is now (18.01.2018) checkable after upload, because it can be deleted:
             isCheckBoxEnabled = true;
         }
         else if (isDirAwaitingUpload(groupPosition)) {
-            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_upload_black_24dp);
+            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_upload_gray_24dp);
             headerText += " " + mContext.getResources().getString(R.string.sync_dir_pending_text);
             isCheckBoxEnabled = false;
         }
         else {
-            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_queue_black_24dp);
+            d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_queue_gray_24dp);
             isCheckBoxEnabled = true;
         }
 

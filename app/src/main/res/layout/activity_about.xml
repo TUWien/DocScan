@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
@@ -79,8 +77,9 @@
                     android:autoLink="web"
                     android:text="@string/about_transkribus_text"/>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/about_intro_button"
+
                     android:text="@string/about_intro_text"
                     android:layout_centerHorizontal="true"
                     android:layout_width="wrap_content"
@@ -89,7 +88,7 @@
                     android:layout_below="@id/about_transkribus_textview"
                     />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/about_licenses_button"
                     android:text="@string/about_licenses_text"
                     android:layout_centerHorizontal="true"

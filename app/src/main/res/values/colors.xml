@@ -10,6 +10,9 @@
     <color name="test">#0000</color>
     <color name="button_bg_color">#c8455a64</color>
 
+    <color name="colorControlHighlight">#1565c0</color>
+    <color name="colorSelectLight">#c5cae9</color>
+
     <color name="navigation_drawer_bg_color">#11111111</color>
     <color name="debug_view_bg_color">#A6000000</color>
     <color name="shoot_button_color">#aaffffff</color>

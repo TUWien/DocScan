@@ -16,7 +16,7 @@
     <item
         android:id="@+id/action_document_upload_item"
         android:title="@string/action_document_upload_document"
-        android:icon="@drawable/ic_cloud_upload_black_24dp"
+        android:icon="@drawable/ic_cloud_upload_gray_24dp"
         />
 
     <item
@@ -27,7 +27,7 @@
     <item
         android:id="@+id/action_document_edit_item"
         android:title="@string/action_document_edit_document"
-        android:icon="@drawable/ic_edit_black_24dp"
+        android:icon="@drawable/ic_title_black_24dp"
         />
     <item
         android:id="@+id/action_document_continue_item"

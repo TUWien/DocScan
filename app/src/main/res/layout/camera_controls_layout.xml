@@ -97,7 +97,7 @@
 
             <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/document_fab"
-                app:srcCompat="@drawable/ic_folder_white_24dp"
+                app:srcCompat="@drawable/ic_library_books_black_24dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
@@ -105,7 +105,7 @@
                 android:layout_marginLeft="4dp"
                 android:layout_marginRight="@dimen/activity_vertical_margin"
                 />
-
+            <!--Previous: app:srcCompat="@drawable/ic_folder_open_gray_24dp"-->
 
 
         </RelativeLayout>

@@ -1,38 +1,29 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer;
 
 import android.Manifest;
-import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
 
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.crashlytics.android.Crashlytics;
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
@@ -50,9 +41,6 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
 import at.ac.tuwien.caa.docscan.ui.AccountActivity;
-import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
-import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
-import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.DocumentAdapter;
 import at.ac.tuwien.caa.docscan.ui.syncui.DocumentUploadAdapter;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
@@ -302,7 +290,7 @@ public class UploadFragment extends Fragment implements DocumentAdapter.Document
 //
 //                        int position = mDocuments.indexOf(document);
 //                        if (position != -1) {
-//                            mSelectionToolbar.fixToolbar();
+//                            mSelectionToolbar.resetToolbar();
 //                            // Open the selection toolbar and show that one element is selected:
 //                            showSelectionToolbar(1);
 //                            mListView.setItemChecked(position, true);
@@ -484,7 +472,7 @@ public class UploadFragment extends Fragment implements DocumentAdapter.Document
 
     }
 
-//    public void createPdfFromSelectedItem(MenuItem item) {
+//    public void createPdf(MenuItem item) {
 //
 ////        Check if the play services are installed first:
 //        if (!Helper.checkPlayServices(this))
@@ -873,7 +861,7 @@ public class UploadFragment extends Fragment implements DocumentAdapter.Document
 
 //        TODO: we need this later!
 //        if (mSelectionToolbar != null)
-//            mSelectionToolbar.fixToolbar();
+//            mSelectionToolbar.resetToolbar();
 //
 //        getToolbar().setTitle(R.string.sync_item_text);
 //        if (mMenu != null)
@@ -884,7 +872,7 @@ public class UploadFragment extends Fragment implements DocumentAdapter.Document
     private void showSelectionToolbar(int selectionCount) {
 
         if (mSelectionToolbar != null)
-            mSelectionToolbar.scrollToolbar(selectionCount);
+            mSelectionToolbar.selectToolbar(selectionCount);
         if (mMenu != null)
             mMenu.setGroupVisible(R.id.sync_menu_selection, true);
 

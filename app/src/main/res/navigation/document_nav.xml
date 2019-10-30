@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/document_nav">
+
+
+    <fragment
+        android:id="@+id/viewer_documents"
+        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.DocumentsFragment"
+        tools:layout="@layout/fragment_documents"/>
+
+    <fragment
+        android:id="@+id/viewer_images"
+        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.ImagesFragment"
+        tools:layout="@layout/fragment_image_viewer"/>
+
+    <fragment
+        android:id="@+id/viewer_pdfs"
+        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment"
+        tools:layout="@layout/fragment_pdfs"/>
+
+
+
+</navigation>

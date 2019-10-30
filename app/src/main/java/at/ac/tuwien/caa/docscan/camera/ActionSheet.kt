@@ -86,7 +86,7 @@ open class ActionSheet: BottomSheetDialogFragment {
         dialogListener?.onShown()
     }
 
-    override fun onDismiss(dialog: DialogInterface?) {
+    override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         dialogListener?.onDismiss()
     }

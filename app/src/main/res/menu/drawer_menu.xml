@@ -16,10 +16,9 @@
             android:title=""
             />
         <item
-            android:id="@+id/pdf_item"
+            android:id="@+id/documents_item"
             android:title=""
             />
-
     </group>
 
     <group

@@ -7,8 +7,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -72,7 +70,7 @@ public class SyncArrayAdapter extends ArrayAdapter<String> {
                 imageView.setImageResource(R.drawable.ic_cloud_off_black_24dp);
                 break;
             case STATE_UPLOADED:
-                imageView.setImageResource(R.drawable.ic_cloud_done_black_24dp);
+                imageView.setImageResource(R.drawable.ic_cloud_done_gray_24dp);
                 break;
         }
 
