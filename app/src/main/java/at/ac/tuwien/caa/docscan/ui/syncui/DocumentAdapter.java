@@ -75,8 +75,14 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
         TextView descriptionTextView = convertView.findViewById(R.id.layout_listview_row_description);
         if (descriptionTextView != null && mDocuments != null) {
             int num = document.getPages().size();
-            String desc = mContext.getResources().getString(R.string.sync_pages_text);
-            desc += " " + Integer.toString(num);
+            String desc = "";
+            if (num == 1)
+                desc = mContext.getResources().getString(R.string.sync_doc_image);
+            else
+                desc = mContext.getResources().getString(R.string.sync_doc_images);
+
+            desc += num + " " + desc;
+
             descriptionTextView.setText(desc);
         }
 

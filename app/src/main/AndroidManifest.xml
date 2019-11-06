@@ -166,7 +166,7 @@
             />
 
         <activity
-            android:name=".ui.docviewer.ViewerActivity"
+            android:name=".ui.docviewer.DocumentViewerActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
@@ -183,11 +183,11 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".sync.BootReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
+        <!--<receiver android:name=".sync.BootReceiver">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.BOOT_COMPLETED" />-->
+            <!--</intent-filter>-->
+        <!--</receiver>-->
 
         <uses-library android:name="android.test.runner"
             android:required="false" />

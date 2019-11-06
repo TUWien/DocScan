@@ -80,12 +80,12 @@ class DocumentsFragment(private val listener: DocumentListener) : Fragment() {
         documents.sortBy { comparator(it) }
         adapter = DocAdapter(documents,
                 {
-    //                    Inform the ViewerActivity that a document should be opened:
+    //                    Inform the DocumentViewerActivity that a document should be opened:
                     document: Document ->
                     listener?.onDocumenOpened(document)
                 },
                 {
-    //                    Inform the ViewerActivity that document options should be shown:
+    //                    Inform the DocumentViewerActivity that document options should be shown:
                     document: Document ->
                     listener?.onDocumentOptions(document)
                 },

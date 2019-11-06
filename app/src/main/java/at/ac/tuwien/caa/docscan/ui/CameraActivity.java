@@ -38,7 +38,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.location.Location;
@@ -58,7 +57,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
@@ -72,7 +70,6 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -127,9 +124,7 @@ import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
-import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity;
-import at.ac.tuwien.caa.docscan.ui.document.SelectDocumentActivity;
-import at.ac.tuwien.caa.docscan.ui.docviewer.ViewerActivity;
+import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -618,46 +613,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(getApplicationContext(), ViewerActivity.class));
-//
-//                ArrayList<ActionSheet.SheetAction> actions = getFABSheetActions();
-//
-//                ActionSheet.SheetSelection s = new ActionSheet.SheetSelection() {
-//                    @Override
-//                    public void onSheetSelected(ActionSheet.SheetAction action) {
-//
-//                        switch(action.getID()) {
-//                            case R.id.action_document_new_item:
-//                                startActivity(new Intent(getApplicationContext(), CreateDocumentActivity.class));
-//                                break;
-//                            case R.id.action_document_select_item:
-//                                startActivity(new Intent(getApplicationContext(), SelectDocumentActivity.class));
-//                                break;
-//                            case R.id.action_document_upload_item:
-//                                uploadActiveDocument();
-//                                break;
-//                            case R.id.action_document_qr_item:
-//                                startQRMode();
-//                                break;
-//                        }
-//                    }
-//                };
-//
-//                ActionSheet.DialogStatus f = new ActionSheet.DialogStatus() {
-//                    @Override
-//                    public void onShown() {
-////                        mPaintView.drawTextOrientationLarge(true);
-//                    }
-//
-//                    @Override
-//                    public void onDismiss() {
-////                        mPaintView.drawTextOrientationLarge(false);
-//                    }
-//                };
-//
-//                getSupportFragmentManager().beginTransaction().add(new ActionSheet(actions, s, f),
-//                        "TAG").commit();
-
+                startActivity(new Intent(getApplicationContext(), DocumentViewerActivity.class));
             }
         });
 

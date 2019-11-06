@@ -60,7 +60,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
-import at.ac.tuwien.caa.docscan.ui.docviewer.ViewerActivity;
+import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
@@ -304,7 +304,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         mToolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, ViewerActivity.class);
+                Intent intent = new Intent(mContext, DocumentViewerActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 mContext.startActivity(intent);
             }

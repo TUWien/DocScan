@@ -116,12 +116,13 @@ class DocAdapter(private val documents: ArrayList<Document>,
         if (exifOrientation != -1) {
             GlideApp.with(context)
                     .load(file?.path)
-                    .signature(MediaStoreSignature("", 0, exifOrientation))
+                    .signature(MediaStoreSignature("", file.lastModified(), exifOrientation))
                     .apply(requestOptions)
                     .into(thumbnail)
         } else {
             GlideApp.with(context)
                     .load(file)
+                    .signature(MediaStoreSignature("", file.lastModified(), 0))
                     .apply(requestOptions)
                     .into(thumbnail)
         }

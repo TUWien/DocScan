@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
+import android.app.Activity
 import android.content.*
 import android.os.Bundle
 import android.util.Log
@@ -34,7 +35,7 @@ import com.google.android.material.snackbar.Snackbar
  * https://pspdfkit.com/blog/2019/using-the-bottom-navigation-view-in-android/
  */
 
-class ViewerActivity : BaseNavigationActivity(),
+class DocumentViewerActivity : BaseNavigationActivity(),
         BottomNavigationView.OnNavigationItemSelectedListener,
         DocumentAdapter.DocumentAdapterCallback,
         DocumentsFragment.DocumentListener,
@@ -44,6 +45,8 @@ class ViewerActivity : BaseNavigationActivity(),
         ActionSheet.DialogStatus,
         SelectableToolbar.SelectableToolbarCallback
 {
+
+    private val DOCUMENT_RENAMING = 0
 
     override fun onSelectionActivated(activated: Boolean) {
 
@@ -132,7 +135,7 @@ class ViewerActivity : BaseNavigationActivity(),
     }
 
     companion object {
-        val TAG = "ViewerActivity"
+        val TAG = "DocumentViewerActivity"
     }
 
     private lateinit var messageReceiver: BroadcastReceiver
@@ -154,9 +157,11 @@ class ViewerActivity : BaseNavigationActivity(),
                     showNotCropDialog(document, false)
             }
             R.id.action_document_edit_item -> {
+//                Start the rename activity and wait for the result:
                 val intent = Intent(applicationContext, EditDocumentActivity::class.java)
                 intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, document.title)
-                startActivity(intent)
+                startActivityForResult(intent, DOCUMENT_RENAMING)
+//                startActivity(intent)
             }
             R.id.action_document_delete_item -> showDeleteConfirmationDialog(document)
             R.id.action_document_crop_item -> showCropConfirmationDialog(document)
@@ -168,6 +173,30 @@ class ViewerActivity : BaseNavigationActivity(),
             }
         }
 
+    }
+
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+        super.onActivityResult(requestCode, resultCode, data)
+
+        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
+            if ((this as ImagesFragment).isVisible) {
+                selectableToolbar.resetToolbar()
+            }
+        }
+
+
+        if (requestCode == DOCUMENT_RENAMING) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (data!!.data != null) {
+                    val docName = data.data!!.toString()
+                    selectableToolbar.setTitle(docName)
+
+                } else
+                    Helper.crashlyticsLog(TAG, "onActivityResult",
+                            "data.getData() == null")
+            }
+        }
     }
 
     private fun uploadDocument(document: Document) {
@@ -341,7 +370,12 @@ class ViewerActivity : BaseNavigationActivity(),
 
     private fun deleteDocument(document: Document) {
 
+        if (document == selectedDocument)
+            selectedDocument = null
+
 //        Update the UI:
+
+//        Remove the document from the list:
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             if ((this as DocumentsFragment).isVisible) {
                 //                update the ui:
@@ -349,6 +383,13 @@ class ViewerActivity : BaseNavigationActivity(),
                 showDocumentsDeletedSnackbar(document.title)
             }
         }
+
+//        Close the ImagesFragment, if the request was called within it:
+        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
+            if ((this as ImagesFragment).isVisible)
+                bottomNavigationView.selectedItemId = R.id.viewer_documents
+        }
+
 //                update the documents:
         DocumentStorage.getInstance(this).documents.remove(document)
         DocumentStorage.saveJSON(this)
@@ -613,7 +654,10 @@ class ViewerActivity : BaseNavigationActivity(),
                         ImagesFragment.TAG).commit()
 
                 showFAB(R.id.viewer_edit_fab)
-                selectableToolbar.setTitle(selectedDocument?.title)
+                if (selectedDocument != null)
+                    selectableToolbar.setTitle(selectedDocument?.title)
+                else
+                    selectableToolbar.setTitle(getString(R.string.document_navigation_images))
 
             }
             R.id.viewer_pdfs -> {
@@ -658,7 +702,7 @@ class ViewerActivity : BaseNavigationActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_viewer)
+        setContentView(R.layout.activity_document_viewer)
 
         bottomNavigationView = findViewById(R.id.viewer_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener(this)
@@ -678,10 +722,6 @@ class ViewerActivity : BaseNavigationActivity(),
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter)
 
         initToolbar()
-
-////        use this if you start the app with ViewerActivity:
-//        initContext(this)
-////        initToolbar()
 
     }
 
