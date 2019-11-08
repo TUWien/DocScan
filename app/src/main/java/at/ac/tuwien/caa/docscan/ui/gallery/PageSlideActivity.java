@@ -110,7 +110,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
 //        Which position was selected?
         int pos = getIntent().getIntExtra(getString(R.string.key_page_position), -1);
-        if (pos != -1 && mDocument.getPages() != null && mDocument.getPages().size() > pos) {
+        if (pos != -1 && mDocument != null && mDocument.getPages() != null && mDocument.getPages().size() > pos) {
             mPager.setCurrentItem(pos);
             setToolbarTitle(pos);
             mPage = mDocument.getPages().get(pos);
@@ -276,7 +276,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
 ////                Check if the file is already cropped.
         RelativeLayout l = findViewById(R.id.page_view_buttons_layout_crop_layout);
-//        if (PageDetector.isCropped(mPage.getFile().getAbsolutePath()))
+//        if (PageDetector.isCurrentlyProcessed(mPage.getFile().getAbsolutePath()))
 //            l.setVisibility(View.GONE);
 //        else
             l.setVisibility(View.VISIBLE);

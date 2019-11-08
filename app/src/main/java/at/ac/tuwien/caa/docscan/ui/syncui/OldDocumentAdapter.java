@@ -28,13 +28,13 @@ import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
  * Created by fabian on 4/5/2018.
  */
 
-public class DocumentAdapter extends ArrayAdapter<Document> {
+public class OldDocumentAdapter extends ArrayAdapter<Document> {
 
     protected Context mContext;
     private List<Document> mDocuments;
     private DocumentAdapterCallback mCallback;
 
-    public DocumentAdapter(@NonNull Context context, int resource, @NonNull List<Document> documents) {
+    public OldDocumentAdapter(@NonNull Context context, int resource, @NonNull List<Document> documents) {
         super(context, resource, documents);
 
         mContext = context;
@@ -44,7 +44,7 @@ public class DocumentAdapter extends ArrayAdapter<Document> {
     }
 
 
-//    public DocumentAdapter(@NonNull Context context, int resource) {
+//    public OldDocumentAdapter(@NonNull Context context, int resource) {
 //        super(context, resource);
 //
 //        mContext = context;

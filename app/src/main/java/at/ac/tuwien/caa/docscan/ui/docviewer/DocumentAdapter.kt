@@ -20,11 +20,11 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.request.RequestOptions
 
-class DocAdapter(private val documents: ArrayList<Document>,
-                 private val clickListener: (Document) -> Unit,
-                 private val optionsListener: (Document) -> Unit,
-                 private val activeDocument: Document?) :
-        RecyclerView.Adapter<DocAdapter.ViewHolder>() {
+class DocumentAdapter(private val documents: ArrayList<Document>,
+                      private val clickListener: (Document) -> Unit,
+                      private val optionsListener: (Document) -> Unit,
+                      private val activeDocument: Document?) :
+        RecyclerView.Adapter<DocumentAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
@@ -56,8 +56,12 @@ class DocAdapter(private val documents: ArrayList<Document>,
                 thumbnail.setBackgroundColor(itemView.resources.getColor(R.color.second_light_gray))
             }
 
-//            Show the number of pages:
-            var desc = "${itemView.context.getText(R.string.sync_pages_text)} ${document.pages.size}"
+//            1 image or  many images?
+            val docDesc =
+                    if (document.pages.size == 1) itemView.context.getText(R.string.sync_doc_image)
+                    else itemView.context.getText(R.string.sync_doc_images)
+
+            var desc = "${document.pages.size} $docDesc"
 
 //            Display the active document in a special color - and print it on the screen:
             if (document == activeDocument) {
@@ -68,6 +72,9 @@ class DocAdapter(private val documents: ArrayList<Document>,
 
 
 //            Show the upload state:
+//            if (document.isCurrentlyProcessed)
+//                iconView.setImageResource(R.drawable.ic_do_not_disturb_black_24dp)
+//            else if (document.isUploaded) {
             if (document.isUploaded) {
                 if (document == activeDocument)
                     iconView.setImageResource(R.drawable.ic_cloud_done_blue_24dp)
@@ -79,8 +86,7 @@ class DocAdapter(private val documents: ArrayList<Document>,
                     iconView.setImageResource(R.drawable.ic_cloud_upload_blue_24dp)
                 else
                     iconView.setImageResource(R.drawable.ic_cloud_upload_gray_24dp)
-//                Write that the upload is pending:
-                desc += "\n${itemView.context.getText(R.string.sync_dir_pending_text)}"
+
             }
             else {
                 if (document == activeDocument)
@@ -89,6 +95,15 @@ class DocAdapter(private val documents: ArrayList<Document>,
                     iconView.setImageResource(R.drawable.ic_cloud_queue_gray_24dp)
             }
 
+            if (document.isCurrentlyProcessed) {
+                progressBar.visibility = View.VISIBLE
+                desc += "\n${itemView.context.getText(R.string.sync_dir_processing_text)}"
+            }
+            else {
+                progressBar.visibility = View.GONE
+                if (document.isAwaitingUpload)
+                    desc += "\n${itemView.context.getText(R.string.sync_dir_pending_text)}"
+            }
 
 
             description.text = "$desc"
@@ -136,6 +151,7 @@ class DocAdapter(private val documents: ArrayList<Document>,
         val description = view.document_description_textview
         val iconView = view.document_upload_state_icon
         val moreButton = view.document_more_button
+        val progressBar = view.document_progress_bar
 
     }
 

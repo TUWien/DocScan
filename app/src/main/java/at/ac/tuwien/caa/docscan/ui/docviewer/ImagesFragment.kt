@@ -67,6 +67,10 @@ class ImagesFragment(private val document: Document?) : Fragment() {
         galleryAdapter.notifyDataSetChanged()
     }
 
+    fun updateDocumentName(fileName: String) {
+        galleryAdapter.setFileName(fileName)
+    }
+
     fun updateGallery(fileName: String) {
         Log.d(TAG, "updateGallery")
         galleryAdapter.updateImageView(fileName)

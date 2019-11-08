@@ -10,7 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
+import at.ac.tuwien.caa.docscan.logic.Helper
 import kotlinx.android.synthetic.main.fragment_documents.*
+import java.io.File
 
 class DocumentsFragment(private val listener: DocumentListener) : Fragment() {
 
@@ -21,7 +23,7 @@ class DocumentsFragment(private val listener: DocumentListener) : Fragment() {
     private var scroll = false
 //    private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var documents: ArrayList<Document>
-    private lateinit var adapter: DocAdapter
+    private lateinit var adapter: DocumentAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -71,6 +73,59 @@ class DocumentsFragment(private val listener: DocumentListener) : Fragment() {
 
     }
 
+    fun updateDocument(title: String) {
+
+        val docIt = documents.iterator()
+        var idx = 0
+        while (docIt.hasNext()) {
+            val doc = docIt.next()
+            if (doc.title == title) {
+                documents_list.adapter!!.notifyItemChanged(idx)
+                return
+            }
+
+            idx++
+        }
+
+    }
+
+
+    /**
+     * Checks for a given file if the processing status of the parenting document has changed and
+     * changes the list adapter in case of changes.
+     */
+    fun checkDocumentProcessStatus(file: File) {
+
+//        Get the document or return if it is not found:
+        val document = Helper.getParentDocument(context, file) ?: return
+
+        var docFromAdapter: Document? = null
+
+//        Find the corresponding document in the adapter:
+        var idx = 0
+        val docIt = documents.iterator()
+        while (docIt.hasNext()) {
+            val doc = docIt.next()
+            if (doc.title.equals(document.title, true)) {
+                Log.d(TAG, "found the document")
+                docFromAdapter = doc
+                break
+            }
+            idx++
+        }
+
+//        Has the status changed?
+        if (docFromAdapter != null) {
+//            Tell the adaptor about the change at position idx:
+            val isProcessed = Helper.isCurrentlyProcessed(document)
+            if (docFromAdapter.isCurrentlyProcessed != isProcessed) {
+                docFromAdapter.setIsCurrentlyProcessed(isProcessed)
+                documents_list.adapter!!.notifyItemChanged(idx)
+            }
+        }
+
+    }
+
     fun resetAdapter() {
 
         DocumentStorage.getInstance(context).updateStatus(context)
@@ -78,7 +133,7 @@ class DocumentsFragment(private val listener: DocumentListener) : Fragment() {
         documents = DocumentStorage.getInstance(context).documents
         //        Sort the documents alphabetically:
         documents.sortBy { comparator(it) }
-        adapter = DocAdapter(documents,
+        adapter = DocumentAdapter(documents,
                 {
     //                    Inform the DocumentViewerActivity that a document should be opened:
                     document: Document ->

@@ -41,7 +41,7 @@ import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 
 public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryViewHolder> {
 
-    private static final String CLASS_NAME = "GalleryAdapter";
+    private static final String CLASS_NAME = "ImagesAdapter";
 
     private Document mDocument;
     private Context mContext;

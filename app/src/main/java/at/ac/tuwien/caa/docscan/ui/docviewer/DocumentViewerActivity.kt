@@ -14,6 +14,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.ActionSheet
 import at.ac.tuwien.caa.docscan.camera.DocumentActionSheet
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.*
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.Helper
@@ -24,11 +25,11 @@ import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
-import at.ac.tuwien.caa.docscan.ui.syncui.DocumentAdapter
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import java.io.File
 
 /**
  * Partly based on this tutorial:
@@ -37,7 +38,6 @@ import com.google.android.material.snackbar.Snackbar
 
 class DocumentViewerActivity : BaseNavigationActivity(),
         BottomNavigationView.OnNavigationItemSelectedListener,
-        DocumentAdapter.DocumentAdapterCallback,
         DocumentsFragment.DocumentListener,
         ImagesAdapter.ImagesAdapterCallback,
         ActionSheet.SheetSelection,
@@ -164,7 +164,13 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //                startActivity(intent)
             }
             R.id.action_document_delete_item -> showDeleteConfirmationDialog(document)
-            R.id.action_document_crop_item -> showCropConfirmationDialog(document)
+            R.id.action_document_crop_item -> {
+                if (Helper.isDocumentCropped(document))
+                    showNoCropDialog()
+                else
+                    showCropConfirmationDialog(document)
+            }
+
             R.id.action_document_upload_item -> {
                 if (Helper.isDocumentCropped(document))
                     uploadDocument(document)
@@ -182,22 +188,44 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
             if ((this as ImagesFragment).isVisible) {
                 selectableToolbar.resetToolbar()
-            }
-        }
 
+                if (requestCode == DOCUMENT_RENAMING && resultCode == Activity.RESULT_OK) {
+                    if (data!!.data != null) {
+                        val docName = data.data!!.toString()
+                        selectableToolbar.setTitle(docName)
+                        this.updateDocumentName(docName)
 
-        if (requestCode == DOCUMENT_RENAMING) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (data!!.data != null) {
-                    val docName = data.data!!.toString()
-                    selectableToolbar.setTitle(docName)
-
-                } else
-                    Helper.crashlyticsLog(TAG, "onActivityResult",
-                            "data.getData() == null")
+                    } else
+                        Helper.crashlyticsLog(TAG, "onActivityResult",
+                                "data.getData() == null")
+                }
             }
         }
     }
+
+//    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//
+//        super.onActivityResult(requestCode, resultCode, data)
+//
+//        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
+//            if ((this as ImagesFragment).isVisible) {
+//                selectableToolbar.resetToolbar()
+//            }
+//        }
+//
+//
+//        if (requestCode == DOCUMENT_RENAMING) {
+//            if (resultCode == Activity.RESULT_OK) {
+//                if (data!!.data != null) {
+//                    val docName = data.data!!.toString()
+//                    selectableToolbar.setTitle(docName)
+//
+//                } else
+//                    Helper.crashlyticsLog(TAG, "onActivityResult",
+//                            "data.getData() == null")
+//            }
+//        }
+//    }
 
     private fun uploadDocument(document: Document) {
 
@@ -312,6 +340,35 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
+//    /**
+//     * Checks if the document contains images that have not been cropped.
+//     */
+//    private fun containsUncroppedImages(document: Document): Boolean {
+//
+//        val pageIt = document.pages.iterator()
+//        while (pageIt.hasNext()) {
+//            val file = pageIt.next().file
+//            if (!PageDetector.isCurrentlyProcessed(file.absolutePath))
+//                return true
+//        }
+//        return false
+//
+//    }
+
+    private fun showNoCropDialog() {
+
+        val cropText = getString(R.string.viewer_all_cropped_text)
+        val cropTitle = "${getString(R.string.viewer_all_cropped_title)}"
+
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder
+                .setTitle(cropTitle)
+                .setMessage(cropText)
+                .setPositiveButton(R.string.dialog_ok_text, null)
+                .setCancelable(true)
+        alertDialogBuilder.create().show()
+
+    }
 
     private fun showCropConfirmationDialog(document: Document) {
 
@@ -322,7 +379,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         alertDialogBuilder
                 .setTitle(cropTitle)
                 .setMessage(cropText)
-                .setPositiveButton(R.string.dialog_yes_text) { dialogInterface, i -> cropDocument(document) }
+                .setPositiveButton(R.string.dialog_yes_text) { dialogInterface, i ->
+                    cropDocument(document)
+                }
                 .setNegativeButton(R.string.dialog_cancel_text, null)
                 .setCancelable(true)
         alertDialogBuilder.create().show()
@@ -337,8 +396,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         }
 
         val pageIt = document.pages.iterator()
-        while (pageIt.hasNext())
-            mapFile(pageIt.next().file)
+        while (pageIt.hasNext()) {
+            val file = pageIt.next().file
+//            Just crop it if it is not already cropped:
+            if (!PageDetector.isCropped(file.absolutePath))
+                mapFile(file)
+        }
 
     }
 
@@ -425,10 +488,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
 //    OCR functionality
     fun showPdfOcrDialog(document: Document) {
-
-        if (!document.isCropped) {
-
-        }
 
         //        Check if the play services are installed first:
         if (!Helper.checkPlayServices(this))
@@ -580,10 +639,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         bottomNavigationView.selectedItemId = R.id.viewer_images
     }
 
-    override fun onSelectionChange() {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
     private lateinit var bottomNavigationView: BottomNavigationView
 
     /**
@@ -623,15 +678,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 ft.setCustomAnimations(R.anim.translate_right_to_left_in,
                         R.anim.translate_right_to_left_out)
 
-//                ft.setCustomAnimations(R.anim.translate_left_to_right, R.anim.translate_right_to_left)
                 ft.replace(R.id.viewer_fragment_layout, DocumentsFragment(this),
                         DocumentsFragment.TAG).commit()
 
                 showFAB(R.id.viewer_add_fab)
 
                 selectableToolbar.setTitle(getText(R.string.document_navigation_documents))
-//                supportActionBar?.setTitle(R.string.document_navigation_documents)
-
 
             }
             R.id.viewer_images -> {
@@ -736,22 +788,22 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         return object : BroadcastReceiver() {
             override fun onReceive(contxt: Context?, intent: Intent?) {
 
-                Log.d(TAG, "onReceive: " + intent)
-
                 when (intent?.action) {
+
                     INTENT_IMAGE_PROCESS_ACTION -> {
                         val defValue = -1
                         when (intent.getIntExtra(INTENT_IMAGE_PROCESS_TYPE, defValue)) {
-//                            TODO: this works only in material theme!
+//                            TODO: badges work only in material theme!
                             INTENT_PDF_PROCESS_FINISHED -> bottomNavigationView.getOrCreateBadge(R.id.viewer_pdfs)
-                            INTENT_IMAGE_PROCESS_FINISHED -> {
+                            INTENT_IMAGE_PROCESS_STARTED, INTENT_IMAGE_PROCESS_FINISHED -> {
                                 val fileName = intent.getStringExtra(INTENT_FILE_NAME)
                                 updateGallery(fileName)
+                                updateDocumentList(fileName)
                             }
                         }
                     }
-                    INTENT_UPLOAD_ACTION -> {
 
+                    INTENT_UPLOAD_ACTION -> {
                         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
                             (this as DocumentsFragment).resetAdapter()
                         }
@@ -762,7 +814,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                             UPLOAD_FINISHED_ID -> showUploadFinishedSnackbar()
                             UPLOAD_FILE_DELETED_ERROR_ID -> showFileDeletedErrorDialog()
                         }
-
                     }
                 }
             }
@@ -834,14 +885,20 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
+    private fun updateDocumentList(fileName: String) {
+
+        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
+            if ((this as DocumentsFragment).isVisible) {
+                this.checkDocumentProcessStatus(File(fileName))
+            }
+        }
+
+    }
+
     private fun updateGallery(fileName: String) {
 
-        Log.d(TAG, "updateGallery: " + fileName)
-
-        //        Update the UI:
         supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
             if ((this as ImagesFragment).isVisible) {
-//                update the ui:
                 this.updateGallery(fileName)
             }
         }

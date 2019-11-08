@@ -60,22 +60,23 @@ public class ImageProcessLogger implements Serializable {
 
     }
 
-    public void saveToDisk(Context context) {
-
-        File cropLoggerPath = context.getFilesDir();
-        File syncFile = new File(cropLoggerPath, CROP_FILE_NAME);
-
-        try {
-            FileOutputStream fos = new FileOutputStream(syncFile);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(sInstance);
-            oos.close();
-        }
-        catch(Exception e) {
-            Log.d(CLASS_NAME, "saveToDisk: " + e.toString());
-        }
-
-    }
+//    public void saveToDisk(Context context) {
+//
+//        File cropLoggerPath = context.getFilesDir();
+//        File syncFile = new File(cropLoggerPath, CROP_FILE_NAME);
+//
+//        try {
+//            FileOutputStream fos = new FileOutputStream(syncFile);
+//            ObjectOutputStream oos = new ObjectOutputStream(fos);
+//            oos.writeObject(sInstance);
+//
+//            oos.close();
+//        }
+//        catch(Exception e) {
+//            Log.d(CLASS_NAME, "saveToDisk: " + e.toString());
+//        }
+//
+//    }
 
 
     public static ImageProcessLogger getInstance() {
@@ -149,7 +150,7 @@ public class ImageProcessLogger implements Serializable {
 
     }
 
-    public static boolean isAwaitingCropping(File file) {
+    public static boolean isWaitingForProcess(File file) {
 
         for (TaskLog task : sInstance.mTasks) {
             if (task == null || task.getFile() == null)

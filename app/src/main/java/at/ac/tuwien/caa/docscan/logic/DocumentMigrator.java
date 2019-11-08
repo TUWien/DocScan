@@ -184,7 +184,7 @@ public class DocumentMigrator {
         document.setIsUploaded(isDocumentUploaded);
 
         boolean isDocumentCropped = areFilesCropped(fileList);
-        document.setIsCropped(isDocumentCropped);
+        document.setIsCurrentlyProcessed(isDocumentCropped);
 
         if (!isDocumentUploaded) {
             boolean isAwaitingUpload = isDirAwaitingUpload(new File(dirName), fileList);
@@ -278,7 +278,7 @@ public class DocumentMigrator {
 
 
         for (File file : fileList) {
-            if (ImageProcessLogger.isAwaitingCropping(file))
+            if (ImageProcessLogger.isWaitingForProcess(file))
                 return true;
         }
 

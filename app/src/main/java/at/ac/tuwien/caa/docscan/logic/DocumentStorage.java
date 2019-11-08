@@ -246,8 +246,8 @@ public class DocumentStorage {
                 document.setIsAwaitingUpload(isAwaitingUpload);
             }
 
-            boolean isDocumentCropped = Helper.areFilesCropped(document);
-            document.setIsCropped(isDocumentCropped);
+            boolean currentlyProcessed = Helper.isCurrentlyProcessed(document);
+            document.setIsCurrentlyProcessed(currentlyProcessed);
 
         }
 

@@ -514,8 +514,8 @@ public class Helper {
 //        boolean isDocumentUploaded = areFilesUploaded(fileList);
 //        document.setIsUploaded(isDocumentUploaded);
 //
-//        boolean isDocumentCropped = areFilesCropped(fileList);
-//        document.setIsCropped(isDocumentCropped);
+//        boolean isDocumentCropped = isCurrentlyProcessed(fileList);
+//        document.setIsCurrentlyProcessed(isDocumentCropped);
 //
 //        if (!isDocumentUploaded) {
 //            boolean isAwaitingUpload = isDirAwaitingUpload(new File(dirName), fileList);
@@ -552,13 +552,37 @@ public class Helper {
         return true;
     }
 
-    public static boolean areFilesCropped(Document document) {
+    /**
+     * Returns the document that contains the file.
+     * @param context
+     * @param file
+     * @return
+     */
+    public static Document getParentDocument(Context context, File file) {
+
+        ArrayList<Document> documents = DocumentStorage.getInstance(context).getDocuments();
+        for (Document document : documents) {
+            Iterator<Page> iter = document.getPages().iterator();
+
+            while (iter.hasNext()) {
+                Page page = iter.next();
+                if (page.getFile().getAbsolutePath().equalsIgnoreCase(file.getAbsolutePath()))
+                    return document;
+            }
+        }
+
+        return null;
+
+    }
+
+
+    public static boolean isCurrentlyProcessed(Document document) {
 
         if (document != null) {
             ArrayList<File> files = document.getFiles();
             if (files != null && !files.isEmpty()) {
                 for (File file : files) {
-                    if (ImageProcessLogger.isAwaitingCropping(file))
+                    if (ImageProcessLogger.isWaitingForProcess(file))
                         return true;
                 }
             }
@@ -594,7 +618,7 @@ public class Helper {
 
     }
 
-    public static boolean areFilesCropped(ArrayList<File> fileList) {
+    public static boolean isCurrentlyProcessed(ArrayList<File> fileList) {
 
         if (fileList == null)
             return false;
@@ -604,7 +628,7 @@ public class Helper {
 
 
         for (File file : fileList) {
-            if (ImageProcessLogger.isAwaitingCropping(file))
+            if (ImageProcessLogger.isWaitingForProcess(file))
                 return true;
         }
 

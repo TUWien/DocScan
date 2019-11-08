@@ -45,8 +45,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/document_title_text"
-
             />
+        <ProgressBar
+            android:id="@+id/document_progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_toRightOf="@id/layout_listview_row_icon_layout"
+            android:layout_below="@id/document_description_textview"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:indeterminate="true"/>
         <RelativeLayout
             android:id="@+id/layout_listview_row_icon_layout"
             android:layout_width="30dp"
@@ -59,13 +67,15 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 />
-            <ProgressBar
-                android:id="@+id/layout_listview_progress_bar"
-                android:visibility="invisible"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                />
+            <!--<ProgressBar-->
+                <!--android:id="@+id/layout_listview_progress_bar"-->
+                <!--android:visibility="invisible"-->
+                <!--android:layout_width="20dp"-->
+                <!--android:layout_height="20dp"-->
+                <!--/>-->
         </RelativeLayout>
+
+
     </RelativeLayout>
 
     <androidx.appcompat.widget.AppCompatImageButton

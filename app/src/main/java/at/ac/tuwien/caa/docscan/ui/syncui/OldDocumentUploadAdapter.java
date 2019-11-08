@@ -20,13 +20,13 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
  * Created by fabian on 4/5/2018.
  */
 
-public class DocumentUploadAdapter extends DocumentAdapter {
+public class OldDocumentUploadAdapter extends OldDocumentAdapter {
 
     protected Context mContext;
     private List<Document> mDocuments;
     private DocumentAdapterCallback mCallback;
 
-    public DocumentUploadAdapter(@NonNull Context context, int resource, @NonNull List<Document> documents) {
+    public OldDocumentUploadAdapter(@NonNull Context context, int resource, @NonNull List<Document> documents) {
         super(context, resource, documents);
 
         mContext = context;
@@ -64,7 +64,7 @@ public class DocumentUploadAdapter extends DocumentAdapter {
                 if (textView != null)
                     textView.append(" " + mContext.getResources().getString(R.string.sync_dir_pending_text));
             }
-            else if (document.isCropped()) {
+            else if (document.isCurrentlyProcessed()) {
 
                 iconView.setVisibility(View.INVISIBLE);
                 if (p != null)
@@ -73,14 +73,14 @@ public class DocumentUploadAdapter extends DocumentAdapter {
                 TextView textView = convertView.findViewById(R.id.layout_listview_row_description);
 //                Write that the upload is pending:
                 if (textView != null)
-                    textView.append(" " + mContext.getResources().getString(R.string.sync_dir_cropping_text));
+                    textView.append(" " + mContext.getResources().getString(R.string.sync_dir_processing_text));
 
             }
             else
                 iconView.setImageResource(R.drawable.ic_cloud_queue_gray_24dp);
 
 //            Check if we have some unfocused images in the document:
-            if (!Helper.isDocumentFocused(document) && !document.isCropped()) {
+            if (!Helper.isDocumentFocused(document) && !document.isCurrentlyProcessed()) {
                 TextView textView = convertView.findViewById(R.id.layout_listview_row_description);
 //                Write that the upload is pending:
                 if (textView != null) {

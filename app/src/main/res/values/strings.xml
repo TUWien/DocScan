@@ -277,7 +277,7 @@
     <string name="sync_snackbar_file_deleted_postfix">file</string>
     <string name="sync_snackbar_files_deleted_postfix">files</string>
     <string name="sync_dir_pending_text">upload pending</string>
-    <string name="sync_dir_cropping_text">processed</string>
+    <string name="sync_dir_processing_text">processing, please wait</string>
     <string name="sync_not_focused_text">- partially blurred</string>
     <string name="sync_menu_upload_item_title">Start upload</string>
     <string name="sync_menu_delete_item_title">Delete item</string>
@@ -456,6 +456,8 @@
     <string name="viewer_crop_confirm_text">Are you sure you want to crop all images in the document?
         This cannot be undone.</string>
     <string name="viewer_selected">selected</string>
+    <string name="viewer_all_cropped_title">Nothing to do</string>
+    <string name="viewer_all_cropped_text">The document contains only images that are already cropped.</string>
     <string name="viewer_not_cropped_confirm_title">Uncropped images in</string>
     <string name="viewer_not_cropped_confirm_text">This document contains images that are not cropped.\nDo you still want to proceed with the</string>
     <string name="viewer_not_cropped_pdf">PDF export</string>

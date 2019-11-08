@@ -40,7 +40,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import at.ac.tuwien.caa.docscan.logic.Document;
-import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_FOCUS_MEASURE;
@@ -56,11 +55,12 @@ public class ImageProcessor {
     public static final int MESSAGE_CREATED_DOCUMENT = 1;
 
     public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
-//    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
     public static final String INTENT_IMAGE_PROCESS_ACTION = "INTENT_IMAGE_PROCESS_ACTION";
     public static final String INTENT_IMAGE_PROCESS_TYPE = "INTENT_IMAGE_PROCESS_TYPE";
     public static final int INTENT_IMAGE_PROCESS_FINISHED = 0;
+    public static final int INTENT_IMAGE_PROCESS_STARTED = 2;
     public static final int INTENT_PDF_PROCESS_FINISHED = 1;
+
 
     // Sets the amount of time an idle thread will wait for a task before terminating
     private static final int KEEP_ALIVE_TIME = 1;
@@ -172,21 +172,6 @@ public class ImageProcessor {
                     ImageProcessLogger.removeTask(task.getFile(),
                             ImageProcessLogger.TASK_TYPE_PAGE_DETECTION);
 
-//                    Check if the page is unfocused:
-//                    if (mContext != null && mContext.get() != null) {
-//                        boolean isFocused = PageDetector.getNormedCropPoints(task.getFile().
-//                                getAbsolutePath()).isFocused();
-////                        This caused me sometimes ConcurrentModificationException:
-////                        DocumentStorage.getInstance(mContext.get()).setPageFocused(
-////                                task.getFile().getName(), isFocused);
-//                    }
-
-////                    Check if the page is unfocused:
-//                    if (mContext != null && mContext.get() != null &&
-//                            !PageDetector.getNormedCropPoints(task.getFile().getAbsolutePath()).isFocused())
-//                        DocumentStorage.getInstance(mContext.get()).setPageAsUnsharp(
-//                                task.getFile().getName());
-
                 }
                 else if (task instanceof MapTask) {
                     ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_MAP);
@@ -204,9 +189,8 @@ public class ImageProcessor {
                 else
                     return false;
 
-                if (task.getFile() != null) {
+                if (task.getFile() != null)
                     sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
-                }
 
                 return true;
 
@@ -306,6 +290,10 @@ public class ImageProcessor {
     private static void executeTask(File file, int taskType) {
 
         ImageProcessTask imageProcessTask = null;
+
+//        Tell any listener that the image is going to be processed:
+        if (file != null)
+            sInstance.sendIntent(file.getAbsolutePath(), INTENT_IMAGE_PROCESS_STARTED);
 
         //        Inform the logger that we got a new file here:
         switch (taskType) {

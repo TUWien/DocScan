@@ -69,12 +69,12 @@ import static at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVI
  * Created by fabian on 4/5/2018.
  */
 
-public class UploadActivity extends BaseNavigationActivity implements DocumentAdapter.DocumentAdapterCallback,
+public class UploadActivity extends BaseNavigationActivity implements OldDocumentAdapter.DocumentAdapterCallback,
         SelectionToolbar.SelectionToolbarCallback {
 
     private Context mContext;
     private ListView mListView;
-    private DocumentUploadAdapter mAdapter;
+    private OldDocumentUploadAdapter mAdapter;
     private SelectionToolbar mSelectionToolbar;
     private List<Document> mDocuments;
     private Snackbar mSnackbar;
@@ -374,7 +374,7 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
             mDocuments = Helper.getNonEmptyDocuments(allDocuments);
 
 
-            mAdapter = new DocumentUploadAdapter(mContext, R.layout.rowlayout, mDocuments);
+            mAdapter = new OldDocumentUploadAdapter(mContext, R.layout.rowlayout, mDocuments);
 
             if (mListView != null) {
                 mListView.setAdapter(mAdapter);
@@ -1034,10 +1034,10 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
                                 for (Document document : mDocuments) {
 
-                                    if (document.isCropped()) {
-                                        boolean isCropped = Helper.areFilesCropped(document);
+                                    if (document.isCurrentlyProcessed()) {
+                                        boolean isCropped = Helper.isCurrentlyProcessed(document);
                                         if (!isCropped) {
-                                            document.setIsCropped(false);
+                                            document.setIsCurrentlyProcessed(false);
                                             isAdapterUpdateRequired = true;
                                         }
                                     }

@@ -16,16 +16,16 @@ import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
-import at.ac.tuwien.caa.docscan.ui.syncui.DocumentAdapter;
+import at.ac.tuwien.caa.docscan.ui.syncui.OldDocumentAdapter;
 
 public class SelectDocumentActivity extends BaseNoNavigationActivity implements
-        DocumentAdapter.DocumentAdapterCallback {
+        OldDocumentAdapter.DocumentAdapterCallback {
 
     private static final String CLASS_NAME = "SelectDocumentActivity";
 
     private Context mContext;
     private ArrayList<Document> mDocuments;
-    private DocumentAdapter mAdapter;
+    private OldDocumentAdapter mAdapter;
     private ListView mListView;
     private Document mSelectedDocument;
     private Button mSelectButton;
@@ -80,7 +80,7 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
         if (mContext != null) {
 
             mDocuments = Helper.getValidDocuments(DocumentStorage.getInstance(this).getDocuments());
-            mAdapter = new DocumentAdapter(mContext, R.layout.rowlayout, mDocuments);
+            mAdapter = new OldDocumentAdapter(mContext, R.layout.rowlayout, mDocuments);
             if (mListView != null) {
                 mListView.setAdapter(mAdapter);
 
