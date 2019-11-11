@@ -11,6 +11,33 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Document
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.sheet_dialog_camera.*
+import java.io.File
+
+open class PdfActionSheet(private val pdf: File, sheetActions: ArrayList<SheetAction>,
+                          private var pdfListener: PdfSheetSelection, dialogListener: DialogStatus) :
+        ActionSheet(sheetActions, null, dialogListener) {
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+
+        return inflater.inflate(R.layout.titled_sheet_dialog_pdf, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val titleField: TextView = view.findViewById(R.id.sheet_dialog_title)
+        titleField.text = pdf.name
+    }
+
+    override fun sheetClicked(sheetAction: SheetAction) {
+
+//        Close the BottomSheetDialogFragment:
+        pdfListener?.onPdfSheetSelected(pdf, sheetAction)
+        dismiss()
+    }
+
+}
 
 open class DocumentActionSheet(private var document: Document, sheetActions: ArrayList<SheetAction>,
                                private var docListener: DocumentSheetSelection, dialogListener: DialogStatus) :
@@ -102,6 +129,10 @@ open class ActionSheet: BottomSheetDialogFragment {
         }
     }
 
+
+    interface PdfSheetSelection {
+        fun onPdfSheetSelected(pdf: File, sheetAction: SheetAction)
+    }
 
     interface DocumentSheetSelection {
         fun onDocumentSheetSelected(document: Document, sheetAction: SheetAction)

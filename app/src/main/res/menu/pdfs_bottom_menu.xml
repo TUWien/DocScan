@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--This is actually not used, I just needed the id's...-->
+    <item
+        android:id="@+id/action_pdf_share_item"
+        android:title="@string/action_pdf_share"
+        android:icon="@drawable/ic_share_black_24dp"
+        />
+    <item
+        android:id="@+id/action_pdf_delete_item"
+        android:title="@string/action_document_delete_document"
+        android:icon="@drawable/ic_delete_black_24dp"
+        />
+</menu>

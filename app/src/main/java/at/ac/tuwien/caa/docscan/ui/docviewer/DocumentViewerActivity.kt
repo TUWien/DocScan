@@ -8,13 +8,17 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentTransaction
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.ActionSheet
 import at.ac.tuwien.caa.docscan.camera.DocumentActionSheet
+import at.ac.tuwien.caa.docscan.camera.PdfActionSheet
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.*
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PdfCreator.PDF_FILE_NAME
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PdfCreator.PDF_INTENT
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.Helper
@@ -42,11 +46,52 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         ImagesAdapter.ImagesAdapterCallback,
         ActionSheet.SheetSelection,
         ActionSheet.DocumentSheetSelection,
+        ActionSheet.PdfSheetSelection,
         ActionSheet.DialogStatus,
-        SelectableToolbar.SelectableToolbarCallback
-{
+        SelectableToolbar.SelectableToolbarCallback, PdfFragment.PdfListener {
+
+    override fun onPdfSheetSelected(pdf: File, sheetAction: ActionSheet.SheetAction) {
+
+        when(sheetAction.mId) {
+            R.id.action_pdf_share_item -> {
+                sharePdf(pdf)
+            }
+            R.id.action_pdf_delete_item -> {
+                showDeletePdfConfirmationDialog(pdf)
+            }
+        }
+    }
+
+    private fun deletePdf(pdf: File) {
+
+        pdf.delete()
+
+        supportFragmentManager.findFragmentByTag(PdfFragment.TAG)?.apply {
+            //                    Scan again for the files:
+            if ((this as PdfFragment).isVisible)
+                updatePdfAdapter()
+        }
+
+        showDocumentsDeletedSnackbar(pdf.name)
+    }
+
+    private fun sharePdf(pdf: File) {
+        val uri = FileProvider.getUriForFile(this,
+                "at.ac.tuwien.caa.fileprovider", pdf)
+        val shareIntent = Intent()
+        shareIntent.action = Intent.ACTION_SEND
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // temp permission for receiving app to read this file
+        //                    check here if the content resolver is null
+        shareIntent.setDataAndType(uri, contentResolver.getType(uri))
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+        shareIntent.type = "application/pdf"
+        startActivity(Intent.createChooser(shareIntent, getString(R.string.page_slide_fragment_share_choose_app_text)))
+    }
 
     private val DOCUMENT_RENAMING = 0
+    private lateinit var messageReceiver: BroadcastReceiver
+    private lateinit var selectableToolbar: SelectableToolbar
+    private var newPdfs = mutableListOf<String>()
 
     override fun onSelectionActivated(activated: Boolean) {
 
@@ -76,6 +121,31 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 R.id.viewer_images -> showFAB(R.id.viewer_edit_fab)
             }
         }
+
+    }
+
+    private fun showDeletePdfConfirmationDialog(pdf: File) {
+
+
+//        val deleteText = resources.getString(R.string.sync_confirm_delete_prefix_text)
+
+        val deleteText = getString(R.string.viewer_delete_pdf_text)
+        val deleteTitle = "${getString(R.string.viewer_delete_pdf_title)}: ${pdf.name}?"
+
+        val alertDialogBuilder = AlertDialog.Builder(this)
+                .setTitle(deleteTitle)
+                .setMessage(deleteText)
+                .setPositiveButton(R.string.sync_confirm_delete_button_text) {
+                    dialogInterface, i -> deletePdf(pdf)
+                }
+                .setNegativeButton(R.string.sync_cancel_delete_button_text, null)
+                .setCancelable(true)
+
+        // create alert dialog
+        val alertDialog = alertDialogBuilder.create()
+
+        // show it
+        alertDialog.show()
 
     }
 
@@ -137,9 +207,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     companion object {
         val TAG = "DocumentViewerActivity"
     }
-
-    private lateinit var messageReceiver: BroadcastReceiver
-    private lateinit var selectableToolbar: SelectableToolbar
 
     override fun onDocumentSheetSelected(document: Document, sheetAction: ActionSheet.SheetAction) {
 
@@ -259,7 +326,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         when (bottomNavigationView.selectedItemId) {
 
 //            Open the CameraActivity:
-            R.id.viewer_documents -> super.onBackPressed()
+            R.id.viewer_documents -> Helper.startCameraActivity(this)
 //            Open the DocumentsFragment:
             R.id.viewer_pdfs -> bottomNavigationView.selectedItemId = R.id.viewer_documents
 //            Special case for ImagesFragment:
@@ -581,6 +648,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
+    override fun onPdfOptions(file: File) {
+        showPdfOptions(file)
+    }
+
     override fun onDocumentOptions(document: Document) {
 
         showDocumentOptions(document)
@@ -589,6 +660,23 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     override fun getSelfNavDrawerItem(): NavigationDrawer.NavigationItemEnum {
         return NavigationDrawer.NavigationItemEnum.DOCUMENTS
+    }
+
+    private fun showPdfOptions(file: File) {
+
+        val sheetActions = ArrayList<ActionSheet.SheetAction>()
+
+        sheetActions.add(ActionSheet.SheetAction(R.id.action_pdf_share_item,
+                getString(R.string.action_pdf_share),
+                R.drawable.ic_share_black_24dp))
+
+        sheetActions.add(ActionSheet.SheetAction(R.id.action_pdf_delete_item,
+                getString(R.string.action_document_delete_document),
+                R.drawable.ic_delete_black_24dp))
+
+        val actionSheet = PdfActionSheet(file, sheetActions, this, this)
+        supportFragmentManager.beginTransaction().add(actionSheet, "TAG").commit()
+
     }
 
     private fun showDocumentOptions(document: Document) {
@@ -674,6 +762,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         when(menuItem.itemId) {
             R.id.viewer_documents -> {
+
                 val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
                 ft.setCustomAnimations(R.anim.translate_right_to_left_in,
                         R.anim.translate_right_to_left_out)
@@ -720,8 +809,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
                 ft.setCustomAnimations(R.anim.translate_left_to_right_in,
                         R.anim.translate_left_to_right_out)
-                ft.replace(R.id.viewer_fragment_layout, PdfFragment()).commit()
-
+                val frag = PdfFragment(newPdfs, this)
+//                frag.setNewPdfs(newPdfs)
+                ft.replace(R.id.viewer_fragment_layout, frag, PdfFragment.TAG).commit()
                 showFAB(-1)
 
                 selectableToolbar.setTitle(getText(R.string.document_navigation_pdfs))
@@ -730,6 +820,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
             }
             else -> return false
+
+
         }
 
         //        Expand the AppBarLayout without any animation
@@ -759,22 +851,38 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         bottomNavigationView = findViewById(R.id.viewer_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener(this)
 
-        val documentsFragment = DocumentsFragment(this)
-        documentsFragment.scrollToActiveDocument()
+        val isPdfIntent = intent.getBooleanExtra(PDF_INTENT, false)
+        Log.d(TAG, "isPdfIntent" + isPdfIntent)
+        initToolbar()
 
+//        Did the user click on the pdf notification?
+        if (isPdfIntent) {
+            val pdfName = intent.getStringExtra(PDF_FILE_NAME)
+            newPdfs.add(pdfName)
+            val pdfFragment = PdfFragment(newPdfs, this)
+//            pdfFragment.setNewPdfs(newPdfs)
+            supportFragmentManager.beginTransaction().replace(R.id.viewer_fragment_layout,
+                    pdfFragment, PdfFragment.TAG).commit()
+            bottomNavigationView.selectedItemId = R.id.viewer_pdfs
+        }
 //        Open the DocumentsFragment first / as default view:
-        supportFragmentManager.beginTransaction().replace(R.id.viewer_fragment_layout,
-                documentsFragment, DocumentsFragment.TAG).commit()
+        else {
+            val documentsFragment = DocumentsFragment(this)
+            documentsFragment.scrollToActiveDocument()
+            supportFragmentManager.beginTransaction().replace(R.id.viewer_fragment_layout,
+                    documentsFragment, DocumentsFragment.TAG).commit()
+        }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
         // Register to receive messages:
         messageReceiver = getReceiver()
         val filter = IntentFilter()
         filter.addAction(INTENT_UPLOAD_ACTION)
         filter.addAction(INTENT_IMAGE_PROCESS_ACTION)
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter)
-
-        initToolbar()
-
     }
 
     override fun onPause() {
@@ -789,14 +897,29 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             override fun onReceive(contxt: Context?, intent: Intent?) {
 
                 when (intent?.action) {
-
                     INTENT_IMAGE_PROCESS_ACTION -> {
                         val defValue = -1
+                        val fileName = intent.getStringExtra(INTENT_FILE_NAME)
+
                         when (intent.getIntExtra(INTENT_IMAGE_PROCESS_TYPE, defValue)) {
-//                            TODO: badges work only in material theme!
-                            INTENT_PDF_PROCESS_FINISHED -> bottomNavigationView.getOrCreateBadge(R.id.viewer_pdfs)
+                            INTENT_PDF_PROCESS_FINISHED -> {
+//                                The intent is directly consumed if the the PdfFragment is open:
+                                var intentConsumed = false
+                                supportFragmentManager.findFragmentByTag(PdfFragment.TAG)?.apply {
+                                    if ((this as PdfFragment).isVisible) {
+                                        this.updateItem(fileName)
+                                        intentConsumed = true
+                                    }
+                                }
+//                                If the PdfFragment is not opened remember the new PDFs:
+                                if (!intentConsumed)
+                                    newPdfs.add(fileName)
+
+
+//                                TODO: badges work only in material theme!
+                                bottomNavigationView.getOrCreateBadge(R.id.viewer_pdfs)
+                            }
                             INTENT_IMAGE_PROCESS_STARTED, INTENT_IMAGE_PROCESS_FINISHED -> {
-                                val fileName = intent.getStringExtra(INTENT_FILE_NAME)
                                 updateGallery(fileName)
                                 updateDocumentList(fileName)
                             }

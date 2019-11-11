@@ -6,7 +6,9 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Helper
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer
+import at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment
 import kotlinx.android.synthetic.main.activity_pdf.*
+import kotlinx.android.synthetic.main.fragment_pdfs.*
 import java.io.File
 import java.text.SimpleDateFormat
 
@@ -31,19 +33,16 @@ class PdfActivity : BaseNavigationActivity() {
         // Acquire the pdfs in the directory:
         val pdfList = getPdfs()
 //        Set the adapter:
-        val pdfAdapter = PdfAdapter(this, pdfList)
-        pdf_list_view.adapter = pdfAdapter
+//        val pdfAdapter = PdfAdapter(this, pdfList)
+//        pdf_list.adapter = pdfAdapter
+//        pdf_list_view.adapter = pdfAdapter
     }
 
-//    override fun getSelfNavDrawerItem(): NavigationDrawer.NavigationItemEnum {
-//        return NavigationDrawer.NavigationItemEnum.PDF
-//    }
 
-
-    private fun getPdfs() : MutableList<Pdf> {
+    private fun getPdfs() : MutableList<PdfFragment.Pdf> {
 
         val dir : File? = Helper.getPDFStorageDir(getString(R.string.app_name))
-        val pdfList: MutableList<PdfActivity.Pdf> = ArrayList()
+        val pdfList: MutableList<PdfFragment.Pdf> = ArrayList()
 
         if (dir != null) {
             val files = dir.listFiles()
@@ -56,7 +55,7 @@ class PdfActivity : BaseNavigationActivity() {
                 val format = SimpleDateFormat("MMM dd, yyyy HH:mm:ss")
                 val date = format.format(file.lastModified()).toString()
 
-                pdfList.add(Pdf(file.name, file, fileSizeInMB, date))
+                pdfList.add(PdfFragment.Pdf(file.name, file, fileSizeInMB, date))
             }
         }
 
@@ -67,18 +66,6 @@ class PdfActivity : BaseNavigationActivity() {
 
     }
 
-    class Pdf(name: String, path: File, fileSize: String, date: String) : Comparable<Pdf> {
-
-        override fun compareTo(other: Pdf): Int {
-            return other.mPath.lastModified().compareTo(mPath.lastModified())
-        }
-
-        var mName: String = name
-        var mPath: File = path
-        var mFileSize: String = fileSize
-        var mDate: String = date
-
-    }
 
 
 
