@@ -18,17 +18,24 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
+import static at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME;
+
 /**
  * Created by fabian on 22.08.2017.
  */
 
 public class AccountActivity extends BaseNavigationActivity implements DropboxUtils.DropboxCallback {
 
+    private String parentActivity = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
+
+        if (getIntent() != null && getIntent().getStringExtra(PARENT_ACTIVITY_NAME) != null)
+            parentActivity = getIntent().getStringExtra(PARENT_ACTIVITY_NAME);
 
         initButtons();
 
@@ -141,6 +148,10 @@ public class AccountActivity extends BaseNavigationActivity implements DropboxUt
     private void startActivity(Class proceedingActivity) {
         //        Start the proceeding activity:
         Intent intent = new Intent(getApplicationContext(), proceedingActivity);
+//        Set the parent activity if necessary:
+        if (parentActivity != null)
+            intent.putExtra(PARENT_ACTIVITY_NAME, parentActivity);
+
         startActivity(intent);
     }
 

@@ -22,11 +22,15 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PdfCreator.PDF_INTENT
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.Helper
+import at.ac.tuwien.caa.docscan.rest.User
+import at.ac.tuwien.caa.docscan.rest.UserHandler
 import at.ac.tuwien.caa.docscan.sync.SyncStorage
 import at.ac.tuwien.caa.docscan.sync.SyncUtils
 import at.ac.tuwien.caa.docscan.sync.UploadService.*
+import at.ac.tuwien.caa.docscan.ui.AccountActivity
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer
+import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
 import com.google.android.material.appbar.AppBarLayout
@@ -296,15 +300,68 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     private fun uploadDocument(document: Document) {
 
+//        First check if user is online
+        if (!Helper.isOnline(this)) {
+            showOfflineDialog()
+            return
+        }
+//        Check if the user is logged in:
+        if (User.getInstance().isLoggedIn)
+            startUpload(document)
+        else
+            showNotLoggedInDialog()
+
+    }
+
+    private fun showNotLoggedInDialog() {
+
+        val dialogTitle = "${getString(R.string.viewer_not_logged_in_title)}"
+        val dialogText = "${getString(R.string.sync_not_logged_in_text)}"
+
+
+
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder
+                .setTitle(dialogTitle)
+                .setMessage(dialogText)
+                .setPositiveButton(R.string.dialog_yes_text) {
+                    _, _ ->
+                    run {
+                        val intent = Intent(applicationContext, AccountActivity::class.java)
+                        intent.putExtra(PARENT_ACTIVITY_NAME, this.javaClass.name)
+                        startActivity(intent)
+                    }
+                }
+                .setNegativeButton(R.string.dialog_cancel_text, null)
+                .setCancelable(true)
+        alertDialogBuilder.create().show()
+
+    }
+
+    private fun startUpload(document: Document) {
         var dirs = ArrayList<String>()
         dirs.add(document.title)
         startUpload(dirs)
 
-//        DocumentsFragment might be null, hence use apply:
+        //        DocumentsFragment might be null, hence use apply:
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-//            This is necessary to change the upload state icon of the document:
+            //            This is necessary to change the upload state icon of the document:
             (this as DocumentsFragment).resetAdapter()
         }
+    }
+
+    private fun showOfflineDialog() {
+
+        val dialogTitle = "${getString(R.string.viewer_offline_title)}"
+        val dialogText = "${getString(R.string.viewer_offline_text)}"
+
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder
+                .setTitle(dialogTitle)
+                .setMessage(dialogText)
+                .setPositiveButton(R.string.dialog_ok_text, null)
+                .setCancelable(true)
+        alertDialogBuilder.create().show()
 
     }
 
@@ -696,9 +753,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             sheetActions.add(ActionSheet.SheetAction(R.id.action_document_pdf_item,
                     getString(R.string.action_document_pdf_title),
                     R.drawable.ic_baseline_picture_as_pdf_24px))
-            sheetActions.add(ActionSheet.SheetAction(R.id.action_document_upload_item,
-                    getString(R.string.action_document_upload_document),
-                    R.drawable.ic_cloud_upload_black_24dp))
+            if (!document.isUploaded)
+                sheetActions.add(ActionSheet.SheetAction(R.id.action_document_upload_item,
+                        getString(R.string.action_document_upload_document),
+                        R.drawable.ic_cloud_upload_black_24dp))
         }
         sheetActions.add(ActionSheet.SheetAction(R.id.action_document_delete_item,
                 getString(R.string.action_document_delete_document),

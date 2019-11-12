@@ -466,4 +466,8 @@
     <string name="viewer_not_cropped_upload">upload</string>
     <string name="viewer_delete_pdf_title">Delete</string>
     <string name="viewer_delete_pdf_text">Are you sure you want to delete the pdf? This cannot be undone.</string>
+    <string name="viewer_offline_title">Offline</string>
+    <string name="viewer_offline_text">Your device is currently offline. Please connect to the internet before uploading.</string>
+    <string name="viewer_not_logged_in_title">Not logged in</string>
+    <string name="viewer_not_logged_in_text">You are currently not logged in. Do you want to login to a cloud service?</string>
 </resources>

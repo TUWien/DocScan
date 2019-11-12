@@ -9,17 +9,18 @@
     android:fitsSystemWindows="true"
     >
 
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/main_frame_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             >
-            <include layout="@layout/toolbar_autohide" />
+            <include layout="@layout/main_toolbar" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <RelativeLayout
@@ -95,7 +96,7 @@
             <!---->
         <!--</android.support.design.widget.AppBarLayout>-->
 
-    </FrameLayout>
+    </LinearLayout>
 
     <!-- The navigation drawer -->
     <!--<include layout="@layout/navigation_view"/>-->

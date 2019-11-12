@@ -101,7 +101,7 @@ class DocumentAdapter(private val documents: ArrayList<Document>,
             }
             else {
                 progressBar.visibility = View.GONE
-                if (document.isAwaitingUpload)
+                if (document.isAwaitingUpload && !document.isUploaded)
                     desc += "\n${itemView.context.getText(R.string.sync_dir_pending_text)}"
             }
 

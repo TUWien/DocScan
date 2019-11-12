@@ -12,6 +12,7 @@
             android:id="@+id/page_container">
         <ImageView
             android:id="@+id/page_imageview"
+            android:transitionName="robot"
             android:layout_below="@id/page_checkbox"
             android:layout_toRightOf="@id/page_checkbox"
             android:layout_width="match_parent"
