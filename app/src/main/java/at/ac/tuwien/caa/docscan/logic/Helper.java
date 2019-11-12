@@ -90,6 +90,17 @@ public class Helper {
         return mediaStorageDir;
     }
 
+    public static int getDPI(double cameraDistance, float horizontalViewAngle, int imgW) {
+
+        double thetaH = Math.toRadians(horizontalViewAngle);
+
+        //Size in inches
+        double printWidth = 2 * cameraDistance * Math.tan(thetaH / 2);
+
+        return (int) Math.round((double) imgW / printWidth);
+
+    }
+
     /**
      * Returns the root path to the directory in which the pdfs are saved.
      *

@@ -61,6 +61,7 @@ import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
+import android.util.Rational;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -266,6 +267,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
     }
+
 
 ////    just for markus oneplus:
 //    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -1707,8 +1709,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void savePicture(byte[] data) {
 
-//        commented, because we are restructuring the document setup:
-//        Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
         FileSaver fileSaver = new FileSaver(data);
         fileSaver.execute();
 
@@ -3422,9 +3422,49 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
             }
 
+            int dpi = getDPI();
+            if (dpi != -1) {
+                Rational r = new Rational(dpi, 1);
+                exif.setAttribute(ExifInterface.TAG_X_RESOLUTION, r.toString());
+                exif.setAttribute(ExifInterface.TAG_Y_RESOLUTION, r.toString());
+            }
+
             exif.saveAttributes();
 
+        }
 
+
+        private int getDPI() {
+
+//            First see if we have already a dpi value saved:
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+            int dpi = sharedPref.getInt(getResources().getString(
+                    R.string.key_dpi), -1);
+            if (dpi == -1) {
+//                Otherwise calculate it:
+                dpi = getDPIFromCamera();
+//                Save the dpi to shared preferences:
+                if (dpi != -1) {
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putInt(getResources().getString(R.string.key_dpi), dpi);
+                    editor.commit();
+                }
+            }
+
+            return dpi;
+
+        }
+
+        private int getDPIFromCamera() {
+            //distance from tent in inches
+            double cameraDistance = 16.535;
+            if (mCameraPreview == null || mCameraPreview.getCamera() == null ||
+                    mCameraPreview.getCamera().getParameters() == null)
+                return -1;
+
+            float angle = mCameraPreview.getCamera().getParameters().getHorizontalViewAngle();
+            int imgW = mCameraPreview.getCamera().getParameters().getPictureSize().width;
+            return Helper.getDPI(cameraDistance, angle, imgW);
         }
 
         private int getExifOrientation() {

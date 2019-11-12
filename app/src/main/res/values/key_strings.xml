@@ -14,6 +14,7 @@
     <string name="key_debug_settings">KEY_DEBUG_SETTINGS</string>
     <string name="key_exif_settings">KEY_EXIF_SETTINGS</string>
     <string name="key_show_debug_view">KEY_SHOW_DEBUG_VIEW</string>
+    <string name="key_dpi">KEY_DPI</string>
     <string name="key_fragment_image_viewer_file_name">KEY_FRAGMENT_IMAGE_VIEWER_FILE_NAME</string>
     <string name="key_crop_view_activity_file_name">KEY_CROP_VIEW_ACTIVITY_FILE_NAME</string>
     <string name="key_document_file_name">KEY_DOCUMENT_FILE_NAME</string>
