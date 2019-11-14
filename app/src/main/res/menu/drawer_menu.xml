@@ -11,10 +11,10 @@
             android:id="@+id/camera_item"
             android:title=""
             />
-        <item
-            android:id="@+id/sync_item"
-            android:title=""
-            />
+        <!--<item-->
+            <!--android:id="@+id/sync_item"-->
+            <!--android:title=""-->
+            <!--/>-->
         <item
             android:id="@+id/documents_item"
             android:title=""

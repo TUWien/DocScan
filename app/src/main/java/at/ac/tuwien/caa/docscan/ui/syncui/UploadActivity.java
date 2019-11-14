@@ -404,10 +404,10 @@ public class UploadActivity extends BaseNavigationActivity implements OldDocumen
 
 
 
-    @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.UPLOAD;
-    }
+//    @Override
+//    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
+//        return NavigationDrawer.NavigationItemEnum.UPLOAD;
+//    }
 
 
     @Override
