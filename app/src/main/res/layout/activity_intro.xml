@@ -17,7 +17,7 @@
         android:layout_height="match_parent"
         android:layout_above="@id/bottom_layout"
         android:layout_centerInParent="true"
-        android:theme="@style/AppTheme"
+
         />
 
     <RelativeLayout
@@ -31,6 +31,7 @@
             android:id="@+id/tabDots"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/light_gray"
             app:tabBackground="@drawable/tab_selector"
             app:tabGravity="center"
             app:tabIndicatorHeight="0dp"/>

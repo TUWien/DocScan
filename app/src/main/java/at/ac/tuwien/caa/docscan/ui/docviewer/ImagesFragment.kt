@@ -1,10 +1,12 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
@@ -14,6 +16,8 @@ import at.ac.tuwien.caa.docscan.logic.Helper
 import kotlinx.android.synthetic.main.fragment_images.*
 import java.io.File
 
+
+
 class ImagesFragment(private val document: Document?) : Fragment() {
 
     companion object {
@@ -22,9 +26,11 @@ class ImagesFragment(private val document: Document?) : Fragment() {
 
 
     private lateinit var galleryAdapter: ImagesAdapter
+    private var scrollToFileName = ""
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+
         return inflater.inflate(R.layout.fragment_images, container, false)
     }
 
@@ -32,11 +38,48 @@ class ImagesFragment(private val document: Document?) : Fragment() {
 
         super.onViewCreated(view, savedInstanceState)
 
+        Log.d(TAG, "onViewCreated: scrollToFile: " + scrollToFileName)
         galleryAdapter = ImagesAdapter(context, document)
         galleryAdapter.setFileName(document?.title)
         images_list.adapter = galleryAdapter
 //        TODO: add here more columns for landscape mode:
         images_list.layoutManager = GridLayoutManager(context, 2)
+
+
+
+    }
+
+    fun scrollToFile(fileName: String) {
+
+        Log.d(TAG, "scrollToFile" + fileName)
+        scrollToFileName = fileName
+        Log.d(TAG, "not empty: " + scrollToFileName.isNotEmpty())
+
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume: " + scrollToFileName)
+
+        if (scrollToFileName.isNotEmpty()) {
+
+            Log.d(TAG, "scroll: " + scrollToFileName)
+            val idx = document!!.filePaths.indexOf(scrollToFileName)
+            Log.d(TAG, "scrollidx: " + idx)
+            images_list.scrollToPosition(idx)
+//            startPostponedEnterTransition()
+//            images_list.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
+//                override fun onPreDraw(): Boolean {
+//                    images_list.viewTreeObserver.removeOnPreDrawListener(this)
+//                    // TODO: figure out why it is necessary to request layout here in order to get a smooth transition.
+//                    images_list.requestLayout()
+//                    startPostponedEnterTransition()
+//                    return true
+//                }
+//            })
+        }
+
 
     }
 

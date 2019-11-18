@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.ui.docviewer
 
 import android.app.Activity
 import android.content.*
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
@@ -33,6 +34,7 @@ import at.ac.tuwien.caa.docscan.ui.NavigationDrawer
 import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
+import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.*
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -53,6 +55,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         ActionSheet.PdfSheetSelection,
         ActionSheet.DialogStatus,
         SelectableToolbar.SelectableToolbarCallback, PdfFragment.PdfListener {
+    override fun onSelectedImageLoaded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Log.d(TAG, "startPostponedEnterTransition")
+            startPostponedEnterTransition()
+        }
+    }
 
     override fun onPdfSheetSelected(pdf: File, sheetAction: ActionSheet.SheetAction) {
 
@@ -210,6 +218,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     companion object {
         val TAG = "DocumentViewerActivity"
+        var selectedFileName: String? = null
     }
 
     override fun onDocumentSheetSelected(document: Document, sheetAction: ActionSheet.SheetAction) {
@@ -839,24 +848,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 if (selectedDocument == null)
                     selectedDocument = DocumentStorage.getInstance(this).activeDocument
 
-                val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-
-//                The animation depends on the position of the selected item:
-                if (bottomNavigationView.selectedItemId == R.id.viewer_documents)
-                    ft.setCustomAnimations(R.anim.translate_left_to_right_in,
-                            R.anim.translate_left_to_right_out)
-                else
-                    ft.setCustomAnimations(R.anim.translate_right_to_left_in,
-                            R.anim.translate_right_to_left_out)
-
-                ft.replace(R.id.viewer_fragment_layout, ImagesFragment(selectedDocument),
-                        ImagesFragment.TAG).commit()
-
-                showFAB(R.id.viewer_edit_fab)
-                if (selectedDocument != null)
-                    selectableToolbar.setTitle(selectedDocument?.title)
-                else
-                    selectableToolbar.setTitle(getString(R.string.document_navigation_images))
+                selectedDocument?.let { openImagesFragment(it) }
 
             }
             R.id.viewer_pdfs -> {
@@ -889,6 +881,59 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
+    private fun openImagesFragmentWithTransition(document: Document, fileName: String? = null) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            postponeEnterTransition()
+        }
+
+        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
+        val imagesFragment = ImagesFragment(document)
+        if (fileName != null) {
+            Log.d(TAG, "scroll filename: " + fileName)
+            selectedFileName = fileName
+            imagesFragment.scrollToFile(fileName)
+
+        }
+        ft.replace(R.id.viewer_fragment_layout, imagesFragment,
+                ImagesFragment.TAG).commit()
+
+        showFAB(R.id.viewer_edit_fab)
+        if (document != null)
+            selectableToolbar.setTitle(document?.title)
+        else
+            selectableToolbar.setTitle(getString(R.string.document_navigation_images))
+
+    }
+
+    private fun openImagesFragment(document: Document, fileName: String? = null) {
+
+        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
+
+        //                The animation depends on the position of the selected item:
+        if (bottomNavigationView.selectedItemId == R.id.viewer_documents)
+            ft.setCustomAnimations(R.anim.translate_left_to_right_in,
+                    R.anim.translate_left_to_right_out)
+        else
+            ft.setCustomAnimations(R.anim.translate_right_to_left_in,
+                    R.anim.translate_right_to_left_out)
+
+        val imagesFragment = ImagesFragment(document)
+        if (fileName != null) {
+            Log.d(TAG, "scroll filename: " + fileName)
+            imagesFragment.scrollToFile(fileName)
+        }
+        ft.replace(R.id.viewer_fragment_layout, imagesFragment,
+                ImagesFragment.TAG).commit()
+
+        showFAB(R.id.viewer_edit_fab)
+        if (document != null)
+            selectableToolbar.setTitle(document?.title)
+        else
+            selectableToolbar.setTitle(getString(R.string.document_navigation_images))
+
+    }
+
     private fun initToolbar() {
 
         val toolbar: Toolbar = findViewById(R.id.main_toolbar)
@@ -910,8 +955,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         bottomNavigationView.setOnNavigationItemSelectedListener(this)
 
         val isPdfIntent = intent.getBooleanExtra(PDF_INTENT, false)
-        Log.d(TAG, "isPdfIntent" + isPdfIntent)
         initToolbar()
+
+        val isGalleryIntent = intent.getBooleanExtra(KEY_OPEN_GALLERY, false)
+//        val isGalleryIntent = false
 
 //        Did the user click on the pdf notification?
         if (isPdfIntent) {
@@ -921,8 +968,20 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //            pdfFragment.setNewPdfs(newPdfs)
             supportFragmentManager.beginTransaction().replace(R.id.viewer_fragment_layout,
                     pdfFragment, PdfFragment.TAG).commit()
-            bottomNavigationView.selectedItemId = R.id.viewer_pdfs
+            //            TODO: select the item, without a callback:
+//            bottomNavigationView.selectedItemId = R.id.viewer_pdfs
         }
+        else if (isGalleryIntent){
+            val fileName = intent.getStringExtra(KEY_FILE_NAME)
+            val documentName = intent.getStringExtra(KEY_DOCUMENT_NAME)
+            val document = DocumentStorage.getInstance(this).getDocument(documentName)
+
+//            openImagesFragment(document, fileName)
+            openImagesFragmentWithTransition(document, fileName)
+//            TODO: select the item, without a callback:
+//            bottomNavigationView.selectedItemId = R.id.viewer_images
+        }
+
 //        Open the DocumentsFragment first / as default view:
         else {
             val documentsFragment = DocumentsFragment(this)

@@ -70,6 +70,20 @@ public class Document {
 
     }
 
+    public ArrayList<String> getFilePaths() {
+
+        if (mPages == null)
+            return null;
+
+        ArrayList<String> fileNames = new ArrayList<>(mPages.size());
+        for (Page page : mPages) {
+            fileNames.add(page.getFile().getAbsolutePath());
+        }
+
+        return fileNames;
+
+    }
+
     public ArrayList<String> getFileNames() {
 
         if (mPages == null)

@@ -18,6 +18,7 @@ package at.ac.tuwien.caa.docscan.ui.gallery;
  */
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -27,9 +28,11 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -49,6 +52,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+
 import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -65,7 +70,8 @@ import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
 
-public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
+public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener,
+    ImageViewerFragment.ImageLoadedCallback {
 
     private HackyViewPager mPager;
     private PageSlideAdapter mPagerAdapter;
@@ -76,6 +82,9 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     private Context mContext;
     private BroadcastReceiver mMessageReceiver;
 
+    public static final String KEY_DOCUMENT_NAME = "KEY_DOCUMENT_NAME";
+    public static final String KEY_FILE_NAME = "KEY_FILE_NAME";
+    public static final String KEY_OPEN_GALLERY = "KEY_OPEN_GALLERY";
     public static final String KEY_RETAKE_IMAGE = "KEY_RETAKE_IMAGE";
     public static final String KEY_RETAKE_IDX = "KEY_RETAKE_IDX";
 
@@ -90,12 +99,17 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_page_slide);
 
+        Log.d(CLASS_NAME, "oncreate");
         // Instantiate a ViewPager and a PagerAdapter.
         initPager();
 
         String fileName = getIntent().getStringExtra(getString(R.string.key_document_file_name));
         if (fileName == null)
             return;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            postponeEnterTransition();
+        }
 
 //        mDocument = getDummyDocument(fileName);
         mDocument = DocumentStorage.getInstance(this).getDocument(fileName);
@@ -394,6 +408,17 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
+    @Override
+    public void finishAfterTransition() {
+
+        Intent data = new Intent();
+        data.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
+        data.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
+        setResult(RESULT_OK, data);
+        super.finishAfterTransition();
+    }
+
+
 //    private void initGalleryButton() {
 //
 //        ImageView galleryImageView = findViewById(R.id.page_view_buttons_layout_gallery_button);
@@ -412,16 +437,40 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         String documentTitle = mDocument.getTitle();
         if (documentTitle != null) {
-            Intent intent = new Intent(mContext, GalleryActivity.class);
+
+            Intent intent = new Intent(mContext, DocumentViewerActivity.class);
 //            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
 //            Without this flag the activities would all be added to the back stack.
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
-            mContext.startActivity(intent);
+            intent.putExtra(KEY_OPEN_GALLERY, true);
+            intent.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
+            intent.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                SubsamplingScaleImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+                ActivityOptionsCompat activityOptionsCompat =
+                        ActivityOptionsCompat.makeSceneTransitionAnimation(this, imageView,
+                                imageView.getTransitionName());
+                Log.d(CLASS_NAME, "transition name: " + imageView.getTransitionName());
+                mContext.startActivity(intent, activityOptionsCompat.toBundle());
+                finishAfterTransition();
+            }
+            else {
+                mContext.startActivity(intent);
+                finish();
+            }
+
+
+//            Intent intent = new Intent(mContext, GalleryActivity.class);
+////            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
+////            Without this flag the activities would all be added to the back stack.
+//            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//            intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
+//            mContext.startActivity(intent);
 //            Finish is necessary, because the current PageSlideActivity can be started from the
 //            CameraActivity, but once we are in the GalleryActivity, we do not want to get back to
 //            PageSlideActivity:
-            finish();
+//            finish();
         }
 
     }
@@ -642,6 +691,12 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
+    @Override
+    public void onImageLoaded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            startPostponedEnterTransition();
+        }
+    }
 
 
     private class PageSlideAdapter extends FragmentStatePagerAdapter {
@@ -665,7 +720,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             Log.d(CLASS_NAME, "getItem: position: " + position);
             Log.d(CLASS_NAME, "getItem: file: " + page.getFile().toString());
 
-            ImageViewerFragment fragment = ImageViewerFragment.create();
+            ImageViewerFragment fragment = ImageViewerFragment.create(mContext);
             Bundle args = new Bundle();
                 args.putString(getString(R.string.key_fragment_image_viewer_file_name),
                         page.getFile().getAbsolutePath());
