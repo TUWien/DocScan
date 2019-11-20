@@ -3,21 +3,26 @@ package at.ac.tuwien.caa.docscan.ui.docviewer;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.signature.MediaStoreSignature;
 
 import java.io.File;
@@ -47,7 +52,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
     private Context mContext;
 
     private int mWidth;
-    private String mFileName;
+    private String mDocumentName;
     private CountableBooleanArray mSelections;
 
     // Callback to listen to selection changes:
@@ -55,6 +60,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
     private int mPaddingPixel;
     private boolean mIsSelectionMode = false;
     private int mColumnCount;
+    private String scrollFileName = null;
 
 
     public ImagesAdapter(Context context, Document document) {
@@ -77,8 +83,12 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
 
     }
 
-    public void setFileName(String fileName) {
-        mFileName = fileName;
+    public void setScrollFileName(String fileName) {
+        scrollFileName = fileName;
+    }
+
+    public void setDocumentName(String documentName) {
+        mDocumentName = documentName;
     }
 
     public void setSelectionMode(boolean isSelectionMode) {
@@ -214,7 +224,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
 
     }
 
-    private synchronized void initImageView(GalleryViewHolder holder, int position, Page page) {
+    private synchronized void initImageView(GalleryViewHolder holder, final int position, Page page) {
 
         if (mDocument == null || mDocument.getPages() == null) {
             Helper.crashlyticsLog(CLASS_NAME, "initImageView",
@@ -228,7 +238,11 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
         if (!file.exists())
             return;
 
-        String fileName = file.getAbsolutePath();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            imageView.setTransitionName(file.getAbsolutePath());
+        }
+
+        final String fileName = file.getAbsolutePath();
 
         int exifOrientation = -1;
         boolean isCropped = false;
@@ -274,10 +288,22 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                             //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
                             .signature(new MediaStoreSignature("", modified, exifOrientation))
                             // TODO: enable disk caching!
-                            //                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                            //                        .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .skipMemoryCache(true)
                             .transform(new CropRectTransform(fileName, mContext))
                             .override(400, 400)
+                            .listener(new RequestListener<Drawable>() {
+                                @Override
+                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                    onImageLoadingDone(position, fileName);
+                                    return false;
+                                }
+
+                                @Override
+                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                    onImageLoadingDone(position, fileName);
+                                    return false;                                }
+                            })
                             .into(imageView);
                 }
                 else
@@ -291,6 +317,19 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                             .load(page.getFile().getPath())
                             //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
                             .signature(new MediaStoreSignature("", modified, exifOrientation))
+                            .listener(new RequestListener<Drawable>() {
+                                @Override
+                                public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                    onImageLoadingDone(position, fileName);
+                                    return false;
+                                }
+
+                                @Override
+                                public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                    onImageLoadingDone(position, fileName);
+                                    return false;
+                                }
+                            })
                             .into(imageView);
                 }
                 else
@@ -303,6 +342,19 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
             if (mContext != null) {
                 GlideApp.with(mContext)
                         .load(page.getFile().getPath())
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                onImageLoadingDone(position, fileName);
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                onImageLoadingDone(position, fileName);
+                                return false;
+                            }
+                        })
                         .into(imageView);
             }
             else
@@ -310,6 +362,19 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                     "mContext == null");
         }
 
+    }
+
+    private void onImageLoadingDone(int position, String fileName) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (scrollFileName != null && fileName.equalsIgnoreCase(scrollFileName))
+                mCallback.onScrollImageLoaded();
+            else if (position == 0)
+                mCallback.onImageLoaded();
+        }
+
+//        if (position == 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+//            mCallback.onImageLoaded();
     }
 
     @Override
@@ -432,8 +497,8 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
 
                     //                Start the image viewer:
                     Intent intent = new Intent(mContext, PageSlideActivity.class);
-                    intent.putExtra(mContext.getString(R.string.key_document_file_name), mFileName);
-                    Log.d(CLASS_NAME, "onClick: " + mFileName);
+                    intent.putExtra(mContext.getString(R.string.key_document_file_name), mDocumentName);
+                    Log.d(CLASS_NAME, "onClick: " + mDocumentName);
                     intent.putExtra(mContext.getString(R.string.key_page_position), position);
                     mContext.startActivity(intent);
                 }
@@ -508,6 +573,8 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
 
     public interface ImagesAdapterCallback {
         void onSelectionChange(int selectionCount);
+        void onImageLoaded();
+        void onScrollImageLoaded();
     }
 
     /**

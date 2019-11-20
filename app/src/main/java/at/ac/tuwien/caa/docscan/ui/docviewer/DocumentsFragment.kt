@@ -5,9 +5,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.Helper
@@ -28,7 +28,7 @@ class DocumentsFragment(private val listener: DocumentListener) : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        return inflater.inflate(R.layout.fragment_documents, container, false)
+        return inflater.inflate(at.ac.tuwien.caa.docscan.R.layout.fragment_documents, container, false)
     }
 
     fun scrollToActiveDocument() {
@@ -54,6 +54,14 @@ class DocumentsFragment(private val listener: DocumentListener) : Fragment() {
             idx++
         }
 
+
+    }
+
+    fun getImageView(document: Document): ImageView {
+        val idx = documents.indexOf(document)
+        val selectedViewHolder = documents_list
+                .findViewHolderForAdapterPosition(idx)
+        return selectedViewHolder!!.itemView.findViewById(at.ac.tuwien.caa.docscan.R.id.document_thumbnail_imageview)
 
     }
 

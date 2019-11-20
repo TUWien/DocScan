@@ -70,8 +70,7 @@ import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
 
-public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener,
-    ImageViewerFragment.ImageLoadedCallback {
+public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
 
     private HackyViewPager mPager;
     private PageSlideAdapter mPagerAdapter;
@@ -107,11 +106,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         if (fileName == null)
             return;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            postponeEnterTransition();
-        }
-
-//        mDocument = getDummyDocument(fileName);
         mDocument = DocumentStorage.getInstance(this).getDocument(fileName);
 
         mPagerAdapter = new PageSlideAdapter(getSupportFragmentManager(), mDocument);
@@ -445,15 +439,20 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             intent.putExtra(KEY_OPEN_GALLERY, true);
             intent.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
             intent.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
+//            mContext.startActivity(intent);
+//            finish();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                SubsamplingScaleImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+                PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+                if (imageView == null)
+                    Log.d(CLASS_NAME, "imageview is null");
                 ActivityOptionsCompat activityOptionsCompat =
                         ActivityOptionsCompat.makeSceneTransitionAnimation(this, imageView,
                                 imageView.getTransitionName());
                 Log.d(CLASS_NAME, "transition name: " + imageView.getTransitionName());
                 mContext.startActivity(intent, activityOptionsCompat.toBundle());
-                finishAfterTransition();
+                finish();
+//                finishAfterTransition();
             }
             else {
                 mContext.startActivity(intent);
@@ -691,12 +690,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-    @Override
-    public void onImageLoaded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            startPostponedEnterTransition();
-        }
-    }
 
 
     private class PageSlideAdapter extends FragmentStatePagerAdapter {
@@ -720,7 +713,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             Log.d(CLASS_NAME, "getItem: position: " + position);
             Log.d(CLASS_NAME, "getItem: file: " + page.getFile().toString());
 
-            ImageViewerFragment fragment = ImageViewerFragment.create(mContext);
+            ImageViewerFragment fragment = ImageViewerFragment.create();
             Bundle args = new Bundle();
                 args.putString(getString(R.string.key_fragment_image_viewer_file_name),
                         page.getFile().getAbsolutePath());

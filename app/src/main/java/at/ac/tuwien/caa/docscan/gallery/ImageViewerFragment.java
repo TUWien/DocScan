@@ -19,6 +19,7 @@ package at.ac.tuwien.caa.docscan.gallery;
 
 
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import android.util.Log;
@@ -122,7 +123,14 @@ public class ImageViewerFragment extends Fragment {
 
     }
 
+    public PageImageView getImageView() {
+        return mImageView;
+    }
+
     public void refreshImageView() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+            mImageView.setTransitionName(new File(mFileName).getAbsolutePath());
 
         mImageView.setImage(ImageSource.uri(mFileName));
 
@@ -177,8 +185,6 @@ public class ImageViewerFragment extends Fragment {
 
 
     }
-
-
 
 
 }

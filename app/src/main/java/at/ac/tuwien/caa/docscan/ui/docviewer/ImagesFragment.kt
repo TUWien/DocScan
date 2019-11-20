@@ -1,6 +1,5 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,13 +8,11 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.Helper
 import kotlinx.android.synthetic.main.fragment_images.*
 import java.io.File
-
 
 
 class ImagesFragment(private val document: Document?) : Fragment() {
@@ -31,7 +28,7 @@ class ImagesFragment(private val document: Document?) : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
-        return inflater.inflate(R.layout.fragment_images, container, false)
+        return inflater.inflate(at.ac.tuwien.caa.docscan.R.layout.fragment_images, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -40,7 +37,8 @@ class ImagesFragment(private val document: Document?) : Fragment() {
 
         Log.d(TAG, "onViewCreated: scrollToFile: " + scrollToFileName)
         galleryAdapter = ImagesAdapter(context, document)
-        galleryAdapter.setFileName(document?.title)
+        galleryAdapter.setDocumentName(document?.title)
+        galleryAdapter.setScrollFileName(scrollToFileName)
         images_list.adapter = galleryAdapter
 //        TODO: add here more columns for landscape mode:
         images_list.layoutManager = GridLayoutManager(context, 2)
@@ -111,7 +109,7 @@ class ImagesFragment(private val document: Document?) : Fragment() {
     }
 
     fun updateDocumentName(fileName: String) {
-        galleryAdapter.setFileName(fileName)
+        galleryAdapter.setDocumentName(fileName)
     }
 
     fun updateGallery(fileName: String) {

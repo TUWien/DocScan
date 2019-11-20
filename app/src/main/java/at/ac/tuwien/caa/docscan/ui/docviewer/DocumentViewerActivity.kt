@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.*
 import android.os.Build
 import android.os.Bundle
+import android.transition.TransitionInflater
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -55,12 +56,34 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         ActionSheet.PdfSheetSelection,
         ActionSheet.DialogStatus,
         SelectableToolbar.SelectableToolbarCallback, PdfFragment.PdfListener {
-    override fun onSelectedImageLoaded() {
+
+    override fun onScrollImageLoaded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Log.d(TAG, "startPostponedEnterTransition")
             startPostponedEnterTransition()
+            Log.d(TAG, "onScrollImageLoaded")
         }
     }
+
+    override fun onImageLoaded() {
+        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
+            startPostponedEnterTransition()
+        }
+
+    }
+
+    companion object {
+        val TAG = "DocumentViewerActivity"
+        var selectedFileName: String? = null
+    }
+
+//    This is needed if the Activity is opened with an intent extra in order to show a certain
+//    fragment: ImagesFragment or PdfFragment. In this case the fragments are created and the
+//    selected item should change, without doing anything else:
+    private var updateSelectedNavigationItem = false
+    private val DOCUMENT_RENAMING = 0
+    private lateinit var messageReceiver: BroadcastReceiver
+    private lateinit var selectableToolbar: SelectableToolbar
+    private var newPdfs = mutableListOf<String>()
 
     override fun onPdfSheetSelected(pdf: File, sheetAction: ActionSheet.SheetAction) {
 
@@ -100,10 +123,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         startActivity(Intent.createChooser(shareIntent, getString(R.string.page_slide_fragment_share_choose_app_text)))
     }
 
-    private val DOCUMENT_RENAMING = 0
-    private lateinit var messageReceiver: BroadcastReceiver
-    private lateinit var selectableToolbar: SelectableToolbar
-    private var newPdfs = mutableListOf<String>()
+
 
     override fun onSelectionActivated(activated: Boolean) {
 
@@ -216,10 +236,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         }
     }
 
-    companion object {
-        val TAG = "DocumentViewerActivity"
-        var selectedFileName: String? = null
-    }
+
 
     override fun onDocumentSheetSelected(document: Document, sheetAction: ActionSheet.SheetAction) {
 
@@ -283,30 +300,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         }
     }
 
-//    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//
-//        super.onActivityResult(requestCode, resultCode, data)
-//
-//        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-//            if ((this as ImagesFragment).isVisible) {
-//                selectableToolbar.resetToolbar()
-//            }
-//        }
-//
-//
-//        if (requestCode == DOCUMENT_RENAMING) {
-//            if (resultCode == Activity.RESULT_OK) {
-//                if (data!!.data != null) {
-//                    val docName = data.data!!.toString()
-//                    selectableToolbar.setTitle(docName)
-//
-//                } else
-//                    Helper.crashlyticsLog(TAG, "onActivityResult",
-//                            "data.getData() == null")
-//            }
-//        }
-//    }
-
     private fun uploadDocument(document: Document) {
 
 //        First check if user is online
@@ -326,8 +319,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val dialogTitle = "${getString(R.string.viewer_not_logged_in_title)}"
         val dialogText = "${getString(R.string.sync_not_logged_in_text)}"
-
-
 
         val alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder
@@ -397,21 +388,16 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             R.id.viewer_pdfs -> bottomNavigationView.selectedItemId = R.id.viewer_documents
 //            Special case for ImagesFragment:
             R.id.viewer_images -> {
-                if (bottomNavigationView.selectedItemId == R.id.viewer_documents)
-                    super.onBackPressed()
-                else {
-//            ImagesFragment might be null, hence use apply:
-                    supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-                        //                If there are currently some files selected, just deselect them:
-                        if ((this as ImagesFragment).isVisible && this.getSelectionCount() > 0) {
-                            this.deselectAllItems()
-                            this.redrawItems()
-                            selectableToolbar.resetToolbar()
-                        }
-//                Otherwise open the DocumentFragment
-                        else
-                            bottomNavigationView.selectedItemId = R.id.viewer_documents
+                supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
+                    //                If there are currently some files selected, just deselect them:
+                    if ((this as ImagesFragment).isVisible && this.getSelectionCount() > 0) {
+                        this.deselectAllItems()
+                        this.redrawItems()
+                        selectableToolbar.resetToolbar()
                     }
+//                Otherwise open the DocumentFragment
+                    else
+                        bottomNavigationView.selectedItemId = R.id.viewer_documents
                 }
             }
         }
@@ -826,6 +812,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //        Do nothing in case the item is already selected:
         if (menuItem.itemId == bottomNavigationView.selectedItemId)
             return false
+//        If the item was selected programmatically (and not by the user) do nothing:
+        if (updateSelectedNavigationItem) {
+            updateSelectedNavigationItem = false
+//            Show the item as selected:
+            return true
+        }
 
         when(menuItem.itemId) {
             R.id.viewer_documents -> {
@@ -881,20 +873,31 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
-    private fun openImagesFragmentWithTransition(document: Document, fileName: String? = null) {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            postponeEnterTransition()
-        }
+    private fun openImagesFragmentFromIntent(document: Document, fileName: String? = null) {
 
         val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
+
+//        //                The animation depends on the position of the selected item:
+//        if (bottomNavigationView.selectedItemId == R.id.viewer_documents)
+//            ft.setCustomAnimations(R.anim.translate_left_to_right_in,
+//                    R.anim.translate_left_to_right_out)
+//        else
+//            ft.setCustomAnimations(R.anim.translate_right_to_left_in,
+//                    R.anim.translate_right_to_left_out)
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            postponeEnterTransition()
+//        }
+
         val imagesFragment = ImagesFragment(document)
         if (fileName != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                postponeEnterTransition()
+            }
             Log.d(TAG, "scroll filename: " + fileName)
-            selectedFileName = fileName
             imagesFragment.scrollToFile(fileName)
-
         }
+
+
         ft.replace(R.id.viewer_fragment_layout, imagesFragment,
                 ImagesFragment.TAG).commit()
 
@@ -923,6 +926,23 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             Log.d(TAG, "scroll filename: " + fileName)
             imagesFragment.scrollToFile(fileName)
         }
+
+        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
+            if ((this as DocumentsFragment).isVisible) {
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                    Log.d(TAG, "imageView transition name" + imageView!!.transitionName)
+//            setSharedElementReturnTransition(TransitionInflater.from(this).inflateTransition(R.transition.image_shared_element_transition));
+                    setExitTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.fade))
+                    imagesFragment.postponeEnterTransition()
+                    imagesFragment.sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(R.transition.image_shared_element_transition)
+                    var imageView = getImageView(document)
+                    ft.addSharedElement(imageView!!, imageView!!.transitionName)
+                    ft.setReorderingAllowed(true)
+                }
+            }
+        }
+
         ft.replace(R.id.viewer_fragment_layout, imagesFragment,
                 ImagesFragment.TAG).commit()
 
@@ -968,7 +988,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //            pdfFragment.setNewPdfs(newPdfs)
             supportFragmentManager.beginTransaction().replace(R.id.viewer_fragment_layout,
                     pdfFragment, PdfFragment.TAG).commit()
-            //            TODO: select the item, without a callback:
+            selectNavigationItem(R.id.viewer_pdfs)
+
+
 //            bottomNavigationView.selectedItemId = R.id.viewer_pdfs
         }
         else if (isGalleryIntent){
@@ -976,9 +998,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             val documentName = intent.getStringExtra(KEY_DOCUMENT_NAME)
             val document = DocumentStorage.getInstance(this).getDocument(documentName)
 
+            openImagesFragmentFromIntent(document, fileName)
 //            openImagesFragment(document, fileName)
-            openImagesFragmentWithTransition(document, fileName)
-//            TODO: select the item, without a callback:
+            selectNavigationItem(R.id.viewer_images)
 //            bottomNavigationView.selectedItemId = R.id.viewer_images
         }
 
@@ -990,6 +1012,11 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                     documentsFragment, DocumentsFragment.TAG).commit()
         }
 
+    }
+
+    private fun selectNavigationItem(id: Int) {
+        updateSelectedNavigationItem = true
+        bottomNavigationView.selectedItemId = id
     }
 
     override fun onResume() {

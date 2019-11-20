@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
 import android.content.Context
+import android.os.Build
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -49,8 +50,13 @@ class DocumentAdapter(private val documents: ArrayList<Document>,
 
             itemView.setOnClickListener{ clickListener(document) }
 
-            if (document.pages != null && !document.pages.isEmpty())
+
+
+            if (document.pages != null && !document.pages.isEmpty()) {
                 loadThumbnail(thumbnail, document.pages[0].file, itemView.context)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                    thumbnail.transitionName = document.pages[0].file.absolutePath
+            }
             else {
                 thumbnail.setImageResource(R.drawable.ic_do_not_disturb_black_24dp)
                 thumbnail.setBackgroundColor(itemView.resources.getColor(R.color.second_light_gray))
