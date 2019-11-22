@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.*
 import android.os.Build
 import android.os.Bundle
@@ -8,7 +9,6 @@ import android.transition.TransitionInflater
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentTransaction
@@ -25,7 +25,6 @@ import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.Helper
 import at.ac.tuwien.caa.docscan.rest.User
-import at.ac.tuwien.caa.docscan.rest.UserHandler
 import at.ac.tuwien.caa.docscan.sync.SyncStorage
 import at.ac.tuwien.caa.docscan.sync.SyncUtils
 import at.ac.tuwien.caa.docscan.sync.UploadService.*
@@ -73,6 +72,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     companion object {
         val TAG = "DocumentViewerActivity"
+        const val DOCUMENT_RENAMING_REQUEST = 0
+        const val LAUNCH_VIEWER_REQUEST = 1
         var selectedFileName: String? = null
     }
 
@@ -80,7 +81,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //    fragment: ImagesFragment or PdfFragment. In this case the fragments are created and the
 //    selected item should change, without doing anything else:
     private var updateSelectedNavigationItem = false
-    private val DOCUMENT_RENAMING = 0
     private lateinit var messageReceiver: BroadcastReceiver
     private lateinit var selectableToolbar: SelectableToolbar
     private var newPdfs = mutableListOf<String>()
@@ -257,7 +257,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //                Start the rename activity and wait for the result:
                 val intent = Intent(applicationContext, EditDocumentActivity::class.java)
                 intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, document.title)
-                startActivityForResult(intent, DOCUMENT_RENAMING)
+                startActivityForResult(intent, DOCUMENT_RENAMING_REQUEST)
 //                startActivity(intent)
             }
             R.id.action_document_delete_item -> showDeleteConfirmationDialog(document)
@@ -282,19 +282,28 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         super.onActivityResult(requestCode, resultCode, data)
 
+        Log.d(TAG, "onActivityResult")
+
         supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
             if ((this as ImagesFragment).isVisible) {
                 selectableToolbar.resetToolbar()
 
-                if (requestCode == DOCUMENT_RENAMING && resultCode == Activity.RESULT_OK) {
-                    if (data!!.data != null) {
-                        val docName = data.data!!.toString()
-                        selectableToolbar.setTitle(docName)
-                        this.updateDocumentName(docName)
+                if (resultCode == Activity.RESULT_OK) {
+//                    Did the user rename the current document?
+                    if (requestCode == DOCUMENT_RENAMING_REQUEST) {
+                        if (data!!.data != null) {
+                            val docName = data.data!!.toString()
+                            selectableToolbar.setTitle(docName)
+                            updateDocumentName(docName)
+                        }
+                    }
+//                    Did the user change one or multiple images in the PageSlideActivity?
+                    else if (requestCode == LAUNCH_VIEWER_REQUEST) {
+                        if (data != null && data.getBooleanExtra(KEY_IMAGE_CHANGED, false)) {
+                            redrawItems()
+                        }
 
-                    } else
-                        Helper.crashlyticsLog(TAG, "onActivityResult",
-                                "data.getData() == null")
+                    }
                 }
             }
         }
@@ -744,7 +753,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         if (!document.pages.isEmpty()) {
             sheetActions.add(ActionSheet.SheetAction(R.id.action_document_crop_item,
                     getString(R.string.action_document_crop_title),
-                    R.drawable.ic_crop_black_24dp))
+                    R.drawable.ic_transform_black_24dp))
             sheetActions.add(ActionSheet.SheetAction(R.id.action_document_pdf_item,
                     getString(R.string.action_document_pdf_title),
                     R.drawable.ic_baseline_picture_as_pdf_24px))
@@ -1171,5 +1180,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         }
 
     }
+
 
 }

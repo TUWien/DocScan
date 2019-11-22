@@ -141,6 +141,26 @@ public class PageDetector {
 
     }
 
+    public static void rotate90DegreesCCW(String fileName) {
+
+        PageFocusResult result = getNormedCropPoints(fileName);
+        if (result == null)
+            return;
+
+//        ArrayList<PointF> points = getNormedCropPoints(fileName);
+        for (PointF point : result.getPoints()) {
+            rotateNormedPoint(point, 270);
+        }
+
+        try {
+            savePointsToExif(fileName, result.getPoints(), result.isFocused());
+        } catch (IOException e) {
+            Crashlytics.logException(e);
+            e.printStackTrace();
+        }
+
+    }
+
     public static void rotate90Degrees(String fileName) {
 
         PageFocusResult result = getNormedCropPoints(fileName);

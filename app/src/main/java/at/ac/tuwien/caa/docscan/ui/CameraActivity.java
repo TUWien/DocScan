@@ -922,7 +922,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         LayoutInflater adbInflater = LayoutInflater.from(this);
-        View eulaLayout = adbInflater.inflate(R.layout.locked_exposure_dialog, null);
+        View eulaLayout = adbInflater.inflate(R.layout.check_box_dialog, null);
 
         final CheckBox checkBox = eulaLayout.findViewById(R.id.skip);
         alertDialog.setView(eulaLayout);
@@ -1093,6 +1093,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Check which request we're responding to
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CREATE_DOCUMENT_FROM_QR_REQUEST) {
 //            Take care that the image processing is resumed, regardless of the intent result:
             resumeFromQRMode();
@@ -3424,9 +3425,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             int dpi = getDPI();
             if (dpi != -1) {
-                Rational r = new Rational(dpi, 1);
-                exif.setAttribute(ExifInterface.TAG_X_RESOLUTION, r.toString());
-                exif.setAttribute(ExifInterface.TAG_Y_RESOLUTION, r.toString());
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    Rational r = new Rational(dpi, 1);
+                    exif.setAttribute(ExifInterface.TAG_X_RESOLUTION, r.toString());
+                    exif.setAttribute(ExifInterface.TAG_Y_RESOLUTION, r.toString());
+                }
             }
 
             exif.saveAttributes();

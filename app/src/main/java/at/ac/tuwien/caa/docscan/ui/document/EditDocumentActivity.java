@@ -175,7 +175,7 @@ public class EditDocumentActivity extends CreateDocumentActivity{
             DocumentStorage.getInstance(this).setTitle(title);
         }
 
-//        Send back the new file name, so that it can be used in the GalleryActivity:
+//        Send back the new file name, so that it can be used in the DocumentViewerActivity:
         Intent data = new Intent();
         data.setData(Uri.parse(mDocument.getTitle()));
         setResult(RESULT_OK, data);

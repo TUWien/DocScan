@@ -1,22 +1,39 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.animation.Animator;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.graphics.PointF;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.CheckBox;
 
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.signature.MediaStoreSignature;
 import com.crashlytics.android.Crashlytics;
 
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -25,7 +42,6 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.crop.CropView;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 
 import static at.ac.tuwien.caa.docscan.ui.MapViewActivity.KEY_MAP_VIEW_ACTIVITY_FINISHED;
 
@@ -35,6 +51,8 @@ import static at.ac.tuwien.caa.docscan.ui.MapViewActivity.KEY_MAP_VIEW_ACTIVITY_
 
 public class CropViewActivity extends AppCompatActivity {
 
+    private static final String KEY_SKIP_CROPPING_INFO_DIALOG = "KEY_SKIP_CROPPING_INFO_DIALOG";
+
     private CropView mCropView;
     private String mFileName;
 //    used to restore previous state - in case the user cancels cropping:
@@ -42,6 +60,7 @@ public class CropViewActivity extends AppCompatActivity {
     private boolean mIsFocused;
 //    used to restore previous state - in case the user cancels cropping:
     private int mOriginalOrientation;
+    private float mImageHeightWidthRatio;
 
     private static final String CLASS_NAME = "CropViewActivity";
 
@@ -106,7 +125,7 @@ public class CropViewActivity extends AppCompatActivity {
     private void initToolbar() {
 
         Toolbar mToolbar = findViewById(R.id.main_toolbar);
-        mToolbar.setTitle(getString(R.string.crop_view_title));
+        mToolbar.setTitle("");
 
 //        Enable back navigation in action bar:
         setSupportActionBar(mToolbar);
@@ -185,8 +204,128 @@ public class CropViewActivity extends AppCompatActivity {
 
     public void rotateCropView(MenuItem item) {
 
-        rotateExif(new File(mFileName));
+        if (Helper.rotateExif(new File(mFileName))) {
+            float toAngle = (mCropView.getRotation() + 90) % 360;
+            rotateCropView(toAngle, item);
+        }
 
+    }
+
+    private void calcImageRatio(File file) throws FileNotFoundException {
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(new FileInputStream(file), null, options);
+
+        try {
+            int exifOrientation = Helper.getExifOrientation(file);
+//            this should not happen:
+            if (exifOrientation == -1)
+                mImageHeightWidthRatio = options.outHeight / (float) options.outWidth;
+            else {
+                int exifAngle = Helper.getAngleFromExif(exifOrientation);
+                if (exifAngle == 0 || exifAngle == 180)
+                    mImageHeightWidthRatio = options.outHeight / (float) options.outWidth;
+                else
+                    mImageHeightWidthRatio = options.outWidth / (float) options.outHeight;
+            }
+        } catch (IOException e) {
+            mImageHeightWidthRatio = options.outHeight / (float) options.outWidth;
+        }
+//        Helper.getAngleFromExif()
+
+
+//        int outHeight = mCropView.getMeasuredHeight();
+//        int outWidth = mCropView.getMeasuredWidth();
+//        int cropViewWidth = mCropView.getMeasuredWidth();
+//
+////        Unfortunately the image view height is always the height of the activity. I found no way
+////        to adjust the view bounds for the CropView. So we have to reconstruct the 'real' view
+////        height based on the image ratio.
+//        int cropViewHeight;
+//
+////            If the original image orientation was in landscape mode we have to flip the ratio:
+//        if (outWidth > outHeight) {
+//            cropViewHeight = Math.round(cropViewWidth / mImageHeightWidthRatio);
+//        }
+//        else {
+//            cropViewHeight = Math.round(cropViewWidth * mImageHeightWidthRatio);
+//        }
+//
+//        float heightWidthRatio = outHeight / (float) cropViewWidth;
+//        float widthHeightRatio = outWidth / (float) cropViewHeight;
+////        The scale factor depends on the ratio of the original image:
+////            portrait:
+//        if (mImageHeightWidthRatio > 1)
+//            mScaleFactor = Math.min(heightWidthRatio, widthHeightRatio);
+////            landscape
+//        else
+//            mScaleFactor = Math.max(heightWidthRatio, widthHeightRatio);
+
+
+    }
+
+//    Returns the scaling factor for the ImageView, depending on the current angle:
+    private float getScaleFactor(float angle) {
+
+        if (angle == 0 || angle == 180)
+            return 1.f;
+
+        int outHeight = mCropView.getMeasuredHeight();
+        int outWidth = mCropView.getMeasuredWidth();
+        int cropViewWidth = mCropView.getMeasuredWidth();
+
+//        Unfortunately the image view height is always the height of the activity. I found no way
+//        to adjust the view bounds for the CropView. So we have to reconstruct the 'real' view
+//        height based on the image ratio.
+        int cropViewHeight;
+
+//            If the original image orientation was in landscape mode we have to flip the ratio:
+        if (outWidth > outHeight) {
+            cropViewHeight = Math.round(cropViewWidth / mImageHeightWidthRatio);
+        }
+        else {
+            cropViewHeight = Math.round(cropViewWidth * mImageHeightWidthRatio);
+        }
+
+        float heightWidthRatio = outHeight / (float) cropViewWidth;
+        float widthHeightRatio = outWidth / (float) cropViewHeight;
+
+        float scaleFactor = Math.min(heightWidthRatio, widthHeightRatio);
+        return scaleFactor;
+
+    }
+
+    private void rotateCropView(float angle, final MenuItem item) {
+
+        float scaleFactor = getScaleFactor(angle);
+        mCropView.resizeDimensions(scaleFactor);
+
+        mCropView.animate().rotation(angle).scaleX(scaleFactor).scaleY(scaleFactor).
+                setListener(new Animator.AnimatorListener() {
+
+            @Override
+            public void onAnimationStart(Animator animator) {
+                item.setEnabled(false);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animator) {
+                item.setEnabled(true);
+                mCropView.invalidate();
+//                mCropView.requestLayout();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animator) {
+//                item.setEnabled(true);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animator) {
+
+            }
+        });
     }
 
 
@@ -201,11 +340,65 @@ public class CropViewActivity extends AppCompatActivity {
         ArrayList<PointF> cropPoints = mCropView.getCropPoints();
         try {
             PageDetector.savePointsToExif(mFileName, cropPoints, mIsFocused);
-            GalleryActivity.fileCropped();
-            finish();
+
+            //        Tell the user that the cropping coordingates have changed:
+            if (!skipCroppingInfoDialog())
+                showCroppingInfoDialog();
+//            The user has skipped the dialog before, close the CropViewActivity:
+            else
+                finish();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+    private boolean skipCroppingInfoDialog() {
+
+        final SharedPreferences sharedPref = androidx.preference.PreferenceManager.
+                getDefaultSharedPreferences(this);
+        boolean skipDialog = sharedPref.getBoolean(KEY_SKIP_CROPPING_INFO_DIALOG, false);
+
+        return skipDialog;
+
+    }
+
+    /**
+     * Shows a message about cropping coordinates and that the images are not transformed at this
+     * point.
+     */
+    private void showCroppingInfoDialog() {
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        LayoutInflater adbInflater = LayoutInflater.from(this);
+        View eulaLayout = adbInflater.inflate(R.layout.check_box_dialog, null);
+
+        final CheckBox checkBox = eulaLayout.findViewById(R.id.skip);
+        alertDialog.setView(eulaLayout);
+        alertDialog.setTitle(R.string.crop_view_crop_dialog_title);
+        alertDialog.setMessage(R.string.crop_view_crop_dialog_text);
+
+        final SharedPreferences sharedPref = androidx.preference.PreferenceManager.
+                getDefaultSharedPreferences(this);
+
+        alertDialog.setPositiveButton(getString(R.string.button_ok),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        if (checkBox.isChecked()) {
+                            SharedPreferences.Editor editor = sharedPref.edit();
+                            editor.putBoolean(KEY_SKIP_CROPPING_INFO_DIALOG, true);
+                            editor.commit();
+//                            Close the CropViewActivity:
+                        }
+
+                        finish();
+                    }
+                });
+
+        alertDialog.show();
 
     }
 
@@ -230,7 +423,7 @@ public class CropViewActivity extends AppCompatActivity {
     private void loadBitmap() {
 
 //        Load image with Glide:
-        File file = new File(mFileName);
+        final File file = new File(mFileName);
 
         try {
             final ExifInterface exif = new ExifInterface(file.getAbsolutePath());
@@ -239,15 +432,27 @@ public class CropViewActivity extends AppCompatActivity {
             GlideApp.with(this)
                     .load(file)
                     .signature(new MediaStoreSignature("", file.lastModified(), orientation))
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            try {
+                                calcImageRatio(file);
+                            } catch (FileNotFoundException e) {
+//                                e.printStackTrace();
+                            }
+                            return false;
+                        }
+                    })
                     .into(mCropView);
 
             Log.d(CLASS_NAME, "loadBitmap: bitmap loaded");
 
         } catch (IOException e) {
-            GlideApp.with(this)
-                    .load(file)
-                    .into(mCropView);
-
             Log.d(CLASS_NAME, "loadBitmap: could not load bitmap");
         }
 

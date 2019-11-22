@@ -363,6 +363,34 @@ public class Helper {
 
     }
 
+    public static boolean rotateExif90DegreesCCW(File outFile)  {
+
+        final ExifInterface exif;
+        try {
+            exif = new ExifInterface(outFile.getAbsolutePath());
+            if (exif != null) {
+
+//            Note the regular android.media.ExifInterface has no method for rotation, but the
+//            android.support.media.ExifInterface does.
+
+                exif.rotate(-90);
+                exif.saveAttributes();
+
+                if (!PageDetector.isCropped(outFile.getAbsolutePath()))
+                    PageDetector.rotate90DegreesCCW(outFile.getAbsolutePath());
+
+                return true;
+            }
+        } catch (IOException e) {
+            Crashlytics.logException(e);
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+
 
     public static boolean rotateExif(File outFile)  {
 

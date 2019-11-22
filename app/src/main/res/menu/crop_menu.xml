@@ -10,13 +10,13 @@
         android:onClick="rotateCropView"
         />
 
-    <item
-        android:icon="@drawable/ic_crop_black_24dp"
-        android:title="@string/crop_view_item_map"
-        android:visible="true"
-        app:showAsAction="always"
-        android:onClick="startMapView"
-        />
+<!--    <item-->
+<!--        android:icon="@drawable/ic_crop_black_24dp"-->
+<!--        android:title="@string/crop_view_item_map"-->
+<!--        android:visible="true"-->
+<!--        app:showAsAction="always"-->
+<!--        android:onClick="startMapView"-->
+<!--        />-->
 
     <item
         android:icon="@drawable/ic_done_black_24dp"

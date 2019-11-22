@@ -35,6 +35,7 @@
     <style name="AppDarkTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorControlNormal">@color/white</item>
         <item name="colorPrimary">@color/white</item>
+        <item name="android:actionMenuTextColor">@color/white</item>
     </style>
 
     <!--Taken from: https://www.murrayc.com/permalink/2014/10/28/android-changing-the-toolbars-text-color-and-overflow-icon-color/-->

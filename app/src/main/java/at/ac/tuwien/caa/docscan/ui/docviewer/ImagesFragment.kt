@@ -43,8 +43,6 @@ class ImagesFragment(private val document: Document?) : Fragment() {
 //        TODO: add here more columns for landscape mode:
         images_list.layoutManager = GridLayoutManager(context, 2)
 
-
-
     }
 
     fun scrollToFile(fileName: String) {

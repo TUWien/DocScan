@@ -5,7 +5,7 @@
     <item
         android:id="@+id/action_document_crop_item"
         android:title="@string/action_document_crop_title"
-        android:icon="@drawable/ic_crop_black_24dp"
+        android:icon="@drawable/ic_transform_black_24dp"
         />
     <item
         android:id="@+id/action_document_pdf_item"

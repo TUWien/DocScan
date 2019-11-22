@@ -157,8 +157,12 @@
     <string name="series_switch">Open document</string>
     <string name="series_qr">New document from QR code</string>
 
+    <!--  CropViewActivitiy  -->
     <string name="crop_view_item_rotate">Rotate 90 degrees</string>
     <string name="crop_view_item_map">Preview mapping</string>
+    <string name="crop_view_crop_dialog_title">Page boundary saved</string>
+    <string name="crop_view_crop_dialog_text">The saved page boundary is used when you transform the images.
+        All document images can be transformed at once in the document view.</string>
 
     <!-- MapViewActivity -->
     <string name="map_view_item_save">Save image</string>
@@ -431,7 +435,7 @@
 
     <string name="action_document_create_title">New document</string>
     <string name="action_document_select_title">Select document</string>
-    <string name="action_document_crop_title">Crop images</string>
+    <string name="action_document_crop_title">Transform images</string>
     <string name="action_document_qr_title">Document from QR code</string>
     <string name="action_document_upload_document">Upload</string>
     <string name="action_document_pdf_title">Save as PDF</string>

@@ -18,7 +18,6 @@ package at.ac.tuwien.caa.docscan.ui.gallery;
  */
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -52,8 +51,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
-
 import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -80,6 +77,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     private LinearLayout mButtonsLayout;
     private Context mContext;
     private BroadcastReceiver mMessageReceiver;
+
+    public static final String KEY_IMAGE_CHANGED = "KEY_IMAGE_CHANGED";
 
     public static final String KEY_DOCUMENT_NAME = "KEY_DOCUMENT_NAME";
     public static final String KEY_FILE_NAME = "KEY_FILE_NAME";
@@ -291,6 +290,15 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
+    @Override
+    public void onBackPressed() {
+        Intent data = new Intent();
+        data.putExtra(KEY_IMAGE_CHANGED, true);
+        setResult(RESULT_OK, data);
+
+        super.onBackPressed();
+    }
+
     private void initToolbar() {
 
         mToolbar = findViewById(R.id.image_viewer_toolbar);
@@ -312,9 +320,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         mToolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(mContext, DocumentViewerActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                mContext.startActivity(intent);
+                startGalleryActivity();
             }
         });
 
@@ -340,46 +346,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-    public void retakeImage(MenuItem item) {
-
-        final int idx;
-        if (mDocument != null && mDocument.getPages() != null && mPage != null)
-            idx = mDocument.getPages().indexOf(mPage);
-        else
-//        Nothing to do here. TODO: add an error message
-            return;
-
-
-        final Context context = this;
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(getString(R.string.page_slide_fragment_retake_image_dialog_title))
-                .setNegativeButton(getString(R.string.page_slide_fragment_retake_image_dialog_cancel_text), null)
-                .setPositiveButton(getString(R.string.page_slide_fragment_retake_image_dialog_confirm_text),
-                        new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)  {
-
-                        Intent intent = new Intent(context, CameraActivity.class);
-//                        Define which image / page should be replaced:
-                        intent.putExtra(KEY_RETAKE_IMAGE, true);
-                        intent.putExtra(KEY_RETAKE_IDX, idx);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                        startActivity(intent);
-//                        finish();
-
-                    }
-                })
-                .setCancelable(true)
-                .setMessage(getString(R.string.page_slide_fragment_retake_image_dialog_text));
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
-    }
 
 
     private void initButtons() {
@@ -402,15 +368,15 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-    @Override
-    public void finishAfterTransition() {
-
-        Intent data = new Intent();
-        data.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
-        data.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
-        setResult(RESULT_OK, data);
-        super.finishAfterTransition();
-    }
+//    @Override
+//    public void finishAfterTransition() {
+//
+//        Intent data = new Intent();
+//        data.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
+//        data.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
+//        setResult(RESULT_OK, data);
+//        super.finishAfterTransition();
+//    }
 
 
 //    private void initGalleryButton() {
@@ -449,7 +415,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                 ActivityOptionsCompat activityOptionsCompat =
                         ActivityOptionsCompat.makeSceneTransitionAnimation(this, imageView,
                                 imageView.getTransitionName());
-                Log.d(CLASS_NAME, "transition name: " + imageView.getTransitionName());
+//                Log.d(CLASS_NAME, "transition name: " + imageView.getTransitionName());
                 mContext.startActivity(intent, activityOptionsCompat.toBundle());
                 finish();
 //                finishAfterTransition();
@@ -476,20 +442,73 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     private void initRotateButton() {
 
-        ImageView rotateImageView = findViewById(R.id.page_view_buttons_layout_rotate_button);
-        rotateImageView.setOnClickListener(new View.OnClickListener() {
+        ImageView retakeImageView = findViewById(R.id.page_view_buttons_layout_rotate_button);
+        retakeImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                // Check if we have the permission to rotate images:
-                if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    // ask for permission:
-                    ActivityCompat.requestPermissions((AppCompatActivity) mContext, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
-                } else
-                    rotatePage();
+                retakeImage();
             }
         });
 
+
+
+
+//        ImageView rotateImageView = findViewById(R.id.page_view_buttons_layout_rotate_button);
+//        rotateImageView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                // Check if we have the permission to rotate images:
+//                if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//                    // ask for permission:
+//                    ActivityCompat.requestPermissions((AppCompatActivity) mContext, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
+//                } else
+//                    rotatePage();
+//            }
+//        });
+
+
+
+    }
+
+    private void retakeImage() {
+        final int idx;
+        if (mDocument != null && mDocument.getPages() != null && mPage != null)
+            idx = mDocument.getPages().indexOf(mPage);
+        else
+//        Nothing to do here.
+            return;
+
+
+        final Context context = this;
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(getString(R.string.page_slide_fragment_retake_image_dialog_title))
+                .setNegativeButton(getString(R.string.page_slide_fragment_retake_image_dialog_cancel_text), null)
+                .setPositiveButton(getString(R.string.page_slide_fragment_retake_image_dialog_confirm_text),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i)  {
+
+                                Intent intent = new Intent(context, CameraActivity.class);
+//                        Define which image / page should be replaced:
+                                intent.putExtra(KEY_RETAKE_IMAGE, true);
+                                intent.putExtra(KEY_RETAKE_IDX, idx);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+//                        finish();
+
+                            }
+                        })
+                .setCancelable(true)
+                .setMessage(getString(R.string.page_slide_fragment_retake_image_dialog_text));
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
     }
 
     private void rotatePage() {

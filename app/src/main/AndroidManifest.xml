@@ -87,7 +87,7 @@
 
         <activity
             android:name=".ui.CropViewActivity"
-            android:exported="false"
+            android:exported="true"
             />
 
         <activity

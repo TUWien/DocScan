@@ -18,7 +18,7 @@
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="preferenceTheme">@style/Preference</item>
         <item name="alertDialogTheme">@style/AlertDialogTheme</item>
-        <item name="materialButtonStyle">@style/ButtonStyle</item>
+<!--        <item name="materialButtonStyle">@style/ButtonStyle</item>-->
 
         <item name="android:windowContentTransitions">true</item>
     </style>
@@ -30,10 +30,10 @@
         <item name="buttonBarButtonStyle">@style/DialogButtonStyle</item>
     </style>
 
-    <style name="ButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">
-        <item name="android:textColor">@color/white</item>
-        <item name="backgroundTint">@color/colorControlHighlight</item>
-    </style>
+<!--    <style name="ButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">-->
+<!--        <item name="android:textColor">@color/white</item>-->
+<!--        <item name="backgroundTint">@color/colorControlHighlight</item>-->
+<!--    </style>-->
 
     <style name="DialogButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
         <item name="android:textColor">@color/colorControlHighlight</item>

@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
@@ -39,6 +40,8 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
+
+import static at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity.LAUNCH_VIEWER_REQUEST;
 
 /**
  * Created by fabian on 2/6/2018.
@@ -500,7 +503,8 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                     intent.putExtra(mContext.getString(R.string.key_document_file_name), mDocumentName);
                     Log.d(CLASS_NAME, "onClick: " + mDocumentName);
                     intent.putExtra(mContext.getString(R.string.key_page_position), position);
-                    mContext.startActivity(intent);
+                    ((Activity) mContext).startActivityForResult(intent, LAUNCH_VIEWER_REQUEST);
+//                    mContext.startActivity(intent);
                 }
             }
             else {
