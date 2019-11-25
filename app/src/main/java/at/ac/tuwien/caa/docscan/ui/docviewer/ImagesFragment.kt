@@ -115,6 +115,10 @@ class ImagesFragment(private val document: Document?) : Fragment() {
         galleryAdapter.updateImageView(fileName)
     }
 
+    fun selectAll() {
+        galleryAdapter.selectAllItems()
+    }
+
     fun deleteSelections() {
 
         if (document == null || document.pages == null) {

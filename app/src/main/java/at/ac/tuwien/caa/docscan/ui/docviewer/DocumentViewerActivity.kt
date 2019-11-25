@@ -237,6 +237,13 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     }
 
 
+    fun selectAll(item: MenuItem) {
+        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
+            if ((this as ImagesFragment).isVisible) {
+                this.selectAll()
+            }
+        }    }
+
 
     override fun onDocumentSheetSelected(document: Document, sheetAction: ActionSheet.SheetAction) {
 
@@ -896,6 +903,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //            postponeEnterTransition()
 //        }
+
+        selectedDocument = document
 
         val imagesFragment = ImagesFragment(document)
         if (fileName != null) {

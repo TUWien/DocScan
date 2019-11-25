@@ -443,7 +443,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
         }
 
         //        We need to redraw the check boxes:
-//        this.notifyDataSetChanged();
+        this.notifyDataSetChanged();
 
 //        if (mCallback != null)
 //    //        We need to inform the parent activity that the selection has changed:

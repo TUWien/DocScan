@@ -18,6 +18,8 @@ package at.ac.tuwien.caa.docscan.ui.gallery;
  */
 
 import android.Manifest;
+import android.animation.Animator;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -26,6 +28,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -50,6 +53,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import java.io.File;
 
@@ -329,8 +334,9 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     private void setToolbarTitle(int pos) {
 
         if (mToolbar != null && getSupportActionBar() != null)
-            getSupportActionBar().setTitle("#: " + Integer.toString(pos+1) + "/" +
-                    Integer.toString(mDocument.getPages().size())+ " - " + mDocument.getTitle());
+            getSupportActionBar().setTitle((pos + 1) + "/" + mDocument.getPages().size());
+//            getSupportActionBar().setTitle("#: " + Integer.toString(pos+1) + "/" +
+//                    Integer.toString(mDocument.getPages().size())+ " - " + mDocument.getTitle());
     }
 
     // A method to find height of the status bar
@@ -398,7 +404,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         String documentTitle = mDocument.getTitle();
         if (documentTitle != null) {
 
-            Intent intent = new Intent(mContext, DocumentViewerActivity.class);
+            final Intent intent = new Intent(mContext, DocumentViewerActivity.class);
 //            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
 //            Without this flag the activities would all be added to the back stack.
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -408,22 +414,27 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //            mContext.startActivity(intent);
 //            finish();
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
-                if (imageView == null)
-                    Log.d(CLASS_NAME, "imageview is null");
-                ActivityOptionsCompat activityOptionsCompat =
-                        ActivityOptionsCompat.makeSceneTransitionAnimation(this, imageView,
-                                imageView.getTransitionName());
-//                Log.d(CLASS_NAME, "transition name: " + imageView.getTransitionName());
-                mContext.startActivity(intent, activityOptionsCompat.toBundle());
-                finish();
-//                finishAfterTransition();
-            }
-            else {
-                mContext.startActivity(intent);
-                finish();
-            }
+            // Zoom out before opening the DocumentViewerActivity:
+            PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+            imageView.animateScale(0).withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
+                @Override
+                public void onComplete() {
+                    startDocumentViewer(intent);
+                }
+
+                @Override
+                public void onInterruptedByUser() {
+                    startDocumentViewer(intent);
+                }
+
+                @Override
+                public void onInterruptedByNewAnim() {
+                    startDocumentViewer(intent);
+                }
+            }).start();
+
+
+
 
 
 //            Intent intent = new Intent(mContext, GalleryActivity.class);
@@ -438,6 +449,24 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //            finish();
         }
 
+    }
+
+    private void startDocumentViewer(Intent intent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+            if (imageView == null)
+                Log.d(CLASS_NAME, "imageview is null");
+            ActivityOptionsCompat activityOptionsCompat =
+                    ActivityOptionsCompat.makeSceneTransitionAnimation(this, imageView,
+                            imageView.getTransitionName());
+//                Log.d(CLASS_NAME, "transition name: " + imageView.getTransitionName());
+            mContext.startActivity(intent, activityOptionsCompat.toBundle());
+            finish();
+        }
+        else {
+            mContext.startActivity(intent);
+            finish();
+        }
     }
 
     private void initRotateButton() {
@@ -581,14 +610,39 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             @Override
             public void onClick(View v) {
                 if (mPage != null) {
-                    Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
-                    intent.putExtra(getString(R.string.key_crop_view_activity_file_name),
-                            mPage.getFile().getAbsolutePath());
-                    startActivity(intent);
+
+//                    Zoom out before opening the CropViewActivity:
+                    PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+                    imageView.animateScale(0).withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
+                        @Override
+                        public void onComplete() {
+                            startCropView();
+
+                        }
+
+                        @Override
+                        public void onInterruptedByUser() {
+                            startCropView();
+                        }
+
+                        @Override
+                        public void onInterruptedByNewAnim() {
+                            startCropView();
+                        }
+                    }).start();
+
                 }
             }
         });
 
+    }
+
+    private void startCropView() {
+        Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+        intent.putExtra(getString(R.string.key_crop_view_activity_file_name),
+                mPage.getFile().getAbsolutePath());
+
+        mContext.startActivity(intent);
     }
 
     private void initDeleteButton() {

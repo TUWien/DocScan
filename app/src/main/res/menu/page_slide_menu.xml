@@ -3,11 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:title="All document images"
+        android:title="All images"
         android:visible="true"
-        android:icon="@drawable/ic_photo_library_white_24dp"
         android:iconTint="@color/white"
-        app:showAsAction="withText"
+        app:showAsAction="withText|always"
         android:onClick="showGallery"
         />
 
