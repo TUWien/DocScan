@@ -162,7 +162,7 @@ public class Mapper {
             return result;
         }
         finally {
-            result.release();
+//            result.release();
             srcPointsMat.release();
             dstPointsMat.release();
             perspectiveTransform.release();
