@@ -80,8 +80,8 @@ public class ImageProcessor {
     // A queue of Runnables for the page detection
     private final BlockingQueue<Runnable> mProcessQueue;
     // A managed pool of background threads
-    private final ThreadPoolExecutor mProcessThreadPool;
-
+//    private final ThreadPoolExecutor mProcessThreadPool;
+    private final Executor mProcessThreadPool;
 //    This is a single thread executor, in order to avoid OOM's when opening too many images in
 //    parallel, instead the pdf's are created in serial:
     private final Executor mPDFExecutor;
@@ -108,9 +108,9 @@ public class ImageProcessor {
 
         mProcessQueue = new LinkedBlockingQueue<>();
         mPDFExecutor = Executors.newSingleThreadExecutor();
-
-        mProcessThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
-                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mProcessQueue);
+        mProcessThreadPool = Executors.newSingleThreadExecutor();
+//        mProcessThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
+//                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mProcessQueue);
 
         /*
          * Instantiates a new anonymous Handler object and defines its
