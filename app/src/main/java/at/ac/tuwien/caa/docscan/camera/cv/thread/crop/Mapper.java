@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
+import android.app.ActivityManager;
 import android.graphics.PointF;
 import androidx.annotation.NonNull;
 import androidx.exifinterface.media.ExifInterface;
@@ -44,7 +45,8 @@ public class Mapper {
                 try {
 //            First copy the exif data, because we do not want to loose this data:
                     ExifInterface exif = new ExifInterface(fileName);
-                    boolean fileSaved = Imgcodecs.imwrite(fileName, transformedMat);
+//                    boolean fileSaved = Imgcodecs.imwrite(fileName, transformedMat);
+                    boolean fileSaved = Helper.replaceImage(fileName, transformedMat);
                     if (fileSaved)
                         Helper.saveExif(exif, fileName);
 
@@ -75,13 +77,12 @@ public class Mapper {
 
         Mat transformedMat = null;
         try {
+
+
             transformedMat = cropAndTransform(fileName, points);
-
-            if (transformedMat != null) {
-
-                return Imgcodecs.imwrite(newFileName, transformedMat);
-
-            }
+            if (transformedMat != null)
+//                return Imgcodecs.imwrite(newFileName, transformedMat);
+                return Helper.replaceImage(newFileName, transformedMat);
 
             return false;
         }
@@ -117,8 +118,6 @@ public class Mapper {
 
             // Sort the points so that the bottom left corner is on the first index:
             sortPoints(srcPoints);
-            printPointList(srcPoints, "sorted");
-
 //        Determine the size of the output image:
             Size size = getRectSize(srcPoints);
             float width = (float) size.width;
@@ -126,7 +125,6 @@ public class Mapper {
 
 //        Get the destination points:
             ArrayList destPoints = getDestinationPoints(width, height);
-            printPointList(destPoints, "dest points");
 
             // Transform the image:
             return warpMat(inputMat, srcPoints, destPoints, Math.round(width), Math.round(height));
@@ -139,13 +137,13 @@ public class Mapper {
 
     private static Mat warpMat(Mat mat, ArrayList<PointF> cropPoints, ArrayList<PointF> destPoints, int width, int height) {
 
-        Mat result = null;
         MatOfPoint2f srcPointsMat = null;
         MatOfPoint2f dstPointsMat = null;
         Mat perspectiveTransform = null;
 
         try {
-            result = new Mat(height, width, mat.type());
+
+            Mat result = new Mat(height, width, mat.type());
 
             srcPointsMat = convertToOpenCVPoints(cropPoints);
             dstPointsMat = convertToOpenCVPoints(destPoints);

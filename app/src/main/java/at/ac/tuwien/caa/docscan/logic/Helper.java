@@ -20,6 +20,9 @@ import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -595,6 +598,64 @@ public class Helper {
         return false;
 
     }
+
+    /**
+     * Replaces an image with a new image. Saves the image first temporary in order to not destroy
+     * the original image in case of an interruption.
+     * @param fileName
+     * @param mat
+     * @return
+     */
+    public static boolean replaceImage(String fileName, Mat mat) {
+
+//            First get a temporary file name:
+//        String tempFileName = fileName;
+////                String fileExt = MimeTypeMap.getFileExtensionFromUrl(fileTmp.getAbsolutePath());
+//        int dotPos = tempFileName.lastIndexOf(".");
+//        tempFileName = tempFileName.substring(0, dotPos) + "-temp" + tempFileName.substring(dotPos);
+
+        File originalFile = new File(fileName);
+        File tempFile;
+        try {
+            tempFile = File.createTempFile("img", ".jpg", originalFile.getParentFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+            Crashlytics.log("Helper.saveMat");
+            Crashlytics.logException(e);
+            return false;
+        }
+
+        String tempFileName = tempFile.getAbsolutePath();
+
+        Log.d(CLASS_NAME, "tempFileName: " + tempFileName);
+
+//        File tempFile = new File(tempFileName);
+
+        boolean isSaved = false;
+
+        try {
+//            First copy the exif data, because we do not want to loose this data:
+            ExifInterface exif = new ExifInterface(fileName);
+            boolean fileSaved = Imgcodecs.imwrite(tempFileName, mat);
+            if (fileSaved) {
+                saveExif(exif, tempFileName);
+//                Rename the file:
+                isSaved = tempFile.renameTo(new File(fileName));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Crashlytics.log("Helper.saveMat");
+            Crashlytics.logException(e);
+        } finally {
+//            Delete the temporary file, if it still exists:
+            if (tempFile.exists())
+                tempFile.delete();
+        }
+
+        return isSaved;
+
+    }
+
 
     /**
      * Returns an input filter for edit text that prevents that the user enters non valid characters
