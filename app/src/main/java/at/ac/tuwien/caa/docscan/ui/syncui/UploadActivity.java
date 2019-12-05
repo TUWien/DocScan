@@ -616,8 +616,10 @@ public class UploadActivity extends BaseNavigationActivity implements DocumentAd
 
     private void deleteSelectedDocuments(ArrayList<Document> documents) {
 
-        for (Document document : documents)
+        for (Document document : documents) {
+            document.deleteImages();
             DocumentStorage.getInstance(this).getDocuments().remove(document);
+        }
 
 //        update the UI:
         showDocumentsDeletedSnackbar(documents.size());

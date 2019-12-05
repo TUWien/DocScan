@@ -108,9 +108,10 @@ public class ImageProcessor {
 
         mProcessQueue = new LinkedBlockingQueue<>();
         mPDFExecutor = Executors.newSingleThreadExecutor();
-        mProcessThreadPool = Executors.newSingleThreadExecutor();
+//        mProcessThreadPool = Executors.newSingleThreadExecutor();
 //        mProcessThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
 //                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mProcessQueue);
+        mProcessThreadPool = Executors.newFixedThreadPool(2);
 
         /*
          * Instantiates a new anonymous Handler object and defines its
