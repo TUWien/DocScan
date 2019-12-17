@@ -31,6 +31,7 @@
             app:showAsAction="never"
             />
         <item
+            android:id="@+id/gallery_menu_crop"
             android:icon="@drawable/ic_crop_black_24dp"
             android:title="@string/gallery_menu_crop_item_title"
             android:onClick="cropSelectedItems"

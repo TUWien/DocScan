@@ -10,8 +10,8 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 16
 		targetSdkVersion 28
-		versionCode 101
-		versionName "1.6.33"
+		versionCode 105
+		versionName "1.7.3"
 
 		multiDexEnabled true
 //		this is used to show the build time in the AboutActivity
@@ -162,12 +162,14 @@ dependencies {
     implementation 'me.drakeet.support:toastcompat:1.1.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 	implementation 'com.google.firebase:firebase-core:17.0.1'
+	implementation 'it.xabaras.android.espresso:recyclerview-child-actions:1.0'
 	// Add dependency
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
 	androidTestImplementation 'androidx.test.ext:junit:1.1.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0', {
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1', {
         exclude group: 'com.android.support', module: 'support-annotations'
     }
+    implementation 'androidx.test.espresso:espresso-idling-resource:3.1.1'
     androidTestImplementation 'androidx.test:rules:1.1.0'
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'

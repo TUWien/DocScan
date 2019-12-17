@@ -1,6 +1,8 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
+import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.Context;
 import android.graphics.PointF;
 import androidx.annotation.NonNull;
 import androidx.exifinterface.media.ExifInterface;
@@ -42,22 +44,15 @@ public class Mapper {
         try {
             transformedMat = cropAndTransform(fileName, points);
             if (transformedMat != null) {
-                try {
 //            First copy the exif data, because we do not want to loose this data:
-                    ExifInterface exif = new ExifInterface(fileName);
-//                    boolean fileSaved = Imgcodecs.imwrite(fileName, transformedMat);
-                    boolean fileSaved = Helper.replaceImage(fileName, transformedMat);
-                    if (fileSaved)
-                        Helper.saveExif(exif, fileName);
-
-                    return fileSaved;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                    TODO; check if exif is not already saved in replaceImage
+                boolean fileSaved = Helper.replaceImage(fileName, transformedMat);
+                return fileSaved;
             }
         }
         finally {
-            transformedMat.release();
+            if (transformedMat != null)
+                transformedMat.release();
         }
 
         return false;
@@ -77,18 +72,16 @@ public class Mapper {
 
         Mat transformedMat = null;
         try {
-
-
             transformedMat = cropAndTransform(fileName, points);
             if (transformedMat != null)
-//                return Imgcodecs.imwrite(newFileName, transformedMat);
-                return Helper.replaceImage(newFileName, transformedMat);
-
-            return false;
+                return Imgcodecs.imwrite(newFileName, transformedMat);
         }
         finally {
-            transformedMat.release();
+            if (transformedMat != null)
+                transformedMat.release();
         }
+
+        return false;
 
     }
 
@@ -108,7 +101,6 @@ public class Mapper {
         Mat inputMat = null;
 
         try {
-
             inputMat = Imgcodecs.imread(fileName);
 
             // Scale the points since they are normed:
@@ -149,7 +141,7 @@ public class Mapper {
             dstPointsMat = convertToOpenCVPoints(destPoints);
             perspectiveTransform = Imgproc.getPerspectiveTransform(srcPointsMat, dstPointsMat);
 
-            // TODO: handle case where not transform is found
+            // TODO: handle case where no transform is found
             Imgproc.warpPerspective(mat,
                     result,
                     perspectiveTransform,
@@ -161,9 +153,12 @@ public class Mapper {
         }
         finally {
 //            result.release();
-            srcPointsMat.release();
-            dstPointsMat.release();
-            perspectiveTransform.release();
+            if (srcPointsMat != null)
+                srcPointsMat.release();
+            if (dstPointsMat != null)
+                dstPointsMat.release();
+            if (perspectiveTransform != null)
+                perspectiveTransform.release();
         }
 
     }
@@ -175,7 +170,6 @@ public class Mapper {
         for (PointF point : points) {
             openCVPoints.add(new Point(point.x, point.y));
         }
-
 
         MatOfPoint2f result = new MatOfPoint2f();
         result.fromList(openCVPoints);

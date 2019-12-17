@@ -69,10 +69,10 @@ public class ImageProcessor {
     private static final TimeUnit KEEP_ALIVE_TIME_UNIT;
 
     // Sets the initial threadpool size to 8
-    private static final int CORE_POOL_SIZE = 8;
+    private static final int CORE_POOL_SIZE = 4;
 
     // Sets the maximum threadpool size to 8
-    private static final int MAXIMUM_POOL_SIZE = 8;
+    private static final int MAXIMUM_POOL_SIZE = 4;
 
 
     private static final String CLASS_NAME = "ImageProcessor";
@@ -95,6 +95,9 @@ public class ImageProcessor {
 //    Singleton:
     private static ImageProcessor sInstance;
 
+////    Used for espresso testing:
+//    private static boolean useEpressoIdling = false;
+
     static {
 
         // The time unit for "keep alive" is in seconds
@@ -103,15 +106,25 @@ public class ImageProcessor {
         sInstance = new ImageProcessor();
     }
 
+//    public static void setEspressoIdling(boolean use) {
+//
+//        useEpressoIdling = use;
+//
+//    }
+
+//    public CountingIdlingResource getIdling() {
+//        return EspressoIdling.INSTANCE.getCntRes();
+//    }
 
     private ImageProcessor() {
 
         mProcessQueue = new LinkedBlockingQueue<>();
         mPDFExecutor = Executors.newSingleThreadExecutor();
-//        mProcessThreadPool = Executors.newSingleThreadExecutor();
-//        mProcessThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
+        mProcessThreadPool = Executors.newSingleThreadExecutor();
+
+        //        mProcessThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
 //                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mProcessQueue);
-        mProcessThreadPool = Executors.newFixedThreadPool(2);
+//        mProcessThreadPool = Executors.newFixedThreadPool(2);
 
         /*
          * Instantiates a new anonymous Handler object and defines its
@@ -166,6 +179,9 @@ public class ImageProcessor {
              */
             private boolean finishTask(ImageProcessTask task) {
 
+//                if (useEpressoIdling)
+//                    EspressoIdling.INSTANCE.decrement();
+
                 if (task == null)
                     return false;
 
@@ -205,9 +221,9 @@ public class ImageProcessor {
                 else
                     return false;
 
-                if (task.getFile() != null) {
+                if (task.getFile() != null)
                     sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
-                }
+
 
                 return true;
 
@@ -308,6 +324,9 @@ public class ImageProcessor {
 
         ImageProcessTask imageProcessTask = null;
 
+//        if (useEpressoIdling)
+//            EspressoIdling.INSTANCE.increment();
+
         //        Inform the logger that we got a new file here:
         switch (taskType) {
             case TASK_TYPE_PAGE_DETECTION:
@@ -361,6 +380,8 @@ public class ImageProcessor {
         sInstance.mPDFExecutor.execute(imageProcessTask.getRunnable());
 
     }
+
+
 
     private void sendIntent(String fileName, int type) {
 

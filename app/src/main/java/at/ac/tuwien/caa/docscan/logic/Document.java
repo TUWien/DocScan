@@ -52,7 +52,7 @@ public class Document {
         Iterator<Page> it = mPages.iterator();
         while (it.hasNext()) {
             Page page = it.next();
-            if (page != null || page.getFile() != null || page.getFile().exists()) {
+            if (page != null && page.getFile() != null && page.getFile().exists()) {
                 page.getFile().delete();
                 it.remove();
             }
