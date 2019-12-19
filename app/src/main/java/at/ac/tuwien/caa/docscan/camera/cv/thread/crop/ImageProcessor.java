@@ -381,8 +381,6 @@ public class ImageProcessor {
 
     }
 
-
-
     private void sendIntent(String fileName, int type) {
 
         Log.d(CLASS_NAME, "sendIntent:");
