@@ -123,7 +123,8 @@ public class Mapper {
 
         }
         finally {
-            inputMat.release();
+            if (inputMat != null)
+                inputMat.release();
         }
     }
 
