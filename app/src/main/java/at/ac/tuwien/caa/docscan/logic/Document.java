@@ -44,6 +44,22 @@ public class Document {
 
     }
 
+    /**
+     * Deletes all images.
+     */
+    public void deleteImages() {
+
+        Iterator<Page> it = mPages.iterator();
+        while (it.hasNext()) {
+            Page page = it.next();
+            if (page != null && page.getFile() != null && page.getFile().exists()) {
+                page.getFile().delete();
+                it.remove();
+            }
+        }
+
+    }
+
     public void replacePage(File file, int index) {
 
         if (mPages != null && mPages.size() >= index + 1 && mPages.get(index) != null) {

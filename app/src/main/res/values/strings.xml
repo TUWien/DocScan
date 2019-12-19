@@ -229,6 +229,8 @@
     <string name="sync_notification_uploading_transkribus_text">Uploading to Transkribus.</string>
     <string name="sync_notification_uploading_finished_title">Upload finished</string>
     <string name="sync_notification_uploading_finished_text">Finished image upload.</string>
+    <string name="sync_notification_uploading_canceled_title">Upload canceled</string>
+    <string name="sync_notification_uploading_canceled_text">Upload canceled on user request.</string>
     <string name="sync_notification_stoped_title">Upload stopped</string>
     <string name="sync_notification_stoped_text">Could not find selected file(s).</string>
     <string name="sync_notification_error_title">Upload interrupted</string>
@@ -409,6 +411,8 @@
     <string name="gallery_menu_delete_item_title">Delete item</string>
     <string name="gallery_menu_select_all_item_title">Select all items</string>
     <string name="gallery_menu_create_pdf_item_title">Create pdf from item</string>
+    <string name="gallery_menu_clear_sync">Clear upload data</string>
+    <string name="gallery_menu_cancel_upload">Cancel upload</string>
     <string name="gallery_menu_crop_item_title">Crop item</string>
     <string name="gallery_selected">selected</string>
     <string name="gallery_menu_rotate_item_title">Rotate right</string>

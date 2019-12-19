@@ -1,5 +1,8 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.graphics.PointF;
 import androidx.annotation.NonNull;
 import androidx.exifinterface.media.ExifInterface;
@@ -36,24 +39,20 @@ public class Mapper {
      */
     public static boolean replaceWithMappedImage(String fileName, ArrayList<PointF> points) {
 
-        Mat transformedMat = cropAndTransform(fileName, points);
+        Mat transformedMat = null;
 
-        if (transformedMat != null) {
-
-            try {
-
+        try {
+            transformedMat = cropAndTransform(fileName, points);
+            if (transformedMat != null) {
 //            First copy the exif data, because we do not want to loose this data:
-                ExifInterface exif = new ExifInterface(fileName);
-                boolean fileSaved = Imgcodecs.imwrite(fileName, transformedMat);
-                if (fileSaved)
-                    Helper.saveExif(exif, fileName);
-
+//                    TODO; check if exif is not already saved in replaceImage
+                boolean fileSaved = Helper.replaceImage(fileName, transformedMat);
                 return fileSaved;
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-            transformedMat.release();
-
+        }
+        finally {
+            if (transformedMat != null)
+                transformedMat.release();
         }
 
         return false;
@@ -71,12 +70,15 @@ public class Mapper {
      */
     public static boolean mapImage(String fileName, String newFileName, ArrayList<PointF> points) {
 
-        Mat transformedMat = cropAndTransform(fileName, points);
-
-        if (transformedMat != null) {
-
-            return Imgcodecs.imwrite(newFileName, transformedMat);
-
+        Mat transformedMat = null;
+        try {
+            transformedMat = cropAndTransform(fileName, points);
+            if (transformedMat != null)
+                return Imgcodecs.imwrite(newFileName, transformedMat);
+        }
+        finally {
+            if (transformedMat != null)
+                transformedMat.release();
         }
 
         return false;
@@ -96,49 +98,68 @@ public class Mapper {
         if (!new File(fileName).exists())
             return null;
 
-        Mat inputMat = Imgcodecs.imread(fileName);
+        Mat inputMat = null;
 
-        // Scale the points since they are normed:
-        scalePoints(srcPoints, inputMat.width(), inputMat.height());
+        try {
+            inputMat = Imgcodecs.imread(fileName);
+
+            // Scale the points since they are normed:
+            scalePoints(srcPoints, inputMat.width(), inputMat.height());
 //        Add an offset to the crop coordinates:
-        srcPoints = PageDetector.getParallelPoints(srcPoints, fileName);
+            srcPoints = PageDetector.getParallelPoints(srcPoints, fileName);
 
-        // Sort the points so that the bottom left corner is on the first index:
-        sortPoints(srcPoints);
-        printPointList(srcPoints, "sorted");
-
+            // Sort the points so that the bottom left corner is on the first index:
+            sortPoints(srcPoints);
 //        Determine the size of the output image:
-        Size size = getRectSize(srcPoints);
-        float width = (float) size.width;
-        float height = (float) size.height;
+            Size size = getRectSize(srcPoints);
+            float width = (float) size.width;
+            float height = (float) size.height;
 
 //        Get the destination points:
-        ArrayList destPoints = getDestinationPoints(width, height);
-        printPointList(destPoints, "dest points");
+            ArrayList destPoints = getDestinationPoints(width, height);
 
-        // Transform the image:
-        return warpMat(inputMat, srcPoints, destPoints, Math.round(width), Math.round(height));
+            // Transform the image:
+            return warpMat(inputMat, srcPoints, destPoints, Math.round(width), Math.round(height));
 
+        }
+        finally {
+            inputMat.release();
+        }
     }
 
     private static Mat warpMat(Mat mat, ArrayList<PointF> cropPoints, ArrayList<PointF> destPoints, int width, int height) {
 
-        Mat result = new Mat(height, width, mat.type());
+        MatOfPoint2f srcPointsMat = null;
+        MatOfPoint2f dstPointsMat = null;
+        Mat perspectiveTransform = null;
 
-        MatOfPoint2f srcPointsMat = convertToOpenCVPoints(cropPoints);
-        MatOfPoint2f dstPointsMat = convertToOpenCVPoints(destPoints);
+        try {
 
-        Mat perspectiveTransform = Imgproc.getPerspectiveTransform(srcPointsMat, dstPointsMat);
+            Mat result = new Mat(height, width, mat.type());
 
-        // TODO: handle case where not transform is found
-        Imgproc.warpPerspective(mat,
-                result,
-                perspectiveTransform,
-                new Size(result.width(), result.height()),
-                Imgproc.INTER_CUBIC);
+            srcPointsMat = convertToOpenCVPoints(cropPoints);
+            dstPointsMat = convertToOpenCVPoints(destPoints);
+            perspectiveTransform = Imgproc.getPerspectiveTransform(srcPointsMat, dstPointsMat);
+
+            // TODO: handle case where no transform is found
+            Imgproc.warpPerspective(mat,
+                    result,
+                    perspectiveTransform,
+                    new Size(result.width(), result.height()),
+                    Imgproc.INTER_CUBIC);
 //        Imgproc.cvtColor(result, result, Imgproc.COLOR_BGR2RGB,0);
 
-        return result;
+            return result;
+        }
+        finally {
+//            result.release();
+            if (srcPointsMat != null)
+                srcPointsMat.release();
+            if (dstPointsMat != null)
+                dstPointsMat.release();
+            if (perspectiveTransform != null)
+                perspectiveTransform.release();
+        }
 
     }
 

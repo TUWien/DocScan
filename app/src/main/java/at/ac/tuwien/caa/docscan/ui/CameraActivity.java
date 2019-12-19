@@ -2459,6 +2459,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+
+
     @Override
     public void onWaitingForDoc(boolean waiting, boolean doAutoFocus) {
 

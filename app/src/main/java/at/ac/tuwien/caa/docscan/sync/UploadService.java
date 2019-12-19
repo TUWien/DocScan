@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.sync;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -33,6 +34,8 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
+import at.ac.tuwien.caa.docscan.ui.pdf.PdfActivity;
+import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
@@ -73,6 +76,7 @@ public class UploadService extends JobService implements
     private static final int NOTIFICATION_ERROR = 1;
     private static final int NOTIFICATION_SUCCESS = 2;
     private static final int NOTIFICATION_FILE_DELETED = 3;
+    private static final int NOTIFICATION_CANCEL = 4;
 
     public static final String SERVICE_ALONE_KEY = "SERVICE_ALONE_KEY";
     private static final String CLASS_NAME = "UploadService";
@@ -89,6 +93,7 @@ public class UploadService extends JobService implements
         Log.d(CLASS_NAME, "================= service starting =================");
 
         mIsInterrupted = false;
+        SyncStorage.getInstance(getApplicationContext()).setCanceled(false);
 
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "================= service starting =================");
 
@@ -472,6 +477,12 @@ public class UploadService extends JobService implements
         @Override
         public void onUploadComplete(SyncFile syncFile) {
 
+            if (SyncStorage.getInstance(getApplicationContext()).isUploadCanceled()) {
+                SyncStorage.saveJSON(getApplicationContext());
+                updateNotification(NOTIFICATION_CANCEL);
+                return;
+            }
+
             syncFile.setState(SyncFile.STATE_UPLOADED);
 
             SyncStorage.getInstance(getApplicationContext()).addToUploadedList(syncFile);
@@ -580,11 +591,17 @@ public class UploadService extends JobService implements
         if (getConnectionText() == null)
             return;
 
+        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, intent, 0);
+
         mNotificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
                 .setContentText(text)
-                .setChannelId(CHANNEL_ID);
+                .setChannelId(CHANNEL_ID)
+                .setContentIntent(pendingIntent);
 
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -645,6 +662,17 @@ public class UploadService extends JobService implements
                         // Removes the progress bar
                         .setProgress(0, 0, false);
                 break;
+            case NOTIFICATION_CANCEL:
+                Log.d(CLASS_NAME, "updateNotification: NOTIFICATION_CANCEL");
+                DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
+                        "updateNotification: NOTIFICATION_CANCEL");
+                mNotificationBuilder
+                        .setContentTitle(getString(R.string.sync_notification_uploading_canceled_title))
+                        .setContentText(getString(R.string.sync_notification_uploading_canceled_text))
+                        // Removes the progress bar
+                        .setProgress(0, 0, false);
+                break;
+
 
         }
 

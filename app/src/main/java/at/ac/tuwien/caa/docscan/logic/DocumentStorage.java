@@ -28,6 +28,8 @@ public class DocumentStorage {
 
     public DocumentStorage() {
 
+        Log.d(CLASS_NAME, "creating new document");
+
         mDocuments = new ArrayList<>();
 
     }

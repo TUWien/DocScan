@@ -140,6 +140,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+
+
     /**
      * Returns if the focus values are drawn.
      * @return boolean
@@ -147,6 +149,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     public boolean isFocusTextVisible() {
 
         return mDrawFocusText;
+
+    }
+
+
+    public void drawFocusTouchSuccess() {
+
+        mDrawFocusTouch = false;
 
     }
 
@@ -315,7 +324,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         Log.d(CLASS_NAME, "focus tocuhed");
     }
 
-    public void drawFocusTouchSuccess() {
+    public void hideFocusCircle() {
 
         mDrawFocusTouch = false;
 
