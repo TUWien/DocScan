@@ -40,6 +40,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_FOCUS_MEASURE;
@@ -55,12 +56,11 @@ public class ImageProcessor {
     public static final int MESSAGE_CREATED_DOCUMENT = 1;
 
     public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
+    //    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
     public static final String INTENT_IMAGE_PROCESS_ACTION = "INTENT_IMAGE_PROCESS_ACTION";
     public static final String INTENT_IMAGE_PROCESS_TYPE = "INTENT_IMAGE_PROCESS_TYPE";
     public static final int INTENT_IMAGE_PROCESS_FINISHED = 0;
-    public static final int INTENT_IMAGE_PROCESS_STARTED = 2;
     public static final int INTENT_PDF_PROCESS_FINISHED = 1;
-
 
     // Sets the amount of time an idle thread will wait for a task before terminating
     private static final int KEEP_ALIVE_TIME = 1;
@@ -69,10 +69,10 @@ public class ImageProcessor {
     private static final TimeUnit KEEP_ALIVE_TIME_UNIT;
 
     // Sets the initial threadpool size to 8
-    private static final int CORE_POOL_SIZE = 8;
+    private static final int CORE_POOL_SIZE = 4;
 
     // Sets the maximum threadpool size to 8
-    private static final int MAXIMUM_POOL_SIZE = 8;
+    private static final int MAXIMUM_POOL_SIZE = 4;
 
 
     private static final String CLASS_NAME = "ImageProcessor";
@@ -80,20 +80,23 @@ public class ImageProcessor {
     // A queue of Runnables for the page detection
     private final BlockingQueue<Runnable> mProcessQueue;
     // A managed pool of background threads
-    private final ThreadPoolExecutor mProcessThreadPool;
-
-//    This is a single thread executor, in order to avoid OOM's when opening too many images in
+//    private final ThreadPoolExecutor mProcessThreadPool;
+    private final Executor mProcessThreadPool;
+    //    This is a single thread executor, in order to avoid OOM's when opening too many images in
 //    parallel, instead the pdf's are created in serial:
     private final Executor mPDFExecutor;
-//    We use here a weak reference to avoid memory leaks:
+    //    We use here a weak reference to avoid memory leaks:
 //    @see https://www.androiddesignpatterns.com/2013/01/inner-class-handler-memory-leak.html
     private WeakReference<Context> mContext;
 
     // An object that manages Messages in a Thread
     private Handler mHandler;
 
-//    Singleton:
+    //    Singleton:
     private static ImageProcessor sInstance;
+
+////    Used for espresso testing:
+//    private static boolean useEpressoIdling = false;
 
     static {
 
@@ -103,14 +106,25 @@ public class ImageProcessor {
         sInstance = new ImageProcessor();
     }
 
+//    public static void setEspressoIdling(boolean use) {
+//
+//        useEpressoIdling = use;
+//
+//    }
+
+//    public CountingIdlingResource getIdling() {
+//        return EspressoIdling.INSTANCE.getCntRes();
+//    }
 
     private ImageProcessor() {
 
         mProcessQueue = new LinkedBlockingQueue<>();
         mPDFExecutor = Executors.newSingleThreadExecutor();
+        mProcessThreadPool = Executors.newSingleThreadExecutor();
 
-        mProcessThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
-                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mProcessQueue);
+        //        mProcessThreadPool = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
+//                KEEP_ALIVE_TIME, KEEP_ALIVE_TIME_UNIT, mProcessQueue);
+//        mProcessThreadPool = Executors.newFixedThreadPool(2);
 
         /*
          * Instantiates a new anonymous Handler object and defines its
@@ -149,7 +163,7 @@ public class ImageProcessor {
                 PdfProcessTask pdfTask = (PdfProcessTask) task;
                 if (pdfTask.getPdfName() != null) {
                     File pdfFile = new File(Helper.getPDFStorageDir("DocScan").getAbsolutePath(),
-                        pdfTask.getPdfName() + ".pdf");
+                            pdfTask.getPdfName() + ".pdf");
                     String absolutePath = pdfFile.getAbsolutePath();
                     sendIntent(absolutePath, INTENT_PDF_PROCESS_FINISHED);
                     return true;
@@ -165,12 +179,30 @@ public class ImageProcessor {
              */
             private boolean finishTask(ImageProcessTask task) {
 
+//                if (useEpressoIdling)
+//                    EspressoIdling.INSTANCE.decrement();
+
                 if (task == null)
                     return false;
 
                 if (task instanceof PageDetectionTask) {
                     ImageProcessLogger.removeTask(task.getFile(),
                             ImageProcessLogger.TASK_TYPE_PAGE_DETECTION);
+
+//                    Check if the page is unfocused:
+//                    if (mContext != null && mContext.get() != null) {
+//                        boolean isFocused = PageDetector.getNormedCropPoints(task.getFile().
+//                                getAbsolutePath()).isFocused();
+////                        This caused me sometimes ConcurrentModificationException:
+////                        DocumentStorage.getInstance(mContext.get()).setPageFocused(
+////                                task.getFile().getName(), isFocused);
+//                    }
+
+////                    Check if the page is unfocused:
+//                    if (mContext != null && mContext.get() != null &&
+//                            !PageDetector.getNormedCropPoints(task.getFile().getAbsolutePath()).isFocused())
+//                        DocumentStorage.getInstance(mContext.get()).setPageAsUnsharp(
+//                                task.getFile().getName());
 
                 }
                 else if (task instanceof MapTask) {
@@ -191,6 +223,7 @@ public class ImageProcessor {
 
                 if (task.getFile() != null)
                     sendIntent(task.getFile().getAbsolutePath(), INTENT_IMAGE_PROCESS_FINISHED);
+
 
                 return true;
 
@@ -291,9 +324,8 @@ public class ImageProcessor {
 
         ImageProcessTask imageProcessTask = null;
 
-//        Tell any listener that the image is going to be processed:
-        if (file != null)
-            sInstance.sendIntent(file.getAbsolutePath(), INTENT_IMAGE_PROCESS_STARTED);
+//        if (useEpressoIdling)
+//            EspressoIdling.INSTANCE.increment();
 
         //        Inform the logger that we got a new file here:
         switch (taskType) {

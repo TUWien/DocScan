@@ -21,6 +21,7 @@ open class PdfActionSheet(private val pdf: File, sheetActions: ArrayList<SheetAc
                               savedInstanceState: Bundle?): View? {
 
         return inflater.inflate(R.layout.titled_sheet_dialog_pdf, container, false)
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

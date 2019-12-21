@@ -429,6 +429,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
     public void deselectAllItems() {
 
         setAllSelections(false);
+        mIsSelectionMode = false;
 
     }
 

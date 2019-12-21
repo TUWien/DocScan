@@ -1,7 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
 import android.app.Activity
-import android.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.content.*
 import android.os.Build
 import android.os.Bundle
@@ -192,6 +192,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val selCount = imgFragment.getSelectionCount()
         imgFragment.deleteSelections()
+
+//        Cancel the selection mode:
+        imgFragment.deselectAllItems()
 
         showImagesDeletedSnackbar(selCount)
         //            Reset the toolbar to default mode:
@@ -590,6 +593,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
 //                update the documents:
         DocumentStorage.getInstance(this).documents.remove(document)
+        document.deleteImages()
         DocumentStorage.saveJSON(this)
 
     }
@@ -615,7 +619,14 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val snackbarText = "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $title"
         val s = Snackbar.make(findViewById(R.id.sync_coordinatorlayout), snackbarText, Snackbar.LENGTH_LONG)
-//        s.anchorView = findViewById(R.id.viewer_navigation)
+        s.show()
+
+    }
+
+    private fun showPdfCreatedSnackbar(title: String) {
+
+        val snackbarText = "${getString(R.string.viewer_pdf_created_snackbar_text)}: $title"
+        val s = Snackbar.make(findViewById(R.id.sync_coordinatorlayout), snackbarText, Snackbar.LENGTH_LONG)
         s.show()
 
     }
@@ -948,7 +959,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             if ((this as DocumentsFragment).isVisible) {
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                Check if the document has pages, otherwise use no shared element transition:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && selectedDocument?.pages?.isNotEmpty()!!) {
 //                    Log.d(TAG, "imageView transition name" + imageView!!.transitionName)
 //            setSharedElementReturnTransition(TransitionInflater.from(this).inflateTransition(R.transition.image_shared_element_transition));
                     setExitTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.fade))
@@ -1077,14 +1089,21 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                                 if (!intentConsumed)
                                     newPdfs.add(fileName)
 
+                                showPdfCreatedSnackbar(File(fileName).name)
+//                                showDocumentsDeletedSnackbar(pdf.name)
 
 //                                TODO: badges work only in material theme!
                                 bottomNavigationView.getOrCreateBadge(R.id.viewer_pdfs)
                             }
-                            INTENT_IMAGE_PROCESS_STARTED, INTENT_IMAGE_PROCESS_FINISHED -> {
+//                            TODO: check if we need INTENT_IMAGE_PROCESS_STARTED here:
+                            INTENT_IMAGE_PROCESS_FINISHED -> {
                                 updateGallery(fileName)
                                 updateDocumentList(fileName)
                             }
+//                            INTENT_IMAGE_PROCESS_STARTED, INTENT_IMAGE_PROCESS_FINISHED -> {
+//                                updateGallery(fileName)
+//                                updateDocumentList(fileName)
+//                            }
                         }
                     }
 

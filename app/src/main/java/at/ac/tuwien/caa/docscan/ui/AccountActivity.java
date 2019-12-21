@@ -157,6 +157,13 @@ public class AccountActivity extends BaseNavigationActivity implements DropboxUt
 
     private void showAccountDetails() {
 
+//        Do not show user information if we no information is saved:
+        if (User.getInstance().getLastName() == null && User.getInstance().getFirstName() == null) {
+            View v = findViewById(R.id.current_account_layout);
+            v.setVisibility(View.GONE);
+            return;
+        }
+
         // Show the first and last name of the user:
         TextView userTextView = findViewById(R.id.account_user_textview);
         String userText = getString(R.string.account_user_textview_text) + " " +
@@ -172,14 +179,6 @@ public class AccountActivity extends BaseNavigationActivity implements DropboxUt
             cloudText += getString(R.string.sync_transkribus_text);
         cloudTextView.setText(cloudText);
 
-    }
-
-    private void hideAccountDetails() {
-//            Remove the view from the parent layout. If the view is just hidden, the layout below
-//            is not centered.
-        View v = findViewById(R.id.current_account_layout);
-        if (v != null)
-            ((ViewManager)v.getParent()).removeView(v);
     }
 
     @Override
