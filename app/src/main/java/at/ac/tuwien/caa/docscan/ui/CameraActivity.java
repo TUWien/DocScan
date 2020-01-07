@@ -116,7 +116,6 @@ import at.ac.tuwien.caa.docscan.camera.PaintView;
 import at.ac.tuwien.caa.docscan.camera.TaskTimer;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
-import at.ac.tuwien.caa.docscan.camera.cv.OrientationManager;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
@@ -148,8 +147,7 @@ import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_I
  */
 
 public class CameraActivity extends BaseNavigationActivity implements TaskTimer.TimerCallbacks,
-        CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
-        OrientationManager.OrientationListener {
+        CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback {
 
     private static final String CLASS_NAME = "CameraActivity";
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
@@ -203,7 +201,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private static Date mLastTimeStamp;
     private DkPolyRect[] mLastDkPolyRects;
-    private OrientationManager mOrientationManager;
     private int mLastTabPosition;
     private int mTextOrientation = IMG_ORIENTATION_0;
     private boolean mLockExposureSupported;
@@ -527,9 +524,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mCameraPreview = findViewById(R.id.camera_view);
 
-        mOrientationManager = new OrientationManager(this, SensorManager.SENSOR_DELAY_NORMAL, this);
-        mOrientationManager.enable();
-
         mPaintView = findViewById(R.id.paint_view);
         if (mPaintView != null)
             mPaintView.setCVResult(mCVResult);
@@ -841,40 +835,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 R.drawable.ic_cloud_upload_gray_24dp));
         return actions;
     }
-
-    @Override
-    public void onOrientationChange(OrientationManager.ScreenOrientation screenOrientation) {
-
-        float rotation = -1;
-
-//        TODO: this covers not all cases:
-        switch (screenOrientation) {
-            case LANDSCAPE:
-                rotation = 90;
-                break;
-            case PORTRAIT:
-                rotation = 0;
-                break;
-            case REVERSED_LANDSCAPE:
-                rotation = 270;
-                break;
-            case REVERSED_PORTRAIT:
-                rotation = 180;
-                break;
-        }
-
-//        TODO: use less or more member fields:
-        ImageButton photoButton = findViewById(R.id.photo_button);
-        FloatingActionButton fab = findViewById(R.id.document_fab);
-        if (mGalleryButton != null)
-            mGalleryButton.setRotation(rotation);
-        if (photoButton != null)
-            photoButton.setRotation(rotation);
-        if (fab != null)
-            fab.setRotation(rotation);
-
-    }
-
 
     private void checkAppVersion() {
 
