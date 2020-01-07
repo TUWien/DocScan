@@ -10,6 +10,11 @@
         android:name="androidx.multidex.MultiDexApplication"
         android:theme="@style/AppTheme" >
 
+        <!-- Download the ML kit model for OCR, after the app is installed from the play store -->
+        <meta-data
+            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:value="ocr" />
+
         <!-- We need a file provider to enable a sharing of the log file (which is saved in internal memory) -->
         <provider
             android:name="androidx.core.content.FileProvider"
