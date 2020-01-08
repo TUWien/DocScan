@@ -1,6 +1,9 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
+import android.content.Context
 import android.os.Bundle
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,24 +14,44 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.Helper
 import at.ac.tuwien.caa.docscan.ui.pdf.PdfAdapter
+import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_pdfs.*
 //import kotlinx.android.synthetic.main.activity_pdf.*
 import java.io.File
 import java.text.SimpleDateFormat
 
-class PdfFragment(private val newPdfs: MutableList<String>, private val listener: PdfListener)
-    : Fragment() {
+class PdfFragment : Fragment() {
 
     companion object {
+        fun newInstance(bundle : Bundle) : PdfFragment{
+            val fragment = PdfFragment()
+            fragment.arguments = bundle
+            return fragment
+        }
+
         val TAG = "PdfFragment"
+        val NEW_PDFS_KEY = "NEW_PDFS_KEY"
     }
 
+    private lateinit var newPdfs: MutableList<String>
+    private lateinit var listener: PdfListener
     private lateinit var pdfList: MutableList<Pdf>
 //    private lateinit var newPdfs: MutableList<String>
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_pdfs, container, false)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        arguments?.getStringArrayList(NEW_PDFS_KEY)?.let {
+            newPdfs = it
+        }
+
+        listener = context as PdfListener
+
     }
 
 //    fun setNewPdfs(pdfs: MutableList<String>) {

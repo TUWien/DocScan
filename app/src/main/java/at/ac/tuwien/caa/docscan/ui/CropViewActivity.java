@@ -102,6 +102,23 @@ public class CropViewActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+
+//        Discard all changes:
+
+        try {
+            PageDetector.savePointsToExif(mFileName, mOriginalPoints, mIsFocused);
+            Helper.saveExifOrientation(new File(mFileName), mOriginalOrientation);
+        } catch (IOException e) {
+            Crashlytics.logException(e);
+            Log.d(CLASS_NAME, "onOptionsItemSelected: " + e.toString());
+            e.printStackTrace();
+        }
+
+        super.onBackPressed();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()){

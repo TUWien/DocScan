@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,21 +15,33 @@ import at.ac.tuwien.caa.docscan.logic.Helper
 import kotlinx.android.synthetic.main.fragment_documents.*
 import java.io.File
 
-class DocumentsFragment(private val listener: DocumentListener) : Fragment() {
+class DocumentsFragment : Fragment() {
 
     companion object {
+
+        fun newInstance(): DocumentsFragment {
+            return DocumentsFragment()
+        }
+
         val TAG = "DocumentsFragment"
     }
 
     private var scroll = false
-//    private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var documents: ArrayList<Document>
     private lateinit var adapter: DocumentAdapter
+    private lateinit var listener: DocumentListener
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
 
         return inflater.inflate(at.ac.tuwien.caa.docscan.R.layout.fragment_documents, container, false)
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        listener = context as DocumentListener
+
     }
 
     fun scrollToActiveDocument() {

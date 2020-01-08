@@ -194,6 +194,9 @@ public class DocumentStorage {
 
     public Document getDocument(String title) {
 
+        if (title == null)
+            return null;
+
         if (mDocuments != null) {
             for (Document document : mDocuments) {
                 if (document == null) {

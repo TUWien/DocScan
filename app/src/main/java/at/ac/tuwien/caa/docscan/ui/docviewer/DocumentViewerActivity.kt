@@ -34,6 +34,8 @@ import at.ac.tuwien.caa.docscan.ui.NavigationDrawer
 import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
+import at.ac.tuwien.caa.docscan.ui.docviewer.ImagesFragment.Companion.DOCUMENT_NAME_KEY
+import at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment.Companion.NEW_PDFS_KEY
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.*
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -853,7 +855,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 ft.setCustomAnimations(R.anim.translate_right_to_left_in,
                         R.anim.translate_right_to_left_out)
 
-                ft.replace(R.id.viewer_fragment_layout, DocumentsFragment(this),
+                ft.replace(R.id.viewer_fragment_layout, DocumentsFragment.newInstance(),
                         DocumentsFragment.TAG).commit()
 
                 showFAB(R.id.viewer_add_fab)
@@ -878,14 +880,15 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
                 ft.setCustomAnimations(R.anim.translate_left_to_right_in,
                         R.anim.translate_left_to_right_out)
-                val frag = PdfFragment(newPdfs, this)
-//                frag.setNewPdfs(newPdfs)
+
+                val arguments = Bundle().apply {
+                    putStringArrayList(NEW_PDFS_KEY, newPdfs as java.util.ArrayList<String>?)
+                }
+                val frag = PdfFragment.newInstance(arguments)
                 ft.replace(R.id.viewer_fragment_layout, frag, PdfFragment.TAG).commit()
                 showFAB(-1)
 
                 selectableToolbar.setTitle(getText(R.string.document_navigation_pdfs))
-//                supportActionBar?.setTitle(R.string.document_navigation_pdfs)
-
 
             }
             else -> return false
@@ -917,7 +920,11 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         selectedDocument = document
 
-        val imagesFragment = ImagesFragment(document)
+        val arguments = Bundle().apply {
+            putString(DOCUMENT_NAME_KEY, document.title)
+        }
+        val imagesFragment = ImagesFragment.newInstance(arguments)
+
         if (fileName != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 postponeEnterTransition()
@@ -950,11 +957,13 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             ft.setCustomAnimations(R.anim.translate_right_to_left_in,
                     R.anim.translate_right_to_left_out)
 
-        val imagesFragment = ImagesFragment(document)
-        if (fileName != null) {
-            Log.d(TAG, "scroll filename: " + fileName)
-            imagesFragment.scrollToFile(fileName)
+        val arguments = Bundle().apply {
+            putString(DOCUMENT_NAME_KEY, document.title)
         }
+        val imagesFragment = ImagesFragment.newInstance(arguments)
+
+        if (fileName != null)
+            imagesFragment.scrollToFile(fileName)
 
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             if ((this as DocumentsFragment).isVisible) {
@@ -1012,17 +1021,20 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
 //        Did the user click on the pdf notification?
         if (isPdfIntent) {
+
             val pdfName = intent.getStringExtra(PDF_FILE_NAME)
             newPdfs.add(pdfName)
-            val pdfFragment = PdfFragment(newPdfs, this)
-//            pdfFragment.setNewPdfs(newPdfs)
+
+            val arguments = Bundle().apply {
+                putStringArrayList(NEW_PDFS_KEY, newPdfs as java.util.ArrayList<String>?)
+            }
+            val pdfFragment = PdfFragment.newInstance(arguments)
+
             supportFragmentManager.beginTransaction().replace(R.id.viewer_fragment_layout,
                     pdfFragment, PdfFragment.TAG).commit()
             selectNavigationItem(R.id.viewer_pdfs)
-
-
-//            bottomNavigationView.selectedItemId = R.id.viewer_pdfs
         }
+
         else if (isGalleryIntent){
             val fileName = intent.getStringExtra(KEY_FILE_NAME)
             val documentName = intent.getStringExtra(KEY_DOCUMENT_NAME)
@@ -1036,7 +1048,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
 //        Open the DocumentsFragment first / as default view:
         else {
-            val documentsFragment = DocumentsFragment(this)
+            val documentsFragment = DocumentsFragment.newInstance()
             documentsFragment.scrollToActiveDocument()
             supportFragmentManager.beginTransaction().replace(R.id.viewer_fragment_layout,
                     documentsFragment, DocumentsFragment.TAG).commit()
