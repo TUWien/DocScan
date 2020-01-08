@@ -525,6 +525,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                                 intent.putExtra(KEY_RETAKE_IMAGE, true);
                                 intent.putExtra(KEY_RETAKE_IDX, idx);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//                                Make the current document active:
+                                DocumentStorage.getInstance(mContext).setTitle(mDocument.getTitle());
                                 startActivity(intent);
 //                        finish();
 
