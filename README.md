@@ -46,6 +46,9 @@ The app makes use of two APIs (Dropbox and Firebase) that require keys which are
 
 You can get the API keys if you send a mail to docscan@cvl.tuwien.ac.at.
 
+## Cheatsheet
+In case you need a more detailed error message for build errors, try: ``.\gradlew clean build``
+
 ## Visual Studio Project (C++ Library)
 - Optional for testing the C++ module
 - C++ lib for page segmentation and focus measure
