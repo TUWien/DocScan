@@ -764,6 +764,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+
         // Check which request we're responding to
         if (requestCode == CREATE_DOCUMENT_FROM_QR_REQUEST) {
 //            Take care that the image processing is resumed, regardless of the intent result:
@@ -968,7 +971,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         initShootModeSpinner();
         updatePhotoButtonIcon();
         initCancelQRButton();
-        initForceShootButton();
+//        initForceShootButton();
         initHudButton();
 
     }
@@ -1017,17 +1020,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    private void initForceShootButton() {
-
-        mForceShootButton = findViewById(R.id.force_shoot_button);
-        mForceShootButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                takePicture();
-            }
-        });
-
-    }
+//    private void initForceShootButton() {
+//
+//        mForceShootButton = findViewById(R.id.force_shoot_button);
+//        mForceShootButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                takePicture();
+//            }
+//        });
+//
+//    }
 
     private void initCancelQRButton() {
 
