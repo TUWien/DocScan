@@ -130,25 +130,25 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     override fun onSelectionActivated(activated: Boolean) {
 
 //        Update the toolbar:
-        if (activated) {
-            supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-                if ((this as ImagesFragment).isVisible && activated)
+        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
+            if ((this as ImagesFragment).isVisible) {
+                toolbar.menu.clear()
+
+                if (activated)
+                    toolbar.inflateMenu(R.menu.images_selected_menu)
+                else
                     toolbar.inflateMenu(R.menu.images_menu)
             }
         }
-        else
-            toolbar.menu.clear()
 
-//        Update the floating action buttons:
-
-//        Hide the fabs:
+///        Update the floating action buttons:
         if (activated) {
             findViewById<FloatingActionButton>(R.id.viewer_camera_fab).hide()
 //            hide all other fab's as well:
             showFAB(-1)
         }
         else {
-//            show the camera fab anyway:
+//            show the camera fab:
             findViewById<FloatingActionButton>(R.id.viewer_camera_fab).show()
             when (bottomNavigationView.selectedItemId) {
                 R.id.viewer_documents -> showFAB(R.id.viewer_add_fab)
@@ -247,7 +247,14 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             if ((this as ImagesFragment).isVisible) {
                 this.selectAll()
             }
-        }    }
+        }
+    }
+
+    fun openDocumentOption(item: MenuItem) {
+
+        selectedDocument?.let { showDocumentOptions(it) }
+
+    }
 
 
     override fun onDocumentSheetSelected(document: Document, sheetAction: ActionSheet.SheetAction) {
@@ -281,6 +288,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             }
 
             R.id.action_document_upload_item -> {
+//                Do nothing if the document is already uploaded:
+                if (document.isUploaded)
+                    return
+
                 if (Helper.isDocumentCropped(document))
                     uploadDocument(document)
                 else
@@ -364,11 +375,24 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         dirs.add(document.title)
         startUpload(dirs)
 
+        showUploadStartedSnackbar()
+
         //        DocumentsFragment might be null, hence use apply:
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             //            This is necessary to change the upload state icon of the document:
             (this as DocumentsFragment).resetAdapter()
         }
+    }
+
+    /**
+     * Shows a snackbar indicating that the upload started.
+     */
+    private fun showUploadStartedSnackbar() {
+
+        val snackbarText = "${getString(R.string.sync_snackbar_upload_started)}"
+        val s = Snackbar.make(findViewById(R.id.sync_coordinatorlayout), snackbarText, Snackbar.LENGTH_LONG)
+        s.show()
+
     }
 
     private fun showOfflineDialog() {
@@ -460,7 +484,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 if (upload) getString(R.string.viewer_not_cropped_upload)
                 else getString(R.string.viewer_not_cropped_pdf)
         val cropText = "${getString(R.string.viewer_not_cropped_confirm_text)} $proceed?"
-        val cropTitle = "${getString(R.string.viewer_not_cropped_confirm_title)} ${document.title}"
+        val cropTitle = "${getString(R.string.viewer_not_cropped_confirm_title)}"
 
         val alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder
@@ -781,6 +805,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 sheetActions.add(ActionSheet.SheetAction(R.id.action_document_upload_item,
                         getString(R.string.action_document_upload_document),
                         R.drawable.ic_cloud_upload_black_24dp))
+            else
+                sheetActions.add(ActionSheet.SheetAction(R.id.action_document_upload_item,
+                        getString(R.string.action_document_upload_document),
+                        R.drawable.ic_cloud_upload_gray_24dp))
         }
         sheetActions.add(ActionSheet.SheetAction(R.id.action_document_delete_item,
                 getString(R.string.action_document_delete_document),
@@ -813,7 +841,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     /**
      * Shows the new floating action button and hides any previous fab. If newFABID is -1 all fab's
-     * are hidden.
+     * are hidden except for the camera fab.
      */
     private fun showFAB(newFABID: Int) {
 
@@ -847,6 +875,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //            Show the item as selected:
             return true
         }
+
+//        Clear the toolbar menu:
+        toolbar.menu.clear()
 
         when(menuItem.itemId) {
             R.id.viewer_documents -> {
@@ -905,50 +936,30 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     private fun openImagesFragmentFromIntent(document: Document, fileName: String? = null) {
 
-        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-
-//        //                The animation depends on the position of the selected item:
-//        if (bottomNavigationView.selectedItemId == R.id.viewer_documents)
-//            ft.setCustomAnimations(R.anim.translate_left_to_right_in,
-//                    R.anim.translate_left_to_right_out)
-//        else
-//            ft.setCustomAnimations(R.anim.translate_right_to_left_in,
-//                    R.anim.translate_right_to_left_out)
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            postponeEnterTransition()
-//        }
-
         selectedDocument = document
 
-        val arguments = Bundle().apply {
-            putString(DOCUMENT_NAME_KEY, document.title)
-        }
-        val imagesFragment = ImagesFragment.newInstance(arguments)
+        val imagesFragment = setupImagesFragment(document)
 
+//        Create the enter transition:
         if (fileName != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 postponeEnterTransition()
             }
-            Log.d(TAG, "scroll filename: " + fileName)
             imagesFragment.scrollToFile(fileName)
         }
-
-
+        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
         ft.replace(R.id.viewer_fragment_layout, imagesFragment,
                 ImagesFragment.TAG).commit()
 
-        showFAB(R.id.viewer_edit_fab)
-        if (document != null)
-            selectableToolbar.setTitle(document?.title)
-        else
-            selectableToolbar.setTitle(getString(R.string.document_navigation_images))
+//        setupImagesFragmentToolbar(document)
 
     }
 
-    private fun openImagesFragment(document: Document, fileName: String? = null) {
+    private fun openImagesFragment(document: Document) {
+
+        val imagesFragment = setupImagesFragment(document)
 
         val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-
         //                The animation depends on the position of the selected item:
         if (bottomNavigationView.selectedItemId == R.id.viewer_documents)
             ft.setCustomAnimations(R.anim.translate_left_to_right_in,
@@ -957,21 +968,11 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             ft.setCustomAnimations(R.anim.translate_right_to_left_in,
                     R.anim.translate_right_to_left_out)
 
-        val arguments = Bundle().apply {
-            putString(DOCUMENT_NAME_KEY, document.title)
-        }
-        val imagesFragment = ImagesFragment.newInstance(arguments)
-
-        if (fileName != null)
-            imagesFragment.scrollToFile(fileName)
-
+//                Create the shared element transition:
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             if ((this as DocumentsFragment).isVisible) {
-
-//                Check if the document has pages, otherwise use no shared element transition:
+//          Check if the document has pages, otherwise use no shared element transition:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && selectedDocument?.pages?.isNotEmpty()!!) {
-//                    Log.d(TAG, "imageView transition name" + imageView!!.transitionName)
-//            setSharedElementReturnTransition(TransitionInflater.from(this).inflateTransition(R.transition.image_shared_element_transition));
                     setExitTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.fade))
                     imagesFragment.postponeEnterTransition()
                     imagesFragment.sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(R.transition.image_shared_element_transition)
@@ -985,12 +986,33 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         ft.replace(R.id.viewer_fragment_layout, imagesFragment,
                 ImagesFragment.TAG).commit()
 
-        showFAB(R.id.viewer_edit_fab)
+
+
+    }
+
+    private fun setupImagesFragment(document: Document): ImagesFragment {
+        val arguments = Bundle().apply {
+            putString(DOCUMENT_NAME_KEY, document.title)
+        }
+        val imagesFragment = ImagesFragment.newInstance(arguments)
+
+//        Setup the toolbar
+        setupImagesFragmentToolbar(document)
+//        Hide any additional floating action button
+        showFAB(-1)
+
+        return imagesFragment
+    }
+
+    private fun setupImagesFragmentToolbar(document: Document) {
+        //        Update the toolbar menu:
+        toolbar.inflateMenu(R.menu.images_menu)
+
+        //        Update the toolbar title:
         if (document != null)
             selectableToolbar.setTitle(document?.title)
         else
             selectableToolbar.setTitle(getString(R.string.document_navigation_images))
-
     }
 
     private fun initToolbar() {
@@ -1052,6 +1074,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             documentsFragment.scrollToActiveDocument()
             supportFragmentManager.beginTransaction().replace(R.id.viewer_fragment_layout,
                     documentsFragment, DocumentsFragment.TAG).commit()
+//            selectNavigationItem(R.id.viewer_documents)
         }
 
     }
