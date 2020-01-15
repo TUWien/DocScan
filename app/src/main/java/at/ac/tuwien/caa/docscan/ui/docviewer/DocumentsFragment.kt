@@ -52,21 +52,17 @@ class DocumentsFragment : Fragment() {
 
     fun deleteDocument(document: Document) {
 
-        Log.d(TAG, "document: ${document.title}")
-
         val docIt = documents.iterator()
         var idx = 0
         while (docIt.hasNext()) {
             val doc = docIt.next()
-            Log.d(TAG, "docIt: " + doc.title)
             if (doc.title.equals(document.title, true)) {
-                Log.d(TAG, "removing idx: " + idx)
                 documents_list.adapter!!.notifyItemRemoved(idx)
+                checkEmptyDocuments()
                 return
             }
             idx++
         }
-
 
     }
 
@@ -79,34 +75,45 @@ class DocumentsFragment : Fragment() {
     }
 
     override fun onResume() {
+
         super.onResume()
 
-        resetAdapter()
-        documents_list.layoutManager = LinearLayoutManager(context)
+        loadDocuments()
 
-        if (scroll) {
-            val pos = documents.indexOf(
-                    DocumentStorage.getInstance(context).activeDocument)
-            if (pos != -1)
-                documents_list.smoothScrollToPosition(pos)
-            scroll = false
+        if (!checkEmptyDocuments()) {
+
+            updateRecyclerView()
+            if (scroll) {
+                val pos = documents.indexOf(
+                        DocumentStorage.getInstance(context).activeDocument)
+                if (pos != -1)
+                    documents_list.smoothScrollToPosition(pos)
+                scroll = false
+            }
+
         }
 
     }
 
-    fun updateDocument(title: String) {
+    private fun loadDocuments() {
 
-        val docIt = documents.iterator()
-        var idx = 0
-        while (docIt.hasNext()) {
-            val doc = docIt.next()
-            if (doc.title == title) {
-                documents_list.adapter!!.notifyItemChanged(idx)
-                return
-            }
+//        Load the documents:
+        DocumentStorage.getInstance(context).updateStatus(context)
+        documents = DocumentStorage.getInstance(context).documents
+//        Sort the documents alphabetically:
+        documents.sortBy { comparator(it) }
 
-            idx++
+    }
+
+    fun checkEmptyDocuments(): Boolean {
+
+        if (documents.isEmpty()) {
+            documents_empty_layout.visibility = View.VISIBLE
+            documents_list.visibility = View.INVISIBLE
+            return true
         }
+
+        return false
 
     }
 
@@ -147,13 +154,14 @@ class DocumentsFragment : Fragment() {
 
     }
 
-    fun resetAdapter() {
+    fun reloadDocuments() {
+        loadDocuments()
+        if (!checkEmptyDocuments())
+            updateRecyclerView()
+    }
 
-        DocumentStorage.getInstance(context).updateStatus(context)
+    private fun updateRecyclerView() {
 
-        documents = DocumentStorage.getInstance(context).documents
-        //        Sort the documents alphabetically:
-        documents.sortBy { comparator(it) }
         adapter = DocumentAdapter(documents,
                 {
     //                    Inform the DocumentViewerActivity that a document should be opened:
@@ -168,6 +176,8 @@ class DocumentsFragment : Fragment() {
                 DocumentStorage.getInstance(context).activeDocument)
 
         documents_list.adapter = adapter
+
+        documents_list.layoutManager = LinearLayoutManager(context)
     }
 
     interface DocumentListener {

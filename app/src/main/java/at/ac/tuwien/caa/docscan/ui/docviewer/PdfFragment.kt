@@ -54,33 +54,53 @@ class PdfFragment : Fragment() {
 
     }
 
-//    fun setNewPdfs(pdfs: MutableList<String>) {
-//
-//        Log.d(TAG, "setNewPdfs")
-//        newPdfs = pdfs
-//    }
+    /**
+     *  Updates a file with a given path name if it is contained in the list. Otherwise it is added
+     *  to the list.
+     */
+    fun updateFile(path: String) {
 
-    fun updateItem(path: String) {
+//        Update the list, if the path is contained:
+        if (!updateList(path))
+//            Otherwise add it to the list:
+            addPdfToList(path)
 
-        Log.d(TAG, "updateItem")
+    }
 
-        //        Find the item:
+    /**
+     * Adds a new pdf to the list and marks it with a badge in the UI.
+     */
+    private fun addPdfToList(path: String) {
+
+        val pdf = fileToPdf(File(path))
+        pdf.showBadge = true
+        pdfList.add(0, pdf)
+        pdf_list.adapter!!.notifyItemChanged(0)
+
+    }
+
+    /**
+     * Iterates over the pdf list and checks if a file path is contained in it. In this case the
+     * file is marked with a badge in the UI. Returns true if the path is contained in the list.
+     */
+    private fun updateList(path: String): Boolean {
+
         val it = pdfList.iterator()
         var idx = 0
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             val pdf = it.next()
             if (pdf.file.absolutePath.equals(path)) {
-                Log.d(TAG, "found at pos: " + idx)
-//                now update the date
+    //                now update the date
                 pdf.date = formatDate(pdf.file.lastModified())
                 pdf.showBadge = true
                 pdf_list.adapter!!.notifyItemChanged(idx)
 
-                return
+                return true
             }
             idx++
         }
 
+        return false
     }
 
     override fun onStop() {
@@ -98,10 +118,34 @@ class PdfFragment : Fragment() {
 
     }
 
-    fun updatePdfAdapter() {
+    fun updatePdfs() {
 
-        // Acquire the pdfs in the directory:
         pdfList = getPdfs()
+
+//        Show the user that no pdf is contained in the list:
+        if (!showEmptyList())
+            updatePdfAdapter()
+
+    }
+
+    /**
+     * Updates the UI in case the pdfList is empty and returns true.
+     */
+    private fun showEmptyList(): Boolean {
+
+        if (pdfList.isEmpty()) {
+            pdf_list.visibility = View.INVISIBLE
+            pdf_empty_layout.visibility = View.VISIBLE
+            return true
+        }
+
+        return false
+
+    }
+
+
+    private fun updatePdfAdapter() {
+
 //        Set the adapter:
         val pdfAdapter = PdfAdapter(context!!, pdfList) {
             file: File ->
@@ -113,16 +157,9 @@ class PdfFragment : Fragment() {
     override fun onResume() {
         super.onResume()
 
+        updatePdfs()
         pdf_list.layoutManager = LinearLayoutManager(context)
-        updatePdfAdapter()
 
-//        pdf_list.layoutManager = LinearLayoutManager(context)
-
-
-//        val pdfAdapter = context?.let { PdfAdapter(it, pdfList,
-//
-////                    Inform the DocumentViewerActivity that document options should be shown:
-//                })
     }
 
     private fun getPdfs() : MutableList<Pdf> {
@@ -134,15 +171,10 @@ class PdfFragment : Fragment() {
             val files = dir.listFiles()
 
             for (file in files) {
-                val fileSizeInBytes = file.length()
-                val fileSize : Float = (fileSizeInBytes / (1024*1024).toFloat())
-                val fileSizeInMB: String = "%.1f".format(fileSize)
-                val date = formatDate(file.lastModified())
-
-                val pdf = Pdf(file.name, file, fileSizeInMB, date)
-
+                val pdf = fileToPdf(file)
                 if (newPdfs.contains(file.absolutePath))
                     pdf.showBadge = true
+
                 pdfList.add(pdf)
             }
         }
@@ -150,11 +182,18 @@ class PdfFragment : Fragment() {
 //        sort the list based on the last modified date:
         pdfList.sort()
 
-//        We do not need the new pdf list from this point on:
-//        newPdfs.clear()
-
         return pdfList
 
+    }
+
+    private fun fileToPdf(file: File): Pdf {
+        val fileSizeInBytes = file.length()
+        val fileSize: Float = (fileSizeInBytes / (1024 * 1024).toFloat())
+        val fileSizeInMB: String = "%.1f".format(fileSize)
+        val date = formatDate(file.lastModified())
+
+        val pdf = Pdf(file.name, file, fileSizeInMB, date)
+        return pdf
     }
 
     private fun formatDate(date: Long): String {

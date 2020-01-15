@@ -47,7 +47,7 @@ class PdfAdapter(private val context: Context,
                 val path = FileProvider.getUriForFile(context, "at.ac.tuwien.caa.fileprovider",
                         File(pdfs[position].file.absolutePath))
                 val intent = Intent(Intent.ACTION_VIEW)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+//                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 intent.setDataAndType(path, "application/pdf")
                 intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
                 pdf.showBadge = false

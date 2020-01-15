@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.logic.Document
@@ -78,17 +77,27 @@ class ImagesFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume: " + scrollToFileName)
 
-        if (scrollToFileName.isNotEmpty()) {
-
-            Log.d(TAG, "scroll: " + scrollToFileName)
+        if (!emptyImageList() && scrollToFileName.isNotEmpty()) {
             val idx = document!!.filePaths.indexOf(scrollToFileName)
-            Log.d(TAG, "scrollidx: " + idx)
             images_list.scrollToPosition(idx)
-
         }
 
+
+    }
+
+    /**
+     * Updates the UI in case the images list is empty and returns true.
+     */
+    private fun emptyImageList(): Boolean {
+
+        if (document.pages.isEmpty()) {
+            images_list.visibility = View.INVISIBLE
+            images_empty_layout.visibility = View.VISIBLE
+            return true
+        }
+
+        return false
 
     }
 
@@ -156,14 +165,13 @@ class ImagesFragment : Fragment() {
                         "file not deleted")
 
             galleryAdapter.notifyItemRemoved(selIdx)
-//            galleryAdapter.notifyItemRangeChanged(selIdx, document.pages.size)
-
             DocumentStorage.saveJSON(context)
 
         }
 
         galleryAdapter.deselectAllItems()
 
+        emptyImageList()
 
     }
 

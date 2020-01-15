@@ -106,7 +106,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         supportFragmentManager.findFragmentByTag(PdfFragment.TAG)?.apply {
             //                    Scan again for the files:
             if ((this as PdfFragment).isVisible)
-                updatePdfAdapter()
+                updatePdfs()
         }
 
         showDocumentsDeletedSnackbar(pdf.name)
@@ -152,7 +152,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             findViewById<FloatingActionButton>(R.id.viewer_camera_fab).show()
             when (bottomNavigationView.selectedItemId) {
                 R.id.viewer_documents -> showFAB(R.id.viewer_add_fab)
-                R.id.viewer_images -> showFAB(R.id.viewer_edit_fab)
             }
         }
 
@@ -380,7 +379,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         //        DocumentsFragment might be null, hence use apply:
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             //            This is necessary to change the upload state icon of the document:
-            (this as DocumentsFragment).resetAdapter()
+            (this as DocumentsFragment).reloadDocuments()
         }
     }
 
@@ -606,7 +605,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             if ((this as DocumentsFragment).isVisible) {
                 //                update the ui:
-                this.deleteDocument(document)
+                deleteDocument(document)
                 showDocumentsDeletedSnackbar(document.title)
             }
         }
@@ -621,6 +620,13 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         DocumentStorage.getInstance(this).documents.remove(document)
         document.deleteImages()
         DocumentStorage.saveJSON(this)
+
+        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
+            if ((this as DocumentsFragment).isVisible) {
+//                update the ui:
+                checkEmptyDocuments()
+            }
+        }
 
     }
 
@@ -833,6 +839,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     override fun onDocumenOpened(document: Document) {
         selectedDocument = document
+        updateSelectedNavigationItem = false
 //        Opens the ImagesFragment:
         bottomNavigationView.selectedItemId = R.id.viewer_images
     }
@@ -1055,9 +1062,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             supportFragmentManager.beginTransaction().replace(R.id.viewer_fragment_layout,
                     pdfFragment, PdfFragment.TAG).commit()
             selectNavigationItem(R.id.viewer_pdfs)
+
         }
 
         else if (isGalleryIntent){
+            intent.putExtra(KEY_OPEN_GALLERY, false)
+
             val fileName = intent.getStringExtra(KEY_FILE_NAME)
             val documentName = intent.getStringExtra(KEY_DOCUMENT_NAME)
             val document = DocumentStorage.getInstance(this).getDocument(documentName)
@@ -1092,6 +1102,27 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         filter.addAction(INTENT_UPLOAD_ACTION)
         filter.addAction(INTENT_IMAGE_PROCESS_ACTION)
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter)
+
+
+//        Assure that the current fragment and the selected item are corresponding.
+//        We are using this, because the selection after resuming is not always corresponding to the
+//        fragment. It seems the behavior is different for different devices.
+        val selItemId = getItemIdOfActiveFragment()
+        if (selItemId != bottomNavigationView.selectedItemId)
+            selectNavigationItem(selItemId)
+
+    }
+
+    /**
+     * Returns the item id of the current and active fragment.
+     */
+    private fun getItemIdOfActiveFragment(): Int {
+        return when {
+            supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG) != null -> R.id.viewer_documents
+            supportFragmentManager.findFragmentByTag(ImagesFragment.TAG) != null -> R.id.viewer_images
+            supportFragmentManager.findFragmentByTag(PdfFragment.TAG) != null -> R.id.viewer_pdfs
+            else -> -1
+        }
     }
 
     override fun onPause() {
@@ -1112,11 +1143,11 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
                         when (intent.getIntExtra(INTENT_IMAGE_PROCESS_TYPE, defValue)) {
                             INTENT_PDF_PROCESS_FINISHED -> {
-//                                The intent is directly consumed if the the PdfFragment is open:
+//                                The intent is directly consumed if the PdfFragment is open:
                                 var intentConsumed = false
                                 supportFragmentManager.findFragmentByTag(PdfFragment.TAG)?.apply {
                                     if ((this as PdfFragment).isVisible) {
-                                        this.updateItem(fileName)
+                                        this.updateFile(fileName)
                                         intentConsumed = true
                                     }
                                 }
@@ -1144,7 +1175,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
                     INTENT_UPLOAD_ACTION -> {
                         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-                            (this as DocumentsFragment).resetAdapter()
+                            (this as DocumentsFragment).reloadDocuments()
                         }
 
                         when (intent.getStringExtra(UPLOAD_INTEND_TYPE)) {

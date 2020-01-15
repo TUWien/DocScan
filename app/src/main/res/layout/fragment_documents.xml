@@ -8,6 +8,29 @@
     <!--The following attributes are required for a footer, so the FAB is not overlapping:-->
     <!--android:paddingBottom="80dp"-->
     <!--android:clipToPadding="false"-->
+
+    <LinearLayout
+        android:id="@+id/documents_empty_layout"
+        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="center">
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            app:srcCompat="@drawable/ic_library_books_gray_24dp"/>
+        <View
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:text="No documents\nPlease create a document first" />
+    </LinearLayout>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/documents_list"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
