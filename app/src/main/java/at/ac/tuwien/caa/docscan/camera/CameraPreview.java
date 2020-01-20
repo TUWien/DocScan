@@ -873,7 +873,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             ratio = (float) size.width / size.height;
             resArea = size.width * size.height;
 
-            if ((ratio == optRatio) && (resArea >= bestResArea)) {
+//            We add a little tolerance, because on the Sony XA2 we do not get the exact preview
+//            ratio as on the picture ratio:
+            if ((Math.abs(ratio - optRatio) <= 0.01f) && (resArea >= bestResArea)) {
                 bestResArea = resArea;
                 bestSize = size;
             }
@@ -883,12 +885,27 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             return bestSize;
 
         float bestRatio = 0;
-//        Second find the closest ratio:
+//        Second find the closest ratio, but add a constraint to the width:
         for (Camera.Size size : previewSizes) {
             ratio = (float) size.width / size.height;
 
-            if ((Math.abs(ratio - optRatio) <= Math.abs(bestRatio - optRatio))) {
+            if ((Math.abs(ratio - optRatio) <= Math.abs(bestRatio - optRatio)) &&
+                    (size.width > 500)) {
                 bestRatio = ratio;
+                bestSize = size;
+            }
+        }
+
+        if (bestSize != null)
+            return bestSize;
+
+//        Third take the highest resolution:
+        for (Camera.Size size : previewSizes) {
+
+            resArea = size.width * size.height;
+
+            if (resArea >= bestResArea) {
+                bestResArea = resArea;
                 bestSize = size;
             }
         }
