@@ -11,8 +11,11 @@ buildscript {
         }
 
     }
+
+
+
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.0'
+        classpath 'com.android.tools.build:gradle:3.5.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // Check for v3.1.2 or higher

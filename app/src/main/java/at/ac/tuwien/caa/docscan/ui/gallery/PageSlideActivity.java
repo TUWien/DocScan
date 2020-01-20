@@ -643,6 +643,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
         intent.putExtra(getString(R.string.key_crop_view_activity_file_name),
                 mPage.getFile().getAbsolutePath());
+        intent.putExtra(getString(R.string.key_crop_view_activity_document_name),
+                mDocument.getTitle());
 
         mContext.startActivity(intent);
     }
