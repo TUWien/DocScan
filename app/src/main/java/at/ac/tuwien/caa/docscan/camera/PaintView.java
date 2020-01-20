@@ -731,7 +731,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 angle = getTextAngle(mTextOrientation);
                 if (angle == -1)
                     return;
-                tl = new PointF(getWidth() / 2f, getHeight() / 2f);
+//                Use the golden ratio for y:
+                tl = new PointF(getWidth() / 2f, getHeight() * .382f);
             }
             else {
                 int csIdx = getTopLeftTextIdx(screenPoints);

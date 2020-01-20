@@ -5,7 +5,7 @@
     <item
         android:id="@+id/action_rotate_text_dir_left"
         android:title="@string/action_rotate_left_title"
-        android:icon="@drawable/ic_rotate_left_gray_24dp"
+        android:icon="@drawable/ic_rotate_left_white_24dp"
         />
     <item
         android:id="@+id/action_rotate_text_dir_right"

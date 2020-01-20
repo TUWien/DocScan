@@ -39,7 +39,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.hardware.Camera;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
@@ -108,7 +107,7 @@ import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.ActionSheet;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
-import at.ac.tuwien.caa.docscan.camera.FixedActionSheet;
+import at.ac.tuwien.caa.docscan.camera.TextOrientationActionSheet;
 import at.ac.tuwien.caa.docscan.camera.GPS;
 import at.ac.tuwien.caa.docscan.camera.LocationHandler;
 import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
@@ -137,6 +136,7 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATI
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
+import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUMENT_CREATED_KEY;
 import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUMENT_QR_TEXT;
 import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IDX;
 import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IMAGE;
@@ -153,6 +153,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
     private static final String KEY_SHOW_EXPOSURE_LOCK_WARNING = "KEY_SHOW_EXPOSURE_LOCK_WARNING";
+    private static final String KEY_SHOW_TEXT_DIR_DIALOG = "KEY_SHOW_TEXT_DIR_DIALOG";
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
@@ -358,7 +359,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mCVResult.setMeasureFocus(mIsFocusMeasured);
         IPManager.getInstance().setIsFocusMeasured(mIsFocusMeasured);
 
-        mTextOrientation = sharedPref.getInt(getResources().getString(R.string.key_text_orientation), IMG_ORIENTATION_0);
+        mTextOrientation = sharedPref.getInt(getResources().getString(R.string.key_text_orientation), IMG_ORIENTATION_90);
         mPaintView.setTextOrientation(mTextOrientation);
 
 
@@ -411,6 +412,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //            is not cleared, the user would be still in retake mode.
             getIntent().removeExtra(KEY_RETAKE_IMAGE);
         }
+
+////        A new document was created -> show a dialog for text direction
+//        boolean documentCreated = getIntent().getBooleanExtra(DOCUMENT_CREATED_KEY, false);
+//        if (documentCreated) {
+//            showTextDirDialog();
+//        }
 
     }
 
@@ -537,6 +544,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //                showSeriesPopup(null);
 //            }
 //        });
+
         setSupportActionBar(toolbar);
         setupToolbar();
         setupNavigationDrawer();
@@ -619,42 +627,43 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         ArrayList<ActionSheet.SheetAction> actions = getRotateTextDirSheetActions();
 
-        ActionSheet.SheetSelection s = new ActionSheet.SheetSelection() {
-            @Override
-            public void onSheetSelected(ActionSheet.SheetAction action) {
+        ActionSheet.SheetSelection s = action -> {
 
-                switch(action.getID()) {
-                    case R.id.action_rotate_text_dir_left:
-                        mTextOrientation--;
-                        break;
-                    case R.id.action_rotate_text_dir_right:
-                        mTextOrientation++;
-                        break;
-                }
-//                Modulo of negative number is still negative, so make it positive:
-                if (mTextOrientation < 0)
-                    mTextOrientation += 4;
-                mTextOrientation = mTextOrientation % 4;
-
-                saveTextOrientation();
-
-                mPaintView.setTextOrientation(mTextOrientation);
+            switch(action.getID()) {
+                case R.id.action_rotate_text_dir_left:
+                    mTextOrientation--;
+                    break;
+                case R.id.action_rotate_text_dir_right:
+                    mTextOrientation++;
+                    break;
             }
+//                Modulo of negative number is still negative, so make it positive:
+            if (mTextOrientation < 0)
+                mTextOrientation += 4;
+            mTextOrientation = mTextOrientation % 4;
+
+            saveTextOrientation();
+
+            mPaintView.setTextOrientation(mTextOrientation);
         };
 
         ActionSheet.DialogStatus f = new ActionSheet.DialogStatus() {
             @Override
             public void onShown() {
+                View v = findViewById(R.id.camera_controls_layout);
+                v.setVisibility(View.INVISIBLE);
                 mPaintView.drawTextOrientationLarge(true);
             }
 
             @Override
             public void onDismiss() {
+                View v = findViewById(R.id.camera_controls_layout);
+                v.setVisibility(View.VISIBLE);
                 mPaintView.drawTextOrientationLarge(false);
             }
         };
 
-        FixedActionSheet.DialogConfirm c = new FixedActionSheet.DialogConfirm() {
+        TextOrientationActionSheet.DialogConfirm c = new TextOrientationActionSheet.DialogConfirm() {
 
             int lastOrientation = mTextOrientation;
 
@@ -672,7 +681,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
         };
 
-        getSupportFragmentManager().beginTransaction().add(new FixedActionSheet(actions, s, f, c),
+        boolean opaqueBackground = mCameraPreview.isPreviewFitting();
+        getSupportFragmentManager().beginTransaction().add(new TextOrientationActionSheet(actions, s, f, c, opaqueBackground),
                 "TAG").commit();
 
     }
@@ -692,11 +702,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         actions.add(new ActionSheet.SheetAction(
                 R.id.action_rotate_text_dir_left,
                 getString(R.string.action_rotate_left_title),
-                R.drawable.ic_rotate_left_gray_24dp));
+                R.drawable.ic_rotate_left_white_24dp));
         actions.add(new ActionSheet.SheetAction(
                 R.id.action_rotate_text_dir_right,
                 getString(R.string.action_rotate_right_title),
-                R.drawable.ic_rotate_right_gray_24dp));
+                R.drawable.ic_rotate_right_white_24dp));
         return actions;
     }
 
@@ -870,6 +880,40 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //
 //    }
 
+    private void showTextDirDialog() {
+
+        final SharedPreferences sharedPref = androidx.preference.PreferenceManager.
+                getDefaultSharedPreferences(this);
+        boolean showDialog = sharedPref.getBoolean(KEY_SHOW_TEXT_DIR_DIALOG, true);
+        if (!showDialog)
+            return;
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        LayoutInflater adbInflater = LayoutInflater.from(this);
+        View eulaLayout = adbInflater.inflate(R.layout.check_box_dialog, null);
+
+        final CheckBox checkBox = eulaLayout.findViewById(R.id.skip);
+        alertDialog.setView(eulaLayout);
+        alertDialog.setTitle(R.string.camera_text_dir_dialog_title);
+        alertDialog.setMessage(R.string.camera_text_dir_dialog_msg);
+
+        alertDialog.setPositiveButton(getString(R.string.button_ok),
+                (dialog, which) -> {
+                    if (checkBox.isChecked()) {
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putBoolean(KEY_SHOW_TEXT_DIR_DIALOG, false);
+                        editor.commit();
+                    }
+
+                    openRotateTextDirMenu();
+                });
+        alertDialog.setCancelable(true);
+        alertDialog.setNegativeButton(getString(R.string.dialog_cancel_text), null);
+
+        alertDialog.show();
+
+    }
+
 
 
     private void showLockedExposureDialog() {
@@ -911,7 +955,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // Concerning series mode:
         mIsSeriesMode = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_ACTIVE_KEY);
-        mIsSeriesModePaused = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_PAUSED_KEY);
+//        mIsSeriesModePaused = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_PAUSED_KEY);
+        if (mIsSeriesMode)
+            mIsSeriesModePaused = true;
 
         if (mIsSeriesMode && mIsSeriesModePaused)
             setInstructionText(getString(R.string.instruction_series_paused));

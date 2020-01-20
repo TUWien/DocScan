@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/sheet_dialog_title"
+        android:text="@string/action_setting_rotate_text_dir"
+        android:textColor="@color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/activity_horizontal_margin"
+        app:drawableLeftCompat="@drawable/ic_rotate_text_white_24px"
+        android:drawablePadding="@dimen/activity_horizontal_margin"
+        android:textSize="20sp"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/second_light_gray"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/sheet_dialog_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/activity_horizontal_margin"
+        android:gravity="right"
+        android:layout_marginBottom="@dimen/activity_vertical_margin">
+        <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:gravity="center"-->
+            <!--android:layout_weight="0.5">-->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/text_orientation_sheet_cancel_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/debug_view_bg_color"
+                android:text="@string/dialog_cancel_text"/>
+        <!--</LinearLayout>-->
+
+        <!--<LinearLayout-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_weight="0.5"-->
+            <!--android:gravity="center">-->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/text_orientation_sheet_ok_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/debug_view_bg_color"
+
+                android:text="@string/dialog_ok_text"/>
+        <!--</LinearLayout>-->
+    </LinearLayout>
+
+</LinearLayout>
