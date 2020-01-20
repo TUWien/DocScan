@@ -46,6 +46,8 @@
     <string name="camera_document_hint_title">Tip for documents</string>
     <string name="camera_lock_exposure_title">Locking exposure</string>
     <string name="camera_lock_exposure_msg">This locks the current exposure and white balance. Please note that we cannot lock these values, after you leave the camera view.</string>
+    <string name="camera_text_dir_dialog_title">Set text direction</string>
+    <string name="camera_text_dir_dialog_msg">Do you want to change the orientation of the document text?</string>
     <string name="do_not_show_again_text">Do not show this message again.</string>
     <string name="camera_status_title_prefix">Status:</string>
 
@@ -163,6 +165,7 @@
     <string name="crop_view_crop_dialog_title">Page boundary saved</string>
     <string name="crop_view_crop_dialog_text">The saved page boundary is used when you transform the images.
         All document images can be transformed at once in the document view.</string>
+    <string name="crop_view_open_document_view">Open document view</string>
 
     <!-- MapViewActivity -->
     <string name="map_view_item_save">Save image</string>
@@ -282,6 +285,7 @@
     <string name="sync_snackbar_files_deleted_prefix">Deleted</string>
     <string name="sync_snackbar_file_deleted_postfix">file</string>
     <string name="sync_snackbar_files_deleted_postfix">files</string>
+    <string name="sync_snackbar_upload_started">Images are uploaded in the background</string>
     <string name="sync_dir_pending_text">upload pending</string>
     <string name="sync_dir_processing_text">processing, please wait</string>
     <string name="sync_not_focused_text">- partially blurred</string>
@@ -323,7 +327,8 @@
     <!-- IntroActivity -->
     <string name="intro_text_1">This app is especially designed for the <a href="https://scantent.eu/">ScanTent</a>.\nIf you own a ScanTent: Please put your document inside.</string>
     <string name="intro_text_2">Place your phone on the ScanTent</string>
-    <string name="intro_text_3">Start the series mode in the app</string>
+    <string name="intro_text_3">Start the automatic mode in the app</string>
+    <string name="intro_text_7">The text orientation can be changed in the settings</string>
     <string name="intro_text_4">Flip pages - images are captured automatically.\n</string>
     <string name="intro_text_5">Your scanned images are grouped into documents.\nDocuments can be exported as PDF and uploaded.</string>
     <string name="intro_trigger_flash_text">Trigger flash after automatic imaging to show that an image has been taken.</string>
@@ -450,6 +455,7 @@
     <string name="action_pdf_delete">Delete</string>
     <string name="action_pdf_share">Share</string>
 
+    <string name="action_rotate_title">Change text orientation</string>
     <string name="action_rotate_left_title">Rotate left</string>
     <string name="action_rotate_right_title">Rotate right</string>
 
@@ -468,7 +474,7 @@
     <string name="viewer_selected">selected</string>
     <string name="viewer_all_cropped_title">Nothing to do</string>
     <string name="viewer_all_cropped_text">The document contains only images that are already cropped.</string>
-    <string name="viewer_not_cropped_confirm_title">Uncropped images in</string>
+    <string name="viewer_not_cropped_confirm_title">Uncropped images</string>
     <string name="viewer_not_cropped_confirm_text">This document contains images that are not cropped.\nDo you still want to proceed with the</string>
     <string name="viewer_not_cropped_pdf">PDF export</string>
     <string name="viewer_not_cropped_upload">upload</string>
@@ -479,5 +485,10 @@
     <string name="viewer_not_logged_in_title">Not logged in</string>
     <string name="viewer_not_logged_in_text">You are currently not logged in. Do you want to login to a cloud service?</string>
     <string name="viewer_pdf_created_snackbar_text">Created pdf</string>
+
+
+    <!-- PdfSelectorActivity -->
+    <string name="pdf_selector_title">Save document as PDF</string>
+
 
 </resources>

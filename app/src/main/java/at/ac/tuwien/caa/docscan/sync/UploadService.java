@@ -34,8 +34,7 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.ui.pdf.PdfActivity;
-import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
+import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
@@ -61,6 +60,7 @@ public class UploadService extends JobService implements
     public static final String UPLOAD_OFFLINE_ERROR_ID = "UPLOAD_OFFLINE_ERROR_ID";
     public static final String UPLOAD_FILE_DELETED_ERROR_ID = "UPLOAD_FILE_DELETED_ERROR_ID";
     public static final String UPLOAD_ERROR_ID = "UPLOAD_ERROR_ID";
+    public static final String KEY_UPLOAD_INTENT = "KEY_UPLOAD_INTENT";
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
@@ -573,7 +573,6 @@ public class UploadService extends JobService implements
         mServiceHandler = new ServiceHandler(mServiceLooper);
     }
 
-
     @Override
     public void onDestroy() {
 
@@ -591,8 +590,10 @@ public class UploadService extends JobService implements
         if (getConnectionText() == null)
             return;
 
-        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        Intent intent = new Intent(getApplicationContext(), DocumentViewerActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.putExtra(KEY_UPLOAD_INTENT, true);
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
                 0, intent, 0);
 

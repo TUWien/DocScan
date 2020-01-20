@@ -28,6 +28,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.signature.MediaStoreSignature;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.material.button.MaterialButton;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -42,8 +43,12 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.crop.CropView;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 
 import static at.ac.tuwien.caa.docscan.ui.MapViewActivity.KEY_MAP_VIEW_ACTIVITY_FINISHED;
+import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_DOCUMENT_NAME;
+import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_OPEN_GALLERY;
 
 /**
  * Created by fabian on 21.11.2017.
@@ -55,6 +60,7 @@ public class CropViewActivity extends AppCompatActivity {
 
     private CropView mCropView;
     private String mFileName;
+    private String mDocumentTitle;
 //    used to restore previous state - in case the user cancels cropping:
     private ArrayList<PointF> mOriginalPoints;
     private boolean mIsFocused;
@@ -176,6 +182,7 @@ public class CropViewActivity extends AppCompatActivity {
         Bundle b = getIntent().getExtras();
         if (b != null) {
             mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
+            mDocumentTitle = b.getString(getString(R.string.key_crop_view_activity_document_name), null);
 
             Log.d(CLASS_NAME, "initCropView: mFileName: " + mFileName);
 
@@ -360,7 +367,8 @@ public class CropViewActivity extends AppCompatActivity {
 
             //        Tell the user that the cropping coordingates have changed:
             if (!skipCroppingInfoDialog())
-                showCroppingInfoDialog();
+                showCroppingInfo_2();
+//                showCroppingInfoDialog();
 //            The user has skipped the dialog before, close the CropViewActivity:
             else
                 finish();
@@ -395,6 +403,55 @@ public class CropViewActivity extends AppCompatActivity {
         alertDialog.setView(eulaLayout);
         alertDialog.setTitle(R.string.crop_view_crop_dialog_title);
         alertDialog.setMessage(R.string.crop_view_crop_dialog_text);
+
+        final SharedPreferences sharedPref = androidx.preference.PreferenceManager.
+                getDefaultSharedPreferences(this);
+
+        alertDialog.setPositiveButton(getString(R.string.button_ok),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        if (checkBox.isChecked()) {
+                            SharedPreferences.Editor editor = sharedPref.edit();
+                            editor.putBoolean(KEY_SKIP_CROPPING_INFO_DIALOG, true);
+                            editor.commit();
+//                            Close the CropViewActivity:
+                        }
+
+                        finish();
+                    }
+                });
+
+        alertDialog.show();
+
+    }
+
+//    TODO: rename
+    private void showCroppingInfo_2() {
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        LayoutInflater adbInflater = LayoutInflater.from(this);
+        View layout = adbInflater.inflate(R.layout.crop_info_dialog, null);
+
+        final CheckBox checkBox = layout.findViewById(R.id.skip);
+        alertDialog.setView(layout);
+        alertDialog.setTitle(R.string.crop_view_crop_dialog_title);
+        alertDialog.setMessage(R.string.crop_view_crop_dialog_text);
+
+        MaterialButton openDocumentViewButton = layout.findViewById(R.id.open_document_viewer_button);
+        openDocumentViewButton.setOnClickListener(view -> {
+            final Intent intent = new Intent(getApplicationContext(), DocumentViewerActivity.class);
+//            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
+//            Without this flag the activities would all be added to the back stack.
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra(KEY_OPEN_GALLERY, true);
+            intent.putExtra(KEY_DOCUMENT_NAME, mDocumentTitle);
+            intent.putExtra(KEY_FILE_NAME, mFileName);
+            startActivity(intent);
+            finish();
+
+        });
 
         final SharedPreferences sharedPref = androidx.preference.PreferenceManager.
                 getDefaultSharedPreferences(this);

@@ -10,13 +10,6 @@
         <!--app:showAsAction="always"-->
         <!--/>-->
 
-    <item
-        android:id="@+id/document_item"
-        android:icon="@drawable/ic_insert_drive_file_white_24dp"
-        android:title="@string/document_item"
-        android:visible="true"
-        app:showAsAction="always"
-        />
 
     <item
         android:id="@+id/flash_mode_item"

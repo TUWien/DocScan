@@ -40,6 +40,10 @@ public class SelectableToolbar {
 
     }
 
+    public Toolbar getToolbar() {
+        return mToolbar;
+    }
+
     public void setTitle(CharSequence title) {
 
         boolean lastSelectMode = mIsSelectMode;

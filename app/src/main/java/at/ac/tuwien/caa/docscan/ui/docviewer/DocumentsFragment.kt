@@ -48,7 +48,7 @@ class DocumentsFragment : Fragment() {
         scroll = true
     }
 
-    fun comparator(d: Document): String = d.title.toLowerCase()
+    private fun comparator(d: Document): String = d.title.toLowerCase()
 
     fun deleteDocument(document: Document) {
 
@@ -166,7 +166,7 @@ class DocumentsFragment : Fragment() {
                 {
     //                    Inform the DocumentViewerActivity that a document should be opened:
                     document: Document ->
-                    listener?.onDocumenOpened(document)
+                    listener?.onDocumentOpened(document)
                 },
                 {
     //                    Inform the DocumentViewerActivity that document options should be shown:
@@ -181,7 +181,7 @@ class DocumentsFragment : Fragment() {
     }
 
     interface DocumentListener {
-        fun onDocumenOpened(document: Document)
+        fun onDocumentOpened(document: Document)
         fun onDocumentOptions(document: Document)
     }
 

@@ -49,7 +49,10 @@
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
-
+        <activity
+            android:name=".ui.docviewer.SelectDocumentActivity"
+            android:exported="true"
+            />
 
         <activity
             android:name=".ui.document.SelectDocumentActivity"

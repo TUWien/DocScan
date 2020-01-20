@@ -74,8 +74,17 @@ class PdfFragment : Fragment() {
 
         val pdf = fileToPdf(File(path))
         pdf.showBadge = true
+
+//        In case the list was empty before, we need to show the list and initialize the adapter:
+        if (pdfList.isEmpty()) {
+            pdf_list.visibility = View.VISIBLE
+            pdf_empty_layout.visibility = View.INVISIBLE
+            updatePdfAdapter()
+        }
+
         pdfList.add(0, pdf)
-        pdf_list.adapter!!.notifyItemChanged(0)
+
+        pdf_list.adapter?.notifyItemChanged(0)
 
     }
 
@@ -107,11 +116,13 @@ class PdfFragment : Fragment() {
 
 //        Save the current adapter state to newPdfs list:
         newPdfs.clear()
-        val it = pdfList.iterator()
-        while(it.hasNext()) {
-            val pdf = it.next()
-            if (pdf.showBadge)
-                newPdfs.add(pdf.file.absolutePath)
+        if (::pdfList.isInitialized) {
+            val it = pdfList.iterator()
+            while (it.hasNext()) {
+                val pdf = it.next()
+                if (pdf.showBadge)
+                    newPdfs.add(pdf.file.absolutePath)
+            }
         }
 
         super.onStop()

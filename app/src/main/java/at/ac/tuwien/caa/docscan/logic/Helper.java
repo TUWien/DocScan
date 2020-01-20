@@ -15,6 +15,10 @@ import androidx.appcompat.app.AlertDialog;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.CheckBox;
 
 import com.android.volley.VolleyError;
 import com.crashlytics.android.Crashlytics;
@@ -912,6 +916,7 @@ public class Helper {
 
     }
 
+
     /**
      * Check the device to make sure it has the Google Play Services APK. Taken from:
      * https://stackoverflow.com/a/48224404/9827698
@@ -943,6 +948,17 @@ public class Helper {
         else
             return RestRequest.BASE_URL;
 
+    }
+
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     public static boolean useTranskribusTestServer(Context context) {

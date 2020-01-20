@@ -36,6 +36,7 @@
         <item name="colorControlNormal">@color/white</item>
         <item name="colorPrimary">@color/white</item>
         <item name="android:actionMenuTextColor">@color/white</item>
+        <item name="actionMenuTextColor">@color/white</item>
     </style>
 
     <!--Taken from: https://www.murrayc.com/permalink/2014/10/28/android-changing-the-toolbars-text-color-and-overflow-icon-color/-->
@@ -76,5 +77,24 @@
         <item name="android:background">@color/button_bg_color</item>
     </style>
 
+    <style name="BottomSheetDialogDarkTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="android:textColor">@color/white</item>
+        <item name="colorControlNormal">@color/white</item>
+        <item name="colorPrimary">@color/white</item>
+        <item name="bottomSheetStyle">@style/OpaqueBottomSheetStyle</item>
+    </style>
+    <style name="OpaqueBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@color/control_background_color</item>
+    </style>
+
+    <style name="TransparentBottomSheetDialogDarkTheme" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="android:textColor">@color/white</item>
+        <item name="colorControlNormal">@color/white</item>
+        <item name="colorPrimary">@color/white</item>
+        <item name="bottomSheetStyle">@style/TransparentBottomSheetStyle</item>
+    </style>
+    <style name="TransparentBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@color/control_background_color_transparent</item>
+    </style>
 
 </resources>
