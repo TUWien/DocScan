@@ -124,13 +124,13 @@ class DocumentProcessTest {
     }
 
 
-    private fun renameFirstDocument() {
-        val muchNewerText = "thanks for all the fish"
-        changeDocumentTitleFromDocumentFragment(muchNewerText)
-
-        val newText = "hitchhikers guide to the galaxy"
-        changeDocumentTitleFromImagesFragment(newText)
-    }
+//    private fun renameFirstDocument() {
+//        val muchNewerText = "thanks for all the fish"
+//        changeDocumentTitleFromDocumentFragment(muchNewerText)
+//
+//        val newText = "hitchhikers guide to the galaxy"
+//        changeDocumentTitleFromImagesFragment(newText)
+//    }
 
     private fun changeDocumentTitleFromDocumentFragment(newText: String) {
 
@@ -160,28 +160,28 @@ class DocumentProcessTest {
 
     }
 
-    private fun changeDocumentTitleFromImagesFragment(newText: String) {
-        //        Open the first document:
-        onView(withId(R.id.documents_list)).perform(
-                actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-
-        BottomNavigationTest.assertSecondScreen()
-        //        Click on the FAB:
-        onView(withId(R.id.viewer_edit_fab))
-                .perform(click())
-
-        //        Click on the change title button:
-        onView(allOf(withText(R.string.action_document_edit_document), isDisplayed()))
-                .perform(click())
-
-        //        The EditDocumentActivity is now launched
-        onView(withId(R.id.create_series_name_edittext))
-                .perform(replaceText(newText))
-        onView(withId(R.id.create_series_done_button))
-                .perform(click())
-
-//        Check the title of the toolbar:
-        onView(allOf(instanceOf(TextView::class.java), withParent(withId(R.id.main_toolbar))))
-                .check(matches(withText(newText)))
-    }
+//    private fun changeDocumentTitleFromImagesFragment(newText: String) {
+//        //        Open the first document:
+//        onView(withId(R.id.documents_list)).perform(
+//                actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+//
+//        BottomNavigationTest.assertSecondScreen()
+//        //        Click on the FAB:
+//        onView(withId(R.id.viewer_edit_fab))
+//                .perform(click())
+//
+//        //        Click on the change title button:
+//        onView(allOf(withText(R.string.action_document_edit_document), isDisplayed()))
+//                .perform(click())
+//
+//        //        The EditDocumentActivity is now launched
+//        onView(withId(R.id.create_series_name_edittext))
+//                .perform(replaceText(newText))
+//        onView(withId(R.id.create_series_done_button))
+//                .perform(click())
+//
+////        Check the title of the toolbar:
+//        onView(allOf(instanceOf(TextView::class.java), withParent(withId(R.id.main_toolbar))))
+//                .check(matches(withText(newText)))
+//    }
 }

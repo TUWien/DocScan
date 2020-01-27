@@ -735,6 +735,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     case R.id.action_rotate_text_dir_item:
                         openRotateTextDirMenu();
                         break;
+                    case R.id.action_document_qr_item:
+                        startQRMode();
+                        break;
                 }
             }
         };
@@ -821,6 +824,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                         getString(R.string.action_setting_lock_wb),
                         R.drawable.ic_lock_outline_gray_24dp));
         }
+
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_document_qr_item,
+                getString(R.string.action_setting_qr_mode),
+                R.drawable.ic_qr_code_gray));
 
         return actions;
     }
@@ -1472,6 +1480,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mCameraPreview.startQrMode(false);
         IPManager.getInstance().setProcessFrame(true);
         IPManager.getInstance().setIsPaused(false);
+        mRestoreTab = false;
         showControlsLayout(!mIsQRActive);
     }
 

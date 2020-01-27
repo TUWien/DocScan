@@ -469,6 +469,7 @@
     <string name="action_setting_rotate_text_dir">Change text orientation</string>
     <string name="action_setting_flash_series">Flash after automated imaging</string>
     <string name="action_setting_no_flash_series">No flash after automated imaging</string>
+    <string name="action_setting_qr_mode">Create Document from QR code</string>
 
     <string name="viewer_crop_confirm_title">Crop</string>
     <string name="viewer_crop_confirm_text">Are you sure you want to crop all images in the document?

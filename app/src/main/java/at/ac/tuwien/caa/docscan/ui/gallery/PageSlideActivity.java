@@ -416,7 +416,26 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
             // Zoom out before opening the DocumentViewerActivity:
             PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
-            imageView.animateScale(0).withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
+
+            if (imageView == null) {
+                startDocumentViewer(intent);
+                return;
+            }
+
+
+
+            SubsamplingScaleImageView.AnimationBuilder ab = imageView.animateScale(0);
+            ab = null;
+//            I am not sure, why this is happening, but it happened once on MotoG3
+            if (ab == null) {
+                startDocumentViewer(intent);
+                return;
+            }
+
+
+
+            ab.withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
+//            imageView.animateScale(0).withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
                 @Override
                 public void onComplete() {
                     startDocumentViewer(intent);
@@ -461,6 +480,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                             imageView.getTransitionName());
 //                Log.d(CLASS_NAME, "transition name: " + imageView.getTransitionName());
             mContext.startActivity(intent, activityOptionsCompat.toBundle());
+            mPagerAdapter = null;
             finish();
         }
         else {
