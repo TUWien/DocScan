@@ -50,7 +50,7 @@
             android:parentActivityName=".ui.CameraActivity"
             />
         <activity
-            android:name=".ui.docviewer.SelectDocumentActivity"
+            android:name=".ui.docviewer.SelectPdfDocumentActivity"
             android:exported="true"
             />
 

@@ -28,6 +28,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -858,8 +859,41 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (lastInstalledVersion <= 35 && lastInstalledVersion != -1)
             DocumentMigrator.migrate(this);
 
+        if (lastInstalledVersion <= 116 && lastInstalledVersion != -1)
+            showUIChangesDialog();
+
     }
 
+    private void showUIChangesDialog() {
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
+
+        String dialogTitle = getString(R.string.ui_changes_title);
+        alertDialog.setTitle(dialogTitle);
+
+        String text = getString(R.string.ui_changes_text);
+        alertDialog.setMessage(text);
+        alertDialog.setPositiveButton(getString(R.string.dialog_yes_text),
+                (dialog, which) -> {
+
+                    String pdfUrl = "https://github.com/TUWien/DocScan/wiki/UI-changes-in-version-1.7";
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                    browserIntent.setData(Uri.parse(pdfUrl));
+                    try {
+                        startActivity(browserIntent);
+                    }
+                    catch (ActivityNotFoundException e) {
+                        Crashlytics.logException(e);
+                        Helper.showActivityNotFoundAlert(getApplicationContext());
+                    }
+
+                });
+        alertDialog.setNegativeButton(getString(R.string.dialog_cancel_text), null);
+        alertDialog.setCancelable(true);
+        alertDialog.show();
+
+
+    }
 //    private void showDocumentHint() {
 //
 //        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -879,40 +913,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //
 //
 //    }
-
-    private void showTextDirDialog() {
-
-        final SharedPreferences sharedPref = androidx.preference.PreferenceManager.
-                getDefaultSharedPreferences(this);
-        boolean showDialog = sharedPref.getBoolean(KEY_SHOW_TEXT_DIR_DIALOG, true);
-        if (!showDialog)
-            return;
-
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-        LayoutInflater adbInflater = LayoutInflater.from(this);
-        View eulaLayout = adbInflater.inflate(R.layout.check_box_dialog, null);
-
-        final CheckBox checkBox = eulaLayout.findViewById(R.id.skip);
-        alertDialog.setView(eulaLayout);
-        alertDialog.setTitle(R.string.camera_text_dir_dialog_title);
-        alertDialog.setMessage(R.string.camera_text_dir_dialog_msg);
-
-        alertDialog.setPositiveButton(getString(R.string.button_ok),
-                (dialog, which) -> {
-                    if (checkBox.isChecked()) {
-                        SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putBoolean(KEY_SHOW_TEXT_DIR_DIALOG, false);
-                        editor.commit();
-                    }
-
-                    openRotateTextDirMenu();
-                });
-        alertDialog.setCancelable(true);
-        alertDialog.setNegativeButton(getString(R.string.dialog_cancel_text), null);
-
-        alertDialog.show();
-
-    }
 
 
 

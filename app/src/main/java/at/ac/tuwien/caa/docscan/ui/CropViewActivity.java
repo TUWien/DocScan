@@ -367,7 +367,7 @@ public class CropViewActivity extends AppCompatActivity {
 
             //        Tell the user that the cropping coordingates have changed:
             if (!skipCroppingInfoDialog())
-                showCroppingInfo_2();
+                showCroppingInfo();
 //                showCroppingInfoDialog();
 //            The user has skipped the dialog before, close the CropViewActivity:
             else
@@ -393,42 +393,7 @@ public class CropViewActivity extends AppCompatActivity {
      * Shows a message about cropping coordinates and that the images are not transformed at this
      * point.
      */
-    private void showCroppingInfoDialog() {
-
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-        LayoutInflater adbInflater = LayoutInflater.from(this);
-        View eulaLayout = adbInflater.inflate(R.layout.check_box_dialog, null);
-
-        final CheckBox checkBox = eulaLayout.findViewById(R.id.skip);
-        alertDialog.setView(eulaLayout);
-        alertDialog.setTitle(R.string.crop_view_crop_dialog_title);
-        alertDialog.setMessage(R.string.crop_view_crop_dialog_text);
-
-        final SharedPreferences sharedPref = androidx.preference.PreferenceManager.
-                getDefaultSharedPreferences(this);
-
-        alertDialog.setPositiveButton(getString(R.string.button_ok),
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                        if (checkBox.isChecked()) {
-                            SharedPreferences.Editor editor = sharedPref.edit();
-                            editor.putBoolean(KEY_SKIP_CROPPING_INFO_DIALOG, true);
-                            editor.commit();
-//                            Close the CropViewActivity:
-                        }
-
-                        finish();
-                    }
-                });
-
-        alertDialog.show();
-
-    }
-
-//    TODO: rename
-    private void showCroppingInfo_2() {
+    private void showCroppingInfo() {
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         LayoutInflater adbInflater = LayoutInflater.from(this);

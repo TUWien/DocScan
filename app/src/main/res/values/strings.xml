@@ -126,6 +126,8 @@
     <string name="toast_series_started">Images are now taken automatically</string>
     <string name="toast_single">Images are taken manually</string>
 
+    <string name="ui_changes_title">What\'s new</string>
+    <string name="ui_changes_text">Version 1.7 contains major UI changes.\nDo you want to read more about the UI changes? (Requires an internet connection.)</string>
 
     <!-- TranskribusLoginActivity -->
     <string name="login_email_hint">Email</string>

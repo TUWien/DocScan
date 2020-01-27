@@ -799,7 +799,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     fun newPDF(view: View) {
 
-        val intent = Intent(applicationContext, SelectDocumentActivity::class.java)
+        val intent = Intent(applicationContext, SelectPdfDocumentActivity::class.java)
         startActivityForResult(intent, DOCUMENT_PDF_SELECTION_REQUEST)
 
     }
