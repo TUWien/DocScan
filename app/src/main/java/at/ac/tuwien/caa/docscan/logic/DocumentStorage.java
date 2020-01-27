@@ -9,10 +9,13 @@ import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
@@ -258,6 +261,42 @@ public class DocumentStorage {
 
     }
 
+    public static String convertStreamToString(InputStream is) throws IOException {
+        // http://www.java2s.com/Code/Java/File-Input-Output/ConvertInputStreamtoString.htm
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        Boolean firstLine = true;
+        while ((line = reader.readLine()) != null) {
+            if(firstLine){
+                sb.append(line);
+                firstLine = false;
+            } else {
+                sb.append("\n").append(line);
+            }
+        }
+        reader.close();
+        return sb.toString();
+    }
+
+    public static String getStringFromFile(String filePath){
+        File fl = new File(filePath);
+        FileInputStream fin = null;
+        try {
+            fin = new FileInputStream(fl);
+            String ret = convertStreamToString(fin);
+            //Make sure you close all streams.
+            fin.close();
+            return ret;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "nothing";
+    }
+
     public static void loadJSON(Context context) {
 
         Log.d(CLASS_NAME, "loadJSON");
@@ -277,7 +316,7 @@ public class DocumentStorage {
                 sInstance = gson.fromJson(bufferedReader, DocumentStorage.class);
 //                I do not know why this is sometimes happening...
                 if (sInstance == null) {
-                    Crashlytics.log("could not read json");
+                    Crashlytics.log("could not read json test: " + getStringFromFile(storeFile.getAbsolutePath()));
                     Crashlytics.logException(new Throwable());
                     sInstance = new DocumentStorage();
                 }
