@@ -59,6 +59,8 @@ public class PdfCreator {
     private static FirebaseVisionTextRecognizer sTextRecognizer;
     public static final String PDF_INTENT = "PDF_INTENT";
     public static final String PDF_FILE_NAME = "PDF_FILE_NAME";
+    public static final String PDF_CHANNEL_ID = "PDF_CHANNEL_ID";
+    public static final CharSequence PDF_CHANNEL_NAME = "DocScan Pdf";// The user-visible name of the channel.
 
     public static void createPdfWithoutOCR(String documentName, final ArrayList<File> files,
                                            CropRunnable cropRunnable, WeakReference<Context> context) {
@@ -215,18 +217,18 @@ public class PdfCreator {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context,
-                UploadService.CHANNEL_ID)
+                PDF_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
                 .setContentIntent(pendingIntent)
-                .setChannelId(UploadService.CHANNEL_ID);
+                .setChannelId(PDF_CHANNEL_ID);
 
         // On Android O we need a NotificationChannel, otherwise the notification is not shown.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // IMPORTANCE_LOW disables the notification sound:
             int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel notificationChannel = new NotificationChannel(
-                    UploadService.CHANNEL_ID, UploadService.CHANNEL_NAME, importance);
+                    PDF_CHANNEL_ID, PDF_CHANNEL_NAME, importance);
             notificationManager.createNotificationChannel(notificationChannel);
         }
 
