@@ -324,7 +324,7 @@ public class DocumentStorage {
                 if (sInstance.getTitle() == null)
                     sInstance.setTitle(Helper.getActiveDocumentTitle(context));
 
-            } catch (FileNotFoundException e) {
+            } catch (Exception e) {
                 Crashlytics.logException(e);
                 e.printStackTrace();
                 sInstance = new DocumentStorage();
@@ -345,7 +345,7 @@ public class DocumentStorage {
             writer.write(documentStorage);
             writer.close();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             Crashlytics.logException(e);
             e.printStackTrace();
         }
