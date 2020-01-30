@@ -422,17 +422,12 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                 return;
             }
 
-
-
             SubsamplingScaleImageView.AnimationBuilder ab = imageView.animateScale(0);
-            ab = null;
 //            I am not sure, why this is happening, but it happened once on MotoG3
             if (ab == null) {
                 startDocumentViewer(intent);
                 return;
             }
-
-
 
             ab.withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
 //            imageView.animateScale(0).withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
@@ -635,6 +630,13 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
 //                    Zoom out before opening the CropViewActivity:
                     PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+                    SubsamplingScaleImageView.AnimationBuilder ab = imageView.animateScale(0);
+//            I am not sure, why this is happening, but it happened once on MotoG3
+                    if (ab == null) {
+                        startCropView();
+                        return;
+                    }
+
                     imageView.animateScale(0).withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
                         @Override
                         public void onComplete() {
