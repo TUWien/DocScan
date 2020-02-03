@@ -771,11 +771,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     }
 
     override fun onShown() {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun onDismiss() {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     fun startCamera(view: View) {

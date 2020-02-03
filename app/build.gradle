@@ -17,8 +17,8 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 16
 		targetSdkVersion 28
-		versionCode 117
-		versionName "1.7.14"
+		versionCode 120
+		versionName "1.7.17"
 
 		multiDexEnabled true
 //		this is used to show the build time in the AboutActivity
@@ -53,7 +53,7 @@ android {
 			buildConfigField "String", "DropboxApiKey", "\"${getProps("DropboxApiKey")}\""
 			resValue 'string', "dropbox_api_key", "\"${getProps("DropboxManifestApiKey")}\""
 //			Uncomment this line if you want to run a release configuration without signing:
-			signingConfig debug.signingConfig
+//			signingConfig debug.signingConfig
 		}
 	}
 

@@ -1596,7 +1596,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
         else {
 //            showToastText(R.string.toast_single);
-            drawable = R.drawable.ic_photo_camera;
+            drawable = R.drawable.ic_photo_camera_white_24dp;
 //            mIsSeriesModePaused = false;
         }
 
@@ -1632,7 +1632,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
         else {
 //            showToastText(R.string.toast_single);
-            drawable = R.drawable.ic_photo_camera;
+            drawable = R.drawable.ic_photo_camera_white_24dp;
             mIsSeriesModePaused = false;
 //    removing mForceShootButton:
 //            if (mForceShootButton != null)

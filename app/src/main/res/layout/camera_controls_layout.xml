@@ -91,7 +91,7 @@
                 android:id="@+id/photo_button"
                 android:layout_width="@dimen/photo_button_size"
                 android:layout_height="@dimen/photo_button_size"
-                android:src="@drawable/ic_photo_camera"
+                app:srcCompat="@drawable/ic_photo_camera_white_24dp"
                 android:background="@drawable/photo_shoot_button_selector"
                 />
 
