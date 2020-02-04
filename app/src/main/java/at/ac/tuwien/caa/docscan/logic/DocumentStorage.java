@@ -23,6 +23,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 public class DocumentStorage {
 
     public static final String DOCUMENT_STORE_FILE_NAME = "documentstorage.json";
+//    public static final String DOCUMENT_BACKUP_FILE_NAME = "documentbackup.json";
     private static final String CLASS_NAME = "DocumentStorage";
     private static DocumentStorage sInstance;
 
@@ -299,8 +300,6 @@ public class DocumentStorage {
 
     public static void loadJSON(Context context) {
 
-        Log.d(CLASS_NAME, "loadJSON");
-
         File path = context.getFilesDir();
         File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
 
@@ -310,16 +309,50 @@ public class DocumentStorage {
         }
 
         else {
+
+            File tempFile = null;
+
             try {
+
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(storeFile));
                 Gson gson = new Gson();
                 sInstance = gson.fromJson(bufferedReader, DocumentStorage.class);
-//                I do not know why this is sometimes happening...
+                bufferedReader.close();
+
                 if (sInstance == null) {
                     Crashlytics.log("could not read json test: " + getStringFromFile(storeFile.getAbsolutePath()));
                     Crashlytics.logException(new Throwable());
                     sInstance = new DocumentStorage();
                 }
+
+////                    Try to recover the backup file:
+//                    if (backupStoreFile != null && backupStoreFile.exists()) {
+//                        Log.d(CLASS_NAME, "recovering backup");
+////                        Copy the backup file:
+//                        Utility.Companion.copyFile(backupStoreFile, storeFile);
+//                        backupStoreFile.renameTo(storeFile);
+//                        bufferedReader = new BufferedReader(new FileReader(storeFile));
+//                        gson = new Gson();
+//                        sInstance = gson.fromJson(bufferedReader, DocumentStorage.class);
+//                        bufferedReader.close();
+//                        if (sInstance == null)
+//                            sInstance = new DocumentStorage();
+//                    }
+//                    else
+//                        sInstance = new DocumentStorage();
+//                }
+//                The storage file is valid so create a backup:
+//                else {
+////                    First copy the storage to a temporary file:
+////                    Unfortunately, I do not know if Kotlin copyTo is atomic, so stay on the safe
+////                    side...
+//
+//                    tempFile = File.createTempFile("document_bp", ".json", path);
+////                    Replace the current backup file:
+//                    if (Utility.Companion.copyFile(storeFile, tempFile))
+//                        tempFile.renameTo(backupStoreFile);
+//
+//                }
 
                 if (sInstance.getTitle() == null)
                     sInstance.setTitle(Helper.getActiveDocumentTitle(context));
@@ -327,7 +360,12 @@ public class DocumentStorage {
             } catch (Exception e) {
                 Crashlytics.logException(e);
                 e.printStackTrace();
-                sInstance = new DocumentStorage();
+                if (sInstance == null)
+                    sInstance = new DocumentStorage();
+            }
+            finally {
+                if (tempFile != null && tempFile.exists())
+                    tempFile.delete();
             }
         }
 
@@ -357,7 +395,7 @@ public class DocumentStorage {
             if (isSaved) {
                 File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
 //                Rename the temp file:
-                isSaved = tempFile.renameTo(storeFile);
+                tempFile.renameTo(storeFile);
             }
 
         } catch (Exception e) {
