@@ -333,7 +333,45 @@ public class DocumentStorage {
 
     }
 
+    /**
+     * Saves the current sInstance to a JSON file.
+     * @param context
+     */
     public static void saveJSON(Context context) {
+
+//        File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
+
+//        Save it first as a temp file, because the saving might be interrupted.
+        File tempFile = null;
+
+        try {
+            File path = context.getFilesDir();
+            tempFile = File.createTempFile("docstore", ".json", path);
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+            String documentStorage = new Gson().toJson(sInstance);
+            writer.write(documentStorage);
+            writer.close();
+
+            boolean isSaved = tempFile.exists();
+            if (isSaved) {
+                File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
+//                Rename the temp file:
+                isSaved = tempFile.renameTo(storeFile);
+            }
+
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+            e.printStackTrace();
+        } finally {
+//            Delete the temporary file, if it still exists:
+            if (tempFile != null && tempFile.exists())
+                tempFile.delete();
+        }
+
+    }
+
+    public static void saveJSONOld(Context context) {
 
         File path = context.getFilesDir();
         File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
@@ -341,7 +379,6 @@ public class DocumentStorage {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(storeFile));
             String documentStorage = new Gson().toJson(sInstance);
-            Log.d(CLASS_NAME, "json: " + documentStorage);
             writer.write(documentStorage);
             writer.close();
 
