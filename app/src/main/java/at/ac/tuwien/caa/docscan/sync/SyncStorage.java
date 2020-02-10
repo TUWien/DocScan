@@ -286,7 +286,7 @@ public class SyncStorage {
 
     }
 
-    private void removeFile(File fileRemoved) {
+    public void removeFile(File fileRemoved) {
 
         if (fileRemoved == null)
             return;

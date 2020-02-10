@@ -658,7 +658,8 @@ public class Helper {
                     iter.remove();
 //                    Removes the document from the uploaded list and the awaiting upload list:
 //                    SyncStorage.getInstance(context).removeDocumentFromUploadList(document);
-                    SyncStorage.getInstance(context).removeDocument(document.getTitle(), context);
+//                    SyncStorage.getInstance(context).removeDocument(document.getTitle(), context);
+                    SyncStorage.getInstance(context).removeFile(file);
                 }
             }
 
