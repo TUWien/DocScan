@@ -310,7 +310,7 @@ public class DocumentStorage {
 
         else {
 
-            File tempFile = null;
+//            File tempFile = null;
 
             try {
 
@@ -363,10 +363,10 @@ public class DocumentStorage {
                 if (sInstance == null)
                     sInstance = new DocumentStorage();
             }
-            finally {
-                if (tempFile != null && tempFile.exists())
-                    tempFile.delete();
-            }
+//            finally {
+//                if (tempFile != null && tempFile.exists())
+//                    tempFile.delete();
+//            }
         }
 
     }

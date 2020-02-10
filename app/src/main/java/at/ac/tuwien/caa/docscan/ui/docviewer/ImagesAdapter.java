@@ -372,8 +372,8 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (scrollFileName != null && fileName.equalsIgnoreCase(scrollFileName))
                 mCallback.onScrollImageLoaded();
-            else if (position == 0)
-                mCallback.onImageLoaded();
+//            else if (position == 0)
+//                mCallback.onImageLoaded();
         }
 
 //        if (position == 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)

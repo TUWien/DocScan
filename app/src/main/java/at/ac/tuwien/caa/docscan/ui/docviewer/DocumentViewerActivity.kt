@@ -47,6 +47,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_document_viewer.*
+import org.opencv.android.OpenCVLoader
 import java.io.File
 
 /**
@@ -72,9 +73,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     }
 
     override fun onImageLoaded() {
-        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-            startPostponedEnterTransition()
-        }
+//        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
+//            startPostponedEnterTransition()
+//        }
 
     }
 
@@ -84,6 +85,18 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         const val DOCUMENT_PDF_SELECTION_REQUEST = 2
         const val LAUNCH_VIEWER_REQUEST = 1
         var selectedFileName: String? = null
+
+        init {
+//         We need this for Android 4:
+            //         We need this for Android 4:
+            if (!OpenCVLoader.initDebug()) {
+                Log.d(TAG, "Error while initializing OpenCV.")
+            } else {
+                System.loadLibrary("opencv_java3")
+                System.loadLibrary("docscan-native")
+            }
+        }
+
     }
 
 //    This is needed if the Activity is opened with an intent extra in order to show a certain
@@ -1075,20 +1088,20 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             ft.setCustomAnimations(R.anim.translate_right_to_left_in,
                     R.anim.translate_right_to_left_out)
 
-//                Create the shared element transition:
-        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-            if ((this as DocumentsFragment).isVisible) {
-//          Check if the document has pages, otherwise use no shared element transition:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && selectedDocument?.pages?.isNotEmpty()!!) {
-                    setExitTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.fade))
-                    imagesFragment.postponeEnterTransition()
-                    imagesFragment.sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(R.transition.image_shared_element_transition)
-                    var imageView = getImageView(document)
-                    ft.addSharedElement(imageView!!, imageView!!.transitionName)
-                    ft.setReorderingAllowed(true)
-                }
-            }
-        }
+////                Create the shared element transition:
+//        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
+//            if ((this as DocumentsFragment).isVisible) {
+////          Check if the document has pages, otherwise use no shared element transition:
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && selectedDocument?.pages?.isNotEmpty()!!) {
+//                    setExitTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.fade))
+//                    imagesFragment.postponeEnterTransition()
+//                    imagesFragment.sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(R.transition.image_shared_element_transition)
+//                    var imageView = getImageView(document)
+//                    ft.addSharedElement(imageView!!, imageView!!.transitionName)
+//                    ft.setReorderingAllowed(true)
+//                }
+//            }
+//        }
 
         ft.replace(R.id.viewer_fragment_layout, imagesFragment,
                 ImagesFragment.TAG).commit()
