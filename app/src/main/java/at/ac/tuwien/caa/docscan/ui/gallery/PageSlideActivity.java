@@ -18,8 +18,6 @@ package at.ac.tuwien.caa.docscan.ui.gallery;
  */
 
 import android.Manifest;
-import android.animation.Animator;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -28,7 +26,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -55,6 +52,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -404,46 +403,38 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         String documentTitle = mDocument.getTitle();
         if (documentTitle != null) {
 
-            final Intent intent = new Intent(mContext, DocumentViewerActivity.class);
-//            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
-//            Without this flag the activities would all be added to the back stack.
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.putExtra(KEY_OPEN_GALLERY, true);
-            intent.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
-            intent.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
-//            mContext.startActivity(intent);
-//            finish();
+            final Intent intent = getGalleryIntent();
 
-            // Zoom out before opening the DocumentViewerActivity:
-            PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
-
-            if (imageView == null) {
-                startDocumentViewer(intent);
+//            Check if we have access to the image view:
+            if (mPagerAdapter == null || mPagerAdapter.getCurrentFragment() == null ||
+                    mPagerAdapter.getCurrentFragment().getImageView() == null) {
+                startGalleryWithoutTransition(intent);
                 return;
             }
 
+            PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+            // Zoom out before opening the DocumentViewerActivity:
             SubsamplingScaleImageView.AnimationBuilder ab = imageView.animateScale(0);
-//            I am not sure, why this is happening, but it happened once on MotoG3
+            //            I am not sure, why this is happening, but it happened once on MotoG3
             if (ab == null) {
-                startDocumentViewer(intent);
+                startGalleryWithoutTransition(intent);
                 return;
             }
 
             ab.withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
-//            imageView.animateScale(0).withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
                 @Override
                 public void onComplete() {
-                    startDocumentViewer(intent);
+                    startGalleryWithTransition(intent);
                 }
 
                 @Override
                 public void onInterruptedByUser() {
-                    startDocumentViewer(intent);
+                    startGalleryWithTransition(intent);
                 }
 
                 @Override
                 public void onInterruptedByNewAnim() {
-                    startDocumentViewer(intent);
+                    startGalleryWithTransition(intent);
                 }
             }).start();
 
@@ -465,11 +456,21 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-    private void startDocumentViewer(Intent intent) {
+    @NotNull
+    private Intent getGalleryIntent() {
+        final Intent intent = new Intent(mContext, DocumentViewerActivity.class);
+//            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
+//            Without this flag the activities would all be added to the back stack.
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(KEY_OPEN_GALLERY, true);
+        intent.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
+        intent.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
+        return intent;
+    }
+
+    private void startGalleryWithTransition(Intent intent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
-            if (imageView == null)
-                Log.d(CLASS_NAME, "imageview is null");
             ActivityOptionsCompat activityOptionsCompat =
                     ActivityOptionsCompat.makeSceneTransitionAnimation(this, imageView,
                             imageView.getTransitionName());
@@ -479,9 +480,13 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             finish();
         }
         else {
-            mContext.startActivity(intent);
-            finish();
+            startGalleryWithoutTransition(intent);
         }
+    }
+
+    private void startGalleryWithoutTransition(Intent intent) {
+        mContext.startActivity(intent);
+        finish();
     }
 
     private void initRotateButton() {
