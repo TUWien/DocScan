@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.pdf
+package at.ac.tuwien.caa.docscan.ui.docviewer
 
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Helper
-import at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment
 import com.crashlytics.android.Crashlytics
 import kotlinx.android.synthetic.main.layout_pdflist_row.view.*
 import java.io.File

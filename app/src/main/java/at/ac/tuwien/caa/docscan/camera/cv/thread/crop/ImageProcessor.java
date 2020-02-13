@@ -383,14 +383,14 @@ public class ImageProcessor {
 
     private void sendIntent(String fileName, int type) {
 
-        Log.d(CLASS_NAME, "sendIntent:");
+//        Log.d(CLASS_NAME, "sendIntent:");
 
-        Intent intent = new Intent(INTENT_IMAGE_PROCESS_ACTION);
-        intent.putExtra(INTENT_IMAGE_PROCESS_TYPE, type);
-        intent.putExtra(INTENT_FILE_NAME, fileName);
-
-        if (mContext != null)
+        if (mContext != null && mContext.get() != null) {
+            Intent intent = new Intent(INTENT_IMAGE_PROCESS_ACTION);
+            intent.putExtra(INTENT_IMAGE_PROCESS_TYPE, type);
+            intent.putExtra(INTENT_FILE_NAME, fileName);
             LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
+        }
 
     }
 

@@ -38,6 +38,8 @@ public class HackyViewPager extends ViewPager {
             return super.onInterceptTouchEvent(ev);
         } catch (IllegalArgumentException ex) {
             ex.printStackTrace();
+        } catch (Exception e) {
+
         }
         return false;
     }

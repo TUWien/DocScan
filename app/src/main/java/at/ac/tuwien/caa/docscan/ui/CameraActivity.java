@@ -129,7 +129,6 @@ import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
-import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 import me.drakeet.support.toast.ToastCompat;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
@@ -2640,31 +2639,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //        mFlashPopupMenu.show();
 //
 //    }
-
-    private void uploadActiveDocument() {
-
-        Document document = DocumentStorage.getInstance(this).getActiveDocument();
-        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
-
-//        If the document contains already images, select it in the UploadActivity:
-        if (document != null && document.getPages() != null && !document.getPages().isEmpty())
-            intent.putExtra(getString(R.string.key_document_file_name), document.getTitle());
-
-        startActivity(intent);
-    }
-
-    public void startUploadActivity(MenuItem item) {
-
-        Document document = DocumentStorage.getInstance(this).getActiveDocument();
-        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
-
-//        If the document contains already images, select it in the UploadActivity:
-        if (document != null && document.getPages() != null && !document.getPages().isEmpty())
-            intent.putExtra(getString(R.string.key_document_file_name), document.getTitle());
-
-        startActivity(intent);
-
-    }
 
     private void showGrid(boolean showGrid) {
 

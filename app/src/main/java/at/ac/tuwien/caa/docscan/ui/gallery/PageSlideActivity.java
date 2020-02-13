@@ -101,6 +101,11 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_page_slide);
 
+        initFromIntent();
+
+    }
+
+    private void initFromIntent() {
         Log.d(CLASS_NAME, "oncreate");
         // Instantiate a ViewPager and a PagerAdapter.
         initPager();
@@ -126,8 +131,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             setToolbarTitle(pos);
             mPage = mDocument.getPages().get(pos);
         }
-
     }
+
 
     @Override
     public void onResume() {
@@ -805,6 +810,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
             super(fm);
             mDocument = document;
+
+            Log.d(CLASS_NAME, "constructor calling");
 
         }
 

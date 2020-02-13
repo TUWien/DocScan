@@ -18,7 +18,6 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
-import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 import me.drakeet.support.toast.ToastCompat;
 
 /**
@@ -52,9 +51,7 @@ public class TranskribusLoginActivity extends BaseNoNavigationActivity implement
         // The string extra look something like this:
 //        at.ac.tuwien.caa.docscan.ui.syncui.SyncActivity$1
 //        So we have to use String.startsWith instead of String.compareTo
-        if (extras != null && extras.getString(PARENT_ACTIVITY_NAME, "").startsWith(UploadActivity.class.getName()))
-            mParentClass = UploadActivity.class;
-        else if (extras != null && extras.getString(PARENT_ACTIVITY_NAME, "").startsWith(DocumentViewerActivity.class.getName()))
+        if (extras != null && extras.getString(PARENT_ACTIVITY_NAME, "").startsWith(DocumentViewerActivity.class.getName()))
             mParentClass = DocumentViewerActivity.class;
         else
             mParentClass = CameraActivity.class;

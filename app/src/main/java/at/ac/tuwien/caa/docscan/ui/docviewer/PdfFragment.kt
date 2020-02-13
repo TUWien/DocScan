@@ -2,19 +2,13 @@ package at.ac.tuwien.caa.docscan.ui.docviewer
 
 import android.content.Context
 import android.os.Bundle
-import android.os.Parcel
-import android.os.Parcelable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.R
-import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.Helper
-import at.ac.tuwien.caa.docscan.ui.pdf.PdfAdapter
-import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_pdfs.*
 //import kotlinx.android.synthetic.main.activity_pdf.*
 import java.io.File

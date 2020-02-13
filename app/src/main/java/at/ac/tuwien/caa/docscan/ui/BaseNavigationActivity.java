@@ -71,7 +71,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
     private void setToolbarForNavigation() {
 
         if (mToolbar != null) {
-            mToolbar.setNavigationIcon(R.drawable.ic_menu);
+            mToolbar.setNavigationIcon(R.drawable.ic_menu_black_24dp);
             mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

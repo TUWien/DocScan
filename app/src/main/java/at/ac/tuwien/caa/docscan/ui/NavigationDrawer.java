@@ -32,7 +32,6 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import at.ac.tuwien.caa.docscan.ui.settings.PreferenceActivity;
-import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 
 import static at.ac.tuwien.caa.docscan.ui.NavigationDrawer.NavigationItemEnum.ACCOUNT_EDIT;
 
@@ -369,8 +368,6 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 R.drawable.ic_remove_circle_outline_black_24dp, LogoutActivity.class),
         SETTINGS(R.id.settings_item, R.string.settings_item_text,
                 R.drawable.ic_settings_black_24dp, PreferenceActivity.class),
-//        UPLOAD(R.id.sync_item, R.string.upload_item_text,
-//                R.drawable.ic_cloud_upload_gray_24dp, UploadActivity.class),
         DOCUMENTS(R.id.documents_item, R.string.documents_item_text,
                 R.drawable.ic_library_books_black_24dp, DocumentViewerActivity.class),
         HELP(R.id.help_item, R.string.help_item_text,

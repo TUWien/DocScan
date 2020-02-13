@@ -47,9 +47,8 @@ import java.util.concurrent.ExecutionException;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.sync.UploadService;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
-import at.ac.tuwien.caa.docscan.ui.pdf.PdfActivity;
+
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESSAGE_CREATED_DOCUMENT;
 
