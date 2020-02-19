@@ -13,7 +13,7 @@ public class Document {
     private String mTitle;
     private ArrayList<Page> mPages;
     private boolean mIsUploaded = false;
-    private boolean mIsCropped = false;
+    private boolean mIsCurrentlyProcessed = false;
     private boolean mIsAwaitingUpload = false;
 
     private TranskribusMetaData mMetaData = null;
@@ -86,6 +86,20 @@ public class Document {
 
     }
 
+    public ArrayList<String> getFilePaths() {
+
+        if (mPages == null)
+            return null;
+
+        ArrayList<String> fileNames = new ArrayList<>(mPages.size());
+        for (Page page : mPages) {
+            fileNames.add(page.getFile().getAbsolutePath());
+        }
+
+        return fileNames;
+
+    }
+
     public ArrayList<String> getFileNames() {
 
         if (mPages == null)
@@ -148,15 +162,15 @@ public class Document {
 
     }
 
-    public void setIsCropped(boolean isCropped) {
+    public void setIsCurrentlyProcessed(boolean isProcessed) {
 
-        mIsCropped = isCropped;
+        mIsCurrentlyProcessed = isProcessed;
 
     }
 
-    public boolean isCropped() {
+    public boolean isCurrentlyProcessed() {
 
-        return mIsCropped;
+        return mIsCurrentlyProcessed;
 
     }
 

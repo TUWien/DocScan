@@ -6,6 +6,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
@@ -59,6 +61,24 @@ public class PageImageView extends SubsamplingScaleImageView {
 //        mOuterQuadPaint.setAntiAlias(true);
 
     }
+
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+////
+//////        if (getScale() <= getMinScale()) {
+////            setScaleX(getMinScale());
+////            setScaleY(getMinScale());
+//////        }
+//        setMinScale(.25f);
+//
+//        return true;
+//
+////        if (event.getAction() == MotionEvent.ACTION_MOVE && isZoomEnabled())
+////            return true;
+////        else
+////            return super.onTouchEvent(event);
+//
+//    }
 
     public void setPoints(ArrayList<PointF> points, boolean isFocused) {
 

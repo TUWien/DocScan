@@ -74,7 +74,7 @@ public class IntroFragment extends Fragment {
 
             ImageView imageView = rootView.findViewById(R.id.intro_imageview);
             GlideApp.with(this)
-                    .load(R.drawable.screenshot)
+                    .load(R.drawable.auto_mode)
                     .into(imageView);
 
 

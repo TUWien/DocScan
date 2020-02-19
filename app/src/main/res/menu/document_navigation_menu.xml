@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/viewer_documents"
+        android:icon="@drawable/ic_library_books_black_24dp"
+        android:title="@string/document_navigation_documents"
+        />
+    <!--Previous: android:icon="@drawable/ic_folder_white_24dp"-->
+    <item
+        android:id="@+id/viewer_images"
+        android:icon="@drawable/ic_photo_library_white_24dp"
+        android:title="@string/document_navigation_images"
+        />
+    <item
+        android:id="@+id/viewer_pdfs"
+        android:icon="@drawable/ic_baseline_picture_as_pdf_24px"
+        android:title="@string/document_navigation_pdfs"
+        />
+
+
+</menu>

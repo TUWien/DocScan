@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -75,13 +77,34 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
     public void setSelectionMode(boolean isSelectionMode) {
 
-        mIsSelectionMode = isSelectionMode;
+        Log.d(CLASS_NAME, "setSelectionMode");
+        boolean redraw = mIsSelectionMode != isSelectionMode;
+        if (redraw) {
+            mIsSelectionMode = isSelectionMode;
+            notifyDataSetChanged();
+        }
 
     }
 
     public void setColumnCount(int columnCount) {
 
         mColumnCount = columnCount;
+
+    }
+
+    public void updateImageView(String fileName) {
+
+        if (mDocument == null || mDocument.getPages() == null || mDocument.getPages().isEmpty())
+            return;
+
+        int idx = 0;
+        for (Page page : mDocument.getPages()) {
+            if (page.getFile().getAbsolutePath().equalsIgnoreCase(fileName)) {
+                notifyItemChanged(idx);
+                return;
+            }
+            idx++;
+        }
 
     }
 
@@ -146,6 +169,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 //        checkBox.setText(page.getTitle());
         checkBox.setText("#: " + Integer.toString(position+1));
 
+        final ImageView imageView = holder.mImageView;
         final int pos = position;
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -164,6 +188,15 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 else
                     Helper.crashlyticsLog(CLASS_NAME, "initCheckBox",
                             "mCallback == null");
+
+                if (mSelections.count() > 0) {
+                    imageView.setScaleX(.8f);
+                    imageView.setScaleY(.8f);
+                }
+                else {
+                    imageView.setScaleX(1f);
+                    imageView.setScaleX(1f);
+                }
             }
         });
 
@@ -198,6 +231,11 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        if (!mIsSelectionMode)
+            holder.mCheckBox.setVisibility(View.INVISIBLE);
+        else
+            holder.mCheckBox.setVisibility(View.VISIBLE);
 
         if (ImageProcessLogger.isAwaitingImageProcessing(file)) {
 
@@ -344,7 +382,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     }
 
 
-    public class GalleryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class GalleryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
         private ImageView mImageView;
         private View mItemView;
@@ -358,6 +396,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
             mItemView = itemView;
             mImageView = itemView.findViewById(R.id.page_imageview);
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
             mCheckBox = itemView.findViewById(R.id.page_checkbox);
             mProgressBar = itemView.findViewById(R.id.page_progressbar);
 
@@ -379,6 +418,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                     //                Start the image viewer:
                     Intent intent = new Intent(mContext, PageSlideActivity.class);
                     intent.putExtra(mContext.getString(R.string.key_document_file_name), mFileName);
+                    Log.d(CLASS_NAME, "onClick: " + mFileName);
                     intent.putExtra(mContext.getString(R.string.key_page_position), position);
                     mContext.startActivity(intent);
                 }
@@ -391,6 +431,22 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 if (mCallback != null)
                     mCallback.onSelectionChange(getSelectionCount());
             }
+        }
+
+        @Override
+        public boolean onLongClick(View view) {
+
+//            mIsSelectionMode = true;
+
+            int position = getAdapterPosition();
+            if (mSelections != null) {
+                mSelections.put(position, !mSelections.get(position, false));
+                mCheckBox.setChecked(mSelections.get(position, false));
+            }
+            if (mCallback != null)
+                mCallback.onSelectionChange(getSelectionCount());
+
+            return true;
         }
     }
 

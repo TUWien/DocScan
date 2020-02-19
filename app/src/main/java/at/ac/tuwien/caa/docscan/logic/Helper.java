@@ -15,6 +15,10 @@ import androidx.appcompat.app.AlertDialog;
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.CheckBox;
 
 import com.android.volley.VolleyError;
 import com.crashlytics.android.Crashlytics;
@@ -93,6 +97,17 @@ public class Helper {
         }
 
         return mediaStorageDir;
+    }
+
+    public static int getDPI(double cameraDistance, float horizontalViewAngle, int imgW) {
+
+        double thetaH = Math.toRadians(horizontalViewAngle);
+
+        //Size in inches
+        double printWidth = 2 * cameraDistance * Math.tan(thetaH / 2);
+
+        return (int) Math.round((double) imgW / printWidth);
+
     }
 
     /**
@@ -357,6 +372,35 @@ public class Helper {
 
     }
 
+    public static boolean rotateExif90DegreesCCW(File outFile)  {
+
+        final ExifInterface exif;
+        try {
+            exif = new ExifInterface(outFile.getAbsolutePath());
+            if (exif != null) {
+
+//            Note the regular android.media.ExifInterface has no method for rotation, but the
+//            android.support.media.ExifInterface does.
+
+                exif.rotate(-90);
+                exif.saveAttributes();
+
+                if (!PageDetector.isCropped(outFile.getAbsolutePath()))
+                    PageDetector.rotate90DegreesCCW(outFile.getAbsolutePath());
+
+                return true;
+            }
+        } catch (IOException e) {
+            Crashlytics.logException(e);
+            e.printStackTrace();
+        }
+
+        return false;
+
+    }
+
+
+
     public static boolean rotateExif(File outFile)  {
 
         final ExifInterface exif;
@@ -518,8 +562,8 @@ public class Helper {
 //        boolean isDocumentUploaded = areFilesUploaded(fileList);
 //        document.setIsUploaded(isDocumentUploaded);
 //
-//        boolean isDocumentCropped = areFilesCropped(fileList);
-//        document.setIsCropped(isDocumentCropped);
+//        boolean isDocumentCropped = isCurrentlyProcessed(fileList);
+//        document.setIsCurrentlyProcessed(isDocumentCropped);
 //
 //        if (!isDocumentUploaded) {
 //            boolean isAwaitingUpload = isDirAwaitingUpload(new File(dirName), fileList);
@@ -541,13 +585,52 @@ public class Helper {
 
     }
 
-    public static boolean areFilesCropped(Document document) {
+    public static boolean isDocumentCropped(Document document) {
 
         if (document != null) {
             ArrayList<File> files = document.getFiles();
             if (files != null && !files.isEmpty()) {
                 for (File file : files) {
-                    if (ImageProcessLogger.isAwaitingCropping(file))
+                    if (!PageDetector.isCropped(file.getAbsolutePath()))
+                        return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns the document that contains the file.
+     * @param context
+     * @param file
+     * @return
+     */
+    public static Document getParentDocument(Context context, File file) {
+
+        ArrayList<Document> documents = DocumentStorage.getInstance(context).getDocuments();
+        for (Document document : documents) {
+            Iterator<Page> iter = document.getPages().iterator();
+
+            while (iter.hasNext()) {
+                Page page = iter.next();
+                if (page.getFile().getAbsolutePath().equalsIgnoreCase(file.getAbsolutePath()))
+                    return document;
+            }
+        }
+
+        return null;
+
+    }
+
+
+    public static boolean isCurrentlyProcessed(Document document) {
+
+        if (document != null) {
+            ArrayList<File> files = document.getFiles();
+            if (files != null && !files.isEmpty()) {
+                for (File file : files) {
+                    if (ImageProcessLogger.isWaitingForProcess(file))
                         return true;
                 }
             }
@@ -575,7 +658,8 @@ public class Helper {
                     iter.remove();
 //                    Removes the document from the uploaded list and the awaiting upload list:
 //                    SyncStorage.getInstance(context).removeDocumentFromUploadList(document);
-                    SyncStorage.getInstance(context).removeDocument(document.getTitle(), context);
+//                    SyncStorage.getInstance(context).removeDocument(document.getTitle(), context);
+                    SyncStorage.getInstance(context).removeFile(file);
                 }
             }
 
@@ -583,7 +667,7 @@ public class Helper {
 
     }
 
-    public static boolean areFilesCropped(ArrayList<File> fileList) {
+    public static boolean isCurrentlyProcessed(ArrayList<File> fileList) {
 
         if (fileList == null)
             return false;
@@ -593,7 +677,7 @@ public class Helper {
 
 
         for (File file : fileList) {
-            if (ImageProcessLogger.isAwaitingCropping(file))
+            if (ImageProcessLogger.isWaitingForProcess(file))
                 return true;
         }
 
@@ -833,6 +917,7 @@ public class Helper {
 
     }
 
+
     /**
      * Check the device to make sure it has the Google Play Services APK. Taken from:
      * https://stackoverflow.com/a/48224404/9827698
@@ -864,6 +949,21 @@ public class Helper {
         else
             return RestRequest.BASE_URL;
 
+    }
+
+    public static void hideKeyboard(Activity activity) {
+
+        if (activity == null)
+            return;
+
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     public static boolean useTranskribusTestServer(Context context) {

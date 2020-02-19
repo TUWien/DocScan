@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:layout_marginVertical="3dp"
+    android:background="?selectableItemBackground"
+    >
+
+    <ImageView
+        android:id="@+id/document_thumbnail_imageview"
+        android:foregroundGravity="left"
+        android:layout_centerVertical="true"
+        android:scaleType="center"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginLeft="6dp"/>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@id/document_thumbnail_imageview"
+        android:layout_toLeftOf="@+id/document_more_button">
+
+        <TextView
+            android:id="@+id/document_title_text"
+            android:text="one two three four five six seven eight nine ten eleven"
+            android:layout_marginLeft="6dp"
+            android:textSize="20sp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+
+        <TextView
+            android:id="@+id/document_description_textview"
+            android:text="one two three four\n five six seven eight nine ten eleve asdfn"
+            android:layout_toRightOf="@id/layout_listview_row_icon_layout"
+            android:layout_alignBaseline="@id/layout_listview_row_icon_layout"
+            android:textSize="14sp"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/document_title_text"
+            />
+        <ProgressBar
+            android:id="@+id/document_progress_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_toRightOf="@id/layout_listview_row_icon_layout"
+            android:layout_below="@id/document_description_textview"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:indeterminate="true"/>
+        <RelativeLayout
+            android:id="@+id/layout_listview_row_icon_layout"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginLeft="6dp"
+            android:layout_below="@+id/document_title_text"
+            >
+            <ImageView
+                android:id="@+id/document_upload_state_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                />
+            <!--<ProgressBar-->
+                <!--android:id="@+id/layout_listview_progress_bar"-->
+                <!--android:visibility="invisible"-->
+                <!--android:layout_width="20dp"-->
+                <!--android:layout_height="20dp"-->
+                <!--/>-->
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/document_more_button"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:layout_centerVertical="true"
+        android:background="?selectableItemBackgroundBorderless"
+        app:srcCompat="@drawable/ic_more_vert_gray_24dp"/>
+
+</RelativeLayout>

@@ -9,10 +9,13 @@ import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
@@ -20,6 +23,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 public class DocumentStorage {
 
     public static final String DOCUMENT_STORE_FILE_NAME = "documentstorage.json";
+//    public static final String DOCUMENT_BACKUP_FILE_NAME = "documentbackup.json";
     private static final String CLASS_NAME = "DocumentStorage";
     private static DocumentStorage sInstance;
 
@@ -194,6 +198,9 @@ public class DocumentStorage {
 
     public Document getDocument(String title) {
 
+        if (title == null)
+            return null;
+
         if (mDocuments != null) {
             for (Document document : mDocuments) {
                 if (document == null) {
@@ -248,16 +255,50 @@ public class DocumentStorage {
                 document.setIsAwaitingUpload(isAwaitingUpload);
             }
 
-            boolean isDocumentCropped = Helper.areFilesCropped(document);
-            document.setIsCropped(isDocumentCropped);
+            boolean currentlyProcessed = Helper.isCurrentlyProcessed(document);
+            document.setIsCurrentlyProcessed(currentlyProcessed);
 
         }
 
     }
 
-    public static void loadJSON(Context context) {
+    public static String convertStreamToString(InputStream is) throws IOException {
+        // http://www.java2s.com/Code/Java/File-Input-Output/ConvertInputStreamtoString.htm
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        StringBuilder sb = new StringBuilder();
+        String line = null;
+        Boolean firstLine = true;
+        while ((line = reader.readLine()) != null) {
+            if(firstLine){
+                sb.append(line);
+                firstLine = false;
+            } else {
+                sb.append("\n").append(line);
+            }
+        }
+        reader.close();
+        return sb.toString();
+    }
 
-        Log.d(CLASS_NAME, "loadJSON");
+    public static String getStringFromFile(String filePath){
+        File fl = new File(filePath);
+        FileInputStream fin = null;
+        try {
+            fin = new FileInputStream(fl);
+            String ret = convertStreamToString(fin);
+            //Make sure you close all streams.
+            fin.close();
+            return ret;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "nothing";
+    }
+
+    public static void loadJSON(Context context) {
 
         File path = context.getFilesDir();
         File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
@@ -268,30 +309,107 @@ public class DocumentStorage {
         }
 
         else {
+
+//            File tempFile = null;
+
             try {
+
                 BufferedReader bufferedReader = new BufferedReader(new FileReader(storeFile));
                 Gson gson = new Gson();
                 sInstance = gson.fromJson(bufferedReader, DocumentStorage.class);
-//                I do not know why this is sometimes happening...
+                bufferedReader.close();
+
                 if (sInstance == null) {
-                    Crashlytics.log("could not read json");
+                    Crashlytics.log("could not read json test: " + getStringFromFile(storeFile.getAbsolutePath()));
                     Crashlytics.logException(new Throwable());
                     sInstance = new DocumentStorage();
                 }
 
+////                    Try to recover the backup file:
+//                    if (backupStoreFile != null && backupStoreFile.exists()) {
+//                        Log.d(CLASS_NAME, "recovering backup");
+////                        Copy the backup file:
+//                        Utility.Companion.copyFile(backupStoreFile, storeFile);
+//                        backupStoreFile.renameTo(storeFile);
+//                        bufferedReader = new BufferedReader(new FileReader(storeFile));
+//                        gson = new Gson();
+//                        sInstance = gson.fromJson(bufferedReader, DocumentStorage.class);
+//                        bufferedReader.close();
+//                        if (sInstance == null)
+//                            sInstance = new DocumentStorage();
+//                    }
+//                    else
+//                        sInstance = new DocumentStorage();
+//                }
+//                The storage file is valid so create a backup:
+//                else {
+////                    First copy the storage to a temporary file:
+////                    Unfortunately, I do not know if Kotlin copyTo is atomic, so stay on the safe
+////                    side...
+//
+//                    tempFile = File.createTempFile("document_bp", ".json", path);
+////                    Replace the current backup file:
+//                    if (Utility.Companion.copyFile(storeFile, tempFile))
+//                        tempFile.renameTo(backupStoreFile);
+//
+//                }
+
                 if (sInstance.getTitle() == null)
                     sInstance.setTitle(Helper.getActiveDocumentTitle(context));
 
-            } catch (FileNotFoundException e) {
+            } catch (Exception e) {
                 Crashlytics.logException(e);
                 e.printStackTrace();
-                sInstance = new DocumentStorage();
+                if (sInstance == null)
+                    sInstance = new DocumentStorage();
             }
+//            finally {
+//                if (tempFile != null && tempFile.exists())
+//                    tempFile.delete();
+//            }
         }
 
     }
 
+    /**
+     * Saves the current sInstance to a JSON file.
+     * @param context
+     */
     public static void saveJSON(Context context) {
+
+//        File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
+
+//        Save it first as a temp file, because the saving might be interrupted.
+        File tempFile = null;
+
+        try {
+            File path = context.getFilesDir();
+            tempFile = File.createTempFile("docstore", ".json", path);
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+            String documentStorage = new Gson().toJson(sInstance);
+            writer.write(documentStorage);
+            writer.close();
+
+            boolean isSaved = tempFile.exists();
+            if (isSaved) {
+                File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
+//                Rename the temp file:
+                tempFile.renameTo(storeFile);
+            }
+
+        } catch (Exception e) {
+            Crashlytics.logException(e);
+            e.printStackTrace();
+        } finally {
+//            Delete the temporary file, if it still exists:
+            if (tempFile != null && tempFile.exists())
+                tempFile.delete();
+        }
+
+    }
+
+    public static void saveJSONOld(Context context) {
 
         File path = context.getFilesDir();
         File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
@@ -299,11 +417,10 @@ public class DocumentStorage {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(storeFile));
             String documentStorage = new Gson().toJson(sInstance);
-            Log.d(CLASS_NAME, "json: " + documentStorage);
             writer.write(documentStorage);
             writer.close();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             Crashlytics.logException(e);
             e.printStackTrace();
         }

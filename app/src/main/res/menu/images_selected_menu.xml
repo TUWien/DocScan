@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:icon="@drawable/ic_rotate_right_black_24dp"
+        android:title="@string/gallery_menu_rotate_item_title"
+        app:showAsAction="always"
+        android:onClick="rotateImages"
+        />
+
+    <item
+        android:icon="@drawable/ic_select_all_black_24dp"
+        android:title="@string/gallery_menu_select_all_item_title"
+        app:showAsAction="always"
+        android:onClick="selectAll"
+        />
+
+
+    <item
+        android:icon="@drawable/ic_delete_black_24dp"
+        android:title="@string/sync_menu_delete_item_title"
+        app:showAsAction="always"
+        android:onClick="deleteImages"
+        />
+    <!--</group>-->
+
+
+
+</menu>

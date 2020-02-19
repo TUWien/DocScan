@@ -34,8 +34,7 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
 import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.ui.pdf.PdfActivity;
-import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
+import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
@@ -61,6 +60,7 @@ public class UploadService extends JobService implements
     public static final String UPLOAD_OFFLINE_ERROR_ID = "UPLOAD_OFFLINE_ERROR_ID";
     public static final String UPLOAD_FILE_DELETED_ERROR_ID = "UPLOAD_FILE_DELETED_ERROR_ID";
     public static final String UPLOAD_ERROR_ID = "UPLOAD_ERROR_ID";
+    public static final String KEY_UPLOAD_INTENT = "KEY_UPLOAD_INTENT";
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
@@ -68,8 +68,8 @@ public class UploadService extends JobService implements
     private NotificationManager mNotificationManager;
     private int mNotifyID = 68;
 
-    public static final String CHANNEL_ID = "docscan_channel";
-    public static final CharSequence CHANNEL_NAME = "DocScan Channel";// The user-visible name of the channel.
+    public static final String UPLOAD_CHANNEL_ID = "UPLOAD_CHANNEL_ID";
+    public static final CharSequence UPLOAD_CHANNEL_NAME = "DocScan Upload";// The user-visible name of the channel.
 
     // constants for the notifications:
     private static final int NOTIFICATION_PROGRESS_UPDATE = 0;
@@ -573,7 +573,6 @@ public class UploadService extends JobService implements
         mServiceHandler = new ServiceHandler(mServiceLooper);
     }
 
-
     @Override
     public void onDestroy() {
 
@@ -591,16 +590,16 @@ public class UploadService extends JobService implements
         if (getConnectionText() == null)
             return;
 
-        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, intent, 0);
-
-        mNotificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
+        Intent intent = new Intent(getApplicationContext(), DocumentViewerActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK |
+                Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.putExtra(KEY_UPLOAD_INTENT, true);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mNotificationBuilder = new NotificationCompat.Builder(this, UPLOAD_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
                 .setContentText(text)
-                .setChannelId(CHANNEL_ID)
+                .setChannelId(UPLOAD_CHANNEL_ID)
                 .setContentIntent(pendingIntent);
 
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -609,7 +608,7 @@ public class UploadService extends JobService implements
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // IMPORTANCE_LOW disables the notification sound:
             int importance = NotificationManager.IMPORTANCE_LOW;
-            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance);
+            NotificationChannel notificationChannel = new NotificationChannel(UPLOAD_CHANNEL_ID, UPLOAD_CHANNEL_NAME, importance);
             mNotificationManager.createNotificationChannel(notificationChannel);
         }
 

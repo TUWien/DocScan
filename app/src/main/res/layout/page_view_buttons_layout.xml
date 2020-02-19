@@ -47,7 +47,7 @@
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
                 android:padding="8dp"
-                app:srcCompat="@drawable/ic_rotate_right_white_24dp" />
+                app:srcCompat="@drawable/ic_camera_retake" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -80,7 +80,7 @@
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
                 android:padding="8dp"
-                app:srcCompat="@drawable/ic_crop_white_24dp" />
+                app:srcCompat="@drawable/ic_crop_rotate_white_24dp" />
         </RelativeLayout>
 
         <RelativeLayout

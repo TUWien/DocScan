@@ -10,14 +10,6 @@
         <!--app:showAsAction="always"-->
         <!--/>-->
 
-    <item
-        android:id="@+id/document_item"
-        android:icon="@drawable/ic_folder_white_24dp"
-        android:title="@string/document_item"
-        android:visible="true"
-        app:showAsAction="always"
-        android:onClick="showSeriesPopup"
-        />
 
     <item
         android:id="@+id/flash_mode_item"
@@ -25,7 +17,6 @@
         android:title="@string/flash_mode"
         android:visible="false"
         app:showAsAction="always"
-        android:onClick="showFlashPopup"
         />
 
     <item
@@ -33,39 +24,34 @@
         android:title="@string/show_grid_item_title"
         android:visible="true"
         app:showAsAction="never"
-        android:onClick="showGrid"
         />
 
-    <item
-        android:id="@+id/gallery_item"
-        android:icon="@drawable/ic_collections_white_24dp"
-        android:title="@string/gallery_item_title"
-        android:visible="true"
-        app:showAsAction="never"
-        android:onClick="startGalleryActivity"
-        />
+    <!--<item-->
+        <!--android:id="@+id/gallery_item"-->
+        <!--android:icon="@drawable/ic_collections_white_24dp"-->
+        <!--android:title="@string/gallery_item_title"-->
+        <!--android:visible="true"-->
+        <!--app:showAsAction="never"-->
+        <!--android:onClick="startGalleryActivity"-->
+        <!--/>-->
 
     <item
         android:id="@+id/upload_item"
         android:icon="@drawable/ic_cloud_upload_white_24dp"
         android:title="@string/upload_item"
         android:visible="true"
-        app:showAsAction="always"
-        android:onClick="startUploadActivity"
         />
     <item
         android:id="@+id/lock_exposure_item"
         android:title="@string/lock_exposure_item"
         android:visible="true"
         app:showAsAction="never"
-        android:onClick="lockExposure"
         />
     <item
         android:id="@+id/unlock_exposure_item"
         android:title="@string/unlock_exposure_item"
         android:visible="false"
         app:showAsAction="never"
-        android:onClick="unlockExposure"
         />
     <!--<item-->
         <!--android:id="@+id/show_grid_item"-->

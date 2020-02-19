@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--This is actually not used, I just needed the id's...-->
+    <item
+        android:id="@+id/action_rotate_text_dir_left"
+        android:title="@string/action_rotate_left_title"
+        android:icon="@drawable/ic_rotate_left_white_24dp"
+        />
+    <item
+        android:id="@+id/action_rotate_text_dir_right"
+        android:title="@string/action_rotate_right_title"
+        android:icon="@drawable/ic_rotate_right_gray_24dp"
+        />
+
+
+</menu>

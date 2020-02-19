@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.document;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +26,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.TranskribusMetaData;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
+import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 /**
  * Created by fabian on 24.10.2017.
@@ -36,6 +38,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
     private TranskribusMetaData mTranskribusMetaData = null;
     public static final String DOCUMENT_QR_TEXT = "DOCUMENT_QR_TEXT";
     private static final String SHOW_TRANSKRIBUS_METADATA_KEY = "SHOW_TRANSKRIBUS_METADATA";
+    public static final String DOCUMENT_CREATED_KEY = "DOCUMENT_CREATED_KEY";
 
 
     @Override
@@ -225,24 +228,29 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
         Button okButton = findViewById(R.id.create_series_done_button);
         final Context context = this;
-        okButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        final Activity a = this;
+        okButton.setOnClickListener(v -> {
 //                Retrieve the entered text:
-                EditText editText = findViewById(R.id.create_series_name_edittext);
-                String title = editText.getText().toString();
+            EditText editText = findViewById(R.id.create_series_name_edittext);
+            String title = editText.getText().toString();
 
 //                The error handling is done in createNewDocument
-                boolean isDocumentCreated = createNewDocument(title);
-                if (isDocumentCreated) {
-                    Helper.startCameraActivity(context);
+            boolean isDocumentCreated = createNewDocument(title);
+            if (isDocumentCreated) {
 
-                    //        Send back the new file name, so that it can be used in the GalleryActivity:
-                    Intent data = new Intent();
-                    setResult(RESULT_OK, data);
+                Intent intent = new Intent(context, CameraActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                intent.putExtra(DOCUMENT_CREATED_KEY, true);
+                Helper.hideKeyboard(a);
+                context.startActivity(intent);
 
-                    finish();
-                }
+//                    Helper.startCameraActivity(context);
+
+//                    //        Send back the new file name, so that it can be used in the GalleryActivity:
+//                    Intent data = new Intent();
+//                    setResult(RESULT_OK, data);
+
+                finish();
             }
         });
 

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--This is actually not used, I just needed the id's...-->
+    <item
+        android:id="@+id/action_document_crop_item"
+        android:title="@string/action_document_crop_title"
+        android:icon="@drawable/ic_transform_black_24dp"
+        />
+    <item
+        android:id="@+id/action_document_pdf_item"
+        android:title="@string/action_document_pdf_title"
+        android:icon="@drawable/ic_baseline_picture_as_pdf_24px"
+        />
+
+    <item
+        android:id="@+id/action_document_upload_item"
+        android:title="@string/action_document_upload_document"
+        android:icon="@drawable/ic_cloud_upload_gray_24dp"
+        />
+
+    <item
+        android:id="@+id/action_document_delete_item"
+        android:title="@string/action_document_delete_document"
+        android:icon="@drawable/ic_delete_black_24dp"
+        />
+    <item
+        android:id="@+id/action_document_edit_item"
+        android:title="@string/action_document_edit_document"
+        android:icon="@drawable/ic_title_black_24dp"
+        />
+    <item
+        android:id="@+id/action_document_continue_item"
+        android:title="@string/action_document_continue_document"
+        android:icon="@drawable/ic_add_a_photo_black_24dp"
+        />
+
+
+
+</menu>

@@ -56,7 +56,7 @@ public class ImageProcessor {
     public static final int MESSAGE_CREATED_DOCUMENT = 1;
 
     public static final String INTENT_FILE_NAME = "INTENT_FILE_NAME";
-//    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
+    //    public static final String INTENT_FILE_MAPPED = "INTENT_FILE_MAPPED";
     public static final String INTENT_IMAGE_PROCESS_ACTION = "INTENT_IMAGE_PROCESS_ACTION";
     public static final String INTENT_IMAGE_PROCESS_TYPE = "INTENT_IMAGE_PROCESS_TYPE";
     public static final int INTENT_IMAGE_PROCESS_FINISHED = 0;
@@ -82,17 +82,17 @@ public class ImageProcessor {
     // A managed pool of background threads
 //    private final ThreadPoolExecutor mProcessThreadPool;
     private final Executor mProcessThreadPool;
-//    This is a single thread executor, in order to avoid OOM's when opening too many images in
+    //    This is a single thread executor, in order to avoid OOM's when opening too many images in
 //    parallel, instead the pdf's are created in serial:
     private final Executor mPDFExecutor;
-//    We use here a weak reference to avoid memory leaks:
+    //    We use here a weak reference to avoid memory leaks:
 //    @see https://www.androiddesignpatterns.com/2013/01/inner-class-handler-memory-leak.html
     private WeakReference<Context> mContext;
 
     // An object that manages Messages in a Thread
     private Handler mHandler;
 
-//    Singleton:
+    //    Singleton:
     private static ImageProcessor sInstance;
 
 ////    Used for espresso testing:
@@ -163,7 +163,7 @@ public class ImageProcessor {
                 PdfProcessTask pdfTask = (PdfProcessTask) task;
                 if (pdfTask.getPdfName() != null) {
                     File pdfFile = new File(Helper.getPDFStorageDir("DocScan").getAbsolutePath(),
-                        pdfTask.getPdfName() + ".pdf");
+                            pdfTask.getPdfName() + ".pdf");
                     String absolutePath = pdfFile.getAbsolutePath();
                     sendIntent(absolutePath, INTENT_PDF_PROCESS_FINISHED);
                     return true;
@@ -383,14 +383,14 @@ public class ImageProcessor {
 
     private void sendIntent(String fileName, int type) {
 
-        Log.d(CLASS_NAME, "sendIntent:");
+//        Log.d(CLASS_NAME, "sendIntent:");
 
-        Intent intent = new Intent(INTENT_IMAGE_PROCESS_ACTION);
-        intent.putExtra(INTENT_IMAGE_PROCESS_TYPE, type);
-        intent.putExtra(INTENT_FILE_NAME, fileName);
-
-        if (mContext != null)
+        if (mContext != null && mContext.get() != null) {
+            Intent intent = new Intent(INTENT_IMAGE_PROCESS_ACTION);
+            intent.putExtra(INTENT_IMAGE_PROCESS_TYPE, type);
+            intent.putExtra(INTENT_FILE_NAME, fileName);
             LocalBroadcastManager.getInstance(mContext.get()).sendBroadcast(intent);
+        }
 
     }
 

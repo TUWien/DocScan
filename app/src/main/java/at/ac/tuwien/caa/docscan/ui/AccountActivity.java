@@ -18,17 +18,24 @@ import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
+import static at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME;
+
 /**
  * Created by fabian on 22.08.2017.
  */
 
 public class AccountActivity extends BaseNavigationActivity implements DropboxUtils.DropboxCallback {
 
+    private String parentActivity = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
+
+        if (getIntent() != null && getIntent().getStringExtra(PARENT_ACTIVITY_NAME) != null)
+            parentActivity = getIntent().getStringExtra(PARENT_ACTIVITY_NAME);
 
         initButtons();
 
@@ -141,10 +148,21 @@ public class AccountActivity extends BaseNavigationActivity implements DropboxUt
     private void startActivity(Class proceedingActivity) {
         //        Start the proceeding activity:
         Intent intent = new Intent(getApplicationContext(), proceedingActivity);
+//        Set the parent activity if necessary:
+        if (parentActivity != null)
+            intent.putExtra(PARENT_ACTIVITY_NAME, parentActivity);
+
         startActivity(intent);
     }
 
     private void showAccountDetails() {
+
+//        Do not show user information if we no information is saved:
+        if (User.getInstance().getLastName() == null && User.getInstance().getFirstName() == null) {
+            View v = findViewById(R.id.current_account_layout);
+            v.setVisibility(View.GONE);
+            return;
+        }
 
         // Show the first and last name of the user:
         TextView userTextView = findViewById(R.id.account_user_textview);
@@ -161,14 +179,6 @@ public class AccountActivity extends BaseNavigationActivity implements DropboxUt
             cloudText += getString(R.string.sync_transkribus_text);
         cloudTextView.setText(cloudText);
 
-    }
-
-    private void hideAccountDetails() {
-//            Remove the view from the parent layout. If the view is just hidden, the layout below
-//            is not centered.
-        View v = findViewById(R.id.current_account_layout);
-        if (v != null)
-            ((ViewManager)v.getParent()).removeView(v);
     }
 
     @Override

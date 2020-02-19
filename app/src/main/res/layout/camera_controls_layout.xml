@@ -6,105 +6,184 @@
     android:background="@color/control_background_color"
     android:layout_height="@dimen/camera_control_height_width"
     android:layout_alignParentBottom="true"
+    android:clickable="true"
     >
 
-    <RelativeLayout
-        android:id="@+id/controls_layout"
+    <!--<com.google.android.material.tabs.TabLayout-->
+        <!--android:id="@+id/camera_tablayout"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_marginBottom="@dimen/activity_vertical_margin"-->
+        <!--app:tabBackground="@drawable/tab_layout_selector"-->
+        <!--app:tabTextColor="@color/white"-->
+        <!--app:tabSelectedTextColor="@color/black"-->
+        <!--app:tabPaddingStart="16dp"-->
+        <!--app:tabPaddingEnd="16dp"-->
+        <!--app:tabIndicatorHeight="0dp"-->
+        <!--app:tabRippleColor="@null">-->
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/camera_tablayout"
+        style="@style/AppTabLayout"
+        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <Spinner
-            android:id="@+id/shoot_mode_spinner"
-            android:layout_width="@dimen/shoot_mode_spinner_size"
-            android:layout_height="@dimen/shoot_mode_spinner_size"
-            android:layout_centerVertical="true"
-            android:layout_alignParentLeft="true"
-            android:layout_marginLeft="@dimen/activity_vertical_margin"
-            android:popupBackground="@color/button_bg_color"
-            android:theme="@style/customSpinnerTheme"
-            android:background="@drawable/spinner_selector"
-            android:dropDownWidth="@dimen/spinner_dropdown_width"
-            />
+        app:tabBackground="@drawable/tab_layout_selector"
+        android:layout_marginBottom="@dimen/activity_vertical_margin">
 
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Manual"/>
 
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:layout_centerInParent="true"
-            android:id="@+id/photo_button"
-            android:layout_width="@dimen/photo_button_size"
-            android:layout_height="@dimen/photo_button_size"
-            android:src="@drawable/ic_photo_camera"
-            android:background="@drawable/photo_shoot_button_selector"
-            />
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Automatic"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"/>
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/camera_tablayout">
+
         <RelativeLayout
-            android:layout_width="@dimen/photo_button_size"
-            android:layout_height="@dimen/photo_button_size"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            >
+            android:id="@+id/controls_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:layout_width="@dimen/gallery_button_size"
+                android:layout_height="@dimen/gallery_button_size"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="@dimen/activity_vertical_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                >
+
+                <androidx.appcompat.widget.AppCompatImageButton
+                    android:id="@+id/gallery_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:adjustViewBounds="true"
+                    android:background="#0000"
+                    />
+
+                <ProgressBar
+                    android:id="@+id/saving_progressbar"
+                    android:layout_width="@dimen/gallery_progress_bar_size"
+                    android:layout_height="@dimen/gallery_progress_bar_size"
+                    android:layout_centerInParent="true"
+                    android:visibility="invisible"
+                    android:indeterminate="true"
+                    style="?android:attr/progressBarStyle"
+                    />
+            </RelativeLayout>
 
             <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/gallery_button"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop"
-                android:adjustViewBounds="true"
-                android:background="#0000"
+                android:layout_centerInParent="true"
+                android:id="@+id/photo_button"
+                android:layout_width="@dimen/photo_button_size"
+                android:layout_height="@dimen/photo_button_size"
+                app:srcCompat="@drawable/ic_photo_camera_white_24dp"
+                android:background="@drawable/photo_shoot_button_selector"
+                />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/document_fab"
+                app:srcCompat="@drawable/ic_library_books_black_24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="@dimen/activity_vertical_margin"
+                />
+            <!--Previous: app:srcCompat="@drawable/ic_folder_open_gray_24dp"-->
+
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/qr_controls_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            android:layout_centerVertical="true"
+            >
+
+            <ImageView
+                android:layout_centerInParent="true"
+                android:layout_width="25dp"
+                android:layout_height="25dp"
+                app:srcCompat="@drawable/ic_qr_code_white"
                 />
 
             <ProgressBar
-                android:id="@+id/saving_progressbar"
-                android:layout_width="@dimen/gallery_progress_bar_size"
-                android:layout_height="@dimen/gallery_progress_bar_size"
                 android:layout_centerInParent="true"
-                android:visibility="invisible"
-                android:indeterminate="true"
+                android:id="@+id/qr_progressbar"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
                 style="?android:attr/progressBarStyle"
                 />
 
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/cancel_qr_button"
+                app:srcCompat="@drawable/ic_close_white_24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="@dimen/activity_vertical_margin"
+                />
+
+            <!--<androidx.appcompat.widget.AppCompatImageButton-->
+                <!--android:id="@+id/cancel_qr_button"-->
+                <!--app:srcCompat="@drawable/ic_cancel_white_24dp"-->
+                <!--android:layout_alignParentRight="true"-->
+                <!--android:layout_centerVertical="true"-->
+                <!--android:layout_marginLeft="4dp"-->
+                <!--android:layout_marginRight="@dimen/activity_vertical_margin"-->
+                <!--android:layout_width="@dimen/gallery_button_size"-->
+                <!--android:layout_height="@dimen/gallery_button_size"-->
+                <!--android:scaleType="centerCrop"-->
+                <!--android:adjustViewBounds="true"-->
+                <!--android:background="#0000"-->
+                <!--/>-->
+
+
         </RelativeLayout>
+
+
+        <!--<Spinner-->
+            <!--android:id="@+id/shoot_mode_spinner"-->
+            <!--android:visibility="invisible"-->
+            <!--android:layout_width="@dimen/shoot_mode_spinner_size"-->
+            <!--android:layout_height="@dimen/shoot_mode_spinner_size"-->
+            <!--android:layout_centerVertical="true"-->
+            <!--android:layout_alignParentLeft="true"-->
+            <!--android:layout_marginLeft="@dimen/activity_vertical_margin"-->
+            <!--android:popupBackground="@color/button_bg_color"-->
+            <!--android:theme="@style/customSpinnerTheme"-->
+            <!--android:background="@drawable/spinner_selector"-->
+            <!--android:dropDownWidth="@dimen/spinner_dropdown_width"-->
+            <!--/>-->
+
+
+
+
 
     </RelativeLayout>
 
     <!--</RelativeLayout>-->
 
-    <RelativeLayout
-        android:id="@+id/qr_controls_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="invisible"
-        >
-
-        <ImageView
-            android:layout_centerInParent="true"
-            android:layout_width="25dp"
-            android:layout_height="25dp"
-            app:srcCompat="@drawable/ic_qr_code_white"
-            />
-
-        <ProgressBar
-            android:layout_centerInParent="true"
-            android:id="@+id/qr_progressbar"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            style="?android:attr/progressBarStyle"
-            />
-
-        <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/cancel_qr_button"
-            app:srcCompat="@drawable/ic_cancel_white_24dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="@dimen/activity_vertical_margin"
-            android:layout_width="@dimen/gallery_button_size"
-            android:layout_height="@dimen/gallery_button_size"
-            android:scaleType="centerCrop"
-            android:adjustViewBounds="true"
-            android:background="#0000"
-            />
-
-
-    </RelativeLayout>
 
 </RelativeLayout>
 

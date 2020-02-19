@@ -108,6 +108,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
 //        In case the user created a document, close the intro, the CameraActivity is already started:
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CREATE_DOCUMENT && resultCode == RESULT_OK)
             finish();
 

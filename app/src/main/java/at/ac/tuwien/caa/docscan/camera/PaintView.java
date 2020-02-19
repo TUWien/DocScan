@@ -24,14 +24,18 @@
 package at.ac.tuwien.caa.docscan.camera;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -45,7 +49,9 @@ import java.util.Locale;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
+import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 
 /**
  * Class responsible for drawing the results of the page segmentation and focus measurement tasks.
@@ -55,7 +61,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
 
-    private static final String TAG = "PaintView";
+    private static final String CLASS_NAME = "PaintView";
     private Paint mGridPaint;
     private DrawerThread mDrawerThread;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
@@ -72,6 +78,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     private static Flicker mFlicker;
     private CVResult mCVResult;
     private boolean mDrawGrid = false;
+//    This is basically the exif orientation, but we do not name it this way in the UI
+    private int mTextOrientation = CameraActivity.IMG_ORIENTATION_0;
+    private boolean mDrawTextDirLarge = false;
 
     /**
      * Creates the PaintView, the timerCallback and the thread responsible for the drawing.
@@ -113,11 +122,25 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    public void setTextOrientation(int textOrientation) {
+
+        mTextOrientation = textOrientation;
+
+    }
+
+    public void drawTextOrientationLarge(boolean large) {
+
+        mDrawTextDirLarge = large;
+
+    }
+
     public void drawGrid(boolean drawGrid) {
 
         mDrawGrid = drawGrid;
 
     }
+
+
 
     /**
      * Returns if the focus values are drawn.
@@ -126,6 +149,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     public boolean isFocusTextVisible() {
 
         return mDrawFocusText;
+
+    }
+
+
+    public void drawFocusTouchSuccess() {
+
+        mDrawFocusTouch = false;
 
     }
 
@@ -187,7 +217,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 retry = false;
             } catch (InterruptedException e) {
                 Crashlytics.logException(e);
-                Log.d(TAG, e.toString());
+                Log.d(CLASS_NAME, e.toString());
             }
         }
 
@@ -291,7 +321,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         mFocusTouchPoint = point;
         mFocusTouchStart = System.nanoTime();
 
-        Log.d(TAG, "focus tocuhed");
+        Log.d(CLASS_NAME, "focus tocuhed");
     }
 
     public void hideFocusCircle() {
@@ -315,7 +345,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private Paint mBGPaint;
         private Paint mSegmentationPaint;
         private Path mSegmentationPath;
-        private Path mFocusTouchPath;
         private Path mFocusPath;
         private Paint mGuidePaint;
         private Paint mMovementPaint;
@@ -337,8 +366,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private Paint mFocusTouchCirclePaint;
         private Paint mFocusTouchOutlinePaint;
 
-
-
         private final int STATE_TEXT_BG_COLOR = getResources().getColor(R.color.hud_state_rect_color);
         private final int PAGE_RECT_COLOR = getResources().getColor(R.color.hud_page_rect_color);
         private final int FOCUS_SHARP_RECT_COLOR = getResources().getColor(R.color.hud_focus_sharp_rect_color);
@@ -349,7 +376,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private Paint mFocusSharpRectPaint;
         private Paint mFocusUnsharpRectPaint;
 
-        // Used for debug output:
+        private Bitmap mTextDirBitmap, mTextDirLargeBitmap;
+
+        // Used for debug output:x
 
         public DrawerThread(SurfaceHolder surfaceHolder) {
 
@@ -365,6 +394,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             int scaledFontSize = getResources().getDimensionPixelSize(R.dimen.draw_view_focus_font_size);
             mTextPaint.setTextSize(scaledFontSize);
 
+            // Used to print out text direction:
+            int textSize = getResources().getDimensionPixelSize(R.dimen.draw_view_textdir_font_size);
+            mTextDirBitmap = textAsBitmap("T", textSize);
+            int textLargeSize = getResources().getDimensionPixelSize(R.dimen.draw_view_textdirlarge_font_size);
+            mTextDirLargeBitmap = textAsBitmap("T", textLargeSize);
 
             // Used to paint the page segmentation boundaries:
             mSegmentationPaint = new Paint();
@@ -385,8 +419,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mFocusUnsharpRectPaint.setStyle(Paint.Style.STROKE);
             mFocusUnsharpRectPaint.setColor(FOCUS_UNSHARP_RECT_COLOR);
             mFocusPath = new Path();
-
-            mFocusTouchPath = new Path();
 
             mGuidePaint = new Paint();
             mGuidePaint.setStrokeWidth(2);
@@ -421,6 +453,33 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             mFocusTouchOutlinePaint.setAntiAlias(true);
         }
 
+        private Bitmap textAsBitmap(String text, int textSize) {
+
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+            Typeface font = Typeface.createFromAsset(getResources().getAssets(), "ptserif.ttf");
+            paint.setTextSize(textSize);
+            paint.setColor(Color.BLACK);
+            paint.setTextAlign(Paint.Align.LEFT);
+            paint.setTypeface(font);
+
+            float baseline = -paint.ascent(); // ascent() is negative
+            int width = (int) (paint.measureText(text) + 0.5f); // round
+            int height = (int) (baseline + paint.descent() + 0.5f);
+            Bitmap orig = Bitmap.createBitmap(height, height, Bitmap.Config.ARGB_8888);
+
+            Canvas canvas = new Canvas(orig);
+            Paint bg = new Paint();
+//            bg.setColor(getResources().getColor(R.color.grid_color));
+            bg.setColor(Color.WHITE);
+            RectF r = new RectF(0, 0, orig.getHeight(), orig.getHeight());
+            canvas.drawRoundRect(r, 10, 10, bg);
+            canvas.drawText(text, orig.getWidth() / 2f - width / 2f, baseline, paint);
+
+            return orig;
+
+        }
+
 
 
         /**
@@ -446,13 +505,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     // This wait is used to assure that the drawing function is just called after an update
                     // from the native package:
                     synchronized (mCVResult) {
-//
-////                        try {
-////                            mCVResult.wait();
-////                        } catch (InterruptedException e) {
-////                            Log.d(TAG, e.toString());
-////                        }
-//
+
                         try {
                             mCVResult.wait(50);
                         } catch (InterruptedException e) {
@@ -463,8 +516,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         if (!mCVResult.isRedrawNecessary()) {
                             if (mSegmentationPaint.getAlpha() >= 170)
                                 mSegmentationPaint.setAlpha(mSegmentationPaint.getAlpha() - 20);
-//                            mFocusSharpRectPaint.setAlpha(mFocusSharpRectPaint.getAlpha() - 20);
-//                            mFocusUnsharpRectPaint.setAlpha(mFocusUnsharpRectPaint.getAlpha() - 20);
                         }
                         else {
                             mSegmentationPaint.setAlpha(221);
@@ -545,6 +596,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
             if (mCVResult != null) {
 
+                ArrayList<PointF> points = null;
+                if (mCVResult.getDKPolyRects() != null && mCVResult.getDKPolyRects().length > 0)
+                    points = mCVResult.getDKPolyRects()[0].getScreenPoints();
+
+                drawTextOrientation(canvas, points);
                 // Page segmentation:
                 if (mCVResult.getDKPolyRects() != null) {
                     drawPageSegmentation(canvas);
@@ -556,16 +612,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                             drawFocusMeasure(canvas);
                     }
                 }
-
-//                drawSavingAnimation(canvas);
-
-                // Output the document state:
-//                drawDocumentState(canvas);
-
             }
-
-//            if (CameraActivity.isDebugViewEnabled())
-//                mTimerCallbacks.onTimerStopped(DRAW_VIEW);
 
         }
 
@@ -592,8 +639,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         alpha = 0;
                     mFocusTouchCirclePaint.setAlpha(alpha);
                 }
-
-
 
                 canvas.drawCircle(mFocusTouchPoint.x, mFocusTouchPoint.y, radius, mFocusTouchCirclePaint); // Filling
                 canvas.drawCircle(mFocusTouchPoint.x, mFocusTouchPoint.y, radius, mFocusTouchOutlinePaint); // Outline
@@ -630,6 +675,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
          */
         private void drawPageSegmentation(Canvas canvas) {
 
+
             for (DkPolyRect dkPolyRect : mCVResult.getDKPolyRects()) {
 
                 mSegmentationPath.reset();
@@ -638,6 +684,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
                 if (screenPoints == null)
                     return;
+
 
 //                int idx = 0; // used for the drawing of the corner numbers
                 for (PointF point : screenPoints) {
@@ -653,8 +700,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         canvas.drawLine(point.x, 0, point.x, getHeight(), mGuidePaint);
                     }
 
-//                    Draw the corner number:
 //                    String cornerNum = String.format(Locale.ENGLISH, "%d", idx);
+//
+//                    if (point == topLeft)
+//                        cornerNum += "!";
+//
+////                    Draw the corner number:
 //                    canvas.drawText(cornerNum, point.x, point.y, mTextPaint);
 //                    idx++;
                 }
@@ -662,9 +713,198 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 mSegmentationPath.close();
                 canvas.drawPath(mSegmentationPath, mSegmentationPaint);
 
-
             }
 
+        }
+
+
+        private void drawTextOrientation(Canvas canvas, ArrayList<PointF> screenPoints) {
+
+            double angle;
+            PointF tl;
+            if (screenPoints == null) {
+//                In case of no page segmentation result, draw the text orientation only, if the
+//                user requests to change the text orientation:
+//                if (!mDrawTextDirLarge)
+//                    return;
+
+                angle = getTextAngle(mTextOrientation);
+                if (angle == -1)
+                    return;
+//                Use the golden ratio for y:
+                tl = new PointF(getWidth() / 2f, getHeight() * .382f);
+            }
+            else {
+                int csIdx = getTopLeftTextIdx(screenPoints);
+
+                if (csIdx == -1)
+                    return;
+
+                int ceIdx = (csIdx + 1) % 4;
+
+                PointF s = screenPoints.get(csIdx);
+                PointF e = screenPoints.get(ceIdx);
+
+                Log.d(CLASS_NAME, "s: " + s + " e: " + e);
+
+//            Determine the angle of the text rotation:
+                DkVector v = new DkVector(e, s);
+                DkVector y = new DkVector(1, 0);
+                if (v.y < 0)
+                    angle = (360 - v.angle(y)) % 360;
+                else
+                    angle = v.angle(y) % 360;
+
+                Log.d(CLASS_NAME, "angle: " + angle);
+
+                tl = screenPoints.get(csIdx);
+//            Make a deep copy, because we will modify the point:
+                tl = new PointF(tl.x, tl.y);
+
+                if (Float.isNaN((float) angle))
+                    return;
+            }
+
+            drawTextDirBitmap(canvas, (float) angle, tl, screenPoints != null);
+
+        }
+
+        /**
+         * Draws the text dir bitmap
+         * @param canvas
+         * @param angle
+         * @param tl
+         */
+        private void drawTextDirBitmap(Canvas canvas, float angle, PointF tl, boolean drawInPage) {
+            Bitmap bm;
+            if (mDrawTextDirLarge)
+                bm = mTextDirLargeBitmap;
+            else
+                bm = mTextDirBitmap;
+
+
+            if ((bm != null) && (bm.getWidth() > 0) && (bm.getHeight() > 0)) {
+
+                Matrix matrix = new Matrix();
+                matrix.setRotate(angle);
+
+                Bitmap rotatedBitmap = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(), bm.getHeight(), matrix, true);
+                if (rotatedBitmap == null)
+                    return;
+
+//                Determine the offset, not used currently:
+//                DkVector half = new DkVector(v.x + lv.x / 2.f, v.y + lv.y / 2.f);
+//                DkVector offset = half.norm().multiply(30);
+                if (drawInPage) {
+                    if (mTextOrientation == CameraActivity.IMG_ORIENTATION_90) {
+                        tl.x -= rotatedBitmap.getWidth();
+                    } else if (mTextOrientation == CameraActivity.IMG_ORIENTATION_180) {
+                        tl.x -= rotatedBitmap.getWidth();
+                        tl.y -= rotatedBitmap.getHeight();
+                    } else if (mTextOrientation == CameraActivity.IMG_ORIENTATION_270) {
+                        tl.y -= rotatedBitmap.getHeight();
+                    }
+                }
+                else {
+                    tl.x -= rotatedBitmap.getWidth() / 2f;
+                    tl.y -= rotatedBitmap.getHeight() / 2f;
+                }
+                canvas.drawBitmap(rotatedBitmap, tl.x, tl.y, new Paint());
+
+            }
+        }
+
+        private int getTextAngle(int textOrientation) {
+
+            switch (textOrientation) {
+                case CameraActivity.IMG_ORIENTATION_0:
+                    return 0;
+                case CameraActivity.IMG_ORIENTATION_90:
+                    return 90;
+                case CameraActivity.IMG_ORIENTATION_180:
+                    return 180;
+                case CameraActivity.IMG_ORIENTATION_270:
+                    return 270;
+                default:
+                    return -1;
+            }
+        }
+
+        private int getTopLeftTextIdx(ArrayList<PointF> screenPoints) {
+
+//            Get the top left corner - regardless of text orientation:
+            PointF topLeft = getTopLeftCorner(screenPoints);
+            if (topLeft == null)
+                return -1;
+
+            int tlIdx = screenPoints.indexOf(topLeft);
+            if (tlIdx == -1)
+                return -1;
+
+//            int offset;
+//            switch (mTextOrientation) {
+//                default:
+//                    offset = 0;
+//                    break;
+//                case 90:
+//                    offset = 1;
+//                    break;
+//                case 180:
+//                    offset = 2;
+//                    break;
+//                case 270:
+//                    offset = 3;
+//                    break;
+//            }
+
+            return (tlIdx + mTextOrientation) % 4;
+        }
+
+        /**
+         * Returns the left top corner point, depending on the orientation of the text.
+         * @param points
+         * @return
+         */
+        private PointF getTopLeftCorner(ArrayList<PointF> points) {
+
+            PointF result = null;
+            float mid = getMidPoint(points);
+            float x = Float.POSITIVE_INFINITY;
+
+            for (PointF point : points) {
+//                Skip bottom points:
+                if (point.y > mid)
+                    continue;
+//                Find the outer left point:
+                if (point.x < x) {
+                    result = point;
+                    x = point.x;
+                }
+            }
+
+            return result;
+
+        }
+
+        /**
+         * Returns the mid point of the bounding box in x or y direction.
+         * @param points
+         * @return
+         */
+        private float getMidPoint(ArrayList<PointF> points) {
+
+            // Get points that have the largest distance in x or y direction:
+            float s = Float.POSITIVE_INFINITY;
+            float e = 0;
+            for (PointF point : points) {
+                float p = point.y;
+                if (p < s)
+                    s = p;
+                if (p > e)
+                    e = p;
+            }
+
+            return s + (e-s) / 2;
         }
 
         /**

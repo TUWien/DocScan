@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.graphics.PointF;
+import android.util.Log;
 
 /**
  * Created by fabian on 27.09.2016.
@@ -8,6 +9,8 @@ import android.graphics.PointF;
 public class DkVector {
 
     public float x, y;
+
+    private static final String CLASS_NAME = "DkVector";
 
     public DkVector(float x, float y) {
 
@@ -99,13 +102,33 @@ public class DkVector {
 
     public double angle(DkVector vector) {
 
-        return Math.toDegrees(Math.acos(cosv(vector)));
+//        Check if cosv is in valid range: [-1, 1]
+        double c = cosv(vector);
+        if (c < -1)
+            c = -1;
+        else if (c > 1)
+            c = 1;
+
+        return Math.toDegrees(Math.acos(c));
 
     }
 
     public double cosv(DkVector vector) {
 
         return (x * vector.x + y * vector.y) / (Math.sqrt(x * x + y * y) * Math.sqrt(vector.x * vector.x + vector.y * vector.y));
+
+    }
+
+    public DkVector rotate(float angle) {
+
+        double a = Math.toRadians(angle);
+        double cs = Math.cos(a);
+        double sn = Math.sin(a);
+
+        float xn = (float) (x * cs - y * sn);
+        float yn = (float) (x * sn + y * cs);
+
+        return new DkVector(xn, yn);
 
     }
 }

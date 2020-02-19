@@ -132,7 +132,7 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
                 "handleRestError: request: " + this.toString());
         Log.d(CLASS_NAME, "handleRestError: request: " + this.toString());
 
-        if (error == null || error.getMessage() == null) {
+        if (error == null || error.getMessage() == null || error.networkResponse == null) {
             DataLog.getInstance().writeUploadLog(getContext(), CLASS_NAME,
                     "handleRestError: error is null ");
             Log.d(CLASS_NAME, "handleRestError: error is null");

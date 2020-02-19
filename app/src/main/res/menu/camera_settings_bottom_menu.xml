@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--This is actually not used, I just needed the id's...-->
+    <item
+        android:id="@+id/action_show_gallery_item"
+        android:title="@string/action_setting_show_gallery"
+        android:icon="@drawable/ic_grid_on_gray_24dp"
+        />
+    <item
+        android:id="@+id/action_show_grid_item"
+        android:title="@string/action_setting_show_grid"
+        android:icon="@drawable/ic_grid_on_gray_24dp"
+        />
+    <item
+        android:id="@+id/action_hide_grid_item"
+        android:title="@string/action_setting_hide_grid"
+        android:icon="@drawable/ic_grid_off_gray_24dp"
+        />
+
+    <item
+        android:id="@+id/action_lock_wb_item"
+        android:title="@string/action_setting_lock_wb"
+        android:icon="@drawable/ic_lock_outline_gray_24dp"
+        />
+    <item
+        android:id="@+id/action_unlock_wb_item"
+        android:title="@string/action_setting_unlock_wb"
+        android:icon="@drawable/ic_lock_open_gray_24dp"
+        />
+    <item
+        android:id="@+id/action_rotate_text_dir_item"
+        android:title="@string/action_setting_unlock_wb"
+        android:icon="@drawable/ic_rotate_text_gray_24px"
+        />
+
+    <item
+        android:id="@+id/action_qr_item"
+        android:title="@string/action_setting_qr_mode"
+        android:icon="@drawable/ic_qr_code_gray"
+        />
+
+    <!--<item-->
+        <!--android:id="@+id/action_unlock_wb_item"-->
+        <!--android:title="@string/action_setting_unlock_wb"-->
+        <!--android:icon="@drawable/ic_lock_open_gray_24dp"-->
+        <!--/>-->
+
+
+</menu>

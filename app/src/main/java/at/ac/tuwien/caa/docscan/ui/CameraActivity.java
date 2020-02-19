@@ -28,6 +28,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -38,15 +39,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.PointF;
-import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
-import android.hardware.SensorManager;
 import android.location.Location;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+
+import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.core.app.ActivityCompat;
@@ -55,31 +57,25 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.content.res.AppCompatResources;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
+import android.util.Rational;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -89,8 +85,10 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
+import com.google.android.material.tabs.TabLayout;
 import com.google.zxing.Result;
 
+import org.jetbrains.annotations.NotNull;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
@@ -99,6 +97,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -107,7 +106,9 @@ import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
 import at.ac.tuwien.caa.docscan.camera.CameraPreview;
+import at.ac.tuwien.caa.docscan.camera.ActionSheet;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
+import at.ac.tuwien.caa.docscan.camera.TextOrientationActionSheet;
 import at.ac.tuwien.caa.docscan.camera.GPS;
 import at.ac.tuwien.caa.docscan.camera.LocationHandler;
 import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
@@ -123,13 +124,11 @@ import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
-import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity;
-import at.ac.tuwien.caa.docscan.ui.document.SelectDocumentActivity;
+import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Settings;
-import at.ac.tuwien.caa.docscan.ui.syncui.UploadActivity;
 import me.drakeet.support.toast.ToastCompat;
 
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
@@ -137,6 +136,7 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATI
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_ACTIVE_KEY;
 import static at.ac.tuwien.caa.docscan.logic.Settings.SettingEnum.SERIES_MODE_PAUSED_KEY;
+import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUMENT_CREATED_KEY;
 import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUMENT_QR_TEXT;
 import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IDX;
 import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IMAGE;
@@ -147,22 +147,28 @@ import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_I
  */
 
 public class CameraActivity extends BaseNavigationActivity implements TaskTimer.TimerCallbacks,
-        CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback,
-        PopupMenu.OnMenuItemClickListener, AdapterView.OnItemSelectedListener {
+        CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback {
 
     private static final String CLASS_NAME = "CameraActivity";
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
     private static final String KEY_SHOW_EXPOSURE_LOCK_WARNING = "KEY_SHOW_EXPOSURE_LOCK_WARNING";
+    private static final String KEY_SHOW_TEXT_DIR_DIALOG = "KEY_SHOW_TEXT_DIR_DIALOG";
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
     private static final int CREATE_DOCUMENT_FROM_QR_REQUEST = 0;
 
+    public static final int IMG_ORIENTATION_0      = 0;
+    public static final int IMG_ORIENTATION_90     = 1;
+    public static final int IMG_ORIENTATION_180    = 2;
+    public static final int IMG_ORIENTATION_270    = 3;
+
     @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
     private ImageButton mGalleryButton;
-    private AppCompatButton mForceShootButton;
+//    removing mForceShootButton:
+//    private AppCompatButton mForceShootButton;
     private TaskTimer mTaskTimer;
     private CameraPreview mCameraPreview;
     private PaintView mPaintView;
@@ -180,9 +186,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private ActionBarDrawerToggle mDrawerToggle;
     private boolean mIsPictureSafe;
     private TextView mTextView;
-    private MenuItem mFlashMenuItem, mDocumentMenuItem, mGalleryMenuItem, mUploadMenuItem,
-            mLockExposureMenuItem, mUnlockExposureMenuItem;
-    private Drawable mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
+//    private MenuItem mFlashMenuItem, mDocumentMenuItem, mGalleryMenuItem, mUploadMenuItem,
+//            mLockExposureMenuItem, mUnlockExposureMenuItem;
+//    private Drawable mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
     private boolean mIsSeriesModePaused = true;
     // We hold here a reference to the popupmenu and the list, because we are not sure what is first initialized:
@@ -196,9 +202,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private TaskTimer.TimerCallbacks mTimerCallbacks;
     private static Date mLastTimeStamp;
     private DkPolyRect[] mLastDkPolyRects;
-
-    private OrientationEventListener mOrientationListener;
-
+    private int mLastTabPosition;
+    private int mTextOrientation = IMG_ORIENTATION_0;
+    private boolean mLockExposureSupported;
+    private boolean mRestoreTab = false;
     private boolean mIsQRActive = false;
 
 
@@ -259,6 +266,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+
 ////    just for markus oneplus:
 //    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 //    private void colorStatusBar() {
@@ -279,11 +287,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         if (mCameraPreview != null)
             mCameraPreview.pause();
-
-        if (mOrientationListener != null && mOrientationListener.canDetectOrientation()) {
-            mOrientationListener.disable();
-        }
-
 
         savePreferences();
         DocumentStorage.saveJSON(this);
@@ -317,12 +320,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         super.onResume();
 
         Log.d(getClass().getName(), "onResume");
-
-//        Stop receiving orientation change events:
-        if (mOrientationListener != null && mOrientationListener.canDetectOrientation())
-            mOrientationListener.enable();
-        else
-            mOrientationListener.disable();
 
 
         // Read the sync information:
@@ -361,6 +358,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 true);
         mCVResult.setMeasureFocus(mIsFocusMeasured);
         IPManager.getInstance().setIsFocusMeasured(mIsFocusMeasured);
+
+        mTextOrientation = sharedPref.getInt(getResources().getString(R.string.key_text_orientation), IMG_ORIENTATION_90);
+        mPaintView.setTextOrientation(mTextOrientation);
 
 
 //        mIsAggressiveAutoFocus = sharedPref.getBoolean(getResources().getString(
@@ -413,10 +413,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             getIntent().removeExtra(KEY_RETAKE_IMAGE);
         }
 
+////        A new document was created -> show a dialog for text direction
+//        boolean documentCreated = getIntent().getBooleanExtra(DOCUMENT_CREATED_KEY, false);
+//        if (documentCreated) {
+//            showTextDirDialog();
+//        }
+
     }
 
     private void showControlsLayout(boolean showControls) {
 
+        Log.d(CLASS_NAME, "showControlsLayout");
 
         int controlsVisibility, qrCodeVisibility;
 
@@ -432,14 +439,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // Show/hide the menu buttons:
 //        Weak devices might have no flash, so check if mFlashModes is null:
-        if ((mFlashModes != null) && (mFlashMenuItem != null))
-            mFlashMenuItem.setVisible(showControls);
-        if (mDocumentMenuItem != null)
-            mDocumentMenuItem.setVisible(showControls);
-        if (mGalleryMenuItem != null)
-            mGalleryMenuItem.setVisible(showControls);
-        if (mUploadMenuItem != null)
-            mUploadMenuItem.setVisible(showControls);
+//        if ((mFlashModes != null) && (mFlashMenuItem != null))
+//            mFlashMenuItem.setVisible(showControls);
+//        if (mDocumentMenuItem != null)
+//            mDocumentMenuItem.setVisible(showControls);
+//        if (mGalleryMenuItem != null)
+//            mGalleryMenuItem.setVisible(showControls);
+//        if (mUploadMenuItem != null)
+//            mUploadMenuItem.setVisible(showControls);
 
 //        Show/hide the gallery button:
 
@@ -450,8 +457,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //            mOptionsMenu.setGroupVisible(R.id.overflow_menu_group, showControls);
 
         RelativeLayout l = findViewById(R.id.controls_layout);
-        if (l != null)
+        TabLayout t = findViewById(R.id.camera_tablayout);
+        if (l != null) {
             l.setVisibility(controlsVisibility);
+            t.setVisibility(controlsVisibility);
+        }
+
+        if (mIsSeriesMode)
+            mLastTabPosition = 1;
+        else
+            mLastTabPosition = 0;
+        if (t.getSelectedTabPosition() != mLastTabPosition)
+            restoreLastTab();
+
 
         RelativeLayout qrLayout = findViewById(R.id.qr_controls_layout);
         if (qrLayout != null)
@@ -520,36 +538,321 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mCounterView = findViewById(R.id.counter_view);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showSeriesPopup(null);
-            }
-        });
+//        toolbar.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                showSeriesPopup(null);
+//            }
+//        });
+
         setSupportActionBar(toolbar);
         setupToolbar();
         setupNavigationDrawer();
         setupDebugView();
 
-        initOrientationListener();
+//        initOrientationListener();
 
         // This is used to measure execution time of time intense tasks:
         mTaskTimer = new TaskTimer();
 
+        mTextView = findViewById(R.id.instruction_view);
+        if (mIsSeriesMode && mIsSeriesModePaused)
+            setInstructionText(getString(R.string.instruction_series_paused));
 
 //        initCameraControlLayout();
 
-        initDrawables();
+//        initDrawables();
         initPictureCallback();
         initButtons();
 
         requestLocation();
 
+//        TODO: this is not that beautiful...
+        final TabLayout t = findViewById(R.id.camera_tablayout);
+
+        t.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+
+//                The tab is restored programmatically - not by the user, in this case do nothing:
+                if (mRestoreTab) {
+                    mRestoreTab = false;
+                    return;
+                }
+//                TODO: replace with static int
+//                We have to remember the last tab selection, because when setting is selected, we
+//                have to restore the last selection:
+                if (tab.getPosition() == 0) {
+                    startAutomaticMode(false);
+                    mLastTabPosition = 0;
+                }
+                else if (tab.getPosition() == 1) {
+                    startAutomaticMode(true);
+                    mLastTabPosition = 1;
+                }
+                else if (tab.getPosition() == 2) {
+                    openSettingsMenu();
+//                    TabLayout.Tab restoredTab = t.getTabAt(mLastTabPosition);
+//                    t.setScrollPosition(mLastTabPosition, 0f, true);
+//                    restoredTab.select();
+                }
+
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
 //        Check app version:
         checkAppVersion();
 
+        FloatingActionButton fab = findViewById(R.id.document_fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(), DocumentViewerActivity.class));
+            }
+        });
+
     }
 
+    private void openRotateTextDirMenu() {
+
+        ArrayList<ActionSheet.SheetAction> actions = getRotateTextDirSheetActions();
+
+        ActionSheet.SheetSelection s = action -> {
+
+            switch(action.getID()) {
+                case R.id.action_rotate_text_dir_left:
+                    mTextOrientation--;
+                    break;
+                case R.id.action_rotate_text_dir_right:
+                    mTextOrientation++;
+                    break;
+            }
+//                Modulo of negative number is still negative, so make it positive:
+            if (mTextOrientation < 0)
+                mTextOrientation += 4;
+            mTextOrientation = mTextOrientation % 4;
+
+            saveTextOrientation();
+
+            mPaintView.setTextOrientation(mTextOrientation);
+        };
+
+        ActionSheet.DialogStatus f = new ActionSheet.DialogStatus() {
+            @Override
+            public void onShown() {
+                View v = findViewById(R.id.camera_controls_layout);
+                v.setVisibility(View.INVISIBLE);
+                mPaintView.drawTextOrientationLarge(true);
+            }
+
+            @Override
+            public void onDismiss() {
+                View v = findViewById(R.id.camera_controls_layout);
+                v.setVisibility(View.VISIBLE);
+                mPaintView.drawTextOrientationLarge(false);
+            }
+        };
+
+        TextOrientationActionSheet.DialogConfirm c = new TextOrientationActionSheet.DialogConfirm() {
+
+            int lastOrientation = mTextOrientation;
+
+            @Override
+            public void onOk() {
+
+            }
+
+            @Override
+            public void onCancel() {
+                Log.d(CLASS_NAME, "onCancel");
+                mTextOrientation = lastOrientation;
+                mPaintView.setTextOrientation(lastOrientation);
+                saveTextOrientation();
+            }
+        };
+
+        boolean opaqueBackground = mCameraPreview.isPreviewFitting();
+        getSupportFragmentManager().beginTransaction().add(new TextOrientationActionSheet(actions, s, f, c, opaqueBackground),
+                "TAG").commit();
+
+    }
+
+    private void saveTextOrientation() {
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(getString(R.string.key_text_orientation), mTextOrientation);
+        editor.commit();
+
+    }
+
+    @NotNull
+    private ArrayList<ActionSheet.SheetAction> getRotateTextDirSheetActions() {
+        ArrayList<ActionSheet.SheetAction> actions = new ArrayList<>();
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_rotate_text_dir_left,
+                getString(R.string.action_rotate_left_title),
+                R.drawable.ic_rotate_left_white_24dp));
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_rotate_text_dir_right,
+                getString(R.string.action_rotate_right_title),
+                R.drawable.ic_rotate_right_white_24dp));
+        return actions;
+    }
+
+    private void openSettingsMenu() {
+
+        ArrayList<ActionSheet.SheetAction> actions = getSettingsSheetActions();
+
+        ActionSheet.SheetSelection s = new ActionSheet.SheetSelection() {
+            @Override
+            public void onSheetSelected(ActionSheet.SheetAction action) {
+
+                switch(action.getID()) {
+                    case R.id.action_show_grid_item:
+                        showGrid(true);
+                        break;
+                    case R.id.action_hide_grid_item:
+                        showGrid(false);
+                        break;
+                    case R.id.action_lock_wb_item:
+                        lockExposure();
+                        break;
+                    case R.id.action_unlock_wb_item:
+                        unlockExposure();
+                        break;
+                    case R.id.action_rotate_text_dir_item:
+                        openRotateTextDirMenu();
+                        break;
+                    case R.id.action_document_qr_item:
+                        startQRMode();
+                        break;
+                }
+            }
+        };
+
+        ActionSheet.DialogStatus f = new ActionSheet.DialogStatus() {
+            @Override
+            public void onShown() {
+//                mPaintView.drawTextOrientationLarge(true);
+            }
+
+            @Override
+            public void onDismiss() {
+                restoreLastTab();
+            }
+        };
+
+        ActionSheet sheet = new ActionSheet(actions, s, f);
+
+        getSupportFragmentManager().beginTransaction().add(sheet, "TAG").commit();
+
+//        sheet.onDismiss(new DialogInterface() {
+//            @Override
+//            public void cancel() {
+//                restoreLastTab();
+//            }
+//
+//            @Override
+//            public void dismiss() {
+//                restoreLastTab();
+//            }
+//        });
+
+    }
+
+    private void restoreLastTab() {
+
+//        do nothing in the selection listener:
+        mRestoreTab = true;
+
+        final TabLayout t = findViewById(R.id.camera_tablayout);
+        t.getTabAt(mLastTabPosition).select();
+    }
+
+    @NotNull
+    private ArrayList<ActionSheet.SheetAction> getSettingsSheetActions() {
+
+        ArrayList<ActionSheet.SheetAction> actions = new ArrayList<>();
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+//        Text orientation action:
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_rotate_text_dir_item,
+                getString(R.string.action_setting_rotate_text_dir),
+                R.drawable.ic_rotate_text_gray_24px));
+
+//        Grid action:
+        boolean showGrid = sharedPref.getBoolean(getResources().getString(
+                R.string.key_show_grid), false);
+        if (showGrid)
+            actions.add(new ActionSheet.SheetAction(
+                    R.id.action_hide_grid_item,
+                    getString(R.string.action_setting_hide_grid),
+                    R.drawable.ic_grid_off_gray_24dp));
+        else
+            actions.add(new ActionSheet.SheetAction(
+                    R.id.action_show_grid_item,
+                    getString(R.string.action_setting_show_grid),
+                    R.drawable.ic_grid_on_gray_24dp));
+
+//        White balance - if supported:
+        if (mLockExposureSupported) {
+            //        This is dirty, but at the moment I do not want another member:
+            boolean wbLocked =
+                    findViewById(R.id.lock_exposure_text_view).getVisibility() == View.VISIBLE;
+            if (wbLocked)
+                actions.add(new ActionSheet.SheetAction(
+                        R.id.action_unlock_wb_item,
+                        getString(R.string.action_setting_unlock_wb),
+                        R.drawable.ic_lock_open_gray_24dp));
+            else
+                actions.add(new ActionSheet.SheetAction(
+                        R.id.action_lock_wb_item,
+                        getString(R.string.action_setting_lock_wb),
+                        R.drawable.ic_lock_outline_gray_24dp));
+        }
+
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_document_qr_item,
+                getString(R.string.action_setting_qr_mode),
+                R.drawable.ic_qr_code_gray));
+
+        return actions;
+    }
+
+    @NotNull
+    private ArrayList<ActionSheet.SheetAction> getFABSheetActions() {
+        ArrayList<ActionSheet.SheetAction> actions = new ArrayList<>();
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_document_new_item,
+                getString(R.string.action_document_create_title),
+                R.drawable.ic_folder_gray_24dp));
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_document_qr_item,
+                getString(R.string.action_document_qr_title),
+                R.drawable.ic_qr_code_gray));
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_document_select_item,
+                getString(R.string.action_document_select_title),
+                R.drawable.ic_folder_open_gray_24dp));
+        actions.add(new ActionSheet.SheetAction(
+                R.id.action_document_upload_item,
+                getString(R.string.action_document_upload_document),
+                R.drawable.ic_cloud_upload_gray_24dp));
+        return actions;
+    }
 
     private void checkAppVersion() {
 
@@ -563,27 +866,60 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (lastInstalledVersion <= 35 && lastInstalledVersion != -1)
             DocumentMigrator.migrate(this);
 
+        if (lastInstalledVersion <= 116 && lastInstalledVersion != -1)
+            showUIChangesDialog();
+
     }
 
-    private void showDocumentHint() {
+    private void showUIChangesDialog() {
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
 
+        String dialogTitle = getString(R.string.ui_changes_title);
+        alertDialog.setTitle(dialogTitle);
 
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(R.string.camera_document_hint_title)
-                .setPositiveButton("OK", null)
-                .setMessage("moving on...");
+        String text = getString(R.string.ui_changes_text);
+        alertDialog.setMessage(text);
+        alertDialog.setPositiveButton(getString(R.string.dialog_yes_text),
+                (dialog, which) -> {
 
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
+                    String pdfUrl = "https://github.com/TUWien/DocScan/wiki/UI-changes-in-version-1.7";
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+                    browserIntent.setData(Uri.parse(pdfUrl));
+                    try {
+                        startActivity(browserIntent);
+                    }
+                    catch (ActivityNotFoundException e) {
+                        Crashlytics.logException(e);
+                        Helper.showActivityNotFoundAlert(getApplicationContext());
+                    }
 
-        // show it
+                });
+        alertDialog.setNegativeButton(getString(R.string.dialog_cancel_text), null);
+        alertDialog.setCancelable(true);
         alertDialog.show();
 
 
     }
+//    private void showDocumentHint() {
+//
+//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+//
+//
+//        // set dialog message
+//        alertDialogBuilder
+//                .setTitle(R.string.camera_document_hint_title)
+//                .setPositiveButton("OK", null)
+//                .setMessage("moving on...");
+//
+//        // create alert dialog
+//        AlertDialog alertDialog = alertDialogBuilder.create();
+//
+//        // show it
+//        alertDialog.show();
+//
+//
+//    }
 
 
 
@@ -597,7 +933,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         LayoutInflater adbInflater = LayoutInflater.from(this);
-        View eulaLayout = adbInflater.inflate(R.layout.locked_exposure_dialog, null);
+        View eulaLayout = adbInflater.inflate(R.layout.check_box_dialog, null);
 
         final CheckBox checkBox = eulaLayout.findViewById(R.id.skip);
         alertDialog.setView(eulaLayout);
@@ -626,13 +962,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // Concerning series mode:
         mIsSeriesMode = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_ACTIVE_KEY);
-        mIsSeriesModePaused = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_PAUSED_KEY);
+//        mIsSeriesModePaused = Settings.getInstance().loadBooleanKey(this, SERIES_MODE_PAUSED_KEY);
+        if (mIsSeriesMode)
+            mIsSeriesModePaused = true;
+
+        if (mIsSeriesMode && mIsSeriesModePaused)
+            setInstructionText(getString(R.string.instruction_series_paused));
 
 //        UserHandler.loadSeriesName(this);
 
-        showShootModeToast();
+//        showShootModeToast();
         updateMode();
-        updateShootModeSpinner();
+//        updateShootModeSpinner();
 
     }
 
@@ -675,50 +1016,50 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//
+//        MenuInflater inflater = getMenuInflater();
+//        inflater.inflate(R.menu.camera_menu, menu);
+//
+//        mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
+//        mDocumentMenuItem = menu.findItem(R.id.document_item);
+//        mGalleryMenuItem = menu.findItem(R.id.gallery_item);
+//        mUploadMenuItem = menu.findItem(R.id.upload_item);
+////        mWhiteBalanceMenuItem = menu.findItem(R.id.white_balance_item);
+//        mLockExposureMenuItem = menu.findItem(R.id.lock_exposure_item);
+//        mUnlockExposureMenuItem = menu.findItem(R.id.unlock_exposure_item);
+//
+////        inflater.inflate(R.menu.white_balance_menu, mWhiteBalanceMenuItem.getSubMenu());
+//
+//        // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
+//        if (mFlashModes != null && !mIsSeriesMode)
+//            mFlashMenuItem.setVisible(true);
+//
+//        MenuItem item = menu.findItem(R.id.grid_item);
+//
+//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+//        boolean showGrid = sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
+//
+//        if (showGrid)
+//            item.setTitle(getString(R.string.hide_grid_item_title));
+//        else
+//            item.setTitle(getString(R.string.show_grid_item_title));
+//
+//        return true;
+//
+//    }
 
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.camera_menu, menu);
-
-        mFlashMenuItem = menu.findItem(R.id.flash_mode_item);
-        mDocumentMenuItem = menu.findItem(R.id.document_item);
-        mGalleryMenuItem = menu.findItem(R.id.gallery_item);
-        mUploadMenuItem = menu.findItem(R.id.upload_item);
-//        mWhiteBalanceMenuItem = menu.findItem(R.id.white_balance_item);
-        mLockExposureMenuItem = menu.findItem(R.id.lock_exposure_item);
-        mUnlockExposureMenuItem = menu.findItem(R.id.unlock_exposure_item);
-
-//        inflater.inflate(R.menu.white_balance_menu, mWhiteBalanceMenuItem.getSubMenu());
-
-        // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
-        if (mFlashModes != null && !mIsSeriesMode)
-            mFlashMenuItem.setVisible(true);
-
-        MenuItem item = menu.findItem(R.id.grid_item);
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean showGrid = sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
-
-        if (showGrid)
-            item.setTitle(getString(R.string.hide_grid_item_title));
-        else
-            item.setTitle(getString(R.string.show_grid_item_title));
-
-        return true;
-
-    }
-
-    @SuppressWarnings("deprecation")
-    private void initDrawables() {
-
-//        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
-        mFlashAutoDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_auto_white_24dp);
-        mFlashOffDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_off_white_24dp);
-        mFlashOnDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_on_white_24dp);
-        mFlashTorchDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_lightbulb_outline_white_24dp);
-
-    }
+//    @SuppressWarnings("deprecation")
+//    private void initDrawables() {
+//
+////        We need to use AppCompatResources for drawables from vector files for pre lollipop devices:
+//        mFlashAutoDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_auto_white_24dp);
+//        mFlashOffDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_off_white_24dp);
+//        mFlashOnDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_flash_on_white_24dp);
+//        mFlashTorchDrawable = AppCompatResources.getDrawable(this, R.drawable.ic_lightbulb_outline_white_24dp);
+//
+//    }
 
     /**
      * Called after permission has been given or has been rejected. This is necessary on Android M
@@ -764,10 +1105,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        super.onActivityResult(requestCode, resultCode, data);
-
         // Check which request we're responding to
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == CREATE_DOCUMENT_FROM_QR_REQUEST) {
 //            Take care that the image processing is resumed, regardless of the intent result:
             resumeFromQRMode();
@@ -938,9 +1277,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     public void onClick(View v) {
                         if (mIsSeriesMode) {
                             mIsSeriesModePaused = !mIsSeriesModePaused;
-                            if (mIsSeriesMode && mForceShootButton != null)
-                                mForceShootButton.setVisibility(View.INVISIBLE);
-                            showShootModeToast();
+//    removing mForceShootButton:
+//                            if (mIsSeriesMode && mForceShootButton != null)
+//                                mForceShootButton.setVisibility(View.INVISIBLE);
+//                            showShootModeToast();
+                            if (mIsSeriesModePaused)
+                                setInstructionText(getString(R.string.instruction_series_paused));
                             updateMode();
 
 //                            // Show the SeriesGeneralActivity just if the user started the series mode and the hide
@@ -968,11 +1310,90 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         initPhotoButton();
         initGalleryCallback();
-        initShootModeSpinner();
+//        initShootModeSpinner();
         updatePhotoButtonIcon();
         initCancelQRButton();
+        //    removing mForceShootButton:
 //        initForceShootButton();
         initHudButton();
+        initInfoButton();
+
+    }
+
+    private void initInfoButton() {
+
+        AppCompatImageButton infoButton = findViewById(R.id.camera_info_button);
+        infoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                final boolean resumeSeriesModeAfterClose;
+
+                if (mIsSeriesMode && !mIsSeriesModePaused) {
+//                    We pause series moment here:
+                    mIsSeriesModePaused = true;
+                    resumeSeriesModeAfterClose = true;
+                    updateMode();
+                }
+                else
+                    resumeSeriesModeAfterClose = false;
+
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
+
+                String statusText = mTextView.getText().toString();
+                String dialogTitle = getString(R.string.camera_status_title_prefix) + " " +
+                        statusText;
+                alertDialog.setTitle(dialogTitle);
+
+                String text = getInstructionDetail(statusText);
+
+                boolean showSeriesModeHint = isHintForSeriesModeRequired(statusText);
+                if (showSeriesModeHint)
+                    text += "\n\n" + getString(R.string.instruction_series_fix);
+
+
+                alertDialog.setMessage(text);
+                alertDialog.setPositiveButton(getString(R.string.button_ok),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (resumeSeriesModeAfterClose) {
+                                    Log.d(CLASS_NAME, "resumeSeriesModeAfterClose");
+                                    mIsSeriesModePaused = false;
+                                    updateMode();
+                                }
+                            }
+                        });
+                alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialogInterface) {
+                        if (resumeSeriesModeAfterClose) {
+                            Log.d(CLASS_NAME, "resumeSeriesModeAfterClose");
+                            mIsSeriesModePaused = false;
+                            updateMode();
+                        }
+                    }
+                });
+                alertDialog.show();
+            }
+        });
+
+    }
+
+    private boolean isHintForSeriesModeRequired(String statusText) {
+
+        if (!mIsSeriesMode)
+            return false;
+
+        if (    statusText.equalsIgnoreCase(getString(R.string.instruction_unsharp)) ||
+                statusText.equalsIgnoreCase(getString(R.string.instruction_no_changes)) ||
+                statusText.equalsIgnoreCase(getString(R.string.instruction_movement)) ||
+                statusText.equalsIgnoreCase(getString(R.string.instruction_perspective)) ||
+                statusText.equalsIgnoreCase(getString(R.string.instruction_rotation)) ||
+                statusText.equalsIgnoreCase(getString(R.string.instruction_empty)))
+            return true;
+        else
+            return false;
 
     }
 
@@ -1020,6 +1441,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    //    removing mForceShootButton:
 //    private void initForceShootButton() {
 //
 //        mForceShootButton = findViewById(R.id.force_shoot_button);
@@ -1034,10 +1456,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void initCancelQRButton() {
 
-        ImageButton button = findViewById(R.id.cancel_qr_button);
-        button.setOnClickListener(new View.OnClickListener() {
+//        ImageButton button = findViewById(R.id.cancel_qr_button);
+//        button.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                resumeFromQRMode();
+//            }
+//        });
+
+        FloatingActionButton fab = findViewById(R.id.cancel_qr_button);
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 resumeFromQRMode();
             }
         });
@@ -1049,52 +1479,74 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mCameraPreview.startQrMode(false);
         IPManager.getInstance().setProcessFrame(true);
         IPManager.getInstance().setIsPaused(false);
+        mRestoreTab = false;
         showControlsLayout(!mIsQRActive);
     }
 
-    private void initShootModeSpinner() {
+//    private void initShootModeSpinner() {
+//
+//        // Spinner for shoot mode:
+//        Spinner shootModeSpinner = findViewById(R.id.shoot_mode_spinner);
+//        String[] shootModeText = getResources().getStringArray(R.array.shoot_mode_array);
+//        Integer[] shootModeIcons = new Integer[]{R.drawable.ic_photo_vector, R.drawable.ic_burst_mode_vector};
+//        shootModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, shootModeText, shootModeIcons));
+//        shootModeSpinner.setOnItemSelectedListener(this);
+//
+////        Used to prevent firing the onItemSelected method:
+//        mItemSelectedAutomatically = true;
+//        if (mIsSeriesMode)
+//            shootModeSpinner.setSelection(SERIES_POS);
+//
+//    }
 
-        // TODO: define the text and the icons in an enum, to ensure that they have the same order.
-        // Spinner for shoot mode:
-        Spinner shootModeSpinner = findViewById(R.id.shoot_mode_spinner);
-        String[] shootModeText = getResources().getStringArray(R.array.shoot_mode_array);
-        Integer[] shootModeIcons = new Integer[]{R.drawable.ic_photo_vector, R.drawable.ic_burst_mode_vector};
-        shootModeSpinner.setAdapter(new ShootModeAdapter(this, R.layout.spinner_row, shootModeText, shootModeIcons));
-        shootModeSpinner.setOnItemSelectedListener(this);
+    public void startAutomaticMode(boolean automatic) {
 
-//        Used to prevent firing the onItemSelected method:
-        mItemSelectedAutomatically = true;
-        if (mIsSeriesMode)
-            shootModeSpinner.setSelection(SERIES_POS);
+        Log.d(CLASS_NAME, "startAutomaticMode");
 
-    }
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-        if ((position == SERIES_POS) && !mIsSeriesMode) {
+        if (automatic) {
             mIsSeriesMode = true;
             mIsSeriesModePaused = false;
-            mCameraPreview.startAutoFocus();
+            if (mCameraPreview != null)
+                mCameraPreview.startAutoFocus();
         }
-        else if (position != SERIES_POS && mIsSeriesMode) {
+        else {
             mIsSeriesMode = false;
-            mCameraPreview.startContinousFocus();
-            mPaintView.hideFocusCircle();
-            mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
+            if (mCameraPreview != null)
+                mCameraPreview.startContinousFocus();
+            if (mPaintView != null)
+                mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
         }
 
-        // Show a toast and update the mode, but just if he selected the spinner manually:
-        if (!mItemSelectedAutomatically) {
-            showShootModeToast();
-            mPaintView.hideFocusCircle();
-            updateMode();
-
-        }
-
-        mItemSelectedAutomatically = false;
+        updateMode();
 
     }
+
+//    @Override
+//    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//
+//        if ((position == SERIES_POS) && !mIsSeriesMode) {
+//            mIsSeriesMode = true;
+//            mIsSeriesModePaused = false;
+//            mCameraPreview.startAutoFocus();
+//        }
+//        else if (position != SERIES_POS && mIsSeriesMode) {
+//            mIsSeriesMode = false;
+//            mCameraPreview.startContinousFocus();
+//            mPaintView.drawMovementIndicator(false); // This is necessary to prevent a drawing of the movement indicator
+//        }
+//
+//        // Show a toast and update the mode, but just if he selected the spinner manually:
+//        if (!mItemSelectedAutomatically) {
+//            showShootModeToast();
+//            updateMode();
+//
+//        }
+//
+//        mItemSelectedAutomatically = false;
+//
+//
+//
+//    }
 
 
     private void showShootModeToast() {
@@ -1112,15 +1564,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         showToastText(msg);
     }
 
-    private void updateShootModeSpinner() {
-
-        Spinner shootModeSpinner = findViewById(R.id.shoot_mode_spinner);
-        if (mIsSeriesMode)
-            shootModeSpinner.setSelection(SERIES_POS);
-        else
-            shootModeSpinner.setSelection(SINGLE_POS);
-
-    }
+//    private void updateShootModeSpinner() {
+//
+//        Spinner shootModeSpinner = findViewById(R.id.shoot_mode_spinner);
+//        if (mIsSeriesMode)
+//            shootModeSpinner.setSelection(SERIES_POS);
+//        else
+//            shootModeSpinner.setSelection(SINGLE_POS);
+//
+//    }
 
     private void updatePhotoButtonIcon() {
 
@@ -1134,6 +1586,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             if (mIsSeriesModePaused) {
                 drawable = R.drawable.ic_play_arrow_24dp;
 //                displaySeriesModePaused(); // shows a text in the text view and removes any CVResults shown.
+                clearCVResult();
             }
             else {
                 drawable = R.drawable.ic_pause_24dp;
@@ -1142,7 +1595,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
         else {
 //            showToastText(R.string.toast_single);
-            drawable = R.drawable.ic_photo_camera;
+            drawable = R.drawable.ic_photo_camera_white_24dp;
 //            mIsSeriesModePaused = false;
         }
 
@@ -1165,26 +1618,29 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mIsSeriesMode) {
             if (mIsSeriesModePaused) {
                 drawable = R.drawable.ic_play_arrow_24dp;
-                displaySeriesModePaused(); // shows a text in the text view and removes any CVResults shown.
-                if (mForceShootButton != null)
-                    mForceShootButton.setVisibility(View.INVISIBLE);
+                clearCVResult();
+//                displaySeriesModePaused(); // shows a text in the text view and removes any CVResults shown.
+//    removing mForceShootButton:
+//                if (mForceShootButton != null)
+//                    mForceShootButton.setVisibility(View.INVISIBLE);
             }
             else {
                 drawable = R.drawable.ic_pause_24dp;
-                setTextViewText(R.string.instruction_series_started);
+//                setTextViewText(R.string.instruction_series_started);
             }
         }
         else {
 //            showToastText(R.string.toast_single);
-            drawable = R.drawable.ic_photo_camera;
+            drawable = R.drawable.ic_photo_camera_white_24dp;
             mIsSeriesModePaused = false;
-            if (mForceShootButton != null)
-                mForceShootButton.setVisibility(View.INVISIBLE);
+//    removing mForceShootButton:
+//            if (mForceShootButton != null)
+//                mForceShootButton.setVisibility(View.INVISIBLE);
         }
 
 //        Hide the flash button in series mode:
-        if (mFlashMenuItem != null)
-            mFlashMenuItem.setVisible(!mIsSeriesMode);
+//        if (mFlashMenuItem != null)
+//            mFlashMenuItem.setVisible(!mIsSeriesMode);
 
         if (mCVResult != null)
             mCVResult.setSeriesMode(mIsSeriesMode);
@@ -1199,7 +1655,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         photoButton.setImageResource(drawable);
 
-        // TODO: put this into a method used for restoring generic states:
         if (mIsSeriesMode)
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -1212,10 +1667,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-
-    }
+//    @Override
+//    public void onNothingSelected(AdapterView<?> parent) {
+//
+//    }
 
 
     /**
@@ -1269,8 +1724,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void savePicture(byte[] data) {
 
-//        commented, because we are restructuring the document setup:
-//        Uri uri = getOutputMediaFile(getResources().getString(R.string.app_name));
         FileSaver fileSaver = new FileSaver(data);
         fileSaver.execute();
 
@@ -1376,29 +1829,29 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      * Initializes an OrientEventListener that is used to detect orientation changes that are not
      * detected by onConfigurationChanged (e.g. landscape to reverse landscape and portrait to reverse portrait).
      */
-    private void initOrientationListener() {
-
-        mOrientationListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_NORMAL) {
-            @Override
-            public void onOrientationChanged(int orientation) {
-
-                int displayRotation = getDisplayRotation();
-
-//                Catch the display rotation changes that are not covered by configuration changes
-//                (e.g. landscape to reverse landscape and portrait to reverse portrait):
-                if ((mLastDisplayRotation == Surface.ROTATION_0 && displayRotation == Surface.ROTATION_180) ||
-                        (mLastDisplayRotation == Surface.ROTATION_180 && displayRotation == Surface.ROTATION_0) ||
-                        (mLastDisplayRotation == Surface.ROTATION_90 && displayRotation == Surface.ROTATION_270) ||
-                        (mLastDisplayRotation == Surface.ROTATION_270 && displayRotation == Surface.ROTATION_90)) {
-                    if (mCameraPreview != null)
-                        mCameraPreview.displayRotated();
-                }
-
-                mLastDisplayRotation = displayRotation;
-
-            }
-        };
-    }
+//    private void initOrientationListener() {
+//
+//        mOrientationListener = new OrientationEventListener(this, SensorManager.SENSOR_DELAY_NORMAL) {
+//            @Override
+//            public void onOrientationChanged(int orientation) {
+//
+//                int displayRotation = getDisplayRotation();
+//
+////                Catch the display rotation changes that are not covered by configuration changes
+////                (e.g. landscape to reverse landscape and portrait to reverse portrait):
+//                if ((mLastDisplayRotation == Surface.ROTATION_0 && displayRotation == Surface.ROTATION_180) ||
+//                        (mLastDisplayRotation == Surface.ROTATION_180 && displayRotation == Surface.ROTATION_0) ||
+//                        (mLastDisplayRotation == Surface.ROTATION_90 && displayRotation == Surface.ROTATION_270) ||
+//                        (mLastDisplayRotation == Surface.ROTATION_270 && displayRotation == Surface.ROTATION_90)) {
+//                    if (mCameraPreview != null)
+//                        mCameraPreview.displayRotated();
+//                }
+//
+//                mLastDisplayRotation = displayRotation;
+//
+//            }
+//        };
+//    }
 
     private void rotateCameraAndLayout() {
 
@@ -1423,8 +1876,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         appRoot.removeView(f);
 
         getLayoutInflater().inflate(R.layout.camera_controls_layout, appRoot);
-        View view = findViewById(R.id.camera_controls_layout);
-        view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
+//        View view = findViewById(R.id.camera_controls_layout);
+//        view.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
 
         showControlsLayout(!mIsQRActive);
 
@@ -1596,7 +2049,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mDebugViewFragment = (DebugViewFragment) getSupportFragmentManager().findFragmentByTag(DEBUG_VIEW_FRAGMENT);
         mTimerCallbacks = this;
-        mTextView = findViewById(R.id.instruction_view);
 
         mIsDebugViewEnabled = (mDebugViewFragment == null);
         if (mDebugViewFragment == null)
@@ -1752,7 +2204,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             return;
         }
         else if (mIsSeriesModePaused) {
-            displaySeriesModePaused();
+            clearCVResult();
+//            displaySeriesModePaused();
             return;
         }
 
@@ -1760,13 +2213,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         if (moved) {
             mCVResult.clearResults();
-            setTextViewText(R.string.instruction_movement);
+            setInstructionText(getString(R.string.instruction_movement));
         }
-        else {
-            // This forces an update of the textview if it is still showing the R.string.instruction_movement text
-            if (mTextView.getText() == getResources().getString(R.string.instruction_movement))
-                setTextViewText(R.string.instruction_none);
-        }
+
+//        else {
+//            // This forces an update of the textview if it is still showing the R.string.instruction_movement text
+//            if (mTextView.getText() == getResources().getString(R.string.instruction_movement))
+//                setTextViewText(R.string.instruction_none);
+//        }
 
     }
 
@@ -1893,22 +2347,23 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             setupFlashUI();
 
         // The flash menu item is not visible at the beginning ('weak' devices might have no flash)
-        if (mFlashModes != null && mFlashMenuItem != null)
-            mFlashMenuItem.setVisible(true);
+//        if (mFlashModes != null && mFlashMenuItem != null)
+//            mFlashMenuItem.setVisible(true);
 
     }
 
     @Override
     public void onExposureLockFound(boolean isSupported) {
 
-        if (mUnlockExposureMenuItem != null && mUnlockExposureMenuItem.isVisible())
-            mUnlockExposureMenuItem.setVisible(false);
-        if (mLockExposureMenuItem != null) {
-            if (isSupported)
-                mLockExposureMenuItem.setVisible(true);
-            else
-                mLockExposureMenuItem.setVisible(false);
-        }
+        mLockExposureSupported = isSupported;
+//        if (mUnlockExposureMenuItem != null && mUnlockExposureMenuItem.isVisible())
+//            mUnlockExposureMenuItem.setVisible(false);
+//        if (mLockExposureMenuItem != null) {
+//            if (isSupported)
+//                mLockExposureMenuItem.setVisible(true);
+//            else
+//                mLockExposureMenuItem.setVisible(false);
+//        }
 
 
     }
@@ -1920,8 +2375,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         if (!focused)
             setInstructionText(getString(R.string.instruction_no_auto_focus));
-        else
-            setInstructionText("");
+//        else
+//            setInstructionText("");
 
         if (mIsSeriesMode && focused)
             IPManager.getInstance().setProcessFrame(true);
@@ -2014,15 +2469,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 
         if (mPaintView != null)
-            mPaintView.hideFocusCircle();
+            mPaintView.drawFocusTouchSuccess();
 
     }
+
+
 
     @Override
     public void onWaitingForDoc(boolean waiting, boolean doAutoFocus) {
 
         if (mIsSeriesModePaused) {
-            displaySeriesModePaused();
+//            displaySeriesModePaused();
+            clearCVResult();
             return;
         }
 
@@ -2032,7 +2490,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //            mCameraPreview.focusOnPoint();
 
         if (waiting)
-            setTextViewText(R.string.instruction_no_changes);
+            setInstructionText(getString(R.string.instruction_no_changes));
+//            setTextViewText(R.string.instruction_no_changes);
         else if (doAutoFocus)
             mCameraPreview.focusOnPoint();
 
@@ -2092,7 +2551,15 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mTextView.setText(text);
+                if (mTextView == null)
+                    return;
+//                Check if the series mode is paused - in that case, do not draw other text:
+                if (mIsSeriesMode && mIsSeriesModePaused) {
+                    clearCVResult();
+                    mTextView.setText(getString(R.string.instruction_series_paused));
+                }
+                else
+                    mTextView.setText(text);
             }
         });
     }
@@ -2117,13 +2584,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //
 //    }
 
-    private void setTextViewText(int msg) {
-
-        String msgText = getResources().getString(msg);
-        if (mTextView != null)
-            mTextView.setText(msgText);
-
-    }
+//    private void setTextViewText(int msg) {
+//
+//        String msgText = getResources().getString(msg);
+//        if (mTextView != null)
+//            mTextView.setText(msgText);
+//
+//    }
 
 //    public void showSeriesPopup(MenuItem item) {
 //
@@ -2144,45 +2611,44 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //
 //    }
 
-    public void showSeriesPopup(MenuItem item) {
+//    public void showSeriesPopup(MenuItem item) {
+//
+//        View menuItemView = findViewById(R.id.document_item);
+//        if (menuItemView == null)
+//            return;
+//
+//        PopupMenu seriesPopupMenu = new PopupMenu(this, menuItemView);
+//        seriesPopupMenu.setOnMenuItemClickListener(this);
+//        seriesPopupMenu.inflate(R.menu.series_menu);
+//        seriesPopupMenu.show();
+//
+//    }
 
-        View menuItemView = findViewById(R.id.document_item);
-        if (menuItemView == null)
-            return;
+//    public void showFlashPopup(MenuItem item) {
+//
+//        View menuItemView = findViewById(R.id.flash_mode_item);
+//        if (menuItemView == null)
+//            return;
+//
+//        mFlashPopupMenu = new PopupMenu(this, menuItemView);
+//        mFlashPopupMenu.setOnMenuItemClickListener(this);
+//        mFlashPopupMenu.inflate(R.menu.flash_mode_menu);
+//
+//        setupFlashUI();
+//
+//        mFlashPopupMenu.show();
+//
+//    }
 
-        PopupMenu seriesPopupMenu = new PopupMenu(this, menuItemView);
-        seriesPopupMenu.setOnMenuItemClickListener(this);
-        seriesPopupMenu.inflate(R.menu.series_menu);
-        seriesPopupMenu.show();
+    private void showGrid(boolean showGrid) {
 
-    }
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        mPaintView.drawGrid(showGrid);
 
-    public void showFlashPopup(MenuItem item) {
-
-        View menuItemView = findViewById(R.id.flash_mode_item);
-        if (menuItemView == null)
-            return;
-
-        mFlashPopupMenu = new PopupMenu(this, menuItemView);
-        mFlashPopupMenu.setOnMenuItemClickListener(this);
-        mFlashPopupMenu.inflate(R.menu.flash_mode_menu);
-
-        setupFlashUI();
-
-        mFlashPopupMenu.show();
-
-    }
-
-    public void startUploadActivity(MenuItem item) {
-
-        Document document = DocumentStorage.getInstance(this).getActiveDocument();
-        Intent intent = new Intent(getApplicationContext(), UploadActivity.class);
-
-//        If the document contains already images, select it in the UploadActivity:
-        if (document != null && document.getPages() != null && !document.getPages().isEmpty())
-            intent.putExtra(getString(R.string.key_document_file_name), document.getTitle());
-
-        startActivity(intent);
+//        Save the new setting:
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(getResources().getString(R.string.key_show_grid), showGrid);
+        editor.commit();
 
     }
 
@@ -2205,6 +2671,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    private void startGalleryActivity() {
+        String documentTitle = DocumentStorage.getInstance(this).getTitle();
+        if (documentTitle != null) {
+            if (DocumentStorage.getInstance(this).getDocument(documentTitle) == null)
+                return;
+
+            Intent intent = new Intent(mContext, GalleryActivity.class);
+            intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
+            mContext.startActivity(intent);
+        }
+    }
 
     public void startGalleryActivity(MenuItem item) {
 
@@ -2220,6 +2697,69 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    private void lockExposure() {
+
+        if (mCameraPreview != null) {
+
+            showLockedExposureDialog();
+
+            mCameraPreview.lockExposure(true);
+            mCameraPreview.lockWhiteBalance(true);
+
+//            if (mLockExposureMenuItem != null)
+//                mLockExposureMenuItem.setVisible(false);
+//            if (mUnlockExposureMenuItem != null)
+//                mUnlockExposureMenuItem.setVisible(true);
+
+            final LinearLayout lockTextView = findViewById(R.id.lock_exposure_text_view);
+            lockTextView.setAlpha(0f);
+            lockTextView.setVisibility(View.VISIBLE);
+            lockTextView.animate()
+                    .alpha(1f)
+                    .setDuration(1000);
+        }
+
+    }
+
+    private void unlockExposure() {
+
+        if (mCameraPreview != null) {
+            mCameraPreview.lockExposure(false);
+            mCameraPreview.lockWhiteBalance(false);
+
+//            if (mLockExposureMenuItem != null)
+//                mLockExposureMenuItem.setVisible(true);
+//            if (mUnlockExposureMenuItem != null)
+//                mUnlockExposureMenuItem.setVisible(false);
+
+            final LinearLayout lockTextView = findViewById(R.id.lock_exposure_text_view);
+            lockTextView.setVisibility(View.INVISIBLE);
+
+            final LinearLayout unlockTextView = findViewById(R.id.unlock_exposure_text_view);
+            unlockTextView.setAlpha(1f);
+            unlockTextView.setVisibility(View.VISIBLE);
+            unlockTextView.animate()
+                    .alpha(0f)
+                    .setDuration(1000)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            unlockTextView.setVisibility(View.INVISIBLE);
+                        }
+                    });
+
+//            final TextView lockTextView = findViewById(R.id.lock_exposure_text_view);
+//            lockTextView.setAlpha(0.f);
+//            lockTextView.setVisibility(View.VISIBLE);
+//            lockTextView.animate()
+//                    .alpha(1f)
+//                    .setDuration(500);
+
+        }
+
+    }
+
+
     public void lockExposure(MenuItem item) {
 
         if (mCameraPreview != null) {
@@ -2229,10 +2769,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             mCameraPreview.lockExposure(true);
             mCameraPreview.lockWhiteBalance(true);
 
-            if (mLockExposureMenuItem != null)
-                mLockExposureMenuItem.setVisible(false);
-            if (mUnlockExposureMenuItem != null)
-                mUnlockExposureMenuItem.setVisible(true);
+//            if (mLockExposureMenuItem != null)
+//                mLockExposureMenuItem.setVisible(false);
+//            if (mUnlockExposureMenuItem != null)
+//                mUnlockExposureMenuItem.setVisible(true);
 
             final LinearLayout lockTextView = findViewById(R.id.lock_exposure_text_view);
             lockTextView.setAlpha(0f);
@@ -2250,10 +2790,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             mCameraPreview.lockExposure(false);
             mCameraPreview.lockWhiteBalance(false);
 
-            if (mLockExposureMenuItem != null)
-                mLockExposureMenuItem.setVisible(true);
-            if (mUnlockExposureMenuItem != null)
-                mUnlockExposureMenuItem.setVisible(false);
+//            if (mLockExposureMenuItem != null)
+//                mLockExposureMenuItem.setVisible(true);
+//            if (mUnlockExposureMenuItem != null)
+//                mUnlockExposureMenuItem.setVisible(false);
 
             final LinearLayout lockTextView = findViewById(R.id.lock_exposure_text_view);
             lockTextView.setVisibility(View.INVISIBLE);
@@ -2323,64 +2863,73 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    @Override
-    @SuppressWarnings("deprecation")
-    public boolean onMenuItemClick(MenuItem item) {
+//    @Override
+//    @SuppressWarnings("deprecation")
+//    public boolean onMenuItemClick(MenuItem item) {
+//
+//        switch (item.getItemId()) {
+//            case R.id.flash_auto_item:
+//                mFlashMenuItem.setIcon(mFlashAutoDrawable);
+//                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
+//                return true;
+//            case R.id.flash_off_item:
+//                mFlashMenuItem.setIcon(mFlashOffDrawable);
+//                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+////                mFlashMode = Camera.Parameters.FLASH_MODE_OFF;
+//                return true;
+//            case R.id.flash_on_item:
+//                mFlashMenuItem.setIcon(mFlashOnDrawable);
+//                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+////                mFlashMode = Camera.Parameters.FLASH_MODE_ON;
+//                return true;
+//            case R.id.flash_torch_item:
+//                mFlashMenuItem.setIcon(mFlashTorchDrawable);
+//                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+////                mFlashMode = Camera.Parameters.FLASH_MODE_ON;
+//                return true;
+//
+//            case R.id.series_new_item:
+//                startActivity(new Intent(getApplicationContext(), CreateDocumentActivity.class));
+////                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+//                return true;
+//
+//            case R.id.series_edit_item:
+//                String documentName = DocumentStorage.getInstance(this).getTitle();
+//                if (documentName != null) {
+//                    Intent intent = new Intent(getApplicationContext(), EditDocumentActivity.class);
+//                    intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, documentName);
+//                    startActivity(intent);
+//                }
+////                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+//                return true;
+//
+//            case R.id.series_switch_item:
+////                startActivity(new Intent(getApplicationContext(), OpenDocumentActivity.class));
+//                startActivity(new Intent(getApplicationContext(), SelectDocumentActivity.class));
+//                return true;
+//
+//            case R.id.series_qr_item:
+//                mIsQRActive = true;
+//                showControlsLayout(false);
+//                mCVResult.clearResults();
+//                mCameraPreview.startQrMode(true);
+//
+//                IPManager.getInstance().setIsPaused(true);
+//                return true;
+//
+//            default:
+//                return false;
+//
+//        }
+//    }
 
-        switch (item.getItemId()) {
-            case R.id.flash_auto_item:
-                mFlashMenuItem.setIcon(mFlashAutoDrawable);
-                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
-                return true;
-            case R.id.flash_off_item:
-                mFlashMenuItem.setIcon(mFlashOffDrawable);
-                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-//                mFlashMode = Camera.Parameters.FLASH_MODE_OFF;
-                return true;
-            case R.id.flash_on_item:
-                mFlashMenuItem.setIcon(mFlashOnDrawable);
-                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
-//                mFlashMode = Camera.Parameters.FLASH_MODE_ON;
-                return true;
-            case R.id.flash_torch_item:
-                mFlashMenuItem.setIcon(mFlashTorchDrawable);
-                mCameraPreview.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-//                mFlashMode = Camera.Parameters.FLASH_MODE_ON;
-                return true;
+    private void startQRMode() {
 
-            case R.id.series_new_item:
-                startActivity(new Intent(getApplicationContext(), CreateDocumentActivity.class));
-//                startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                return true;
+        mIsQRActive = true;
+        showControlsLayout(false);
+        mCVResult.clearResults();
+        mCameraPreview.startQrMode(true);
 
-            case R.id.series_edit_item:
-                String documentName = DocumentStorage.getInstance(this).getTitle();
-                if (documentName != null) {
-                    Intent intent = new Intent(getApplicationContext(), EditDocumentActivity.class);
-                    intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, documentName);
-                    startActivity(intent);
-                }
-//                startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                return true;
-
-            case R.id.series_switch_item:
-//                startActivity(new Intent(getApplicationContext(), OpenDocumentActivity.class));
-                startActivity(new Intent(getApplicationContext(), SelectDocumentActivity.class));
-                return true;
-
-            case R.id.series_qr_item:
-                mIsQRActive = true;
-                showControlsLayout(false);
-                mCVResult.clearResults();
-                mCameraPreview.startQrMode(true);
-
-                IPManager.getInstance().setIsPaused(true);
-                return true;
-
-            default:
-                return false;
-
-        }
     }
 
 
@@ -2450,33 +2999,47 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public void onStatusChange(final int state) {
 
         mTextView.setText(getInstructionMessage(state));
-        updateForceShootButton(state);
+        //    removing mForceShootButton:
+//        updateForceShootButton(state);
 
     }
 
-    private void updateForceShootButton(int state) {
-        //        Show or hide the force shoot button:
-        if (mIsSeriesMode) {
-            if (mForceShootButton != null) {
-                if (state == CVResult.DOCUMENT_STATE_UNSHARP ||
-                        state == CVResult.DOCUMENT_STATE_ROTATION ||
-                        state == CVResult.DOCUMENT_STATE_PERSPECTIVE)
-                    mForceShootButton.setVisibility(View.VISIBLE);
-                else
-                    mForceShootButton.setVisibility(View.INVISIBLE);
-            }
-        }
-    }
+    //    removing mForceShootButton:
+//    private void updateForceShootButton(int state) {
+//        //        Show or hide the force shoot button:
+//        if (mIsSeriesMode) {
+//            if (mForceShootButton != null) {
+//                if (state == CVResult.DOCUMENT_STATE_UNSHARP ||
+//                        state == CVResult.DOCUMENT_STATE_ROTATION ||
+//                        state == CVResult.DOCUMENT_STATE_PERSPECTIVE)
+//                    mForceShootButton.setVisibility(View.VISIBLE);
+//                else
+//                    mForceShootButton.setVisibility(View.INVISIBLE);
+//            }
+//        }
+//    }
 
-    private void displaySeriesModePaused() {
+    private void clearCVResult() {
+
         if (mCVResult != null)
             mCVResult.clearResults();
 
         if (mPaintView != null)
             mPaintView.clearScreen();
 
-        setTextViewText(R.string.instruction_series_paused);
     }
+
+
+//    private void displaySeriesModePaused() {
+//
+//        if (mCVResult != null)
+//            mCVResult.clearResults();
+//
+//        if (mPaintView != null)
+//            mPaintView.clearScreen();
+//
+//        setInstructionText(R.string.instruction_series_paused);
+//    }
 
     private void showToastText(int id) {
 
@@ -2507,6 +3070,88 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //        }
     }
 
+
+    private String getInstructionDetail(String msgText) {
+
+        if (msgText.equals(getString(R.string.instruction_perspective)))
+            return getString(R.string.instruction_perspective_detail);
+
+        else if (msgText.equals(getString(R.string.instruction_empty)))
+            return getString(R.string.instruction_empty_detail);
+
+        else if (msgText.equals(getString(R.string.instruction_movement)))
+            return getString(R.string.instruction_movement_detail);
+
+        else if (msgText.equals(getString(R.string.instruction_no_auto_focus)))
+            return getString(R.string.instruction_no_auto_focus_detail);
+
+        else if (msgText.equals(getString(R.string.instruction_no_changes)))
+            return getString(R.string.instruction_no_changes_detail);
+
+        else if (msgText.equals(getString(R.string.instruction_no_focus_measured)))
+            return getString(R.string.instruction_no_focus_measured);
+
+        else if (msgText.equals(getString(R.string.instruction_ok)))
+            return getString(R.string.instruction_ok_detail);
+
+        else if (msgText.equals(getString(R.string.instruction_rotation)))
+            return getString(R.string.instruction_rotation_detail);
+
+        else if (msgText.equals(getString(R.string.instruction_series_paused)))
+            return getString(R.string.instruction_series_paused_detail);
+
+        else if (msgText.equals(getString(R.string.instruction_searching_qr)))
+            return getString(R.string.instruction_searching_qr_detail);
+
+//        else if (msgText.equals(getString(R.string.instruction_series_started)))
+//            return getString(R.string.instruction_series_started_detail);
+
+        else if (msgText.equals(getString(R.string.instruction_small)))
+            return getString(R.string.instruction_small_detail);
+
+        else if (msgText.equals(getString(R.string.instruction_unsharp)))
+            return getString(R.string.instruction_unsharp_detail);
+        else
+            return "";
+
+//        switch (msgText) {
+//
+//            case getString(R.string.instruction_unknown):
+//
+////            case CVResult.DOCUMENT_STATE_EMPTY:
+////                return getResources().getString(R.string.instruction_empty_detail);
+////
+////            case CVResult.DOCUMENT_STATE_OK:
+////                return getResources().getString(R.string.instruction_ok);
+////
+////            case CVResult.DOCUMENT_STATE_SMALL:
+////                return getResources().getString(R.string.instruction_small_detail);
+////
+////            case CVResult.DOCUMENT_STATE_PERSPECTIVE:
+////                return getResources().getString(R.string.instruction_perspective_detail);
+////
+////            case CVResult.DOCUMENT_STATE_UNSHARP:
+////                return getResources().getString(R.string.instruction_unsharp_detail);
+////
+////            case CVResult.DOCUMENT_STATE_BAD_ILLUMINATION:
+////                return getResources().getString(R.string.instruction_bad_illumination_detail);
+////
+////            case CVResult.DOCUMENT_STATE_ROTATION:
+////                return getResources().getString(R.string.instruction_rotation_detail);
+////
+////            case CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED:
+////                return getResources().getString(R.string.instruction_no_focus_measured_detail);
+////
+////            case CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED:
+////                return getResources().getString(R.string.instruction_no_illumination_measured_detail);
+//
+//        }
+//
+//        return getResources().getString(R.string.instruction_unknown);
+
+
+    }
+
     /**
      * Returns instruction messages, depending on the current state of the CVResult object.
      * @param state state of the CVResult object
@@ -2531,8 +3176,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             case CVResult.DOCUMENT_STATE_UNSHARP:
                 return getResources().getString(R.string.instruction_unsharp);
 
-            case CVResult.DOCUMENT_STATE_BAD_ILLUMINATION:
-                return getResources().getString(R.string.instruction_bad_illumination);
+//            case CVResult.DOCUMENT_STATE_BAD_ILLUMINATION:
+//                return getResources().getString(R.string.instruction_bad_illumination);
 
             case CVResult.DOCUMENT_STATE_ROTATION:
                 return getResources().getString(R.string.instruction_rotation);
@@ -2540,9 +3185,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             case CVResult.DOCUMENT_STATE_NO_FOCUS_MEASURED:
                 return getResources().getString(R.string.instruction_no_focus_measured);
 
-            case CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED:
-                return getResources().getString(R.string.instruction_no_illumination_measured);
-
+//            case CVResult.DOCUMENT_STATE_NO_ILLUMINATION_MEASURED:
+//                return getResources().getString(R.string.instruction_no_illumination_measured);
 
         }
 
@@ -2579,11 +3223,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 GlideApp.with(getApplicationContext())
                         .load(fileName)
                         .signature(new MediaStoreSignature("", 0, exifOrientation))
+                        .apply(RequestOptions.circleCropTransform())
                         .into(mGalleryButton);
             }
             else {
                 GlideApp.with(getApplicationContext())
                         .load(fileName)
+                        .apply(RequestOptions.circleCropTransform())
                         .into(mGalleryButton);
             }
 
@@ -2595,24 +3241,24 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
 
-    private int getExifOrientation() {
-
-        switch (mCameraOrientation) {
-
-            case 0:
-                return 1;
-            case 90:
-                return 6;
-            case 180:
-                return 3;
-            case 270:
-                return 8;
-
-        }
-
-        return -1;
-
-    }
+//    private int getExifOrientation() {
+//
+//        switch (mCameraOrientation) {
+//
+//            case 0:
+//                return 1;
+//            case 90:
+//                return 6;
+//            case 180:
+//                return 3;
+//            case 270:
+//                return 8;
+//
+//        }
+//
+//        return -1;
+//
+//    }
 
 
     @Override
@@ -2715,7 +3361,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
                             mProgressBar.setVisibility(View.INVISIBLE);
                             mGalleryButton.setVisibility(View.VISIBLE);
 //                            Check if the activity is closing. This might especially happen on slow
@@ -2724,8 +3369,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                             if (!((Activity) mContext).isFinishing())
                                 GlideApp.with(mContext)
                                         .load(file.getPath())
+                                        .apply(RequestOptions.circleCropTransform())
                                         .into(mGalleryButton);
-
                         }
                     });
 
@@ -2739,41 +3384,162 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         private void saveExif(File outFile) throws IOException {
 
             final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
-            if (exif != null) {
-                // Save the orientation of the image:
-                int orientation = getExifOrientation();
-                String exifOrientation = Integer.toString(orientation);
-                exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
+
+            // Save the orientation of the image:
+            int orientation = getExifOrientation();
+            String exifOrientation = Integer.toString(orientation);
+            exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
 
 //                Save the docscan information:
-                exif.setAttribute(ExifInterface.TAG_SOFTWARE, getString(R.string.app_name));
+            exif.setAttribute(ExifInterface.TAG_SOFTWARE, getString(R.string.app_name));
 
 //                Save the user defined exif tags:
-                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-                String artist = sharedPref.getString(getResources().getString(R.string.key_exif_artist), "");
-                if (!artist.isEmpty())
-                    exif.setAttribute(ExifInterface.TAG_ARTIST, artist);
-                String copyright = sharedPref.getString(getResources().getString(R.string.key_exif_copyright), "");
-                if (!copyright.isEmpty())
-                    exif.setAttribute(ExifInterface.TAG_COPYRIGHT, copyright);
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+            String artist = sharedPref.getString(getResources().getString(R.string.key_exif_artist), "");
+            if (!artist.isEmpty())
+                exif.setAttribute(ExifInterface.TAG_ARTIST, artist);
+            String copyright = sharedPref.getString(getResources().getString(R.string.key_exif_copyright), "");
+            if (!copyright.isEmpty())
+                exif.setAttribute(ExifInterface.TAG_COPYRIGHT, copyright);
 
-                // Save the GPS coordinates if available:
-                Location location = LocationHandler.getInstance(mContext).getLocation();
-                if (location != null) {
-                    double latitude = location.getLatitude();
-                    double longitude = location.getLongitude();
+            // Save the GPS coordinates if available:
+            Location location = LocationHandler.getInstance(mContext).getLocation();
+            if (location != null) {
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
 //                        Taken from http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android (post by fabien):
-                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
-                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
-                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
-                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
-                }
-
-                exif.saveAttributes();
-
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
+                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
+                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
             }
+
+            int dpi = getDPI();
+            if (dpi != -1) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    Rational r = new Rational(dpi, 1);
+                    exif.setAttribute(ExifInterface.TAG_X_RESOLUTION, r.toString());
+                    exif.setAttribute(ExifInterface.TAG_Y_RESOLUTION, r.toString());
+                }
+            }
+
+            exif.saveAttributes();
+
         }
 
+
+        private int getDPI() {
+
+//            First see if we have already a dpi value saved:
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+            int dpi = sharedPref.getInt(getResources().getString(
+                    R.string.key_dpi), -1);
+            if (dpi == -1) {
+//                Otherwise calculate it:
+                dpi = getDPIFromCamera();
+//                Save the dpi to shared preferences:
+                if (dpi != -1) {
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putInt(getResources().getString(R.string.key_dpi), dpi);
+                    editor.commit();
+                }
+            }
+
+            return dpi;
+
+        }
+
+        private int getDPIFromCamera() {
+            //distance from tent in inches
+            double cameraDistance = 16.535;
+            if (mCameraPreview == null || mCameraPreview.getCamera() == null ||
+                    mCameraPreview.getCamera().getParameters() == null)
+                return -1;
+
+            float angle = mCameraPreview.getCamera().getParameters().getHorizontalViewAngle();
+            int imgW = mCameraPreview.getCamera().getParameters().getPictureSize().width;
+            return Helper.getDPI(cameraDistance, angle, imgW);
+        }
+
+        private int getExifOrientation() {
+
+            //    private int getExifOrientation() {
+//
+//        switch (mCameraOrientation) {
+//
+//            case 0:
+//                return 1;
+//            case 90:
+//                return 6;
+//            case 180:
+//                return 3;
+//            case 270:
+//                return 8;
+//
+//        }
+//
+//        return -1;
+//
+//            Log.d(CLASS_NAME, "mCameraOrientation: " + mCameraOrientation);
+//            Log.d(CLASS_NAME, "mTextOrientation: " + mTextOrientation);
+//
+//            TODO: test this on multiple devices:
+//            int camTextOrientation = mTextOrientation;
+//
+//
+//            if (mCameraOrientation == 90)
+//                camTextOrientation -= 1;
+//            else if (mCameraOrientation == 180)
+//                camTextOrientation += 2;
+//            else if (mCameraOrientation == 270)
+//                camTextOrientation += 1;
+
+//            int camTextOrientation = mTextOrientation;
+////            Compensate the camera rotation:
+            int camTextOrientation = IMG_ORIENTATION_0;
+            if (mCameraOrientation == 90)
+                camTextOrientation = IMG_ORIENTATION_90;
+//            TODO: find a way to test such a device (I am missing the 5X):
+            else if (mCameraOrientation == 180)
+                camTextOrientation = IMG_ORIENTATION_180;
+//            TODO: find a way to test such a device (I am missing the 5X):
+            else if (mCameraOrientation == 270)
+                camTextOrientation = IMG_ORIENTATION_270;
+//
+            camTextOrientation -= mTextOrientation;
+//
+            if (camTextOrientation < 0)
+                camTextOrientation += 4;
+//
+//            camTextOrientation = camTextOrientation % 4;
+
+//            if (mCameraOrientation == 90)
+//                camTextOrientation++;
+            camTextOrientation = camTextOrientation % 4;
+
+            Log.d(CLASS_NAME, "mCameraOrientation: " + mCameraOrientation);
+            Log.d(CLASS_NAME, "mTextOrientation: " + mTextOrientation);
+            Log.d(CLASS_NAME, "camTextOrientation: " + camTextOrientation);
+
+
+            switch (camTextOrientation) {
+                case IMG_ORIENTATION_0:
+                    return ExifInterface.ORIENTATION_NORMAL;
+                case IMG_ORIENTATION_90:
+                    return ExifInterface.ORIENTATION_ROTATE_90;
+                case IMG_ORIENTATION_180:
+                    return ExifInterface.ORIENTATION_ROTATE_180;
+                case IMG_ORIENTATION_270:
+                    return ExifInterface.ORIENTATION_ROTATE_270;
+                default:
+                    return ExifInterface.ORIENTATION_UNDEFINED;
+            }
+
+
+
+//            return ExifInterface.ORIENTATION_ROTATE_90;
+
+        }
 
 
         protected void onPostExecute(String uri) {

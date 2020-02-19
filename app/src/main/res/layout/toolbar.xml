@@ -4,10 +4,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:background="@color/navigation_drawer_bg_color"
     android:theme="@style/GalaxyZooThemeToolbarDarkOverflow"
     app:popupTheme="@style/Theme.AppCompat.Light"
     app:titleTextAppearance="@style/Toolbar.TitleText"
+    android:background="@drawable/dark_to_transparent_gradient"
 />
 <!--android:elevation="4dp"-->
     <!--app:theme="@style/CustomActionBar"-->

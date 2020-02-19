@@ -27,9 +27,11 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -49,6 +51,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -60,6 +66,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
+import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
@@ -75,6 +82,11 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     private Context mContext;
     private BroadcastReceiver mMessageReceiver;
 
+    public static final String KEY_IMAGE_CHANGED = "KEY_IMAGE_CHANGED";
+
+    public static final String KEY_DOCUMENT_NAME = "KEY_DOCUMENT_NAME";
+    public static final String KEY_FILE_NAME = "KEY_FILE_NAME";
+    public static final String KEY_OPEN_GALLERY = "KEY_OPEN_GALLERY";
     public static final String KEY_RETAKE_IMAGE = "KEY_RETAKE_IMAGE";
     public static final String KEY_RETAKE_IDX = "KEY_RETAKE_IDX";
 
@@ -89,6 +101,12 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_page_slide);
 
+        initFromIntent();
+
+    }
+
+    private void initFromIntent() {
+        Log.d(CLASS_NAME, "oncreate");
         // Instantiate a ViewPager and a PagerAdapter.
         initPager();
 
@@ -96,7 +114,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         if (fileName == null)
             return;
 
-//        mDocument = getDummyDocument(fileName);
         mDocument = DocumentStorage.getInstance(this).getDocument(fileName);
 
         mPagerAdapter = new PageSlideAdapter(getSupportFragmentManager(), mDocument);
@@ -109,13 +126,13 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
 //        Which position was selected?
         int pos = getIntent().getIntExtra(getString(R.string.key_page_position), -1);
-        if (pos != -1 && mDocument.getPages() != null && mDocument.getPages().size() > pos) {
+        if (pos != -1 && mDocument != null && mDocument.getPages() != null && mDocument.getPages().size() > pos) {
             mPager.setCurrentItem(pos);
             setToolbarTitle(pos);
             mPage = mDocument.getPages().get(pos);
         }
-
     }
+
 
     @Override
     public void onResume() {
@@ -275,11 +292,20 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
 ////                Check if the file is already cropped.
         RelativeLayout l = findViewById(R.id.page_view_buttons_layout_crop_layout);
-//        if (PageDetector.isCropped(mPage.getFile().getAbsolutePath()))
+//        if (PageDetector.isCurrentlyProcessed(mPage.getFile().getAbsolutePath()))
 //            l.setVisibility(View.GONE);
 //        else
             l.setVisibility(View.VISIBLE);
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent data = new Intent();
+        data.putExtra(KEY_IMAGE_CHANGED, true);
+        setResult(RESULT_OK, data);
+
+        super.onBackPressed();
     }
 
     private void initToolbar() {
@@ -300,13 +326,21 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             }
         });
 
+        mToolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startGalleryActivity();
+            }
+        });
+
     }
 
     private void setToolbarTitle(int pos) {
 
         if (mToolbar != null && getSupportActionBar() != null)
-            getSupportActionBar().setTitle("#: " + Integer.toString(pos+1) + "/" +
-                    Integer.toString(mDocument.getPages().size())+ " - " + mDocument.getTitle());
+            getSupportActionBar().setTitle((pos + 1) + "/" + mDocument.getPages().size());
+//            getSupportActionBar().setTitle("#: " + Integer.toString(pos+1) + "/" +
+//                    Integer.toString(mDocument.getPages().size())+ " - " + mDocument.getTitle());
     }
 
     // A method to find height of the status bar
@@ -322,46 +356,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-    public void retakeImage(MenuItem item) {
-
-        final int idx;
-        if (mDocument != null && mDocument.getPages() != null && mPage != null)
-            idx = mDocument.getPages().indexOf(mPage);
-        else
-//        Nothing to do here. TODO: add an error message
-            return;
-
-
-        final Context context = this;
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(getString(R.string.page_slide_fragment_retake_image_dialog_title))
-                .setNegativeButton(getString(R.string.page_slide_fragment_retake_image_dialog_cancel_text), null)
-                .setPositiveButton(getString(R.string.page_slide_fragment_retake_image_dialog_confirm_text),
-                        new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i)  {
-
-                        Intent intent = new Intent(context, CameraActivity.class);
-//                        Define which image / page should be replaced:
-                        intent.putExtra(KEY_RETAKE_IMAGE, true);
-                        intent.putExtra(KEY_RETAKE_IDX, idx);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                        startActivity(intent);
-//                        finish();
-
-                    }
-                })
-                .setCancelable(true)
-                .setMessage(getString(R.string.page_slide_fragment_retake_image_dialog_text));
-
-        // create alert dialog
-        AlertDialog alertDialog = alertDialogBuilder.create();
-
-        // show it
-        alertDialog.show();
-    }
 
 
     private void initButtons() {
@@ -384,6 +378,17 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
+//    @Override
+//    public void finishAfterTransition() {
+//
+//        Intent data = new Intent();
+//        data.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
+//        data.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
+//        setResult(RESULT_OK, data);
+//        super.finishAfterTransition();
+//    }
+
+
 //    private void initGalleryButton() {
 //
 //        ImageView galleryImageView = findViewById(R.id.page_view_buttons_layout_gallery_button);
@@ -402,36 +407,164 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         String documentTitle = mDocument.getTitle();
         if (documentTitle != null) {
-            Intent intent = new Intent(mContext, GalleryActivity.class);
-//            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
-//            Without this flag the activities would all be added to the back stack.
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
-            mContext.startActivity(intent);
+
+            final Intent intent = getGalleryIntent();
+
+//            Check if we have access to the image view:
+            if (mPagerAdapter == null || mPagerAdapter.getCurrentFragment() == null ||
+                    mPagerAdapter.getCurrentFragment().getImageView() == null) {
+                startGalleryWithoutTransition(intent);
+                return;
+            }
+
+            PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+            // Zoom out before opening the DocumentViewerActivity:
+            SubsamplingScaleImageView.AnimationBuilder ab = imageView.animateScale(0);
+            //            I am not sure, why this is happening, but it happened once on MotoG3
+            if (ab == null) {
+                startGalleryWithoutTransition(intent);
+                return;
+            }
+
+            ab.withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
+                @Override
+                public void onComplete() {
+                    startGalleryWithTransition(intent);
+                }
+
+                @Override
+                public void onInterruptedByUser() {
+                    startGalleryWithTransition(intent);
+                }
+
+                @Override
+                public void onInterruptedByNewAnim() {
+                    startGalleryWithTransition(intent);
+                }
+            }).start();
+
+
+
+
+
+//            Intent intent = new Intent(mContext, GalleryActivity.class);
+////            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
+////            Without this flag the activities would all be added to the back stack.
+//            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//            intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
+//            mContext.startActivity(intent);
 //            Finish is necessary, because the current PageSlideActivity can be started from the
 //            CameraActivity, but once we are in the GalleryActivity, we do not want to get back to
 //            PageSlideActivity:
-            finish();
+//            finish();
         }
 
     }
 
+    @NotNull
+    private Intent getGalleryIntent() {
+        final Intent intent = new Intent(mContext, DocumentViewerActivity.class);
+//            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
+//            Without this flag the activities would all be added to the back stack.
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(KEY_OPEN_GALLERY, true);
+        intent.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
+        intent.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
+        return intent;
+    }
+
+    private void startGalleryWithTransition(Intent intent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+            ActivityOptionsCompat activityOptionsCompat =
+                    ActivityOptionsCompat.makeSceneTransitionAnimation(this, imageView,
+                            imageView.getTransitionName());
+//                Log.d(CLASS_NAME, "transition name: " + imageView.getTransitionName());
+            mContext.startActivity(intent, activityOptionsCompat.toBundle());
+            mPagerAdapter = null;
+            finish();
+        }
+        else {
+            startGalleryWithoutTransition(intent);
+        }
+    }
+
+    private void startGalleryWithoutTransition(Intent intent) {
+        mContext.startActivity(intent);
+        finish();
+    }
+
     private void initRotateButton() {
 
-        ImageView rotateImageView = findViewById(R.id.page_view_buttons_layout_rotate_button);
-        rotateImageView.setOnClickListener(new View.OnClickListener() {
+        ImageView retakeImageView = findViewById(R.id.page_view_buttons_layout_rotate_button);
+        retakeImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                // Check if we have the permission to rotate images:
-                if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    // ask for permission:
-                    ActivityCompat.requestPermissions((AppCompatActivity) mContext, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
-                } else
-                    rotatePage();
+                retakeImage();
             }
         });
 
+
+
+
+//        ImageView rotateImageView = findViewById(R.id.page_view_buttons_layout_rotate_button);
+//        rotateImageView.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                // Check if we have the permission to rotate images:
+//                if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//                    // ask for permission:
+//                    ActivityCompat.requestPermissions((AppCompatActivity) mContext, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_ROTATE);
+//                } else
+//                    rotatePage();
+//            }
+//        });
+
+
+
+    }
+
+    private void retakeImage() {
+        final int idx;
+        if (mDocument != null && mDocument.getPages() != null && mPage != null)
+            idx = mDocument.getPages().indexOf(mPage);
+        else
+//        Nothing to do here.
+            return;
+
+
+        final Context context = this;
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(getString(R.string.page_slide_fragment_retake_image_dialog_title))
+                .setNegativeButton(getString(R.string.page_slide_fragment_retake_image_dialog_cancel_text), null)
+                .setPositiveButton(getString(R.string.page_slide_fragment_retake_image_dialog_confirm_text),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i)  {
+
+                                Intent intent = new Intent(context, CameraActivity.class);
+//                        Define which image / page should be replaced:
+                                intent.putExtra(KEY_RETAKE_IMAGE, true);
+                                intent.putExtra(KEY_RETAKE_IDX, idx);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//                                Make the current document active:
+                                DocumentStorage.getInstance(mContext).setTitle(mDocument.getTitle());
+                                startActivity(intent);
+//                        finish();
+
+                            }
+                        })
+                .setCancelable(true)
+                .setMessage(getString(R.string.page_slide_fragment_retake_image_dialog_text));
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
     }
 
     private void rotatePage() {
@@ -504,14 +637,48 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             @Override
             public void onClick(View v) {
                 if (mPage != null) {
-                    Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
-                    intent.putExtra(getString(R.string.key_crop_view_activity_file_name),
-                            mPage.getFile().getAbsolutePath());
-                    startActivity(intent);
+
+//                    Zoom out before opening the CropViewActivity:
+                    PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+                    SubsamplingScaleImageView.AnimationBuilder ab = imageView.animateScale(0);
+//            I am not sure, why this is happening, but it happened once on MotoG3
+                    if (ab == null) {
+                        startCropView();
+                        return;
+                    }
+
+                    imageView.animateScale(0).withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
+                        @Override
+                        public void onComplete() {
+                            startCropView();
+
+                        }
+
+                        @Override
+                        public void onInterruptedByUser() {
+                            startCropView();
+                        }
+
+                        @Override
+                        public void onInterruptedByNewAnim() {
+                            startCropView();
+                        }
+                    }).start();
+
                 }
             }
         });
 
+    }
+
+    private void startCropView() {
+        Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
+        intent.putExtra(getString(R.string.key_crop_view_activity_file_name),
+                mPage.getFile().getAbsolutePath());
+        intent.putExtra(getString(R.string.key_crop_view_activity_document_name),
+                mDocument.getTitle());
+
+        mContext.startActivity(intent);
     }
 
     private void initDeleteButton() {
@@ -643,6 +810,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
             super(fm);
             mDocument = document;
+
+            Log.d(CLASS_NAME, "constructor calling");
 
         }
 

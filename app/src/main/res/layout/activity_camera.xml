@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
     android:fitsSystemWindows="true"
-
     >
 
     <RelativeLayout
@@ -25,8 +24,37 @@
             android:tag="CameraPaintFragment"
             />
 
-        <include layout="@layout/camera_controls_layout"
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/camera_text_overlay_height"
+            android:layout_marginLeft="5dp"
+            android:layout_above="@+id/camera_controls_layout"
+            android:layout_marginBottom="100dp"
+            >
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/camera_info_button"
+                android:layout_width="@dimen/camera_text_overlay_height"
+                android:layout_height="@dimen/camera_text_overlay_height"
+                android:background="@drawable/camera_text_overlay_bg"
+                android:layout_centerVertical="true"
+                app:srcCompat="@drawable/ic_info_outline_white_24dp"/>
+            <TextView
+                android:id="@+id/instruction_view"
+                android:layout_toRightOf="@+id/camera_info_button"
+                android:layout_marginLeft="5dp"
+                android:layout_centerHorizontal="true"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/camera_text_overlay_height"
+                android:paddingHorizontal="@dimen/activity_horizontal_margin"
+                android:gravity="center"
+                android:layout_centerVertical="true"
+                android:textColor="@color/white"
+                android:background="@drawable/camera_text_overlay_bg"
+                android:textSize="16sp"
+                />
+        </RelativeLayout>
 
+        <include layout="@layout/camera_controls_layout"
             />
 
     </RelativeLayout>

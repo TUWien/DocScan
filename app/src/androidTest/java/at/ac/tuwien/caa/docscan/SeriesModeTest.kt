@@ -53,7 +53,7 @@ class SeriesModeTest {
         IPManager.getInstance().setIsTesting(true)
 
         // WHEN
-        onView(withId(R.id.shoot_mode_spinner)).perform(click())
+//        onView(withId(R.id.shoot_mode_spinner)).perform(click())
 
 //        Select the series mode:
         onData(allOf(`is`(instanceOf(String::class.java)),

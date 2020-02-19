@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import com.google.android.material.appbar.AppBarLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -21,21 +20,61 @@ public class SelectionToolbar {
     private CoordinatorLayout.LayoutParams mCoordinatorLayoutParams;
     private AppBarLayout mAppBarLayout;
     private Drawable mNavigationDrawable;
+    private CharSequence mLastTitle;
+    private boolean mIsSelectMode = false;
+    private SelectionToolbarCallback mCallback;
 
     public SelectionToolbar(Context context, Toolbar toolbar, AppBarLayout appBarLayout) {
 
         mContext = context;
 
         mToolbar = toolbar;
+        mLastTitle = mToolbar.getTitle();
         mNavigationDrawable = mToolbar.getNavigationIcon();
         mAppBarLayout = appBarLayout;
         mAppBarLayoutParams = (AppBarLayout.LayoutParams) mToolbar.getLayoutParams();
         mCoordinatorLayoutParams = (CoordinatorLayout.LayoutParams) mAppBarLayout.getLayoutParams();
+        mCallback = (SelectionToolbarCallback) context;
 
     }
 
+    public void setTitle(CharSequence title) {
 
-    public void scrollToolbar(int selectionCount) {
+        boolean lastSelectMode = mIsSelectMode;
+
+        mIsSelectMode = false;
+        mToolbar.setNavigationIcon(mNavigationDrawable);
+        mToolbar.setTitle(title);
+        mLastTitle = title;
+        mToolbar.setBackgroundColor(mContext.getResources().getColor(R.color.white));
+
+//        Tell the activity that the selection state has changed:
+        if (lastSelectMode)
+            mCallback.onSelectionActivated(false);
+
+    }
+
+    public boolean isSelectMode() {
+        return mIsSelectMode;
+    }
+
+    public void update(int selectionCount) {
+
+        boolean lastSelectMode = mIsSelectMode;
+
+        mIsSelectMode = selectionCount > 0;
+
+        if (mIsSelectMode)
+            selectToolbar(selectionCount);
+        else
+            deselectToolbar();
+
+        //        Tell the activity that the selection state has changed:
+        if (lastSelectMode != mIsSelectMode)
+            mCallback.onSelectionActivated(mIsSelectMode);
+    }
+
+    public void selectToolbar(int selectionCount) {
 
         // This is based on post of Denny Weinberg:
         // https://stackoverflow.com/questions/30771156/how-to-set-applayout-scrollflags-for-toolbar-programmatically/30771904
@@ -48,25 +87,41 @@ public class SelectionToolbar {
 //            Set custom home button:
         mToolbar.setNavigationIcon(R.drawable.ic_clear_black_24dp);
         mToolbar.setBackgroundColor(mContext.getResources().getColor(R.color.colorAccent));
-
         mAppBarLayout.setLayoutParams(mCoordinatorLayoutParams);
 
     }
 
 
-    public void fixToolbar() {
+    public void resetToolbar() {
+
+        boolean lastSelectMode = mIsSelectMode;
+
+        deselectToolbar();
+
+        //        Tell the activity that the selection state has changed:
+        if (lastSelectMode != mIsSelectMode)
+            mCallback.onSelectionActivated(mIsSelectMode);
+
+    }
+
+    private void deselectToolbar() {
+        mIsSelectMode = false;
 
         // This is based on post of Denny Weinberg:
         // https://stackoverflow.com/questions/30771156/how-to-set-applayout-scrollflags-for-toolbar-programmatically/30771904
         mAppBarLayoutParams.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL | AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS);
         mCoordinatorLayoutParams.setBehavior(new AppBarLayout.Behavior());
 
-        mToolbar.setBackgroundColor(mContext.getResources().getColor(R.color.colorPrimary));
+        mToolbar.setBackgroundColor(mContext.getResources().getColor(R.color.white));
 //            Set the default back button:
         mToolbar.setNavigationIcon(mNavigationDrawable);
-
+        mToolbar.setTitle(mLastTitle);
         mAppBarLayout.setLayoutParams(mCoordinatorLayoutParams);
+    }
 
+    public interface SelectionToolbarCallback {
+
+        public void onSelectionActivated(boolean activated);
     }
 
 }

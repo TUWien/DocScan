@@ -9,6 +9,7 @@
     <string name="upload_item_text">Upload</string>
     <string name="help_item_text">Help</string>
     <string name="pdf_item_text">Saved PDFs</string>
+    <string name="documents_item_text">Documents</string>
     <string name="camera_item_text">Camera</string>
     <string name="header_text">DocScan</string>
     <string name="account_edit_text">Set up account</string>
@@ -45,7 +46,14 @@
     <string name="camera_document_hint_title">Tip for documents</string>
     <string name="camera_lock_exposure_title">Locking exposure</string>
     <string name="camera_lock_exposure_msg">This locks the current exposure and white balance. Please note that we cannot lock these values, after you leave the camera view.</string>
+    <string name="camera_text_dir_dialog_title">Set text direction</string>
+    <string name="camera_text_dir_dialog_msg">Do you want to change the orientation of the document text?</string>
     <string name="do_not_show_again_text">Do not show this message again.</string>
+    <string name="camera_status_title_prefix">Status:</string>
+
+    <string name="camera_tab_manual">Manual</string>
+    <string name="camera_tab_auto">Automatic</string>
+    <string name="camera_tab_settings">Settings</string>
     <!-- Just used for debugging: -->
 
 
@@ -70,30 +78,56 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
-    <!-- PaintView -->
-    <string name="instruction_empty">no page found</string>
-    <string name="instruction_small">move closer</string>
-    <string name="instruction_perspective">change perspective</string>
-    <string name="instruction_rotation">rotate</string>
-    <string name="instruction_no_focus_measured">calculating focus</string>
-    <string name="instruction_unsharp">not focused</string>
-    <string name="instruction_no_illumination_measured">calculating illumination</string>
-    <string name="instruction_no_changes">page already scanned</string>
-    <string name="instruction_bad_illumination">change illumination</string>
+    <string name="instruction_series_fix">Hint for automatic mode: Try to solve the issue. If that does not work, switch to manual mode and take a picture manually.</string>
+
+    <string name="instruction_empty">No page found</string>
+    <string name="instruction_empty_detail">Could not find a page.\n\nSolution: Place the document on another background with a higher contrast to the document.</string>
+
+    <string name="instruction_small">Move closer</string>
+    <string name="instruction_small_detail">The document is too small.\n\nSolution: Decrease the distance between camera and document.</string>
+
+    <string name="instruction_perspective">Change perspective</string>
+    <string name="instruction_perspective_detail">The document boundary is not rectangular.\n\nSolution:\n(1) Get the document as parallel to the phone as possible.\n(2) Check if the boundary found is correct.</string>
+
+    <string name="instruction_rotation">Rotate</string>
+    <string name="instruction_rotation_detail">The document is rotated.\n\nSolution:\nRotate the document so that it is parallel to your phone.</string>
+
+    <string name="instruction_no_focus_measured">Calculating focus</string>
+    <string name="instruction_no_focus_measured_detail">Please wait, until focus measure is calculated.</string>
+
+    <string name="instruction_unsharp">Not focused</string>
+    <string name="instruction_unsharp_detail">The document appears to be not in focus.\n\nSolution:\nChange the focus point, by tapping on a part of the document that should be focused.</string>
+
+    <string name="instruction_no_changes">Page already scanned</string>
+    <string name="instruction_no_changes_detail">The page is already scanned.\n\nSometimes, if the page is very similar to the preceding page, it may appear to the app that it is the same page.</string>
+
     <string name="instruction_ok">OK</string>
+    <string name="instruction_ok_detail">The document quality is fine for imaging.</string>
+
     <string name="instruction_unknown">state unknown</string>
+    <string name="instruction_unknown_detail">state unknown</string>
+
     <string name="instruction_movement">movement detected</string>
-    <string name="instruction_none"></string>
-    <string name="instruction_series_started">series mode started</string>
-    <string name="instruction_series_paused">series mode paused</string>
+    <string name="instruction_movement_detail">The image content or the phone is moving.\n\nSolution:\n(1) Hold the document still or (2) make sure the ScanTent or phone are not moving.</string>
+    <string name="instruction_none"> </string>
+    <!--<string name="instruction_series_started">series mode started</string>-->
+    <!--<string name="instruction_series_started_detail">series mode started</string>-->
+    <string name="instruction_series_paused">Automatic mode paused</string>
+    <string name="instruction_series_paused_detail">Automatic mode is currently paused. No images are taken and no quality measure is applied until the automatic mode is resumed.</string>
+
     <string name="instruction_searching_qr">searching QR code</string>
+    <string name="instruction_searching_qr_detail">The app is searching for a QR code.</string>
+
     <string name="instruction_no_auto_focus">auto-focusing</string>
+    <string name="instruction_no_auto_focus_detail">Camera could not perform an auto focus.\n\nSolution:\nChange the focus point, by tapping on a part of the document that should be focused.</string>
 
     <!-- Toasts -->
     <string name="toast_series_paused">Automated imaging paused</string>
     <string name="toast_series_started">Images are now taken automatically</string>
     <string name="toast_single">Images are taken manually</string>
 
+    <string name="ui_changes_title">What\'s new</string>
+    <string name="ui_changes_text">Version 1.7 contains major UI changes.\nDo you want to read more about the UI changes? (Requires an internet connection.)</string>
 
     <!-- TranskribusLoginActivity -->
     <string name="login_email_hint">Email</string>
@@ -127,8 +161,13 @@
     <string name="series_switch">Open document</string>
     <string name="series_qr">New document from QR code</string>
 
+    <!--  CropViewActivitiy  -->
     <string name="crop_view_item_rotate">Rotate 90 degrees</string>
     <string name="crop_view_item_map">Preview mapping</string>
+    <string name="crop_view_crop_dialog_title">Page boundary saved</string>
+    <string name="crop_view_crop_dialog_text">The saved page boundary is used when you transform the images.
+        All document images can be transformed at once in the document view.</string>
+    <string name="crop_view_open_document_view">Open document view</string>
 
     <!-- MapViewActivity -->
     <string name="map_view_item_save">Save image</string>
@@ -239,19 +278,26 @@
     <string name="sync_cancel_delete_button_text">Cancel</string>
     <string name="sync_confirm_delete_title">Delete</string>
     <string name="sync_confirm_delete_prefix_text">Are you sure you want to delete</string>
+    <string name="sync_confirm_delete_doc_prefix_text">Are you sure you want to delete the document? This cannot be undone.</string>
     <string name="sync_confirm_delete_postfix_text">from your device?\n\nHint: Documents already uploaded are not deleted from the server, but you cannot add new images to uploaded documents.</string>
     <string name="sync_snackbar_finished_upload_text">Finished upload.</string>
     <string name="sync_snackbar_offline_text">Your device is currently offline. Upload postponed.</string>
     <string name="sync_snackbar_disconnected_text">Could not login on the server. Upload postponed.</string>
     <string name="sync_snackbar_no_permissions">Files cannot be uploaded without permission.</string>
     <string name="sync_snackbar_files_deleted_prefix">Deleted</string>
-    <string name="sync_dir_pending_text">(upload pending)</string>
-    <string name="sync_dir_cropping_text">(processed)</string>
+    <string name="sync_snackbar_file_deleted_postfix">file</string>
+    <string name="sync_snackbar_files_deleted_postfix">files</string>
+    <string name="sync_snackbar_upload_started">Images are uploaded in the background</string>
+    <string name="sync_dir_pending_text">upload pending</string>
+    <string name="sync_dir_processing_text">processing, please wait</string>
     <string name="sync_not_focused_text">- partially blurred</string>
     <string name="sync_menu_upload_item_title">Start upload</string>
     <string name="sync_menu_delete_item_title">Delete item</string>
     <string name="sync_menu_select_all_item_title">Select all items</string>
-    <string name="sync_pages_text">Images:</string>
+    <string name="sync_pages_text">Images: </string>
+    <string name="sync_doc_active_text"> - active</string>
+    <string name="sync_doc_image">image</string>
+    <string name="sync_doc_images">images</string>
     <string name="sync_cancel_login_button_text">Cancel</string>
     <string name="sync_confirm_login_button_text">Login</string>
     <string name="sync_not_logged_in_title">Cannot start upload</string>
@@ -261,13 +307,18 @@
 
     <!-- UploadingActivity -->
 
+    <!-- document_navigation_menu -->
+    <string name="document_navigation_documents">Documents</string>
+    <string name="document_navigation_images">Images</string>
+    <string name="document_navigation_pdfs">PDFs</string>
+
     <!-- SeriesGeneralActivity -->
 
     <!-- LicenseActivity  -->
     <string name="license_title">Open Source Licenses</string>
 
     <!-- AboutActivity -->
-    <string name="about_heading_text">DocScan 2019</string>
+    <string name="about_heading_text">DocScan 2020</string>
     <string name="about_version_prefix_text">Version:</string>
     <string name="about_buildtime_prefix_text">Built:</string>
     <string name="about_intro_text">Show DocScan intro</string>
@@ -278,14 +329,13 @@
     <!-- IntroActivity -->
     <string name="intro_text_1">This app is especially designed for the <a href="https://scantent.eu/">ScanTent</a>.\nIf you own a ScanTent: Please put your document inside.</string>
     <string name="intro_text_2">Place your phone on the ScanTent</string>
-    <string name="intro_text_3">Start the series mode in the app</string>
+    <string name="intro_text_3">Start the automatic mode in the app</string>
+    <string name="intro_text_7">The text orientation can be changed in the settings</string>
     <string name="intro_text_4">Flip pages - images are captured automatically.\n</string>
     <string name="intro_text_5">Your scanned images are grouped into documents.\nDocuments can be exported as PDF and uploaded.</string>
     <string name="intro_trigger_flash_text">Trigger flash after automatic imaging to show that an image has been taken.</string>
     <string name="intro_create_document_button_text">Create a document now</string>
     <string name="intro_skip_button_text">Skip</string>
-
-
 
 
     <string name="edit_series_title">Edit document</string>
@@ -359,7 +409,7 @@
     <string name="page_slide_fragment_retake_image_item_text">Retake image</string>
     <string name="page_slide_fragment_show_gallery_item_text">Show gallery</string>
     <string name="page_slide_fragment_retake_image_dialog_title">Retake image</string>
-    <string name="page_slide_fragment_retake_image_dialog_text">Do you really want to replace this image with a new one? This cannot be undone.</string>
+    <string name="page_slide_fragment_retake_image_dialog_text">This will replace the current image with a newly taken one. Do you want to proceed?</string>
     <string name="page_slide_fragment_retake_image_dialog_confirm_text">Retake</string>
     <string name="page_slide_fragment_retake_image_dialog_cancel_text">Cancel</string>
 
@@ -376,6 +426,8 @@
     <string name="gallery_confirm_delete_title_prefix">Delete</string>
     <string name="gallery_confirm_delete_title_single_postfix">document?</string>
     <string name="gallery_confirm_delete_title_multiple_postfix">documents?</string>
+    <string name="gallery_confirm_delete_images_title_single_postfix">image?</string>
+    <string name="gallery_confirm_delete_images_title_multiple_postfix">images?</string>
     <string name="gallery_confirm_delete_text">Are you sure? This cannot be undone.</string>
     <string name="gallery_confirm_delete_confirm_button_text">Delete</string>
     <string name="gallery_confirm_delete_cancel_button_text">Cancel</string>
@@ -391,6 +443,55 @@
     <string name="gallery_unfocused_info">Info</string>
     <string name="gallery_unfocused_title">Focus issues</string>
     <string name="gallery_unfocused_text">Some images appear to be not focused and should be checked and eventually be replaced. These images are marked with a red rectangle.</string>
+
+    <string name="action_document_create_title">New document</string>
+    <string name="action_document_select_title">Select document</string>
+    <string name="action_document_crop_title">Crop images</string>
+    <string name="action_document_qr_title">Document from QR code</string>
+    <string name="action_document_upload_document">Upload</string>
+    <string name="action_document_pdf_title">Save as PDF</string>
+    <string name="action_document_delete_document">Delete</string>
+    <string name="action_document_edit_document">Change title</string>
+    <string name="action_document_continue_document">Continue imaging</string>
+
+    <string name="action_pdf_delete">Delete</string>
+    <string name="action_pdf_share">Share</string>
+
+    <string name="action_rotate_title">Change text orientation</string>
+    <string name="action_rotate_left_title">Rotate left</string>
+    <string name="action_rotate_right_title">Rotate right</string>
+
+    <string name="action_setting_show_gallery">Show gallery</string>
+    <string name="action_setting_show_grid">Show grid</string>
+    <string name="action_setting_hide_grid">Hide grid</string>
+    <string name="action_setting_lock_wb">Lock white balance and exposure</string>
+    <string name="action_setting_unlock_wb">Unlock white balance and exposure</string>
+    <string name="action_setting_rotate_text_dir">Change text orientation</string>
+    <string name="action_setting_flash_series">Flash after automated imaging</string>
+    <string name="action_setting_no_flash_series">No flash after automated imaging</string>
+    <string name="action_setting_qr_mode">Create Document from QR code</string>
+
+    <string name="viewer_crop_confirm_title">Crop</string>
+    <string name="viewer_crop_confirm_text">Are you sure you want to crop all images in the document?
+        This cannot be undone.</string>
+    <string name="viewer_selected">selected</string>
+    <string name="viewer_all_cropped_title">Nothing to do</string>
+    <string name="viewer_all_cropped_text">The document contains only images that are already cropped.</string>
+    <string name="viewer_not_cropped_confirm_title">Uncropped images</string>
+    <string name="viewer_not_cropped_confirm_text">This document contains images that are not cropped.\nDo you still want to proceed with the</string>
+    <string name="viewer_not_cropped_pdf">PDF export</string>
+    <string name="viewer_not_cropped_upload">upload</string>
+    <string name="viewer_delete_pdf_title">Delete</string>
+    <string name="viewer_delete_pdf_text">Are you sure you want to delete the pdf? This cannot be undone.</string>
+    <string name="viewer_offline_title">Offline</string>
+    <string name="viewer_offline_text">Your device is currently offline. Please connect to the internet before uploading.</string>
+    <string name="viewer_not_logged_in_title">Not logged in</string>
+    <string name="viewer_not_logged_in_text">You are currently not logged in. Do you want to login to a cloud service?</string>
+    <string name="viewer_pdf_created_snackbar_text">Created pdf</string>
+
+
+    <!-- PdfSelectorActivity -->
+    <string name="pdf_selector_title">Save document as PDF</string>
 
 
 </resources>

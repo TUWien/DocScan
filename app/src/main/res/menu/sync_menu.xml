@@ -48,7 +48,7 @@
             app:showAsAction="always"
             />
         <item
-            android:icon="@drawable/ic_cloud_upload_black_24dp"
+            android:icon="@drawable/ic_cloud_upload_gray_24dp"
             android:title="@string/sync_menu_upload_item_title"
             android:onClick="startUpload"
             app:showAsAction="always"

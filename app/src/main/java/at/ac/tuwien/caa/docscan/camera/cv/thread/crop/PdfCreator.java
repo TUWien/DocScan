@@ -35,6 +35,8 @@ import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,8 +47,8 @@ import java.util.concurrent.ExecutionException;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.sync.UploadService;
-import at.ac.tuwien.caa.docscan.ui.pdf.PdfActivity;
+import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
+
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESSAGE_CREATED_DOCUMENT;
 
@@ -54,14 +56,21 @@ public class PdfCreator {
 
     private static final String CLASS_NAME = "PdfCreator";
     private static FirebaseVisionTextRecognizer sTextRecognizer;
+    public static final String PDF_INTENT = "PDF_INTENT";
+    public static final String PDF_FILE_NAME = "PDF_FILE_NAME";
+    public static final String PDF_CHANNEL_ID = "PDF_CHANNEL_ID";
+    public static final CharSequence PDF_CHANNEL_NAME = "DocScan Pdf";// The user-visible name of the channel.
 
     public static void createPdfWithoutOCR(String documentName, final ArrayList<File> files,
                                            CropRunnable cropRunnable, WeakReference<Context> context) {
 
+        if (context == null || context.get() == null)
+            return;
+
         final Context contextF = context.get();
         final NotificationManager notificationManager = (NotificationManager)
                 contextF.getSystemService(Context.NOTIFICATION_SERVICE);
-        final NotificationCompat.Builder builder = getNotificationBuilder(notificationManager,
+        final NotificationCompat.Builder builder = getNotificationBuilder(documentName, notificationManager,
                 contextF);
 
         progressNotification(documentName, -1, notificationManager, contextF,
@@ -107,8 +116,8 @@ public class PdfCreator {
             final Context contextF = context.get();
             final NotificationManager notificationManager = (NotificationManager)
                     contextF.getSystemService(Context.NOTIFICATION_SERVICE);
-            final NotificationCompat.Builder builder = getNotificationBuilder(notificationManager,
-                    contextF);
+            final NotificationCompat.Builder builder = getNotificationBuilder(documentName,
+                    notificationManager, contextF);
 
             Task<FirebaseVisionText> task = getTextRecognizer().processImage(image);
 
@@ -193,30 +202,32 @@ public class PdfCreator {
         return finishCnt;
     }
 
-    private static NotificationCompat.Builder getNotificationBuilder(
+    private static NotificationCompat.Builder getNotificationBuilder(String documentName,
             NotificationManager notificationManager, Context context) {
 
         String title = context.getString(R.string.sync_notification_title);
 
         //        Create an intent that is started, if the user clicks on the notification:
-        Intent intent = new Intent(context, PdfActivity.class);
+        Intent intent = new Intent(context, DocumentViewerActivity.class);
+        intent.putExtra(PDF_INTENT, true);
+
+        intent.putExtra(PDF_FILE_NAME, getPdfFile(documentName).getAbsolutePath());
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context,
-                UploadService.CHANNEL_ID)
+                PDF_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_docscan_notification)
                 .setContentTitle(title)
-                .setContentText("asdf")
                 .setContentIntent(pendingIntent)
-                .setChannelId(UploadService.CHANNEL_ID);
+                .setChannelId(PDF_CHANNEL_ID);
 
         // On Android O we need a NotificationChannel, otherwise the notification is not shown.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // IMPORTANCE_LOW disables the notification sound:
             int importance = NotificationManager.IMPORTANCE_LOW;
             NotificationChannel notificationChannel = new NotificationChannel(
-                    UploadService.CHANNEL_ID, UploadService.CHANNEL_NAME, importance);
+                    PDF_CHANNEL_ID, PDF_CHANNEL_NAME, importance);
             notificationManager.createNotificationChannel(notificationChannel);
         }
 
@@ -293,8 +304,7 @@ public class PdfCreator {
 
         Log.d(CLASS_NAME, "page size: " + firstPageSize.getWidth() + " " + firstPageSize.getHeight());
 
-        String pdfName = documentName + ".pdf";
-        File outputFile = new File(Helper.getPDFStorageDir("DocScan"), pdfName);
+        File outputFile = getPdfFile(documentName);
         Document document = new Document(firstPageSize, 0, 0, 0, 0);
 
         try {
@@ -419,6 +429,12 @@ public class PdfCreator {
 
         return true;
 
+    }
+
+    @NotNull
+    private static File getPdfFile(String documentName) {
+        String pdfName = documentName + ".pdf";
+        return new File(Helper.getPDFStorageDir("DocScan"), pdfName);
     }
 
     private static boolean isLandscape(BitmapSize size) {

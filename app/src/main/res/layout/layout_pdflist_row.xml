@@ -2,47 +2,47 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/list_view_multi_selector"
+    android:layout_height="75dp"
+    android:background="?selectableItemBackground"
     android:padding="8dp">
 
     <ImageView
         android:id="@+id/layout_pdflist_row_icon"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        app:srcCompat="@drawable/ic_description_black_24dp"
-        android:layout_centerVertical="true"
-        android:layout_alignParentLeft="true"/>
-
-    <TextView
-        android:id="@+id/layout_pdflist_row_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/layout_pdflist_row_icon"
-        android:layout_toLeftOf="@id/layout_listview_image_frame_layout"
-        android:layout_marginLeft="6dp"
         android:layout_centerVertical="true"
-        android:text="asdfsadfsadf"
-        android:textSize="20sp"
-        android:ellipsize="end"
-        android:layout_marginTop="8dp"
-        android:maxLines="1"
-        android:layout_alignParentTop="true"
-        />
+        app:srcCompat="@drawable/ic_description_gray_24dp"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:layout_alignParentLeft="true"/>
 
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/layout_pdflist_row_title"
-        android:paddingTop="8dp"
-        android:layout_alignParentRight="true">
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@id/layout_pdflist_row_icon"
+        android:layout_toLeftOf="@+id/layout_pdflist_more_button"
 
+        >
+        <TextView
+            android:id="@+id/layout_pdflist_row_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="asdfsadfsadfasdfsadfsadfasdfsadfsadf"
+            android:textSize="20sp"
+            android:ellipsize="end"
+            android:layout_marginTop="8dp"
+            android:maxLines="1"
+            android:layout_alignParentTop="true"
+        />
         <TextView
             android:id="@+id/layout_pdflist_row_filesize"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/layout_pdflist_row_title"
             android:text="20MB"
-            android:textSize="14sp"
+            android:textSize="12sp"
             android:ellipsize="end"
             android:maxLines="1"
             />
@@ -50,22 +50,82 @@
             android:id="@+id/layout_pdflist_row_separator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/layout_pdflist_row_title"
             android:layout_toRightOf="@id/layout_pdflist_row_filesize"
-            android:textSize="14sp"
+            android:textSize="12sp"
             android:text=" / "/>
         <TextView
             android:id="@+id/layout_pdflist_row_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_below="@id/layout_pdflist_row_title"
             android:layout_toRightOf="@id/layout_pdflist_row_separator"
-
             android:text="25.10.1983"
-            android:textSize="14sp"
+            android:textSize="12sp"
             android:ellipsize="end"
             android:maxLines="1"
             />
 
     </RelativeLayout>
+
+    <!--<RelativeLayout-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@id/layout_pdflist_row_title"-->
+        <!--android:layout_toLeftOf="@+id/document_more_button"-->
+        <!--android:paddingTop="8dp"-->
+        <!--&gt;-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/layout_pdflist_row_filesize"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="20MB"-->
+            <!--android:textSize="14sp"-->
+            <!--android:ellipsize="end"-->
+            <!--android:maxLines="1"-->
+            <!--/>-->
+        <!--<TextView-->
+            <!--android:id="@+id/layout_pdflist_row_separator"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_toRightOf="@id/layout_pdflist_row_filesize"-->
+            <!--android:textSize="14sp"-->
+            <!--android:text=" / "/>-->
+        <!--<TextView-->
+            <!--android:id="@+id/layout_pdflist_row_date"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_toRightOf="@id/layout_pdflist_row_separator"-->
+            <!--android:text="25.10.1983"-->
+            <!--android:textSize="14sp"-->
+            <!--android:ellipsize="end"-->
+            <!--android:maxLines="1"-->
+            <!--/>-->
+
+    <!--</RelativeLayout>-->
+
+<!--    <androidx.appcompat.widget.AppCompatImageButton-->
+<!--        android:id="@+id/layout_pdflist_more_button"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_alignParentRight="true"-->
+<!--        android:paddingLeft="@dimen/activity_horizontal_margin"-->
+<!--        android:paddingRight="@dimen/activity_horizontal_margin"-->
+<!--        android:layout_centerVertical="true"-->
+<!--        android:background="?selectableItemBackgroundBorderless"-->
+<!--        app:srcCompat="@drawable/ic_more_vert_gray_24dp"/>-->
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/layout_pdflist_more_button"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:layout_centerVertical="true"
+        android:background="?selectableItemBackgroundBorderless"
+        app:srcCompat="@drawable/ic_more_vert_gray_24dp"/>
 
 
 

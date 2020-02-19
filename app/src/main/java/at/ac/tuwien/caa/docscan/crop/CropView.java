@@ -59,16 +59,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
     private final int PAGE_OUTER_RECT_COLOR = getResources().getColor(R.color.page_outer_color);
     private final int DETAIL_OUTLINE_COLOR = getResources().getColor(R.color.detail_crop_outline);
     private final int CROSS_COLOR = getResources().getColor(R.color.cross_color);
-    private final float CORNER_CIRCLE_RADIUS =
-            getResources().getDimension(R.dimen.crop_circle_radius);
-    private final float DETAIL_WIDTH =
-            getResources().getDimension(R.dimen.crop_detail_width);
-    private final float DETAIL_OUTER_WIDTH =
-            getResources().getDimension(R.dimen.crop_detail_outer_width);
-    private final float DETAIL_OFFSET =
-            getResources().getDimension(R.dimen.crop_detail_offset);
-    private final float CROSS_WIDTH =
-            getResources().getDimension(R.dimen.crop_detail_width);
+
+    private float mDetailWidth, mDetailOuterWidth, mDetailOffset, mCrossWidth, mCircleRadius;
     private final int DETAIL_IMG_WIDTH = 50;
 
     private Paint mDetailOutlinePaint;
@@ -134,6 +126,9 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         initCirclePaint();
         initDetailOutlinePaint();
 
+//        Initialize the dimensions with scaling factor 1:
+        resizeDimensions(1);
+
     }
 
     private void initDetailOutlinePaint() {
@@ -160,12 +155,42 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     }
 
+    public void rotate90DegreesCCW() {
+
+        float angle = getRotation() - 90;
+        if (angle < 0)
+            angle += 360;
+        setRotation(angle % 360);
+
+        invalidate();
+
+    }
+
+    /**
+     * Sets device dependent dimensions. The scaling factor is used to dynamically resize the
+     * CropView from the CropView activity.
+     * @param scale
+     */
+    public void resizeDimensions(float scale) {
+
+        mCircleRadius = getResources().getDimension(R.dimen.crop_circle_radius) / scale;
+        mDetailWidth = getResources().getDimension(R.dimen.crop_detail_width) / scale;
+        mDetailOuterWidth = getResources().getDimension(R.dimen.crop_detail_outer_width) / scale;
+        mDetailOffset = getResources().getDimension(R.dimen.crop_detail_offset) / scale;
+        mCrossWidth = getResources().getDimension(R.dimen.crop_detail_width) / scale;
+
+        mQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width) / scale);
+        mOuterQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width) / scale);
+        mCrossPaint.setStrokeWidth(getResources().getDimension(R.dimen.cross_stroke_width) / scale);
+        mCirclePaint.setStrokeWidth(getResources().getDimension(R.dimen.cross_stroke_width) * scale);
+
+    }
+
     private void initQuadPaint() {
 
         mQuadPaint = new Paint();
         mQuadPaint.setColor(PAGE_RECT_COLOR);
         mQuadPaint.setStyle(Paint.Style.STROKE);
-        mQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width));
         mQuadPaint.setAntiAlias(true);
         mQuadPath = new Path();
 
@@ -176,7 +201,6 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         mOuterQuadPaint = new Paint();
         mOuterQuadPaint.setColor(PAGE_OUTER_RECT_COLOR);
         mOuterQuadPaint.setStyle(Paint.Style.STROKE);
-        mOuterQuadPaint.setStrokeWidth(getResources().getDimension(R.dimen.page_live_preview_stroke_width));
         mOuterQuadPaint.setAntiAlias(true);
         mOuterQuadPath = new Path();
 
@@ -187,17 +211,16 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         mCrossPaint = new Paint();
         mCrossPaint.setColor(CROSS_COLOR);
         mCrossPaint.setStyle(Paint.Style.STROKE);
-        mCrossPaint.setStrokeWidth(getResources().getDimension(R.dimen.cross_stroke_width));
         mCrossPaint.setAntiAlias(true);
 
     }
 
     private void initCirclePaint() {
 
+        mCircleRadius = getResources().getDimension(R.dimen.crop_circle_radius);
         mCirclePaint = new Paint();
         mCirclePaint.setColor(CROSS_COLOR);
         mCirclePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        mCirclePaint.setStrokeWidth(getResources().getDimension(R.dimen.cross_stroke_width));
         mCirclePaint.setAntiAlias(true);
 
     }
@@ -286,10 +309,10 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
         // draw the outline:
         Rect outerRect = new Rect(
-                Math.round(point.x - DETAIL_OUTER_WIDTH + offSetX),
-                Math.round(point.y - DETAIL_OUTER_WIDTH - offSetY),
-                Math.round(point.x + DETAIL_OUTER_WIDTH + offSetX),
-                Math.round(point.y + DETAIL_OUTER_WIDTH - offSetY));
+                Math.round(point.x - mDetailOuterWidth + offSetX),
+                Math.round(point.y - mDetailOuterWidth - offSetY),
+                Math.round(point.x + mDetailOuterWidth + offSetX),
+                Math.round(point.y + mDetailOuterWidth - offSetY));
         canvas.drawRect(outerRect, mDetailOutlinePaint);
 
         // draw the bitmap:
@@ -300,10 +323,10 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         canvas.drawBitmap(bitmap, src, dst, mPaintBitmap);
 
         // draw the cross:
-        canvas.drawLine(point.x - CROSS_WIDTH + offSetX, point.y - offSetY,
-                point.x + CROSS_WIDTH + offSetX, point.y -  offSetY, mCrossPaint);
-        canvas.drawLine(point.x + offSetX, point.y - offSetY - CROSS_WIDTH,
-                point.x + offSetX, point.y - offSetY + CROSS_WIDTH, mCrossPaint);
+        canvas.drawLine(point.x - mCrossWidth + offSetX, point.y - offSetY,
+                point.x + mCrossWidth + offSetX, point.y -  offSetY, mCrossPaint);
+        canvas.drawLine(point.x + offSetX, point.y - offSetY - mCrossWidth,
+                point.x + offSetX, point.y - offSetY + mCrossWidth, mCrossPaint);
 
     }
 
@@ -312,8 +335,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         int bmpW = getBitmap().getWidth();
         int bmpH = getBitmap().getHeight();
 
-        PointF tl = new PointF(viewPoint.x - DETAIL_WIDTH + offSet.x,viewPoint.y - DETAIL_WIDTH - offSet.y);
-        PointF br = new PointF(viewPoint.x + DETAIL_WIDTH + offSet.x, viewPoint.y + DETAIL_WIDTH - offSet.y);
+        PointF tl = new PointF(viewPoint.x - mDetailWidth + offSet.x,viewPoint.y - mDetailWidth - offSet.y);
+        PointF br = new PointF(viewPoint.x + mDetailWidth + offSet.x, viewPoint.y + mDetailWidth - offSet.y);
 
         if (imgTL.x < 0)
             tl.x += getDetailOffSet(Math.abs(imgTL.x)); // shift the detail to the right
@@ -337,20 +360,20 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
      * @return
      */
     private float getDetailOffSet(float overlapLength) {
-        return overlapLength / DETAIL_IMG_WIDTH * DETAIL_WIDTH;
+        return overlapLength / DETAIL_IMG_WIDTH * mDetailWidth;
     }
 
     private PointF getDetailOffSet(PointF point) {
 
         // This is the usual offset:
-        PointF offSet = new PointF(0, DETAIL_OFFSET);
+        PointF offSet = new PointF(0, mDetailOffset);
 
         // Check if the view is rotated:
         int angle = Math.round(getRotation());
         boolean isPointOutside = isPointOutside(point, angle);
 
         if (isPointOutside) {
-            offSet.x = isLeftOfCenter(point, angle) ? DETAIL_OFFSET : -DETAIL_OFFSET;
+            offSet.x = isLeftOfCenter(point, angle) ? mDetailOffset : -mDetailOffset;
             offSet.y = 0;
         }
 
@@ -365,13 +388,13 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
         switch (angle) {
             case 90:
-                return point.x < DETAIL_OFFSET;
+                return point.x < mDetailOffset;
             case 180:
-                return point.y > getBitmap().getHeight() - DETAIL_OFFSET;
+                return point.y > getBitmap().getHeight() - mDetailOffset;
             case 270:
-                return point.x > getBitmap().getWidth() - DETAIL_OFFSET;
+                return point.x > getBitmap().getWidth() - mDetailOffset;
             default:
-                return point.y < DETAIL_OFFSET;
+                return point.y < mDetailOffset;
         }
     }
 
@@ -503,11 +526,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     private void drawCircles(Canvas canvas, ArrayList<PointF> points, Paint paint) {
 
-        for (PointF point : points) {
-
-            canvas.drawCircle(point.x, point.y, CORNER_CIRCLE_RADIUS, paint);
-
-        }
+        for (PointF point : points)
+            canvas.drawCircle(point.x, point.y, mCircleRadius, paint);
 
     }
 
@@ -530,7 +550,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
             // draw the circle around the corner:
             Log.d(CLASS_NAME, "drawQuad: point: " + point);
-            canvas.drawCircle(point.x, point.y, CORNER_CIRCLE_RADIUS, mCirclePaint);
+            canvas.drawCircle(point.x, point.y, mCircleRadius, mCirclePaint);
 
         }
 

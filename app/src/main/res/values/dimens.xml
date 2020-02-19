@@ -2,8 +2,10 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="camera_control_height_width">120dp</dimen>
+    <dimen name="camera_control_height_width">180dp</dimen>
     <dimen name="draw_view_focus_font_size">15sp</dimen>
+    <dimen name="draw_view_textdir_font_size">20sp</dimen>
+    <dimen name="draw_view_textdirlarge_font_size">40sp</dimen>
     <dimen name="draw_view_counter_font_size">50sp</dimen>
     <dimen name="instruction_view_margin_bottom">140dp</dimen>
     <dimen name="focus_stroke_width">3dp</dimen>
@@ -11,11 +13,13 @@
     <dimen name="focus_short_length">12dp</dimen>
     <dimen name="focus_touch_circle_radius_start">50dp</dimen>
     <dimen name="focus_touch_circle_radius_end">30dp</dimen>
+    <dimen name="camera_text_overlay_height">36dp</dimen>
 
     <dimen name="crop_circle_radius">10dp</dimen>
     <dimen name="crop_detail_width">30dp</dimen>
     <dimen name="crop_detail_outer_width">35dp</dimen>
     <dimen name="crop_detail_offset">70dp</dimen>
+    <dimen name="document_preview_corner_radius">10dp</dimen>
 
     <dimen name="page_live_preview_stroke_width">4dp</dimen>
     <dimen name="page_gallery_stroke_width">2.5dp</dimen>
@@ -24,7 +28,7 @@
     <dimen name="spinner_dropdown_width">70dp</dimen>
     <dimen name="photo_button_size">80dp</dimen>
     <dimen name="gallery_progress_bar_size">35dp</dimen>
-    <dimen name="gallery_button_size">50dp</dimen>
+    <dimen name="gallery_button_size">56dp</dimen>
     <dimen name="shoot_mode_spinner_size">70dp</dimen>
     <dimen name="login_margin">50dp</dimen>
     <dimen name="login_spinner_size">100dp</dimen>

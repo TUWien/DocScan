@@ -7,10 +7,14 @@
 
     <color name="control_background_color">#37474f</color>
     <color name="control_background_color_transparent">#4f37474f</color>
+    <color name="test">#0000</color>
     <color name="button_bg_color">#c8455a64</color>
 
+    <color name="colorControlHighlight">#1565c0</color>
+    <color name="colorSelectLight">#c5cae9</color>
+
     <color name="navigation_drawer_bg_color">#11111111</color>
-    <color name="debug_view_bg_color">#aa666666</color>
+    <color name="debug_view_bg_color">#A6000000</color>
     <color name="shoot_button_color">#aaffffff</color>
     <color name="white">#ffffff</color>
     <color name="black">#000</color>
@@ -30,19 +34,22 @@
     <color name="hud_helper_line_color">#bb636363</color>
     <color name="grid_color">#bb636363</color>
     <color name="flicker_color">#bb636363</color>
+    <color name="textdir_bg_color">#D9FFFFFF</color>
     <color name="focus_touch_circle_fill">#aa666666</color>
     <color name="focus_touch_circle_outline">#96ffffff</color>
 
     <color name="detail_crop_outline">#aa666666</color>
-
-    <!--<color name="movement_color">#6fff0000</color>-->
     <color name="movement_color">#4f630000</color>
     <color name="waiting_frame_color">#00ffffff</color>
 
     <color name="expandable_list_view_child_color">#aa464646</color>
     <color name="light_gray">#d6d6d6</color>
-
+    <color name="very_light_gray">#FAFAFA</color>
+    <color name="second_light_gray">#E6E6E6</color>
+    <color name="answers_all_gray">#424242</color>
     <color name="gallery_checkbox_background">#9dffffff</color>
+
+    <color name="text_selection">#283593</color>
 
     <!--<color name="photo_button_view_bg_color">#333</color>-->
 

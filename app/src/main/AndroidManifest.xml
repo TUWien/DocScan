@@ -10,6 +10,11 @@
         android:name="androidx.multidex.MultiDexApplication"
         android:theme="@style/AppTheme" >
 
+        <!-- Download the ML kit model for OCR, after the app is installed from the play store -->
+        <meta-data
+            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:value="ocr" />
+
         <!-- We need a file provider to enable a sharing of the log file (which is saved in internal memory) -->
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -44,7 +49,10 @@
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
             />
-
+        <activity
+            android:name=".ui.docviewer.SelectPdfDocumentActivity"
+            android:exported="true"
+            />
 
         <activity
             android:name=".ui.document.SelectDocumentActivity"
@@ -70,23 +78,18 @@
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
             />
-        <activity
-            android:name=".ui.pdf.PdfActivity"
-            android:exported="true"
-            android:launchMode="singleTask"
-            android:parentActivityName=".ui.CameraActivity"
-            />
 
         <activity
             android:name=".ui.CameraActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize"
             />
 
 
         <activity
             android:name=".ui.CropViewActivity"
-            android:exported="false"
+            android:exported="true"
             />
 
         <activity
@@ -94,6 +97,13 @@
             android:exported="true"
             android:configChanges="orientation|screenSize"
             />
+
+        <!--<activity-->
+            <!--android:name=".ui.docviewer.NewDocumentActivity"-->
+            <!--android:exported="true"-->
+            <!--android:configChanges="orientation|screenSize"-->
+            <!--/>-->
+
         <activity
             android:name=".ui.document.EditDocumentActivity"
             android:configChanges="orientation|screenSize"
@@ -147,14 +157,14 @@
         <!--Debugging activities: -->
 
         <activity
-            android:name=".ui.syncui.UploadActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.CameraActivity"
+            android:name=".ui.license.LicenseActivity"
+            android:exported="false"
             />
 
         <activity
-            android:name=".ui.license.LicenseActivity"
-            android:exported="false"
+            android:name=".ui.docviewer.DocumentViewerActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.CameraActivity"
             />
 
         <activity
