@@ -56,6 +56,8 @@ public class Helper {
 
     private static final String RESERVED_CHARS = "|\\?*<\":>+[]/'";
     private static final String CLASS_NAME = "Helper";
+    public static final String START_SAVE_JSON_CALLER = "START_SAVE_JSON_CALLER";
+    public static final String END_SAVE_JSON_CALLER = "END_SAVE_JSON_CALLER";
 
 
     /**
@@ -168,6 +170,8 @@ public class Helper {
             final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
             if (exif != null) {
                 String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+                if (orientation == null)
+                    return -1;
                 return Integer.valueOf(orientation);
             }
         }
@@ -184,6 +188,8 @@ public class Helper {
         final ExifInterface exif = new ExifInterface(fileName);
         if (exif != null) {
             String orientation = exif.getAttribute(ExifInterface.TAG_ORIENTATION);
+            if (orientation == null)
+                return -1;
             return Integer.valueOf(orientation);
         }
 

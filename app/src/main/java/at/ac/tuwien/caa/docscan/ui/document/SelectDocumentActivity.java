@@ -9,6 +9,8 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -51,11 +53,14 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
     }
 
     @Override
-    public void onPause() {
+    public void onStop() {
 
-        super.onPause();
+        super.onStop();
+//        DocumentStorage.saveJSON(this);
+
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "SelectDocumentActivity::61");
         DocumentStorage.saveJSON(this);
-
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "SelectDocumentActivity:63");
     }
 
     private void initSelectButton() {

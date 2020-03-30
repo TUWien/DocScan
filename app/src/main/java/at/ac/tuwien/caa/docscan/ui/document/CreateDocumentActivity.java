@@ -20,6 +20,8 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
+import com.crashlytics.android.Crashlytics;
+
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
@@ -98,11 +100,13 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
     }
 
     @Override
-    public void onPause() {
+    public void onStop() {
 
-        super.onPause();
+        super.onStop();
+//        DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "CreateDocumentActivity::107");
         DocumentStorage.saveJSON(this);
-
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "CreateDocumentActivity:109");
     }
 
     private void initEditField() {

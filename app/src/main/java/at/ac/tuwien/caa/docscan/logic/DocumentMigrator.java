@@ -3,6 +3,8 @@ package at.ac.tuwien.caa.docscan.logic;
 import android.content.Context;
 import androidx.annotation.NonNull;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
@@ -97,7 +99,11 @@ public class DocumentMigrator {
         DocumentStorage.getInstance(context).setTitle(activeDocumentTitle);
 
 //        Save the new documents:
+//        DocumentStorage.saveJSON(context);
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentMigrator::103");
         DocumentStorage.saveJSON(context);
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentMigrator:105");
+
 
     }
 

@@ -7,9 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
-import android.transition.TransitionInflater
 import android.util.Log
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.annotation.IdRes
@@ -42,11 +40,11 @@ import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.docviewer.ImagesFragment.Companion.DOCUMENT_NAME_KEY
 import at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment.Companion.NEW_PDFS_KEY
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.*
+import com.crashlytics.android.Crashlytics
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.activity_document_viewer.*
 import org.opencv.android.OpenCVLoader
 import java.io.File
 
@@ -282,7 +280,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             R.id.action_document_continue_item -> {
                 DocumentStorage.getInstance(this).title = document.getTitle()
                 Helper.startCameraActivity(this)
+//                DocumentStorage.saveJSON(this)
+                Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::284")
                 DocumentStorage.saveJSON(this)
+                Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:286")
                 finish()
             }
             R.id.action_document_pdf_item -> {
@@ -670,7 +671,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //                update the documents:
         DocumentStorage.getInstance(this).documents.remove(document)
         document.deleteImages()
+//        DocumentStorage.saveJSON(this)
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::672")
         DocumentStorage.saveJSON(this)
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:674")
 
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             if ((this as DocumentsFragment).isVisible) {
@@ -1245,8 +1249,15 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     override fun onPause() {
         super.onPause()
-        DocumentStorage.saveJSON(this)
         LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver)
+    }
+
+    override fun onStop() {
+        super.onStop()
+//        DocumentStorage.saveJSON(this)
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::1258")
+        DocumentStorage.saveJSON(this)
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:1260")
     }
 
     private fun getReceiver(): BroadcastReceiver {

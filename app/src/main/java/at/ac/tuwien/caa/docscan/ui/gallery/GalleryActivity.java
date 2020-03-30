@@ -10,6 +10,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+
+import com.crashlytics.android.Crashlytics;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.core.app.ActivityCompat;
@@ -231,11 +233,20 @@ public class GalleryActivity extends AppCompatActivity implements
 
         super.onPause();
 
-        DocumentStorage.saveJSON(this);
+//        DocumentStorage.saveJSON(this);
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         mMessageReceiver = null;
 
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+//        DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "GalleryActivity::247");
+        DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "GalleryActivity:249");
     }
 
 

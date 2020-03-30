@@ -282,6 +282,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onPause() {
 
+        super.onPause();
+
         if (mPaintView != null)
             mPaintView.pause();
 
@@ -289,11 +291,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             mCameraPreview.pause();
 
         savePreferences();
-        DocumentStorage.saveJSON(this);
+//        DocumentStorage.saveJSON(this);
 
         mPictureData = null;
-
-        super.onPause();
 
     }
 
@@ -304,6 +304,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public void onStop() {
 
         super.onStop();
+//        DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "CameraActivity::308");
+        DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "CameraActivity:310");
 
         mCameraPreview.stop();
 

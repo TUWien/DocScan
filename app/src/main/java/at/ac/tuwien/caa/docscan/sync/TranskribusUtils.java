@@ -525,7 +525,9 @@ public class TranskribusUtils  {
         }
 
         SyncStorage.saveJSON(mContext);
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "TranskribusUtils::528");
         DocumentStorage.saveJSON(mContext);
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "TranskribusUtils::530");
 
     }
 

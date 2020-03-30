@@ -13,6 +13,7 @@ import com.crashlytics.android.Crashlytics;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.TranskribusMetaData;
 
 public class EditDocumentActivity extends CreateDocumentActivity{
@@ -167,7 +168,10 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         metaData.setUrl(urlEditText.getText().toString());
 
 //        DocumentStorage.getInstance(this).replaceDocument(document, mDocumentTitle);
+//        DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "EditDocumentActivity::172");
         DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "EditDocumentActivity:174");
 
         //        Check if the edited document is the active document (in the CameraActivity):
         if (mIsActiveDocument) {
