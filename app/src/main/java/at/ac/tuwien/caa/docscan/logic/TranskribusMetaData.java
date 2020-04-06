@@ -47,10 +47,15 @@ public class TranskribusMetaData {
     private Date mDate;
     private String mUrl;
     private Integer mRelatedUploadId;
+    private String mLanguage;
+    private boolean mReadme2020 = false;
+    private boolean mReadme2020Public = false;
 
     public String getTitle() { return mTitle; }
     public void setTitle(String title) { mTitle = title; }
     public String getDescription() { return mDescription; }
+    public String getLanguage() { return mLanguage; }
+    public void setLanguage(String language) { mLanguage = language; }
     public void setDescription(String description) { mDescription = description; }
     public String getAuthority() { return mAuthority; }
     public void setAuthority(String authority) { mAuthority = authority; }
@@ -69,6 +74,12 @@ public class TranskribusMetaData {
     public void setAuthor(String author) { mAuthor = author; }
     public String getUrl() { return mUrl; }
     public void setUrl(String url) { mUrl = url; }
+
+    public void setReadme2020(boolean readme2020) { mReadme2020 = readme2020; }
+    public boolean getReadme2020() { return mReadme2020; }
+    public void setReadme2020Public(boolean isPublic) { mReadme2020Public = isPublic; }
+    public boolean getReadme2020Public() { return mReadme2020Public; }
+
 
     public TranskribusMetaData() {
 

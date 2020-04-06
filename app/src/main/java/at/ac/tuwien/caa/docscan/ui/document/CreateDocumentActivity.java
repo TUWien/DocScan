@@ -9,16 +9,21 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatImageButton;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 
@@ -29,6 +34,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.TranskribusMetaData;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+import me.drakeet.support.toast.ToastCompat;
 
 /**
  * Created by fabian on 24.10.2017.
@@ -40,6 +46,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
     private TranskribusMetaData mTranskribusMetaData = null;
     public static final String DOCUMENT_QR_TEXT = "DOCUMENT_QR_TEXT";
     private static final String SHOW_TRANSKRIBUS_METADATA_KEY = "SHOW_TRANSKRIBUS_METADATA";
+    private static final String SHOW_README2020_KEY = "SHOW_README2020";
     public static final String DOCUMENT_CREATED_KEY = "DOCUMENT_CREATED_KEY";
 
 
@@ -54,9 +61,10 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         initOkButton();
         initUrlButton();
         initEditField();
-
-//        Temporarily deactivate the advanced fields:
-        initShowFieldsCheckBox();
+//        Transkribus metadata:
+        initMetadataViews();
+//        Readme 2020 project - not checked by default:
+        initReadme2020Views();
 
 //        Debugging: (if you just want to launch the Activity (without CameraActivity)
 //        String qrText = "<root><authority>Universitätsarchiv Greifswald</authority><identifier type=\"hierarchy description\">Universitätsarchiv Greifswald/Altes Rektorat/01. Rechtliche Stellung der Universität - 01.01. Statuten/R 1199</identifier><identifier type=\"uri\">https://ariadne-portal.uni-greifswald.de/?arc=1&type=obj&id=5162222</identifier><title>Entwurf neuer Universitätsstatuten </title><date normal=\"1835010118421231\">1835-1842</date><callNumber>R 1199</callNumber><description>Enthält u.a.: Ausführliche rechtshistorische Begründung des Entwurfs von 1835.</description></root>";
@@ -75,6 +83,40 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                     showQRCodeErrorAlert();
             }
         }
+    }
+
+    private void initReadme2020Views() {
+
+        CheckBox checkBox = findViewById(R.id.create_series_readme_checkbox);
+        RelativeLayout layout = findViewById(R.id.create_series_readme_fields_layout);
+//        No Readme2020 project - per default:
+        initExpandableLayout(checkBox, layout, false);
+
+        checkBox.setOnCheckedChangeListener((buttonView, isChecked) ->
+                expandLayout(isChecked, layout));
+
+        initLanguageSpinner();
+
+    }
+
+    private void initMetadataViews() {
+
+        //        Transkribus metadata - check is stored in SharedPreferences
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean showMetadata = sharedPref.getBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, false);
+        CheckBox metadataCheckBox = findViewById(R.id.create_series_advanced_options_checkbox);
+        RelativeLayout metadataLayout = findViewById(R.id.create_series_fields_layout);
+        initExpandableLayout(metadataCheckBox, metadataLayout, showMetadata);
+
+        metadataCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            expandLayout(isChecked, metadataLayout);
+//                Remember the check state:
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, isChecked);
+            editor.apply();
+            editor.commit();
+        });
+
     }
 
     private void initUrlButton() {
@@ -273,8 +315,15 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             return false;
         }
 
+//        Check if the readme2020 fields are filled (because they are mandatory):
+        if (!isReadme2020FieldsCompleted())
+            return false;
 //        Fill the metadata with the field values entered by the user:
-        readFieldValues();
+        readMetaDataFields();
+//        Get the fields of Readme2020 (if set):
+        if (!readReadme2020Fields())
+            return false;
+
 
         boolean isDocumentCreated = DocumentStorage.getInstance(this).createNewDocument(title);
         if (!isDocumentCreated)
@@ -291,7 +340,69 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     }
 
-    private void readFieldValues() {
+    public boolean isReadme2020FieldsCompleted() {
+
+        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
+        if (readmeCheckBox.isChecked()) {
+            RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
+            TextView radioTextView = findViewById(R.id.create_series_readme_public_label);
+            if (radioGroup.getCheckedRadioButtonId() == -1) {
+                radioTextView.setError(getString(R.string.create_series_readme_public_error));
+                ToastCompat.makeText(this, R.string.create_series_readme_error_toast_text, Toast.LENGTH_LONG).show();
+                return false;
+            }
+//            Otherwise clear any previous error:
+            else
+                radioTextView.setError(null);
+
+
+            AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
+            String language = textView.getText().toString();
+            if (language.isEmpty()) {
+                textView.setError(getString(R.string.create_series_readme_language_error));
+                ToastCompat.makeText(this, R.string.create_series_readme_error_toast_text, Toast.LENGTH_LONG).show();
+                return false;
+            }
+//            Otherwise clear any previous error:
+            else
+                textView.setError(null);
+
+        }
+
+        return true;
+    }
+
+    private boolean readReadme2020Fields() {
+
+        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
+        if (readmeCheckBox.isChecked()) {
+            if (mTranskribusMetaData == null)
+                mTranskribusMetaData = new TranskribusMetaData();
+//            Enable upload in readme2020 collection:
+            mTranskribusMetaData.setReadme2020(true);
+//            Switch publicSwitch = findViewById(R.id.create_series_readme_public_switch);
+//            if (publicSwitch.isChecked())
+//                mTranskribusMetaData.setReadme2020Public(true);
+
+            RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
+            if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_public_radio_button)
+                mTranskribusMetaData.setReadme2020Public(true);
+            else if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_private_radio_button)
+                mTranskribusMetaData.setReadme2020Public(false);
+
+//        Save the selected language:
+            AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
+            String language = textView.getText().toString();
+            if (!language.isEmpty())
+                mTranskribusMetaData.setLanguage(language);
+
+        }
+
+        return true;
+
+    }
+
+    private void readMetaDataFields() {
         EditText authorEditText = findViewById(R.id.create_series_author_edittext);
         String author = authorEditText.getText().toString();
 
@@ -326,40 +437,45 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         }
     }
 
-    private void initShowFieldsCheckBox() {
-        final RelativeLayout fieldsLayout = findViewById(R.id.create_series_fields_layout);
+//    initExpandableLayout(findViewById(R.id.create_series_advanced_options_checkbox), findViewById(R.id.create_series_fields_layout), SHOW_TRANSKRIBUS_METADATA_KEY)
 
-        CheckBox showFieldsCheckBox = findViewById(R.id.create_series_advanced_options_checkbox);
-//        set the check state to its previous state:
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean showFields = sharedPref.getBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, false);
-        showFieldsCheckBox.setChecked(showFields);
+    private void initExpandableLayout(CheckBox showFieldsCheckBox, RelativeLayout fieldsLayout,
+                                      boolean checked) {
 
-//        Hide or show the the Transkribus fields:
-        showTranskribusFields(showFields, fieldsLayout);
+        showFieldsCheckBox.setChecked(checked);
 
-        showFieldsCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//        Hide or show the fields:
+        expandLayout(checked, fieldsLayout);
 
-                showTranskribusFields(isChecked, fieldsLayout);
-
-//                Remember the check state:
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, isChecked);
-                editor.apply();
-                editor.commit();
-
-
-            }
-        });
     }
 
-    private void showTranskribusFields(boolean isChecked, RelativeLayout fieldsLayout) {
+    private void initLanguageSpinner() {
+
+        String[] languages = getResources().getStringArray(R.array.create_document_languages);
+        ArrayAdapter<String> adapter =
+                new ArrayAdapter<>(
+                        this,
+                        R.layout.dropdown_menu_popup_item,
+                        languages);
+
+        AutoCompleteTextView editTextFilledExposedDropdown =
+                findViewById(R.id.create_series_readme_language_dropdown);
+        editTextFilledExposedDropdown.setInputType(0);
+        editTextFilledExposedDropdown.setAdapter(adapter);
+
+//        Spinner spinner = findViewById(R.id.create_series_readme_language_spinner);
+//        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+//                R.array.create_document_languages, android.R.layout.simple_spinner_item);
+//        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//        spinner.setAdapter(adapter);
+
+    }
+
+    private void expandLayout(boolean isChecked, RelativeLayout fieldsLayout) {
         if (isChecked)
             fieldsLayout.setVisibility(View.VISIBLE);
         else
-            fieldsLayout.setVisibility(View.INVISIBLE);
+            fieldsLayout.setVisibility(View.GONE);
     }
 
 //    /**

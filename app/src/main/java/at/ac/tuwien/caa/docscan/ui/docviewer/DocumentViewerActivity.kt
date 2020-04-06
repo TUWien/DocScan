@@ -858,7 +858,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 R.drawable.ic_add_a_photo_black_24dp))
         sheetActions.add(ActionSheet.SheetAction(R.id.action_document_edit_item,
                 getString(R.string.action_document_edit_document),
-                R.drawable.ic_title_black_24dp))
+                R.drawable.ic_edit_black_24dp))
 //        This options are just available if the document contains at least one image:
         if (!document.pages.isEmpty()) {
             sheetActions.add(ActionSheet.SheetAction(R.id.action_document_crop_item,

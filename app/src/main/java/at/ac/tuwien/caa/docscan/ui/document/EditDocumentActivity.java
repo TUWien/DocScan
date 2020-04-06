@@ -2,13 +2,22 @@ package at.ac.tuwien.caa.docscan.ui.document;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.Switch;
 
 import com.crashlytics.android.Crashlytics;
+
+import java.util.Arrays;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
@@ -141,6 +150,9 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 //        type was different, because mDocumentTitle was not altered in the meantime.
 //        mDocumentTitle = title;
 
+        if (!isReadme2020FieldsCompleted())
+            return;
+
         mDocument.setTitle(title);
 
         TranskribusMetaData metaData = mDocument.getMetaData();
@@ -166,6 +178,22 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 
         EditText urlEditText = findViewById(R.id.create_series_url_edittext);
         metaData.setUrl(urlEditText.getText().toString());
+
+
+        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
+        metaData.setReadme2020(readmeCheckBox.isChecked());
+
+        RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
+        if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_public_radio_button)
+            metaData.setReadme2020Public(true);
+        else if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_private_radio_button)
+            metaData.setReadme2020Public(false);
+
+        //        Save the selected language:
+        AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
+        String language = textView.getText().toString();
+        if (!language.isEmpty())
+            metaData.setLanguage(language);
 
 //        DocumentStorage.getInstance(this).replaceDocument(document, mDocumentTitle);
 //        DocumentStorage.saveJSON(this);
@@ -234,8 +262,26 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 
         }
 
+        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
+        readmeCheckBox.setChecked(metaData.getReadme2020());
 
+//        Switch publicSwitch = findViewById(R.id.create_series_readme_public_switch);
+//        publicSwitch.setChecked(metaData.getReadme2020Public());
 
+        RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
+        if (metaData.getReadme2020Public())
+            radioGroup.check(R.id.create_series_readme_public_radio_button);
+        else
+            radioGroup.check(R.id.create_series_readme_private_radio_button);
+
+        AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
+        String[] languages = getResources().getStringArray(R.array.create_document_languages);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            int selIdx = Arrays.asList(languages).indexOf(metaData.getLanguage());
+            if (selIdx != -1)
+                textView.setText(languages[selIdx], false);
+        }
     }
 
 }

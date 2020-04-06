@@ -117,6 +117,8 @@ public class DocumentJSONParser {
         private static final String JSON_WRITER =               "writer";
         private static final String JSON_AUTHOR =               "author";
         private static final String JSON_GENRE =                "genre";
+        private static final String JSON_DESC =                 "desc";
+        private static final String JSON_LANGUAGE =             "language";
 
         @SerializedName(JSON_TITLE)                             private String mTitle;
         @SerializedName(JSON_AUTHORITY)                         private String mAuthority;
@@ -126,6 +128,8 @@ public class DocumentJSONParser {
         @SerializedName(JSON_WRITER)                            private String mWriter;
         @SerializedName(JSON_AUTHOR)                            private String mAuthor;
         @SerializedName(JSON_GENRE)                             private String mGenre;
+        @SerializedName(JSON_DESC)                              private String mDesc;
+        @SerializedName(JSON_LANGUAGE)                          private String mLanguage;
 
         private JSONMetaData(Document document) {
             mTitle = document.getTitle();
@@ -143,6 +147,19 @@ public class DocumentJSONParser {
             mWriter = md.getWriter();
             mAuthor = md.getAuthor();
             mGenre = md.getGenre();
+            mDesc = md.getDescription();
+
+            if (md.getReadme2020()) {
+                if (mDesc != null)
+                    mDesc = " ";
+                else
+                    mDesc = "";
+
+                mDesc += " #readme2020";
+                if (md.getReadme2020Public())
+                    mDesc += " #public";
+            }
+            mLanguage = md.getLanguage();
 
         }
     }

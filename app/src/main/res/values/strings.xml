@@ -352,6 +352,17 @@
     <string name="create_series_genre_text">Genre</string>
     <string name="create_series_signature_text">Signature</string>
     <string name="create_series_url_text">URL</string>
+    <string name="create_series_readme_publication_text">Allow image publication</string>
+    <string name="create_series_readme_language_hint">Handwriting language</string>
+    <string name="create_series_readme_language_error">Please select a language</string>
+    <string name="create_series_readme_public_text">Allow image publication:</string>
+    <string name="create_series_readme_public_radio_text">Yes</string>
+    <string name="create_series_readme_private_radio_text">No</string>
+    <string name="create_series_readme_error_toast_text">Please fill out all Readme2020 fields</string>
+    <string name="create_series_readme_public_error">Please select type</string>
+    <string name="create_series_readme_checkbox_text">Project: readme2020</string>
+    <string name="create_series_readme_info_text">Help Transkribus to train an HTR model for modern handwritings.</string>
+
 
     <string name="map_crop_view_title">Warp image</string>
     <string name="map_crop_view_no_transformation_title">Image not transformed</string>
@@ -451,7 +462,7 @@
     <string name="action_document_upload_document">Upload</string>
     <string name="action_document_pdf_title">Save as PDF</string>
     <string name="action_document_delete_document">Delete</string>
-    <string name="action_document_edit_document">Change title</string>
+    <string name="action_document_edit_document">Edit document</string>
     <string name="action_document_continue_document">Continue imaging</string>
 
     <string name="action_pdf_delete">Delete</string>
@@ -492,6 +503,57 @@
 
     <!-- PdfSelectorActivity -->
     <string name="pdf_selector_title">Save document as PDF</string>
+
+    <string-array name="create_document_languages">
+        <item>Arabic</item>
+        <item>Basque</item>
+        <item>Bulgarian</item>
+        <item>Catalan</item>
+        <item>Croatian</item>
+        <item>Czech</item>
+        <item>Danish</item>
+        <item>Dutch</item>
+        <item>English</item>
+        <item>Estorian</item>
+        <item>Finnish</item>
+        <item>French</item>
+        <item>GaelicScottish</item>
+        <item>Galician</item>
+        <item>German</item>
+        <item>Greek</item>
+        <item>Hebrew</item>
+        <item>Hungarian</item>
+        <item>Irish</item>
+        <item>Italian</item>
+        <item>Judeo-Arabic</item>
+        <item>Ladino</item>
+        <item>Latin</item>
+        <item>Latvian</item>
+        <item>LatvianGothic</item>
+        <item>Lithuanian</item>
+        <item>Maltese</item>
+        <item>Norwegian</item>
+        <item>OldEnglish</item>
+        <item>OldFrench</item>
+        <item>OldGerman</item>
+        <item>OldItalian</item>
+        <item>Polish</item>
+        <item>PortugeseBrazilian</item>
+        <item>PortugeseStandard</item>
+        <item>Romanian</item>
+        <item>Russian</item>
+        <item>RussianOld</item>
+        <item>SerbianCyrillic</item>
+        <item>SerbianLatin</item>
+        <item>Slovak</item>
+        <item>Slovenian</item>
+        <item>Spanish</item>
+        <item>Swedish</item>
+        <item>Turkish</item>
+        <item>Ukrainian</item>
+        <item>Welsh</item>
+        <item>Yiddish</item>
+    </string-array>
 
 
 </resources>

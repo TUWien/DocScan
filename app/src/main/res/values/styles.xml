@@ -30,6 +30,14 @@
 
     </style>
 
+    <style name="AutoCompleteTextViewDropDown">
+        <item name="android:clickable">false</item>
+        <item name="android:cursorVisible">false</item>
+        <item name="android:focusable">false</item>
+        <item name="android:focusableInTouchMode">false</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
 
     <!--This theme is used for the image viewer (in viewpager) -->
     <style name="AppDarkTheme" parent="Theme.AppCompat.Light.DarkActionBar">
