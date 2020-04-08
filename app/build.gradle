@@ -17,8 +17,8 @@ android {
 		applicationId "at.ac.tuwien.caa.docscan"
 		minSdkVersion 16
 		targetSdkVersion 28
-		versionCode 141
-		versionName "1.7.38"
+		versionCode 142
+		versionName "1.7.39"
 
 		multiDexEnabled true
 //		this is used to show the build time in the AboutActivity

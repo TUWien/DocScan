@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -349,8 +350,10 @@ public class TranskribusUtils  {
         Log.d(CLASS_NAME, "uploadDirs: preparing file: " + dirs + " for upload");
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"uploadDirs: preparing file: " + dirs + " for upload");
 
-        for (String dir : mSelectedDirs) {
+//        for (String dir : mSelectedDirs) {
+        for (Iterator<String> it = mSelectedDirs.iterator(); it.hasNext(); ) {
 
+            String dir = it.next();
             Log.d(CLASS_NAME, "uploadDirs: processing dir: " + dir);
             DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"uploadDirs: processing dir: " + dir);
 
@@ -380,6 +383,11 @@ public class TranskribusUtils  {
                     Log.d(CLASS_NAME,"error while parsing json string: " + jsonString);
                 }
             }
+            else {
+                it.remove();
+            }
+
+
         }
 
     }
@@ -421,6 +429,7 @@ public class TranskribusUtils  {
 //        if (mNumUploadJobs == mSelectedDirs.size())
 //            mCallback.onSelectedFilesPrepared();
 
+//        TODO: find out why this is not the case:
         // For each directory the upload request is finished and all files are added to the sync list:
         if (mSelectedDirs.size() == 0) {
             mAreDocumentsPrepared = true;
