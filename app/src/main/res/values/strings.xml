@@ -240,6 +240,7 @@
     <string name="sync_notification_stoped_text">Could not find selected file(s).</string>
     <string name="sync_notification_error_title">Upload interrupted</string>
     <string name="sync_notification_error_text">Upload postponed.</string>
+    <string name="sync_notification_time_out_text">Server is temporary not responding.</string>
 
     <!-- PdfCreator -->
     <string name="pdf_notification_exporting">Exporting pdf</string>

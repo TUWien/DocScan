@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 
@@ -140,15 +141,22 @@ public class SyncStorage {
 
     }
 
-    public void addUploadDirs(ArrayList<String> dirs) {
+    public void addUploadDirs(Context context, ArrayList<String> dirs) {
 
         if (mUploadDocumentTitles == null)
             mUploadDocumentTitles = new ArrayList<>();
 
+        DataLog.getInstance().writeUploadLog(context, CLASS_NAME, "addUploadDirs: " + dirs);
+
 //        Just add the directory if it is not already contained:
-        for (String dir : dirs)
-            if (!mUploadDocumentTitles.contains(dir))
+        for (String dir : dirs) {
+            DataLog.getInstance().writeUploadLog(context, CLASS_NAME, "addUploadDirs: dir: " + dir);
+            if (!mUploadDocumentTitles.contains(dir)) {
+                DataLog.getInstance().writeUploadLog(context, CLASS_NAME,
+                        "addUploadDirs: add to mUploadDocumentTitles: " + dir);
                 mUploadDocumentTitles.add(dir);
+            }
+        }
 
         createAwaitingUploadList();
 

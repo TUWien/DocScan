@@ -92,6 +92,7 @@ public abstract class RestRequest {
     public interface RestCallback {
 
         void handleRestError(RestRequest request, VolleyError error);
+//        void handleTimeOutError(RestRequest request, VolleyError error);
 
     }
 

@@ -24,6 +24,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.*
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PdfCreator.PDF_FILE_NAME
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PdfCreator.PDF_INTENT
+import at.ac.tuwien.caa.docscan.logic.DataLog
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.Helper
@@ -308,6 +309,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             }
 
             R.id.action_document_upload_item -> {
+
+                DataLog.getInstance().writeUploadLog(this, TAG, "onDocumentSheetSelected: ${document.title}")
+
 //                Do nothing if the document is already uploaded:
                 if (document.isUploaded)
                     return
@@ -385,6 +389,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     private fun uploadDocument(document: Document) {
 
+        DataLog.getInstance().writeUploadLog(this, TAG, "uploadDocument: ${document.title}")
+
 //        First check if user is online
         if (!Helper.isOnline(this)) {
             showOfflineDialog()
@@ -422,6 +428,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     }
 
     private fun startUpload(document: Document) {
+
+        if (document != null) {
+            DataLog.getInstance().writeUploadLog(this, TAG, "startUpload document: $document")
+            DataLog.getInstance().writeUploadLog(this, TAG, "startUpload document: ${document.title}")
+        }
+
         var dirs = ArrayList<String>()
         dirs.add(document.title)
         startUpload(dirs)
@@ -469,7 +481,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
      */
     private fun startUpload(uploadDirs: java.util.ArrayList<String>) {
 
-        SyncStorage.getInstance(this).addUploadDirs(uploadDirs)
+        DataLog.getInstance().writeUploadLog(this, TAG, "startUpload: $uploadDirs")
+
+        SyncStorage.getInstance(this).addUploadDirs(this, uploadDirs)
         SyncUtils.startSyncJob(this, false)
 
     }

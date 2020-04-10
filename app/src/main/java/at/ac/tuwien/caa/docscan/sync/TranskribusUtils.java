@@ -73,8 +73,10 @@ public class TranskribusUtils  {
         mCallback = (TranskribusUtilsCallback) context;
 
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "startUpload");
-
         SyncStorage.getInstance(mContext).clearSyncList();
+
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "startUpload: " +
+                SyncStorage.getInstance(mContext).getUploadDocumentTitles());
 
         if (SyncStorage.getInstance(mContext).getUploadDocumentTitles() != null &&
                 !SyncStorage.getInstance(mContext).getUploadDocumentTitles().isEmpty()) {
@@ -117,6 +119,8 @@ public class TranskribusUtils  {
      * upload folder.
      */
     public void uploadDocuments(ArrayList<String> selectedDirs) {
+
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "uploadDocuments");
 
         mSelectedDirs = selectedDirs;
         mIsCollectionCreated = false;
@@ -225,6 +229,8 @@ public class TranskribusUtils  {
      */
     private boolean isCollectionIDSaved() {
 
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "isCollectionIDSaved");
+
         int savedCollectionID = getDocScanCollectionID();
 
         return (savedCollectionID != Settings.NO_ENTRY);
@@ -232,6 +238,8 @@ public class TranskribusUtils  {
     }
 
     private int getDocScanCollectionID() {
+
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "getDocScanCollectionID");
 
         int savedCollectionID;
 
@@ -253,6 +261,8 @@ public class TranskribusUtils  {
 
     private void saveDocScanCollectionID(int collectionID) {
 
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "saveDocScanCollectionID");
+
         boolean useTestServer = Helper.useTranskribusTestServer(mContext);
 
         if (useTestServer)
@@ -269,6 +279,7 @@ public class TranskribusUtils  {
     public void onCollections(List<Collection> collections) {
 
         Log.d(CLASS_NAME, "onCollections");
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onCollections");
 
         int savedCollectionID = getDocScanCollectionID();
 
@@ -316,6 +327,8 @@ public class TranskribusUtils  {
 
     private void createDocScanCollection() {
 
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "createDocScanCollection");
+
         if (mContext != null)
             new CreateCollectionRequest(mContext, TRANSKRIBUS_UPLOAD_COLLECTION_NAME);
 
@@ -323,6 +336,9 @@ public class TranskribusUtils  {
 
     //    @Override
     public void onCollectionCreated(String collName) {
+
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onCollectionCreated");
+
         if (collName.compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
             mIsCollectionCreated = true;
             new CollectionsRequest(mContext);
@@ -517,6 +533,8 @@ public class TranskribusUtils  {
 //    TODO: test what we really need here!
     private void handleMissingFile(final TranskribusSyncFile syncFile, Context context) {
 
+        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "handleMissingFile");
+
         mCallback.onFilesDeleted();
 
         removeFromSyncStorageUnfinishedList(syncFile.getUploadId());
@@ -553,6 +571,8 @@ public class TranskribusUtils  {
 
     public void removeFromUnfinishedListAndCheckJob(int uploadID) {
 
+        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "removeFromUnfinishedListAndCheckJob");
+
         removeFromSyncStorageUnfinishedList(uploadID);
 
         if (mUnfinishedUploadIDsProcessed.isEmpty()) {
@@ -569,6 +589,8 @@ public class TranskribusUtils  {
      * @param title
      */
     private void removeFromSyncStorageUploadList(String title) {
+
+        DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "removeFromSyncStorageUploadList");
 
         SyncStorage.getInstance(mContext).removeDocument(title, mContext);
         SyncStorage.saveJSON(mContext);

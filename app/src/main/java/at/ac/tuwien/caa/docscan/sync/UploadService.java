@@ -77,6 +77,7 @@ public class UploadService extends JobService implements
     private static final int NOTIFICATION_SUCCESS = 2;
     private static final int NOTIFICATION_FILE_DELETED = 3;
     private static final int NOTIFICATION_CANCEL = 4;
+    private static final int NOTIFICATION_TIME_OUT = 5;
 
     public static final String SERVICE_ALONE_KEY = "SERVICE_ALONE_KEY";
     private static final String CLASS_NAME = "UploadService";
@@ -251,7 +252,12 @@ public class UploadService extends JobService implements
     public void handleRestError(RestRequest request, VolleyError error) {
 
         logRestError(request, error);
-        handleUploadError();
+
+        int notification = NOTIFICATION_ERROR;
+        if (error != null && error.networkResponse != null && error.networkResponse.statusCode == 503)
+            notification = NOTIFICATION_TIME_OUT;
+
+        handleUploadError(notification);
 
     }
 
@@ -294,14 +300,14 @@ public class UploadService extends JobService implements
     /**
      * Handles errors that occur before the first file is uploaded.
      */
-    private void handleUploadError() {
+    private void handleUploadError(int notification) {
 
         User.getInstance().setLoggedIn(false);
 
         Log.d(getClass().getName(), "handleUploadError");
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "handleUploadError");
 
-        updateNotification(NOTIFICATION_ERROR);
+        updateNotification(notification);
         sendOfflineErrorIntent();
 
         SyncStorage.saveJSON(getApplicationContext());
@@ -512,9 +518,10 @@ public class UploadService extends JobService implements
         @Override
         public void onError(Exception e) {
 
-            handleUploadError();
+            handleUploadError(NOTIFICATION_ERROR);
             Log.d(CLASS_NAME, "onError: unfinished upload ids size: "
                     + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
+            Log.d(CLASS_NAME, "onError: " + e);
             DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                     "onError: unfinished upload ids size: "
                             + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
@@ -628,6 +635,14 @@ public class UploadService extends JobService implements
 
         switch (notificationID) {
 
+            case NOTIFICATION_TIME_OUT:
+                mNotificationBuilder
+                        .setContentTitle(getString(R.string.sync_notification_error_title))
+                        .setContentText(getString(R.string.sync_notification_time_out_text))
+                        // Removes the progress bar
+                        .setProgress(0, 0, false);
+                mIsInterrupted = true;
+                break;
             case NOTIFICATION_ERROR:
                 mNotificationBuilder
                         .setContentTitle(getString(R.string.sync_notification_error_title))
