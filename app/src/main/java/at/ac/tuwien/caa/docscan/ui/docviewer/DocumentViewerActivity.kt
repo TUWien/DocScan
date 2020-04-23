@@ -48,6 +48,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import org.opencv.android.OpenCVLoader
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * Partly based on this tutorial:
@@ -1269,9 +1272,13 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     override fun onStop() {
         super.onStop()
 //        DocumentStorage.saveJSON(this)
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::1258")
+        var crashLog = "DocumentViewerActivity::1258"
+        //        if (changeRatio > 0.01) {
+        val t1 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::1258 $t1")
         DocumentStorage.saveJSON(this)
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:1260")
+        val t2 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:1260 $t2")
     }
 
     private fun getReceiver(): BroadcastReceiver {

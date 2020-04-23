@@ -63,8 +63,9 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         initEditField();
 //        Transkribus metadata:
         initMetadataViews();
-//        Readme 2020 project - not checked by default:
-        initReadme2020Views();
+// Uncomment for readme2020:
+//        //        Readme 2020 project - not checked by default:
+//        initReadme2020Views();
 
 //        Debugging: (if you just want to launch the Activity (without CameraActivity)
 //        String qrText = "<root><authority>Universitätsarchiv Greifswald</authority><identifier type=\"hierarchy description\">Universitätsarchiv Greifswald/Altes Rektorat/01. Rechtliche Stellung der Universität - 01.01. Statuten/R 1199</identifier><identifier type=\"uri\">https://ariadne-portal.uni-greifswald.de/?arc=1&type=obj&id=5162222</identifier><title>Entwurf neuer Universitätsstatuten </title><date normal=\"1835010118421231\">1835-1842</date><callNumber>R 1199</callNumber><description>Enthält u.a.: Ausführliche rechtshistorische Begründung des Entwurfs von 1835.</description></root>";
@@ -85,19 +86,20 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         }
     }
 
-    private void initReadme2020Views() {
-
-        CheckBox checkBox = findViewById(R.id.create_series_readme_checkbox);
-        RelativeLayout layout = findViewById(R.id.create_series_readme_fields_layout);
-//        No Readme2020 project - per default:
-        initExpandableLayout(checkBox, layout, false);
-
-        checkBox.setOnCheckedChangeListener((buttonView, isChecked) ->
-                expandLayout(isChecked, layout));
-
-        initLanguageSpinner();
-
-    }
+// Uncomment for readme2020:
+//    private void initReadme2020Views() {
+//
+//        CheckBox checkBox = findViewById(R.id.create_series_readme_checkbox);
+//        RelativeLayout layout = findViewById(R.id.create_series_readme_fields_layout);
+////        No Readme2020 project - per default:
+//        initExpandableLayout(checkBox, layout, false);
+//
+//        checkBox.setOnCheckedChangeListener((buttonView, isChecked) ->
+//                expandLayout(isChecked, layout));
+//
+//        initLanguageSpinner();
+//
+//    }
 
     private void initMetadataViews() {
 
@@ -315,14 +317,18 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             return false;
         }
 
-//        Check if the readme2020 fields are filled (because they are mandatory):
-        if (!isReadme2020FieldsCompleted())
-            return false;
+        // Uncomment for readme2020:
+////        Check if the readme2020 fields are filled (because they are mandatory):
+//        if (!isReadme2020FieldsCompleted())
+//            return false;
+////        Fill the metadata with the field values entered by the user:
+//        readMetaDataFields();
+////        Get the fields of Readme2020 (if set):
+//        if (!readReadme2020Fields())
+//            return false;
+
 //        Fill the metadata with the field values entered by the user:
         readMetaDataFields();
-//        Get the fields of Readme2020 (if set):
-        if (!readReadme2020Fields())
-            return false;
 
 
         boolean isDocumentCreated = DocumentStorage.getInstance(this).createNewDocument(title);
@@ -340,67 +346,69 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     }
 
-    public boolean isReadme2020FieldsCompleted() {
+//    Uncomment for readme2020:
+//    public boolean isReadme2020FieldsCompleted() {
+//
+//        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
+//        if (readmeCheckBox.isChecked()) {
+//            RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
+//            TextView radioTextView = findViewById(R.id.create_series_readme_public_label);
+//            if (radioGroup.getCheckedRadioButtonId() == -1) {
+//                radioTextView.setError(getString(R.string.create_series_readme_public_error));
+//                ToastCompat.makeText(this, R.string.create_series_readme_error_toast_text, Toast.LENGTH_LONG).show();
+//                return false;
+//            }
+////            Otherwise clear any previous error:
+//            else
+//                radioTextView.setError(null);
+//
+//
+//            AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
+//            String language = textView.getText().toString();
+//            if (language.isEmpty()) {
+//                textView.setError(getString(R.string.create_series_readme_language_error));
+//                ToastCompat.makeText(this, R.string.create_series_readme_error_toast_text, Toast.LENGTH_LONG).show();
+//                return false;
+//            }
+////            Otherwise clear any previous error:
+//            else
+//                textView.setError(null);
+//
+//        }
+//
+//        return true;
+//    }
 
-        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
-        if (readmeCheckBox.isChecked()) {
-            RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
-            TextView radioTextView = findViewById(R.id.create_series_readme_public_label);
-            if (radioGroup.getCheckedRadioButtonId() == -1) {
-                radioTextView.setError(getString(R.string.create_series_readme_public_error));
-                ToastCompat.makeText(this, R.string.create_series_readme_error_toast_text, Toast.LENGTH_LONG).show();
-                return false;
-            }
-//            Otherwise clear any previous error:
-            else
-                radioTextView.setError(null);
-
-
-            AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
-            String language = textView.getText().toString();
-            if (language.isEmpty()) {
-                textView.setError(getString(R.string.create_series_readme_language_error));
-                ToastCompat.makeText(this, R.string.create_series_readme_error_toast_text, Toast.LENGTH_LONG).show();
-                return false;
-            }
-//            Otherwise clear any previous error:
-            else
-                textView.setError(null);
-
-        }
-
-        return true;
-    }
-
-    private boolean readReadme2020Fields() {
-
-        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
-        if (readmeCheckBox.isChecked()) {
-            if (mTranskribusMetaData == null)
-                mTranskribusMetaData = new TranskribusMetaData();
-//            Enable upload in readme2020 collection:
-            mTranskribusMetaData.setReadme2020(true);
-//            Switch publicSwitch = findViewById(R.id.create_series_readme_public_switch);
-//            if (publicSwitch.isChecked())
+    //    Uncomment for readme2020:
+//    private boolean readReadme2020Fields() {
+//
+//        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
+//        if (readmeCheckBox.isChecked()) {
+//            if (mTranskribusMetaData == null)
+//                mTranskribusMetaData = new TranskribusMetaData();
+////            Enable upload in readme2020 collection:
+//            mTranskribusMetaData.setReadme2020(true);
+////            Switch publicSwitch = findViewById(R.id.create_series_readme_public_switch);
+////            if (publicSwitch.isChecked())
+////                mTranskribusMetaData.setReadme2020Public(true);
+//
+//            RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
+//            if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_public_radio_button)
 //                mTranskribusMetaData.setReadme2020Public(true);
-
-            RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
-            if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_public_radio_button)
-                mTranskribusMetaData.setReadme2020Public(true);
-            else if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_private_radio_button)
-                mTranskribusMetaData.setReadme2020Public(false);
-
-//        Save the selected language:
-            AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
-            String language = textView.getText().toString();
-            if (!language.isEmpty())
-                mTranskribusMetaData.setLanguage(language);
-
-        }
-
-        return true;
-
-    }
+//            else if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_private_radio_button)
+//                mTranskribusMetaData.setReadme2020Public(false);
+//
+////        Save the selected language:
+//            AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
+//            String language = textView.getText().toString();
+//            if (!language.isEmpty())
+//                mTranskribusMetaData.setLanguage(language);
+//
+//        }
+//
+//        return true;
+//
+//    }
 
     private void readMetaDataFields() {
         EditText authorEditText = findViewById(R.id.create_series_author_edittext);
@@ -448,28 +456,28 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         expandLayout(checked, fieldsLayout);
 
     }
-
-    private void initLanguageSpinner() {
-
-        String[] languages = getResources().getStringArray(R.array.create_document_languages);
-        ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(
-                        this,
-                        R.layout.dropdown_menu_popup_item,
-                        languages);
-
-        AutoCompleteTextView editTextFilledExposedDropdown =
-                findViewById(R.id.create_series_readme_language_dropdown);
-        editTextFilledExposedDropdown.setInputType(0);
-        editTextFilledExposedDropdown.setAdapter(adapter);
-
-//        Spinner spinner = findViewById(R.id.create_series_readme_language_spinner);
-//        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-//                R.array.create_document_languages, android.R.layout.simple_spinner_item);
-//        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-//        spinner.setAdapter(adapter);
-
-    }
+//    Uncomment for readme2020:
+//    private void initLanguageSpinner() {
+//
+//        String[] languages = getResources().getStringArray(R.array.create_document_languages);
+//        ArrayAdapter<String> adapter =
+//                new ArrayAdapter<>(
+//                        this,
+//                        R.layout.dropdown_menu_popup_item,
+//                        languages);
+//
+//        AutoCompleteTextView editTextFilledExposedDropdown =
+//                findViewById(R.id.create_series_readme_language_dropdown);
+//        editTextFilledExposedDropdown.setInputType(0);
+//        editTextFilledExposedDropdown.setAdapter(adapter);
+//
+////        Spinner spinner = findViewById(R.id.create_series_readme_language_spinner);
+////        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+////                R.array.create_document_languages, android.R.layout.simple_spinner_item);
+////        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+////        spinner.setAdapter(adapter);
+//
+//    }
 
     private void expandLayout(boolean isChecked, RelativeLayout fieldsLayout) {
         if (isChecked)
