@@ -174,6 +174,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             findViewById<FloatingActionButton>(R.id.viewer_camera_fab).show()
             when (bottomNavigationView.selectedItemId) {
                 R.id.viewer_documents -> showFAB(R.id.viewer_add_fab)
+                R.id.viewer_images -> showFAB(R.id.viewer_upload_fab)
             }
         }
 
@@ -546,12 +547,20 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
-    private fun showNotCropDialog(document: Document, upload: Boolean) {
+    private fun showNotCropDialog(document: Document, upload: Boolean, extendedInfo: Boolean = false) {
 
         val proceed =
                 if (upload) getString(R.string.viewer_not_cropped_upload)
                 else getString(R.string.viewer_not_cropped_pdf)
-        val cropText = "${getString(R.string.viewer_not_cropped_confirm_text)} $proceed?"
+
+        val text: String
+        if (extendedInfo)
+            text = getString(R.string.viewer_images_fragment_not_cropped_confirm_text)
+        else
+            text = getString(R.string.viewer_not_cropped_confirm_text)
+
+//        val text = getString(R.string.viewer_not_cropped_confirm_text)
+        val cropText = "$text $proceed?"
         val cropTitle = "${getString(R.string.viewer_not_cropped_confirm_title)}"
 
         val alertDialogBuilder = AlertDialog.Builder(this)
@@ -823,9 +832,33 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
-    fun openDocumentOptions(view: View) {
+    fun uploadFABPressed(view: View) {
 
-        selectedDocument?.title?.let { showDocumentOptions(selectedDocument!!) }
+//        selectedDocument?.title?.let { showDocumentOptions(selectedDocument!!) }
+
+        selectedDocument?.let {
+            when {
+                it.isUploaded -> showDocumentUploadedDialog()
+                Helper.isDocumentCropped(it) -> uploadDocument(it)
+                else -> showNotCropDialog(it, true, true)
+            }
+
+        }
+
+    }
+
+    private fun showDocumentUploadedDialog() {
+
+        val dialogText = getString(R.string.viewer_document_uploaded_text)
+        val dialogTitle = getString(R.string.viewer_document_uploaded_title)
+
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder
+                .setTitle(dialogTitle)
+                .setMessage(dialogText)
+                .setPositiveButton(R.string.dialog_ok_text, null)
+        alertDialogBuilder.create().show()
+
 
     }
 
@@ -934,11 +967,19 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         if (newFABID != -1)
             newFAB = findViewById(newFABID)
 
-        if (newFABID == R.id.viewer_add_fab || newFABID == -1)
+        if (newFABID == R.id.viewer_add_fab || newFABID == -1) {
             hideFab(R.id.viewer_add_pdf_fab)
-        if (newFABID == R.id.viewer_add_pdf_fab || newFABID == -1)
+            hideFab(R.id.viewer_upload_fab)
+        }
+        if (newFABID == R.id.viewer_add_pdf_fab || newFABID == -1) {
             hideFab(R.id.viewer_add_fab)
+            hideFab(R.id.viewer_upload_fab)
+        }
 
+        if (newFABID == R.id.viewer_upload_fab || newFABID == -1) {
+            hideFab(R.id.viewer_add_fab)
+            hideFab(R.id.viewer_add_pdf_fab)
+        }
 //        Show the button if it is assigned:
         newFAB?.show()
 
@@ -1163,7 +1204,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //        Setup the toolbar
         setupImagesFragmentToolbar(document)
 //        Hide any additional floating action button
-        showFAB(-1)
+        showFAB(R.id.viewer_upload_fab)
 
         return imagesFragment
 
@@ -1236,7 +1277,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 toolbar.title = getText(R.string.document_navigation_pdfs)
             }
             R.id.viewer_images -> {
-                showFAB(-1)
+                showFAB(R.id.viewer_upload_fab)
                 selectedDocument?.let { toolbar.title = it.title }
             }
             R.id.viewer_documents -> {

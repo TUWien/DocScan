@@ -483,6 +483,10 @@
     <string name="action_setting_no_flash_series">No flash after automated imaging</string>
     <string name="action_setting_qr_mode">Create Document from QR code</string>
 
+    <string name="viewer_document_uploaded_title">Already uploaded</string>
+    <string name="viewer_document_uploaded_text">The document is already uploaded. You have to add a new image to start a new upload process.</string>
+
+
     <string name="viewer_crop_confirm_title">Crop</string>
     <string name="viewer_crop_confirm_text">Are you sure you want to crop all images in the document?
         This cannot be undone.</string>
@@ -490,7 +494,8 @@
     <string name="viewer_all_cropped_title">Nothing to do</string>
     <string name="viewer_all_cropped_text">The document contains only images that are already cropped.</string>
     <string name="viewer_not_cropped_confirm_title">Uncropped images</string>
-    <string name="viewer_not_cropped_confirm_text">This document contains images that are not cropped.\nDo you still want to proceed with the</string>
+    <string name="viewer_not_cropped_confirm_text">Some images are not cropped.\nDo you want to proceed with the</string>
+    <string name="viewer_images_fragment_not_cropped_confirm_text">Some images are not cropped. Cropping option can be found in the overflow menu at the top-right.\nDo you want to proceed with the</string>
     <string name="viewer_not_cropped_pdf">PDF export</string>
     <string name="viewer_not_cropped_upload">upload</string>
     <string name="viewer_delete_pdf_title">Delete</string>

@@ -83,13 +83,14 @@
                     android:layout_margin="12dp"
                     />
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/viewer_edit_fab"
+                    android:id="@+id/viewer_upload_fab"
                     android:visibility="invisible"
-                    android:onClick="openDocumentOptions"
+                    android:onClick="uploadFABPressed"
                     android:background="@color/colorControlHighlight"
                     android:backgroundTint="@color/colorControlHighlight"
                     app:borderWidth="0dp"
-                    app:srcCompat="@drawable/ic_edit_black_24dp"
+                    app:srcCompat="@drawable/ic_cloud_upload_white_24dp"
+                    app:tint="@color/white"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="12dp"
