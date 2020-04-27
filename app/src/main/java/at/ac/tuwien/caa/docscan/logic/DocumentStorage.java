@@ -397,9 +397,14 @@ public class DocumentStorage {
 //                Rename the temp file:
                 tempFile.renameTo(storeFile);
             }
+            else {
+                Crashlytics.logException(new Throwable());
+                Crashlytics.log("isSaved = false");
+            }
 
         } catch (Exception e) {
             Crashlytics.logException(e);
+            Crashlytics.log("exception while saving json");
             e.printStackTrace();
         } finally {
 //            Delete the temporary file, if it still exists:

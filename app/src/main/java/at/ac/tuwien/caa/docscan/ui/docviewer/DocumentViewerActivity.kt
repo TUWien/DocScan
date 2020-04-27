@@ -286,9 +286,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 DocumentStorage.getInstance(this).title = document.getTitle()
                 Helper.startCameraActivity(this)
 //                DocumentStorage.saveJSON(this)
-                Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::284")
-                DocumentStorage.saveJSON(this)
-                Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:286")
+//                Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::284")
+//                DocumentStorage.saveJSON(this)
+//                Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:286")
                 finish()
             }
             R.id.action_document_pdf_item -> {
@@ -1313,7 +1313,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     override fun onStop() {
         super.onStop()
 //        DocumentStorage.saveJSON(this)
-        var crashLog = "DocumentViewerActivity::1258"
         //        if (changeRatio > 0.01) {
         val t1 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
         Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::1258 $t1")

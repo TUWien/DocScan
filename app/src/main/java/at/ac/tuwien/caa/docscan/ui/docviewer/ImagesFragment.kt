@@ -175,10 +175,11 @@ class ImagesFragment : Fragment() {
             galleryAdapter.notifyItemRemoved(selIdx)
 //            DocumentStorage.saveJSON(context)
 
-            Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "ImagesFragment::178")
-            DocumentStorage.saveJSON(context)
-            Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "ImagesFragment:180")
         }
+
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "ImagesFragment::178")
+        DocumentStorage.saveJSON(context)
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "ImagesFragment:180")
 
         galleryAdapter.deselectAllItems()
 

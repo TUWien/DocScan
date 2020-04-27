@@ -151,8 +151,8 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 //        mDocumentTitle = title;
 
 //    Uncomment for readme2020:
-//        if (!isReadme2020FieldsCompleted())
-//            return;
+        if (!isReadme2020FieldsCompleted())
+            return;
 
         mDocument.setTitle(title);
 
@@ -182,20 +182,20 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 
 
         //    Uncomment for readme2020:
-//        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
-//        metaData.setReadme2020(readmeCheckBox.isChecked());
-//
-//        RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
-//        if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_public_radio_button)
-//            metaData.setReadme2020Public(true);
-//        else if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_private_radio_button)
-//            metaData.setReadme2020Public(false);
-//
-//        //        Save the selected language:
-//        AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
-//        String language = textView.getText().toString();
-//        if (!language.isEmpty())
-//            metaData.setLanguage(language);
+        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
+        metaData.setReadme2020(readmeCheckBox.isChecked());
+
+        RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
+        if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_public_radio_button)
+            metaData.setReadme2020Public(true);
+        else if (radioGroup.getCheckedRadioButtonId() == R.id.create_series_readme_private_radio_button)
+            metaData.setReadme2020Public(false);
+
+        //        Save the selected language:
+        AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
+        String language = textView.getText().toString();
+        if (!language.isEmpty())
+            metaData.setLanguage(language);
 
 //        DocumentStorage.getInstance(this).replaceDocument(document, mDocumentTitle);
 //        DocumentStorage.saveJSON(this);
@@ -265,26 +265,26 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         }
 
         //    Uncomment for readme2020:
-//        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
-//        readmeCheckBox.setChecked(metaData.getReadme2020());
-//
-////        Switch publicSwitch = findViewById(R.id.create_series_readme_public_switch);
-////        publicSwitch.setChecked(metaData.getReadme2020Public());
-//
-//        RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
-//        if (metaData.getReadme2020Public())
-//            radioGroup.check(R.id.create_series_readme_public_radio_button);
-//        else
-//            radioGroup.check(R.id.create_series_readme_private_radio_button);
-//
-//        AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
-//        String[] languages = getResources().getStringArray(R.array.create_document_languages);
-//
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-//            int selIdx = Arrays.asList(languages).indexOf(metaData.getLanguage());
-//            if (selIdx != -1)
-//                textView.setText(languages[selIdx], false);
-//        }
+        CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
+        readmeCheckBox.setChecked(metaData.getReadme2020());
+
+//        Switch publicSwitch = findViewById(R.id.create_series_readme_public_switch);
+//        publicSwitch.setChecked(metaData.getReadme2020Public());
+
+        RadioGroup radioGroup = findViewById(R.id.create_series_readme_public_radio_group);
+        if (metaData.getReadme2020Public())
+            radioGroup.check(R.id.create_series_readme_public_radio_button);
+        else
+            radioGroup.check(R.id.create_series_readme_private_radio_button);
+
+        AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
+        String[] languages = getResources().getStringArray(R.array.create_document_languages);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            int selIdx = Arrays.asList(languages).indexOf(metaData.getLanguage());
+            if (selIdx != -1)
+                textView.setText(languages[selIdx], false);
+        }
     }
 
 }
