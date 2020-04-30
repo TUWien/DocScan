@@ -43,8 +43,11 @@ import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
+import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
+
+//import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
+//import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 
 
 /**
@@ -233,21 +236,23 @@ public class GalleryActivity extends AppCompatActivity implements
 
         super.onPause();
 
-//        DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "GalleryActivity::247");
+        DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "GalleryActivity:249");
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         mMessageReceiver = null;
 
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
+//    @Override
+//    public void onPause() {
+//        super.onPause();
+////        DocumentStorage.saveJSON(this);
+//        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "GalleryActivity::247");
 //        DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "GalleryActivity::247");
-        DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "GalleryActivity:249");
-    }
+//        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "GalleryActivity:249");
+//    }
 
 
     private BroadcastReceiver getReceiver() {

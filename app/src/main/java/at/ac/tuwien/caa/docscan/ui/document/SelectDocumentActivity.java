@@ -53,9 +53,9 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
     }
 
     @Override
-    public void onStop() {
+    public void onPause() {
 
-        super.onStop();
+        super.onPause();
 //        DocumentStorage.saveJSON(this);
 
         Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "SelectDocumentActivity::61");

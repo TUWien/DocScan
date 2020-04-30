@@ -1308,18 +1308,25 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     override fun onPause() {
         super.onPause()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver)
-    }
 
-    override fun onStop() {
-        super.onStop()
-//        DocumentStorage.saveJSON(this)
-        //        if (changeRatio > 0.01) {
         val t1 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
         Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::1258 $t1")
         DocumentStorage.saveJSON(this)
         val t2 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
         Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:1260 $t2")
+
     }
+
+//    override fun onStop() {
+//        super.onStop()
+////        DocumentStorage.saveJSON(this)
+//        //        if (changeRatio > 0.01) {
+//        val t1 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
+//        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::1258 $t1")
+//        DocumentStorage.saveJSON(this)
+//        val t2 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
+//        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:1260 $t2")
+//    }
 
     private fun getReceiver(): BroadcastReceiver {
 

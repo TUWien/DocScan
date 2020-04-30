@@ -59,6 +59,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
 import at.ac.tuwien.caa.docscan.gallery.ImageViewerFragment;
 import at.ac.tuwien.caa.docscan.gallery.PageImageView;
 import at.ac.tuwien.caa.docscan.logic.Document;
@@ -69,8 +70,11 @@ import at.ac.tuwien.caa.docscan.ui.CameraActivity;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
-import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
+//import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
+//import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
+
+//import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
+//import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
 
 public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
 
@@ -145,7 +149,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         // with actions named "PROGRESS_INTENT_NAME".
         mMessageReceiver = getReceiver();
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(INTENT_IMAGE_PROCESS_ACTION));
+                new IntentFilter(ImageProcessor.INTENT_IMAGE_PROCESS_ACTION));
 
 
         if ((mPagerAdapter != null) && (mPagerAdapter.getCurrentFragment() != null))
@@ -160,21 +164,23 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         super.onPause();
 
-//        DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "PageSlideActivity::174");
+        DocumentStorage.saveJSON(this);
+        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "PageSlideActivity:176");
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         mMessageReceiver = null;
 
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+////        DocumentStorage.saveJSON(this);
+//        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "PageSlideActivity::174");
 //        DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "PageSlideActivity::174");
-        DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "PageSlideActivity:176");
-    }
+//        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "PageSlideActivity:176");
+//    }
 
 
     @Override
@@ -226,10 +232,10 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                     mPagerAdapter.notifyDataSetChanged();
 
                 Log.d(CLASS_NAME, "onReceive:");
-                Log.d(CLASS_NAME, "onReceive: file: " + intent.getStringExtra(INTENT_FILE_NAME));
+                Log.d(CLASS_NAME, "onReceive: file: " + intent.getStringExtra(ImageProcessor.INTENT_FILE_NAME));
 
                 if (mPage != null && mPage.getFile() != null) {
-                    if (mPage.getFile().getAbsolutePath().equals(intent.getStringExtra(INTENT_FILE_NAME))) {
+                    if (mPage.getFile().getAbsolutePath().equals(intent.getStringExtra(ImageProcessor.INTENT_FILE_NAME))) {
                         Log.d(CLASS_NAME, "onReceive: passing to mPagerAdapter");
                         if (mPagerAdapter != null)
                             mPagerAdapter.getCurrentFragment().refreshImageView();

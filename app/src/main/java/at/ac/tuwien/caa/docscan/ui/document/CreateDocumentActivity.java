@@ -144,9 +144,9 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
     }
 
     @Override
-    public void onStop() {
+    public void onPause() {
 
-        super.onStop();
+        super.onPause();
 //        DocumentStorage.saveJSON(this);
         Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "CreateDocumentActivity::107");
         DocumentStorage.saveJSON(this);

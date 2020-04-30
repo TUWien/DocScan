@@ -388,7 +388,18 @@ public class DocumentStorage {
 
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
             String documentStorage = new Gson().toJson(sInstance);
+
+            if (documentStorage == null) {
+                Crashlytics.logException(new Throwable());
+                Crashlytics.log("documentStorage == null");
+            }
+            else if (documentStorage.isEmpty()) {
+                Crashlytics.logException(new Throwable());
+                Crashlytics.log("documentStorage is empty");
+            }
+
             writer.write(documentStorage);
+            writer.flush();
             writer.close();
 
             boolean isSaved = tempFile.exists();
