@@ -778,6 +778,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         mPage = mDocument.getPages().get(newPos);
         setToolbarTitle(newPos);
 
+        DocumentStorage.saveJSON(mContext);
+
     }
 
 //    private Document getDummyDocument(String fileName) {

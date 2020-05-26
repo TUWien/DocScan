@@ -377,7 +377,8 @@ public class DocumentStorage {
      */
     public static void saveJSON(Context context) {
 
-//        File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
+        if (sInstance == null)
+            return;
 
 //        Save it first as a temp file, because the saving might be interrupted.
         File tempFile = null;
@@ -406,7 +407,11 @@ public class DocumentStorage {
             if (isSaved) {
                 File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
 //                Rename the temp file:
-                tempFile.renameTo(storeFile);
+                boolean renameSuccess = tempFile.renameTo(storeFile);
+                if (!renameSuccess) {
+                    Crashlytics.logException(new Throwable());
+                    Crashlytics.log("renameSuccess = false");
+                }
             }
             else {
                 Crashlytics.logException(new Throwable());

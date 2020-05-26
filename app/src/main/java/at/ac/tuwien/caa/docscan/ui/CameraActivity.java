@@ -3324,6 +3324,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                         DocumentStorage.getInstance(mContext).generateDocument(file, mContext);
                 }
 
+                DocumentStorage.saveJSON(mContext);
+
                 mIsPictureSafe = true;
 
                 return uri.getPath();
