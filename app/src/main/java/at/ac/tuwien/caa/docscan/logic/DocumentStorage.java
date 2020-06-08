@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
@@ -18,11 +19,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
 public class DocumentStorage {
 
     public static final String DOCUMENT_STORE_FILE_NAME = "documentstorage.json";
+    public static final String DOCUMENT_STORE_BACKUP_FILE_NAME = "documentstorage_bu.json";
 //    public static final String DOCUMENT_BACKUP_FILE_NAME = "documentbackup.json";
     private static final String CLASS_NAME = "DocumentStorage";
     private static DocumentStorage sInstance;
@@ -239,6 +242,10 @@ public class DocumentStorage {
 
     }
 
+    public static void clearInstance() {
+        sInstance = new DocumentStorage();
+    }
+
     public void updateStatus(Context context) {
 
 //        Check if some files are removed from outside:
@@ -296,6 +303,56 @@ public class DocumentStorage {
         }
 
         return "nothing";
+    }
+
+    /**
+     * Checks if the DocumentStorage json file is existing.
+     * @param context
+     * @return
+     */
+    public static boolean isStoreFileExisting(Context context) {
+
+        if (context == null)
+            return false;
+
+        File path = context.getFilesDir();
+        File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
+        return storeFile.exists();
+
+    }
+
+    /**
+     * Checks if the backup JSON file is available.
+     * @param context
+     * @return
+     */
+    public static boolean isBackupExisting(Context context) {
+
+        if (context == null)
+            return false;
+
+        File backupFile = getBackupFile(context);
+        if (backupFile != null)
+            return backupFile.exists();
+        else
+            return false;
+
+    }
+
+    public static boolean restoreBackup(Context context) {
+
+        if (context == null)
+            return false;
+
+        File path = context.getFilesDir();
+        File storeFile = new File(path, DOCUMENT_STORE_FILE_NAME);
+
+        File backupFile = getBackupFile(context);
+        if (backupFile == null || !backupFile.exists())
+            return false;
+
+        return KtHelper.Companion.copyFile(backupFile, storeFile);
+
     }
 
     public static void loadJSON(Context context) {
@@ -412,6 +469,10 @@ public class DocumentStorage {
                     Crashlytics.logException(new Throwable());
                     Crashlytics.log("renameSuccess = false");
                 }
+                else {
+//                    Save the backupfile:
+                    saveJSONBackup(context, storeFile);
+                }
             }
             else {
                 Crashlytics.logException(new Throwable());
@@ -427,6 +488,38 @@ public class DocumentStorage {
             if (tempFile != null && tempFile.exists())
                 tempFile.delete();
         }
+
+    }
+
+    private static boolean saveJSONBackup(Context context, File storeFile) {
+
+        if (context == null)
+            return false;
+
+        File dest = getBackupFile(context);
+        if (dest != null)
+            return KtHelper.Companion.copyFile(storeFile, dest);
+        else
+            return false;
+
+    }
+
+    /**
+     * Returns the backup file. This file is located in the media storage dir, where the images are
+     * saved.
+     * @param context
+     * @return
+     */
+    private static File getBackupFile(Context context) {
+
+        if (context == null)
+            return null;
+
+        File mediaStorageDir = Helper.getMediaStorageDir(context.getString(R.string.app_name));
+        if (mediaStorageDir == null)
+            return null;
+
+        return new File(mediaStorageDir, DOCUMENT_STORE_BACKUP_FILE_NAME);
 
     }
 

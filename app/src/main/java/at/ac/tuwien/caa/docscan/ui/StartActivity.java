@@ -55,7 +55,6 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
-import at.ac.tuwien.caa.docscan.sync.SyncUtils;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.intro.IntroFragment;
 import at.ac.tuwien.caa.docscan.ui.intro.ZoomOutPageTransformer;
@@ -326,14 +325,47 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 
     private void startCamera() {
 
-        DocumentStorage.loadJSON(this);
-        SyncStorage.loadJSON(this);
+        if (DocumentStorage.isStoreFileExisting(this)) {
+            DocumentStorage.loadJSON(this);
+            startCameraIntent();
+        }
 
+        else if (DocumentStorage.isBackupExisting(this))
+            askForBackupRestore();
+
+
+    }
+
+    private void startCameraIntent() {
+        SyncStorage.loadJSON(this);
         Intent intent = new Intent(this, CameraActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
 
         finish();
+    }
+
+    private void askForBackupRestore() {
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+//        TODO: test, check permission in background...
+
+        // set dialog message
+        alertDialog
+                .setTitle(R.string.start_restore_backup_title)
+                .setPositiveButton(R.string.start_confirm_button_text, (dialogInterface, i) -> {
+                    DocumentStorage.restoreBackup(this);
+                    startCameraIntent();
+                })
+                .setNegativeButton(R.string.start_cancel_button_text, (dialogInterface, i) -> {
+                    DocumentStorage.clearInstance();
+                    startCameraIntent();
+                })
+                .setMessage(R.string.start_restore_backup_text);
+
+        alertDialog.show();
+
 
     }
 

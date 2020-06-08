@@ -74,8 +74,12 @@ public class SyncStorage {
                 Gson gson = new Gson();
                 sInstance = gson.fromJson(bufferedReader, SyncStorage.class);
 
-            } catch (FileNotFoundException e) {
+            }
+            catch (FileNotFoundException e) {
                 e.printStackTrace();
+                sInstance = new SyncStorage();
+            }
+            catch (Exception e) {
                 sInstance = new SyncStorage();
             }
         }

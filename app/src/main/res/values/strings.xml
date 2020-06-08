@@ -36,6 +36,10 @@
     <string name="start_confirm_button_text">OK</string>
     <string name="start_cancel_button_text">Cancel</string>
     <string name="start_firebase_not_auth_text">Could not authenticate with Firebase / google-services. If you are a developer, you probably want the API key. In that case, take a look at the readme.</string>
+    <string name="start_restore_button">Restore</string>
+    <string name="start_clear_button">No</string>
+    <string name="start_restore_backup_title">Restore backup?</string>
+    <string name="start_restore_backup_text">It seems that you have DocScan installed before. Do you want to restore your previous documents?</string>
 
     <!--CameraActivity-->
 
