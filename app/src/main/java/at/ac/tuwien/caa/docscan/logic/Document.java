@@ -15,6 +15,8 @@ public class Document {
     private boolean mIsUploaded = false;
     private boolean mIsCurrentlyProcessed = false;
     private boolean mIsAwaitingUpload = false;
+    private boolean mUseCustomFileName = false;
+    private String mFileNamePrefix;
 
     private TranskribusMetaData mMetaData = null;
 
@@ -196,4 +198,21 @@ public class Document {
         mPages = pages;
 
     }
+
+    public void setUseCustomFileName(boolean use) {
+        mUseCustomFileName = use;
+    }
+
+    public boolean getUseCustomFileName() {
+        return mUseCustomFileName;
+    }
+
+    public void setFileNamePrefix(String prefix) {
+        mFileNamePrefix = prefix;
+    }
+
+    public String getFileNamePrefix() {
+        return mFileNamePrefix;
+    }
 }
+

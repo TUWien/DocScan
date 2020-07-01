@@ -22,8 +22,8 @@
 
     <!-- Maximum illumination value. -->
     <string name="illumination_threshold">0.3</string>
-
-
+    <!--    The maximum length for a file name is actually 127, but we have a timestamp and page numbers-->
+    <integer name="file_name_max_length">100</integer>
     <!--=================== TIME CONSTRAINTS ===================-->
 
     <!-- Time necessary for automatic capturing - in milli-seconds. -->

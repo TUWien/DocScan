@@ -200,7 +200,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private final static int SINGLE_POS = 0;
     private final static int SERIES_POS = 1;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
-    private static Date mLastTimeStamp;
     private DkPolyRect[] mLastDkPolyRects;
     private int mLastTabPosition;
     private int mTextOrientation = IMG_ORIENTATION_0;
@@ -1756,19 +1755,29 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             return null;
 
         // Create a media file name
-        mLastTimeStamp = new Date();
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(mLastTimeStamp);
+        String timeStamp = Helper.getFileTimeStamp();
 //        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmm").format(mLastTimeStamp);
-        String prefix = mediaStorageDir.getPath() + File.separator +
-                mContext.getString(R.string.img_prefix) + timeStamp;
-        File mediaFile = new File(prefix  + ".jpg");
+//        String prefix = mediaStorageDir.getPath() + File.separator +
+//                mContext.getString(R.string.img_prefix) + timeStamp;
+//        File mediaFile = new File(prefix  + ".jpg");
+
+        String docName;
+        if (DocumentStorage.getInstance(mContext).getActiveDocument().getUseCustomFileName())
+            docName = DocumentStorage.getInstance(mContext).getActiveDocument().getFileNamePrefix();
+        else
+            docName = DocumentStorage.getInstance(mContext).getActiveDocument().getTitle();
+
+        int pageNum = DocumentStorage.getInstance(mContext).getActiveDocument().getPages().size() + 1;
+
+        String fileName = Helper.getFileNamePrefix(timeStamp, docName, pageNum);
+        File mediaFile = new File(mediaStorageDir, fileName + ".jpg");
 
 //        Check if the file is existing:
         if (mediaFile.exists()) {
 //            add a number at the end:
             int idx = 2;
             while (mediaFile.exists()) {
-                mediaFile = new File(prefix + "_" + idx + ".jpg");
+                mediaFile = new File(mediaStorageDir, fileName + "_" + idx + ".jpg");
                 idx++;
             }
         }
@@ -1776,6 +1785,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         return Uri.fromFile(mediaFile);
 
     }
+
+
+
 
 //    /**
 //     * Returns the path to the directory in which the images are saved.
@@ -3489,7 +3501,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //            Log.d(CLASS_NAME, "mCameraOrientation: " + mCameraOrientation);
 //            Log.d(CLASS_NAME, "mTextOrientation: " + mTextOrientation);
 //
-//            TODO: test this on multiple devices:
 //            int camTextOrientation = mTextOrientation;
 //
 //

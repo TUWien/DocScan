@@ -367,6 +367,11 @@
     <string name="create_series_readme_public_error">Please select type</string>
     <string name="create_series_readme_checkbox_text">Project: readme2020</string>
     <string name="create_series_readme_info_text">Help Transkribus to train an HTR model for modern handwritings.</string>
+    <string name="create_series_name_edittext_text">Custom file naming</string>
+    <string name="create_series_custom_name_example_label_textview_text">Preview:</string>
+    <string name="create_series_custom_name_example_textview_empty_prefix_text">Please enter a prefix first</string>
+    <string name="create_series_custom_name_prefix_input_empty_text">Prefix must not be empty</string>
+
 
 
     <string name="map_crop_view_title">Warp image</string>

@@ -25,6 +25,7 @@ import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import org.jetbrains.annotations.NotNull;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 
@@ -33,9 +34,11 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -759,72 +762,110 @@ public class Helper {
      */
     public static InputFilter getDocumentInputFilter() {
 
-        InputFilter filter = new InputFilter() {
-            @Override
-            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-                if (source.length() < 1)
-                    return null;
-                char last = source.charAt(source.length() - 1);
-                if(RESERVED_CHARS.indexOf(last) > -1)
-                    return source.subSequence(0, source.length() - 1);
-
+        InputFilter filter = (source, start, end, dest, dstart, dend) -> {
+            if (source.length() < 1)
                 return null;
-            }
+            char last = source.charAt(source.length() - 1);
+            if(RESERVED_CHARS.indexOf(last) > -1)
+                return source.subSequence(0, source.length() - 1);
+
+            return null;
         };
 
         return filter;
 
     }
 
-//    TODO: this should later be changed:
-    private static boolean areFilesUploaded(ArrayList<File> fileList) {
+    public static InputFilter[] getDocumentInputFilters() {
 
-        if (fileList == null)
-            return false;
+        InputFilter filter = (source, start, end, dest, dstart, dend) -> {
+            if (source.length() < 1)
+                return null;
+            char last = source.charAt(source.length() - 1);
+            if(RESERVED_CHARS.indexOf(last) > -1)
+                return source.subSequence(0, source.length() - 1);
 
-        if (fileList.size() == 0)
-            return false;
+            return null;
+        };
 
-        File[] files = fileList.toArray(new File[fileList.size()]);
+        return new InputFilter[] {new InputFilter.LengthFilter(100), filter};
 
-        return SyncInfo.getInstance().areFilesUploaded(files);
+    }
 
-//        if (files.length == 0)
+    /**
+     * Returns a file name prefix for a given timestamp document name and page num.
+     * @param timeStamp
+     * @param docName
+     * @param pageNum
+     * @return
+     */
+    @NotNull
+    public static String getFileNamePrefix(String timeStamp, String docName, int pageNum) {
+        String leadingZeros = "00000";
+        String page = Integer.toString(pageNum);
+        int shift = page.length();
+        if (shift < leadingZeros.length())
+            page = leadingZeros.substring(0, leadingZeros.length() - shift) + page;
+
+        return docName + "_" + page + '-' + timeStamp;
+    }
+
+    /**
+     * Returns a time stamp that is used for the file name generation.
+     * @return
+     */
+    public static String getFileTimeStamp() {
+        return new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+    }
+
+//    private static boolean areFilesUploaded(ArrayList<File> fileList) {
+//
+//        if (fileList == null)
 //            return false;
 //
-//        // Check if every file contained in the folder is already uploaded:
-//        for (File file : files) {
-//            if (!isFileUploaded(file))
-//                return false;
-//        }
+//        if (fileList.size() == 0)
+//            return false;
 //
-//        return true;
-
-    }
-
-
-    private static boolean isDirAwaitingUpload(File dir, ArrayList<File> fileList) {
-
-        if (dir == null)
-            return false;
-
-        if (fileList == null)
-            return false;
-
-        if (fileList.size() == 0)
-            return false;
-
-        File[] files = fileList.toArray(new File[fileList.size()]);
-
-        return SyncInfo.getInstance().isDirAwaitingUpload(dir, files);
-
-    }
-
-    private static ArrayList<File> getImageList(String dir) {
-
-        return getImageList(new File(dir));
-
-    }
+//        File[] files = fileList.toArray(new File[fileList.size()]);
+//
+//        return SyncInfo.getInstance().areFilesUploaded(files);
+//
+////        if (files.length == 0)
+////            return false;
+////
+////        // Check if every file contained in the folder is already uploaded:
+////        for (File file : files) {
+////            if (!isFileUploaded(file))
+////                return false;
+////        }
+////
+////        return true;
+//
+//    }
+//
+//
+//    private static boolean isDirAwaitingUpload(File dir, ArrayList<File> fileList) {
+//
+//        if (dir == null)
+//            return false;
+//
+//        if (fileList == null)
+//            return false;
+//
+//        if (fileList.size() == 0)
+//            return false;
+//
+//        File[] files = fileList.toArray(new File[fileList.size()]);
+//
+//        return SyncInfo.getInstance().isDirAwaitingUpload(dir, files);
+//
+//    }
+//
+//    private static ArrayList<File> getImageList(String dir) {
+//
+//        return getImageList(new File(dir));
+//
+//    }
 
     private static ArrayList<File> getImageList(File file) {
 

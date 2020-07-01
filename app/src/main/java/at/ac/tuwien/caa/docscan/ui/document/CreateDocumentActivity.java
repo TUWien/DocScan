@@ -10,7 +10,10 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageButton;
+
+import android.text.Editable;
 import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -18,7 +21,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
@@ -26,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.android.material.textfield.TextInputEditText;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Document;
@@ -48,6 +51,8 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
     private static final String SHOW_TRANSKRIBUS_METADATA_KEY = "SHOW_TRANSKRIBUS_METADATA";
     private static final String SHOW_README2020_KEY = "SHOW_README2020";
     public static final String DOCUMENT_CREATED_KEY = "DOCUMENT_CREATED_KEY";
+//    Time stamp used for construction the exemplar file name:
+    private String mTimeStamp;
 
 
     @Override
@@ -66,6 +71,9 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 // Uncomment for readme2020:
         //        Readme 2020 project - not checked by default:
         initReadme2020Views();
+
+//        Custom naming:
+        initCustomNamingFields();
 
 //        Debugging: (if you just want to launch the Activity (without CameraActivity)
 //        String qrText = "<root><authority>Universitätsarchiv Greifswald</authority><identifier type=\"hierarchy description\">Universitätsarchiv Greifswald/Altes Rektorat/01. Rechtliche Stellung der Universität - 01.01. Statuten/R 1199</identifier><identifier type=\"uri\">https://ariadne-portal.uni-greifswald.de/?arc=1&type=obj&id=5162222</identifier><title>Entwurf neuer Universitätsstatuten </title><date normal=\"1835010118421231\">1835-1842</date><callNumber>R 1199</callNumber><description>Enthält u.a.: Ausführliche rechtshistorische Begründung des Entwurfs von 1835.</description></root>";
@@ -86,7 +94,85 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         }
     }
 
-// Uncomment for readme2020:
+    private void initCustomNamingFields() {
+        CheckBox namingCheckbox = findViewById(R.id.create_series_custom_name_checkbox);
+        namingCheckbox.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            showCustomNameLayout(isChecked);
+            updateExampleFileName();
+        });
+
+        TextInputEditText input = findViewById(R.id.create_series_custom_name_prefix_input);
+        input.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                updateExampleFileName();
+            }
+        });
+//        InputFilter filter = Helper.getDocumentInputFilter();
+//        if (filter != null)
+//            input.setFilters(new InputFilter[] {filter});
+        InputFilter[] filters = Helper.getDocumentInputFilters();
+        input.setFilters(filters);
+    }
+
+    private void showCustomNameLayout(boolean isChecked) {
+
+        RelativeLayout layout = findViewById(R.id.create_series_custom_name_layout);
+        if (isChecked) {
+            layout.setVisibility(View.VISIBLE);
+//            Copy the document name to the prefix field:
+//            EditText prefix = findViewById(R.id.create_series_custom_name_prefix_edittext);
+            TextInputEditText input = findViewById(R.id.create_series_custom_name_prefix_input);
+            EditText documentName = findViewById(R.id.create_series_name_edittext);
+            input.setText(documentName.getText());
+        }
+        else
+            layout.setVisibility(View.GONE);
+
+    }
+
+    private void updateExampleFileName() {
+
+//        Switch nameSwitch = findViewById(R.id.create_series_custom_name_checkbox);
+        CheckBox nameCheckbox = findViewById(R.id.create_series_custom_name_checkbox);
+        String prefix;
+        if (nameCheckbox.isChecked()) {
+            TextInputEditText prefixEdit = findViewById(R.id.create_series_custom_name_prefix_input);
+            prefix = prefixEdit.getText().toString();
+            if (prefix.isEmpty()) {
+                showEmptyPrefixWarning();
+                return;
+            }
+        }
+        else {
+            EditText nameEdit = findViewById(R.id.create_series_name_edittext);
+            prefix = nameEdit.getText().toString();
+        }
+
+        String example = Helper.getFileNamePrefix(mTimeStamp, prefix, 1);
+
+        TextView exampleTextView = findViewById(R.id.create_series_custom_name_example_textview);
+        exampleTextView.setText(example);
+    }
+
+    private void showEmptyPrefixWarning() {
+
+        TextView exampleTextView = findViewById(R.id.create_series_custom_name_example_textview);
+        exampleTextView.setText(R.string.create_series_custom_name_example_textview_empty_prefix_text);
+
+    }
+
+    // Uncomment for readme2020:
     private void initReadme2020Views() {
 
         CheckBox checkBox = findViewById(R.id.create_series_readme_checkbox);
@@ -156,9 +242,8 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
     private void initEditField() {
 
         EditText editText = findViewById(R.id.create_series_name_edittext);
-        InputFilter filter = Helper.getDocumentInputFilter();
-        if (filter != null)
-            editText.setFilters(new InputFilter[] {filter});
+        InputFilter[] filters = Helper.getDocumentInputFilters();
+        editText.setFilters(filters);
 
     }
 
@@ -167,7 +252,8 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
     public void onResume() {
 
         super.onResume();
-        Log.d(CLASS_NAME, "onresume");
+        mTimeStamp = Helper.getFileTimeStamp();
+
     }
 
     private TranskribusMetaData processQRCode(String text) {
@@ -282,6 +368,10 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             EditText editText = findViewById(R.id.create_series_name_edittext);
             String title = editText.getText().toString();
 
+//            Check if custom naming is checked and prefix is given:
+            if (!isCustomNamingValid())
+                return;
+
 //                The error handling is done in createNewDocument
             boolean isDocumentCreated = createNewDocument(title);
             if (isDocumentCreated) {
@@ -301,6 +391,27 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                 finish();
             }
         });
+
+    }
+
+    /**
+     * Checks if the custom file naming fields are valid. Returns true if no custom naming is used.
+     * @return
+     */
+    protected boolean isCustomNamingValid() {
+
+        CheckBox namingCheckbox = findViewById(R.id.create_series_custom_name_checkbox);
+        if (!namingCheckbox.isChecked())
+            return true;
+
+        TextInputEditText inputEdit = findViewById(R.id.create_series_custom_name_prefix_input);
+        String input = inputEdit.getText().toString();
+        if (input.isEmpty()) {
+            inputEdit.setError(getString(R.string.create_series_custom_name_prefix_input_empty_text));
+            return false;
+        }
+
+        return true;
 
     }
 
@@ -335,11 +446,21 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         if (!isDocumentCreated)
             showNoDirCreatedAlert();
 
-        else if (mTranskribusMetaData != null) {
-//        Save the metadata:
+        else {
             Document document = DocumentStorage.getInstance(this).getDocument(title);
-            if (document != null) // This should not happen...
-                document.setMetaData(mTranskribusMetaData);
+            // This should not happen...
+            if (document != null) {
+//                Save custom file name attributes:
+                CheckBox customCheckBox = findViewById(R.id.create_series_custom_name_checkbox);
+                document.setUseCustomFileName(customCheckBox.isChecked());
+                if (customCheckBox.isChecked()) {
+                    TextInputEditText inputEdit = findViewById(R.id.create_series_custom_name_prefix_input);
+                    String prefix = inputEdit.getText().toString();
+                    document.setFileNamePrefix(prefix);
+                }
+                if (mTranskribusMetaData != null)
+                    document.setMetaData(mTranskribusMetaData);
+            }
         }
 
         return isDocumentCreated;

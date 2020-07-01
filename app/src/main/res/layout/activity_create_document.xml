@@ -30,13 +30,154 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
+                android:maxLength="@integer/file_name_max_length"
                 android:hint="@string/create_series_name_hint"
                 android:imeOptions="actionDone"/>
+            <CheckBox
+                android:id="@+id/create_series_custom_name_checkbox"
+                android:layout_below="@id/create_series_name_edittext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/create_series_name_edittext_text"/>
+            <RelativeLayout
+                android:id="@+id/create_series_custom_name_layout"
+                android:visibility="gone"
+                android:layout_below="@id/create_series_custom_name_checkbox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/create_series_custom_name_prefix_textview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:hintTextColor="@color/colorAccent"
+                    android:hint="Prefix">
+
+<!--                    android:textColorHighlight="@color/colorAccent"-->
+<!--                    android:textColorLink="@color/black"-->
+<!--                    android:textColorHint="@color/colorControlHighlight"-->
+<!--                    app:hintTextColor="@color/hud_focus_unsharp_rect_color"-->
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/create_series_custom_name_prefix_input"
+                        android:theme="@style/TextInputLayoutAppearance"
+                        android:maxLength="@integer/file_name_max_length"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+<!--                <TextView-->
+<!--                    android:id="@+id/create_series_custom_name_prefix_textview"-->
+<!--                    android:layout_alignParentLeft="true"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="XXX Prefix"-->
+<!--                    android:paddingBottom="@dimen/activity_vertical_margin"-->
+<!--                    />-->
+<!--                <EditText-->
+<!--                    android:id="@+id/create_series_custom_name_prefix_edittext"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_alignBaseline="@id/create_series_custom_name_prefix_textview"-->
+<!--                    android:layout_alignParentRight="true"-->
+<!--                    android:layout_marginLeft="16dp"-->
+<!--                    android:layout_toRightOf="@id/create_series_custom_name_prefix_textview"-->
+<!--                    />-->
+                <TextView
+                    android:id="@+id/create_series_custom_name_example_label_textview"
+                    android:layout_below="@id/create_series_custom_name_prefix_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/create_series_custom_name_example_label_textview_text"
+                    />
+
+                <TextView
+                    android:id="@+id/create_series_custom_name_example_textview"
+                    android:layout_below="@id/create_series_custom_name_prefix_textview"
+                    android:layout_toRightOf="@id/create_series_custom_name_example_label_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="16dp"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:focusableInTouchMode="true"
+                    />
+
+            </RelativeLayout>
+
+<!--            <CheckBox-->
+<!--                android:id="@+id/create_series_file_naming_checkbox"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_below="@id/create_series_name_edittext"-->
+<!--                android:text="XXXShow file naming options"-->
+<!--                android:visibility="visible"-->
+<!--                />-->
+<!--            <RelativeLayout-->
+<!--                android:id="@+id/create_series_file_naming_example_layout"-->
+<!--                android:layout_below="@id/create_series_file_naming_checkbox"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content">-->
+<!--                <TextView-->
+<!--                    android:id="@+id/create_series_file_naming_example_textview"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Example"/>-->
+<!--                <EditText-->
+<!--                    android:id="@+id/create_series_file_naming_example_input"-->
+<!--                    android:layout_toRightOf="@id/create_series_file_naming_example_textview"-->
+<!--                    android:layout_alignBaseline="@id/create_series_file_naming_example_textview"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Example"-->
+<!--                    android:enabled="false"/>-->
+<!--            </RelativeLayout>-->
+<!--            <androidx.gridlayout.widget.GridLayout-->
+<!--                android:id="@+id/create_series_file_naming_layout"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_below="@id/create_series_file_naming_example_layout"-->
+<!--                app:columnCount="2"-->
+<!--                >-->
+<!--            &lt;!&ndash; ==================================================================== &ndash;&gt;-->
+<!--                <Switch-->
+<!--                    android:id="@+id/create_series_file_naming_prefix_switch"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="XXX Use own prefix"-->
+<!--                    app:layout_columnSpan="2"-->
+<!--                    />-->
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="XXX Prefix"/>-->
+<!--                <EditText-->
+<!--                    android:id="@+id/create_series_file_naming_prefix_edittext"-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:inputType="text"-->
+<!--                    app:layout_columnWeight="1"-->
+<!--                    />-->
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="XXX Counter digits"/>-->
+<!--                <EditText-->
+<!--                    android:layout_width="0dp"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:inputType="number"-->
+<!--                    android:text="1"-->
+<!--                    app:layout_columnWeight="1"-->
+<!--                    />-->
+<!--            </androidx.gridlayout.widget.GridLayout>-->
+
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/create_series_done_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/create_series_name_edittext"
+                android:layout_below="@id/create_series_custom_name_layout"
                 android:layout_centerInParent="true"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
                 app:backgroundTint="@color/colorAccent"

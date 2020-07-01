@@ -1095,11 +1095,15 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     private fun openDocumentsView() {
 
+        val documentsFragment = DocumentsFragment.newInstance()
+
         val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
         ft.setCustomAnimations(R.anim.translate_right_to_left_in,
                 R.anim.translate_right_to_left_out)
-        ft.replace(R.id.viewer_fragment_layout, DocumentsFragment.newInstance(),
+        ft.replace(R.id.viewer_fragment_layout, documentsFragment,
                 DocumentsFragment.TAG).commit()
+
+        documentsFragment.scrollToActiveDocument()
 
         showFAB(R.id.viewer_add_fab)
 

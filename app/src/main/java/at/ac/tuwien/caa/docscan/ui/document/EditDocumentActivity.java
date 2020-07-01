@@ -16,6 +16,9 @@ import android.widget.RadioGroup;
 import android.widget.Switch;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.android.material.textfield.TextInputEditText;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 
@@ -154,6 +157,9 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         if (!isReadme2020FieldsCompleted())
             return;
 
+        if (!isCustomNamingValid())
+            return;
+
         mDocument.setTitle(title);
 
         TranskribusMetaData metaData = mDocument.getMetaData();
@@ -197,6 +203,9 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         if (!language.isEmpty())
             metaData.setLanguage(language);
 
+//        Save custom file name attributes:
+        saveCustomFileNameAttributes();
+
 //        DocumentStorage.getInstance(this).replaceDocument(document, mDocumentTitle);
 //        DocumentStorage.saveJSON(this);
         Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "EditDocumentActivity::172");
@@ -221,11 +230,36 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 
     }
 
+    private void saveCustomFileNameAttributes() {
+        CheckBox customCheckBox = findViewById(R.id.create_series_custom_name_checkbox);
+        mDocument.setUseCustomFileName(customCheckBox.isChecked());
+        if (customCheckBox.isChecked()) {
+            TextInputEditText inputEdit = findViewById(R.id.create_series_custom_name_prefix_input);
+            String prefix = inputEdit.getText().toString();
+            mDocument.setFileNamePrefix(prefix);
+        }
+    }
+
     private void fillViews(Document document) {
 
-        String title = document.getTitle();
-        EditText titleEditText = findViewById(R.id.create_series_name_edittext);
-        titleEditText.setText(title);
+        EditText titleEditText = fillDocumentTitle(document);
+
+        fillTranskribusData(document, titleEditText);
+
+        fillCustomName(document);
+
+    }
+
+    private void fillCustomName(Document document) {
+        CheckBox namingCheckbox = findViewById(R.id.create_series_custom_name_checkbox);
+        namingCheckbox.setChecked(document.getUseCustomFileName());
+        if (document.getUseCustomFileName()) {
+            TextInputEditText input = findViewById(R.id.create_series_custom_name_prefix_input);
+            input.setText(document.getFileNamePrefix());
+        }
+    }
+
+    private void fillTranskribusData(Document document, EditText titleEditText) {
 
         TranskribusMetaData metaData = document.getMetaData();
         if (metaData == null)
@@ -285,6 +319,15 @@ public class EditDocumentActivity extends CreateDocumentActivity{
             if (selIdx != -1)
                 textView.setText(languages[selIdx], false);
         }
+
+    }
+
+    @NotNull
+    private EditText fillDocumentTitle(Document document) {
+        String title = document.getTitle();
+        EditText titleEditText = findViewById(R.id.create_series_name_edittext);
+        titleEditText.setText(title);
+        return titleEditText;
     }
 
 }
