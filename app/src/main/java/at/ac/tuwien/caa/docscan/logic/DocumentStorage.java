@@ -155,6 +155,17 @@ public class DocumentStorage {
 
     }
 
+    public void generateDocument(Context context) {
+
+        if (mTitle == null)
+            mTitle = Helper.getActiveDocumentTitle(context);
+
+        Document document = getDocument(mTitle);
+        if (document == null || document.getPages() == null)
+            createNewDocument(mTitle);
+
+    }
+
     public void generateDocument(File file, Context context) {
 
         if (mTitle == null)
@@ -167,7 +178,6 @@ public class DocumentStorage {
         }
 
         document.getPages().add(new Page(file));
-
 
     }
 

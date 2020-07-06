@@ -1761,6 +1761,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //                mContext.getString(R.string.img_prefix) + timeStamp;
 //        File mediaFile = new File(prefix  + ".jpg");
 
+        if (DocumentStorage.getInstance(mContext).getActiveDocument() == null)
+            DocumentStorage.getInstance(mContext).generateDocument(mContext);
+
         String docName;
         if (DocumentStorage.getInstance(mContext).getActiveDocument().getUseCustomFileName())
             docName = DocumentStorage.getInstance(mContext).getActiveDocument().getFileNamePrefix();
