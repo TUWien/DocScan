@@ -104,6 +104,8 @@ public class Helper {
         return mediaStorageDir;
     }
 
+
+
     public static int getDPI(double cameraDistance, float horizontalViewAngle, int imgW) {
 
         double thetaH = Math.toRadians(horizontalViewAngle);

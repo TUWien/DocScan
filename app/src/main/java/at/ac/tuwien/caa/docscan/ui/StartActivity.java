@@ -329,10 +329,12 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
             DocumentStorage.loadJSON(this);
             startCameraIntent();
         }
-
         else if (DocumentStorage.isBackupExisting(this))
             askForBackupRestore();
-
+        else {
+            DocumentStorage.clearInstance();
+            startCameraIntent();
+        }
 
     }
 
