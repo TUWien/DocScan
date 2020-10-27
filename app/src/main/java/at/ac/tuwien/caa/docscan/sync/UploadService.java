@@ -173,6 +173,14 @@ public class UploadService extends JobService implements
     }
 
     @Override
+    public void onLoginError(VolleyError error) {
+
+        Log.d(getClass().getName(), "onLoginError");
+        DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME, "onLoginError");
+
+    }
+
+    @Override
     public void onCollections(List<Collection> collections) {
 
         Log.d(CLASS_NAME, "onCollections");

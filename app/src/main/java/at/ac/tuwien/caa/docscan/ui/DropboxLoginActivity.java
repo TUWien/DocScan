@@ -126,6 +126,10 @@ public class DropboxLoginActivity extends BaseNoNavigationActivity implements Lo
     public void onLoginError() {
         showLoadingLayout(false);
     }
+    @Override
+    public void onLoginError(VolleyError error) {
+        showLoadingLayout(false);
+    }
 
     private void loginToDropbox() {
 

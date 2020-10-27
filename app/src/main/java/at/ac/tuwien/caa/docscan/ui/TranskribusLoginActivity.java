@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,7 +10,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
+import com.crashlytics.android.Crashlytics;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
@@ -27,6 +37,7 @@ public class TranskribusLoginActivity extends BaseNoNavigationActivity implement
 
     private Class mParentClass;
     public static final String PARENT_ACTIVITY_NAME = "PARENT_ACTIVITY_NAME";
+    private static final String CLASS_NAME = "TranskribusLoginActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +119,67 @@ public class TranskribusLoginActivity extends BaseNoNavigationActivity implement
         showLoadingLayout(false);
 
         EditText pwEdit = findViewById(R.id.password_edittext);
-        pwEdit.setError(getResources().getString(R.string.login_error_text));
+        pwEdit.setError(getResources().getString(R.string.login_auth_error_text));
+
+    }
+
+    @Override
+    public void onLoginError(VolleyError error) {
+
+        showLoadingLayout(false);
+//            AuthFailureError, NetworkError, ParseError, ServerError, TimeoutError
+        if (error instanceof AuthFailureError) {
+            EditText pwEdit = findViewById(R.id.password_edittext);
+            pwEdit.setError(getResources().getString(R.string.login_auth_error_text));
+        }
+        else if (error instanceof NoConnectionError) {
+            showErrorDialog(getString(R.string.login_no_connection_error_title),
+                    getString(R.string.login_no_connection_error_text));
+            Crashlytics.log("login error: " + "login_no_connection_error");
+        }
+        else if (error instanceof NetworkError) {
+            showErrorDialog(getString(R.string.login_network_error_title),
+                    getString(R.string.login_network_error_text));
+            Crashlytics.log("login error: " + "login_network_error");
+        }
+        else if (error instanceof ParseError) {
+            showErrorDialog(getString(R.string.login_parse_error_title),
+                    getString(R.string.login_parse_error_text));
+            Crashlytics.log("login error: " + "login_parse_error");
+        }
+        else if (error instanceof ServerError) {
+            showErrorDialog(getString(R.string.login_server_error_title),
+                    getString(R.string.login_server_error_text));
+            Crashlytics.log("login error: " + "login_server_error");
+        }
+        else if (error instanceof TimeoutError) {
+            showErrorDialog(getString(R.string.login_timeout_error_title),
+                    getString(R.string.login_timeout_error_text));
+            Crashlytics.log("login error: " + "login_timeout_error");
+        }
+
+
+
+    }
+
+    private void showErrorDialog(String title, String msg) {
+
+//        If file(s) have been uploaded, warn the user, before the SyncStorage is deleted:
+        androidx.appcompat.app.AlertDialog.Builder alertDialogBuilder = new androidx.appcompat.app.AlertDialog.Builder(this);
+
+        // set dialog message
+        alertDialogBuilder
+                .setTitle(title)
+                .setPositiveButton(R.string.button_ok, null)
+//                .setNegativeButton(R.string.sync_cancel_login_button_text, null)
+                .setCancelable(true)
+                .setMessage(msg);
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
 
     }
 

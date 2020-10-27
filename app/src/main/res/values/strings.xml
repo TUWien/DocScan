@@ -140,7 +140,25 @@
     <string name="login_check_input_toast">Please check your login credentials.</string>
     <string name="login_welcome_text">Welcome</string>
     <string name="login_loading_text">Login, please wait</string>
-    <string name="login_error_text">User name or password is incorrect. Please reenter your credentials.</string>
+    <string name="login_auth_error_text">User name or password is incorrect. Please reenter your credentials.</string>
+
+    <!--  These are the error messages for handling specific VolleyError's:  -->
+    <string name="login_no_connection_error_title">No internet connection</string>
+    <string name="login_no_connection_error_text">Your device is not connected to the internet. Please connect to the internet and try again to log in.</string>
+
+    <string name="login_network_error_title">Network error</string>
+    <string name="login_network_error_text">There was a network error. Please check your internet connection status.</string>
+
+    <string name="login_parse_error_title">Server response not valid</string>
+    <string name="login_parse_error_text">Could not parse the server response. Please try again in a while.</string>
+
+    <string name="login_timeout_error_title">Timeout error</string>
+    <string name="login_timeout_error_text">Looks like the server is taking to long to respond, this can be caused by either poor connectivity or an error with the server. Please try again in a while.</string>
+
+    <string name="login_server_error_title">Server error</string>
+    <string name="login_server_error_text">The server responded with an error message. Please try again in a while.</string>
+
+
     <string name="login_title">Login to Transkribus</string>
 
     <!-- AutoLoginActivity -->

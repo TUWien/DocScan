@@ -32,6 +32,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.fabric.sdk.android.services.common.Crash;
+
 
 public class RequestHandler {
 
@@ -101,7 +103,13 @@ public class RequestHandler {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        request.handleLoginError();
+                        if (error != null) {
+                            Crashlytics.log("login error: " + error);
+                            if (error.networkResponse != null)
+                                Crashlytics.log("login error network response: " + error.networkResponse);
+                        }
+
+                        request.handleLoginError(error);
                     }
                 }) {
 
@@ -120,7 +128,9 @@ public class RequestHandler {
         //Set a retry policy in case of SocketTimeout & ConnectionTimeout Exceptions.
         //Volley does retry for you if you have specified the policy.
         if (stringRequest != null)
-            stringRequest.setRetryPolicy(new DefaultRetryPolicy(5000, 2, 2));
+            stringRequest.setRetryPolicy(new DefaultRetryPolicy(4000, 1, 1));
+//        Note: This was the retry policy until 27.10.2020:
+//            stringRequest.setRetryPolicy(new DefaultRetryPolicy(5000, 2, 2));
 
         RequestQueue requestQueue = createRequestQueue(request.getContext());
         requestQueue.add(stringRequest);

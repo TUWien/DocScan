@@ -3,6 +3,8 @@ package at.ac.tuwien.caa.docscan.rest;
 import android.content.Context;
 
 import com.android.volley.Request;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
 
 /**
  * Created by fabian on 01.12.2016.
@@ -59,6 +61,12 @@ public class LoginRequest extends RestRequest.XMLRequest {
 
     }
 
+    public void handleLoginError(VolleyError error) {
+
+        ((LoginCallback) mRestCallback).onLoginError(error);
+
+    }
+
     private String getSessionID(String response) {
 
         return super.findString(response, SESSION_ID_START, SESSION_ID_END);
@@ -90,6 +98,7 @@ public class LoginRequest extends RestRequest.XMLRequest {
     public interface LoginCallback extends RestRequest.RestCallback{
         void onLogin(User user);
         void onLoginError();
+        void onLoginError(VolleyError error);
     }
 
 }

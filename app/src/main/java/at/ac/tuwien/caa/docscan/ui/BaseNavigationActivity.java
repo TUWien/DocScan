@@ -144,6 +144,13 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
     }
 
     @Override
+    public void onLoginError(VolleyError error) {
+
+        User.getInstance().setLoggedIn(false);
+
+    }
+
+    @Override
     public void onLogout() {
 
         User.getInstance().setLoggedIn(false);
