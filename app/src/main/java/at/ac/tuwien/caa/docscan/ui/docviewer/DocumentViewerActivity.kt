@@ -107,7 +107,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //    private var updateSelectedNavigationItem = false
     private lateinit var messageReceiver: BroadcastReceiver
     private lateinit var selectableToolbar: SelectableToolbar
-    private var newPdfs = mutableListOf<String>()
+    private var newPdfs = mutableListOf<String?>()
 
     override fun onPdfSheetSelected(pdf: File, sheetAction: ActionSheet.SheetAction) {
 
@@ -1461,7 +1461,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
-    private fun updateDocumentList(fileName: String) {
+    private fun updateDocumentList(fileName: String?) {
+
+        if (fileName == null)
+            return
 
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             if ((this as DocumentsFragment).isVisible) {
@@ -1471,8 +1474,11 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
-    private fun updateGallery(fileName: String) {
+    private fun updateGallery(fileName: String?) {
 
+        if (fileName == null)
+            return
+        
         supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
             if ((this as ImagesFragment).isVisible) {
                 this.updateGallery(fileName)

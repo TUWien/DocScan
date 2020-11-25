@@ -3404,7 +3404,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         private void saveExif(File outFile) throws IOException {
 
-            final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
+            ExifInterface exif = Helper.getExifInterface(outFile, mContext);
+
+//            final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
 
             // Save the orientation of the image:
             int orientation = getExifOrientation();

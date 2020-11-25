@@ -52,7 +52,10 @@ class PdfFragment : Fragment() {
      *  Updates a file with a given path name if it is contained in the list. Otherwise it is added
      *  to the list.
      */
-    fun updateFile(path: String) {
+    fun updateFile(path: String?) {
+
+        if (path == null)
+            return
 
 //        Update the list, if the path is contained:
         if (!updateList(path))
