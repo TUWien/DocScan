@@ -177,7 +177,8 @@ dependencies {
 	implementation 'com.github.hollaus:OpenCVLibrary:1.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'com.dropbox.core:dropbox-core-sdk:3.1.3'
-    implementation 'androidx.exifinterface:exifinterface:1.1.0'
+	implementation 'androidx.exifinterface:exifinterface:1.3.1'
+//    implementation 'androidx.exifinterface:exifinterface:1.3.1'
     implementation 'androidx.preference:preference:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
 //	TODO: check here for a stable version. The reason we switch here to beta is badge support:

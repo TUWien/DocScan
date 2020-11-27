@@ -7,10 +7,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.appcompat.app.AlertDialog;
@@ -32,9 +30,7 @@ import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.ref.WeakReference;
@@ -909,27 +905,6 @@ public class Helper {
             Arrays.sort(files);
 
         return files;
-    }
-
-    public static ExifInterface getExifInterface(File file, Context context) {
-
-        if (context == null)
-            return null;
-
-        Uri uri = Uri.fromFile(file);
-
-        try {
-            ParcelFileDescriptor parcelFileDescriptor = context.getContentResolver().openFileDescriptor(uri, "rw");
-            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-            ExifInterface exifInterface = new ExifInterface(fileDescriptor);
-            return exifInterface;
-        } catch (FileNotFoundException e) {
-            return null;
-        } catch (IOException e) {
-            return null;
-        }
-
-
     }
 
     public static boolean isOnline(Context context) {
