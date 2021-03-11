@@ -40,6 +40,22 @@
             android:layout_weight="1">
 
             <ImageView
+                android:id="@+id/page_view_buttons_layout_segmentation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_marginBottom="8dp"
+                android:layout_marginTop="8dp"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_baseline_image_search_24" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <ImageView
                 android:id="@+id/page_view_buttons_layout_rotate_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

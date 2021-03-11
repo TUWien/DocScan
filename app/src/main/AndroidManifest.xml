@@ -7,7 +7,7 @@
         android:icon="@mipmap/ic_launcher_adaptive"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:name="androidx.multidex.MultiDexApplication"
+        android:name=".DocScanApp"
         android:theme="@style/AppTheme" >
 
         <!-- Download the ML kit model for OCR, after the app is installed from the play store -->
@@ -64,6 +64,12 @@
             android:name=".ui.gallery.PageSlideActivity"
             android:exported="true"
             android:parentActivityName=".ui.CameraActivity"
+            />
+
+        <activity
+            android:name=".ui.segmentation.SegmentationActivity"
+            android:exported="true"
+            android:parentActivityName=".ui.gallery.PageSlideActivity"
             />
 
         <activity

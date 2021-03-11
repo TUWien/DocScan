@@ -17,7 +17,7 @@
         <item name="textAllCaps">false</item>
     </style>
 
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar" >
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorAccent">@color/colorAccent</item>
         <item name="windowActionBar">false</item>
         <item name="windowActionBarOverlay">true</item>
@@ -91,6 +91,7 @@
         <item name="colorPrimary">@color/white</item>
         <item name="bottomSheetStyle">@style/OpaqueBottomSheetStyle</item>
     </style>
+
     <style name="OpaqueBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@color/control_background_color</item>
     </style>
@@ -101,8 +102,28 @@
         <item name="colorPrimary">@color/white</item>
         <item name="bottomSheetStyle">@style/TransparentBottomSheetStyle</item>
     </style>
+
     <style name="TransparentBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@color/control_background_color_transparent</item>
     </style>
 
+    <style name="TableRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <style name="TableRowItemKey">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">0.4</item>
+        <item name="android:layout_marginEnd">8dp</item>
+    </style>
+
+    <style name="TableRowItemValue">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">0.6</item>
+    </style>
 </resources>

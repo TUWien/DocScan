@@ -589,4 +589,20 @@
     </string-array>
 
 
+    <string name="segmentation_result_label">result:</string>
+    <string name="segmentation_label_model_name">model name</string>
+    <string name="segmentation_label_model_full_name">full name</string>
+    <string name="segmentation_label_gpu">isGPU</string>
+    <string name="segmentation_label_model_size">model input size</string>
+    <string name="segmentation_label_training_size">model training size</string>
+    <string name="segmentation_label_image_size">image size</string>
+    <string name="segmentation_label_total_task_time">total task time</string>
+    <string name="segmentation_label_decode_image">decode image</string>
+    <string name="segmentation_label_down_scale">down-scale/quantize</string>
+    <string name="segmentation_label_load_interpreter">load interpreter</string>
+    <string name="segmentation_label_allocate_buffer">allocateOutputBuffer</string>
+    <string name="segmentation_label_inference">inference</string>
+    <string name="segmentation_label_flatten_mask">flattenMask</string>
+    <string name="segmentation_label_rescale">rescale</string>
+    <string name="segmentatio_label_gpu_checkbox">GPU</string>
 </resources>

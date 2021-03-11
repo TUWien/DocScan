@@ -34,4 +34,14 @@
     <dimen name="login_spinner_size">100dp</dimen>
     <dimen name="sync_footer_height">80dp</dimen>
 
+    <!-- basic margin offset for item_model_result !-->
+    <dimen name="item_model_result_margin">4dp</dimen>
+    <!-- initial size for item_model_result (width and height are equal) !-->
+    <dimen name="item_model_result_size">200dp</dimen>
+    <!-- a possible range buffer for the default item size which gets dynamically adapted to get the best fit size !-->
+    <dimen name="item_model_result_buffer">40dp</dimen>
+    <!-- the granularity step size for the dynamically adapted size !-->
+    <dimen name="item_model_result_size_step">1dp</dimen>
+
+
 </resources>

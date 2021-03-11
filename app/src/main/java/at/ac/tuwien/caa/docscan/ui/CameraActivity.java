@@ -1748,7 +1748,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    private static Uri getFileName(String appName) {
+    public static Uri getFileName(String appName) {
 
         File mediaStorageDir = Helper.getMediaStorageDir(appName);
         if (mediaStorageDir == null)

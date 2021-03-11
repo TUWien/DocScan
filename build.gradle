@@ -2,7 +2,12 @@ ext {
     var = kotlin_version
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext.kotlin_version = '1.4.21'
+
+    ext {
+        kotlin_version = '1.4.21'
+        koin_version = "2.2.2"
+    }
+
     repositories {
         jcenter()
         google()

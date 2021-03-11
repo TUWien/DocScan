@@ -17,7 +17,7 @@
     <color name="debug_view_bg_color">#A6000000</color>
     <color name="shoot_button_color">#aaffffff</color>
     <color name="white">#ffffff</color>
-    <color name="black">#000</color>
+    <color name="black">#FF000000</color>
     <color name="icon_color_navigation_view">#424242</color>
 
     <!--<color name="button_view_bg_color">#333</color>-->
