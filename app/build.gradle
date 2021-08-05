@@ -19,7 +19,7 @@ android {
     compileSdkVersion 30
     defaultConfig {
         applicationId "at.ac.tuwien.caa.docscan"
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 30
         versionCode 156
         versionName "1.7.54"
@@ -232,6 +232,7 @@ dependencies {
     implementation 'android.arch.navigation:navigation-fragment:1.0.0'
     implementation 'android.arch.navigation:navigation-ui:1.0.0'
     implementation 'it.xabaras.android.espresso:recyclerview-child-actions:1.0'
+    implementation 'androidx.documentfile:documentfile:1.0.1'
 
 }
 repositories {

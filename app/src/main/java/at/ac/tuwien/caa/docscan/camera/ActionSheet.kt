@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Document
@@ -13,7 +14,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.sheet_dialog_camera.*
 import java.io.File
 
-open class PdfActionSheet(private val pdf: File, sheetActions: ArrayList<SheetAction>,
+open class PdfActionSheet(private val pdf: DocumentFile, sheetActions: ArrayList<SheetAction>,
                           private var pdfListener: PdfSheetSelection, dialogListener: DialogStatus) :
         ActionSheet(sheetActions, null, dialogListener) {
 
@@ -132,7 +133,7 @@ open class ActionSheet: BottomSheetDialogFragment {
 
 
     interface PdfSheetSelection {
-        fun onPdfSheetSelected(pdf: File, sheetAction: SheetAction)
+        fun onPdfSheetSelected(pdf: DocumentFile, sheetAction: SheetAction)
     }
 
     interface DocumentSheetSelection {

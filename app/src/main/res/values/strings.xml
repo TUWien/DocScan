@@ -533,6 +533,9 @@
     <string name="viewer_not_logged_in_text">You are currently not logged in. Do you want to login to a cloud service?</string>
     <string name="viewer_pdf_created_snackbar_text">Created pdf</string>
 
+    <string name="pdf_fragment_persisted_permission_title">Permission required</string>
+    <string name="pdf_fragment_persisted_permission_text">Your permission is required to save pdf
+    documents in a folder. Do you want to grant this permission now?</string>
 
     <!-- PdfSelectorActivity -->
     <string name="pdf_selector_title">Save document as PDF</string>

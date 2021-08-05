@@ -416,7 +416,6 @@ public class PdfCreator {
             document.close();
 
             notifyPdfChanged(outputFile, context);
-            Log.d(CLASS_NAME, "Document created at " + outputFile.getAbsolutePath());
             cropRunnable.mCropTask.handleState(MESSAGE_CREATED_DOCUMENT);
 
         } catch (Exception e) {

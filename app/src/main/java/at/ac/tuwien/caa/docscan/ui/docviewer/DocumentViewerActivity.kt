@@ -13,7 +13,7 @@ import android.view.View
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.FileProvider
+import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentTransaction
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import at.ac.tuwien.caa.docscan.R
@@ -109,7 +109,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     private lateinit var selectableToolbar: SelectableToolbar
     private var newPdfs = mutableListOf<String?>()
 
-    override fun onPdfSheetSelected(pdf: File, sheetAction: ActionSheet.SheetAction) {
+    override fun onPdfSheetSelected(pdf: DocumentFile, sheetAction: ActionSheet.SheetAction) {
 
         when(sheetAction.mId) {
             R.id.action_pdf_share_item -> {
@@ -121,8 +121,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         }
     }
 
-    private fun deletePdf(pdf: File) {
+    private fun deletePdf(pdf: DocumentFile) {
 
+        val name = pdf.name
         pdf.delete()
 
         supportFragmentManager.findFragmentByTag(PdfFragment.TAG)?.apply {
@@ -131,12 +132,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 updatePdfs()
         }
 
-        showDocumentsDeletedSnackbar(pdf.name)
+        showDocumentsDeletedSnackbar(name)
     }
 
-    private fun sharePdf(pdf: File) {
-        val uri = FileProvider.getUriForFile(this,
-                "at.ac.tuwien.caa.fileprovider", pdf)
+    private fun sharePdf(pdf: DocumentFile) {
+
+        val uri = pdf.uri
         val shareIntent = Intent()
         shareIntent.action = Intent.ACTION_SEND
         shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // temp permission for receiving app to read this file
@@ -180,7 +181,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
-    private fun showDeletePdfConfirmationDialog(pdf: File) {
+    private fun showDeletePdfConfirmationDialog(pdf: DocumentFile) {
 
 
 //        val deleteText = resources.getString(R.string.sync_confirm_delete_prefix_text)
@@ -728,7 +729,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     /**
      * Shows a snackbar indicating that documents have been deleted.
      */
-    private fun showDocumentsDeletedSnackbar(title: String) {
+    private fun showDocumentsDeletedSnackbar(title: String?) {
 
         val snackbarText = "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $title"
         val s = Snackbar.make(findViewById(R.id.sync_coordinatorlayout), snackbarText, Snackbar.LENGTH_LONG)
@@ -869,10 +870,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
-    override fun onPdfOptions(file: File) {
-        showPdfOptions(file)
-    }
-
     override fun onDocumentOptions(document: Document) {
 
         showDocumentOptions(document)
@@ -883,7 +880,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         return NavigationDrawer.NavigationItemEnum.DOCUMENTS
     }
 
-    private fun showPdfOptions(file: File) {
+    private fun showPdfOptions(file: DocumentFile) {
 
         val sheetActions = ArrayList<ActionSheet.SheetAction>()
 
@@ -1485,6 +1482,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             }
         }
 
+    }
+
+    override fun onPdfOptions(file: DocumentFile) {
+        showPdfOptions(file)
     }
 
 
