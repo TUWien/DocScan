@@ -1232,8 +1232,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
 
-                Log.d(CLASS_NAME, "taking picture");
-
                 mTimerCallbacks.onTimerStopped(SHOT_TIME);
                 mTimerCallbacks.onTimerStarted(SHOT_TIME);
                 mTimerCallbacks.onTimerStopped(FLIP_SHOT_TIME);

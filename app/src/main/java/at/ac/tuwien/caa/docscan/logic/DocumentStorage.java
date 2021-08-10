@@ -1,7 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
-import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
@@ -479,7 +479,8 @@ public class DocumentStorage {
                     Crashlytics.logException(new Throwable());
                     Crashlytics.log("renameSuccess = false");
                 }
-                else {
+                // The backup is not accessible anymore on Android 30:
+                else if (Build.VERSION.SDK_INT <= 29){
 //                    Save the backupfile:
                     saveJSONBackup(context, storeFile);
                 }

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.view.LayoutInflater
@@ -32,6 +33,7 @@ class PdfFragment : Fragment() {
 
         val TAG = "PdfFragment"
         val NEW_PDFS_KEY = "NEW_PDFS_KEY"
+        val PERSISTABLE_URI_PERMISSION = 0
     }
 
     private lateinit var newPdfs: MutableList<String>
@@ -67,13 +69,12 @@ class PdfFragment : Fragment() {
             addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
         }
 
-//        TODO: use a meaningfull int here:
-        startActivityForResult(intent, 42)
+        startActivityForResult(intent, PERSISTABLE_URI_PERMISSION)
     }
 
     override fun onActivityResult(
         requestCode: Int, resultCode: Int, resultData: Intent?) {
-        if (requestCode == 42
+        if (requestCode == PERSISTABLE_URI_PERMISSION
             && resultCode == Activity.RESULT_OK) {
             // The result data contains a URI for the document or directory that
             // the user selected.
@@ -287,15 +288,19 @@ class PdfFragment : Fragment() {
      */
     private fun isPermissionGiven(folder: String): Boolean {
 
-        val permissions = context?.contentResolver?.persistedUriPermissions
-        if (permissions != null) {
-            for (permission in permissions) {
-                if (permission.uri.toString() == folder)
-                    return true
-            }
-        }
+        if (Build.VERSION.SDK_INT >= 29) {
 
-        return false
+            val permissions = context?.contentResolver?.persistedUriPermissions
+            if (permissions != null) {
+                for (permission in permissions) {
+                    if (permission.uri.toString() == folder)
+                        return true
+                }
+            }
+            return false
+        }
+        else
+            return true
 
     }
 
@@ -315,7 +320,7 @@ class PdfFragment : Fragment() {
                 arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
                 null,
                 null,
-                null);
+                null)
             if (cursor != null && cursor.moveToFirst()) {
                 do {
                     val pdfUri = DocumentsContract.buildDocumentUriUsingTree(uri, cursor.getString(0))

@@ -217,7 +217,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 retry = false;
             } catch (InterruptedException e) {
                 Crashlytics.logException(e);
-                Log.d(CLASS_NAME, e.toString());
             }
         }
 
@@ -321,7 +320,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         mFocusTouchPoint = point;
         mFocusTouchStart = System.nanoTime();
 
-        Log.d(CLASS_NAME, "focus tocuhed");
     }
 
     public void hideFocusCircle() {
@@ -627,13 +625,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 // Animate:
                 if (timeDiff <= FOCUS_TOUCH_ANIMATION_DURATION) {
                     mFocusTouchCirclePaint.setAlpha(150);
-                    Log.d(TAG, "focus animation");
                     radius = (int) (FOCUS_TOUCH_CIRCLE_RADIUS_END +
                             Math.round(FOCUS_TOUCH_CIRCLE_RADIUS_START - FOCUS_TOUCH_CIRCLE_RADIUS_END)
                                     * (1 - (float) timeDiff / FOCUS_TOUCH_ANIMATION_DURATION));
                 }
                 else {
-                    Log.d(TAG, "focus stopped animation");
                     int alpha = mFocusTouchCirclePaint.getAlpha() - 20;
                     if (alpha < 0)
                         alpha = 0;
@@ -745,8 +741,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 PointF s = screenPoints.get(csIdx);
                 PointF e = screenPoints.get(ceIdx);
 
-                Log.d(CLASS_NAME, "s: " + s + " e: " + e);
-
 //            Determine the angle of the text rotation:
                 DkVector v = new DkVector(e, s);
                 DkVector y = new DkVector(1, 0);
@@ -754,8 +748,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     angle = (360 - v.angle(y)) % 360;
                 else
                     angle = v.angle(y) % 360;
-
-                Log.d(CLASS_NAME, "angle: " + angle);
 
                 tl = screenPoints.get(csIdx);
 //            Make a deep copy, because we will modify the point:

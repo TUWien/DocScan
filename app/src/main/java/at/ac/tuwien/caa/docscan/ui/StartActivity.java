@@ -29,6 +29,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import com.google.android.material.tabs.TabLayout;
@@ -215,7 +216,8 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         String[] PERMISSIONS = {
                 Manifest.permission.CAMERA,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.READ_EXTERNAL_STORAGE
         };
 
         if(!hasPermissions(this, PERMISSIONS)){
@@ -311,6 +313,12 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
                     R.string.start_permission_storage_text));
             return;
         }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            showPermissionRequiredAlert(getResources().getString(
+                    R.string.start_permission_storage_text));
+            return;
+        }
 
         if (mDocumentCreateRequest) {
             Intent intent = new Intent(this, CreateDocumentActivity.class);
@@ -328,8 +336,10 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         if (DocumentStorage.isStoreFileExisting(this)) {
             DocumentStorage.loadJSON(this);
             startCameraIntent();
+            return;
         }
-        else if (DocumentStorage.isBackupExisting(this))
+        // Unfortunately scoped storage does not allow to recover the backup on Android level >= 30:
+        if (Build.VERSION.SDK_INT <= 29 && DocumentStorage.isBackupExisting(this))
             askForBackupRestore();
         else {
             DocumentStorage.clearInstance();
