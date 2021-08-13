@@ -3,7 +3,9 @@ package at.ac.tuwien.caa.docscan.ui;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.appcompat.app.AlertDialog;
+
 import android.view.View;
 import android.view.ViewManager;
 import android.widget.Button;
@@ -58,8 +60,7 @@ public class AccountActivity extends BaseNavigationActivity implements DropboxUt
         if (show) {
             buttonsLayout.setVisibility(View.VISIBLE);
             offlineTextView.setVisibility(View.GONE);
-        }
-        else {
+        } else {
             buttonsLayout.setVisibility(View.GONE);
             offlineTextView.setVisibility(View.VISIBLE);
         }
@@ -105,7 +106,7 @@ public class AccountActivity extends BaseNavigationActivity implements DropboxUt
                 .setTitle(R.string.account_delete_sync_storage_title)
                 .setPositiveButton(R.string.sync_confirm_login_button_text, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i)  {
+                    public void onClick(DialogInterface dialogInterface, int i) {
                         clearUserAndLogin(proceedingActivity);
                     }
                 })

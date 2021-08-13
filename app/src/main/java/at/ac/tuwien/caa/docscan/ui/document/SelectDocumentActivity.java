@@ -102,7 +102,6 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
     }
 
 
-
     @Override
     public void onSelectionChange() {
 
@@ -111,8 +110,7 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
         if (documents.isEmpty()) {
             mSelectedDocument = null;
             mSelectButton.setVisibility(View.INVISIBLE);
-        }
-        else {
+        } else {
             mSelectedDocument = documents.get(0);
             mSelectButton.setVisibility(View.VISIBLE);
         }

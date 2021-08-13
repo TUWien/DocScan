@@ -3,19 +3,15 @@
 
     <item
         android:id="@+id/series_new_item"
-        android:title="@string/series_create"
-        />
+        android:title="@string/series_create" />
     <item
         android:id="@+id/series_edit_item"
-        android:title="@string/series_edit"
-        />
+        android:title="@string/series_edit" />
     <item
         android:id="@+id/series_switch_item"
-        android:title="@string/series_switch"
-        />
+        android:title="@string/series_switch" />
     <item
         android:id="@+id/series_qr_item"
-        android:title="@string/series_qr"
-        />
+        android:title="@string/series_qr" />
 
 </menu>

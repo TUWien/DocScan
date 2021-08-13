@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.appcompat.app.AlertDialog;
@@ -38,7 +39,7 @@ import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
  * Created by fabian on 24.11.2017.
  */
 
-public class MapViewActivity  extends BaseNoNavigationActivity {
+public class MapViewActivity extends BaseNoNavigationActivity {
 
     public static final String KEY_MAP_VIEW_ACTIVITY_FINISHED = "KEY_MAP_VIEW_ACTIVITY_FINISHED";
 
@@ -167,20 +168,17 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
     /**
      * Moves the temporary file from the internal to the external storage and overwrites the
      * original image.
+     *
      * @param src
      * @param dst
      * @throws IOException
      */
-    private static void copyFile(File src, File dst) throws IOException
-    {
+    private static void copyFile(File src, File dst) throws IOException {
         FileChannel inChannel = new FileInputStream(src).getChannel();
         FileChannel outChannel = new FileOutputStream(dst).getChannel();
-        try
-        {
+        try {
             inChannel.transferTo(0, inChannel.size(), outChannel);
-        }
-        finally
-        {
+        } finally {
             if (inChannel != null)
                 inChannel.close();
             outChannel.close();
@@ -210,7 +208,6 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 //    }
 
 
-
     private void showNoTransformationAlert() {
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -228,6 +225,7 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
     /**
      * Constructs a new temporary file the in the internal storage directory of the app.
+     *
      * @param fileName
      * @return
      */
@@ -242,6 +240,7 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
 
     /**
      * Informs DocScan and other (system) apps that the image has been changed.
+     *
      * @param file
      */
     private void sendNewImageBroadcast(File file) {
@@ -290,8 +289,7 @@ public class MapViewActivity  extends BaseNoNavigationActivity {
                     mImageView.setImage(ImageSource.uri(file.getAbsolutePath()));
                     sendNewImageBroadcast(file);
                 }
-            }
-            else {
+            } else {
                 showNoTransformationAlert();
             }
 

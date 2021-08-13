@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<transitionSet
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<transitionSet xmlns:android="http://schemas.android.com/apk/res/android"
     android:duration="375"
     android:transitionOrdering="together">
-    <changeClipBounds/>
-    <changeTransform/>
-    <changeBounds/>
+    <changeClipBounds />
+    <changeTransform />
+    <changeBounds />
 </transitionSet>

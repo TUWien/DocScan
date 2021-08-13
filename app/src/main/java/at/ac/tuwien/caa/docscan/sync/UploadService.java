@@ -10,8 +10,10 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.util.Log;
 
 import com.android.volley.VolleyError;
@@ -231,7 +233,6 @@ public class UploadService extends JobService implements
         sendFileDeletedErrorIntent();
 
 
-
     }
 
     private void sendFileDeletedErrorIntent() {
@@ -304,7 +305,6 @@ public class UploadService extends JobService implements
     }
 
 
-
     /**
      * Handles errors that occur before the first file is uploaded.
      */
@@ -350,6 +350,7 @@ public class UploadService extends JobService implements
      * This is just called if an upload was already finished before the UploadService job was started.
      * Hence we need to take a look if TranskribusUtils is waiting for this upload id, because
      * otherwise it will starve.
+     *
      * @param uploadID
      */
     @Override
@@ -433,7 +434,7 @@ public class UploadService extends JobService implements
                 case User.SYNC_TRANSKRIBUS:
 //                    Note this should be assured, by deleting the SyncStorage, after the user
 //                    switches the connection:
-                    if (syncFile instanceof  TranskribusSyncFile)
+                    if (syncFile instanceof TranskribusSyncFile)
                         TranskribusUtils.getInstance().uploadFile(this, getApplicationContext(),
                                 (TranskribusSyncFile) syncFile);
                     else
@@ -443,7 +444,7 @@ public class UploadService extends JobService implements
                 case User.SYNC_DROPBOX:
 //                    Note this should be assured, by deleting the SyncStorage, after the user
 //                    switches the connection:
-                    if (syncFile instanceof  DropboxSyncFile)
+                    if (syncFile instanceof DropboxSyncFile)
                         DropboxUtils.getInstance().uploadFile(this, (DropboxSyncFile) syncFile);
                     else
                         onUploadComplete(syncFile);
@@ -521,6 +522,7 @@ public class UploadService extends JobService implements
 
         /**
          * This occurs during file upload and is thrown by TranskribusUtils.uploadFile.
+         *
          * @param e
          */
         @Override
@@ -636,7 +638,7 @@ public class UploadService extends JobService implements
                 + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
         DataLog.getInstance().writeUploadLog(getApplicationContext(), CLASS_NAME,
                 "updateNotification: unfinished upload ids size: "
-                + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
+                        + SyncStorage.getInstance(getApplicationContext()).getUnfinishedUploadIDs().size());
 
         if (mNotificationBuilder == null)
             return;

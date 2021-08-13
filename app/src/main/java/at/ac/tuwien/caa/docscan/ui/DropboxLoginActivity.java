@@ -2,7 +2,9 @@ package at.ac.tuwien.caa.docscan.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.appcompat.app.AlertDialog;
+
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -22,7 +24,7 @@ import me.drakeet.support.toast.ToastCompat;
  * Created by fabian on 23.08.2017.
  */
 
-public class DropboxLoginActivity extends BaseNoNavigationActivity implements LoginRequest.LoginCallback{
+public class DropboxLoginActivity extends BaseNoNavigationActivity implements LoginRequest.LoginCallback {
 
     private boolean mIsActitivyJustCreated;
 
@@ -42,7 +44,7 @@ public class DropboxLoginActivity extends BaseNoNavigationActivity implements Lo
             public void onClick(View v) {
                 //        TODO: handle cases in which the user rejects the authentication
                 if (!DropboxUtils.getInstance().startAuthentication(getApplicationContext())) {
-                       showNotAuthenticatedDialog();
+                    showNotAuthenticatedDialog();
                 }
             }
         });
@@ -90,7 +92,6 @@ public class DropboxLoginActivity extends BaseNoNavigationActivity implements Lo
         }
 
 
-
 //        mIsActitivyJustCreated = false;
 
     }
@@ -126,6 +127,7 @@ public class DropboxLoginActivity extends BaseNoNavigationActivity implements Lo
     public void onLoginError() {
         showLoadingLayout(false);
     }
+
     @Override
     public void onLoginError(VolleyError error) {
         showLoadingLayout(false);
@@ -155,8 +157,7 @@ public class DropboxLoginActivity extends BaseNoNavigationActivity implements Lo
         if (showLoading) {
             authenticationLayout.setVisibility(View.INVISIBLE);
             loadingLayout.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             authenticationLayout.setVisibility(View.VISIBLE);
             loadingLayout.setVisibility(View.INVISIBLE);
         }

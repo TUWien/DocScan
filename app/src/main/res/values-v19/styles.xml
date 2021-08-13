@@ -2,7 +2,7 @@
 <resources>
 
     <!--<style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar" >-->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar" >
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowTranslucentStatus">true</item>
         <!--<item name="colorAccent">@color/colorAccent</item>-->
         <item name="colorSecondary">@color/colorAccent</item>
@@ -18,7 +18,7 @@
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="preferenceTheme">@style/Preference</item>
         <item name="alertDialogTheme">@style/AlertDialogTheme</item>
-<!--        <item name="materialButtonStyle">@style/ButtonStyle</item>-->
+        <!--        <item name="materialButtonStyle">@style/ButtonStyle</item>-->
     </style>
 
     <style name="TextInputLayoutAppearance" parent="Widget.Design.TextInputLayout">
@@ -30,15 +30,15 @@
         <item name="colorControlHighlight">@color/colorAccent</item>
     </style>
 
-<!--    <style name="TextLabel" parent="TextAppearance.AppCompat">-->
-<!--        &lt;!&ndash; Hint color and label color in FALSE state &ndash;&gt;-->
-<!--        <item name="android:textColorHint">@color/colorAccent</item>-->
-<!--        <item name="android:textSize">20sp</item>-->
-<!--        &lt;!&ndash; Label color in TRUE state and bar color FALSE and TRUE State &ndash;&gt;-->
-<!--        <item name="colorAccent">@color/colorAccent</item>-->
-<!--        <item name="colorControlNormal">@color/colorAccent</item>-->
-<!--        <item name="colorControlActivated">@color/colorAccent</item>-->
-<!--    </style>-->
+    <!--    <style name="TextLabel" parent="TextAppearance.AppCompat">-->
+    <!--        &lt;!&ndash; Hint color and label color in FALSE state &ndash;&gt;-->
+    <!--        <item name="android:textColorHint">@color/colorAccent</item>-->
+    <!--        <item name="android:textSize">20sp</item>-->
+    <!--        &lt;!&ndash; Label color in TRUE state and bar color FALSE and TRUE State &ndash;&gt;-->
+    <!--        <item name="colorAccent">@color/colorAccent</item>-->
+    <!--        <item name="colorControlNormal">@color/colorAccent</item>-->
+    <!--        <item name="colorControlActivated">@color/colorAccent</item>-->
+    <!--    </style>-->
 
     <!--Taken from: https://stackoverflow.com/questions/27965662/how-can-i-change-default-dialog-button-text-color-in-android-5-->
     <style name="AlertDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
@@ -47,10 +47,10 @@
         <item name="buttonBarButtonStyle">@style/DialogButtonStyle</item>
     </style>
 
-<!--    <style name="ButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">-->
-<!--        <item name="android:textColor">@color/white</item>-->
-<!--        <item name="backgroundTint">@color/colorControlHighlight</item>-->
-<!--    </style>-->
+    <!--    <style name="ButtonStyle" parent="Widget.MaterialComponents.Button.TextButton">-->
+    <!--        <item name="android:textColor">@color/white</item>-->
+    <!--        <item name="backgroundTint">@color/colorControlHighlight</item>-->
+    <!--    </style>-->
 
     <style name="DialogButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
         <item name="android:textColor">@color/colorControlHighlight</item>
@@ -63,7 +63,7 @@
 
     <!--<item name="actionOverflowMenuStyle">@style/OverflowMenu</item>-->
     <!--<style name="OverflowMenu" parent="Widget.AppCompat.PopupMenu.Overflow">-->
-        <!--&lt;!&ndash; Required for Lollipop. &ndash;&gt;-->
-        <!--<item name="android:dropDownVerticalOffset">40.0dp</item>-->
+    <!--&lt;!&ndash; Required for Lollipop. &ndash;&gt;-->
+    <!--<item name="android:dropDownVerticalOffset">40.0dp</item>-->
     <!--</style>-->
 </resources>

@@ -64,17 +64,19 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
     private boolean mProcessFrame = true;
     private boolean mIsPaused = false;
     private boolean mIsFocusMeasured;
-//    private boolean mIsAggressiveAutoFocus = false;
+    //    private boolean mIsAggressiveAutoFocus = false;
     private boolean mIsAlreadyChanged = true;
 
-//    used for testing with artificial created mats:
+    //    used for testing with artificial created mats:
     private boolean mIsTesting = false;
     public static final int TEST_STATE_NO_PAGE = 0;
+
     public enum TestState {
         TEST_STATE_NO_PAGE,
         TEST_STATE_PAGE_A,
         TEST_STATE_PAGE_B
     }
+
     private TestState mTestState = TestState.TEST_STATE_NO_PAGE;
 
     //    Singleton:
@@ -151,7 +153,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                             Log.d(CLASS_NAME, "handleMessage: onMovement: false");
 
-                            if (!mIsAlreadyChanged){
+                            if (!mIsAlreadyChanged) {
 
                                 if (!ChangeDetector.getInstance().isNewFakeFrame(mat)) {
 
@@ -165,8 +167,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                                     break;
 
-                                }
-                                else
+                                } else
                                     Log.d(CLASS_NAME, "handleMessage: is new fake " +
                                             "frame");
 
@@ -227,8 +228,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                                 mCVCallback.onWaitingForDoc(false, true);
                                 mCheckState = CHANGE_TASK_START_PAGE_DETECTION;
                                 releaseMat(mat);
-                            }
-                            else
+                            } else
 //                                Start the page detection:
                                 createProcessor(mat, ImageProcessor.ProcessorType.PAGE);
 
@@ -328,8 +328,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                             break;
 
                     }
-                }
-                else {
+                } else {
 
                     switch (message) {
 
@@ -469,7 +468,6 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
         }
 
 
-
     }
 
     public void setTestState(TestState state) {
@@ -545,7 +543,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 //        }
     }
 
-//    This is just for testing purposes:
+    //    This is just for testing purposes:
     public static byte[] mat2Byte(Mat mat) {
 
         byte[] return_buff = new byte[(int) (mat.total() *
@@ -571,7 +569,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 //        page.copyTo(resultSub);
 
         result.setTo(new Scalar(0, 255, 0));
-        Mat submat= result.submat(new org.opencv.core.Rect(20,20, page.cols(), page.rows()));
+        Mat submat = result.submat(new org.opencv.core.Rect(20, 20, page.cols(), page.rows()));
         page.copyTo(submat);
 
         Bitmap bmp = Bitmap.createBitmap(result.cols(), result.rows(), Bitmap.Config.ARGB_8888);
@@ -582,7 +580,6 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
         Bitmap bmpYuv = Bitmap.createBitmap(yuv.cols(), yuv.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(result, bmpYuv);
-
 
 
 //        ByteBuffer byteBuffer = ByteBuffer.allocate(bmpYuv.getByteCount());
@@ -676,9 +673,9 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
     }
 
     public void setIsFocusMeasured(boolean isFocusMeasured) {
-        
+
         mIsFocusMeasured = isFocusMeasured;
-        
+
     }
 
 //    public void setIsAggressiveAutoFocus(boolean isAggressive) {

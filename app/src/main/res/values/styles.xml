@@ -17,7 +17,7 @@
         <item name="textAllCaps">false</item>
     </style>
 
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar" >
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorAccent">@color/colorAccent</item>
         <item name="windowActionBar">false</item>
         <item name="windowActionBarOverlay">true</item>
@@ -91,6 +91,7 @@
         <item name="colorPrimary">@color/white</item>
         <item name="bottomSheetStyle">@style/OpaqueBottomSheetStyle</item>
     </style>
+
     <style name="OpaqueBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@color/control_background_color</item>
     </style>
@@ -101,6 +102,7 @@
         <item name="colorPrimary">@color/white</item>
         <item name="bottomSheetStyle">@style/TransparentBottomSheetStyle</item>
     </style>
+
     <style name="TransparentBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@color/control_background_color_transparent</item>
     </style>

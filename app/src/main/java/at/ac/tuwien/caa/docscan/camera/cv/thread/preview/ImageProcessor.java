@@ -54,6 +54,7 @@ public abstract class ImageProcessor implements Runnable {
     protected interface ImageProcessorCallback {
 
         void handleState(int type, Mat mat);
+
         void handleObject(int type, Object[] object, Mat mat);
 
     }

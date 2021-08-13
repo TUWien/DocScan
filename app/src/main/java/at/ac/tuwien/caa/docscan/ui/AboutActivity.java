@@ -33,7 +33,7 @@ public class AboutActivity extends BaseNavigationActivity {
         // Show the app version number and build time:
         try {
             String versionName = getResources().getString(R.string.about_version_prefix_text);
-            versionName +=  " " + getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            versionName += " " + getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
             TextView versionTextView = findViewById(R.id.about_version_textview);
             versionTextView.setText(versionName);
 

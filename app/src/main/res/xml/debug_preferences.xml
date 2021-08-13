@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory
-        android:title="@string/settings_preview_title">
+    <PreferenceCategory android:title="@string/settings_preview_title">
         <CheckBoxPreference
             android:key="@string/key_show_focus_values"
             android:title="@string/settings_show_focus_values_checkbox_title"
             android:defaultValue="false" />
-
 
 
         <CheckBoxPreference
@@ -18,10 +16,10 @@
     </PreferenceCategory>
 
     <!--<CheckBoxPreference-->
-        <!--android:key="@string/key_show_advanced_qr_code"-->
-        <!--android:title="@string/settings_show_advanced_qr_code_checkbox_title"-->
-        <!--android:summary="@string/settings_show_advanced_qr_code_checkbox_summary"-->
-        <!--android:defaultValue="false" />-->
+    <!--android:key="@string/key_show_advanced_qr_code"-->
+    <!--android:title="@string/settings_show_advanced_qr_code_checkbox_title"-->
+    <!--android:summary="@string/settings_show_advanced_qr_code_checkbox_summary"-->
+    <!--android:defaultValue="false" />-->
 
     <CheckBoxPreference
         android:key="@string/key_aggressive_autofocus"

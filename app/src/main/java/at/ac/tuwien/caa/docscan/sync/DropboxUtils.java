@@ -82,7 +82,6 @@ public class DropboxUtils {
         }
 
 
-
     }
 
     private void addDocument(String documentTitle) {
@@ -116,6 +115,7 @@ public class DropboxUtils {
     /**
      * Clears the token, which is similar to logging a user out. See here:
      * https://github.com/dropbox/dropbox-sdk-java/issues/92
+     *
      * @param callback
      */
     public void clearAccessToken(DropboxCallback callback) {
@@ -130,8 +130,7 @@ public class DropboxUtils {
 
         try {
             Auth.startOAuth2Authentication(context, BuildConfig.DropboxApiKey);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Crashlytics.logException(e);
 //                This happens if a wrong api key is provided
             return false;
@@ -194,7 +193,7 @@ public class DropboxUtils {
         }
 
 
-        protected void onPostExecute(Boolean isConnected){
+        protected void onPostExecute(Boolean isConnected) {
             if (isConnected)
                 mCallback.onLogin(User.getInstance());
             else
@@ -244,8 +243,7 @@ public class DropboxUtils {
 //            I did not found another way to check the presence of a folder:
             try {
                 list = mClient.files().listFolder("/" + mDocument.getTitle());
-            }
-            catch(ListFolderErrorException e) {
+            } catch (ListFolderErrorException e) {
                 Crashlytics.logException(e);
                 return remoteFileNames;
             }
@@ -280,7 +278,7 @@ public class DropboxUtils {
                     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                     'a', 'b', 'c', 'd', 'e', 'f'};
 
-            char[] buf = new char[2*data.length];
+            char[] buf = new char[2 * data.length];
             int i = 0;
             for (byte b : data) {
                 buf[i++] = HEX_DIGITS[(b & 0xf0) >>> 4];
@@ -290,7 +288,7 @@ public class DropboxUtils {
 
         }
 
-        protected void onPostExecute(Void v){
+        protected void onPostExecute(Void v) {
 
             mCallback.onFilesPrepared();
 
@@ -316,8 +314,7 @@ public class DropboxUtils {
                     if (n < 0) break;  // EOF
                     hasher.update(buf, 0, n);
                 }
-            }
-            finally {
+            } finally {
                 in.close();
             }
 
@@ -337,6 +334,7 @@ public class DropboxUtils {
 
         /**
          * Returns true if the token is cleared:
+         *
          * @param voids
          * @return
          */

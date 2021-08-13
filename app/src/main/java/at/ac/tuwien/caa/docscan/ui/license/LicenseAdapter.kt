@@ -9,7 +9,8 @@ import kotlinx.android.synthetic.main.license_list_item.view.*
 import java.util.*
 
 
-class LicenseAdapter(private val licenseList: ArrayList<LicenseActivity.License>) : RecyclerView.Adapter<LicenseAdapter.ViewHolder>() {
+class LicenseAdapter(private val licenseList: ArrayList<LicenseActivity.License>) :
+    RecyclerView.Adapter<LicenseAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
@@ -28,7 +29,7 @@ class LicenseAdapter(private val licenseList: ArrayList<LicenseActivity.License>
 
         val license = licenseList[position]
 
-        with (holder) {
+        with(holder) {
             title.text = license.mName
             copyright.text = license.mCopyright
             licenseText.text = license.mLicense

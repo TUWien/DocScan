@@ -1,9 +1,11 @@
 package at.ac.tuwien.caa.docscan.ui.gallery;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.viewpager.widget.ViewPager;
+
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 

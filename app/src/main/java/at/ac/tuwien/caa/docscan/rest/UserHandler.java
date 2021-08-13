@@ -13,12 +13,12 @@ import static at.ac.tuwien.caa.docscan.rest.User.SYNC_DROPBOX;
 public class UserHandler {
 
 
-    private static final String FIRST_NAME_KEY =    "firstName";
-    private static final String LAST_NAME_KEY =     "lastName";
-    private static final String NAME_KEY =          "userName";
-    private static final String TRANSKRIBUS_PASSWORD_KEY =      "userPassword";
+    private static final String FIRST_NAME_KEY = "firstName";
+    private static final String LAST_NAME_KEY = "lastName";
+    private static final String NAME_KEY = "userName";
+    private static final String TRANSKRIBUS_PASSWORD_KEY = "userPassword";
     private static final String DROPBOX_TOKEN_KEY = "dropboxToken";
-    private static final String CONNECTION_KEY =    "connection";
+    private static final String CONNECTION_KEY = "connection";
 
     public static void clearUser(Context context) {
 

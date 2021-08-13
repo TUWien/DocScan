@@ -88,10 +88,11 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
     }
 
     /**
-     This is a dirty workaround to solve the issue arising with unfinished uploads, that are
-     already finished, but we did not receive a finish from the server, because the connection
-     was closed before. After a while, such old and finished uploads are removed from the
-     server and if we query them we get a 404 error. Therefore, we catch the error in this class.
+     * This is a dirty workaround to solve the issue arising with unfinished uploads, that are
+     * already finished, but we did not receive a finish from the server, because the connection
+     * was closed before. After a while, such old and finished uploads are removed from the
+     * server and if we query them we get a 404 error. Therefore, we catch the error in this class.
+     *
      * @param error
      */
 
@@ -122,7 +123,6 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
 //                mRestCallback.handleRestError(this, error);
 //                break;
 //        }
-
 
 
     }
@@ -156,9 +156,10 @@ public class UploadStatusRequest extends RestRequest.XMLRequest {
         Log.d(CLASS_NAME, "handleRestError: networkResponse: " + networkResponse);
     }
 
-    public interface UploadStatusCallback extends RestCallback{
+    public interface UploadStatusCallback extends RestCallback {
 
         void onStatusReceived(int uploadID, String title, ArrayList<String> unfinishedFileNames);
+
         void onUploadAlreadyFinished(int uploadID);
 
     }

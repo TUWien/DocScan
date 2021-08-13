@@ -1,43 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/drawer_layout"
-    android:fitsSystemWindows="true"
-    >
+    android:fitsSystemWindows="true">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/main_frame_layout"
-        android:background="@color/control_background_color"
-        >
+        android:background="@color/control_background_color">
 
         <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
-        <fragment android:name="at.ac.tuwien.caa.docscan.camera.CameraPaintFragment"
+        <fragment
+            android:name="at.ac.tuwien.caa.docscan.camera.CameraPaintFragment"
             android:id="@+id/camera_paint_fragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:tag="CameraPaintFragment"
-            />
+            android:tag="CameraPaintFragment" />
 
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="@dimen/camera_text_overlay_height"
             android:layout_marginLeft="5dp"
             android:layout_above="@+id/camera_controls_layout"
-            android:layout_marginBottom="100dp"
-            >
+            android:layout_marginBottom="100dp">
+
             <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/camera_info_button"
                 android:layout_width="@dimen/camera_text_overlay_height"
                 android:layout_height="@dimen/camera_text_overlay_height"
                 android:background="@drawable/camera_text_overlay_bg"
                 android:layout_centerVertical="true"
-                app:srcCompat="@drawable/ic_info_outline_white_24dp"/>
+                app:srcCompat="@drawable/ic_info_outline_white_24dp" />
+
             <TextView
                 android:id="@+id/instruction_view"
                 android:layout_toRightOf="@+id/camera_info_button"
@@ -50,16 +48,14 @@
                 android:layout_centerVertical="true"
                 android:textColor="@color/white"
                 android:background="@drawable/camera_text_overlay_bg"
-                android:textSize="16sp"
-                />
+                android:textSize="16sp" />
         </RelativeLayout>
 
-        <include layout="@layout/camera_controls_layout"
-            />
+        <include layout="@layout/camera_controls_layout" />
 
     </RelativeLayout>
 
     <!-- The navigation drawer -->
-    <include layout="@layout/navigation_view"/>
+    <include layout="@layout/navigation_view" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -3,19 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!--<item-->
-        <!--android:icon="@drawable/ic_rotate_right_black_24dp"-->
-        <!--android:title="@string/map_view_item_rotate"-->
-        <!--android:visible="true"-->
-        <!--app:showAsAction="always"-->
-        <!--android:onClick="rotateMapView"-->
-        <!--/>-->
+    <!--android:icon="@drawable/ic_rotate_right_black_24dp"-->
+    <!--android:title="@string/map_view_item_rotate"-->
+    <!--android:visible="true"-->
+    <!--app:showAsAction="always"-->
+    <!--android:onClick="rotateMapView"-->
+    <!--/>-->
     <item
         android:id="@+id/map_menu_save_item"
         android:icon="@drawable/ic_save_black_24dp"
         android:title="@string/map_view_item_save"
         android:visible="true"
         app:showAsAction="always"
-        android:onClick="saveImage"
-        />
+        android:onClick="saveImage" />
 
 </menu>

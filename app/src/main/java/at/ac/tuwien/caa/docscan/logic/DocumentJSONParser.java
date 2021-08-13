@@ -46,17 +46,19 @@ public class DocumentJSONParser {
     }
 
 
-
     private static class JSONDocument {
 
         //    String serialization needed for generating JSON strings from the member fields:
-        private static final String JSON_METADATA =             "md";
-        private static final String JSON_RELATED_UPLOAD_ID =    "relatedUploadId";
-        private static final String JSON_PAGE_LIST =            "pageList";
+        private static final String JSON_METADATA = "md";
+        private static final String JSON_RELATED_UPLOAD_ID = "relatedUploadId";
+        private static final String JSON_PAGE_LIST = "pageList";
 
-        @SerializedName(JSON_METADATA)                          private JSONMetaData mMetaData;
-        @SerializedName(JSON_RELATED_UPLOAD_ID)                 private Integer mRelatedUploadId;
-        @SerializedName(JSON_PAGE_LIST)                         private JSONPageList mPageList;
+        @SerializedName(JSON_METADATA)
+        private JSONMetaData mMetaData;
+        @SerializedName(JSON_RELATED_UPLOAD_ID)
+        private Integer mRelatedUploadId;
+        @SerializedName(JSON_PAGE_LIST)
+        private JSONPageList mPageList;
 
         private JSONDocument(Document document) {
 
@@ -74,9 +76,10 @@ public class DocumentJSONParser {
 
     private static class JSONPageList {
 
-        private static final String JSON_PAGES =                 "pages";
+        private static final String JSON_PAGES = "pages";
 
-        @SerializedName(JSON_PAGES)                              private ArrayList<JSONPage> mPages;
+        @SerializedName(JSON_PAGES)
+        private ArrayList<JSONPage> mPages;
 
         private JSONPageList(Document document) {
 
@@ -89,11 +92,13 @@ public class DocumentJSONParser {
     private static class JSONPage {
 
         //    String serialization needed for generating JSON strings from the member fields:
-        private static final String JSON_FILE =                 "fileName";
-        private static final String JSON_PAGE_NR =              "pageNr";
+        private static final String JSON_FILE = "fileName";
+        private static final String JSON_PAGE_NR = "pageNr";
 
-        @SerializedName(JSON_FILE)                              private String mFileName;
-        @SerializedName(JSON_PAGE_NR)                           private int mPageNr;
+        @SerializedName(JSON_FILE)
+        private String mFileName;
+        @SerializedName(JSON_PAGE_NR)
+        private int mPageNr;
 
 
         private JSONPage(Document document, int pageNr) {
@@ -105,31 +110,40 @@ public class DocumentJSONParser {
     }
 
 
-
     private static class JSONMetaData {
 
         //    String serialization needed for generating JSON strings from the member fields:
-        private static final String JSON_TITLE =                "title";
-        private static final String JSON_AUTHORITY =            "authority";
-        private static final String JSON_HIERARCHY =            "hierarchy";
-        private static final String JSON_SIGNATURE =            "extid";
-        private static final String JSON_URI =                  "backlink";
-        private static final String JSON_WRITER =               "writer";
-        private static final String JSON_AUTHOR =               "author";
-        private static final String JSON_GENRE =                "genre";
-        private static final String JSON_DESC =                 "desc";
-        private static final String JSON_LANGUAGE =             "language";
+        private static final String JSON_TITLE = "title";
+        private static final String JSON_AUTHORITY = "authority";
+        private static final String JSON_HIERARCHY = "hierarchy";
+        private static final String JSON_SIGNATURE = "extid";
+        private static final String JSON_URI = "backlink";
+        private static final String JSON_WRITER = "writer";
+        private static final String JSON_AUTHOR = "author";
+        private static final String JSON_GENRE = "genre";
+        private static final String JSON_DESC = "desc";
+        private static final String JSON_LANGUAGE = "language";
 
-        @SerializedName(JSON_TITLE)                             private String mTitle;
-        @SerializedName(JSON_AUTHORITY)                         private String mAuthority;
-        @SerializedName(JSON_HIERARCHY)                         private String mHierarchy;
-        @SerializedName(JSON_SIGNATURE)                         private String mSignature;
-        @SerializedName(JSON_URI)                               private String mUri;
-        @SerializedName(JSON_WRITER)                            private String mWriter;
-        @SerializedName(JSON_AUTHOR)                            private String mAuthor;
-        @SerializedName(JSON_GENRE)                             private String mGenre;
-        @SerializedName(JSON_DESC)                              private String mDesc;
-        @SerializedName(JSON_LANGUAGE)                          private String mLanguage;
+        @SerializedName(JSON_TITLE)
+        private String mTitle;
+        @SerializedName(JSON_AUTHORITY)
+        private String mAuthority;
+        @SerializedName(JSON_HIERARCHY)
+        private String mHierarchy;
+        @SerializedName(JSON_SIGNATURE)
+        private String mSignature;
+        @SerializedName(JSON_URI)
+        private String mUri;
+        @SerializedName(JSON_WRITER)
+        private String mWriter;
+        @SerializedName(JSON_AUTHOR)
+        private String mAuthor;
+        @SerializedName(JSON_GENRE)
+        private String mGenre;
+        @SerializedName(JSON_DESC)
+        private String mDesc;
+        @SerializedName(JSON_LANGUAGE)
+        private String mLanguage;
 
         private JSONMetaData(Document document) {
             mTitle = document.getTitle();

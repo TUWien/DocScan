@@ -33,8 +33,10 @@ class ImagesFragment : Fragment() {
     private lateinit var galleryAdapter: ImagesAdapter
     private var scrollToFileName = ""
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         setHasOptionsMenu(true)
         return inflater.inflate(R.layout.fragment_images, container, false)
@@ -152,8 +154,10 @@ class ImagesFragment : Fragment() {
     fun deleteSelections() {
 
         if (document == null || document.pages == null) {
-            Helper.crashlyticsLog(TAG, "rotateSelectedItems",
-                    "mDocument == null || mAdapter == null || mDocument.getPages() == null || " + "                mAdapter == null")
+            Helper.crashlyticsLog(
+                TAG, "rotateSelectedItems",
+                "mDocument == null || mAdapter == null || mDocument.getPages() == null || " + "                mAdapter == null"
+            )
             return
         }
 
@@ -169,8 +173,10 @@ class ImagesFragment : Fragment() {
 
             val isFileDeleted = File(fileName).delete()
             if (!isFileDeleted)
-                Helper.crashlyticsLog(TAG, "deleteSelections",
-                        "file not deleted")
+                Helper.crashlyticsLog(
+                    TAG, "deleteSelections",
+                    "file not deleted"
+                )
 
             galleryAdapter.notifyItemRemoved(selIdx)
 //            DocumentStorage.saveJSON(context)

@@ -36,7 +36,7 @@ public class UploadMetaDataRequest extends RestRequest.JSONObjectRestRequest {
 
     }
 
-    public interface UploadMetaDataCallback extends RestRequest.RestCallback{
+    public interface UploadMetaDataCallback extends RestRequest.RestCallback {
 
         void onMetaData(int uploadId, String title);
 

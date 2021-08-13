@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import com.crashlytics.android.Crashlytics;
@@ -147,7 +148,7 @@ public class DocumentMigrator {
 
     }
 
-    public static ArrayList<Document> getDocuments(String appName){
+    public static ArrayList<Document> getDocuments(String appName) {
 
         ArrayList<Document> documents = new ArrayList<>();
 
@@ -259,7 +260,6 @@ public class DocumentMigrator {
         return SyncInfo.getInstance().isDirAwaitingUpload(dir, files);
 
     }
-
 
 
     private static ArrayList<Page> filesToPages(ArrayList<File> files) {

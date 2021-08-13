@@ -57,6 +57,7 @@ public class RequestHandler {
      * Creates a new request queue. If API is between JELLY_BEAN and KIT_KAT a HttpStack with
      * TLSSocketFactory is generated. This fixes the SSLHandshakeException on Android 4 devices.
      * Taken from: https://stackoverflow.com/questions/31269425/how-do-i-tell-the-tls-version-in-android-volley
+     *
      * @param context
      * @return
      */
@@ -193,7 +194,7 @@ public class RequestHandler {
 
     }
 
-    public static void processMultiPartRequest(Context context,  MultipartRequest multipartRequest) {
+    public static void processMultiPartRequest(Context context, MultipartRequest multipartRequest) {
 
         //Adding the string request to the queue
 //        RequestQueue requestQueue = Volley.newRequestQueue(context);
@@ -251,14 +252,13 @@ public class RequestHandler {
                         request.handleRestError(error);
 
                         NetworkResponse response = error.networkResponse;
-                        if(response != null && response.data != null){
+                        if (response != null && response.data != null) {
                             String json = new String(response.data);
                             json = trimMessage(json, "message");
                         }
 
                     }
-                })
-        {
+                }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<String, String>();
@@ -267,7 +267,7 @@ public class RequestHandler {
             }
 
             @Override
-            public String getBodyContentType(){
+            public String getBodyContentType() {
                 return "application/json";
             }
         };
@@ -300,13 +300,13 @@ public class RequestHandler {
 //
 //    }
 
-    private static String trimMessage(String json, String key){
+    private static String trimMessage(String json, String key) {
         String trimmedString = null;
 
-        try{
+        try {
             JSONObject obj = new JSONObject(json);
             trimmedString = obj.getString(key);
-        } catch(JSONException e){
+        } catch (JSONException e) {
             Crashlytics.logException(e);
             e.printStackTrace();
             return null;
@@ -314,7 +314,6 @@ public class RequestHandler {
 
         return trimmedString;
     }
-
 
 
 }

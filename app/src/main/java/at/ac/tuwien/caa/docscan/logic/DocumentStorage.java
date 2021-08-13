@@ -26,7 +26,7 @@ public class DocumentStorage {
 
     public static final String DOCUMENT_STORE_FILE_NAME = "documentstorage.json";
     public static final String DOCUMENT_STORE_BACKUP_FILE_NAME = "documentstorage_bu.json";
-//    public static final String DOCUMENT_BACKUP_FILE_NAME = "documentbackup.json";
+    //    public static final String DOCUMENT_BACKUP_FILE_NAME = "documentbackup.json";
     private static final String CLASS_NAME = "DocumentStorage";
     private static DocumentStorage sInstance;
 
@@ -87,6 +87,7 @@ public class DocumentStorage {
 
     /**
      * Creates a new document inf the title is not already assigned to another document.
+     *
      * @param title
      * @return
      */
@@ -126,6 +127,7 @@ public class DocumentStorage {
 
     /**
      * Returns the last file name of the pages of the active document
+     *
      * @return
      */
     public String getLastPageFileInActiveDocument() {
@@ -136,7 +138,7 @@ public class DocumentStorage {
             if (document != null) {
                 ArrayList<Page> pages = document.getPages();
                 if (pages != null && !pages.isEmpty())
-                    return pages.get(pages.size()-1).getFile().getAbsolutePath();
+                    return pages.get(pages.size() - 1).getFile().getAbsolutePath();
             }
         }
         return null;
@@ -184,6 +186,7 @@ public class DocumentStorage {
     /**
      * Returns true if a document with the active title (mTitle) is existing and the file is added
      * to it.
+     *
      * @param file
      * @return
      */
@@ -196,8 +199,7 @@ public class DocumentStorage {
         if (document != null) {
             document.getPages().add(new Page(file));
             return true;
-        }
-        else
+        } else
             return false;
 
     }
@@ -286,7 +288,7 @@ public class DocumentStorage {
         String line = null;
         Boolean firstLine = true;
         while ((line = reader.readLine()) != null) {
-            if(firstLine){
+            if (firstLine) {
                 sb.append(line);
                 firstLine = false;
             } else {
@@ -297,7 +299,7 @@ public class DocumentStorage {
         return sb.toString();
     }
 
-    public static String getStringFromFile(String filePath){
+    public static String getStringFromFile(String filePath) {
         File fl = new File(filePath);
         FileInputStream fin = null;
         try {
@@ -317,6 +319,7 @@ public class DocumentStorage {
 
     /**
      * Checks if the DocumentStorage json file is existing.
+     *
      * @param context
      * @return
      */
@@ -333,6 +336,7 @@ public class DocumentStorage {
 
     /**
      * Checks if the backup JSON file is available.
+     *
      * @param context
      * @return
      */
@@ -373,9 +377,7 @@ public class DocumentStorage {
         if (!storeFile.exists()) {
             sInstance = new DocumentStorage();
             sInstance.setTitle(Helper.getActiveDocumentTitle(context));
-        }
-
-        else {
+        } else {
 
 //            File tempFile = null;
 
@@ -440,6 +442,7 @@ public class DocumentStorage {
 
     /**
      * Saves the current sInstance to a JSON file.
+     *
      * @param context
      */
     public static void saveJSON(Context context) {
@@ -460,8 +463,7 @@ public class DocumentStorage {
             if (documentStorage == null) {
                 Crashlytics.logException(new Throwable());
                 Crashlytics.log("documentStorage == null");
-            }
-            else if (documentStorage.isEmpty()) {
+            } else if (documentStorage.isEmpty()) {
                 Crashlytics.logException(new Throwable());
                 Crashlytics.log("documentStorage is empty");
             }
@@ -480,12 +482,11 @@ public class DocumentStorage {
                     Crashlytics.log("renameSuccess = false");
                 }
                 // The backup is not accessible anymore on Android 30:
-                else if (Build.VERSION.SDK_INT <= 29){
+                else if (Build.VERSION.SDK_INT <= 29) {
 //                    Save the backupfile:
                     saveJSONBackup(context, storeFile);
                 }
-            }
-            else {
+            } else {
                 Crashlytics.logException(new Throwable());
                 Crashlytics.log("isSaved = false");
             }
@@ -518,6 +519,7 @@ public class DocumentStorage {
     /**
      * Returns the backup file. This file is located in the media storage dir, where the images are
      * saved.
+     *
      * @param context
      * @return
      */

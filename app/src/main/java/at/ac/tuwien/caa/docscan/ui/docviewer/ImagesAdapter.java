@@ -79,7 +79,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
 
         int paddingDp = 3;
         float density = context.getResources().getDisplayMetrics().density;
-        mPaddingPixel = (int)(paddingDp * density);
+        mPaddingPixel = (int) (paddingDp * density);
 
         mColumnCount = 2;
 
@@ -156,7 +156,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
 
         holder.mItemView.getLayoutParams().width = mWidth;
 
-        double aspectRatio= aspectRatioForIndex(position);
+        double aspectRatio = aspectRatioForIndex(position);
         if (aspectRatio != 0)
             holder.mItemView.getLayoutParams().height = (int) Math.round(mWidth / aspectRatio);
         else
@@ -167,11 +167,11 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
         if ((position % mColumnCount) == 0)
             holder.itemView.setPadding(0, mPaddingPixel, mPaddingPixel, mPaddingPixel);
 //        Outer right item:
-        else if ((position % mColumnCount) == (mColumnCount-1))
+        else if ((position % mColumnCount) == (mColumnCount - 1))
             holder.itemView.setPadding(mPaddingPixel, mPaddingPixel, 0, mPaddingPixel);
 //        Middle item:
         else
-            holder.itemView.setPadding(mPaddingPixel/2, mPaddingPixel, mPaddingPixel / 2,mPaddingPixel);
+            holder.itemView.setPadding(mPaddingPixel / 2, mPaddingPixel, mPaddingPixel / 2, mPaddingPixel);
 
 //        Show the image:
         initImageView(holder, position, page);
@@ -206,7 +206,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
 
             RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) holder.mImageView.getLayoutParams();
             float d = holder.itemView.getContext().getResources().getDisplayMetrics().density;
-            int margin = (int)(-30 * d); // margin in pixels
+            int margin = (int) (-30 * d); // margin in pixels
             lp.setMargins(margin, margin, 0, 0);
         }
 
@@ -252,7 +252,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
         long modified = file.lastModified();
 
         try {
-            exifOrientation =  Helper.getExifOrientation(file);
+            exifOrientation = Helper.getExifOrientation(file);
             isCropped = PageDetector.isCropped(file.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
@@ -268,15 +268,13 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                         //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
                         .signature(new MediaStoreSignature("", modified, exifOrientation))
                         .into(imageView);
-            }
-            else
+            } else
                 Helper.crashlyticsLog(CLASS_NAME, "initImageView",
                         "mContext == null");
             holder.mProgressBar.setVisibility(View.VISIBLE);
 
             return;
-        }
-        else {
+        } else {
             holder.mProgressBar.setVisibility(View.INVISIBLE);
             holder.mCheckBox.setEnabled(true);
         }
@@ -305,11 +303,11 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                                 @Override
                                 public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
                                     onImageLoadingDone(position, fileName);
-                                    return false;                                }
+                                    return false;
+                                }
                             })
                             .into(imageView);
-                }
-                else
+                } else
                     Helper.crashlyticsLog(CLASS_NAME, "initImageView",
                             "mContext == null");
             }
@@ -334,13 +332,11 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                                 }
                             })
                             .into(imageView);
-                }
-                else
+                } else
                     Helper.crashlyticsLog(CLASS_NAME, "initImageView",
-                        "mContext == null");
+                            "mContext == null");
             }
-        }
-        else {
+        } else {
 //            Exif data contains no cropping information, simply show the image:
             if (mContext != null) {
                 GlideApp.with(mContext)
@@ -359,10 +355,9 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                             }
                         })
                         .into(imageView);
-            }
-            else
+            } else
                 Helper.crashlyticsLog(CLASS_NAME, "initImageView",
-                    "mContext == null");
+                        "mContext == null");
         }
 
     }
@@ -402,8 +397,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                     index++;
                 }
             }
-        }
-        else
+        } else
             Helper.crashlyticsLog(CLASS_NAME, "getSelectionIndices",
                     "mDocument == null || mDocument.getPages() == null");
 
@@ -507,8 +501,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                     ((Activity) mContext).startActivityForResult(intent, LAUNCH_VIEWER_REQUEST);
 //                    mContext.startActivity(intent);
                 }
-            }
-            else {
+            } else {
                 if (mSelections != null) {
                     mSelections.put(position, !mSelections.get(position, false));
                     mCheckBox.setChecked(mSelections.get(position, false));
@@ -578,7 +571,9 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
 
     public interface ImagesAdapterCallback {
         void onSelectionChange(int selectionCount);
+
         void onImageLoaded();
+
         void onScrollImageLoaded();
     }
 

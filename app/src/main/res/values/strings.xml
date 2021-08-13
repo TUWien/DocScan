@@ -240,7 +240,7 @@
         to automatically upload your images.</string>
     <string name="logout_confirm_button_text">Logout</string>
     <string name="logout_cancel_button_text">Cancel</string>
-    
+
     <!-- AccountActivity -->
     <string name="account_heading_text">Your current account:</string>
     <string name="account_user_textview_text">Name:</string>
@@ -347,7 +347,8 @@
     <string name="about_intro_text">Show DocScan intro</string>
     <string name="about_licenses_text">Open Source Licenses</string>
     <string name="about_scantent_text">DocScan is developed together with the ScanTent device. Visit our website for more information: \nhttps://scantent.eu</string>
-    <string name="about_transkribus_text">DocScan features image uploads to Transkribus. Visit the Transkribus website for further information: \nhttps://transkribus.eu</string>#
+    <string name="about_transkribus_text">DocScan features image uploads to Transkribus. Visit the Transkribus website for further information: \nhttps://transkribus.eu</string>
+    #
 
     <!-- IntroActivity -->
     <string name="intro_text_1">This app is especially designed for the <a href="https://scantent.eu/">ScanTent</a>.\nIf you own a ScanTent: Please put your document inside.</string>
@@ -389,7 +390,6 @@
     <string name="create_series_custom_name_example_label_textview_text">Preview:</string>
     <string name="create_series_custom_name_example_textview_empty_prefix_text">Please enter a prefix first</string>
     <string name="create_series_custom_name_prefix_input_empty_text">Prefix must not be empty</string>
-
 
 
     <string name="map_crop_view_title">Warp image</string>
@@ -532,10 +532,16 @@
     <string name="viewer_not_logged_in_title">Not logged in</string>
     <string name="viewer_not_logged_in_text">You are currently not logged in. Do you want to login to a cloud service?</string>
     <string name="viewer_pdf_created_snackbar_text">Created pdf</string>
+    <string name="viewer_document_dir_set_title">Permission given</string>
+    <string name="viewer_document_dir_set_text">You can now proceed and export documents to pdf.</string>
+    <string name="viewer_document_dir_permission_title">Permission required</string>
+    <string name="viewer_document_dir_permission_text">Your permission is required to save pdf\'s
+        in a certain document folder. Do you want to grant your permission for this folder now?</string>
 
     <string name="pdf_fragment_persisted_permission_title">Permission required</string>
-    <string name="pdf_fragment_persisted_permission_text">Your permission is required to save pdf
-    documents in a folder. Do you want to grant this permission now?</string>
+    <string name="pdf_fragment_persisted_permission_text">Your permission is required to show the
+        pdf\'s, which have been saved in the documents folder.
+        Do you want to grant your permission for this folder now?</string>
 
     <!-- PdfSelectorActivity -->
     <string name="pdf_selector_title">Save document as PDF</string>

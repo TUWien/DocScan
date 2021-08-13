@@ -74,12 +74,10 @@ public class SyncStorage {
                 Gson gson = new Gson();
                 sInstance = gson.fromJson(bufferedReader, SyncStorage.class);
 
-            }
-            catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 sInstance = new SyncStorage();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 sInstance = new SyncStorage();
             }
         }
@@ -377,8 +375,7 @@ public class SyncStorage {
         if ((mUploadDocumentTitles != null) && (mUploadDocumentTitles.contains(dir))) {
             Log.d(CLASS_NAME, "isDirAwaitingUpload: mUploadDirs.size: " + mUploadDocumentTitles.size());
             return true;
-        }
-        else if ((mFileSyncList != null) && (mFileSyncList.size() > 0)) {
+        } else if ((mFileSyncList != null) && (mFileSyncList.size() > 0)) {
             Log.d(CLASS_NAME, "isDirAwaitingUpload: mFileSyncList.size: " + mFileSyncList.size());
             Log.d(CLASS_NAME, "isDirAwaitingUpload: files.size: " + files.size());
             for (File file : files) {
@@ -468,11 +465,9 @@ public class SyncStorage {
 
     public interface Callback {
         void onUploadComplete(SyncFile syncFile);
+
         void onError(Exception e);
     }
-
-
-
 
 
 }

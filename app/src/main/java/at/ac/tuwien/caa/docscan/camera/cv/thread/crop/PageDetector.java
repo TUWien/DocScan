@@ -3,7 +3,9 @@ package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.os.Looper;
+
 import androidx.exifinterface.media.ExifInterface;
+
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
@@ -26,13 +28,14 @@ public class PageDetector {
     private static final String UNFOCUSED_TAG = "<Focused value=\"false\"/>";
     private static final String BORDER_COORDS_POSTFIX_1 = "\"/>";
     private static final String BORDER_COORDS_POSTFIX_2 = "</Border>";
-//    private static final String BORDER_COORDS_POSTFIX = "\"/></Border>";
+    //    private static final String BORDER_COORDS_POSTFIX = "\"/></Border>";
     private static final String CLASS_TAG = "PageDetector";
     private static final String CROPPING_PREFIX = "<Cropping applied=\"true\"/>";
 
     /**
      * Performs the page detection. Note this is done in the calling thread, so assure you are not
      * running this on main thread.
+     *
      * @param fileName
      * @return
      */
@@ -91,7 +94,7 @@ public class PageDetector {
 
         PageFocusResult result = null;
 
-        if (polyRects != null && polyRects.length > 0 && polyRects[0] != null)  {
+        if (polyRects != null && polyRects.length > 0 && polyRects[0] != null) {
             ArrayList<PointF> points = normPoints(polyRects[0], mg.width(), mg.height());
 
 //            Patch[] patches = NativeWrapper.getFocusMeasures(mg);
@@ -126,7 +129,7 @@ public class PageDetector {
 
         for (Patch patch : patches) {
             if (polyRect != null) {
-                if (patch != null  && patch.getPoint() != null
+                if (patch != null && patch.getPoint() != null
                         && patch.getIsForeGround() && polyRect.isInside(patch.getPoint())) {
                     if (patch.getIsSharp())
                         sharpCnt++;
@@ -212,16 +215,16 @@ public class PageDetector {
 
             case 90:
                 float tmpY = point.x;
-                point.x = 1-point.y;
+                point.x = 1 - point.y;
                 point.y = tmpY;
                 break;
             case 180:
-                point.x = 1-point.x;
-                point.y = 1-point.y;
+                point.x = 1 - point.x;
+                point.y = 1 - point.y;
                 break;
             case 270:
                 float tmpX = point.y;
-                point.y = 1-point.x;
+                point.y = 1 - point.x;
                 point.x = tmpX;
                 break;
             default:
@@ -249,12 +252,13 @@ public class PageDetector {
     }
 
     /**
-     *  Returns a string describing the result of the NativeWrapper.getPageSegmentation page
-     *  detection.
-     *  The result string is formatted according to the prima PAGE XML:
-     *  @see <a href="https://github.com/PRImA-Research-Lab/PAGE-XML/wiki">https://github.com/PRImA-Research-Lab/PAGE-XML/wiki</a>
+     * Returns a string describing the result of the NativeWrapper.getPageSegmentation page
+     * detection.
+     * The result string is formatted according to the prima PAGE XML:
+     *
      * @param points
      * @return
+     * @see <a href="https://github.com/PRImA-Research-Lab/PAGE-XML/wiki">https://github.com/PRImA-Research-Lab/PAGE-XML/wiki</a>
      */
     private static String getCoordString(ArrayList<PointF> points, boolean isFocused) {
 
@@ -303,7 +307,6 @@ public class PageDetector {
         return result;
 
     }
-
 
 
     public static ArrayList<PointF> getParallelPoints(ArrayList<PointF> points, String fileName) {
@@ -395,6 +398,7 @@ public class PageDetector {
     /**
      * Searches in the exif data for the maker note and returns the page detection coordinates if
      * the attribute is correctly formatted according to the prima PAGE XML definition.
+     *
      * @return
      */
     public static PageFocusResult getNormedCropPoints(String fileName) {
@@ -450,6 +454,7 @@ public class PageDetector {
 
     /**
      * Returns points that are located at the image corners.
+     *
      * @return
      */
     static ArrayList<PointF> getNormedDefaultPoints() {
@@ -521,7 +526,6 @@ public class PageDetector {
         }
 
     }
-
 
 
 }

@@ -36,6 +36,7 @@ public class SyncUtils {
     /**
      * Starts a new sync job. Note that a current job will not be overwritten. If restart is true
      * the time window for the starting time is increased.
+     *
      * @param context
      */
     public static void startSyncJob(Context context, boolean restart) {
@@ -53,8 +54,7 @@ public class SyncUtils {
         if (useMobileConnection) {
             constraints = new int[]{Constraint.ON_ANY_NETWORK};
             Log.d(CLASS_NAME, "startSyncJob: using mobile connection");
-        }
-        else {
+        } else {
             constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
             Log.d(CLASS_NAME, "startSyncJob: using just wifi");
         }
@@ -86,8 +86,6 @@ public class SyncUtils {
                 .build();
 
 
-
-
         dispatcher.mustSchedule(syncJob);
 
     }
@@ -111,8 +109,7 @@ public class SyncUtils {
             if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS) {
                 RequestHandler.createRequest(context, RequestHandler.REQUEST_LOGIN);
                 User.getInstance().setAutoLogInDone(true);
-            }
-            else if (User.getInstance().getConnection() == SYNC_DROPBOX) {
+            } else if (User.getInstance().getConnection() == SYNC_DROPBOX) {
                 DropboxUtils.getInstance().loginToDropbox(loginCallback, User.getInstance().getDropboxToken());
                 User.getInstance().setAutoLogInDone(true);
             }

@@ -12,6 +12,7 @@ import android.util.Log;
 public class BootReceiver extends BroadcastReceiver {
 
     private static final String CLASS_NAME = "BootReceiver";
+
     /*
      * (non-Javadoc)
      *
@@ -34,9 +35,8 @@ public class BootReceiver extends BroadcastReceiver {
                         !SyncStorage.getInstance(context).getUploadDocumentTitles().isEmpty()) {
                     Log.d(CLASS_NAME, "upload dirs are not empty. starting sync job.");
                     SyncUtils.startSyncJob(context, false);
-                }
-                else if (SyncStorage.getInstance(context).getUnfinishedUploadIDs() != null &&
-                        !SyncStorage.getInstance(context).getUnfinishedUploadIDs().isEmpty())  {
+                } else if (SyncStorage.getInstance(context).getUnfinishedUploadIDs() != null &&
+                        !SyncStorage.getInstance(context).getUnfinishedUploadIDs().isEmpty()) {
                     Log.d(CLASS_NAME, "unfinished ids are not empty. starting sync job.");
                     SyncUtils.startSyncJob(context, false);
                 }

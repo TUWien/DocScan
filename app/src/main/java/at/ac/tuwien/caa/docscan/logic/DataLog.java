@@ -28,6 +28,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+
 import androidx.core.app.ShareCompat;
 import androidx.core.content.FileProvider;
 
@@ -80,10 +81,10 @@ public class DataLog {
         Uri syncUri = FileProvider.getUriForFile(activity.getBaseContext(),
                 "at.ac.tuwien.caa.fileprovider", syncPath);
 
-        String emailSubject =   activity.getBaseContext().getString(R.string.log_email_subject);
-        String[] emailTo =      new String[]{activity.getBaseContext().getString(R.string.log_email_to)};
+        String emailSubject = activity.getBaseContext().getString(R.string.log_email_subject);
+        String[] emailTo = new String[]{activity.getBaseContext().getString(R.string.log_email_to)};
 //        String[] emailTo =      new String[]{"holl@cvl.tuwien.ac.at"};
-        String text =           activity.getBaseContext().getString(R.string.log_email_text);
+        String text = activity.getBaseContext().getString(R.string.log_email_text);
 
         Intent intent = ShareCompat.IntentBuilder.from(activity)
                 .setType("text/plain")
@@ -103,8 +104,7 @@ public class DataLog {
 
         try {
             activity.startActivity(intent);
-        }
-        catch (ActivityNotFoundException e) {
+        } catch (ActivityNotFoundException e) {
             Crashlytics.logException(e);
             Helper.showActivityNotFoundAlert(activity.getApplicationContext());
         }
@@ -116,21 +116,21 @@ public class DataLog {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String logText = sender + ": " + text;
         if (timeStamp != null)
-               logText = timeStamp + ": " + logText;
+            logText = timeStamp + ": " + logText;
 
         writeUploadLog(context, logText);
     }
 
     public void writeUploadLog(Context context, String text) {
 
-        if ((context == null ) || (text == null))
+        if ((context == null) || (text == null))
             return;
 
         try {
             String fileName = getUploadLogFileName(context);
             File file = new File(fileName);
 
-            FileOutputStream fOut = new FileOutputStream(file,true);
+            FileOutputStream fOut = new FileOutputStream(file, true);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fOut));
 
             bw.newLine();

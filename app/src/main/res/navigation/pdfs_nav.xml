@@ -9,10 +9,9 @@
         android:label="IMAGES"
         tools:layout="@layout/fragment_pdfs">
         <!--<action-->
-            <!--android:id="@+id/action_title_to_about"-->
-            <!--app:destination="@id/aboutScreen"/>-->
+        <!--android:id="@+id/action_title_to_about"-->
+        <!--app:destination="@id/aboutScreen"/>-->
     </fragment>
-
 
 
 </navigation>

@@ -37,127 +37,129 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-bool testPageSegmentation(const std::string& filePath, const std::string& outputPath = "");
-bool testFocusMeasure(const std::string& filePath);
- 
-int main(int argc, char** argv) {
+bool testPageSegmentation(const std::string &filePath, const std::string &outputPath = "");
 
-	if (argc < 2) {
-		std::cerr << "[ERROR] first argument must be the absolute path to a test image" << std::endl;
-		return 0;
-	}
+bool testFocusMeasure(const std::string &filePath);
 
-	std::string path = argv[1];
-	//path = "C:/VSProjects/DocScan/img/tests/test.png";
+int main(int argc, char **argv) {
 
-	//// test the focus measure module
-	//if (!testFocusMeasure(path))
-	//	std::cerr << "[FAIL] focus measure NOT succesfull... input file: " << path << std::endl;
-	//else
-	//	std::cout << "[SUCCESS] focus measure succesfull..." << std::endl;
+    if (argc < 2) {
+        std::cerr << "[ERROR] first argument must be the absolute path to a test image"
+                  << std::endl;
+        return 0;
+    }
 
-	std::string oPath = argc > 2 ? argv[2] : "";
-	//oPath = "C:/VSProjects/DocScan/img/tests/test-res.png";
+    std::string path = argv[1];
+    //path = "C:/VSProjects/DocScan/img/tests/test.png";
 
-	// test the page segmentation module
-	if (!testPageSegmentation(path, oPath))
-		std::cerr << "[FAIL] page segmentation NOT succesfull... input file: " << path << std::endl;
-	else
-		std::cout << "[SUCCESS] page segmentation succesfull..." << std::endl;
+    //// test the focus measure module
+    //if (!testFocusMeasure(path))
+    //	std::cerr << "[FAIL] focus measure NOT succesfull... input file: " << path << std::endl;
+    //else
+    //	std::cout << "[SUCCESS] focus measure succesfull..." << std::endl;
 
-	return 0;
+    std::string oPath = argc > 2 ? argv[2] : "";
+    //oPath = "C:/VSProjects/DocScan/img/tests/test-res.png";
+
+    // test the page segmentation module
+    if (!testPageSegmentation(path, oPath))
+        std::cerr << "[FAIL] page segmentation NOT succesfull... input file: " << path << std::endl;
+    else
+        std::cout << "[SUCCESS] page segmentation succesfull..." << std::endl;
+
+    return 0;
 }
 
-bool loadImage(const std::string& filePath, cv::Mat& img) {
+bool loadImage(const std::string &filePath, cv::Mat &img) {
 
-	img = cv::imread(filePath);
+    img = cv::imread(filePath);
 
-	if (img.empty()) {
-		std::cerr << "could not load: " << img << std::endl;
-		return false;
-	}
+    if (img.empty()) {
+        std::cerr << "could not load: " << img << std::endl;
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
-bool testFocusMeasure(const std::string& filePath) {
+bool testFocusMeasure(const std::string &filePath) {
 
-	cv::Mat img;
-	
-	if (!loadImage(filePath, img))
-		return false;
+    cv::Mat img;
 
-	std::vector<dsc::Patch> patches = dsc::FocusEstimation::apply(img);
+    if (!loadImage(filePath, img))
+        return false;
 
-	if (patches.empty()) {
-		std::cerr << "FocusEstimation returned no patches for image: " << img << std::endl;
-		return false;
-	}
+    std::vector <dsc::Patch> patches = dsc::FocusEstimation::apply(img);
 
-	int sumError = 0;
+    if (patches.empty()) {
+        std::cerr << "FocusEstimation returned no patches for image: " << img << std::endl;
+        return false;
+    }
 
-	for (auto p : patches) {
-		if (p.fm() == -1.0f)
-			sumError++;
-	}
+    int sumError = 0;
 
-	if (sumError > 0) {
-		std::cerr << sumError << " out of " << patches.size() << " failed..." << std::endl;
-		return false;
-	}
+    for (auto p : patches) {
+        if (p.fm() == -1.0f)
+            sumError++;
+    }
 
-	return true;
+    if (sumError > 0) {
+        std::cerr << sumError << " out of " << patches.size() << " failed..." << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
-bool testPageSegmentation(const std::string& filePath, const std::string& outputPath) {
+bool testPageSegmentation(const std::string &filePath, const std::string &outputPath) {
 
-	cv::Mat img;
+    cv::Mat img;
 
-	if (!loadImage(filePath, img))
-		return false;
+    if (!loadImage(filePath, img))
+        return false;
 
 
-	std::vector<dsc::DkPolyRect> pageRects = dsc::DkPageSegmentation::apply(img);
+    std::vector <dsc::DkPolyRect> pageRects = dsc::DkPageSegmentation::apply(img);
 
-	if (pageRects.empty()) {
+    if (pageRects.empty()) {
 
-		//double illVal = dsc::DkIllumination::apply(img);
-		//std::cout << "illumination value: " << illVal << std::endl;
+        //double illVal = dsc::DkIllumination::apply(img);
+        //std::cout << "illumination value: " << illVal << std::endl;
 
-		std::cerr << "PageSegmentation returned no page rects for: " << filePath << std::endl;
-		return false;
-	}
+        std::cerr << "PageSegmentation returned no page rects for: " << filePath << std::endl;
+        return false;
+    }
 
-	// save results?!
-	if (!outputPath.empty()) {
+    // save results?!
+    if (!outputPath.empty()) {
 
-		cv::FileStorage fs(outputPath, cv::FileStorage::WRITE);
-		
-		//TODO write output coordinates
-		dsc::DkPolyRect rect = pageRects[0];
-		std::vector<dsc::DkVector> corners = rect.getCorners();
-		cv::Point cpt;
-		cpt = corners[0].getCvPoint();
-		fs << "cornerPoint0" << cpt;
-		cpt = corners[1].getCvPoint();
-		fs << "cornerPoint1" << cpt;
-		cpt = corners[2].getCvPoint();
-		fs << "cornerPoint2" << cpt;
-		cpt = corners[3].getCvPoint();
-		fs << "cornerPoint3" << cpt;
-		fs.release();
+        cv::FileStorage fs(outputPath, cv::FileStorage::WRITE);
 
-		//cv::Mat dstImg = img.clone();
-		//for (auto rect : pageRects)
-		//	rect.draw(dstImg);
+        //TODO write output coordinates
+        dsc::DkPolyRect rect = pageRects[0];
+        std::vector <dsc::DkVector> corners = rect.getCorners();
+        cv::Point cpt;
+        cpt = corners[0].getCvPoint();
+        fs << "cornerPoint0" << cpt;
+        cpt = corners[1].getCvPoint();
+        fs << "cornerPoint1" << cpt;
+        cpt = corners[2].getCvPoint();
+        fs << "cornerPoint2" << cpt;
+        cpt = corners[3].getCvPoint();
+        fs << "cornerPoint3" << cpt;
+        fs.release();
 
-		//cv::imwrite(outputPath, dstImg);
-	}
+        //cv::Mat dstImg = img.clone();
+        //for (auto rect : pageRects)
+        //	rect.draw(dstImg);
 
-	//double illVal = dsc::DkIllumination::apply(img, pageRects[0]);
-	//std::cout << "illumination value: " << illVal << std::endl;
+        //cv::imwrite(outputPath, dstImg);
+    }
 
-	//std::cout << "test page segmentation not implemented..." << std::endl;
-	return true;
+    //double illVal = dsc::DkIllumination::apply(img, pageRects[0]);
+    //std::cout << "illumination value: " << illVal << std::endl;
+
+    //std::cout << "test page segmentation not implemented..." << std::endl;
+    return true;
 }
 

@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.ui.docviewer
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.core.content.FileProvider
 import android.view.LayoutInflater
 import android.view.View
@@ -15,10 +16,12 @@ import com.crashlytics.android.Crashlytics
 import kotlinx.android.synthetic.main.layout_pdflist_row.view.*
 import java.io.File
 
-class PdfAdapter(private val context: Context,
-                 private val pdfs: MutableList<PdfFragment.Pdf>,
-                 private val optionsListener: (DocumentFile) -> Unit) :
-        RecyclerView.Adapter<PdfAdapter.ViewHolder>(){
+class PdfAdapter(
+    private val context: Context,
+    private val pdfs: MutableList<PdfFragment.Pdf>,
+    private val optionsListener: (DocumentFile) -> Unit
+) :
+    RecyclerView.Adapter<PdfAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
@@ -35,58 +38,52 @@ class PdfAdapter(private val context: Context,
 
         val pdf = pdfs[position]
 
-        with (holder) {
+        with(holder) {
             title.text = pdf.name
             fileSize.text = pdf.fileSize + " MB"
             date.text = pdf.date
-            val iconRes = if (pdf.showBadge) R.drawable.ic_pdf_icon_badge else R.drawable.ic_pdf_icon
+            val iconRes =
+                if (pdf.showBadge) R.drawable.ic_pdf_icon_badge else R.drawable.ic_pdf_icon
             icon.setImageResource(iconRes)
-            moreButton.setOnClickListener { optionsListener(pdf.file)}
+            moreButton.setOnClickListener { optionsListener(pdf.file) }
             pdf.showBadge = false
 
             itemView.setOnClickListener {
 
-                val uri = pdf.file.uri
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.setDataAndType(uri, "application/pdf")
-                intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+//                Determine the type of uri:
+                val uri =
+                    when (pdf.file.uri.scheme) {
+                        "content" -> {
+                            pdf.file.uri
+                        }
+//                        These are old fashioned direct file paths that were used before scoped
+//                        storage. Use a file provider, because otherwise the location is exposed
+//                        and an exception is thrown.
+                        "file" -> {
 
-                try {
-                    context.startActivity(intent)
-                } catch (e: ActivityNotFoundException) {
-                    Crashlytics.logException(e)
-                    Helper.showActivityNotFoundAlert(context)
+                            val file = File(Helper.getPDFStorageDir(
+                                context.getString(R.string.app_name)), pdf.file.name)
+                            FileProvider.getUriForFile(context, "at.ac.tuwien.caa.fileprovider",
+                                file)
+                        }
+                        else -> {
+                            null
+                        }
+                    }
+
+                // uri should never be null, because the list is filtered for *.pdf extension
+                if (uri != null) {
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        setDataAndType(uri, "application/pdf")
+                        flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    }
+                    try {
+                        context.startActivity(intent)
+                    } catch (e: ActivityNotFoundException) {
+                        Crashlytics.logException(e)
+                        Helper.showActivityNotFoundAlert(context)
+                    }
                 }
-
-//                val scheme = pdf.file.uri.scheme
-//                if (scheme == "file" || scheme == "content") {
-//                    val uri =
-//                        if (scheme == "file") {
-//
-//                            val f = File(pdf.file.uri.toString())
-//                            FileProvider.getUriForFile(context, "at.ac.tuwien.caa.fileprovider", f)
-//                        } else {
-//                            pdf.file.uri
-//                        }
-//
-//                    val intent = Intent(Intent.ACTION_VIEW)
-//                    intent.setDataAndType(uri, "application/pdf")
-//
-//                    intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-//                    pdf.showBadge = false
-//                    try {
-//                        context.startActivity(intent)
-//                    } catch (e: ActivityNotFoundException) {
-//                        Crashlytics.logException(e)
-//                        Helper.showActivityNotFoundAlert(context)
-//                    }
-//                }
-////                This should not happen:
-//                else {
-//                    Crashlytics.log("PdfAdapater: uri scheme not handeled:" + pdf.file.uri.scheme)
-//                }
-
-
             }
         }
 

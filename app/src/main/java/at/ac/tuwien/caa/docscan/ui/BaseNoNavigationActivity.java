@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.ui;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.view.MenuItem;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -14,6 +15,7 @@ public abstract class BaseNoNavigationActivity extends AppCompatActivity {
 
     /**
      * Sets the title of the toolbar.
+     *
      * @param titleID ID of the title string defined in strings.xml
      */
     protected void initToolbarTitle(int titleID) {
@@ -27,6 +29,7 @@ public abstract class BaseNoNavigationActivity extends AppCompatActivity {
 
     /**
      * Sets the title of the toolbar.
+     *
      * @param title title string
      */
     protected void initToolbarTitle(String title) {
@@ -41,7 +44,7 @@ public abstract class BaseNoNavigationActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case android.R.id.home:
                 onBackPressed();
                 return true;

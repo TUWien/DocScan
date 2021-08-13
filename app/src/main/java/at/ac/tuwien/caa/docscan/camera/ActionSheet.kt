@@ -14,12 +14,16 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.sheet_dialog_camera.*
 import java.io.File
 
-open class PdfActionSheet(private val pdf: DocumentFile, sheetActions: ArrayList<SheetAction>,
-                          private var pdfListener: PdfSheetSelection, dialogListener: DialogStatus) :
-        ActionSheet(sheetActions, null, dialogListener) {
+open class PdfActionSheet(
+    private val pdf: DocumentFile, sheetActions: ArrayList<SheetAction>,
+    private var pdfListener: PdfSheetSelection, dialogListener: DialogStatus
+) :
+    ActionSheet(sheetActions, null, dialogListener) {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         return inflater.inflate(R.layout.titled_sheet_dialog_pdf, container, false)
 
@@ -41,12 +45,16 @@ open class PdfActionSheet(private val pdf: DocumentFile, sheetActions: ArrayList
 
 }
 
-open class DocumentActionSheet(private var document: Document, sheetActions: ArrayList<SheetAction>,
-                               private var docListener: DocumentSheetSelection, dialogListener: DialogStatus) :
-        ActionSheet(sheetActions, null, dialogListener) {
+open class DocumentActionSheet(
+    private var document: Document, sheetActions: ArrayList<SheetAction>,
+    private var docListener: DocumentSheetSelection, dialogListener: DialogStatus
+) :
+    ActionSheet(sheetActions, null, dialogListener) {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         return inflater.inflate(R.layout.titled_sheet_dialog_camera, container, false)
     }
@@ -67,22 +75,28 @@ open class DocumentActionSheet(private var document: Document, sheetActions: Arr
 
 }
 
-open class ActionSheet: BottomSheetDialogFragment {
+open class ActionSheet : BottomSheetDialogFragment {
 
     private val sheetActions: ArrayList<SheetAction>
     protected var listener: SheetSelection? = null
     protected var dialogListener: DialogStatus? = null
     private val CLASS_NAME = "ActionSheet"
 
-    constructor(sheetActions: ArrayList<SheetAction>, listener: SheetSelection?, dialogListener: DialogStatus) {
+    constructor(
+        sheetActions: ArrayList<SheetAction>,
+        listener: SheetSelection?,
+        dialogListener: DialogStatus
+    ) {
 
         this.sheetActions = sheetActions
         this.listener = listener
         this.dialogListener = dialogListener
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         return inflater.inflate(R.layout.sheet_dialog_camera, container, false)
     }
@@ -92,7 +106,8 @@ open class ActionSheet: BottomSheetDialogFragment {
 
 //        Lambda for RecyclerView clicks. Got this from:
 //        https://www.andreasjakl.com/recyclerview-kotlin-style-click-listener-android/
-        val sheetAdapter = SheetAdapter(sheetActions) { sheetAction : SheetAction -> sheetClicked(sheetAction) }
+        val sheetAdapter =
+            SheetAdapter(sheetActions) { sheetAction: SheetAction -> sheetClicked(sheetAction) }
         sheet_dialog_recyclerview.apply {
             adapter = sheetAdapter
             layoutManager = GridLayoutManager(this@ActionSheet.context, 2)
@@ -148,7 +163,6 @@ open class ActionSheet: BottomSheetDialogFragment {
         fun onShown()
         fun onDismiss()
     }
-
 
 
 }

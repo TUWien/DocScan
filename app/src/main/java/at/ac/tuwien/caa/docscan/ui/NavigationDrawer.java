@@ -5,10 +5,13 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
+
 import com.google.android.material.navigation.NavigationView;
+
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,7 +42,6 @@ import static at.ac.tuwien.caa.docscan.ui.NavigationDrawer.NavigationItemEnum.AC
  * This file contains parts of this source file:
  * https://github.com/google/iosched/blob/e8c61e7e23f74aa6786696dad22e5136b423a334/android/src/main/java/com/google/samples/apps/iosched/navigation/AppNavigationViewAsDrawerImpl.java
  * Created by fabian on 30.11.2016.
- *
  */
 public class NavigationDrawer implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -141,8 +143,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         else if (UserHandler.loadUserNames(mActivity)) {
             userTextView.setText(User.getInstance().getFirstName() + " " + User.getInstance().getLastName());
             connectionTextView.setText(mActivity.getResources().getText(R.string.sync_not_connected_text));
-        }
-        else {
+        } else {
             userTextView.setText(mActivity.getResources().getText(R.string.account_not_logged_in));
             connectionTextView.setText("");
         }
@@ -156,8 +157,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                 if (!mAccountGroupVisible) {
                     setAccountGroupVisible(true);
                     button.setRotation(180);
-                }
-                else {
+                } else {
                     setAccountGroupVisible(false);
                     button.setRotation(0);
                 }
@@ -195,8 +195,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
                             .into(userImageView);
                     break;
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Helper.crashlyticsLog(CLASS_NAME, "showUserImage", e.toString());
         }
     }
@@ -270,8 +269,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         browserIntent.setData(Uri.parse(pdfUrl));
         try {
             mActivity.startActivity(browserIntent);
-        }
-        catch (ActivityNotFoundException e) {
+        } catch (ActivityNotFoundException e) {
             Crashlytics.logException(e);
             Helper.showActivityNotFoundAlert(mActivity.getApplicationContext());
         }
@@ -345,6 +343,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 //            menu.setGroupVisible(R.id.account_group, mAccountGroupVisible);
         }
     }
+
     /**
      * Taken from: https://github.com/google/iosched
      * List of all possible navigation items.
@@ -356,7 +355,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
 
         CAMERA(R.id.camera_item, R.string.camera_item_text,
                 R.drawable.ic_camera_alt_black_24dp, CameraActivity.class),
-//        LOGIN(R.id.login_item, R.string.login_item_text,
+        //        LOGIN(R.id.login_item, R.string.login_item_text,
 //                R.drawable.ic_arrow_forward_black_24dp, TranskribusLoginActivity.class),
         ABOUT(R.id.about_item, R.string.about_item_text,
                 R.drawable.ic_info_black_24dp, AboutActivity.class),

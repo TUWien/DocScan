@@ -131,33 +131,27 @@ public class TranskribusLoginActivity extends BaseNoNavigationActivity implement
         if (error instanceof AuthFailureError) {
             EditText pwEdit = findViewById(R.id.password_edittext);
             pwEdit.setError(getResources().getString(R.string.login_auth_error_text));
-        }
-        else if (error instanceof NoConnectionError) {
+        } else if (error instanceof NoConnectionError) {
             showErrorDialog(getString(R.string.login_no_connection_error_title),
                     getString(R.string.login_no_connection_error_text));
             Crashlytics.log("login error: " + "login_no_connection_error");
-        }
-        else if (error instanceof NetworkError) {
+        } else if (error instanceof NetworkError) {
             showErrorDialog(getString(R.string.login_network_error_title),
                     getString(R.string.login_network_error_text));
             Crashlytics.log("login error: " + "login_network_error");
-        }
-        else if (error instanceof ParseError) {
+        } else if (error instanceof ParseError) {
             showErrorDialog(getString(R.string.login_parse_error_title),
                     getString(R.string.login_parse_error_text));
             Crashlytics.log("login error: " + "login_parse_error");
-        }
-        else if (error instanceof ServerError) {
+        } else if (error instanceof ServerError) {
             showErrorDialog(getString(R.string.login_server_error_title),
                     getString(R.string.login_server_error_text));
             Crashlytics.log("login error: " + "login_server_error");
-        }
-        else if (error instanceof TimeoutError) {
+        } else if (error instanceof TimeoutError) {
             showErrorDialog(getString(R.string.login_timeout_error_title),
                     getString(R.string.login_timeout_error_text));
             Crashlytics.log("login error: " + "login_timeout_error");
         }
-
 
 
     }
@@ -191,8 +185,7 @@ public class TranskribusLoginActivity extends BaseNoNavigationActivity implement
         if (showLoading) {
             loginFieldsLayout.setVisibility(View.INVISIBLE);
             loginLoadingLayout.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             loginFieldsLayout.setVisibility(View.VISIBLE);
             loginLoadingLayout.setVisibility(View.INVISIBLE);
         }

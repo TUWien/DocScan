@@ -14,7 +14,7 @@ import at.ac.tuwien.caa.docscan.R;
 /**
  * Created by fabian on 09.12.2016.
  */
-public class ShootModeAdapter  extends ArrayAdapter<String> {
+public class ShootModeAdapter extends ArrayAdapter<String> {
 
     private Context mContext;
     private Integer[] mIcons;

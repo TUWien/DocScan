@@ -27,6 +27,7 @@ public class JsonHelperRequest extends JsonObjectRequest {
 
     /**
      * Converts a XML response into a JSON response with the help of HttpHeaderParser.
+     *
      * @param response
      * @return
      */

@@ -63,7 +63,7 @@ public class DocumentsMetaDataRequest extends RestRequest.JSONArrayRestRequest {
 
     }
 
-    public interface DocumentsMetaDataCallback extends RestRequest.RestCallback{
+    public interface DocumentsMetaDataCallback extends RestRequest.RestCallback {
 
         void onDocumentsMetaData(List<TranskribusDocumentMetaDataRequest> transkribusDocumentMetaDatumRequests);
 

@@ -2,8 +2,10 @@ package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -63,8 +65,7 @@ public class OldDocumentUploadAdapter extends OldDocumentAdapter {
 //                Write that the upload is pending:
                 if (textView != null)
                     textView.append(" " + mContext.getResources().getString(R.string.sync_dir_pending_text));
-            }
-            else if (document.isCurrentlyProcessed()) {
+            } else if (document.isCurrentlyProcessed()) {
 
                 iconView.setVisibility(View.INVISIBLE);
                 if (p != null)
@@ -75,8 +76,7 @@ public class OldDocumentUploadAdapter extends OldDocumentAdapter {
                 if (textView != null)
                     textView.append(" " + mContext.getResources().getString(R.string.sync_dir_processing_text));
 
-            }
-            else
+            } else
                 iconView.setImageResource(R.drawable.ic_cloud_queue_gray_24dp);
 
 //            Check if we have some unfocused images in the document:
@@ -87,10 +87,9 @@ public class OldDocumentUploadAdapter extends OldDocumentAdapter {
                     textView.append(" " +
                             mContext.getResources().getString(R.string.sync_not_focused_text));
                     Drawable img = AppCompatResources.getDrawable(mContext, R.drawable.ic_warning_black_18dp);
-                    textView.setCompoundDrawablesWithIntrinsicBounds( img,null,null,null);
+                    textView.setCompoundDrawablesWithIntrinsicBounds(img, null, null, null);
                 }
             }
-
 
 
         }
@@ -98,8 +97,6 @@ public class OldDocumentUploadAdapter extends OldDocumentAdapter {
         return convertView;
 
     }
-
-
 
 
 }

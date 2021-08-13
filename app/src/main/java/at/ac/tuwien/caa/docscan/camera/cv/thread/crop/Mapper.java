@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.PointF;
+
 import androidx.annotation.NonNull;
 import androidx.exifinterface.media.ExifInterface;
+
 import android.util.Log;
 
 import org.opencv.core.Mat;
@@ -33,6 +35,7 @@ public class Mapper {
 
     /**
      * Maps the image and replaces the corresponding file after mapping.
+     *
      * @param fileName
      * @param points
      * @return
@@ -49,8 +52,7 @@ public class Mapper {
                 boolean fileSaved = Helper.replaceImage(fileName, transformedMat);
                 return fileSaved;
             }
-        }
-        finally {
+        } finally {
             if (transformedMat != null)
                 transformedMat.release();
         }
@@ -60,9 +62,9 @@ public class Mapper {
     }
 
 
-
     /**
      * Maps the image and saves it in the file with the name: newFileName
+     *
      * @param fileName
      * @param newFileName
      * @param points
@@ -75,8 +77,7 @@ public class Mapper {
             transformedMat = cropAndTransform(fileName, points);
             if (transformedMat != null)
                 return Imgcodecs.imwrite(newFileName, transformedMat);
-        }
-        finally {
+        } finally {
             if (transformedMat != null)
                 transformedMat.release();
         }
@@ -121,8 +122,7 @@ public class Mapper {
             // Transform the image:
             return warpMat(inputMat, srcPoints, destPoints, Math.round(width), Math.round(height));
 
-        }
-        finally {
+        } finally {
             if (inputMat != null)
                 inputMat.release();
         }
@@ -151,8 +151,7 @@ public class Mapper {
 //        Imgproc.cvtColor(result, result, Imgproc.COLOR_BGR2RGB,0);
 
             return result;
-        }
-        finally {
+        } finally {
 //            result.release();
             if (srcPointsMat != null)
                 srcPointsMat.release();

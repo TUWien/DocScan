@@ -26,9 +26,11 @@
 
 #include "PageSegmentationUtils.h"
 
-#pragma warning(push, 0)	// no warnings from includes - begin
+#pragma warning(push, 0)    // no warnings from includes - begin
+
 #include <opencv2/core/core.hpp>
-#pragma warning(pop)		// no warnings from includes - end
+
+#pragma warning(pop)        // no warnings from includes - end
 
 #ifndef DllCoreExport
 #ifdef DK_DLL_EXPORT
@@ -42,31 +44,32 @@
 
 namespace dsc {
 
-class DllCoreExport DkIllumination {
+    class DllCoreExport DkIllumination {
 
-public:
-	DkIllumination(const cv::Mat& img = cv::Mat(), const DkPolyRect& rect = DkPolyRect());
+    public:
+        DkIllumination(const cv::Mat &img = cv::Mat(), const DkPolyRect &rect = DkPolyRect());
 
-	virtual void compute();
-	double value() const;
+        virtual void compute();
 
-    static double apply(const cv::Mat& src, const DkPolyRect& rect = DkPolyRect());
+        double value() const;
 
-	cv::Mat debugImage() const;
+        static double apply(const cv::Mat &src, const DkPolyRect &rect = DkPolyRect());
 
-protected:
-	cv::Mat mImg;
-	cv::Mat mDbgImg;	// unused
+        cv::Mat debugImage() const;
 
-	DkPolyRect mPageRect;
-	
-	// parameters
-	int mEps = 5;
-	int mNumScanLines = 30;
+    protected:
+        cv::Mat mImg;
+        cv::Mat mDbgImg;    // unused
 
-	double mIlluminationValue = 0.0;	// result
+        DkPolyRect mPageRect;
 
-	double scanLineValue(const cv::Mat& scanline) const;
-};
+        // parameters
+        int mEps = 5;
+        int mNumScanLines = 30;
+
+        double mIlluminationValue = 0.0;    // result
+
+        double scanLineValue(const cv::Mat &scanline) const;
+    };
 
 };

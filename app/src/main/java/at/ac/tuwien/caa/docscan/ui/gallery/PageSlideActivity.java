@@ -30,6 +30,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
@@ -41,6 +42,7 @@ import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -198,8 +200,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
      * Called after permission has been given or has been rejected. This is necessary on Android M
      * and younger Android systems.
      *
-     * @param requestCode Request code
-     * @param permissions Permission
+     * @param requestCode  Request code
+     * @param permissions  Permission
      * @param grantResults results
      */
     @Override
@@ -312,7 +314,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //        if (PageDetector.isCurrentlyProcessed(mPage.getFile().getAbsolutePath()))
 //            l.setVisibility(View.GONE);
 //        else
-            l.setVisibility(View.VISIBLE);
+        l.setVisibility(View.VISIBLE);
 
     }
 
@@ -374,14 +376,13 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     }
 
 
-
     private void initButtons() {
 
-       mButtonsLayout = findViewById(R.id.page_view_buttons_layout);
-    //       Take care that the mButtonsLayout is not overlaid by the navigation bar:
-    //       mButtonsLayout.setPadding(0, 0, 0, getNavigationBarHeight());
+        mButtonsLayout = findViewById(R.id.page_view_buttons_layout);
+        //       Take care that the mButtonsLayout is not overlaid by the navigation bar:
+        //       mButtonsLayout.setPadding(0, 0, 0, getNavigationBarHeight());
 
-    //        initGalleryButton();
+        //        initGalleryButton();
         initCropButton();
         initDeleteButton();
         initRotateButton();
@@ -461,9 +462,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             }).start();
 
 
-
-
-
 //            Intent intent = new Intent(mContext, GalleryActivity.class);
 ////            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
 ////            Without this flag the activities would all be added to the back stack.
@@ -500,8 +498,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             mContext.startActivity(intent, activityOptionsCompat.toBundle());
             mPagerAdapter = null;
             finish();
-        }
-        else {
+        } else {
             startGalleryWithoutTransition(intent);
         }
     }
@@ -522,8 +519,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         });
 
 
-
-
 //        ImageView rotateImageView = findViewById(R.id.page_view_buttons_layout_rotate_button);
 //        rotateImageView.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -537,7 +532,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //                    rotatePage();
 //            }
 //        });
-
 
 
     }
@@ -560,7 +554,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                 .setPositiveButton(getString(R.string.page_slide_fragment_retake_image_dialog_confirm_text),
                         new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialogInterface, int i)  {
+                            public void onClick(DialogInterface dialogInterface, int i) {
 
                                 Intent intent = new Intent(context, CameraActivity.class);
 //                        Define which image / page should be replaced:
@@ -628,9 +622,9 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         String filePath = imageFile.getAbsolutePath();
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                new String[] { MediaStore.Images.Media._ID },
+                new String[]{MediaStore.Images.Media._ID},
                 MediaStore.Images.Media.DATA + "=? ",
-                new String[] { filePath }, null);
+                new String[]{filePath}, null);
         if (cursor != null && cursor.moveToFirst()) {
             int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
             cursor.close();
@@ -646,7 +640,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             }
         }
     }
-//
+
+    //
     private void initCropButton() {
 
         ImageView cropImageView = findViewById(R.id.page_view_buttons_layout_crop_button);
@@ -706,12 +701,12 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
             public void onClick(View v) {
 
 
-                    if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        // ask for permission:
-                        ActivityCompat.requestPermissions((AppCompatActivity) mContext, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_DELETE);
-                    } else
-                        deletePage();
-                }
+                if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    // ask for permission:
+                    ActivityCompat.requestPermissions((AppCompatActivity) mContext, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_DELETE);
+                } else
+                    deletePage();
+            }
 //            }
         });
 
@@ -732,7 +727,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                 .setTitle(R.string.page_slide_fragment_confirm_delete_text)
                 .setPositiveButton(R.string.page_slide_fragment_confirm_delete_confirm_title, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i)  {
+                    public void onClick(DialogInterface dialogInterface, int i) {
 
                         deleteCurrentPage();
 
@@ -759,7 +754,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //        Tell the gallery viewer that the file was deleted:
         GalleryActivity.fileDeleted();
 
-        int newPos = mPager.getCurrentItem()-1;
+        int newPos = mPager.getCurrentItem() - 1;
 
         if ((newPos < 0) && (mDocument.getPages().size() > 0))
             newPos = 0;
@@ -808,8 +803,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         if (mToolbar.getVisibility() == View.VISIBLE) {
             mToolbar.setVisibility(View.INVISIBLE);
             mButtonsLayout.setVisibility(View.INVISIBLE);
-        }
-        else {
+        } else {
 
             mToolbar.setVisibility(View.VISIBLE);
             mButtonsLayout.setVisibility(View.VISIBLE);
@@ -817,7 +811,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
 
     }
-
 
 
     private class PageSlideAdapter extends FragmentStatePagerAdapter {
@@ -845,8 +838,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
             ImageViewerFragment fragment = ImageViewerFragment.create();
             Bundle args = new Bundle();
-                args.putString(getString(R.string.key_fragment_image_viewer_file_name),
-                        page.getFile().getAbsolutePath());
+            args.putString(getString(R.string.key_fragment_image_viewer_file_name),
+                    page.getFile().getAbsolutePath());
             fragment.setArguments(args);
 
             return fragment;
@@ -873,7 +866,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         }
 
 
-
         public ImageViewerFragment getCurrentFragment() {
 
             return mCurrentFragment;
@@ -881,8 +873,6 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
 
     }
-
-
 
 
 }

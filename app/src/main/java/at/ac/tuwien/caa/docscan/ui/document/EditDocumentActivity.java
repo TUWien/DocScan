@@ -28,7 +28,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.TranskribusMetaData;
 
-public class EditDocumentActivity extends CreateDocumentActivity{
+public class EditDocumentActivity extends CreateDocumentActivity {
 
     public static final String DOCUMENT_NAME_KEY = "DOCUMENT_NAME";
 
@@ -59,12 +59,10 @@ public class EditDocumentActivity extends CreateDocumentActivity{
                         mIsActiveDocument = true;
 
                     fillViews(mDocument);
-                }
-                else
+                } else
                     finish(); // Nothing to do here, but this should not happen...
 
-            }
-            else
+            } else
                 finish(); // Nothing to do here, but this should not happen...
         }
 

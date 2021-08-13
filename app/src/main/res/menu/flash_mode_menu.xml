@@ -3,21 +3,17 @@
 
     <item
         android:id="@+id/flash_off_item"
-        android:title="@string/flash_off_mode"
-        />
+        android:title="@string/flash_off_mode" />
 
     <item
         android:id="@+id/flash_auto_item"
-        android:title="@string/flash_auto_mode"
-        />
+        android:title="@string/flash_auto_mode" />
 
     <item
         android:id="@+id/flash_on_item"
-        android:title="@string/flash_on_mode"
-        />
+        android:title="@string/flash_on_mode" />
     <item
         android:id="@+id/flash_torch_item"
-        android:title="@string/flash_torch_mode"
-        />
+        android:title="@string/flash_torch_mode" />
 
 </menu>

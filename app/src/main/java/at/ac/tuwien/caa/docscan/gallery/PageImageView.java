@@ -105,7 +105,7 @@ public class PageImageView extends SubsamplingScaleImageView {
     }
 
     @Override
-    public boolean performClick () {
+    public boolean performClick() {
 
         if (mClickCallBack != null) {
             mClickCallBack.onSingleClick();

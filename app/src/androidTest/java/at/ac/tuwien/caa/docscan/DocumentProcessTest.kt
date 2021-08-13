@@ -1,10 +1,18 @@
 package at.ac.tuwien.caa.docscan
 
+import android.app.Activity
+import android.app.Instrumentation
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.widget.TextView
+import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import org.junit.Test
 import org.junit.runner.RunWith
 import androidx.test.core.app.ActivityScenario
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.ViewAssertion
 import androidx.test.espresso.action.ViewActions.click
@@ -15,15 +23,24 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import at.ac.tuwien.caa.docscan.ui.CameraActivity
-import org.hamcrest.CoreMatchers.allOf
-import org.hamcrest.CoreMatchers.instanceOf
 import androidx.test.espresso.matcher.ViewMatchers.withParent
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
+import androidx.test.espresso.intent.Intents.intending
+import androidx.test.espresso.intent.matcher.IntentMatchers.*
 import androidx.test.espresso.matcher.PreferenceMatchers.withTitle
+import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.GrantPermissionRule
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObjectNotFoundException
+import androidx.test.uiautomator.UiSelector
 import it.xabaras.android.espresso.recyclerviewchildactions.RecyclerViewChildActions.Companion.actionOnChild
 import org.checkerframework.framework.qual.Bottom
+import org.hamcrest.CoreMatchers.*
+import org.junit.Rule
+import java.io.File
 import androidx.test.espresso.ViewAction as ViewAction
 
 
@@ -31,29 +48,40 @@ import androidx.test.espresso.ViewAction as ViewAction
 class DocumentProcessTest {
 
     @Test
-    fun processPictures() {
+    fun exportToPdf() {
 
 //        TODO: grant permissions
 
         ActivityScenario.launch(CameraActivity::class.java)
 
         // Take n images
-//        takeImages(5)
+        takeImages(5)
 //
 //        Click on the documents button and open the DocumentViewerActivity:
         onView(withId(R.id.document_fab)).perform(click())
         BottomNavigationTest.assertFirstScreen()
+        createPdf(0)
+        Thread.sleep(2000)
+        openPdf(0)
+
+//        TODO: keep old functions...
 
 //        renameFirstDocument()
 
-        createDocument("permanent record", 3)
-//        Click on the documents button and open the DocumentViewerActivity:
-        onView(withId(R.id.document_fab)).perform(click())
-        createDocument("designing interfaces", 3)
+//        createDocument("permanent record", 3)
+////        Click on the documents button and open the DocumentViewerActivity:
+//        onView(withId(R.id.document_fab)).perform(click())
+//        createDocument("designing interfaces", 3)
+//
+//        onView(withId(R.id.document_fab)).perform(click())
+//        deleteDocumentFromDocumentFragment(0)
 
-        onView(withId(R.id.document_fab)).perform(click())
-        deleteDocumentFromDocumentFragment(0)
+//        onView(withId(R.id.document_fab)).perform(click())
+//        createPdf(0)
 
+//        Thread.sleep(5000)
+//        onView(withId(R.id.viewer_pdfs)).perform((click()))
+//        Thread.sleep(5000)
 
 
 
@@ -69,6 +97,8 @@ class DocumentProcessTest {
 //        changeDocumentTitleFromDocumentFragment(muchNewerText)
 
     }
+
+
 
     /**
      * Deletes the document at position pos from the DocumentsFragment
@@ -93,6 +123,100 @@ class DocumentProcessTest {
 
 
     }
+
+    /**
+     * Opens a pdf from the pdf list at position pos from the DocumentsFragment
+     */
+    private fun openPdf(pos: Int) {
+
+        BottomNavigationTest.openThirdScreen()
+//        try {
+            onView(withText(R.string.pdf_fragment_persisted_permission_title)).inRoot(isDialog())
+                .check(matches(isDisplayed()))
+            onView(withText(R.string.dialog_ok_text)).perform(click())
+            Thread.sleep(2000)
+
+        val intent = genIntentWithPersistedReadPermissionForFile()
+        intending(
+            allOf(
+                hasAction(Intent.ACTION_CHOOSER),
+                hasExtra(`is`(Intent.EXTRA_INTENT),
+                    allOf(
+                        hasAction(Intent.ACTION_OPEN_DOCUMENT_TREE),
+                        hasType("*/*"),
+                        hasCategories(hasItem(equalTo(Intent.CATEGORY_OPENABLE)))
+                    )
+                )
+            )
+        ).respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, intent))
+
+
+        onView(withId(R.id.pdf_list)).perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(pos, click()))
+    }
+
+    fun genIntentWithPersistedReadPermissionForFile(): Intent {
+        val uri = Uri.parse("content://com.android.externalstorage.documents/tree/home%3ADocScan")
+        return Intent().apply {
+            val context: Context = ApplicationProvider.getApplicationContext()
+//            val uri = FileProvider.getUriForFile(context, Constants.FILE_PROVIDER_AUTHORITY, file)
+            context.grantUriPermission(
+                BuildConfig.APPLICATION_ID,
+                uri,
+                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            data = uri
+            flags = Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or Intent.FLAG_GRANT_READ_URI_PERMISSION
+        }
+    }
+//        }
+//        catch (e: Exception) {
+//
+//        }
+//
+
+//        BottomNavigationTest.assertThirdScreen()
+
+//        Click the more button that is next to the title with value oldText
+//        Unfortunately, there is no one liner for this so we use this package:
+//        it.xabaras.android.espresso.recyclerviewchildactions
+//        onView(withId(R.id.pdf_list)).perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(pos, click()))
+//        perform(
+//            actionOnItemAtPosition<RecyclerView.ViewHolder>(pos,
+//                actionOnChild(click(), R.id.document_more_button)))
+////        Click on the delete button in the ActionSheet:
+//        onView(allOf(withText(R.string.action_document_pdf_title), isDisplayed()))
+//            .perform(click())
+////        Click on the yes button in the dialog:
+//        onView(withText(R.string.dialog_yes_text)).perform(click())
+////        Do not do OCR:
+//        onView(withText(R.string.dialog_no_text)).perform(click())
+
+    }
+
+    /**
+     * Creates a pdf from the document at position pos from the DocumentsFragment
+     */
+    private fun createPdf(pos: Int) {
+
+        BottomNavigationTest.openFirstScreen()
+        BottomNavigationTest.assertFirstScreen()
+
+//        Click the more button that is next to the title with value oldText
+//        Unfortunately, there is no one liner for this so we use this package:
+//        it.xabaras.android.espresso.recyclerviewchildactions
+        onView(withId(R.id.documents_list)).
+        perform(
+            actionOnItemAtPosition<RecyclerView.ViewHolder>(pos,
+                actionOnChild(click(), R.id.document_more_button)))
+//        Click on the delete button in the ActionSheet:
+        onView(allOf(withText(R.string.action_document_pdf_title), isDisplayed()))
+            .perform(click())
+//        Click on the yes button in the dialog:
+        onView(withText(R.string.dialog_yes_text)).perform(click())
+//        Do not do OCR:
+        onView(withText(R.string.dialog_no_text)).perform(click())
+
+    }
+
 
     /**
      * Creates a new document and takes n pictures:
@@ -184,4 +308,3 @@ class DocumentProcessTest {
 //        onView(allOf(instanceOf(TextView::class.java), withParent(withId(R.id.main_toolbar))))
 //                .check(matches(withText(newText)))
 //    }
-}

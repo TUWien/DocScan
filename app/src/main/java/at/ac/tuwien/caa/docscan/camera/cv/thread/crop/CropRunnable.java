@@ -18,14 +18,20 @@ public abstract class CropRunnable implements Runnable {
     // Defines a field that contains the calling object of type ImageProcessTask.
     final protected TaskRunnableCropMethods mCropTask;
 
-    interface TaskPdfMethods extends TaskRunnableCropMethods{
+    interface TaskPdfMethods extends TaskRunnableCropMethods {
 
         void setFiles(ArrayList<File> files);
+
         ArrayList<File> getFiles();
+
         void setPdfName(String pdfName);
+
         String getPdfName();
+
         void setContext(WeakReference<Context> context);
+
         WeakReference<Context> getContext();
+
         boolean getPerformOCR();
     }
 
@@ -33,17 +39,22 @@ public abstract class CropRunnable implements Runnable {
 
         /**
          * Sets the Thread that this instance is running on
+         *
          * @param currentThread the current Thread
          */
         void setCropThread(Thread currentThread);
+
         void handleState(int state);
+
         File getFile();
+
         void setFile(File file);
+
         Document getDocument();
+
         void setDocument(Document document);
 
     }
-
 
 
     protected abstract void performTask(String fileName);
@@ -63,8 +74,6 @@ public abstract class CropRunnable implements Runnable {
 
     @Override
     public void run() {
-
-        Log.d(CLASS_NAME, "run:");
 
         // Moves the current Thread into the background
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);

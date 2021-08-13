@@ -21,7 +21,9 @@ package at.ac.tuwien.caa.docscan.gallery;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+
 import androidx.fragment.app.Fragment;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -43,7 +45,7 @@ import at.ac.tuwien.caa.docscan.logic.Page;
 public class ImageViewerFragment extends Fragment {
 
     private Page mPage;
-//    private SubsamplingScaleImageView mImageView;
+    //    private SubsamplingScaleImageView mImageView;
     private static final String CLASS_NAME = "ImageViewerFragment";
     private PageImageView mImageView;
     private String mFileName;
@@ -113,12 +115,11 @@ public class ImageViewerFragment extends Fragment {
             Log.d(CLASS_NAME, "checkLoadingViewStatus: cropping NOT done: " + mFileName);
             if (mLoadingView != null)
                 mLoadingView.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             Log.d(CLASS_NAME, "checkLoadingViewStatus: cropping done: " + mFileName);
             if (mLoadingView != null)
-            if (mLoadingView != null)
-                mLoadingView.setVisibility(View.INVISIBLE);
+                if (mLoadingView != null)
+                    mLoadingView.setVisibility(View.INVISIBLE);
         }
 
     }
@@ -148,7 +149,7 @@ public class ImageViewerFragment extends Fragment {
             if (orientation != -1) {
                 int angle = Helper.getAngleFromExif(orientation);
                 Log.d(CLASS_NAME, "refreshImageView: angle: " + angle);
-                if (angle == 0 || angle == 180)  {
+                if (angle == 0 || angle == 180) {
                     imageHeight = options.outWidth;
                     imageWidth = options.outHeight;
                 }
@@ -162,8 +163,7 @@ public class ImageViewerFragment extends Fragment {
 
         if (ImageProcessLogger.isAwaitingPageDetection(file)) {
             mLoadingView.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             mLoadingView.setVisibility(View.INVISIBLE);
 
             if (!PageDetector.isCropped(mFileName)) {
@@ -177,8 +177,7 @@ public class ImageViewerFragment extends Fragment {
 
 //                ArrayList<PointF> outerPoints = PageDetector.getParallelPoints(points, mFileName);
 //                mImageView.setPoints(points, outerPoints);
-            }
-            else
+            } else
 //            We do this because the image might have been cropped in the meantime:
                 mImageView.resetPoints();
         }

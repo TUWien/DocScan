@@ -25,8 +25,7 @@ public class PageDetectionRunnable extends CropRunnable {
                 PageDetector.savePointsToExif(fileName,
                         PageDetector.getNormedDefaultPoints(), true);
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
 
         }
 

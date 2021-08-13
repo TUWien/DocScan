@@ -25,27 +25,26 @@ import at.ac.tuwien.caa.docscan.R;
  * https://github.com/IsseiAoki/SimpleCropView/tree/master/simplecropview-sample/src/main/java/com/example/simplecropviewsample
  * Licence by SimpleCropView:
  * The MIT License (MIT)
-
- Copyright (c) 2015 Issei Aoki
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
-
+ * <p>
+ * Copyright (c) 2015 Issei Aoki
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 public class CropView extends androidx.appcompat.widget.AppCompatImageView {
@@ -87,7 +86,6 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
     private boolean mIsPointDragged = false;
 
 
-
     private CropQuad mCropQuad;
     private ArrayList<PointF> mNormedPoints;
 //    private int mAngle;
@@ -118,7 +116,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         mPaintFrame = new Paint();
         mFrameColor = getResources().getColor(R.color.hud_page_rect_color);
 
-        mFrameRect = new RectF(0,0, 200, 200);
+        mFrameRect = new RectF(0, 0, 200, 200);
 
         initQuadPaint();
         initOuterQuadPaint();
@@ -169,6 +167,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
     /**
      * Sets device dependent dimensions. The scaling factor is used to dynamically resize the
      * CropView from the CropView activity.
+     *
      * @param scale
      */
     public void resizeDimensions(float scale) {
@@ -225,7 +224,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     }
 
-    @Override public void onDraw(Canvas canvas) {
+    @Override
+    public void onDraw(Canvas canvas) {
         canvas.drawColor(mBackgroundColor);
 
         setMatrix();
@@ -324,7 +324,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
         // draw the cross:
         canvas.drawLine(point.x - mCrossWidth + offSetX, point.y - offSetY,
-                point.x + mCrossWidth + offSetX, point.y -  offSetY, mCrossPaint);
+                point.x + mCrossWidth + offSetX, point.y - offSetY, mCrossPaint);
         canvas.drawLine(point.x + offSetX, point.y - offSetY - mCrossWidth,
                 point.x + offSetX, point.y - offSetY + mCrossWidth, mCrossPaint);
 
@@ -335,7 +335,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         int bmpW = getBitmap().getWidth();
         int bmpH = getBitmap().getHeight();
 
-        PointF tl = new PointF(viewPoint.x - mDetailWidth + offSet.x,viewPoint.y - mDetailWidth - offSet.y);
+        PointF tl = new PointF(viewPoint.x - mDetailWidth + offSet.x, viewPoint.y - mDetailWidth - offSet.y);
         PointF br = new PointF(viewPoint.x + mDetailWidth + offSet.x, viewPoint.y + mDetailWidth - offSet.y);
 
         if (imgTL.x < 0)
@@ -356,6 +356,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     /**
      * Calculates the length of the shift for an detail that would lay partially outside the image border.
+     *
      * @param overlapLength
      * @return
      */
@@ -400,6 +401,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     /**
      * Rotates a point according to an angle.
+     *
      * @param point
      * @param angle discrete angle (0, 90, 180, 270)
      */
@@ -433,16 +435,16 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
             case 90:
                 float tmpY = point.x;
-                point.x = 1-point.y;
+                point.x = 1 - point.y;
                 point.y = tmpY;
                 break;
             case 180:
-                point.x = 1-point.x;
-                point.y = 1-point.y;
+                point.x = 1 - point.x;
+                point.y = 1 - point.y;
                 break;
             case 270:
                 float tmpX = point.y;
-                point.y = 1-point.x;
+                point.y = 1 - point.x;
                 point.x = tmpX;
                 break;
             default:
@@ -532,7 +534,6 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
     }
 
 
-
     private void drawQuad(Canvas canvas) {
 
 //        canvas.drawCircle(marker1.x, marker1.y, 50, mQuadPaint);
@@ -560,7 +561,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
     }
 
 
-    @Override public boolean onTouchEvent(MotionEvent event) {
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -608,8 +610,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
         if (mCropQuad.isPointClose(point)) {
             mIsPointDragged = true;
-        }
-        else
+        } else
             mIsPointDragged = false;
 
     }
@@ -642,7 +643,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     // Calculations for layout size:
 
-    @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         final int viewWidth = MeasureSpec.getSize(widthMeasureSpec);
         final int viewHeight = MeasureSpec.getSize(heightMeasureSpec);
 
@@ -652,7 +654,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         mViewHeight = viewHeight - getPaddingTop() - getPaddingBottom();
     }
 
-    @Override protected void onLayout(boolean changed, int l, int t, int r, int b) {
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
         if (getDrawable() != null) setupLayout(mViewWidth, mViewHeight);
     }
 
@@ -859,7 +862,6 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         mMatrix.postScale(mScale, mScale, mCenter.x, mCenter.y);
 //        mMatrix.postRotate(mAngle, mCenter.x, mCenter.y);
     }
-
 
 
     private PointF getPoint(MotionEvent e) {

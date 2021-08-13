@@ -68,6 +68,7 @@ public class TaskTimer {
 
     /**
      * Starts a timer.
+     *
      * @param type
      */
     public void startTaskTimer(TaskType type) {
@@ -80,6 +81,7 @@ public class TaskTimer {
 
     /**
      * Stops the timer and returns the execution time.
+     *
      * @param type
      * @return time in milliseconds
      */
@@ -97,6 +99,7 @@ public class TaskTimer {
 
     /**
      * Finds a task by ID in the task list.
+     *
      * @param type
      * @return Task
      */
@@ -114,6 +117,7 @@ public class TaskTimer {
     public interface TimerCallbacks {
 
         void onTimerStarted(TaskType type);
+
         void onTimerStopped(TaskType type);
 
     }
@@ -166,7 +170,7 @@ public class TaskTimer {
             double averageTime = mTimeSum / (double) mTaskCnt;
 
             String type = "undefined";
-            switch(mType) {
+            switch (mType) {
                 case PAGE_SEGMENTATION:
                     type = "page segmentation";
                     break;

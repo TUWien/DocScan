@@ -78,15 +78,16 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     private static Flicker mFlicker;
     private CVResult mCVResult;
     private boolean mDrawGrid = false;
-//    This is basically the exif orientation, but we do not name it this way in the UI
+    //    This is basically the exif orientation, but we do not name it this way in the UI
     private int mTextOrientation = CameraActivity.IMG_ORIENTATION_0;
     private boolean mDrawTextDirLarge = false;
 
     /**
      * Creates the PaintView, the timerCallback and the thread responsible for the drawing.
+     *
      * @param context of the Activity
-     * @param attrs attributes of the activity. Note that we need to pass the attributes in order to
-     *              find the view by its ID (findViewById) in the activity.
+     * @param attrs   attributes of the activity. Note that we need to pass the attributes in order to
+     *                find the view by its ID (findViewById) in the activity.
      */
     public PaintView(Context context, AttributeSet attrs) {
 
@@ -114,6 +115,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Method used for turning the drawing of the focus values on or off
+     *
      * @param drawText boolean
      */
     public void drawFocusText(boolean drawText) {
@@ -141,9 +143,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
-
     /**
      * Returns if the focus values are drawn.
+     *
      * @return boolean
      */
     public boolean isFocusTextVisible() {
@@ -162,6 +164,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     /**
      * Sets the CVResult. The draw method is only called if the CVResult notifies the PaintView that
      * it has been updated.
+     *
      * @param cvResult CVResult to which the PaintView is connected
      */
     public void setCVResult(CVResult cvResult) {
@@ -172,11 +175,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Called after the surface is created.
+     *
      * @param holder owner of the surface
      */
     @Override
-    public void surfaceCreated(SurfaceHolder holder)
-    {
+    public void surfaceCreated(SurfaceHolder holder) {
 
         mHolder = holder;
         mDrawerThread.setRunning(true);
@@ -188,9 +191,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Called after the surface is changed.
+     *
      * @param holder owner of the surface
      * @param format format
-     * @param width width of the surface
+     * @param width  width of the surface
      * @param height height of the surface
      */
     @Override
@@ -202,6 +206,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     /**
      * Called if the surface is destroyed. Shuts down the drawer thread.
+     *
      * @param holder the surface holder
      */
     @Override
@@ -228,7 +233,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
     public void resume() {
 
 
-
         if (mDrawerThread != null) {
             // It is necessary to call notify here, because otherwise there will be a deadlock in the
             // run method, which waits for the mCVResult object. The deadlock will arise after the
@@ -240,8 +244,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 mDrawerThread = new DrawerThread(mHolder);
                 mDrawerThread.setRunning(true);
                 mDrawerThread.start();
-            }
-            else
+            } else
                 mDrawerThread.setRunning(true);
         }
 
@@ -355,8 +358,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         private static final String TEXT_FORMAT = "%.2f";
 
         // Focus touch:
-        private final long FOCUS_TOUCH_ANIMATION_DURATION =     200000000; // in nano seconds
-        private final long FOCUS_TOUCH_MAX_DURATION =           15000000000L; // in nano seconds
+        private final long FOCUS_TOUCH_ANIMATION_DURATION = 200000000; // in nano seconds
+        private final long FOCUS_TOUCH_MAX_DURATION = 15000000000L; // in nano seconds
         private final float FOCUS_TOUCH_CIRCLE_RADIUS_START =
                 getResources().getDimension(R.dimen.focus_touch_circle_radius_start);
         private final float FOCUS_TOUCH_CIRCLE_RADIUS_END =
@@ -479,11 +482,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
 
-
         /**
          * Continuous looping method used for waiting for updates of the CVResult object. The draw
          * method is only called after the CVResult object is updated. Note that this saves a lot of
          * CPU usage.
+         *
          * @see <a href="https://developer.android.com/training/custom-views/optimizing-view.html">Optimizing the View</a>
          */
         @Override
@@ -514,8 +517,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         if (!mCVResult.isRedrawNecessary()) {
                             if (mSegmentationPaint.getAlpha() >= 170)
                                 mSegmentationPaint.setAlpha(mSegmentationPaint.getAlpha() - 20);
-                        }
-                        else {
+                        } else {
                             mSegmentationPaint.setAlpha(221);
                             mFocusSharpRectPaint.setAlpha(170);
                             mFocusUnsharpRectPaint.setAlpha(170);
@@ -546,6 +548,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         /**
          * Used for pausing and resuming the drawer thread.
+         *
          * @param b boolean indicating if the thread is running
          */
         public void setRunning(boolean b) {
@@ -559,9 +562,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
 
-
         /**
          * Method used for the drawing of the CV result.
+         *
          * @param canvas canvas
          */
         private void draw(Canvas canvas) {
@@ -577,12 +580,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             canvas.drawColor(Color.BLUE, PorterDuff.Mode.CLEAR);
 
             if (mDrawMovementIndicator) {
-                Rect rect = new Rect(0,0, getWidth(), getHeight());
+                Rect rect = new Rect(0, 0, getWidth(), getHeight());
                 canvas.drawRect(rect, mMovementPaint);
             }
 
             if (mDrawWaitingIndicator) {
-                Rect rect = new Rect(0,0, getWidth(), getHeight());
+                Rect rect = new Rect(0, 0, getWidth(), getHeight());
                 canvas.drawRect(rect, mWaitingFramePaint);
             }
 
@@ -628,8 +631,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     radius = (int) (FOCUS_TOUCH_CIRCLE_RADIUS_END +
                             Math.round(FOCUS_TOUCH_CIRCLE_RADIUS_START - FOCUS_TOUCH_CIRCLE_RADIUS_END)
                                     * (1 - (float) timeDiff / FOCUS_TOUCH_ANIMATION_DURATION));
-                }
-                else {
+                } else {
                     int alpha = mFocusTouchCirclePaint.getAlpha() - 20;
                     if (alpha < 0)
                         alpha = 0;
@@ -639,8 +641,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 canvas.drawCircle(mFocusTouchPoint.x, mFocusTouchPoint.y, radius, mFocusTouchCirclePaint); // Filling
                 canvas.drawCircle(mFocusTouchPoint.x, mFocusTouchPoint.y, radius, mFocusTouchOutlinePaint); // Outline
 
-            }
-            else
+            } else
                 mDrawFocusTouch = false;
 
         }
@@ -653,13 +654,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
 //            Draw the vertical lines:
             for (int i = 0; i < gridColumnNum - 1; i++) {
-                float x = ((float) getWidth() / gridColumnNum) * (i+1);
+                float x = ((float) getWidth() / gridColumnNum) * (i + 1);
                 canvas.drawLine(x, 0, x, getHeight(), mGridPaint);
             }
 
 //            Draw the horizontal lines:
             for (int i = 0; i < gridRowNum - 1; i++) {
-                float y = ((float) getHeight() / gridRowNum) * (i+1);
+                float y = ((float) getHeight() / gridRowNum) * (i + 1);
                 canvas.drawLine(0, y, getWidth(), y, mGridPaint);
             }
 
@@ -667,6 +668,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         /**
          * Draws the output of the page segmentation task.
+         *
          * @param canvas canvas
          */
         private void drawPageSegmentation(Canvas canvas) {
@@ -729,8 +731,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     return;
 //                Use the golden ratio for y:
                 tl = new PointF(getWidth() / 2f, getHeight() * .382f);
-            }
-            else {
+            } else {
                 int csIdx = getTopLeftTextIdx(screenPoints);
 
                 if (csIdx == -1)
@@ -763,6 +764,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         /**
          * Draws the text dir bitmap
+         *
          * @param canvas
          * @param angle
          * @param tl
@@ -796,8 +798,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     } else if (mTextOrientation == CameraActivity.IMG_ORIENTATION_270) {
                         tl.y -= rotatedBitmap.getHeight();
                     }
-                }
-                else {
+                } else {
                     tl.x -= rotatedBitmap.getWidth() / 2f;
                     tl.y -= rotatedBitmap.getHeight() / 2f;
                 }
@@ -854,6 +855,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         /**
          * Returns the left top corner point, depending on the orientation of the text.
+         *
          * @param points
          * @return
          */
@@ -880,6 +882,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
         /**
          * Returns the mid point of the bounding box in x or y direction.
+         *
          * @param points
          * @return
          */
@@ -896,11 +899,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                     e = p;
             }
 
-            return s + (e-s) / 2;
+            return s + (e - s) / 2;
         }
 
         /**
          * Draws the output of the focus measurement task.
+         *
          * @param canvas canvas
          */
         private void drawFocusMeasure(Canvas canvas) {
@@ -923,8 +927,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
                         drawFocusRect(canvas, mFocusSharpRectPaint, patch.getDrawViewPX(), patch.getDrawViewPY());
 
-                    }
-                    else {
+                    } else {
 
                         if (mDrawFocusText)
                             mTextPaint.setColor(FOCUS_UNSHARP_RECT_COLOR);
@@ -996,7 +999,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             if (canvas == null)
                 return;
 
-            Rect rect = new Rect(0,0, getWidth(), getHeight());
+            Rect rect = new Rect(0, 0, getWidth(), getHeight());
             canvas.drawRect(rect, mFlickerPaint);
 
             mHolder.unlockCanvasAndPost(canvas);
@@ -1005,7 +1008,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
             long startTime = System.currentTimeMillis();
             long currentTime = -1;
 
-            while(currentTime - startTime < getResources().getInteger(R.integer.flicker_time))
+            while (currentTime - startTime < getResources().getInteger(R.integer.flicker_time))
                 currentTime = System.currentTimeMillis();
 
             // Remove the painting:
@@ -1020,4 +1023,4 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
- }
+}

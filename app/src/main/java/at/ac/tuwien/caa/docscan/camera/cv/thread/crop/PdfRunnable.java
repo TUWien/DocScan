@@ -6,7 +6,7 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-public class PdfRunnable extends CropRunnable{
+public class PdfRunnable extends CropRunnable {
 
     private static final String CLASS_NAME = "PdfRunnable";
 

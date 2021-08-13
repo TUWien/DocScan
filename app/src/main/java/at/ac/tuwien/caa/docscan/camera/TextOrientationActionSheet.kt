@@ -11,20 +11,22 @@ import at.ac.tuwien.caa.docscan.R
 import kotlinx.android.synthetic.main.sheet_dialog_camera.*
 
 
-class TextOrientationActionSheet(sheetActions: ArrayList<SheetAction>, selectionListener: SheetSelection,
-                                 dialogListener: DialogStatus, var confirmListener: DialogConfirm,
-                                 private val opaque: Boolean = true) :
-        ActionSheet(sheetActions, selectionListener, dialogListener) {
+class TextOrientationActionSheet(
+    sheetActions: ArrayList<SheetAction>, selectionListener: SheetSelection,
+    dialogListener: DialogStatus, var confirmListener: DialogConfirm,
+    private val opaque: Boolean = true
+) :
+    ActionSheet(sheetActions, selectionListener, dialogListener) {
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
 
         val style: Int =
-                if (opaque)
-                    R.style.BottomSheetDialogDarkTheme
-                else
-                    R.style.TransparentBottomSheetDialogDarkTheme
+            if (opaque)
+                R.style.BottomSheetDialogDarkTheme
+            else
+                R.style.TransparentBottomSheetDialogDarkTheme
 
         setStyle(STYLE_NORMAL, style)
         sheet_dialog_recyclerview.apply {
@@ -32,8 +34,10 @@ class TextOrientationActionSheet(sheetActions: ArrayList<SheetAction>, selection
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
 //        setStyle(STYLE_NORMAL, R.style.CustomBottomSheetDialogTheme)
 
@@ -46,7 +50,8 @@ class TextOrientationActionSheet(sheetActions: ArrayList<SheetAction>, selection
             dismiss()
         }
 
-        val cancelButton = view.findViewById<AppCompatButton>(R.id.text_orientation_sheet_cancel_button)
+        val cancelButton =
+            view.findViewById<AppCompatButton>(R.id.text_orientation_sheet_cancel_button)
         cancelButton.setOnClickListener {
             dismiss()
             confirmListener.onCancel()
