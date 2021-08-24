@@ -28,8 +28,8 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.signature.MediaStoreSignature;
-import com.crashlytics.android.Crashlytics;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 //import org.opencv.android.OpenCVLoader;
 
@@ -117,9 +117,7 @@ public class CropViewActivity extends AppCompatActivity {
             PageDetector.savePointsToExif(mFileName, mOriginalPoints, mIsFocused);
             Helper.saveExifOrientation(new File(mFileName), mOriginalOrientation);
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            Log.d(CLASS_NAME, "onOptionsItemSelected: " + e.toString());
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         super.onBackPressed();
@@ -134,9 +132,7 @@ public class CropViewActivity extends AppCompatActivity {
                     PageDetector.savePointsToExif(mFileName, mOriginalPoints, mIsFocused);
                     Helper.saveExifOrientation(new File(mFileName), mOriginalOrientation);
                 } catch (IOException e) {
-                    Crashlytics.logException(e);
-                    Log.d(CLASS_NAME, "onOptionsItemSelected: " + e.toString());
-                    e.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(e);
                 }
                 onBackPressed();
                 return true;
@@ -208,8 +204,7 @@ public class CropViewActivity extends AppCompatActivity {
                     mOriginalPoints = points;
 
                 } catch (IOException e) {
-                    Crashlytics.logException(e);
-                    e.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(e);
                 }
 
             }

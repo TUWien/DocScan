@@ -82,12 +82,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.signature.MediaStoreSignature;
-import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.zxing.Result;
 
 import org.jetbrains.annotations.NotNull;
@@ -284,9 +284,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         super.onPause();
 
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "CameraActivity::308");
         DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "CameraActivity:310");
 
         if (mPaintView != null)
             mPaintView.pause();
@@ -489,14 +487,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         try {
             ProviderInstaller.installIfNeeded(this);
         } catch (GooglePlayServicesRepairableException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             // Indicates that Google Play services is out of date, disabled, etc.
             // Prompt the user to install/update/enable Google Play services.
             GooglePlayServicesUtil.showErrorNotification(
                     e.getConnectionStatusCode(), mContext);
 
         } catch (GooglePlayServicesNotAvailableException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             // Indicates a non-recoverable error; the ProviderInstaller is not able
             // to install an up-to-date Provider.
         }
@@ -888,7 +886,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     try {
                         startActivity(browserIntent);
                     } catch (ActivityNotFoundException e) {
-                        Crashlytics.logException(e);
+                        FirebaseCrashlytics.getInstance().recordException(e);
                         Helper.showActivityNotFoundAlert(getApplicationContext());
                     }
 
@@ -3211,8 +3209,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             try {
                 exifOrientation = Helper.getExifOrientation(fileName);
             } catch (IOException e) {
-                Crashlytics.logException(e);
-                e.printStackTrace();
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
 
             if (exifOrientation != -1) {
@@ -3320,7 +3317,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             } catch (Exception e) {
 
-                Crashlytics.logException(e);
+                FirebaseCrashlytics.getInstance().recordException(e);
 
                 runOnUiThread(new Runnable() {
 
@@ -3575,7 +3572,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             return BitmapFactory.decodeStream(new FileInputStream(f), null, options);
 
         } catch (FileNotFoundException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         return null;
     }

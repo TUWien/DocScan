@@ -22,7 +22,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.request.RequestOptions;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.ArrayList;
 
@@ -270,7 +270,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
         try {
             mActivity.startActivity(browserIntent);
         } catch (ActivityNotFoundException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             Helper.showActivityNotFoundAlert(mActivity.getApplicationContext());
         }
 

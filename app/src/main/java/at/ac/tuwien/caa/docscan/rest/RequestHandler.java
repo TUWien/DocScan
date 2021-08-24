@@ -21,7 +21,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,9 +31,6 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.fabric.sdk.android.services.common.Crash;
-
 
 public class RequestHandler {
 
@@ -71,14 +68,10 @@ public class RequestHandler {
             try {
                 stack = new HurlStack(null, new TLSSocketFactory());
             } catch (KeyManagementException e) {
-                Crashlytics.logException(e);
-                e.printStackTrace();
-                Log.d("Your Wrapper Class", "Could not create new stack for TLS v1.2");
+                FirebaseCrashlytics.getInstance().recordException(e);
                 stack = new HurlStack();
             } catch (NoSuchAlgorithmException e) {
-                Crashlytics.logException(e);
-                e.printStackTrace();
-                Log.d("Your Wrapper Class", "Could not create new stack for TLS v1.2");
+                FirebaseCrashlytics.getInstance().recordException(e);
                 stack = new HurlStack();
             }
             requestQueue = Volley.newRequestQueue(context, stack);
@@ -105,9 +98,10 @@ public class RequestHandler {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         if (error != null) {
-                            Crashlytics.log("login error: " + error);
+                            FirebaseCrashlytics.getInstance().log("login error: " + error);
                             if (error.networkResponse != null)
-                                Crashlytics.log("login error network response: " + error.networkResponse);
+                                FirebaseCrashlytics.getInstance().log(
+                                        "login error network response: " + error.networkResponse);
                         }
 
                         request.handleLoginError(error);
@@ -307,8 +301,7 @@ public class RequestHandler {
             JSONObject obj = new JSONObject(json);
             trimmedString = obj.getString(key);
         } catch (JSONException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
             return null;
         }
 

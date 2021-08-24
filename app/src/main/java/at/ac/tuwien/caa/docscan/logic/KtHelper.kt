@@ -12,7 +12,7 @@ import androidx.annotation.RequiresApi
 import androidx.documentfile.provider.DocumentFile
 import androidx.preference.PreferenceManager
 import at.ac.tuwien.caa.docscan.R
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import java.io.File
 import java.net.URLEncoder
 
@@ -26,7 +26,7 @@ class KtHelper {
                 srcFile.copyTo(dstFile, true)
                 true
             } catch (exception: Exception) {
-                Crashlytics.logException(exception)
+                FirebaseCrashlytics.getInstance().recordException(exception)
                 false
             }
         }

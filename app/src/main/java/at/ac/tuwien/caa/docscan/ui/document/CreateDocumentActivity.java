@@ -28,7 +28,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.material.textfield.TextInputEditText;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -231,10 +230,8 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
     public void onPause() {
 
         super.onPause();
-//        DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "CreateDocumentActivity::107");
         DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "CreateDocumentActivity:109");
+
     }
 
     private void initEditField() {

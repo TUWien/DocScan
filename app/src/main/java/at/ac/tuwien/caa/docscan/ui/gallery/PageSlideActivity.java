@@ -53,7 +53,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import com.crashlytics.android.Crashlytics;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import org.jetbrains.annotations.NotNull;
@@ -166,9 +165,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
         super.onPause();
 
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "PageSlideActivity::174");
         DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "PageSlideActivity:176");
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         mMessageReceiver = null;

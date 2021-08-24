@@ -39,7 +39,6 @@ import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.docviewer.ImagesFragment.Companion.DOCUMENT_NAME_KEY
 import at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment.Companion.NEW_PDFS_KEY
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.*
-import com.crashlytics.android.Crashlytics
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -290,10 +289,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             R.id.action_document_continue_item -> {
                 DocumentStorage.getInstance(this).title = document.title
                 Helper.startCameraActivity(this)
-//                DocumentStorage.saveJSON(this)
-//                Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::284")
-//                DocumentStorage.saveJSON(this)
-//                Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:286")
                 finish()
             }
             R.id.action_document_pdf_item -> {
@@ -733,10 +728,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //                update the documents:
         DocumentStorage.getInstance(this).documents.remove(document)
         document.deleteImages()
-//        DocumentStorage.saveJSON(this)
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::672")
         DocumentStorage.saveJSON(this)
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:674")
 
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             if ((this as DocumentsFragment).isVisible) {
@@ -1451,12 +1443,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     override fun onPause() {
         super.onPause()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver)
-
-        val t1 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::1258 $t1")
-        DocumentStorage.saveJSON(this)
-        val t2 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:1260 $t2")
 
     }
 

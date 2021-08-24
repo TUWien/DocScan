@@ -23,9 +23,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 
 import com.android.volley.VolleyError;
-import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.jetbrains.annotations.NotNull;
 import org.opencv.core.Mat;
@@ -82,7 +82,7 @@ public class Helper {
     public static void crashlyticsLog(String className, String methodName, String msg) {
 
         String log = className + ": " + methodName + ": " + msg;
-        Crashlytics.log(log);
+        FirebaseCrashlytics.getInstance().log(log);
 
     }
 
@@ -396,8 +396,7 @@ public class Helper {
                 return true;
             }
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         return false;
@@ -424,8 +423,7 @@ public class Helper {
                 return true;
             }
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         return false;
@@ -713,9 +711,8 @@ public class Helper {
             tempFile = File.createTempFile("img", ".jpg", originalFile.getParentFile());
         } catch (IOException e) {
             e.printStackTrace();
-            Crashlytics.log("Helper.saveMat");
-            Log.d(CLASS_NAME, "Helper.saveMat");
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().log("Helper.saveMat");
+            FirebaseCrashlytics.getInstance().recordException(e);
             return false;
         }
 
@@ -737,8 +734,8 @@ public class Helper {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Crashlytics.log("Helper.saveMat");
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().log("Helper.saveMat");
+            FirebaseCrashlytics.getInstance().recordException(e);
         } finally {
 //            Delete the temporary file, if it still exists:
             if (tempFile != null && tempFile.exists())
@@ -922,8 +919,7 @@ public class Helper {
             String body = new String(error.networkResponse.data, "UTF-8");
             return body;
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
 //            This should not be null, because we should use the proper encoding:
             return null;
         }

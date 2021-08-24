@@ -10,7 +10,6 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.Helper
-import com.crashlytics.android.Crashlytics
 import kotlinx.android.synthetic.main.fragment_images.*
 import java.io.File
 
@@ -183,9 +182,7 @@ class ImagesFragment : Fragment() {
 
         }
 
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "ImagesFragment::178")
         DocumentStorage.saveJSON(context)
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "ImagesFragment:180")
 
         galleryAdapter.deselectAllItems()
 

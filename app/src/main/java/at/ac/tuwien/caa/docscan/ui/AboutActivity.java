@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -46,8 +46,7 @@ public class AboutActivity extends BaseNavigationActivity {
             buildDateTextView.setText(buildTime);
 
         } catch (PackageManager.NameNotFoundException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         final Context context = this;

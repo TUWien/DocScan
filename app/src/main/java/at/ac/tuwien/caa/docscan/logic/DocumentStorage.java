@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -219,7 +219,8 @@ public class DocumentStorage {
         if (mDocuments != null) {
             for (Document document : mDocuments) {
                 if (document == null) {
-                    Crashlytics.logException(new Throwable(CLASS_NAME + ": document is null"));
+                    FirebaseCrashlytics.getInstance().recordException(
+                            new Throwable(CLASS_NAME + ": document is null"));
                     continue;
                 }
                 if (document != null && document.getTitle() != null && document.getTitle().compareToIgnoreCase(title) == 0)
@@ -389,8 +390,9 @@ public class DocumentStorage {
                 bufferedReader.close();
 
                 if (sInstance == null) {
-                    Crashlytics.log("could not read json test: " + getStringFromFile(storeFile.getAbsolutePath()));
-                    Crashlytics.logException(new Throwable());
+                    FirebaseCrashlytics.getInstance().log(
+                            "could not read json test: " + getStringFromFile(storeFile.getAbsolutePath()));
+                    FirebaseCrashlytics.getInstance().recordException(new Throwable());
                     sInstance = new DocumentStorage();
                 }
 
@@ -427,8 +429,7 @@ public class DocumentStorage {
                     sInstance.setTitle(Helper.getActiveDocumentTitle(context));
 
             } catch (Exception e) {
-                Crashlytics.logException(e);
-                e.printStackTrace();
+                FirebaseCrashlytics.getInstance().recordException(e);
                 if (sInstance == null)
                     sInstance = new DocumentStorage();
             }
@@ -461,11 +462,11 @@ public class DocumentStorage {
             String documentStorage = new Gson().toJson(sInstance);
 
             if (documentStorage == null) {
-                Crashlytics.logException(new Throwable());
-                Crashlytics.log("documentStorage == null");
+                FirebaseCrashlytics.getInstance().recordException(new Throwable());
+                FirebaseCrashlytics.getInstance().log("documentStorage == null");
             } else if (documentStorage.isEmpty()) {
-                Crashlytics.logException(new Throwable());
-                Crashlytics.log("documentStorage is empty");
+                FirebaseCrashlytics.getInstance().recordException(new Throwable());
+                FirebaseCrashlytics.getInstance().log("documentStorage is empty");
             }
 
             writer.write(documentStorage);
@@ -478,8 +479,8 @@ public class DocumentStorage {
 //                Rename the temp file:
                 boolean renameSuccess = tempFile.renameTo(storeFile);
                 if (!renameSuccess) {
-                    Crashlytics.logException(new Throwable());
-                    Crashlytics.log("renameSuccess = false");
+                    FirebaseCrashlytics.getInstance().recordException(new Throwable());
+                    FirebaseCrashlytics.getInstance().log("renameSuccess = false");
                 }
                 // The backup is not accessible anymore on Android 30:
                 else if (Build.VERSION.SDK_INT <= 29) {
@@ -487,14 +488,13 @@ public class DocumentStorage {
                     saveJSONBackup(context, storeFile);
                 }
             } else {
-                Crashlytics.logException(new Throwable());
-                Crashlytics.log("isSaved = false");
+                FirebaseCrashlytics.getInstance().recordException(new Throwable());
+                FirebaseCrashlytics.getInstance().log("isSaved = false");
             }
 
         } catch (Exception e) {
-            Crashlytics.logException(e);
-            Crashlytics.log("exception while saving json");
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
+            FirebaseCrashlytics.getInstance().log("exception while saving json");
         } finally {
 //            Delete the temporary file, if it still exists:
             if (tempFile != null && tempFile.exists())
@@ -548,8 +548,7 @@ public class DocumentStorage {
             writer.close();
 
         } catch (Exception e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
     }

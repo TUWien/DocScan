@@ -7,7 +7,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.util.Map;
 
@@ -50,7 +50,7 @@ public class MultipartRequest extends Request<NetworkResponse> {
                     response,
                     HttpHeaderParser.parseCacheHeaders(response));
         } catch (Exception e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             return Response.error(new ParseError(e));
         }
     }

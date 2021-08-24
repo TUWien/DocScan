@@ -16,9 +16,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.crashlytics.android.Crashlytics;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.opencv.android.OpenCVLoader;
 
@@ -157,8 +157,7 @@ public class MapViewActivity extends BaseNoNavigationActivity {
                 finish();
 
             } catch (IOException e) {
-                Crashlytics.logException(e);
-                e.printStackTrace();
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
 
 

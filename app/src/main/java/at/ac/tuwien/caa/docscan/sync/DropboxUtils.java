@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.android.Auth;
@@ -16,6 +15,7 @@ import com.dropbox.core.v2.files.ListFolderResult;
 import com.dropbox.core.v2.files.Metadata;
 import com.dropbox.core.v2.files.WriteMode;
 import com.dropbox.core.v2.users.FullAccount;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -131,7 +131,7 @@ public class DropboxUtils {
         try {
             Auth.startOAuth2Authentication(context, BuildConfig.DropboxApiKey);
         } catch (Exception e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
 //                This happens if a wrong api key is provided
             return false;
         }
@@ -181,11 +181,9 @@ public class DropboxUtils {
                 return true;
 
             } catch (DbxException e) {
-                Crashlytics.logException(e);
-                Log.d(CLASS_NAME, "DropboxLogin: doInBackground: login error: " + e);
+                FirebaseCrashlytics.getInstance().recordException(e);
                 DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
                         "DropboxLogin: doInBackground: login error: " + e);
-                e.printStackTrace();
                 return false;
             }
 
@@ -216,7 +214,7 @@ public class DropboxUtils {
                 ArrayList<String> remoteFileNames = processRemoteFiles();
                 processLocalFiles(remoteFileNames);
             } catch (DbxException e) {
-                Crashlytics.logException(e);
+                FirebaseCrashlytics.getInstance().recordException(e);
                 e.printStackTrace();
             }
 
@@ -244,7 +242,7 @@ public class DropboxUtils {
             try {
                 list = mClient.files().listFolder("/" + mDocument.getTitle());
             } catch (ListFolderErrorException e) {
-                Crashlytics.logException(e);
+                FirebaseCrashlytics.getInstance().recordException(e);
                 return remoteFileNames;
             }
 
@@ -350,7 +348,7 @@ public class DropboxUtils {
                 return true;
 
             } catch (DbxException e) {
-                Crashlytics.logException(e);
+                FirebaseCrashlytics.getInstance().recordException(e);
                 return true;
             }
 
@@ -416,9 +414,8 @@ public class DropboxUtils {
                             .withMode(WriteMode.OVERWRITE)
                             .uploadAndFinish(inputStream);
                 } catch (DbxException | IOException e) {
-                    Crashlytics.logException(e);
+                    FirebaseCrashlytics.getInstance().recordException(e);
                     mException = e;
-                    Log.d(CLASS_NAME, "UploadFileTask: doInBackground: exception: " + mException);
                 }
             }
 

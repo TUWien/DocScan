@@ -12,7 +12,6 @@ import at.ac.tuwien.caa.docscan.glidemodule.GlideApp
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.Helper
 import com.bumptech.glide.signature.MediaStoreSignature
-import com.crashlytics.android.Crashlytics
 import kotlinx.android.synthetic.main.select_document_row_layout.view.*
 import java.io.File
 import java.io.IOException
@@ -20,6 +19,7 @@ import java.util.*
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.request.RequestOptions
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 
 class SelectDocumentAdapter(
     private val documents: ArrayList<Document>,
@@ -87,8 +87,7 @@ class SelectDocumentAdapter(
             exifOrientation = Helper.getExifOrientation(file)
 
         } catch (e: IOException) {
-            Crashlytics.logException(e)
-            e.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(e)
         }
 
         var requestOptions = RequestOptions()

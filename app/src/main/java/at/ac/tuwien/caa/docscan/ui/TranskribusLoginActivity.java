@@ -19,7 +19,7 @@ import com.android.volley.ParseError;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.rest.LoginRequest;
@@ -134,23 +134,23 @@ public class TranskribusLoginActivity extends BaseNoNavigationActivity implement
         } else if (error instanceof NoConnectionError) {
             showErrorDialog(getString(R.string.login_no_connection_error_title),
                     getString(R.string.login_no_connection_error_text));
-            Crashlytics.log("login error: " + "login_no_connection_error");
+            FirebaseCrashlytics.getInstance().log("login error: " + "login_no_connection_error");
         } else if (error instanceof NetworkError) {
             showErrorDialog(getString(R.string.login_network_error_title),
                     getString(R.string.login_network_error_text));
-            Crashlytics.log("login error: " + "login_network_error");
+            FirebaseCrashlytics.getInstance().log("login error: " + "login_network_error");
         } else if (error instanceof ParseError) {
             showErrorDialog(getString(R.string.login_parse_error_title),
                     getString(R.string.login_parse_error_text));
-            Crashlytics.log("login error: " + "login_parse_error");
+            FirebaseCrashlytics.getInstance().log("login error: " + "login_parse_error");
         } else if (error instanceof ServerError) {
             showErrorDialog(getString(R.string.login_server_error_title),
                     getString(R.string.login_server_error_text));
-            Crashlytics.log("login error: " + "login_server_error");
+            FirebaseCrashlytics.getInstance().log("login error: " + "login_server_error");
         } else if (error instanceof TimeoutError) {
             showErrorDialog(getString(R.string.login_timeout_error_title),
                     getString(R.string.login_timeout_error_text));
-            Crashlytics.log("login error: " + "login_timeout_error");
+            FirebaseCrashlytics.getInstance().log("login error: " + "login_timeout_error");
         }
 
 

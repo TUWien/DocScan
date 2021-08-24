@@ -8,7 +8,7 @@ import androidx.exifinterface.media.ExifInterface;
 
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -158,8 +158,7 @@ public class PageDetector {
         try {
             savePointsToExif(fileName, result.getPoints(), result.isFocused());
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
     }
@@ -178,8 +177,7 @@ public class PageDetector {
         try {
             savePointsToExif(fileName, result.getPoints(), result.isFocused());
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
     }
@@ -433,8 +431,7 @@ public class PageDetector {
 
             }
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
 //        If no point set is found use the entire image dimension:
@@ -482,8 +479,7 @@ public class PageDetector {
             }
 
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
     }
@@ -499,8 +495,7 @@ public class PageDetector {
             }
 
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         return false;

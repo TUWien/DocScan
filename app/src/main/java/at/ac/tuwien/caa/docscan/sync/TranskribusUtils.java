@@ -3,7 +3,7 @@ package at.ac.tuwien.caa.docscan.sync;
 import android.content.Context;
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
@@ -390,10 +390,9 @@ public class TranskribusUtils {
                 } catch (JSONException e) {
                     e.printStackTrace();
 //                    TODO: tell the user that an error happened:
-                    Crashlytics.logException(e);
+                    FirebaseCrashlytics.getInstance().recordException(e);
                     DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
                             "error while parsing json string: " + jsonString);
-                    Log.d(CLASS_NAME, "error while parsing json string: " + jsonString);
                 }
             } else {
                 it.remove();
@@ -545,9 +544,7 @@ public class TranskribusUtils {
         }
 
         SyncStorage.saveJSON(mContext);
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "TranskribusUtils::528");
         DocumentStorage.saveJSON(mContext);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "TranskribusUtils::530");
 
     }
 

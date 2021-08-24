@@ -32,7 +32,7 @@ import android.net.Uri;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.FileProvider;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -105,7 +105,7 @@ public class DataLog {
         try {
             activity.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             Helper.showActivityNotFoundAlert(activity.getApplicationContext());
         }
 
@@ -139,11 +139,9 @@ public class DataLog {
             fOut.close();
 
         } catch (FileNotFoundException e1) {
-            Crashlytics.logException(e1);
-            e1.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e1);
         } catch (IOException e1) {
-            Crashlytics.logException(e1);
-            e1.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e1);
         }
 
 

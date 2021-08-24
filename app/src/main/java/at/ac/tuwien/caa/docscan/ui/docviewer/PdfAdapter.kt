@@ -3,7 +3,6 @@ package at.ac.tuwien.caa.docscan.ui.docviewer
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.core.content.FileProvider
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +11,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.RecyclerView
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Helper
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.android.synthetic.main.layout_pdflist_row.view.*
 import java.io.File
 
@@ -80,7 +79,7 @@ class PdfAdapter(
                     try {
                         context.startActivity(intent)
                     } catch (e: ActivityNotFoundException) {
-                        Crashlytics.logException(e)
+                        FirebaseCrashlytics.getInstance().recordException(e)
                         Helper.showActivityNotFoundAlert(context)
                     }
                 }

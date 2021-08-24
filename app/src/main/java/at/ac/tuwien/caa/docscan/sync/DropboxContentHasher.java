@@ -1,6 +1,6 @@
 package at.ac.tuwien.caa.docscan.sync;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.nio.ByteBuffer;
 import java.security.DigestException;
@@ -176,7 +176,7 @@ public final class DropboxContentHasher extends MessageDigest implements Cloneab
         try {
             return MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException ex) {
-            Crashlytics.logException(ex);
+            FirebaseCrashlytics.getInstance().recordException(ex);
             throw new AssertionError("Couldn't create SHA-256 hasher");
         }
     }

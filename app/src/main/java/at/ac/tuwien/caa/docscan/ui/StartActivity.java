@@ -48,8 +48,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -204,7 +204,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
                 editor.putString(KEY_FIRST_START_DATE, timeStamp);
                 editor.commit();
 //                Save in Crashlytics:
-                Crashlytics.setString(KEY_FIRST_START_DATE, timeStamp);
+                FirebaseCrashlytics.getInstance().setCustomKey(KEY_FIRST_START_DATE, timeStamp);
             }
         }
     }
