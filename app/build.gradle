@@ -20,7 +20,7 @@ android {
     defaultConfig {
         applicationId "at.ac.tuwien.caa.docscan"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 29
         versionCode 156
         versionName "1.7.54"
 
@@ -201,7 +201,7 @@ dependencies {
     implementation 'com.github.smart-fun:XmlToJson:1.4.0'
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.3.0'
-    implementation 'com.koushikdutta.ion:ion:3.0.8'
+    implementation 'com.koushikdutta.ion:ion:3.1.0'
     implementation 'com.google.android.gms:play-services-auth:17.0.0'
     // we need this for the ProviderInstaller
     implementation 'me.dm7.barcodescanner:zxing:1.9.8'
