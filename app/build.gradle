@@ -16,15 +16,14 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
         applicationId "at.ac.tuwien.caa.docscan"
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 156
         versionName "1.7.54"
 
-        multiDexEnabled true
 //		this is used to show the build time in the AboutActivity
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
         // we need vectorDrawables.useSupportLibrary to get rid of this error:

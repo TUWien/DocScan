@@ -1,6 +1,6 @@
 package at.ac.tuwien.caa.docscan
 
-import androidx.multidex.MultiDexApplication
+import android.app.Application
 import at.ac.tuwien.caa.docscan.koin.appModule
 import at.ac.tuwien.caa.docscan.koin.viewModelModule
 import org.koin.android.ext.koin.androidContext
@@ -10,7 +10,7 @@ import org.koin.core.context.startKoin
 /**
  * @author matejbart
  */
-class DocScanApp : MultiDexApplication() {
+class DocScanApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
