@@ -17,8 +17,8 @@ class ExifPreferenceActivity : BaseNoNavigationActivity() {
 //        Note we use a PreferenceFragment here instead of PreferenceActivity because it is advised in the API for versions > android 3.0
         // Display the fragment as the main content.
         fragmentManager.beginTransaction()
-                .replace(R.id.settings_framelayout, ExifPreferenceFragment())
-                .commit()
+            .replace(R.id.settings_framelayout, ExifPreferenceFragment())
+            .commit()
 
     }
 

@@ -18,24 +18,25 @@
 
 namespace dsc {
 
-class Utils {
+    class Utils {
 
-public:
-    static void print(const std::string &text, const std::string &moduleName = "[DocScanNative]");
+    public:
+        static void
+        print(const std::string &text, const std::string &moduleName = "[DocScanNative]");
+
+        template<typename num>
+        static std::string num2str(num n);
+    };
 
     template<typename num>
-    static std::string num2str(num n);
-};
+    inline std::string Utils::num2str(num n) {
 
-template<typename num>
-inline std::string Utils::num2str(num n) {
-	
-	std::stringstream ss;
-	ss << n;
-	std::string str = ss.str();
+        std::stringstream ss;
+        ss << n;
+        std::string str = ss.str();
 
-	return str;
-}
+        return str;
+    }
 
 }
 

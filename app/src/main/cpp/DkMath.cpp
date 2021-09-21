@@ -27,21 +27,21 @@
 
 #include "DkMath.h"
 
-#pragma warning(push, 0)	// no warnings from includes - begin
-#pragma warning(pop)		// no warnings from includes - end
+#pragma warning(push, 0)    // no warnings from includes - begin
+#pragma warning(pop)        // no warnings from includes - end
 
 
 namespace dsc {
 
 // we had issues with cvRound - that came from a wrong define
 // so basically we could use cvRound instead of our own definition (again)
-int round(double x) {
+    int round(double x) {
 
-	if(x >= (int)x+0.5)
-		return (int)x++;
-	else
-		return (int)x;
-}
+        if (x >= (int) x + 0.5)
+            return (int) x++;
+        else
+            return (int) x;
+    }
 
 // DkMath --------------------------------------------------------------------
 
@@ -50,9 +50,9 @@ int round(double x) {
 * @param val the integer value.
 * @return the half integer (floor(val)).
 **/
-int DkMath::halfInt(int val) {
-	return (val >> 1);
-}
+    int DkMath::halfInt(int val) {
+        return (val >> 1);
+    }
 
 /**
 * Returns the greatest common divisor (GGT).
@@ -60,15 +60,15 @@ int DkMath::halfInt(int val) {
 * @param a the greater number.
 * @param b the smaller number.
 * @return int the greatest common divisor.
-**/ 
-int DkMath::gcd(int a, int b) {
-	// zu deutsch: ggt
+**/
+    int DkMath::gcd(int a, int b) {
+        // zu deutsch: ggt
 
-	if (b==0)
-		return a;
-	else
-		return gcd(b, a%b);
-}
+        if (b == 0)
+            return a;
+        else
+            return gcd(b, a % b);
+    }
 
 /**
 * Computes the normalized angle in radians.
@@ -77,40 +77,19 @@ int DkMath::gcd(int a, int b) {
 * @param angle an angle in radians.
 * @return the normalized angle in radians within [0 pi].
 **/
-double DkMath::normAngleRad(double angle) {
-	
-	// this could be a bottleneck
-	if (std::abs(angle) > 1000)
-		return angle;
+    double DkMath::normAngleRad(double angle) {
 
-	while (angle < 0)
-		angle += 2*CV_PI;
-	while (angle >= 2*CV_PI)
-		angle -= 2*CV_PI;
+        // this could be a bottleneck
+        if (std::abs(angle) > 1000)
+            return angle;
 
-	return angle;
-}
+        while (angle < 0)
+            angle += 2 * CV_PI;
+        while (angle >= 2 * CV_PI)
+            angle -= 2 * CV_PI;
 
-/**
-* Computes the normalized angle within startIvl and endIvl.
-* @param angle the angle in radians.
-* @param startIvl the interval's lower bound.
-* @param endIvl the interval's upper bound.
-* @return the angle within [startIvl endIvl)
-**/
-double DkMath::normAngleRad(double angle, double startIvl, double endIvl) {
-
-	// this could be a bottleneck
-	if (std::abs(angle) > 1000)
-		return angle;
-
-	while(angle <= startIvl)
-		angle += endIvl-startIvl;
-	while(angle > endIvl)
-		angle -= endIvl-startIvl;
-
-	return angle;
-}
+        return angle;
+    }
 
 /**
 * Computes the normalized angle within startIvl and endIvl.
@@ -119,19 +98,40 @@ double DkMath::normAngleRad(double angle, double startIvl, double endIvl) {
 * @param endIvl the interval's upper bound.
 * @return the angle within [startIvl endIvl)
 **/
-float DkMath::normAngleRad(float angle, float startIvl, float endIvl) {
+    double DkMath::normAngleRad(double angle, double startIvl, double endIvl) {
 
-	// this could be a bottleneck
-	if (std::abs(angle) > 1000)
-		return angle;
+        // this could be a bottleneck
+        if (std::abs(angle) > 1000)
+            return angle;
 
-	while(angle <= startIvl)
-		angle += endIvl-startIvl;
-	while(angle > endIvl)
-		angle -= endIvl-startIvl;
+        while (angle <= startIvl)
+            angle += endIvl - startIvl;
+        while (angle > endIvl)
+            angle -= endIvl - startIvl;
 
-	return angle;
-}
+        return angle;
+    }
+
+/**
+* Computes the normalized angle within startIvl and endIvl.
+* @param angle the angle in radians.
+* @param startIvl the interval's lower bound.
+* @param endIvl the interval's upper bound.
+* @return the angle within [startIvl endIvl)
+**/
+    float DkMath::normAngleRad(float angle, float startIvl, float endIvl) {
+
+        // this could be a bottleneck
+        if (std::abs(angle) > 1000)
+            return angle;
+
+        while (angle <= startIvl)
+            angle += endIvl - startIvl;
+        while (angle > endIvl)
+            angle -= endIvl - startIvl;
+
+        return angle;
+    }
 
 /**
 * Computes the normalized angle in radians.
@@ -140,71 +140,71 @@ float DkMath::normAngleRad(float angle, float startIvl, float endIvl) {
 * @param angle an angle in radians.
 * @return the normalized angle in radians within [0 pi].
 **/
-float DkMath::normAngleRad(float angle) {
+    float DkMath::normAngleRad(float angle) {
 
-	// this could be a bottleneck
-	if (std::fabs(angle) > 1000)
-		return angle;
+        // this could be a bottleneck
+        if (std::fabs(angle) > 1000)
+            return angle;
 
-	while (angle < 0)
-		angle += 2*(float)CV_PI;
-	while (angle >= 2.0*CV_PI)
-		angle -= 2*(float)CV_PI;
+        while (angle < 0)
+            angle += 2 * (float) CV_PI;
+        while (angle >= 2.0 * CV_PI)
+            angle -= 2 * (float) CV_PI;
 
-	return angle;
-}
+        return angle;
+    }
 
-double DkMath::distAngle(const double angle1, const double angle2) {
+    double DkMath::distAngle(const double angle1, const double angle2) {
 
-	double nAngle1 = normAngleRad(angle1);
-	double nAngle2 = normAngleRad(angle2);
+        double nAngle1 = normAngleRad(angle1);
+        double nAngle2 = normAngleRad(angle2);
 
-	double angle = std::fabs(nAngle1 - nAngle2);
+        double angle = std::fabs(nAngle1 - nAngle2);
 
-	return (angle > CV_PI) ? 2*CV_PI - angle : angle;
-}
+        return (angle > CV_PI) ? 2 * CV_PI - angle : angle;
+    }
 
 /**
 * Check if a number is a power of two.
 * @param ps a positive integer
 * @return true if ps is a power of two.
 **/
-bool DkMath::isPowerOfTwo(unsigned int ps) {
+    bool DkMath::isPowerOfTwo(unsigned int ps) {
 
-	// count the bit set, see: http://tekpool.wordpress.com/category/bit-count/
-	unsigned int bC;
+        // count the bit set, see: http://tekpool.wordpress.com/category/bit-count/
+        unsigned int bC;
 
-	bC = ps - ((ps >> 1) & 033333333333) - ((ps >> 2) & 011111111111);
-	bC = ((bC + (bC >> 3)) & 030707070707) % 63;
+        bC = ps - ((ps >> 1) & 033333333333) - ((ps >> 2) & 011111111111);
+        bC = ((bC + (bC >> 3)) & 030707070707) % 63;
 
-	return bC == 1;
-}
+        return bC == 1;
+    }
 
-float DkMath::getNextPowerOfTwoDivisior(float factor) {
+    float DkMath::getNextPowerOfTwoDivisior(float factor) {
 
-	int iv = dsc::round(1.0f/factor);
-	int pt = getNextPowerOfTwo(iv);
+        int iv = dsc::round(1.0f / factor);
+        int pt = getNextPowerOfTwo(iv);
 
-	// if the number is not yet a power of two or pt is one
-	if (pt != iv && pt != 1)
-		pt = pt >> 1;
+        // if the number is not yet a power of two or pt is one
+        if (pt != iv && pt != 1)
+            pt = pt >> 1;
 
-	return (float)pt;
-}
+        return (float) pt;
+    }
 
 /**
 * Returns the next power of two.
 * @param val a number for which the next power of two needs to be computed.
 * @return the next power of two for val.
 **/
-int DkMath::getNextPowerOfTwo(int val) {
+    int DkMath::getNextPowerOfTwo(int val) {
 
-	int pt = 1;
-	while (val > pt)
-		pt = pt << 1;	// *2
+        int pt = 1;
+        while (val > pt)
+            pt = pt << 1;    // *2
 
-	return pt;
-}
+        return pt;
+    }
 
 /**
 * Returns the value of f(x,sigma) where f is a gaussian.
@@ -212,9 +212,9 @@ int DkMath::getNextPowerOfTwo(int val) {
 * @param x param of the gaussian.
 * @return f(x,sigma) .
 **/
-float DkMath::getGaussian(float sigma, float x) {
+    float DkMath::getGaussian(float sigma, float x) {
 
-	return 1/sqrt(2*(float)CV_PI*sigma*sigma) * exp(-(x*x)/(2*sigma*sigma));
-}
+        return 1 / sqrt(2 * (float) CV_PI * sigma * sigma) * exp(-(x * x) / (2 * sigma * sigma));
+    }
 
 }

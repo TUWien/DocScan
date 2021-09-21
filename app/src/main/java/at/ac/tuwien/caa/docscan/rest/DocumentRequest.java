@@ -13,7 +13,7 @@ import org.json.JSONObject;
 public class DocumentRequest extends RestRequest.JSONObjectRestRequest {
 
     private TranskribusDocumentMetaDataRequest mTranskribusDocumentMetaDataRequest;
-//    JSON method for retrieving documents: https://transkribus.eu/TrpServer/rest/collections/{collection-ID}/{document-ID}/fulldoc
+    //    JSON method for retrieving documents: https://transkribus.eu/TrpServer/rest/collections/{collection-ID}/{document-ID}/fulldoc
     private final static String[] URL = {"collections/", "/fulldoc"};
 
     public DocumentRequest(Context context, TranskribusDocumentMetaDataRequest transkribusDocumentMetaDataRequest) {

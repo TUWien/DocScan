@@ -41,7 +41,7 @@ public class CreateCollectionRequest extends RestRequest.JSONObjectRestRequest {
 
     }
 
-    public interface CreateCollectionCallback extends RestRequest.RestCallback{
+    public interface CreateCollectionCallback extends RestRequest.RestCallback {
 
         void onCollectionCreated(String collName);
 

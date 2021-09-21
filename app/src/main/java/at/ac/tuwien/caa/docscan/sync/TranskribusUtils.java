@@ -3,7 +3,7 @@ package at.ac.tuwien.caa.docscan.sync;
 import android.content.Context;
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
@@ -36,7 +36,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentJSONParser;
  * general) functionality should be included in SyncService.
  */
 
-public class TranskribusUtils  {
+public class TranskribusUtils {
 
     public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
     private static final String CLASS_NAME = "TranskribusUtils";
@@ -85,8 +85,7 @@ public class TranskribusUtils  {
             mAreDocumentsPrepared = false;
             //        Start the upload of user selected dirs:
             TranskribusUtils.getInstance().uploadDocuments(SyncStorage.getInstance(mContext).getUploadDocumentTitles());
-        }
-        else {
+        } else {
             mAreDocumentsPrepared = true;
             Log.d(CLASS_NAME, "startUpload: no titles are selected for upload");
         }
@@ -100,8 +99,7 @@ public class TranskribusUtils  {
             mAreUnfinishedFilesPrepared = false;
             startFindingUnfinishedUploads(SyncStorage.getInstance(mContext).getUnfinishedUploadIDs());
 
-        }
-        else {
+        } else {
 
             SyncStorage.getInstance(mContext).printUnfinishedUploadIDs();
             DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "startUpload: no unfinished work here");
@@ -136,6 +134,7 @@ public class TranskribusUtils  {
 
     /**
      * Sends requests to the server asking in order to collect the unfinished files.
+     *
      * @param unfinishedIDs
      */
     public void startFindingUnfinishedUploads(ArrayList<Integer> unfinishedIDs) {
@@ -162,7 +161,7 @@ public class TranskribusUtils  {
 
         Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived1: unfinished upload ids size" +
                 SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"onUnfinishedUploadStatusReceived1: unfinished upload ids size" +
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onUnfinishedUploadStatusReceived1: unfinished upload ids size" +
                 SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
 
         boolean isFileDeleted = false;
@@ -175,10 +174,9 @@ public class TranskribusUtils  {
             if (file.exists()) {
                 Log.d(getClass().getName(), "onUnfinishedUploadStatusReceived: added unfinished file - id: " + uploadID + " file: " + file);
                 DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onUnfinishedUploadStatusReceived: added unfinished file - id: " + uploadID + " file: " + file);
-        //        Add the files to the sync list:
+                //        Add the files to the sync list:
                 SyncStorage.getInstance(mContext).addTranskribusFile(file, uploadID);
-            }
-            else {
+            } else {
                 Log.d(getClass().getName(), "onUnfinishedUploadStatusReceived: file not existing: " + fileName);
                 DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onUnfinishedUploadStatusReceived: file not existing: " + fileName);
 //                First remove the upload ID from the unfinished list:
@@ -197,7 +195,7 @@ public class TranskribusUtils  {
 
         Log.d(CLASS_NAME, "onUnfinishedUploadStatusReceived2: unfinished upload ids size" +
                 SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"onUnfinishedUploadStatusReceived2: unfinished upload ids size" +
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onUnfinishedUploadStatusReceived2: unfinished upload ids size" +
                 SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
 
         int idx = mUnfinishedUploadIDsProcessed.indexOf(new Integer(uploadID));
@@ -225,6 +223,7 @@ public class TranskribusUtils  {
 
     /**
      * Determines if there is a DocScan collection ID saved in SharedPreferences.
+     *
      * @return
      */
     private boolean isCollectionIDSaved() {
@@ -273,7 +272,6 @@ public class TranskribusUtils  {
                     collectionID);
 
 
-
     }
 
     public void onCollections(List<Collection> collections) {
@@ -299,8 +297,7 @@ public class TranskribusUtils  {
 //                    Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, collection.getID());
 //                    docScanCollectionFound(collection);
 //                    return;
-                }
-                else if ((savedCollectionID == collection.getID())) {
+                } else if ((savedCollectionID == collection.getID())) {
                     Log.d(CLASS_NAME, "onCollections: docScanCollectionFound");
                     docScanCollectionFound(collection.getID());
                     return;
@@ -350,7 +347,7 @@ public class TranskribusUtils  {
     private void docScanCollectionFound(int id) {
 
         Log.d(CLASS_NAME, "docScanCollectionFound: id: " + id);
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"docScanCollectionFound: id: " + id);
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "docScanCollectionFound: id: " + id);
         uploadDirs(mSelectedDirs, id);
 
     }
@@ -364,14 +361,14 @@ public class TranskribusUtils  {
         mNumUploadJobs = 0;
 
         Log.d(CLASS_NAME, "uploadDirs: preparing file: " + dirs + " for upload");
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"uploadDirs: preparing file: " + dirs + " for upload");
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "uploadDirs: preparing file: " + dirs + " for upload");
 
 //        for (String dir : mSelectedDirs) {
         for (Iterator<String> it = mSelectedDirs.iterator(); it.hasNext(); ) {
 
             String dir = it.next();
             Log.d(CLASS_NAME, "uploadDirs: processing dir: " + dir);
-            DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,"uploadDirs: processing dir: " + dir);
+            DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "uploadDirs: processing dir: " + dir);
 
             // Get the corresponding document:
 
@@ -393,13 +390,11 @@ public class TranskribusUtils  {
                 } catch (JSONException e) {
                     e.printStackTrace();
 //                    TODO: tell the user that an error happened:
-                    Crashlytics.logException(e);
+                    FirebaseCrashlytics.getInstance().recordException(e);
                     DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
                             "error while parsing json string: " + jsonString);
-                    Log.d(CLASS_NAME,"error while parsing json string: " + jsonString);
                 }
-            }
-            else {
+            } else {
                 it.remove();
             }
 
@@ -413,12 +408,13 @@ public class TranskribusUtils  {
      * Receives the uploadId for a document/directory and starts the upload job. Note that multiple
      * directories can be selected and we have to take assign each directory to its correct
      * uploadId (this is done by comparing the title).
+     *
      * @param uploadId
      */
     public void onNewUploadIDReceived(int uploadId, String title) {
 
         Log.d(CLASS_NAME, "onNewUploadIDReceived: id: " + uploadId + " title: " + title);
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,  + uploadId + " title: " + title);
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, +uploadId + " title: " + title);
 
         SyncStorage.getInstance(mContext).getUnprocessedUploadIDs().add(new Integer(uploadId));
 
@@ -456,7 +452,6 @@ public class TranskribusUtils  {
     }
 
 
-
     /**
      * Checks if the unfinished files and the user selected documents are ready for upload.
      */
@@ -471,7 +466,6 @@ public class TranskribusUtils  {
             mCallback.onFilesPrepared();
 
     }
-
 
 
     public void uploadFile(final SyncStorage.Callback callback, final Context context, final TranskribusSyncFile syncFile) {
@@ -509,8 +503,7 @@ public class TranskribusUtils  {
                                 DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "finished upload with ID: " + syncFile.getUploadId());
                             }
 
-                        }
-                        else {
+                        } else {
                             if (e instanceof FileNotFoundException) {
                                 DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
                                         "FileNotFoundException: " + syncFile.getFile().toString());
@@ -518,8 +511,7 @@ public class TranskribusUtils  {
                                         syncFile.getFile().toString());
                                 handleMissingFile(syncFile, context);
                                 removeFromSyncStorageUnfinishedList(syncFile.getUploadId());
-                            }
-                            else {
+                            } else {
                                 callback.onError(e);
                             }
                             Log.d(getClass().getName(), "error uploading file with upload ID: " + syncFile.getUploadId() + " fileSync: " + syncFile.toString());
@@ -530,7 +522,7 @@ public class TranskribusUtils  {
                 });
     }
 
-//    TODO: test what we really need here!
+    //    TODO: test what we really need here!
     private void handleMissingFile(final TranskribusSyncFile syncFile, Context context) {
 
         DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "handleMissingFile");
@@ -552,9 +544,7 @@ public class TranskribusUtils  {
         }
 
         SyncStorage.saveJSON(mContext);
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "TranskribusUtils::528");
         DocumentStorage.saveJSON(mContext);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "TranskribusUtils::530");
 
     }
 
@@ -586,6 +576,7 @@ public class TranskribusUtils  {
      * Removes every entry from the sync info uploaded list. This is necessary to show the document
      * as not uploaded. Otherwise, if the directory contains soley uploaded files, but also contains
      * missing files, it would be shown as uploaded.
+     *
      * @param title
      */
     private void removeFromSyncStorageUploadList(String title) {
@@ -603,8 +594,8 @@ public class TranskribusUtils  {
         Log.d(CLASS_NAME, "removeFromSyncStorageUnfinishedList: list size: " +
                 SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "removeFromSyncStorageUnfinishedList: uploadID: " + uploadID);
-                DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "removeFromSyncStorageUnfinishedList: list size: " +
-                        SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "removeFromSyncStorageUnfinishedList: list size: " +
+                SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
 
 
         SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().remove(new Integer(uploadID));
@@ -619,7 +610,7 @@ public class TranskribusUtils  {
         Log.d(CLASS_NAME, "removeFromSyncStorageUnfinishedList: list size: " +
                 SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
 
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,  "removeFromSyncStorageUnfinishedList: list size: " +
+        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "removeFromSyncStorageUnfinishedList: list size: " +
                 SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
 
 
@@ -648,6 +639,7 @@ public class TranskribusUtils  {
     public interface TranskribusUtilsCallback {
 
         void onFilesPrepared();
+
         void onFilesDeleted();
 
     }

@@ -28,8 +28,14 @@
 #include <jni.h>
 
 extern "C" {
-    JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetFocusMeasures(JNIEnv *, jclass, jlong);
-    JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(JNIEnv *, jclass, jlong srcImg, jboolean useLab, jobject oldRect);
+JNIEXPORT jobjectArray JNICALL
+Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetFocusMeasures(JNIEnv *, jclass,
+                                                                             jlong);
+JNIEXPORT jobjectArray JNICALL
+Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(JNIEnv *, jclass,
+                                                                                jlong srcImg,
+                                                                                jboolean useLab,
+                                                                                jobject oldRect);
 }
 
 namespace dsc {
@@ -37,7 +43,7 @@ namespace dsc {
 }
 
 namespace cvt {
-    dsc::DkPolyRect jPolyRectToC(JNIEnv * env, jobject jRect);
+    dsc::DkPolyRect jPolyRectToC(JNIEnv *env, jobject jRect);
 }
 
 #endif // #ifndef NO_JNI

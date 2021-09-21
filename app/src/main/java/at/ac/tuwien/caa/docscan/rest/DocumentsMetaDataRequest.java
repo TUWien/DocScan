@@ -3,7 +3,7 @@ package at.ac.tuwien.caa.docscan.rest;
 import android.content.Context;
 
 import com.android.volley.Request;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,13 +57,12 @@ public class DocumentsMetaDataRequest extends RestRequest.JSONArrayRestRequest {
             ((DocumentsMetaDataCallback) mRestCallback).onDocumentsMetaData(metaDatas);
 
         } catch (JSONException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
     }
 
-    public interface DocumentsMetaDataCallback extends RestRequest.RestCallback{
+    public interface DocumentsMetaDataCallback extends RestRequest.RestCallback {
 
         void onDocumentsMetaData(List<TranskribusDocumentMetaDataRequest> transkribusDocumentMetaDatumRequests);
 

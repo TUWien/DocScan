@@ -4,15 +4,13 @@
     android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:theme="@style/AppDarkTheme"
-    >
+    android:theme="@style/AppDarkTheme">
 
-    <at.ac.tuwien.caa.docscan.ui.gallery.HackyViewPager
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <at.ac.tuwien.caa.docscan.ui.gallery.HackyViewPager xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/slide_viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:theme="@style/AppDarkTheme"/>
+        android:theme="@style/AppDarkTheme" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/image_viewer_toolbar"
@@ -20,11 +18,10 @@
         android:layout_height="wrap_content"
         android:background="@drawable/dark_to_transparent_gradient"
         android:theme="@style/AppDarkTheme"
-        app:titleTextColor="@color/white"
-        />
+        app:titleTextColor="@color/white" />
 
-    <include layout="@layout/page_view_buttons_layout"
-        android:theme="@style/AppDarkTheme"
-        />
+    <include
+        layout="@layout/page_view_buttons_layout"
+        android:theme="@style/AppDarkTheme" />
 
 </FrameLayout>

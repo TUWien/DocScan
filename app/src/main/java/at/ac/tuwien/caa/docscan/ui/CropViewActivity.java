@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,8 +28,8 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.bumptech.glide.signature.MediaStoreSignature;
-import com.crashlytics.android.Crashlytics;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 //import org.opencv.android.OpenCVLoader;
 
@@ -61,10 +62,10 @@ public class CropViewActivity extends AppCompatActivity {
     private CropView mCropView;
     private String mFileName;
     private String mDocumentTitle;
-//    used to restore previous state - in case the user cancels cropping:
+    //    used to restore previous state - in case the user cancels cropping:
     private ArrayList<PointF> mOriginalPoints;
     private boolean mIsFocused;
-//    used to restore previous state - in case the user cancels cropping:
+    //    used to restore previous state - in case the user cancels cropping:
     private int mOriginalOrientation;
     private float mImageHeightWidthRatio;
 
@@ -116,9 +117,7 @@ public class CropViewActivity extends AppCompatActivity {
             PageDetector.savePointsToExif(mFileName, mOriginalPoints, mIsFocused);
             Helper.saveExifOrientation(new File(mFileName), mOriginalOrientation);
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            Log.d(CLASS_NAME, "onOptionsItemSelected: " + e.toString());
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         super.onBackPressed();
@@ -127,15 +126,13 @@ public class CropViewActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case android.R.id.home:
                 try {
                     PageDetector.savePointsToExif(mFileName, mOriginalPoints, mIsFocused);
                     Helper.saveExifOrientation(new File(mFileName), mOriginalOrientation);
                 } catch (IOException e) {
-                    Crashlytics.logException(e);
-                    Log.d(CLASS_NAME, "onOptionsItemSelected: " + e.toString());
-                    e.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(e);
                 }
                 onBackPressed();
                 return true;
@@ -207,8 +204,7 @@ public class CropViewActivity extends AppCompatActivity {
                     mOriginalPoints = points;
 
                 } catch (IOException e) {
-                    Crashlytics.logException(e);
-                    e.printStackTrace();
+                    FirebaseCrashlytics.getInstance().recordException(e);
                 }
 
             }
@@ -289,7 +285,7 @@ public class CropViewActivity extends AppCompatActivity {
 
     }
 
-//    Returns the scaling factor for the ImageView, depending on the current angle:
+    //    Returns the scaling factor for the ImageView, depending on the current angle:
     private float getScaleFactor(float angle) {
 
         if (angle == 0 || angle == 180)
@@ -307,8 +303,7 @@ public class CropViewActivity extends AppCompatActivity {
 //            If the original image orientation was in landscape mode we have to flip the ratio:
         if (outWidth > outHeight) {
             cropViewHeight = Math.round(cropViewWidth / mImageHeightWidthRatio);
-        }
-        else {
+        } else {
             cropViewHeight = Math.round(cropViewWidth * mImageHeightWidthRatio);
         }
 
@@ -328,28 +323,28 @@ public class CropViewActivity extends AppCompatActivity {
         mCropView.animate().rotation(angle).scaleX(scaleFactor).scaleY(scaleFactor).
                 setListener(new Animator.AnimatorListener() {
 
-            @Override
-            public void onAnimationStart(Animator animator) {
-                item.setEnabled(false);
-            }
+                    @Override
+                    public void onAnimationStart(Animator animator) {
+                        item.setEnabled(false);
+                    }
 
-            @Override
-            public void onAnimationEnd(Animator animator) {
-                item.setEnabled(true);
-                mCropView.invalidate();
+                    @Override
+                    public void onAnimationEnd(Animator animator) {
+                        item.setEnabled(true);
+                        mCropView.invalidate();
 //                mCropView.requestLayout();
-            }
+                    }
 
-            @Override
-            public void onAnimationCancel(Animator animator) {
+                    @Override
+                    public void onAnimationCancel(Animator animator) {
 //                item.setEnabled(true);
-            }
+                    }
 
-            @Override
-            public void onAnimationRepeat(Animator animator) {
+                    @Override
+                    public void onAnimationRepeat(Animator animator) {
 
-            }
-        });
+                    }
+                });
     }
 
 

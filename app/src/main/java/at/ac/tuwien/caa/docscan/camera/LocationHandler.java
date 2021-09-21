@@ -30,6 +30,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+
 import androidx.core.app.ActivityCompat;
 
 import java.util.List;
@@ -45,7 +46,7 @@ public class LocationHandler implements LocationListener {
     private static final float UPDATE_DISTANCE = 10; // Location update in meters.
     private static final long MAX_TIME_RUNNING = 1000 * 60 * 5;  // Maximum time the location is requested - in milli-seconds. Note: Normally this time should not pass, but a useful location should be found before!
 
-//    We use here a singleton, because the location should be read one time after the app starts.
+    //    We use here a singleton, because the location should be read one time after the app starts.
 //    The CameraActivity can be created multiple times, during the app is running, so we use here
 //    a static instance to prevent multiple location accesses.
     private static LocationHandler mInstance = null;
@@ -85,16 +86,19 @@ public class LocationHandler implements LocationListener {
                 if (System.currentTimeMillis() - mStartTime >= MAX_TIME_RUNNING)
                     stopManager = true;
 
-                if (stopManager && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION)  == PackageManager.PERMISSION_GRANTED)
+                if (stopManager && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
                     mLocationManager.removeUpdates(this);
 
             }
 
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+            }
 
-            public void onProviderEnabled(String provider) {}
+            public void onProviderEnabled(String provider) {
+            }
 
-            public void onProviderDisabled(String provider) {}
+            public void onProviderDisabled(String provider) {
+            }
         };
 
         if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -116,7 +120,7 @@ public class LocationHandler implements LocationListener {
             return mLocation;
         else {
 //            If no location has been found yet, use the last known location as a fallback:
-            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION)  == PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 Location l1 = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 Location l2 = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
@@ -125,8 +129,7 @@ public class LocationHandler implements LocationListener {
                         return l1;
                     else
                         return l2;
-                }
-                else {
+                } else {
                     if (l1 != null)
                         return l1;
                     else
@@ -159,11 +162,13 @@ public class LocationHandler implements LocationListener {
 
     }
 
-    /** Determines whether one Location reading is better than the current Location fix
+    /**
+     * Determines whether one Location reading is better than the current Location fix
      * This code is taken from:
+     *
+     * @param location            The new Location that you want to evaluate
+     * @param currentBestLocation The current Location fix, to which you want to compare the new one
      * @see <a href="https://developer.android.com/guide/topics/location/strategies.html">https://developer.android.com/guide/topics/location/strategies.html</a>
-     * @param location  The new Location that you want to evaluate
-     * @param currentBestLocation  The current Location fix, to which you want to compare the new one
      */
     private boolean isBetterLocation(Location location, Location currentBestLocation) {
         if (currentBestLocation == null) {
@@ -207,7 +212,9 @@ public class LocationHandler implements LocationListener {
         return false;
     }
 
-    /** Checks whether two providers are the same */
+    /**
+     * Checks whether two providers are the same
+     */
     private boolean isSameProvider(String provider1, String provider2) {
         if (provider1 == null) {
             return provider2 == null;

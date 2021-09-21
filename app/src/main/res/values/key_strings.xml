@@ -24,6 +24,7 @@
     <string name="key_exif_artist">KEY_EXIF_ARTIST</string>
     <string name="key_exif_copyright">KEY_EXIF_COPYRIGHT</string>
     <string name="key_hud_enabled">KEY_HUD_ENABLED</string>
+    <string name="key_pdf_dir">KEY_PDF_DIR</string>
 
 
 </resources>

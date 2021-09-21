@@ -17,6 +17,7 @@ package at.ac.tuwien.caa.docscan;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
+
 import androidx.core.app.TaskStackBuilder;
 
 /**

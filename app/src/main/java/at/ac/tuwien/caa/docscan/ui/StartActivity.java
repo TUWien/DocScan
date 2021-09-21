@@ -29,9 +29,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+
 import com.google.android.material.tabs.TabLayout;
+
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -40,12 +43,13 @@ import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -66,7 +70,7 @@ import static at.ac.tuwien.caa.docscan.ui.AboutActivity.KEY_SHOW_INTRO;
  * Activity called after the app is started. This activity is responsible for requesting the camera
  * permission. If the permission is given the CameraActivity is started via an intent.
  * Based on this example: <a href="https://github.com/googlesamples/android-RuntimePermissionsBasic">android-RuntimePermissionsBasic
- </a>
+ * </a>
  */
 public class StartActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
@@ -133,7 +137,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         skipButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                    startAppNoIntro();
+                startAppNoIntro();
             }
         });
 
@@ -200,7 +204,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
                 editor.putString(KEY_FIRST_START_DATE, timeStamp);
                 editor.commit();
 //                Save in Crashlytics:
-                Crashlytics.setString(KEY_FIRST_START_DATE, timeStamp);
+                FirebaseCrashlytics.getInstance().setCustomKey(KEY_FIRST_START_DATE, timeStamp);
             }
         }
     }
@@ -215,19 +219,18 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         String[] PERMISSIONS = {
                 Manifest.permission.CAMERA,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.READ_EXTERNAL_STORAGE
         };
 
-        if(!hasPermissions(this, PERMISSIONS)){
+        if (!hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
-        }
-        else {
+        } else {
 //            The user wants to create a document and has already given the permissions:
             if (mDocumentCreateRequest) {
                 Intent intent = new Intent(this, CreateDocumentActivity.class);
                 startActivityForResult(intent, CREATE_DOCUMENT);
-            }
-            else
+            } else
                 startCamera();
         }
 
@@ -237,6 +240,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     /**
      * Ask for multiple permissions. Taken from:
      * https://stackoverflow.com/a/34343101/9827698
+     *
      * @param context
      * @param permissions
      * @return
@@ -270,7 +274,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
                 .setTitle(R.string.start_permission_title)
                 .setPositiveButton(R.string.start_confirm_button_text, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i)  {
+                    public void onClick(DialogInterface dialogInterface, int i) {
 //                        Restart the activity:
                         Intent intent = getIntent();
                         finish();
@@ -306,7 +310,13 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
             return;
         }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED) {
+            showPermissionRequiredAlert(getResources().getString(
+                    R.string.start_permission_storage_text));
+            return;
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
             showPermissionRequiredAlert(getResources().getString(
                     R.string.start_permission_storage_text));
             return;
@@ -315,10 +325,9 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         if (mDocumentCreateRequest) {
             Intent intent = new Intent(this, CreateDocumentActivity.class);
             startActivityForResult(intent, CREATE_DOCUMENT);
-        }
-        else
-    //        If CAMERA and WRITE_EXTERNAL_STORAGE permissions are given start the camera, the GPS
-    //        permissions are not required:
+        } else
+            //        If CAMERA and WRITE_EXTERNAL_STORAGE permissions are given start the camera, the GPS
+            //        permissions are not required:
             startCamera();
 
     }
@@ -328,8 +337,10 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         if (DocumentStorage.isStoreFileExisting(this)) {
             DocumentStorage.loadJSON(this);
             startCameraIntent();
+            return;
         }
-        else if (DocumentStorage.isBackupExisting(this))
+        // Unfortunately scoped storage does not allow to recover the backup on Android level >= 30:
+        if (Build.VERSION.SDK_INT <= 29 && DocumentStorage.isBackupExisting(this))
             askForBackupRestore();
         else {
             DocumentStorage.clearInstance();

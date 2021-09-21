@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -26,7 +27,6 @@ public class SyncArrayAdapter extends ArrayAdapter<String> {
     private ArrayList<String> mList;
 
     private static SyncArrayAdapter mInstance = null;
-
 
 
     public static SyncArrayAdapter getInstance() {
@@ -51,7 +51,7 @@ public class SyncArrayAdapter extends ArrayAdapter<String> {
     }
 
     @Override
-    public int getCount(){
+    public int getCount() {
         return mFileSyncList.size();
     }
 

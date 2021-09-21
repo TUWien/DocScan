@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageButton;
 
@@ -27,7 +28,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.material.textfield.TextInputEditText;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -51,7 +51,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
     private static final String SHOW_TRANSKRIBUS_METADATA_KEY = "SHOW_TRANSKRIBUS_METADATA";
     private static final String SHOW_README2020_KEY = "SHOW_README2020";
     public static final String DOCUMENT_CREATED_KEY = "DOCUMENT_CREATED_KEY";
-//    Time stamp used for construction the exemplar file name:
+    //    Time stamp used for construction the exemplar file name:
     private String mTimeStamp;
 
 
@@ -135,8 +135,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
             TextInputEditText input = findViewById(R.id.create_series_custom_name_prefix_input);
             EditText documentName = findViewById(R.id.create_series_name_edittext);
             input.setText(documentName.getText());
-        }
-        else
+        } else
             layout.setVisibility(View.GONE);
 
     }
@@ -153,8 +152,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                 showEmptyPrefixWarning();
                 return;
             }
-        }
-        else {
+        } else {
             EditText nameEdit = findViewById(R.id.create_series_name_edittext);
             prefix = nameEdit.getText().toString();
         }
@@ -220,8 +218,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                     Uri uri = Uri.parse(url);
                     browserIntent.setData(uri);
                     startActivity(browserIntent);
-                }
-                catch (ActivityNotFoundException e) {
+                } catch (ActivityNotFoundException e) {
                     showUrlNotValidAlert(url);
                 }
             }
@@ -233,10 +230,8 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
     public void onPause() {
 
         super.onPause();
-//        DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "CreateDocumentActivity::107");
         DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "CreateDocumentActivity:109");
+
     }
 
     private void initEditField() {
@@ -307,8 +302,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
                 AppCompatImageButton button = findViewById(R.id.create_series_link_button);
                 button.setVisibility(View.GONE);
             }
-        }
-        else
+        } else
             layout.setVisibility(View.INVISIBLE);
 
     }
@@ -396,6 +390,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     /**
      * Checks if the custom file naming fields are valid. Returns true if no custom naming is used.
+     *
      * @return
      */
     protected boolean isCustomNamingValid() {
@@ -467,7 +462,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
     }
 
-//    Uncomment for readme2020:
+    //    Uncomment for readme2020:
     public boolean isReadme2020FieldsCompleted() {
 
         CheckBox readmeCheckBox = findViewById(R.id.create_series_readme_checkbox);
@@ -552,7 +547,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
 //            We need at least one field that is set to create meta data here:
         if (!author.isEmpty() || !writer.isEmpty() || !genre.isEmpty() ||
-                !signature.isEmpty() || !authority.isEmpty() || !url.isEmpty()){
+                !signature.isEmpty() || !authority.isEmpty() || !url.isEmpty()) {
 
             if (mTranskribusMetaData == null)
                 mTranskribusMetaData = new TranskribusMetaData();
@@ -577,7 +572,8 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
         expandLayout(checked, fieldsLayout);
 
     }
-//    Uncomment for readme2020:
+
+    //    Uncomment for readme2020:
     private void initLanguageSpinner() {
 
         String[] languages = getResources().getStringArray(R.array.create_document_languages);
@@ -701,7 +697,7 @@ public class CreateDocumentActivity extends BaseNoNavigationActivity {
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
-        String msg = getResources().getString(R.string.document_dir_existing_prefix_message)+
+        String msg = getResources().getString(R.string.document_dir_existing_prefix_message) +
                 " " + dirName + " " +
                 getResources().getString(R.string.document_dir_existing_postfix_message);
         // set dialog message

@@ -8,8 +8,7 @@
     <FrameLayout
 
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
+        android:layout_height="match_parent">
 
         <FrameLayout
             android:id="@+id/container_layout"
@@ -19,20 +18,17 @@
             <at.ac.tuwien.caa.docscan.camera.CameraPaintLayout
                 android:id="@+id/camera_paint_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                >
+                android:layout_height="match_parent">
 
-                    <at.ac.tuwien.caa.docscan.camera.CameraPreview
-                        android:id="@+id/camera_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        />
+                <at.ac.tuwien.caa.docscan.camera.CameraPreview
+                    android:id="@+id/camera_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
 
-                    <at.ac.tuwien.caa.docscan.camera.PaintView
-                        android:id="@+id/paint_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        />
+                <at.ac.tuwien.caa.docscan.camera.PaintView
+                    android:id="@+id/paint_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
             </at.ac.tuwien.caa.docscan.camera.CameraPaintLayout>
 
             <!--This is necessary because on the Samsung Galaxy Tab 10.1 (Android 4.0.4) the
@@ -58,8 +54,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="60dp"
-                android:layout_gravity="center_horizontal"
-                >
+                android:layout_gravity="center_horizontal">
+
                 <LinearLayout
                     android:id="@+id/lock_exposure_text_view"
                     android:layout_width="match_parent"
@@ -70,11 +66,13 @@
                     android:paddingHorizontal="@dimen/activity_horizontal_margin"
                     android:background="@drawable/camera_text_overlay_bg"
                     android:padding="3dp">
+
                     <androidx.appcompat.widget.AppCompatImageView
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/camera_text_overlay_height"
 
-                        app:srcCompat="@drawable/ic_lock_outline_white_24dp"/>
+                        app:srcCompat="@drawable/ic_lock_outline_white_24dp" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/camera_text_overlay_height"
@@ -82,8 +80,7 @@
                         android:layout_gravity="center"
                         android:text="@string/locked_exposure_text"
                         android:textColor="@color/white"
-                        android:textSize="14sp"
-                        />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -96,11 +93,13 @@
                     android:paddingHorizontal="@dimen/activity_horizontal_margin"
                     android:background="@drawable/camera_text_overlay_bg"
                     android:padding="3dp">
+
                     <androidx.appcompat.widget.AppCompatImageView
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/camera_text_overlay_height"
 
-                        app:srcCompat="@drawable/ic_unlock_open_black_24dp"/>
+                        app:srcCompat="@drawable/ic_unlock_open_black_24dp" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/camera_text_overlay_height"
@@ -108,31 +107,30 @@
                         android:layout_gravity="center"
                         android:text="@string/unlocked_exposure_text"
                         android:textColor="@color/white"
-                        android:textSize="14sp"
-                        />
+                        android:textSize="14sp" />
                 </LinearLayout>
 
                 <!--<LinearLayout-->
-                    <!--android:id="@+id/unlock_exposure_text_view"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:orientation="horizontal"-->
-                    <!--android:visibility="invisible"-->
-                    <!--android:background="@color/debug_view_bg_color"-->
-                    <!--android:padding="3dp">-->
-                    <!--<androidx.appcompat.widget.AppCompatImageView-->
-                        <!--android:layout_width="wrap_content"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--app:srcCompat="@drawable/ic_unlock_open_black_24dp"/>-->
-                    <!--<TextView-->
-                        <!--android:layout_width="wrap_content"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:layout_gravity="center_vertical"-->
-                        <!--android:text="@string/unlocked_exposure_text"-->
-                        <!--android:textColor="@color/white"-->
-                        <!--android:gravity="center_horizontal"-->
-                        <!--android:textSize="14sp"-->
-                        <!--/>-->
+                <!--android:id="@+id/unlock_exposure_text_view"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:orientation="horizontal"-->
+                <!--android:visibility="invisible"-->
+                <!--android:background="@color/debug_view_bg_color"-->
+                <!--android:padding="3dp">-->
+                <!--<androidx.appcompat.widget.AppCompatImageView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--app:srcCompat="@drawable/ic_unlock_open_black_24dp"/>-->
+                <!--<TextView-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_gravity="center_vertical"-->
+                <!--android:text="@string/unlocked_exposure_text"-->
+                <!--android:textColor="@color/white"-->
+                <!--android:gravity="center_horizontal"-->
+                <!--android:textSize="14sp"-->
+                <!--/>-->
                 <!--</LinearLayout>-->
 
             </FrameLayout>
@@ -145,47 +143,43 @@
                 android:textColor="@color/button_bg_color"
                 android:gravity="center"
                 android:visibility="invisible"
-                android:textSize="@dimen/draw_view_counter_font_size"
-                />
+                android:textSize="@dimen/draw_view_counter_font_size" />
 
             <!--<RelativeLayout-->
-                <!--android:layout_width="160dp"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginBottom="@dimen/instruction_view_margin_bottom"-->
-                <!--android:layout_gravity="center_vertical|bottom">-->
+            <!--android:layout_width="160dp"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginBottom="@dimen/instruction_view_margin_bottom"-->
+            <!--android:layout_gravity="center_vertical|bottom">-->
 
-                <!--<androidx.appcompat.widget.AppCompatButton-->
-                    <!--android:id="@+id/force_shoot_button"-->
-                    <!--android:visibility="invisible"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_marginTop="8dp"-->
-                    <!--android:layout_below="@id/instruction_view"-->
-                    <!--android:textSize="16sp"-->
-                    <!--android:backgroundTint="@color/shoot_button_color"-->
-                    <!--android:text="@string/force_shoot_button_text"/>-->
+            <!--<androidx.appcompat.widget.AppCompatButton-->
+            <!--android:id="@+id/force_shoot_button"-->
+            <!--android:visibility="invisible"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginTop="8dp"-->
+            <!--android:layout_below="@id/instruction_view"-->
+            <!--android:textSize="16sp"-->
+            <!--android:backgroundTint="@color/shoot_button_color"-->
+            <!--android:text="@string/force_shoot_button_text"/>-->
 
             <!--</RelativeLayout>-->
 
-        <!--<android.support.design.widget.AppBarLayout-->
+            <!--<android.support.design.widget.AppBarLayout-->
             <!--android:id="@+id/toolbar"-->
             <!--android:layout_width="match_parent"-->
             <!--android:layout_height="wrap_content"-->
             <!--&gt;-->
             <!--<include layout="@layout/toolbar_camera" />-->
-        <!--</android.support.design.widget.AppBarLayout>-->
+            <!--</android.support.design.widget.AppBarLayout>-->
 
         </FrameLayout>
 
-        <include layout="@layout/toolbar"
-            android:id="@+id/toolbar"/>
-
+        <include
+            layout="@layout/toolbar"
+            android:id="@+id/toolbar" />
 
 
     </FrameLayout>
-
-
-
 
 
 </LinearLayout>

@@ -1,9 +1,8 @@
 package at.ac.tuwien.caa.docscan.logic;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 
-import com.crashlytics.android.Crashlytics;
+import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -100,10 +99,7 @@ public class DocumentMigrator {
 
 //        Save the new documents:
 //        DocumentStorage.saveJSON(context);
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentMigrator::103");
         DocumentStorage.saveJSON(context);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentMigrator:105");
-
 
     }
 
@@ -147,7 +143,7 @@ public class DocumentMigrator {
 
     }
 
-    public static ArrayList<Document> getDocuments(String appName){
+    public static ArrayList<Document> getDocuments(String appName) {
 
         ArrayList<Document> documents = new ArrayList<>();
 
@@ -259,7 +255,6 @@ public class DocumentMigrator {
         return SyncInfo.getInstance().isDirAwaitingUpload(dir, files);
 
     }
-
 
 
     private static ArrayList<Page> filesToPages(ArrayList<File> files) {

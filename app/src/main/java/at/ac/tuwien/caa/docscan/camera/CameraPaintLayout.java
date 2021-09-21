@@ -52,7 +52,7 @@ public class CameraPaintLayout extends FrameLayout {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
 
-        if (mFrameHeight == 0|| mFrameWidth == 0) {
+        if (mFrameHeight == 0 || mFrameWidth == 0) {
 //            setChildMeasuredDimension(width, height);
             setMeasuredDimension(width, height);
         } else {
@@ -90,8 +90,6 @@ public class CameraPaintLayout extends FrameLayout {
         mCameraPreviewCallback.onMeasuredDimensionChange(getMeasuredWidth(), getMeasuredHeight());
 
     }
-
-
 
 
 }

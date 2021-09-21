@@ -2,7 +2,9 @@ package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.content.Context;
 import android.content.Intent;
+
 import androidx.annotation.NonNull;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.signature.MediaStoreSignature;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.File;
 import java.io.IOException;
@@ -123,19 +125,17 @@ public class OldDocumentAdapter extends ArrayAdapter<Document> {
         //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
         int exifOrientation = -1;
         try {
-            exifOrientation =  Helper.getExifOrientation(file);
+            exifOrientation = Helper.getExifOrientation(file);
 
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
         if (exifOrientation != -1) {
             GlideApp.with(mContext)
                     .load(file.getPath())
                     .signature(new MediaStoreSignature("", 0, exifOrientation))
                     .into(thumbNail);
-        }
-        else {
+        } else {
             GlideApp.with(mContext)
                     .load(file)
                     .into(thumbNail);

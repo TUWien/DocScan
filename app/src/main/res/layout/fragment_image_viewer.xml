@@ -7,16 +7,16 @@
 
     >
     <!--<com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView-->
-        <!--android:id="@+id/image_viewer_image_view"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:background="@color/black"/>-->
+    <!--android:id="@+id/image_viewer_image_view"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:background="@color/black"/>-->
 
     <at.ac.tuwien.caa.docscan.gallery.PageImageView
         android:id="@+id/image_viewer_image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/black"/>
+        android:background="@color/black" />
 
     <RelativeLayout
         android:id="@+id/image_viewer_progress_layout"
@@ -29,14 +29,15 @@
             android:id="@+id/image_viewer_progressbar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"/>
+            android:layout_centerHorizontal="true" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/page_slide_fragment_loading_text"
             android:background="@color/light_gray"
             android:layout_below="@+id/image_viewer_progressbar"
-            android:layout_centerHorizontal="true"/>
+            android:layout_centerHorizontal="true" />
     </RelativeLayout>
 
 </FrameLayout>

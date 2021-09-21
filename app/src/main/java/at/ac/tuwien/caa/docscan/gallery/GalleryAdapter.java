@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.gallery;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
@@ -64,7 +65,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
         int paddingDp = 3;
         float density = context.getResources().getDisplayMetrics().density;
-        mPaddingPixel = (int)(paddingDp * density);
+        mPaddingPixel = (int) (paddingDp * density);
 
         mColumnCount = 2;
 
@@ -137,7 +138,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
         holder.mItemView.getLayoutParams().width = mWidth;
 
-        double aspectRatio= aspectRatioForIndex(position);
+        double aspectRatio = aspectRatioForIndex(position);
         if (aspectRatio != 0)
             holder.mItemView.getLayoutParams().height = (int) Math.round(mWidth / aspectRatio);
         else
@@ -146,13 +147,13 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
 
 //        Outer left item:
         if ((position % mColumnCount) == 0)
-            holder.itemView.setPadding(0, 0,mPaddingPixel,mPaddingPixel);
+            holder.itemView.setPadding(0, 0, mPaddingPixel, mPaddingPixel);
 //        Outer right item:
-        else if ((position % mColumnCount) == (mColumnCount-1))
-            holder.itemView.setPadding(mPaddingPixel, 0,0,mPaddingPixel);
+        else if ((position % mColumnCount) == (mColumnCount - 1))
+            holder.itemView.setPadding(mPaddingPixel, 0, 0, mPaddingPixel);
 //        Middle item:
         else
-            holder.itemView.setPadding(mPaddingPixel/2, 0,mPaddingPixel / 2,mPaddingPixel);
+            holder.itemView.setPadding(mPaddingPixel / 2, 0, mPaddingPixel / 2, mPaddingPixel);
 
 //        Show the image:
         initImageView(holder, position, page);
@@ -167,7 +168,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         CheckBox checkBox = holder.mCheckBox;
 //        checkBox.setText(page.getFile().getName());
 //        checkBox.setText(page.getTitle());
-        checkBox.setText("#: " + Integer.toString(position+1));
+        checkBox.setText("#: " + Integer.toString(position + 1));
 
         final ImageView imageView = holder.mImageView;
         final int pos = position;
@@ -182,7 +183,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 }
 
                 mSelections.put(pos, !mSelections.get(pos, false));
-                ((CheckBox)v).setChecked(mSelections.get(pos, false));
+                ((CheckBox) v).setChecked(mSelections.get(pos, false));
                 if (mCallback != null)
                     mCallback.onSelectionChange(mSelections.count());
                 else
@@ -192,8 +193,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                 if (mSelections.count() > 0) {
                     imageView.setScaleX(.8f);
                     imageView.setScaleY(.8f);
-                }
-                else {
+                } else {
                     imageView.setScaleX(1f);
                     imageView.setScaleX(1f);
                 }
@@ -226,7 +226,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         long modified = file.lastModified();
 
         try {
-            exifOrientation =  Helper.getExifOrientation(file);
+            exifOrientation = Helper.getExifOrientation(file);
             isCropped = PageDetector.isCropped(file.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
@@ -247,15 +247,13 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                         //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
                         .signature(new MediaStoreSignature("", modified, exifOrientation))
                         .into(imageView);
-            }
-            else
+            } else
                 Helper.crashlyticsLog(CLASS_NAME, "initImageView",
                         "mContext == null");
             holder.mProgressBar.setVisibility(View.VISIBLE);
 
             return;
-        }
-        else {
+        } else {
             holder.mProgressBar.setVisibility(View.INVISIBLE);
             holder.mCheckBox.setEnabled(true);
         }
@@ -275,8 +273,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                             .transform(new CropRectTransform(fileName, mContext))
                             .override(400, 400)
                             .into(imageView);
-                }
-                else
+                } else
                     Helper.crashlyticsLog(CLASS_NAME, "initImageView",
                             "mContext == null");
             }
@@ -288,22 +285,19 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                             //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
                             .signature(new MediaStoreSignature("", modified, exifOrientation))
                             .into(imageView);
-                }
-                else
+                } else
                     Helper.crashlyticsLog(CLASS_NAME, "initImageView",
-                        "mContext == null");
+                            "mContext == null");
             }
-        }
-        else {
+        } else {
 //            Exif data contains no cropping information, simply show the image:
             if (mContext != null) {
                 GlideApp.with(mContext)
                         .load(page.getFile().getPath())
                         .into(imageView);
-            }
-            else
+            } else
                 Helper.crashlyticsLog(CLASS_NAME, "initImageView",
-                    "mContext == null");
+                        "mContext == null");
         }
 
     }
@@ -330,8 +324,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                     index++;
                 }
             }
-        }
-        else
+        } else
             Helper.crashlyticsLog(CLASS_NAME, "getSelectionIndices",
                     "mDocument == null || mDocument.getPages() == null");
 
@@ -373,7 +366,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
         this.notifyDataSetChanged();
 
         if (mCallback != null)
-    //        We need to inform the parent activity that the selection has changed:
+            //        We need to inform the parent activity that the selection has changed:
             mCallback.onSelectionChange(mSelections.count());
         else
             Helper.crashlyticsLog(CLASS_NAME, "setAllSelections",
@@ -422,8 +415,7 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
                     intent.putExtra(mContext.getString(R.string.key_page_position), position);
                     mContext.startActivity(intent);
                 }
-            }
-            else {
+            } else {
                 if (mSelections != null) {
                     mSelections.put(position, !mSelections.get(position, false));
                     mCheckBox.setChecked(mSelections.get(position, false));

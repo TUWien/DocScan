@@ -32,7 +32,7 @@ public class LogoutRequest extends RestRequest.JSONObjectRestRequest {
 
     }
 
-    public interface LogoutCallback extends RestRequest.RestCallback{
+    public interface LogoutCallback extends RestRequest.RestCallback {
 
         void onLogout();
 

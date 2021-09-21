@@ -46,6 +46,7 @@ public class NativeWrapper {
 
     /**
      * Returns an array of Patch objects, containing focus measurement results.
+     *
      * @param src OpenCV Mat
      * @return array of Patch objects
      */
@@ -59,6 +60,7 @@ public class NativeWrapper {
 
     /**
      * Returns an array of DkPolyRect objects, containing page segmentation results.
+     *
      * @param src OpenCV Mat
      * @return array of DkPolyRect objects
      */
@@ -99,6 +101,7 @@ public class NativeWrapper {
 
     /**
      * Native method for focus measurement.
+     *
      * @param src input image
      * @return array of Patch objects
      */
@@ -108,6 +111,7 @@ public class NativeWrapper {
 
     /**
      * Native method for page segmentation.
+     *
      * @param src input image
      * @return array of DKPolyRect objects
      */
@@ -116,7 +120,8 @@ public class NativeWrapper {
 
     /**
      * Native method for illumination computation.
-     * @param src input image
+     *
+     * @param src      input image
      * @param polyRect rectangle describing the page
      * @return double value measuring the illumination quality
      */
@@ -130,7 +135,6 @@ public class NativeWrapper {
     public static boolean useLab() {
         return mUseLab;
     }
-
 
 
 }

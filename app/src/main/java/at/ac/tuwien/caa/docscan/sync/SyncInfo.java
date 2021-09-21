@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
 import com.firebase.jobdispatcher.Constraint;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -13,6 +12,7 @@ import com.firebase.jobdispatcher.Job;
 import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.RetryStrategy;
 import com.firebase.jobdispatcher.Trigger;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -68,7 +68,7 @@ public class SyncInfo implements Serializable {
         DataLog.getInstance().writeUploadLog(context, CLASS_NAME, "readFromDisk");
 
         try {
-            FileInputStream fis = new FileInputStream (syncFile);
+            FileInputStream fis = new FileInputStream(syncFile);
             ObjectInputStream ois = new ObjectInputStream(fis);
             mInstance = (SyncInfo) ois.readObject();
 
@@ -76,10 +76,8 @@ public class SyncInfo implements Serializable {
                 mInstance.setUploadedList(new ArrayList<FileSync>());
             }
             ois.close();
-        }
-        catch(Exception e) {
-            Crashlytics.logException(e);
-            Log.d(CLASS_NAME, e.toString());
+        } catch (Exception e) {
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
     }
@@ -102,7 +100,7 @@ public class SyncInfo implements Serializable {
 
     }
 
-//    We need this method although it is not used, because the serializable SyncInfo was build with
+    //    We need this method although it is not used, because the serializable SyncInfo was build with
 //    this method.
 //    @see: https://stackoverflow.com/questions/8335813/java-serialization-java-io-invalidclassexception-local-class-incompatible
     public void addFile(Context context, File file) {
@@ -217,7 +215,7 @@ public class SyncInfo implements Serializable {
 
     }
 
-//    Note this was private, I am not sure if i can change the modifier, without breaking serialization.
+    //    Note this was private, I am not sure if i can change the modifier, without breaking serialization.
 //    private ArrayList<FileSync> getUploadedList() {
     public ArrayList<FileSync> getUploadedList() {
 
@@ -280,8 +278,7 @@ public class SyncInfo implements Serializable {
 //            }
 
             return true;
-        }
-        else if ((mFileSyncList != null) && (mFileSyncList.size() > 0)) {
+        } else if ((mFileSyncList != null) && (mFileSyncList.size() > 0)) {
             Log.d(CLASS_NAME, "isDirAwaitingUpload: mFileSyncList.size: " + mFileSyncList.size());
             Log.d(CLASS_NAME, "isDirAwaitingUpload: files.size: " + files.length);
             for (File file : files) {
@@ -349,7 +346,7 @@ public class SyncInfo implements Serializable {
         public String toString() {
 
             String state;
-            switch(mState) {
+            switch (mState) {
                 case STATE_AWAITING_UPLOAD:
                     state = "STATE_AWAITING_UPLOAD";
                     break;
@@ -383,10 +380,9 @@ public class SyncInfo implements Serializable {
 
     public interface Callback {
         void onUploadComplete(SyncInfo.FileSync fileSync);
+
         void onError(Exception e);
     }
-
-
 
 
 }

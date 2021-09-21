@@ -3,7 +3,7 @@
 
 # set your preferred OpenCV Library path
 IF (CMAKE_CL_64)
-	SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "C:/VSProjects/OpenCV3/build2015-x64")
+    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "C:/VSProjects/OpenCV3/build2015-x64")
 ELSE ()
-	SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "C:/VSProjects/OpenCV3/build2015-x86")
+    SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "C:/VSProjects/OpenCV3/build2015-x86")
 ENDIF ()

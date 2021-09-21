@@ -48,8 +48,7 @@ public class LoginRequest extends RestRequest.XMLRequest {
             User.getInstance().setConnection(User.SYNC_TRANSKRIBUS);
 //            Now update the GUI with the user data:
             ((LoginCallback) mRestCallback).onLogin(User.getInstance());
-        }
-        else
+        } else
             User.getInstance().setLoggedIn(false);
 
     }
@@ -95,9 +94,11 @@ public class LoginRequest extends RestRequest.XMLRequest {
     }
 
 
-    public interface LoginCallback extends RestRequest.RestCallback{
+    public interface LoginCallback extends RestRequest.RestCallback {
         void onLogin(User user);
+
         void onLoginError();
+
         void onLoginError(VolleyError error);
     }
 

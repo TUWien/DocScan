@@ -46,6 +46,7 @@ public class DkPolyRect implements Parcelable {
 
     /**
      * Creates a polygon with four corners, marking the borders of a document.
+     *
      * @param x1
      * @param y1
      * @param x2
@@ -116,6 +117,7 @@ public class DkPolyRect implements Parcelable {
 
     /**
      * Returns the list of corners (in frame coordinates).
+     *
      * @return a list of Points encoding the polygon corners.
      */
     public ArrayList<PointF> getPoints() {
@@ -126,9 +128,10 @@ public class DkPolyRect implements Parcelable {
 
     /**
      * Sets the screen coordinates of the polygon.
+     *
      * @param screenPoints
      */
-    public void setScreenPoints (ArrayList<PointF> screenPoints) {
+    public void setScreenPoints(ArrayList<PointF> screenPoints) {
 
         mScreenPoints = screenPoints;
 
@@ -136,6 +139,7 @@ public class DkPolyRect implements Parcelable {
 
     /**
      * Returns the list of corners (in screen coordinates).
+     *
      * @return a list of Points encoding the polygon corners.
      */
     public ArrayList<PointF> getScreenPoints() {
@@ -143,7 +147,6 @@ public class DkPolyRect implements Parcelable {
         return mScreenPoints;
 
     }
-
 
 
     public double getLargestDistance(DkPolyRect polyRect) {
@@ -222,6 +225,7 @@ public class DkPolyRect implements Parcelable {
 
     /**
      * Returns the largest angle within a polyrect.
+     *
      * @return
      */
 
@@ -232,7 +236,7 @@ public class DkPolyRect implements Parcelable {
         for (int i = 1; i < mPoints.size() + 1; i++) {
 
             DkVector v1 = new DkVector(mPoints.get(i - 1), mPoints.get(i % mPoints.size()));
-            DkVector v2 = new DkVector(mPoints.get(i  % mPoints.size()), mPoints.get((i+1) % mPoints.size()));
+            DkVector v2 = new DkVector(mPoints.get(i % mPoints.size()), mPoints.get((i + 1) % mPoints.size()));
 
             double cAngle = v1.angle(v2);
             if (cAngle > maxAngle)
@@ -247,18 +251,19 @@ public class DkPolyRect implements Parcelable {
      * Returns the overall rotation of the page segmentation result. The rotation is measured
      * by taking the angle between the 'main' vector x=0, y=1 and the side of the document that has
      * the smallest enclosing angle.
+     *
      * @return
      */
     public double getDocumentRotation() {
 
         double minAngle = 360;
 
-        DkVector v1 = new DkVector(new PointF(0,0), new PointF(0,1));
+        DkVector v1 = new DkVector(new PointF(0, 0), new PointF(0, 1));
 
         for (int i = 1; i < mPoints.size() + 1; i++) {
 
 
-            DkVector v2 = new DkVector(mPoints.get(i  % mPoints.size()), mPoints.get((i+1) % mPoints.size()));
+            DkVector v2 = new DkVector(mPoints.get(i % mPoints.size()), mPoints.get((i + 1) % mPoints.size()));
 
             double cAngle = v1.angle(v2);
             if (cAngle < minAngle)
@@ -273,7 +278,7 @@ public class DkPolyRect implements Parcelable {
     public double getArea() {
 
         double area = 0.5 * Math.abs((mPoints.get(0).y - mPoints.get(2).y) * (mPoints.get(3).x - mPoints.get(1).x) +
-                        (mPoints.get(1).y - mPoints.get(3).y) * (mPoints.get(0).x - mPoints.get(2).x));
+                (mPoints.get(1).y - mPoints.get(3).y) * (mPoints.get(0).x - mPoints.get(2).x));
 
         return area;
 
@@ -290,7 +295,7 @@ public class DkPolyRect implements Parcelable {
         for (int i = 1; i < mPoints.size() + 1; i++) {
 
             DkVector dv = new DkVector(mPoints.get(i - 1), mPoints.get(i % mPoints.size()));
-            float cSign = dv.scalarProduct(new DkVector(point, mPoints.get(i  % mPoints.size())));
+            float cSign = dv.scalarProduct(new DkVector(point, mPoints.get(i % mPoints.size())));
 
             if (lastSign * cSign < 0) {
                 return false;
@@ -304,21 +309,45 @@ public class DkPolyRect implements Parcelable {
 
     }
 
-    public float getX1() { return mPoints.get(0).x; }
-    public float getY1() { return mPoints.get(0).y; }
+    public float getX1() {
+        return mPoints.get(0).x;
+    }
 
-    public float getX2() { return mPoints.get(1).x; }
-    public float getY2() { return mPoints.get(1).y; }
+    public float getY1() {
+        return mPoints.get(0).y;
+    }
 
-    public float getX3() { return mPoints.get(2).x; }
-    public float getY3() { return mPoints.get(2).y; }
+    public float getX2() {
+        return mPoints.get(1).x;
+    }
 
-    public float getX4() { return mPoints.get(3).x; }
-    public float getY4() { return mPoints.get(3).y; }
+    public float getY2() {
+        return mPoints.get(1).y;
+    }
 
-    public int channel() { return mChl; }
+    public float getX3() {
+        return mPoints.get(2).x;
+    }
 
-    public int threshold() { return mThr; }
+    public float getY3() {
+        return mPoints.get(2).y;
+    }
+
+    public float getX4() {
+        return mPoints.get(3).x;
+    }
+
+    public float getY4() {
+        return mPoints.get(3).y;
+    }
+
+    public int channel() {
+        return mChl;
+    }
+
+    public int threshold() {
+        return mThr;
+    }
 
     @Override
     public int describeContents() {

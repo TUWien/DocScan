@@ -1,6 +1,6 @@
 package at.ac.tuwien.caa.docscan.sync;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.nio.ByteBuffer;
 import java.security.DigestException;
@@ -62,21 +62,18 @@ import java.security.NoSuchAlgorithmException;
  * assert r.contentHash.equals(locallyComputed);
  * </pre>
  */
-public final class DropboxContentHasher extends MessageDigest implements Cloneable
-{
+public final class DropboxContentHasher extends MessageDigest implements Cloneable {
     private MessageDigest overallHasher;
     private MessageDigest blockHasher;
     private int blockPos = 0;
 
     public static final int BLOCK_SIZE = 4 * 1024 * 1024;
 
-    public DropboxContentHasher()
-    {
+    public DropboxContentHasher() {
         this(newSha256Hasher(), newSha256Hasher(), 0);
     }
 
-    private DropboxContentHasher(MessageDigest overallHasher, MessageDigest blockHasher, int blockPos)
-    {
+    private DropboxContentHasher(MessageDigest overallHasher, MessageDigest blockHasher, int blockPos) {
         super("Dropbox-Content-Hash");
         this.overallHasher = overallHasher;
         this.blockHasher = blockHasher;
@@ -84,8 +81,7 @@ public final class DropboxContentHasher extends MessageDigest implements Cloneab
     }
 
     @Override
-    protected void engineUpdate(byte input)
-    {
+    protected void engineUpdate(byte input) {
         finishBlockIfFull();
 
         blockHasher.update(input);
@@ -93,20 +89,18 @@ public final class DropboxContentHasher extends MessageDigest implements Cloneab
     }
 
     @Override
-    protected int engineGetDigestLength()
-    {
+    protected int engineGetDigestLength() {
         return overallHasher.getDigestLength();
     }
 
     @Override
-    protected void engineUpdate(byte[] input, int offset, int len)
-    {
+    protected void engineUpdate(byte[] input, int offset, int len) {
         int inputEnd = offset + len;
         while (offset < inputEnd) {
             finishBlockIfFull();
 
             int spaceInBlock = BLOCK_SIZE - this.blockPos;
-            int inputPartEnd = Math.min(inputEnd, offset+spaceInBlock);
+            int inputPartEnd = Math.min(inputEnd, offset + spaceInBlock);
             int inputPartLength = inputPartEnd - offset;
             blockHasher.update(input, offset, inputPartLength);
 
@@ -116,14 +110,13 @@ public final class DropboxContentHasher extends MessageDigest implements Cloneab
     }
 
     @Override
-    protected void engineUpdate(ByteBuffer input)
-    {
+    protected void engineUpdate(ByteBuffer input) {
         int inputEnd = input.limit();
         while (input.position() < inputEnd) {
             finishBlockIfFull();
 
             int spaceInBlock = BLOCK_SIZE - this.blockPos;
-            int inputPartEnd = Math.min(inputEnd, input.position()+spaceInBlock);
+            int inputPartEnd = Math.min(inputEnd, input.position() + spaceInBlock);
             int inputPartLength = inputPartEnd - input.position();
             input.limit(inputPartEnd);
             blockHasher.update(input);
@@ -134,23 +127,20 @@ public final class DropboxContentHasher extends MessageDigest implements Cloneab
     }
 
     @Override
-    protected byte[] engineDigest()
-    {
+    protected byte[] engineDigest() {
         finishBlockIfNonEmpty();
         return overallHasher.digest();
     }
 
     @Override
     protected int engineDigest(byte[] buf, int offset, int len)
-            throws DigestException
-    {
+            throws DigestException {
         finishBlockIfNonEmpty();
         return overallHasher.digest(buf, offset, len);
     }
 
     @Override
-    protected void engineReset()
-    {
+    protected void engineReset() {
         this.overallHasher.reset();
         this.blockHasher.reset();
         this.blockPos = 0;
@@ -158,41 +148,35 @@ public final class DropboxContentHasher extends MessageDigest implements Cloneab
 
     @Override
     public DropboxContentHasher clone()
-            throws CloneNotSupportedException
-    {
+            throws CloneNotSupportedException {
         DropboxContentHasher clone = (DropboxContentHasher) super.clone();
         clone.overallHasher = (MessageDigest) clone.overallHasher.clone();
         clone.blockHasher = (MessageDigest) clone.blockHasher.clone();
         return clone;
     }
 
-    private void finishBlock()
-    {
+    private void finishBlock() {
         overallHasher.update(blockHasher.digest());
         blockPos = 0;
     }
 
-    private void finishBlockIfFull()
-    {
+    private void finishBlockIfFull() {
         if (blockPos == BLOCK_SIZE) {
             finishBlock();
         }
     }
 
-    private void finishBlockIfNonEmpty()
-    {
+    private void finishBlockIfNonEmpty() {
         if (blockPos > 0) {
             finishBlock();
         }
     }
 
-    static MessageDigest newSha256Hasher()
-    {
+    static MessageDigest newSha256Hasher() {
         try {
             return MessageDigest.getInstance("SHA-256");
-        }
-        catch (NoSuchAlgorithmException ex) {
-            Crashlytics.logException(ex);
+        } catch (NoSuchAlgorithmException ex) {
+            FirebaseCrashlytics.getInstance().recordException(ex);
             throw new AssertionError("Couldn't create SHA-256 hasher");
         }
     }

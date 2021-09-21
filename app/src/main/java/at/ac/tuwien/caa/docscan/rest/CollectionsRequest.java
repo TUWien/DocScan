@@ -3,7 +3,7 @@ package at.ac.tuwien.caa.docscan.rest;
 import android.content.Context;
 
 import com.android.volley.Request;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class CollectionsRequest extends RestRequest.JSONArrayRestRequest {
 
-//    private CollectionsCallback mCollectionsCallback;
+    //    private CollectionsCallback mCollectionsCallback;
     private static final String ID_ID = "colId";
     private static final String NAME_ID = "colName";
     private static final String ROLE_ID = "role";
@@ -58,12 +58,11 @@ public class CollectionsRequest extends RestRequest.JSONArrayRestRequest {
             ((CollectionsCallback) mRestCallback).onCollections(collections);
 
         } catch (JSONException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
     }
 
-    public interface CollectionsCallback extends RestRequest.RestCallback{
+    public interface CollectionsCallback extends RestRequest.RestCallback {
 
         void onCollections(List<Collection> collections);
 

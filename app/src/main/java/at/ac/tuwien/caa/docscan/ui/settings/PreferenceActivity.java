@@ -38,7 +38,7 @@ public class PreferenceActivity extends BaseNavigationActivity {
             addPreferencesFromResource(R.xml.preferences);
 
             String preferenceKey = getResources().getString(R.string.key_debug_settings);
-            findPreference(preferenceKey).setOnPreferenceClickListener( new android.preference.Preference.OnPreferenceClickListener() {
+            findPreference(preferenceKey).setOnPreferenceClickListener(new android.preference.Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(android.preference.Preference preference) {
                     Intent intent = new Intent(getActivity().getApplicationContext(), DebugPreferenceActivity.class);
@@ -47,10 +47,10 @@ public class PreferenceActivity extends BaseNavigationActivity {
                     return true;
                 }
 
-            } );
+            });
 
             String exifKey = getResources().getString(R.string.key_exif_settings);
-            findPreference(exifKey).setOnPreferenceClickListener( new android.preference.Preference.OnPreferenceClickListener() {
+            findPreference(exifKey).setOnPreferenceClickListener(new android.preference.Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(android.preference.Preference preference) {
                     Intent intent = new Intent(getActivity().getApplicationContext(), ExifPreferenceActivity.class);
@@ -59,7 +59,7 @@ public class PreferenceActivity extends BaseNavigationActivity {
                     return true;
                 }
 
-            } );
+            });
         }
     }
 

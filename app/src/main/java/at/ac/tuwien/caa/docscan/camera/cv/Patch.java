@@ -46,11 +46,12 @@ public class Patch implements Parcelable {
 
     /**
      * Creates a Patch object encoding the focus measurement of a patch of the camera frame.
-     * @param pX x coordinate of the center of the patch
-     * @param pY y coordinate of the center of the patch
-     * @param width width of the patch
+     *
+     * @param pX     x coordinate of the center of the patch
+     * @param pY     y coordinate of the center of the patch
+     * @param width  width of the patch
      * @param height height of the patch
-     * @param fM focus value
+     * @param fM     focus value
      */
     public Patch(float pX, float pY, int width, int height, double fM) {
 
@@ -64,12 +65,13 @@ public class Patch implements Parcelable {
 
     /**
      * Creates a Patch object encoding the focus measurement of a patch of the camera frame.
-     * @param pX x coordinate of the center of the patch - in frame coordinates
-     * @param pY y coordinate of the center of the patch - in frame coordinates
-     * @param width width of the patch
-     * @param height height of the patch
-     * @param fM focus value
-     * @param isSharp boolean indicating if the focus value is larger than a user defined threshold
+     *
+     * @param pX           x coordinate of the center of the patch - in frame coordinates
+     * @param pY           y coordinate of the center of the patch - in frame coordinates
+     * @param width        width of the patch
+     * @param height       height of the patch
+     * @param fM           focus value
+     * @param isSharp      boolean indicating if the focus value is larger than a user defined threshold
      * @param isForeGround boolean indicating if the patch is belonging to the foreground
      *                     (meaning it has sufficient inhomogeneous image content)
      */
@@ -115,6 +117,7 @@ public class Patch implements Parcelable {
 
     /**
      * Returns the x coordinate of the center in frame coordinates
+     *
      * @return the x coordinate in frame coordinates
      */
     public float getPX() {
@@ -125,6 +128,7 @@ public class Patch implements Parcelable {
 
     /**
      * Returns the y coordinate of the center in frame coordinates
+     *
      * @return the y coordinate in frame coordinates
      */
     public float getPY() {
@@ -140,6 +144,7 @@ public class Patch implements Parcelable {
 
     /**
      * Returns the width of the patch in frame coordinates.
+     *
      * @return
      */
     public int getWidth() {
@@ -150,6 +155,7 @@ public class Patch implements Parcelable {
 
     /**
      * Returns the height of the patch in frame coordinates.
+     *
      * @return
      */
     public int getHeight() {
@@ -160,6 +166,7 @@ public class Patch implements Parcelable {
 
     /**
      * Returns the focus value.
+     *
      * @return
      */
     public double getFM() {
@@ -170,6 +177,7 @@ public class Patch implements Parcelable {
 
     /**
      * Returns a boolean indicating whether the focus value exceeds a user defined threshold
+     *
      * @return boolean indicating whether the patch content is in focus.
      */
     public boolean getIsSharp() {
@@ -185,6 +193,7 @@ public class Patch implements Parcelable {
     /**
      * Returns a boolean indicating whether the patch belongs to the foreground (meaning it has
      * enough image content).
+     *
      * @return boolean
      */
     public boolean getIsForeGround() {
@@ -201,6 +210,7 @@ public class Patch implements Parcelable {
 
     /**
      * Sets the x coordinate of the center of patch in screen coordinates.
+     *
      * @param drawViewPX
      */
     public void setDrawViewPX(float drawViewPX) {
@@ -211,6 +221,7 @@ public class Patch implements Parcelable {
 
     /**
      * Returns the x coordinate of the center of the patch in screen coordinates.
+     *
      * @return
      */
     public float getDrawViewPX() {
@@ -221,6 +232,7 @@ public class Patch implements Parcelable {
 
     /**
      * Sets the y coordinate of the center of patch in screen coordinates.
+     *
      * @return
      */
     public float getDrawViewPY() {
@@ -231,9 +243,12 @@ public class Patch implements Parcelable {
 
     /**
      * Returns the y coordinate of the center of the patch in screen coordinates.
+     *
      * @param drawViewPY
      */
-    public void setDrawViewPY(float drawViewPY) { mDrawViewPY = drawViewPY; }
+    public void setDrawViewPY(float drawViewPY) {
+        mDrawViewPY = drawViewPY;
+    }
 
     @Override
     public int describeContents() {

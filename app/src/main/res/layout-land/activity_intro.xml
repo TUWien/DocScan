@@ -6,32 +6,31 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:background="@color/light_gray"
-    android:theme="@style/AppTheme"
-    >
+    android:theme="@style/AppTheme">
 
-    <androidx.viewpager.widget.ViewPager
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.viewpager.widget.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/intro_viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottom_layout"
         android:layout_gravity="center_vertical"
-        android:theme="@style/AppDarkTheme"
-        />
+        android:theme="@style/AppDarkTheme" />
+
     <RelativeLayout
         android:id="@+id/bottom_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin"
-        >
+        android:layout_marginBottom="@dimen/activity_horizontal_margin">
+
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabDots"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:tabBackground="@drawable/tab_selector"
             app:tabGravity="center"
-            app:tabIndicatorHeight="0dp"/>
+            app:tabIndicatorHeight="0dp" />
+
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/intro_skip_button"
             android:layout_width="wrap_content"

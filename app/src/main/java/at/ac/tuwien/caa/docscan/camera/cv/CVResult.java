@@ -90,6 +90,7 @@ public class CVResult {
 
     /**
      * Sets the DkPolyRect array, calculated by PageSegmentation.cpp
+     *
      * @param dkPolyRects array of page segmentation results
      */
     public void setDKPolyRects(DkPolyRect[] dkPolyRects) {
@@ -117,7 +118,7 @@ public class CVResult {
         return mIsStable;
     }
 
-    boolean isRectStable(DkPolyRect[] dkPolyRects){
+    boolean isRectStable(DkPolyRect[] dkPolyRects) {
 
         boolean isStable = true;
 
@@ -141,7 +142,7 @@ public class CVResult {
     public void clearResults() {
 
         synchronized (this) {
-            mDKPolyRects  = new DkPolyRect[0];
+            mDKPolyRects = new DkPolyRect[0];
             mPatches = new Patch[0];
         }
 
@@ -208,9 +209,9 @@ public class CVResult {
     }
 
 
-
     /**
      * Sets the dimension of the view.
+     *
      * @param width
      * @param height
      */
@@ -223,6 +224,7 @@ public class CVResult {
 
     /**
      * Sets the dimensions of the camera preview frame.
+     *
      * @param width
      * @param height
      * @param cameraOrientation
@@ -345,6 +347,7 @@ public class CVResult {
     /**
      * Normalizes the points contained in a DkPolyRect between zero and one. The screen orientation
      * is taken into account.
+     *
      * @param rect
      * @return
      */
@@ -361,6 +364,7 @@ public class CVResult {
 
     /**
      * Normalizes a point coordinate between zero and 1 and takes orientation into account.
+     *
      * @param point
      * @param frameWidth
      * @param frameHeight
@@ -429,8 +433,7 @@ public class CVResult {
                 mCVState = currentCVState;
                 mCorrectedStatesCnt = 0;
             }
-        }
-        else {
+        } else {
             mCVState = currentCVState;
             mCorrectedStatesCnt = 0;
         }
@@ -439,7 +442,6 @@ public class CVResult {
         mCallback.onStatusChange(mCVState);
 
     }
-
 
 
     public int getCVState() {
@@ -533,6 +535,7 @@ public class CVResult {
 
     /**
      * Transforms frame coordinates to screen coordinates.
+     *
      * @param framePos
      * @param frameWidth
      * @param frameHeight
@@ -558,7 +561,6 @@ public class CVResult {
                 drawViewPX = framePos.y / frameHeight * drawWidth;
                 drawViewPY = (frameWidth - framePos.x) / frameWidth * drawHeight;
                 break;
-
 
 
             case ORIENTATION_LANDSCAPE: // Landscape mode

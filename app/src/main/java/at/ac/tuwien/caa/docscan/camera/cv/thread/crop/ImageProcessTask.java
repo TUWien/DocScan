@@ -54,7 +54,7 @@ public class ImageProcessTask implements CropRunnable.TaskRunnableCropMethods {
      * notes for getCurrentThread()
      */
     public void setCurrentThread(Thread thread) {
-        synchronized(sImageProcessor) {
+        synchronized (sImageProcessor) {
             mCurrentThread = thread;
         }
     }

@@ -6,6 +6,6 @@
 
     <target
         android:name="phone"
-        android:animation="@anim/phone_animator"/>
+        android:animation="@anim/phone_animator" />
 
 </animated-vector>

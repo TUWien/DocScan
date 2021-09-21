@@ -54,7 +54,7 @@ public class StartUploadRequest extends RestRequest.JSONObjectRestRequest {
     }
 
 
-    public interface StartUploadCallback extends RestRequest.RestCallback{
+    public interface StartUploadCallback extends RestRequest.RestCallback {
 
         void onUploadStart(int uploadId, String title);
 

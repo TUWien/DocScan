@@ -38,7 +38,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
@@ -74,7 +74,7 @@ import static com.google.zxing.BarcodeFormat.QR_CODE;
  * is used by two thread classes (inner classes): FocusMeasurementThread and PageSegmentationThread.
  */
 @SuppressWarnings("deprecation")
-public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {
 
     private static final String CLASS_NAME = "CameraPreview";
     private SurfaceHolder mHolder;
@@ -92,7 +92,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     // Prevents a shooting within a very short time range:
     private boolean mIsQRMode;
 
-   // Used for the size of the auto focus area:
+    // Used for the size of the auto focus area:
     private static final int FOCUS_HALF_AREA = 1000;
 
 
@@ -105,8 +105,9 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     /**
      * Creates the CameraPreview and the callbacks required to send events to the activity.
+     *
      * @param context context
-     * @param attrs attributes
+     * @param attrs   attributes
      */
     public CameraPreview(Context context, AttributeSet attrs) {
 
@@ -128,8 +129,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
 
-
-
 //    QR code stuff starts here:
 
     public void startQrMode(boolean qrMode) {
@@ -139,7 +138,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     private void initMultiFormatReader() {
-        Map<DecodeHintType,Object> hints = new EnumMap<>(DecodeHintType.class);
+        Map<DecodeHintType, Object> hints = new EnumMap<>(DecodeHintType.class);
         List<BarcodeFormat> formats = new ArrayList<>();
         formats.add(QR_CODE);
         hints.put(DecodeHintType.POSSIBLE_FORMATS, formats);
@@ -157,7 +156,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         Log.d(CLASS_NAME, "detectBarcode");
 
-        Map<DecodeHintType,Object> hintsMap = new EnumMap<>(DecodeHintType.class);
+        Map<DecodeHintType, Object> hintsMap = new EnumMap<>(DecodeHintType.class);
         hintsMap.put(DecodeHintType.POSSIBLE_FORMATS, EnumSet.of(BarcodeFormat.QR_CODE));
 
         try {
@@ -167,16 +166,13 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             else
                 Log.d(CLASS_NAME, "detectBarcode: no result");
         } catch (NotFoundException e) {
-            Crashlytics.logException(e);
-            Log.d(CLASS_NAME, "detectBarcode: not found");
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         if (result != null) {
             Log.d(CLASS_NAME, "rawresult output: " + result.toString());
             mCVCallback.onQRCode(result);
-        }
-        else
+        } else
             Log.d(CLASS_NAME, "rawresult still null");
 
     }
@@ -189,8 +185,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         try {
             source = new PlanarYUVLuminanceSource(data, mFrameWidth, mFrameHeight, 0, 0,
                     mFrameWidth, mFrameHeight, false);
-        } catch(Exception e) {
-            Crashlytics.logException(e);
+        } catch (Exception e) {
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         return source;
@@ -199,6 +195,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     /**
      * Called after the preview received a new frame (as byte array).
+     *
      * @param pixels byte array containgin the frame.
      * @param camera camera
      */
@@ -211,8 +208,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (mIsQRMode) {
             Log.d(CLASS_NAME, "detecting qr code");
             detectBarcode(pixels);
-        }
-        else {
+        } else {
 //            Log.d(CLASS_NAME, "doing cv stuff");
             cvManagerAction(pixels);
         }
@@ -229,7 +225,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public void shortFlash() {
 
         new Thread(new Runnable() {
-            public void run(){
+            public void run() {
 
                 if (mCamera == null)
                     return;
@@ -248,8 +244,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     }
                     params.setFlashMode(mFlashMode);
                     mCamera.setParameters(params);
-                }
-                catch (RuntimeException e) {
+                } catch (RuntimeException e) {
 
                 }
             }
@@ -270,12 +265,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     params.setFocusMode(FOCUS_MODE_CONTINUOUS_PICTURE);
                     mCamera.setParameters(params);
                     Log.d(CLASS_NAME, "continous focus started");
-                }
-                else if (params.getSupportedFocusModes().contains(FOCUS_MODE_AUTO))
+                } else if (params.getSupportedFocusModes().contains(FOCUS_MODE_AUTO))
                     startAutoFocus();
             }
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
 //            Nothing to do here, probably camera.release has been called from somewhere.
             Log.d(CLASS_NAME, "catched RuntimeException");
         }
@@ -299,8 +292,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                     startContinousFocus();
 
             }
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
 //            Nothing to do here, probably camera.release has been called from somewhere.
             Log.d(CLASS_NAME, "catched RuntimeException");
         }
@@ -344,10 +336,8 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             });
             try {
                 wait();
-            }
-            catch (InterruptedException e) {
-                Crashlytics.logException(e);
-                Log.w(CLASS_NAME, "wait was interrupted");
+            } catch (InterruptedException e) {
+                FirebaseCrashlytics.getInstance().recordException(e);
             }
         }
     }
@@ -356,10 +346,15 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public interface CVCallback {
 
         void onFocusMeasured(Patch[] patches);
+
         void onPageSegmented(DkPolyRect[] polyRects);
+
         void onMovement(boolean moved);
+
         void onWaitingForDoc(boolean waiting, boolean doAutoFocus);
+
         void onCaptureVerified();
+
         void onQRCode(Result result);
 
     }
@@ -371,12 +366,18 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     public interface CameraPreviewCallback {
 
         void onMeasuredDimensionChange(int width, int height);
+
         void onFrameDimensionChange(int width, int height, int cameraOrientation);
+
         void onFlashModesFound(List<String> modes);
+
         void onExposureLockFound(boolean isSupported);
+
         void onFocused(boolean focused);
-//        void onWhiteBalanceFound(List<String> whiteBalances);
+
+        //        void onWhiteBalanceFound(List<String> whiteBalances);
         void onFocusTouch(PointF point);
+
         void onFocusTouchSuccess();
 
     }
@@ -391,6 +392,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
     /**
      * Called after the surface is created.
+     *
      * @param holder Holder
      */
     public void surfaceCreated(SurfaceHolder holder) {
@@ -406,9 +408,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     /**
      * Called once the surface is changed. This happens after orientation changes or if the activity
      * is started (or resumed).
+     *
      * @param holder holder
      * @param format format
-     * @param width width
+     * @param width  width
      * @param height height
      */
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -454,8 +457,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
                 mCamera.setPreviewCallback(null);
                 mCamera.release();        // release the camera for other applications
                 mCamera = null;
-            }
-            catch (RuntimeException e) {
+            } catch (RuntimeException e) {
 
             }
         }
@@ -473,9 +475,10 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
     /**
      * Called after the user touches the view in order to make an auto focus. The auto focus region
      * is set device independent by using Camera.Area.
-     * @see <a href="https://developer.android.com/reference/android/hardware/Camera.Area.html">Camera.Area</a>
+     *
      * @param event a touch event
      * @return a boolean indicating if the event has been processed
+     * @see <a href="https://developer.android.com/reference/android/hardware/Camera.Area.html">Camera.Area</a>
      */
     @Override
     @SuppressWarnings("deprecation")
@@ -539,7 +542,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
             boolean focusSupported = false;
             if (parameters.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_AUTO)
-                && parameters.getFocusMode() != Camera.Parameters.FOCUS_MODE_AUTO) {
+                    && parameters.getFocusMode() != Camera.Parameters.FOCUS_MODE_AUTO) {
 
                 parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
 
@@ -571,7 +574,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         } catch (RuntimeException e) {
             //            This can happen if the user touches the CameraPreview, while the preview is not
             //            started. In this case we do nothing.
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
 
@@ -598,7 +601,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
 
         Log.d(CLASS_NAME, "orientation: " + orientation);
 
-        switch(orientation) {
+        switch (orientation) {
             case 0:
                 result.x = point.x;
                 result.y = point.y;
@@ -629,8 +632,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (orientation == 0 || orientation == 180) {
             halfScreenWidth = (float) getMeasuredWidth() / 2;
             halfScreenHeight = (float) getMeasuredHeight() / 2;
-        }
-        else {
+        } else {
             halfScreenHeight = (float) getMeasuredWidth() / 2;
             halfScreenWidth = (float) getMeasuredHeight() / 2;
         }
@@ -694,9 +696,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.stopPreview();
             Log.d(CLASS_NAME, "Preview stopped.");
         } catch (Exception e) {
-            Crashlytics.logException(e);
-            // ignore: tried to stop a non-existent preview
-            Log.d(CLASS_NAME, "Error stoppings camera preview: " + e.getMessage());
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         Log.d(CLASS_NAME, "initPreview");
@@ -716,8 +716,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();
         } catch (Exception e) {
-            Crashlytics.logException(e);
-            Log.d(CLASS_NAME, "Error starting camera preview: " + e.getMessage());
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         // Tell the dependent Activity that the frame dimension (might have) change:
@@ -841,8 +840,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         if (dim != null) {
             width = dim.x;
             height = dim.y;
-        }
-        else {
+        } else {
             width = getWidth();
             height = getHeight();
         }
@@ -967,8 +965,7 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
             mCamera.setParameters(params);
 
             mFlashMode = flashMode;
-        }
-        catch(RuntimeException e) {
+        } catch (RuntimeException e) {
 
         }
     }
@@ -1027,7 +1024,6 @@ public class CameraPreview  extends SurfaceView implements SurfaceHolder.Callbac
         mCameraPreviewCallback.onFrameDimensionChange(mFrameWidth, mFrameHeight, cameraOrienation);
 
     }
-
 
 
 }

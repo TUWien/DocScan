@@ -32,7 +32,7 @@ public class SyncFile {
     public String toString() {
 
         String state;
-        switch(mState) {
+        switch (mState) {
             case STATE_AWAITING_UPLOAD:
                 state = "STATE_AWAITING_UPLOAD";
                 break;

@@ -5,7 +5,9 @@ import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+
 import androidx.fragment.app.Fragment;
+
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -108,8 +110,7 @@ public class IntroFragment extends Fragment {
                     .load(R.drawable.document_screenshot)
                     .fitCenter()
                     .into(documentImageView);
-        }
-        else {
+        } else {
 
             switch (mNum) {
                 case 0:

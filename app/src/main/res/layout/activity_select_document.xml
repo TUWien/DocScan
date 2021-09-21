@@ -1,31 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:id="@+id/drawer_layout"
-    >
+    android:id="@+id/drawer_layout">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/sync_coordinatorlayout"
-        >
+        android:id="@+id/sync_coordinatorlayout">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/gallery_appbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content">
+
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/main_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?android:attr/actionBarSize"
                 app:layout_scrollFlags="scroll|enterAlways"
-                android:background="@color/colorPrimary"
-                />
+                android:background="@color/colorPrimary" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <!--The following attributes are required for a footer, so the FAB is not overlapping:-->
@@ -39,16 +35,15 @@
             android:fadeScrollbars="false"
             app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
             android:paddingBottom="80dp"
-            android:clipToPadding="false"
-            />
+            android:clipToPadding="false" />
 
         <!--<android.support.design.widget.FloatingActionButton-->
-            <!--android:id="@+id/upload_fab"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_gravity="end|bottom"-->
-            <!--app:srcCompat="@drawable/ic_camera_alt_black_24dp"-->
-            <!--android:layout_margin="16dp" />-->
+        <!--android:id="@+id/upload_fab"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="end|bottom"-->
+        <!--app:srcCompat="@drawable/ic_camera_alt_black_24dp"-->
+        <!--android:layout_margin="16dp" />-->
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/document_select_button"
@@ -61,10 +56,11 @@
             android:textColor="@color/white"
             android:layout_gravity="bottom|center_horizontal"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:text="@string/select_document_select_button_text"/>
+            android:text="@string/select_document_select_button_text" />
 
-        </androidx.coordinatorlayout.widget.CoordinatorLayout>
-    <include layout="@layout/navigation_view"/>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <include layout="@layout/navigation_view" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
 

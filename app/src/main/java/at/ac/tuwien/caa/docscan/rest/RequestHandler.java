@@ -21,7 +21,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,9 +31,6 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
-
-import io.fabric.sdk.android.services.common.Crash;
-
 
 public class RequestHandler {
 
@@ -57,6 +54,7 @@ public class RequestHandler {
      * Creates a new request queue. If API is between JELLY_BEAN and KIT_KAT a HttpStack with
      * TLSSocketFactory is generated. This fixes the SSLHandshakeException on Android 4 devices.
      * Taken from: https://stackoverflow.com/questions/31269425/how-do-i-tell-the-tls-version-in-android-volley
+     *
      * @param context
      * @return
      */
@@ -70,14 +68,10 @@ public class RequestHandler {
             try {
                 stack = new HurlStack(null, new TLSSocketFactory());
             } catch (KeyManagementException e) {
-                Crashlytics.logException(e);
-                e.printStackTrace();
-                Log.d("Your Wrapper Class", "Could not create new stack for TLS v1.2");
+                FirebaseCrashlytics.getInstance().recordException(e);
                 stack = new HurlStack();
             } catch (NoSuchAlgorithmException e) {
-                Crashlytics.logException(e);
-                e.printStackTrace();
-                Log.d("Your Wrapper Class", "Could not create new stack for TLS v1.2");
+                FirebaseCrashlytics.getInstance().recordException(e);
                 stack = new HurlStack();
             }
             requestQueue = Volley.newRequestQueue(context, stack);
@@ -104,9 +98,10 @@ public class RequestHandler {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         if (error != null) {
-                            Crashlytics.log("login error: " + error);
+                            FirebaseCrashlytics.getInstance().log("login error: " + error);
                             if (error.networkResponse != null)
-                                Crashlytics.log("login error network response: " + error.networkResponse);
+                                FirebaseCrashlytics.getInstance().log(
+                                        "login error network response: " + error.networkResponse);
                         }
 
                         request.handleLoginError(error);
@@ -193,7 +188,7 @@ public class RequestHandler {
 
     }
 
-    public static void processMultiPartRequest(Context context,  MultipartRequest multipartRequest) {
+    public static void processMultiPartRequest(Context context, MultipartRequest multipartRequest) {
 
         //Adding the string request to the queue
 //        RequestQueue requestQueue = Volley.newRequestQueue(context);
@@ -251,14 +246,13 @@ public class RequestHandler {
                         request.handleRestError(error);
 
                         NetworkResponse response = error.networkResponse;
-                        if(response != null && response.data != null){
+                        if (response != null && response.data != null) {
                             String json = new String(response.data);
                             json = trimMessage(json, "message");
                         }
 
                     }
-                })
-        {
+                }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<String, String>();
@@ -267,7 +261,7 @@ public class RequestHandler {
             }
 
             @Override
-            public String getBodyContentType(){
+            public String getBodyContentType() {
                 return "application/json";
             }
         };
@@ -300,21 +294,19 @@ public class RequestHandler {
 //
 //    }
 
-    private static String trimMessage(String json, String key){
+    private static String trimMessage(String json, String key) {
         String trimmedString = null;
 
-        try{
+        try {
             JSONObject obj = new JSONObject(json);
             trimmedString = obj.getString(key);
-        } catch(JSONException e){
-            Crashlytics.logException(e);
-            e.printStackTrace();
+        } catch (JSONException e) {
+            FirebaseCrashlytics.getInstance().recordException(e);
             return null;
         }
 
         return trimmedString;
     }
-
 
 
 }

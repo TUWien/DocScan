@@ -31,10 +31,16 @@ class DocumentsFragment : Fragment() {
     private lateinit var adapter: DocumentAdapter
     private lateinit var listener: DocumentListener
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
-        return inflater.inflate(at.ac.tuwien.caa.docscan.R.layout.fragment_documents, container, false)
+        return inflater.inflate(
+            at.ac.tuwien.caa.docscan.R.layout.fragment_documents,
+            container,
+            false
+        )
     }
 
     override fun onAttach(context: Context) {
@@ -69,7 +75,7 @@ class DocumentsFragment : Fragment() {
     fun getImageView(document: Document): ImageView {
         val idx = documents.indexOf(document)
         val selectedViewHolder = documents_list
-                .findViewHolderForAdapterPosition(idx)
+            .findViewHolderForAdapterPosition(idx)
         return selectedViewHolder!!.itemView.findViewById(at.ac.tuwien.caa.docscan.R.id.document_thumbnail_imageview)
 
     }
@@ -85,7 +91,8 @@ class DocumentsFragment : Fragment() {
             updateRecyclerView()
             if (scroll) {
                 val pos = documents.indexOf(
-                        DocumentStorage.getInstance(context).activeDocument)
+                    DocumentStorage.getInstance(context).activeDocument
+                )
                 if (pos != -1)
                     documents_list.smoothScrollToPosition(pos)
                 scroll = false
@@ -162,18 +169,20 @@ class DocumentsFragment : Fragment() {
 
     private fun updateRecyclerView() {
 
-        adapter = DocumentAdapter(documents,
-                {
-    //                    Inform the DocumentViewerActivity that a document should be opened:
+        adapter = DocumentAdapter(
+            documents,
+            {
+                //                    Inform the DocumentViewerActivity that a document should be opened:
                     document: Document ->
-                    listener?.onDocumentOpened(document)
-                },
-                {
-    //                    Inform the DocumentViewerActivity that document options should be shown:
+                listener?.onDocumentOpened(document)
+            },
+            {
+                //                    Inform the DocumentViewerActivity that document options should be shown:
                     document: Document ->
-                    listener?.onDocumentOptions(document)
-                },
-                DocumentStorage.getInstance(context).activeDocument)
+                listener?.onDocumentOptions(document)
+            },
+            DocumentStorage.getInstance(context).activeDocument
+        )
 
         documents_list.adapter = adapter
 

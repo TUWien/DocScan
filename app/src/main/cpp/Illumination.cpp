@@ -22,100 +22,101 @@
 
  *******************************************************************************************************/
 
-#include "DkMath.h"	// nomacs
+#include "DkMath.h"    // nomacs
 #include "Utils.h"
 
-#pragma warning(push, 0)	// no warnings from includes - begin
+#pragma warning(push, 0)    // no warnings from includes - begin
+
 #include <opencv2/imgproc/imgproc.hpp>
 #include "Illumination.h"
-#pragma warning(pop)		// no warnings from includes - end
+
+#pragma warning(pop)        // no warnings from includes - end
 
 namespace dsc {
 // DkIllumination --------------------------------------------------------------------
-DkIllumination::DkIllumination(const cv::Mat & img, const DkPolyRect & rect) {
+    DkIllumination::DkIllumination(const cv::Mat &img, const DkPolyRect &rect) {
 
-	mImg = img;
-	mPageRect = rect;
-}
+        mImg = img;
+        mPageRect = rect;
+    }
 
-void DkIllumination::compute() {
+    void DkIllumination::compute() {
 
-	cv::Mat img = mImg;
-	
-	if (!mPageRect.empty()) {
-		img = img(mPageRect.getBBox().getCvRect());
-	}
+        cv::Mat img = mImg;
 
-	if (img.channels() > 1)
-		cv::cvtColor(img, img, CV_RGB2GRAY);
+        if (!mPageRect.empty()) {
+            img = img(mPageRect.getBBox().getCvRect());
+        }
 
-
-	int rStep = std::max(dsc::round((double)img.rows / mNumScanLines), 1);
-	int cStep = std::max(dsc::round((double)img.cols / mNumScanLines), 1);
-
-	double sumVal = 0;
-	int nSum = 0;
-	
-	// for all rows
-	for (int idx = 0; idx < img.rows; idx += rStep) {
-		sumVal += scanLineValue(img.row(idx));
-		nSum++;
-	}
-
-	// for all cols
-	for (int idx = 0; idx < img.cols; idx += cStep) {
-		sumVal += scanLineValue(img.col(idx).t());
-		nSum++;
-	}
-
-	mIlluminationValue = sumVal / nSum;
-
-	std::cout << "illumination evaluated on " << nSum << " scanlines..." << std::endl;
-}
+        if (img.channels() > 1)
+            cv::cvtColor(img, img, CV_RGB2GRAY);
 
 
+        int rStep = std::max(dsc::round((double) img.rows / mNumScanLines), 1);
+        int cStep = std::max(dsc::round((double) img.cols / mNumScanLines), 1);
 
-double DkIllumination::value() const {
-	return mIlluminationValue;
-}
+        double sumVal = 0;
+        int nSum = 0;
 
-double DkIllumination::scanLineValue(const cv::Mat & scanline) const {
+        // for all rows
+        for (int idx = 0; idx < img.rows; idx += rStep) {
+            sumVal += scanLineValue(img.row(idx));
+            nSum++;
+        }
 
-	cv::Mat sc = scanline;
-	cv::medianBlur(sc, sc, 5);
+        // for all cols
+        for (int idx = 0; idx < img.cols; idx += cStep) {
+            sumVal += scanLineValue(img.col(idx).t());
+            nSum++;
+        }
 
-	int sumVal = 0;
-	int nSum = 0;
+        mIlluminationValue = sumVal / nSum;
 
-	const unsigned char* sPtr = sc.ptr<unsigned char>();
-	
-	for (int idx = 0; idx < sc.cols-1; idx++) {
+        std::cout << "illumination evaluated on " << nSum << " scanlines..." << std::endl;
+    }
 
-		int diff = (int)sPtr[idx] - (int)sPtr[idx+1];
 
-		if (std::abs(diff) < mEps) {
-			sumVal += diff;
-			nSum++;
-		}
-	}
+    double DkIllumination::value() const {
+        return mIlluminationValue;
+    }
 
-	double val = std::abs(sumVal);
-	//std::cout << "scanline val: " << val << " #" << nSum << std::endl;
+    double DkIllumination::scanLineValue(const cv::Mat &scanline) const {
 
-	return val/nSum;
-}
+        cv::Mat sc = scanline;
+        cv::medianBlur(sc, sc, 5);
 
-double DkIllumination::apply(const cv::Mat & src, const DkPolyRect & pageRect) {
+        int sumVal = 0;
+        int nSum = 0;
 
-	DkIllumination module(src, pageRect);
-	module.compute();
+        const unsigned char *sPtr = sc.ptr<unsigned char>();
 
-	return module.value();
-}
+        for (int idx = 0; idx < sc.cols - 1; idx++) {
 
-cv::Mat DkIllumination::debugImage() const {
-	return mDbgImg;
-}
+            int diff = (int) sPtr[idx] - (int) sPtr[idx + 1];
+
+            if (std::abs(diff) < mEps) {
+                sumVal += diff;
+                nSum++;
+            }
+        }
+
+        double val = std::abs(sumVal);
+        //std::cout << "scanline val: " << val << " #" << nSum << std::endl;
+
+        return val / nSum;
+    }
+
+    double DkIllumination::apply(const cv::Mat &src, const DkPolyRect &pageRect) {
+
+        DkIllumination module(src, pageRect);
+        module.compute();
+
+        return module.value();
+    }
+
+    cv::Mat DkIllumination::debugImage() const {
+        return mDbgImg;
+    }
 
 };
 

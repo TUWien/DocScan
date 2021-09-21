@@ -9,11 +9,12 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
+
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.appcompat.app.AlertDialog;
@@ -21,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -74,7 +76,7 @@ public class GalleryActivity extends AppCompatActivity implements
     private static final int DOCUMENT_RENAMING = 0;
 
 
-//    This is used to determine if some file changes (rotation or deletion) happened outside of the
+    //    This is used to determine if some file changes (rotation or deletion) happened outside of the
 //    GalleryActivity (i.e. in the ImageViewerFragment). If something changed we need to reload the
 //    images in onResume.
     private static boolean sFileDeleted, sFileRotated, sFileCropped;
@@ -118,8 +120,7 @@ public class GalleryActivity extends AppCompatActivity implements
             initAdapter();
             initToolbar();
             checkFocus();
-        }
-        else
+        } else
             Helper.crashlyticsLog(CLASS_NAME, "onCreate", "mDocument == null");
     }
 
@@ -138,7 +139,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
     }
 
-    public class InfoButtonListener implements View.OnClickListener{
+    public class InfoButtonListener implements View.OnClickListener {
 
         AlertDialog mAlertDialog;
 
@@ -178,8 +179,7 @@ public class GalleryActivity extends AppCompatActivity implements
             if (mAdapter != null) {
                 Log.d(CLASS_NAME, "onResume: notifyDataSetChanged");
                 mAdapter.notifyDataSetChanged();
-            }
-            else
+            } else
                 Helper.crashlyticsLog(CLASS_NAME, "onResume", "mAdapater == null");
         }
 
@@ -188,8 +188,7 @@ public class GalleryActivity extends AppCompatActivity implements
             if (mAdapter != null) {
                 Log.d(CLASS_NAME, "onResume: notifyDataSetChanged");
                 mAdapter.notifyDataSetChanged();
-            }
-            else {
+            } else {
                 loadDocument();
                 initAdapter();
             }
@@ -236,9 +235,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
         super.onPause();
 
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "GalleryActivity::247");
         DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "GalleryActivity:249");
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         mMessageReceiver = null;
@@ -278,8 +275,7 @@ public class GalleryActivity extends AppCompatActivity implements
                     }
 
 //                    mAdapter.deselectAllItems();
-                }
-                else
+                } else
                     Helper.crashlyticsLog(CLASS_NAME, "getReceiver",
                             "mAdapter == null");
 
@@ -294,8 +290,8 @@ public class GalleryActivity extends AppCompatActivity implements
      * Called after permission has been given or has been rejected. This is necessary on Android M
      * and younger Android systems.
      *
-     * @param requestCode Request code
-     * @param permissions Permission
+     * @param requestCode  Request code
+     * @param permissions  Permission
      * @param grantResults results
      */
     @Override
@@ -375,8 +371,7 @@ public class GalleryActivity extends AppCompatActivity implements
             mDocument = DocumentStorage.getInstance(this).getDocument(mFileName);
             if (mDocument == null)
                 mDocument = DocumentStorage.getInstance(this).getActiveDocument();
-        }
-        else
+        } else
             mDocument = DocumentStorage.getInstance(this).getActiveDocument();
 
     }
@@ -411,7 +406,7 @@ public class GalleryActivity extends AppCompatActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case android.R.id.home:
                 // did the user cancel the renaming?
                 if (mAdapter.getSelectionCount() == 0) {
@@ -449,7 +444,7 @@ public class GalleryActivity extends AppCompatActivity implements
         else
             selectAllItems();
 
-     }
+    }
 
     private boolean areAllItemsSelected() {
 
@@ -583,7 +578,7 @@ public class GalleryActivity extends AppCompatActivity implements
         if (mDocument == null || mAdapter == null || mDocument.getPages() == null) {
             Helper.crashlyticsLog(CLASS_NAME, "rotateSelectedItems",
                     "mDocument == null || mAdapter == null || mDocument.getPages() == null || " +
-                    "                mAdapter == null");
+                            "                mAdapter == null");
             return;
         }
 
@@ -675,8 +670,7 @@ public class GalleryActivity extends AppCompatActivity implements
         if (mMenu != null) {
             mMenu.setGroupVisible(R.id.gallery_menu_selection, false);
             mMenu.setGroupVisible(R.id.gallery_menu_main, true);
-        }
-        else
+        } else
             Helper.crashlyticsLog(CLASS_NAME, "resetToolbar", "mMenu == null");
 
     }
@@ -702,7 +696,7 @@ public class GalleryActivity extends AppCompatActivity implements
                 .setTitle(title)
                 .setPositiveButton(R.string.gallery_confirm_delete_confirm_button_text, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int i)  {
+                    public void onClick(DialogInterface dialogInterface, int i) {
                         deleteSelections();
                     }
                 })

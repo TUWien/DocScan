@@ -6,7 +6,6 @@
         android:icon="@drawable/ic_more_vert_black_24dp"
         android:title="@string/gallery_menu_rotate_item_title"
         android:onClick="openDocumentOption"
-        app:showAsAction="always"
-        />
+        app:showAsAction="always" />
 
 </menu>

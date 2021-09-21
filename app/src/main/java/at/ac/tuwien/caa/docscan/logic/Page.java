@@ -55,6 +55,8 @@ public class Page {
         mTitle = title;
     }
 
-    public String getTitle() { return mTitle; }
+    public String getTitle() {
+        return mTitle;
+    }
 
 }

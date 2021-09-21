@@ -9,8 +9,8 @@ public class User {
 
     private static User mInstance = null;
 
-    public static final int SYNC_DROPBOX        = 0;
-    public static final int SYNC_TRANSKRIBUS    = 1;
+    public static final int SYNC_DROPBOX = 0;
+    public static final int SYNC_TRANSKRIBUS = 1;
 
     private String mUserName, mPassword, mFirstName, mLastName, mSessionID;
     private boolean mIsLoggedin, mIsAutoLogInDone, mTranskribusUploadCollIdSet;
@@ -21,6 +21,7 @@ public class User {
 
     /**
      * Returns a singleton.
+     *
      * @return
      */
     public static User getInstance() {
@@ -39,31 +40,49 @@ public class User {
         mTranskribusUploadCollIdSet = false;
     }
 
-    public boolean isAutoLogInDone() { return mIsAutoLogInDone; }
+    public boolean isAutoLogInDone() {
+        return mIsAutoLogInDone;
+    }
 
-    public void setAutoLogInDone(boolean isAutoLogInDone) { mIsAutoLogInDone = isAutoLogInDone; }
+    public void setAutoLogInDone(boolean isAutoLogInDone) {
+        mIsAutoLogInDone = isAutoLogInDone;
+    }
 
-    public String getFirstName() { return mFirstName; }
+    public String getFirstName() {
+        return mFirstName;
+    }
 
-    public void setFirstName(String firstName) { mFirstName = firstName; }
+    public void setFirstName(String firstName) {
+        mFirstName = firstName;
+    }
 
-    public String getLastName() { return mLastName; }
+    public String getLastName() {
+        return mLastName;
+    }
 
-    public void setLastName(String lastName) { mLastName = lastName; }
+    public void setLastName(String lastName) {
+        mLastName = lastName;
+    }
 
     public String getUserName() {
         return mUserName;
     }
 
-    public void setUserName(String userName) { mUserName = userName; }
+    public void setUserName(String userName) {
+        mUserName = userName;
+    }
 
     public String getPassword() {
         return mPassword;
     }
 
-    public void setPassword(String password) { mPassword = password; }
+    public void setPassword(String password) {
+        mPassword = password;
+    }
 
-    public boolean isLoggedIn() { return mIsLoggedin; }
+    public boolean isLoggedIn() {
+        return mIsLoggedin;
+    }
 
     public void setLoggedIn(boolean loggedIn) {
         mIsLoggedin = loggedIn;
@@ -78,14 +97,18 @@ public class User {
         return mSessionID;
     }
 
-    public void setConnection(int connection) { mConnection = connection; }
+    public void setConnection(int connection) {
+        mConnection = connection;
+    }
 
-    public int getConnection() { return mConnection; }
+    public int getConnection() {
+        return mConnection;
+    }
 
     public void setDropboxToken(String token) {
         mDropboxToken = token;
     }
-    
+
     public String getDropboxToken() {
         return mDropboxToken;
     }

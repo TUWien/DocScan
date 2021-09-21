@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+
 import androidx.appcompat.content.res.AppCompatResources;
+
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -132,7 +134,6 @@ public class SyncAdapter extends BaseDocumentAdapter {
             mDirs.remove(rmIdx.get(i).intValue());
 
 
-
     }
 
 //    class FileComparator implements Comparator<File>
@@ -210,7 +211,7 @@ public class SyncAdapter extends BaseDocumentAdapter {
                 public void onClick(View v) {
                     int position = (int) v.getTag();
                     mSelections.put(position, !mSelections.get(position, false));
-                    ((CheckBox)v).setChecked(mSelections.get(position, false));
+                    ((CheckBox) v).setChecked(mSelections.get(position, false));
 
                     mCallback.onSelectionChange();
                 }
@@ -242,13 +243,11 @@ public class SyncAdapter extends BaseDocumentAdapter {
 //            isCheckBoxEnabled = false;
 //            The checkbox is now (18.01.2018) checkable after upload, because it can be deleted:
             isCheckBoxEnabled = true;
-        }
-        else if (isDirAwaitingUpload(groupPosition)) {
+        } else if (isDirAwaitingUpload(groupPosition)) {
             d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_upload_gray_24dp);
             headerText += " " + mContext.getResources().getString(R.string.sync_dir_pending_text);
             isCheckBoxEnabled = false;
-        }
-        else {
+        } else {
             d = AppCompatResources.getDrawable(mContext, R.drawable.ic_cloud_queue_gray_24dp);
             isCheckBoxEnabled = true;
         }

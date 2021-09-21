@@ -1,8 +1,10 @@
 package at.ac.tuwien.caa.docscan.ui;
 
 import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -101,8 +103,7 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
             if (User.getInstance().getConnection() == User.SYNC_TRANSKRIBUS) {
                 RequestHandler.createRequest(this, RequestHandler.REQUEST_LOGIN);
                 User.getInstance().setAutoLogInDone(true);
-            }
-            else if (User.getInstance().getConnection() == User.SYNC_DROPBOX) {
+            } else if (User.getInstance().getConnection() == User.SYNC_DROPBOX) {
                 if (UserHandler.loadDropboxToken(this)) {
                     DropboxUtils.getInstance().loginToDropbox(this, User.getInstance().getDropboxToken());
                     User.getInstance().setAutoLogInDone(true);
@@ -164,8 +165,4 @@ public abstract class BaseNavigationActivity extends AppCompatActivity implement
     }
 
 
-
-
-
-
-    }
+}

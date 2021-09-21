@@ -2,7 +2,9 @@ package at.ac.tuwien.caa.docscan.ui.widget;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+
 import com.google.android.material.appbar.AppBarLayout;
+
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.appcompat.widget.Toolbar;
 

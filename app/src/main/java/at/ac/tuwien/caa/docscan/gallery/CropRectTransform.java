@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+
 import androidx.annotation.NonNull;
 
 //import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
@@ -102,7 +103,6 @@ public class CropRectTransform extends BitmapTransformation {
 //        mOuterQuadPaint.setAntiAlias(true);
 
     }
-
 
 
     private void drawQuad(Canvas canvas, ArrayList<PointF> points, Path path, Paint paint) {

@@ -14,8 +14,7 @@ class Utility {
             try {
 //                Overwrite the current file:
                 file.copyTo(target, true)
-            }
-            catch(e: Exception) {
+            } catch (e: Exception) {
                 return false
             }
 

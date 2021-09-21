@@ -38,21 +38,27 @@
 #include <iostream>
 
 
-JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(JNIEnv * env, jclass cls, jlong src, jboolean useLab, jobject jOldRect) {
+JNIEXPORT jobjectArray JNICALL
+Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(JNIEnv *env,
+                                                                                jclass cls,
+                                                                                jlong src,
+                                                                                jboolean useLab,
+                                                                                jobject jOldRect) {
 
     dsc::DkPolyRect oldRect = cvt::jPolyRectToC(env, jOldRect);
 
     // call the main function:
-    std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(*((cv::Mat*)src), useLab, oldRect);
+    std::vector<dsc::DkPolyRect> polyRects = dsc::DkPageSegmentation::apply(*((cv::Mat *) src),
+                                                                            useLab, oldRect);
 
     // JNI type signatures: http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
     jclass jPolyRectClass = env->FindClass("at/ac/tuwien/caa/docscan/camera/cv/DkPolyRect");
 
     // "(FFFFFFFF)V" -> (8 x float) return void
     jmethodID cnstrctr = env->GetMethodID(
-        jPolyRectClass,
-        "<init>",
-        "(FFFFFFFFII)V");
+            jPolyRectClass,
+            "<init>",
+            "(FFFFFFFFII)V");
 
     if (cnstrctr == 0)
         __android_log_write(ANDROID_LOG_INFO, "DkPageSegmentation", "did not find constructor!");
@@ -68,22 +74,22 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWra
 
         std::vector<cv::Point> points = polyRects[i].toCvPoints();
 
-         if (points.empty())
+        if (points.empty())
             continue;
 
         polyRect = env->NewObject(
-            jPolyRectClass,
-            cnstrctr,
-            (float) points[0].x,
-            (float) points[0].y,
-            (float) points[1].x,
-            (float) points[1].y,
-            (float) points[2].x,
-            (float) points[2].y,
-            (float) points[3].x,
-            (float) points[3].y,
-            polyRects[i].channel(),
-            polyRects[i].threshold());
+                jPolyRectClass,
+                cnstrctr,
+                (float) points[0].x,
+                (float) points[0].y,
+                (float) points[1].x,
+                (float) points[1].y,
+                (float) points[2].x,
+                (float) points[2].y,
+                (float) points[3].x,
+                (float) points[3].y,
+                polyRects[i].channel(),
+                polyRects[i].threshold());
 
         env->SetObjectArrayElement(outJRects, i, polyRect);
     }
@@ -92,7 +98,10 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWra
 
 }
 
-JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetFocusMeasures(JNIEnv * env, jclass cls, jlong src) {
+JNIEXPORT jobjectArray JNICALL
+Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetFocusMeasures(JNIEnv *env,
+                                                                             jclass cls,
+                                                                             jlong src) {
 
     try {
         // call the main function:
@@ -148,38 +157,38 @@ JNIEXPORT jobjectArray JNICALL Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWra
 
 namespace cvt {
 
-dsc::DkPolyRect jPolyRectToC(JNIEnv * env, jobject jRect) {
+    dsc::DkPolyRect jPolyRectToC(JNIEnv *env, jobject jRect) {
 
-    jclass jRectClass = env->GetObjectClass(jRect);
+        jclass jRectClass = env->GetObjectClass(jRect);
 
-    std::vector<cv::Point> pts = std::vector<cv::Point>();
+        std::vector<cv::Point> pts = std::vector<cv::Point>();
 
-    float x1 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX1", "()F"));
-    float y1 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY1", "()F"));
-    pts.push_back(cv::Point(x1, y1));
+        float x1 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX1", "()F"));
+        float y1 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY1", "()F"));
+        pts.push_back(cv::Point(x1, y1));
 
-    float x2 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX2", "()F"));
-    float y2 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY2", "()F"));
-    pts.push_back(cv::Point(x2, y2));
+        float x2 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX2", "()F"));
+        float y2 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY2", "()F"));
+        pts.push_back(cv::Point(x2, y2));
 
-    float x3 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX3", "()F"));
-    float y3 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY3", "()F"));
-    pts.push_back(cv::Point(x3, y3));
+        float x3 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX3", "()F"));
+        float y3 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY3", "()F"));
+        pts.push_back(cv::Point(x3, y3));
 
-    float x4 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX4", "()F"));
-    float y4 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY4", "()F"));
-    pts.push_back(cv::Point(x4, y4));
+        float x4 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getX4", "()F"));
+        float y4 = env->CallFloatMethod(jRect, env->GetMethodID(jRectClass, "getY4", "()F"));
+        pts.push_back(cv::Point(x4, y4));
 
-    int chl = env->CallIntMethod(jRect, env->GetMethodID(jRectClass, "channel", "()I"));
-    int thr = env->CallIntMethod(jRect, env->GetMethodID(jRectClass, "threshold", "()I"));
+        int chl = env->CallIntMethod(jRect, env->GetMethodID(jRectClass, "channel", "()I"));
+        int thr = env->CallIntMethod(jRect, env->GetMethodID(jRectClass, "threshold", "()I"));
 
-    dsc::DkPolyRect p = dsc::DkPolyRect(pts);
-    p.setChannel(chl);
-    p.setThreshold(thr);
+        dsc::DkPolyRect p = dsc::DkPolyRect(pts);
+        p.setChannel(chl);
+        p.setThreshold(thr);
 
-    return p;
+        return p;
 
-}
+    }
 
 }
 

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.logic.Page;
 
-public class MapRunnable extends CropRunnable{
+public class MapRunnable extends CropRunnable {
 
     private static final String CLASS_NAME = "MapRunnable";
 

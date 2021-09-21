@@ -3,8 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_container"
@@ -16,5 +15,5 @@
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:menu="@menu/documents_bottom_menu"/>
+        app:menu="@menu/documents_bottom_menu" />
 </LinearLayout>

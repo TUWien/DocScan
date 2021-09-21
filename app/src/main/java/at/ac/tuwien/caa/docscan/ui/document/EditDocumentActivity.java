@@ -15,8 +15,8 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Switch;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +28,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.TranskribusMetaData;
 
-public class EditDocumentActivity extends CreateDocumentActivity{
+public class EditDocumentActivity extends CreateDocumentActivity {
 
     public static final String DOCUMENT_NAME_KEY = "DOCUMENT_NAME";
 
@@ -59,12 +59,10 @@ public class EditDocumentActivity extends CreateDocumentActivity{
                         mIsActiveDocument = true;
 
                     fillViews(mDocument);
-                }
-                else
+                } else
                     finish(); // Nothing to do here, but this should not happen...
 
-            }
-            else
+            } else
                 finish(); // Nothing to do here, but this should not happen...
         }
 
@@ -104,7 +102,8 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         if (mDocument == null || mDocument.getTitle() == null) {
 //                This should not happen:
             finish();
-            Crashlytics.logException(new Throwable(CLASS_NAME + "saveChanges: mDocument == null || mDocument.getTitle() == null"));
+            FirebaseCrashlytics.getInstance().recordException(
+                    new Throwable(CLASS_NAME + "saveChanges: mDocument == null || mDocument.getTitle() == null"));
             return;
         }
 
@@ -120,8 +119,8 @@ public class EditDocumentActivity extends CreateDocumentActivity{
         if (mDocument == null) {
 //            This should not happen:
             finish();
-            Log.d(CLASS_NAME, "document == null");
-            Crashlytics.logException(new Throwable(CLASS_NAME + "saveChanges: mDocument == null"));
+            FirebaseCrashlytics.getInstance().recordException(
+                    new Throwable(CLASS_NAME + "saveChanges: mDocument == null"));
             return;
         }
 
@@ -206,11 +205,7 @@ public class EditDocumentActivity extends CreateDocumentActivity{
 //        Save custom file name attributes:
         saveCustomFileNameAttributes();
 
-//        DocumentStorage.getInstance(this).replaceDocument(document, mDocumentTitle);
-//        DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "EditDocumentActivity::172");
         DocumentStorage.saveJSON(this);
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "EditDocumentActivity:174");
 
         //        Check if the edited document is the active document (in the CameraActivity):
         if (mIsActiveDocument) {

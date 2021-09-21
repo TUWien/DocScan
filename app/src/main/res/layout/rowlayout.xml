@@ -2,16 +2,13 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/list_view_multi_selector"
-    >
+    android:background="@drawable/list_view_multi_selector">
 
     <ImageView
         android:id="@+id/icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-         >
-    </ImageView>
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"></ImageView>
 
     <TextView
         android:id="@+id/label"
@@ -19,8 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:text="@+id/label"
-        />
+        android:text="@+id/label" />
 
 
 </LinearLayout>

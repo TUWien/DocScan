@@ -49,12 +49,11 @@ public class ImageProcessLogger implements Serializable {
         }
 
         try {
-            FileInputStream fis = new FileInputStream (cropFile);
+            FileInputStream fis = new FileInputStream(cropFile);
             ObjectInputStream ois = new ObjectInputStream(fis);
             sInstance = (ImageProcessLogger) ois.readObject();
             ois.close();
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             Log.d(CLASS_NAME, "readFromDisk: " + e.toString());
         }
 
@@ -282,7 +281,6 @@ public class ImageProcessLogger implements Serializable {
         }
 
     }
-
 
 
 }

@@ -1,19 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="55dip"-->
-    <!--android:orientation="vertical" >-->
+<?xml version="1.0" encoding="utf-8"?><!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="55dip"-->
+<!--android:orientation="vertical" >-->
 
-    <!--<TextView-->
-        <!--android:id="@+id/lblListItem"-->
-        <!--android:layout_width="fill_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textColor="@color/expandable_list_view_child_color"-->
-        <!--android:drawableLeft="@drawable/ic_image_black_24dp"-->
-        <!--android:textSize="17dip"-->
-        <!--android:paddingTop="5dp"-->
-        <!--android:paddingBottom="5dp"-->
-        <!--android:paddingLeft="80dp" />-->
+<!--<TextView-->
+<!--android:id="@+id/lblListItem"-->
+<!--android:layout_width="fill_parent"-->
+<!--android:layout_height="wrap_content"-->
+<!--android:textColor="@color/expandable_list_view_child_color"-->
+<!--android:drawableLeft="@drawable/ic_image_black_24dp"-->
+<!--android:textSize="17dip"-->
+<!--android:paddingTop="5dp"-->
+<!--android:paddingBottom="5dp"-->
+<!--android:paddingLeft="80dp" />-->
 
 <!--</LinearLayout>-->
 
@@ -24,7 +23,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal" >
+    android:orientation="horizontal">
 
     <ImageView
         android:id="@+id/document_list_image_view"
@@ -32,8 +31,7 @@
         android:layout_height="50dp"
         android:layout_gravity="left"
         android:src="@drawable/doc_scan_header_cropped"
-        android:scaleType="centerCrop"
-        />
+        android:scaleType="centerCrop" />
     <!--android:src="@drawable/ic_image_black_24dp"-->
 
     <TextView

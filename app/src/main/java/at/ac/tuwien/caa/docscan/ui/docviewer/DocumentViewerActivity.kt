@@ -12,9 +12,10 @@ import android.view.MenuItem
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.IdRes
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.FileProvider
+import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentTransaction
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import at.ac.tuwien.caa.docscan.R
@@ -39,7 +40,6 @@ import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.docviewer.ImagesFragment.Companion.DOCUMENT_NAME_KEY
 import at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment.Companion.NEW_PDFS_KEY
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.*
-import com.crashlytics.android.Crashlytics
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -85,7 +85,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     override fun onScrollImageLoaded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             startPostponedEnterTransition()
-            Log.d(TAG, "onScrollImageLoaded")
         }
     }
 
@@ -99,8 +98,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     companion object {
         val TAG = "DocumentViewerActivity"
         const val DOCUMENT_RENAMING_REQUEST = 0
-        const val DOCUMENT_PDF_SELECTION_REQUEST = 2
         const val LAUNCH_VIEWER_REQUEST = 1
+        const val DOCUMENT_PDF_SELECTION_REQUEST = 2
+        const val PERSISTABLE_URI_PERMISSION = 3
         var selectedFileName: String? = null
 
         init {
@@ -124,7 +124,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     private lateinit var selectableToolbar: SelectableToolbar
     private var newPdfs = mutableListOf<String?>()
 
-    override fun onPdfSheetSelected(pdf: File, sheetAction: ActionSheet.SheetAction) {
+    override fun onPdfSheetSelected(pdf: DocumentFile, sheetAction: ActionSheet.SheetAction) {
 
         when (sheetAction.mId) {
             R.id.action_pdf_share_item -> {
@@ -136,8 +136,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         }
     }
 
-    private fun deletePdf(pdf: File) {
+    private fun deletePdf(pdf: DocumentFile) {
 
+        val name = pdf.name
         pdf.delete()
 
         supportFragmentManager.findFragmentByTag(PdfFragment.TAG)?.apply {
@@ -146,14 +147,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 updatePdfs()
         }
 
-        showDocumentsDeletedSnackbar(pdf.name)
+        showDocumentsDeletedSnackbar(name)
     }
 
-    private fun sharePdf(pdf: File) {
-        val uri = FileProvider.getUriForFile(
-            this,
-            "at.ac.tuwien.caa.fileprovider", pdf
-        )
+
+    private fun sharePdf(pdf: DocumentFile) {
+        val uri = pdf.uri
         val shareIntent = Intent()
         shareIntent.action = Intent.ACTION_SEND
         shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // temp permission for receiving app to read this file
@@ -200,7 +199,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
-    private fun showDeletePdfConfirmationDialog(pdf: File) {
+    private fun showDeletePdfConfirmationDialog(pdf: DocumentFile) {
 
 
 //        val deleteText = resources.getString(R.string.sync_confirm_delete_prefix_text)
@@ -306,19 +305,22 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         when (sheetAction.mId) {
             R.id.action_document_continue_item -> {
-                DocumentStorage.getInstance(this).title = document.getTitle()
+                DocumentStorage.getInstance(this).title = document.title
                 Helper.startCameraActivity(this)
-//                DocumentStorage.saveJSON(this)
-//                Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::284")
-//                DocumentStorage.saveJSON(this)
-//                Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:286")
                 finish()
             }
             R.id.action_document_pdf_item -> {
-                if (Helper.isDocumentCropped(document))
-                    showPdfOcrDialog(document)
-                else
-                    showNotCropDialog(document, false)
+                if (KtHelper.isPdfFolderPermissionGiven(this)) {
+                    if (Helper.isDocumentCropped(document))
+                        showPdfOcrDialog(document)
+                    else
+                        showNotCropDialog(document, false)
+                }
+                else {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        showDirectoryPermissionRequiredAlert()
+                    }
+                }
             }
             R.id.action_document_edit_item -> {
 //                Start the rename activity and wait for the result:
@@ -359,6 +361,17 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         when (requestCode) {
 
+//            Permissions:
+            PERSISTABLE_URI_PERMISSION -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    // The result data contains a URI for the document or directory that
+                    // the user selected.
+                    data?.data?.also { uri ->
+                        KtHelper.saveDocumentDir(this, uri)
+                        showDocumentDirSetDialog()
+                    }
+                }
+            }
 //            Document rename:
             DOCUMENT_RENAMING_REQUEST, LAUNCH_VIEWER_REQUEST -> {
                 supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
@@ -410,8 +423,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                         showNotCropDialog(document, false)
                 }
             }
-
-//            Pdf from selected document:
 
         }
 
@@ -735,10 +746,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //                update the documents:
         DocumentStorage.getInstance(this).documents.remove(document)
         document.deleteImages()
-//        DocumentStorage.saveJSON(this)
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::672")
         DocumentStorage.saveJSON(this)
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:674")
 
         supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
             if ((this as DocumentsFragment).isVisible) {
@@ -771,7 +779,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     /**
      * Shows a snackbar indicating that documents have been deleted.
      */
-    private fun showDocumentsDeletedSnackbar(title: String) {
+    private fun showDocumentsDeletedSnackbar(title: String?) {
 
         val snackbarText = "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $title"
         val s = Snackbar.make(
@@ -795,6 +803,34 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun grantPdfDirAccess() {
+
+        val intent = KtHelper.getOpenDocumentDirIntent(this)
+        startActivityForResult(intent, PERSISTABLE_URI_PERMISSION)
+
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun showDirectoryPermissionRequiredAlert() {
+
+        val title = getString(R.string.viewer_document_dir_permission_title)
+        val text = getString(R.string.viewer_document_dir_permission_text)
+
+//        val text = getString(R.string.pdf_fragment_persisted_permission_text)
+//        val title = getString(R.string.pdf_fragment_persisted_permission_title)
+
+        val alertDialogBuilder = AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(text)
+            .setPositiveButton(R.string.dialog_ok_text) { _, _ ->
+                grantPdfDirAccess()
+            }
+            .setNegativeButton(R.string.dialog_cancel_text, null)
+            .setCancelable(true)
+        alertDialogBuilder.create().show()
+
+    }
 
     //    OCR functionality
     fun showPdfOcrDialog(document: Document) {
@@ -821,10 +857,24 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             .setNegativeButton(R.string.dialog_no_text) { dialogInterface, i -> }
             .setCancelable(true)
             .setMessage(R.string.gallery_confirm_no_ocr_available_text)
-
         alertDialogBuilder.create().show()
 
     }
+
+    private fun showDocumentDirSetDialog() {
+
+        val alertDialogBuilder = AlertDialog.Builder(this)
+
+        // set dialog message
+        alertDialogBuilder
+            .setTitle(R.string.viewer_document_dir_set_title)
+            .setPositiveButton(R.string.dialog_ok_text) { _, _ ->            }
+            .setCancelable(true)
+            .setMessage(R.string.viewer_document_dir_set_text)
+        alertDialogBuilder.create().show()
+
+    }
+
 
     private fun createPdf(document: Document, withOCR: Boolean) {
 
@@ -928,10 +978,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
-    override fun onPdfOptions(file: File) {
-        showPdfOptions(file)
-    }
-
     override fun onDocumentOptions(document: Document) {
 
         showDocumentOptions(document)
@@ -942,7 +988,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         return NavigationDrawer.NavigationItemEnum.DOCUMENTS
     }
 
-    private fun showPdfOptions(file: File) {
+    private fun showPdfOptions(file: DocumentFile) {
 
         val sheetActions = ArrayList<ActionSheet.SheetAction>()
 
@@ -1421,12 +1467,6 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         super.onPause()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver)
 
-        val t1 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::1258 $t1")
-        DocumentStorage.saveJSON(this)
-        val t2 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:1260 $t2")
-
     }
 
 //    override fun onStop() {
@@ -1465,12 +1505,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                                     newPdfs.add(fileName)
 
                                 showPdfCreatedSnackbar(File(fileName).name)
-//                                showDocumentsDeletedSnackbar(pdf.name)
 
-//                                TODO: badges work only in material theme!
                                 bottomNavigationView.getOrCreateBadge(R.id.viewer_pdfs)
                             }
-//                            TODO: check if we need INTENT_IMAGE_PROCESS_STARTED here:
                             INTENT_IMAGE_PROCESS_FINISHED -> {
                                 updateGallery(fileName)
                                 updateDocumentList(fileName)
@@ -1596,6 +1633,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             }
         }
 
+    }
+
+    override fun onPdfOptions(file: DocumentFile) {
+        showPdfOptions(file)
     }
 
 

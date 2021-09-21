@@ -13,8 +13,8 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import kotlinx.android.synthetic.main.activity_pdf_selector.*
 
 
-class SelectPdfDocumentActivity: AppCompatActivity(),
-        DocumentSelector {
+class SelectPdfDocumentActivity : AppCompatActivity(),
+    DocumentSelector {
 
     private lateinit var documents: ArrayList<Document>
     private lateinit var listener: DocumentSelector
@@ -31,7 +31,7 @@ class SelectPdfDocumentActivity: AppCompatActivity(),
         loadDocuments()
         updateRecyclerView()
 
-   }
+    }
 
     private fun initToolbar() {
 
@@ -61,9 +61,9 @@ class SelectPdfDocumentActivity: AppCompatActivity(),
 
     private fun updateRecyclerView() {
 
-        val adapter = SelectDocumentAdapter(documents
-        ) {
-            document: Document ->
+        val adapter = SelectDocumentAdapter(
+            documents
+        ) { document: Document ->
             listener?.onDocumentSelected(document)
         }
 

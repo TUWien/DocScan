@@ -16,7 +16,7 @@ public class CropQuad {
     private static final int NO_ACTIVE_POINT_IDX = -1;
 
     private ArrayList<PointF> mViewPoints, mImgPoints;
-//    private ArrayList<PointF> mViewPoints, mImgPoints, mOuterPoints, mOuterViewPoints;
+    //    private ArrayList<PointF> mViewPoints, mImgPoints, mOuterPoints, mOuterViewPoints;
     private int mActivePointIdx;
 //    private int mImgWidth, mImgHeight;
 
@@ -85,8 +85,7 @@ public class CropQuad {
         if (dist < 100) {
             mActivePointIdx = closestPointIdx;
             return true;
-        }
-        else {
+        } else {
             mActivePointIdx = NO_ACTIVE_POINT_IDX;
             return false;
         }
@@ -133,14 +132,14 @@ public class CropQuad {
     }
 
     private boolean isLeft(PointF p1, PointF p2, PointF p3) {
-        return (p2.x - p1.x) * (p3.y - p1.y)  - (p2.y - p1.y) * (p3.x - p1.x) > 0;
+        return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x) > 0;
 //        return ((b.X - a.X)*(c.Y - a.Y) - (b.Y - a.Y)*(c.X - a.X)) > 0;
     }
 
     private double getAngle(int pointIdx) {
 
         DkVector v1 = new DkVector(mViewPoints.get(pointIdx - 1), mViewPoints.get(pointIdx % mViewPoints.size()));
-        DkVector v2 = new DkVector(mViewPoints.get(pointIdx  % mViewPoints.size()), mViewPoints.get((pointIdx+1) % mViewPoints.size()));
+        DkVector v2 = new DkVector(mViewPoints.get(pointIdx % mViewPoints.size()), mViewPoints.get((pointIdx + 1) % mViewPoints.size()));
 
         double cAngle = v1.angle(v2);
 

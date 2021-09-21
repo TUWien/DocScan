@@ -5,7 +5,7 @@ import com.android.volley.ParseError;
 import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +27,7 @@ public class JsonHelperRequest extends JsonObjectRequest {
 
     /**
      * Converts a XML response into a JSON response with the help of HttpHeaderParser.
+     *
      * @param response
      * @return
      */
@@ -42,10 +43,10 @@ public class JsonHelperRequest extends JsonObjectRequest {
                     HttpHeaderParser.parseCacheHeaders(response));
 
         } catch (UnsupportedEncodingException e) {
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
             return Response.error(new ParseError(e));
         } catch (JSONException je) {
-            Crashlytics.logException(je);
+            FirebaseCrashlytics.getInstance().recordException(je);
             return Response.error(new ParseError(je));
         }
 

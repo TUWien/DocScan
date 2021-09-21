@@ -99,7 +99,6 @@ public class DkVector {
     }
 
 
-
     public double angle(DkVector vector) {
 
 //        Check if cosv is in valid range: [-1, 1]

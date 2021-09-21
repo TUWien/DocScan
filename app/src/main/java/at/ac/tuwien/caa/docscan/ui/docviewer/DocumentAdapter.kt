@@ -12,7 +12,6 @@ import at.ac.tuwien.caa.docscan.glidemodule.GlideApp
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.Helper
 import com.bumptech.glide.signature.MediaStoreSignature
-import com.crashlytics.android.Crashlytics
 import kotlinx.android.synthetic.main.document_row_layout.view.*
 import java.io.File
 import java.io.IOException
@@ -20,12 +19,15 @@ import java.util.*
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.request.RequestOptions
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 
-class DocumentAdapter(private val documents: ArrayList<Document>,
-                      private val clickListener: (Document) -> Unit,
-                      private val optionsListener: (Document) -> Unit,
-                      private val activeDocument: Document?) :
-        RecyclerView.Adapter<DocumentAdapter.ViewHolder>() {
+class DocumentAdapter(
+    private val documents: ArrayList<Document>,
+    private val clickListener: (Document) -> Unit,
+    private val optionsListener: (Document) -> Unit,
+    private val activeDocument: Document?
+) :
+    RecyclerView.Adapter<DocumentAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
@@ -44,11 +46,11 @@ class DocumentAdapter(private val documents: ArrayList<Document>,
 
         val document = documents[position]
 
-        with (holder) {
+        with(holder) {
 
             title.text = document.title
 
-            itemView.setOnClickListener{ clickListener(document) }
+            itemView.setOnClickListener { clickListener(document) }
 
 
 
@@ -56,16 +58,15 @@ class DocumentAdapter(private val documents: ArrayList<Document>,
                 loadThumbnail(thumbnail, document.pages[0].file, itemView.context)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
                     thumbnail.transitionName = document.pages[0].file.absolutePath
-            }
-            else {
+            } else {
                 thumbnail.setImageResource(R.drawable.ic_do_not_disturb_black_24dp)
                 thumbnail.setBackgroundColor(itemView.resources.getColor(R.color.second_light_gray))
             }
 
 //            1 image or  many images?
             val docDesc =
-                    if (document.pages.size == 1) itemView.context.getText(R.string.sync_doc_image)
-                    else itemView.context.getText(R.string.sync_doc_images)
+                if (document.pages.size == 1) itemView.context.getText(R.string.sync_doc_image)
+                else itemView.context.getText(R.string.sync_doc_images)
 
             var desc = "${document.pages.size} $docDesc"
 
@@ -86,15 +87,13 @@ class DocumentAdapter(private val documents: ArrayList<Document>,
                     iconView.setImageResource(R.drawable.ic_cloud_done_blue_24dp)
                 else
                     iconView.setImageResource(R.drawable.ic_cloud_done_gray_24dp)
-            }
-            else if (document.isAwaitingUpload) {
+            } else if (document.isAwaitingUpload) {
                 if (document == activeDocument)
                     iconView.setImageResource(R.drawable.ic_cloud_upload_blue_24dp)
                 else
                     iconView.setImageResource(R.drawable.ic_cloud_upload_gray_24dp)
 
-            }
-            else {
+            } else {
                 if (document == activeDocument)
                     iconView.setImageResource(R.drawable.ic_cloud_queue_blue_24dp)
                 else
@@ -104,8 +103,7 @@ class DocumentAdapter(private val documents: ArrayList<Document>,
             if (document.isCurrentlyProcessed) {
                 progressBar.visibility = View.VISIBLE
                 desc += "\n${itemView.context.getText(R.string.sync_dir_processing_text)}"
-            }
-            else {
+            } else {
                 progressBar.visibility = View.GONE
                 if (document.isAwaitingUpload && !document.isUploaded)
                     desc += "\n${itemView.context.getText(R.string.sync_dir_pending_text)}"
@@ -114,7 +112,7 @@ class DocumentAdapter(private val documents: ArrayList<Document>,
 
             description.text = "$desc"
 
-            moreButton.setOnClickListener { optionsListener(document)}
+            moreButton.setOnClickListener { optionsListener(document) }
         }
 
     }
@@ -127,8 +125,7 @@ class DocumentAdapter(private val documents: ArrayList<Document>,
             exifOrientation = Helper.getExifOrientation(file)
 
         } catch (e: IOException) {
-            Crashlytics.logException(e)
-            e.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(e)
         }
 
         var requestOptions = RequestOptions()
@@ -136,16 +133,16 @@ class DocumentAdapter(private val documents: ArrayList<Document>,
         requestOptions = requestOptions.transforms(CenterCrop(), RoundedCorners(radius))
         if (exifOrientation != -1) {
             GlideApp.with(context)
-                    .load(file?.path)
-                    .signature(MediaStoreSignature("", file.lastModified(), exifOrientation))
-                    .apply(requestOptions)
-                    .into(thumbnail)
+                .load(file?.path)
+                .signature(MediaStoreSignature("", file.lastModified(), exifOrientation))
+                .apply(requestOptions)
+                .into(thumbnail)
         } else {
             GlideApp.with(context)
-                    .load(file)
-                    .signature(MediaStoreSignature("", file.lastModified(), 0))
-                    .apply(requestOptions)
-                    .into(thumbnail)
+                .load(file)
+                .signature(MediaStoreSignature("", file.lastModified(), 0))
+                .apply(requestOptions)
+                .into(thumbnail)
         }
 
     }

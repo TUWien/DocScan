@@ -17,7 +17,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 public abstract class RestRequest {
 
     private Context mContext;
-//    protected String mUrl;
+    //    protected String mUrl;
     protected RestCallback mRestCallback;
     protected int mMethod;
 
@@ -40,7 +40,6 @@ public abstract class RestRequest {
         return resultName + "," + "resultUrl";
 
     }
-
 
 
 //    public String getExtendedUrl() {
@@ -109,7 +108,7 @@ public abstract class RestRequest {
 
     }
 
-//      We do not need implicit reference from the inner class to the enclosing class, hence use static.
+    //      We do not need implicit reference from the inner class to the enclosing class, hence use static.
 //      Otherwise we get an an enclosing instance that contains X.Y.Z is required error:
     public static abstract class JSONArrayRestRequest extends RestRequest {
 
@@ -121,7 +120,9 @@ public abstract class RestRequest {
 
         public abstract void handleResponse(JSONArray response);
 
-        public JSONArray getJSONArray() { return mJSONArray; }
+        public JSONArray getJSONArray() {
+            return mJSONArray;
+        }
     }
 
     //      We do not need implicit reference from the inner class to the enclosing class, hence use static.
@@ -136,6 +137,8 @@ public abstract class RestRequest {
 
         public abstract void handleResponse(JSONObject response);
 
-        public JSONObject getJSONObject() { return mJSONObject; }
+        public JSONObject getJSONObject() {
+            return mJSONObject;
+        }
     }
 }

@@ -10,8 +10,10 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+
 import androidx.exifinterface.media.ExifInterface;
 import androidx.appcompat.app.AlertDialog;
+
 import android.text.InputFilter;
 import android.text.Spanned;
 import android.util.Log;
@@ -21,9 +23,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 
 import com.android.volley.VolleyError;
-import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.jetbrains.annotations.NotNull;
 import org.opencv.core.Mat;
@@ -65,6 +67,7 @@ public class Helper {
 
     /**
      * Start the CameraActivity and remove everything from the back stack.
+     *
      * @param context
      */
     public static void startCameraActivity(Context context) {
@@ -79,7 +82,7 @@ public class Helper {
     public static void crashlyticsLog(String className, String methodName, String msg) {
 
         String log = className + ": " + methodName + ": " + msg;
-        Crashlytics.log(log);
+        FirebaseCrashlytics.getInstance().log(log);
 
     }
 
@@ -105,7 +108,6 @@ public class Helper {
     }
 
 
-
     public static int getDPI(double cameraDistance, float horizontalViewAngle, int imgW) {
 
         double thetaH = Math.toRadians(horizontalViewAngle);
@@ -125,15 +127,9 @@ public class Helper {
      */
     public static File getPDFStorageDir(String appName) {
 
-        File pdfStorageDir;
-
-        if (Build.VERSION.SDK_INT >= 19) {
-            pdfStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOCUMENTS), appName);
-        }else{
-            pdfStorageDir = new File(Environment.getExternalStorageDirectory(),  "Documents");
-            pdfStorageDir = new File(pdfStorageDir.getAbsolutePath(), appName);
-        }
+        File pdfStorageDir =
+                new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_DOCUMENTS), appName);
 
         // Create the storage directory if it does not exist
         if (!pdfStorageDir.exists()) {
@@ -148,6 +144,7 @@ public class Helper {
 
     /**
      * Returns the angle from an exif orientation
+     *
      * @param orientation
      * @return angle (in degrees)
      */
@@ -179,8 +176,7 @@ public class Helper {
                     return -1;
                 return Integer.valueOf(orientation);
             }
-        }
-        else
+        } else
             Log.d(CLASS_NAME, "getExifOrientation: not existing: " + outFile);
 
 
@@ -212,8 +208,7 @@ public class Helper {
     }
 
 
-    public static void saveExif(ExifInterface exif, String fileName) throws IOException
-    {
+    public static void saveExif(ExifInterface exif, String fileName) throws IOException {
 
 //        TODO: check whcih tags should be deleted!
         String[] attributes = new String[]
@@ -356,8 +351,7 @@ public class Helper {
 
         ExifInterface newExif = new ExifInterface(fileName);
 
-        for (int i = 0; i < attributes.length; i++)
-        {
+        for (int i = 0; i < attributes.length; i++) {
             String value = exif.getAttribute(attributes[i]);
             if (value != null)
                 newExif.setAttribute(attributes[i], value);
@@ -383,7 +377,7 @@ public class Helper {
 
     }
 
-    public static boolean rotateExif90DegreesCCW(File outFile)  {
+    public static boolean rotateExif90DegreesCCW(File outFile) {
 
         final ExifInterface exif;
         try {
@@ -402,8 +396,7 @@ public class Helper {
                 return true;
             }
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         return false;
@@ -411,8 +404,7 @@ public class Helper {
     }
 
 
-
-    public static boolean rotateExif(File outFile)  {
+    public static boolean rotateExif(File outFile) {
 
         final ExifInterface exif;
         try {
@@ -431,8 +423,7 @@ public class Helper {
                 return true;
             }
         } catch (IOException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         return false;
@@ -467,12 +458,11 @@ public class Helper {
 //    }
 
     /**
-     *
      * @param appName
      * @param fileName
      * @return
      */
-    public static File getFile(String appName, String fileName){
+    public static File getFile(String appName, String fileName) {
 
         File mediaStorageDir = getMediaStorageDir(appName);
 
@@ -541,10 +531,9 @@ public class Helper {
 
     }
 
-    static class DocumentComparator implements Comparator<Document>
-    {
-        @Override public int compare(Document doc1, Document doc2)
-        {
+    static class DocumentComparator implements Comparator<Document> {
+        @Override
+        public int compare(Document doc1, Document doc2) {
             int value;
             if (doc1.isUploaded() && !doc2.isUploaded())
                 value = 1;
@@ -558,7 +547,6 @@ public class Helper {
 
         }
     }
-
 
 
 //    public static Document getDocument(String dirName) {
@@ -613,6 +601,7 @@ public class Helper {
 
     /**
      * Returns the document that contains the file.
+     *
      * @param context
      * @param file
      * @return
@@ -652,6 +641,7 @@ public class Helper {
 
     /**
      * Iterates over documents and checks if the files are still existing.
+     *
      * @param context
      */
     public static void cleanDocuments(Context context) {
@@ -699,6 +689,7 @@ public class Helper {
     /**
      * Replaces an image with a new image. Saves the image first temporary in order to not destroy
      * the original image in case of an interruption.
+     *
      * @param fileName
      * @param mat
      * @return
@@ -720,9 +711,8 @@ public class Helper {
             tempFile = File.createTempFile("img", ".jpg", originalFile.getParentFile());
         } catch (IOException e) {
             e.printStackTrace();
-            Crashlytics.log("Helper.saveMat");
-            Log.d(CLASS_NAME, "Helper.saveMat");
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().log("Helper.saveMat");
+            FirebaseCrashlytics.getInstance().recordException(e);
             return false;
         }
 
@@ -744,8 +734,8 @@ public class Helper {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Crashlytics.log("Helper.saveMat");
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().log("Helper.saveMat");
+            FirebaseCrashlytics.getInstance().recordException(e);
         } finally {
 //            Delete the temporary file, if it still exists:
             if (tempFile != null && tempFile.exists())
@@ -760,6 +750,7 @@ public class Helper {
     /**
      * Returns an input filter for edit text that prevents that the user enters non valid characters
      * for directories (under Windows and Unix).
+     *
      * @return
      */
     public static InputFilter getDocumentInputFilter() {
@@ -768,7 +759,7 @@ public class Helper {
             if (source.length() < 1)
                 return null;
             char last = source.charAt(source.length() - 1);
-            if(RESERVED_CHARS.indexOf(last) > -1)
+            if (RESERVED_CHARS.indexOf(last) > -1)
                 return source.subSequence(0, source.length() - 1);
 
             return null;
@@ -784,18 +775,19 @@ public class Helper {
             if (source.length() < 1)
                 return null;
             char last = source.charAt(source.length() - 1);
-            if(RESERVED_CHARS.indexOf(last) > -1)
+            if (RESERVED_CHARS.indexOf(last) > -1)
                 return source.subSequence(0, source.length() - 1);
 
             return null;
         };
 
-        return new InputFilter[] {new InputFilter.LengthFilter(100), filter};
+        return new InputFilter[]{new InputFilter.LengthFilter(100), filter};
 
     }
 
     /**
      * Returns a file name prefix for a given timestamp document name and page num.
+     *
      * @param timeStamp
      * @param docName
      * @param pageNum
@@ -814,6 +806,7 @@ public class Helper {
 
     /**
      * Returns a time stamp that is used for the file name generation.
+     *
      * @return
      */
     public static String getFileTimeStamp() {
@@ -896,7 +889,7 @@ public class Helper {
 
         FileFilter filesFilter = new FileFilter() {
             public boolean accept(File file) {
-                return (file.getPath().endsWith(".jpg")||file.getPath().endsWith(".jpeg"));
+                return (file.getPath().endsWith(".jpg") || file.getPath().endsWith(".jpeg"));
 //                return !file.isDirectory();
             }
         };
@@ -926,8 +919,7 @@ public class Helper {
             String body = new String(error.networkResponse.data, "UTF-8");
             return body;
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            Crashlytics.logException(e);
+            FirebaseCrashlytics.getInstance().recordException(e);
 //            This should not be null, because we should use the proper encoding:
             return null;
         }
@@ -937,6 +929,7 @@ public class Helper {
     /**
      * Shows a dialog in case of ActivityNotFoundExceptions. This exceptions happen if the user
      * wants to share a file with another app and no app is found for that purpose.
+     *
      * @param context
      */
     public static void showActivityNotFoundAlert(Context context) {
@@ -986,6 +979,7 @@ public class Helper {
 
     /**
      * Returns the url of the production or test server, depending on the user setting.
+     *
      * @param context
      * @return
      */
@@ -1027,6 +1021,7 @@ public class Helper {
     /**
      * Returns the correct singular or plural form of the word documents, regarding the number of
      * documents.
+     *
      * @param numDoc
      * @return
      */
@@ -1038,7 +1033,6 @@ public class Helper {
             return context.getResources().getString(R.string.sync_selection_many_documents_text);
 
     }
-
 
 
 }

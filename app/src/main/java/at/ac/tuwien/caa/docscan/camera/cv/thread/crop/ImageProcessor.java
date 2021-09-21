@@ -27,7 +27,9 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.util.Log;
 
 import java.io.File;
@@ -155,17 +157,17 @@ public class ImageProcessor {
 
             }
 
-            private boolean notifyCreatedDocument(ImageProcessTask task){
+            private boolean notifyCreatedDocument(ImageProcessTask task) {
 
                 if (!(task instanceof PdfProcessTask))
                     return false;
 
                 PdfProcessTask pdfTask = (PdfProcessTask) task;
                 if (pdfTask.getPdfName() != null) {
-                    File pdfFile = new File(Helper.getPDFStorageDir("DocScan").getAbsolutePath(),
-                            pdfTask.getPdfName() + ".pdf");
-                    String absolutePath = pdfFile.getAbsolutePath();
-                    sendIntent(absolutePath, INTENT_PDF_PROCESS_FINISHED);
+//                    File pdfFile = new File(Helper.getPDFStorageDir("DocScan").getAbsolutePath(),
+//                            pdfTask.getPdfName() + ".pdf");
+//                    String absolutePath = pdfFile.getAbsolutePath();
+                    sendIntent(pdfTask.getPdfName(), INTENT_PDF_PROCESS_FINISHED);
                     return true;
                 } else {
                     return false;
@@ -204,21 +206,17 @@ public class ImageProcessor {
 //                        DocumentStorage.getInstance(mContext.get()).setPageAsUnsharp(
 //                                task.getFile().getName());
 
-                }
-                else if (task instanceof MapTask) {
+                } else if (task instanceof MapTask) {
                     ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_MAP);
                     // Notify other apps and DocScan about the image change:
                     notifyImageChanged(task.getFile());
-                }
-                else if (task instanceof RotateTask) {
+                } else if (task instanceof RotateTask) {
                     ImageProcessLogger.removeTask(task.getFile(), ImageProcessLogger.TASK_TYPE_ROTATE);
                     // Notify other apps and DocScan about the image change:
                     notifyImageChanged(task.getFile());
-                }
-                else if (task instanceof PdfProcessTask){
+                } else if (task instanceof PdfProcessTask) {
                     ImageProcessLogger.removeTask(task.getDocument(), ImageProcessLogger.TASK_TYPE_PDF);
-                }
-                else
+                } else
                     return false;
 
                 if (task.getFile() != null)
@@ -262,6 +260,7 @@ public class ImageProcessor {
 
     /**
      * Returns the ImageProcessor object
+     *
      * @return The global ImageProcessor object
      */
     public static ImageProcessor getInstance() {
@@ -374,7 +373,7 @@ public class ImageProcessor {
 
         imageProcessTask = new PdfProcessTask(performOCR, document.getFiles(), document.getTitle());
 //        We need to pass here the context, because it allows us to generate a FirebaseVisionImage:
-        ((PdfProcessTask)imageProcessTask).setContext(sInstance.mContext);
+        ((PdfProcessTask) imageProcessTask).setContext(sInstance.mContext);
         imageProcessTask.initializeTask(sInstance);
 
         sInstance.mPDFExecutor.execute(imageProcessTask.getRunnable());
@@ -382,8 +381,6 @@ public class ImageProcessor {
     }
 
     private void sendIntent(String fileName, int type) {
-
-//        Log.d(CLASS_NAME, "sendIntent:");
 
         if (mContext != null && mContext.get() != null) {
             Intent intent = new Intent(INTENT_IMAGE_PROCESS_ACTION);

@@ -10,9 +10,11 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp
 import kotlinx.android.synthetic.main.sheet_action_list_item.view.*
 
-class SheetAdapter(private val actionList: ArrayList<ActionSheet.SheetAction>,
-                   private val listener: (ActionSheet.SheetAction) -> Unit) :
-        RecyclerView.Adapter<SheetAdapter.ViewHolder>() {
+class SheetAdapter(
+    private val actionList: ArrayList<ActionSheet.SheetAction>,
+    private val listener: (ActionSheet.SheetAction) -> Unit
+) :
+    RecyclerView.Adapter<SheetAdapter.ViewHolder>() {
 
     val CLASS_NAME = "SheetAdapter"
 
@@ -29,15 +31,15 @@ class SheetAdapter(private val actionList: ArrayList<ActionSheet.SheetAction>,
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-       val sheetAction = actionList[position]
+        val sheetAction = actionList[position]
 
-        with (holder) {
+        with(holder) {
 
             GlideApp.with(imageView)
-                    .load(sheetAction.mIcon)
-                    .into(imageView)
+                .load(sheetAction.mIcon)
+                .into(imageView)
             textView.text = sheetAction.mText
-            holder.itemView.setOnClickListener{
+            holder.itemView.setOnClickListener {
                 listener(sheetAction)
             }
         }

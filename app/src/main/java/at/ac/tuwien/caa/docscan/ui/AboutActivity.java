@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.crashlytics.android.Crashlytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -33,7 +33,7 @@ public class AboutActivity extends BaseNavigationActivity {
         // Show the app version number and build time:
         try {
             String versionName = getResources().getString(R.string.about_version_prefix_text);
-            versionName +=  " " + getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            versionName += " " + getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
             TextView versionTextView = findViewById(R.id.about_version_textview);
             versionTextView.setText(versionName);
 
@@ -46,8 +46,7 @@ public class AboutActivity extends BaseNavigationActivity {
             buildDateTextView.setText(buildTime);
 
         } catch (PackageManager.NameNotFoundException e) {
-            Crashlytics.logException(e);
-            e.printStackTrace();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
         final Context context = this;

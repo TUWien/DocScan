@@ -10,7 +10,6 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.Helper
-import com.crashlytics.android.Crashlytics
 import kotlinx.android.synthetic.main.fragment_images.*
 import java.io.File
 
@@ -33,8 +32,10 @@ class ImagesFragment : Fragment() {
     private lateinit var galleryAdapter: ImagesAdapter
     private var scrollToFileName = ""
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
 
         setHasOptionsMenu(true)
         return inflater.inflate(R.layout.fragment_images, container, false)
@@ -152,8 +153,10 @@ class ImagesFragment : Fragment() {
     fun deleteSelections() {
 
         if (document == null || document.pages == null) {
-            Helper.crashlyticsLog(TAG, "rotateSelectedItems",
-                    "mDocument == null || mAdapter == null || mDocument.getPages() == null || " + "                mAdapter == null")
+            Helper.crashlyticsLog(
+                TAG, "rotateSelectedItems",
+                "mDocument == null || mAdapter == null || mDocument.getPages() == null || " + "                mAdapter == null"
+            )
             return
         }
 
@@ -169,17 +172,17 @@ class ImagesFragment : Fragment() {
 
             val isFileDeleted = File(fileName).delete()
             if (!isFileDeleted)
-                Helper.crashlyticsLog(TAG, "deleteSelections",
-                        "file not deleted")
+                Helper.crashlyticsLog(
+                    TAG, "deleteSelections",
+                    "file not deleted"
+                )
 
             galleryAdapter.notifyItemRemoved(selIdx)
 //            DocumentStorage.saveJSON(context)
 
         }
 
-        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "ImagesFragment::178")
         DocumentStorage.saveJSON(context)
-        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "ImagesFragment:180")
 
         galleryAdapter.deselectAllItems()
 

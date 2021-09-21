@@ -17,7 +17,7 @@ import at.ac.tuwien.caa.docscan.R;
 
 public class SeriesAdapter extends BaseDocumentAdapter {
 
-//    private Context mContext;
+    //    private Context mContext;
 //    private File[] mDirs;
 //    private ArrayList<File[]> mFiles;
 //

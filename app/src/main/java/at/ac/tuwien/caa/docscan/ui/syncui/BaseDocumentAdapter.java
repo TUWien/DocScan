@@ -74,16 +74,14 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
 
     }
 
-    class FileComparator implements Comparator<File>
-    {
-        @Override public int compare(File file1, File file2)
-        {
+    class FileComparator implements Comparator<File> {
+        @Override
+        public int compare(File file1, File file2) {
 
             return file1.getName().compareToIgnoreCase(file2.getName());
 
         }
     }
-
 
 
     public static File[] getFiles(File dir) {
@@ -142,7 +140,6 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
     }
 
 
-
     @Override
     public int getGroupCount() {
 
@@ -158,7 +155,7 @@ public abstract class BaseDocumentAdapter extends BaseExpandableListAdapter {
         if (mFiles == null)
             return 0;
 
-        if (mFiles.size()-1 < groupPosition)
+        if (mFiles.size() - 1 < groupPosition)
             return 0;
 
         return mFiles.get(groupPosition).length;

@@ -37,7 +37,6 @@ public class ChangeDetector {
     }
 
 
-
     public static ChangeDetector getInstance() {
 
         return sInstance;
@@ -174,12 +173,12 @@ public class ChangeDetector {
 //        if (changeRatio > 0.01) {
 
 
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-            Log.d(CLASS_NAME, "taking picture: "+ timeStamp);
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        Log.d(CLASS_NAME, "taking picture: " + timeStamp);
 
-            String fileName = "mask" + timeStamp + ".jpg";
-            File file = new File(Helper.getMediaStorageDir("DocScan"), fileName);
-            Imgcodecs.imwrite(file.getAbsolutePath(), fgMask);
+        String fileName = "mask" + timeStamp + ".jpg";
+        File file = new File(Helper.getMediaStorageDir("DocScan"), fileName);
+        Imgcodecs.imwrite(file.getAbsolutePath(), fgMask);
 //        }
 
         return changeRatio;
@@ -220,7 +219,6 @@ public class ChangeDetector {
 
         return result;
     }
-
 
 
 }

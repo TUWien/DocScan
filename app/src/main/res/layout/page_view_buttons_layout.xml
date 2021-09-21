@@ -4,8 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom"
-    android:background="@android:color/transparent"
-    >
+    android:background="@android:color/transparent">
 
     <LinearLayout
         android:id="@+id/page_view_buttons_layout"
@@ -19,19 +18,19 @@
         android:paddingStart="16dp">
 
         <!--<RelativeLayout-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_weight="1">-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_weight="1">-->
 
-            <!--<ImageView-->
-                <!--android:id="@+id/page_view_buttons_layout_gallery_button"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_centerInParent="true"-->
-                <!--android:layout_marginBottom="8dp"-->
-                <!--android:layout_marginTop="8dp"-->
-                <!--android:padding="8dp"-->
-                <!--app:srcCompat="@drawable/ic_collections_white_24dp" />-->
+        <!--<ImageView-->
+        <!--android:id="@+id/page_view_buttons_layout_gallery_button"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_centerInParent="true"-->
+        <!--android:layout_marginBottom="8dp"-->
+        <!--android:layout_marginTop="8dp"-->
+        <!--android:padding="8dp"-->
+        <!--app:srcCompat="@drawable/ic_collections_white_24dp" />-->
         <!--</RelativeLayout>-->
 
         <RelativeLayout
@@ -103,6 +102,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1">
+
             <ImageView
                 android:id="@+id/page_view_buttons_layout_delete_button"
                 android:layout_width="wrap_content"
@@ -115,7 +115,6 @@
         </RelativeLayout>
 
     </LinearLayout>
-
 
 
 </LinearLayout>
