@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:key="@string/key_pdf_quality"
+        android:defaultValue="2"
+        android:entries="@array/pdf_quality_entries"
+        android:entryValues="@array/pdf_quality_values"
+        android:summary="@string/pdf_settings_summary"
+        android:title="@string/pdf_settings_title" />
 
     <PreferenceCategory android:title="@string/settings_upload_title">
         <CheckBoxPreference
@@ -39,22 +48,27 @@
         android:defaultValue="false" />
 
     <!-- opens another nested subscreen -->
+<!--    <Preference-->
+<!--        android:key="@string/key_pdf_settings"-->
+<!--        android:title="@string/pdf_settings_title"-->
+<!--        android:summary="@string/pdf_settings_summary"-->
+<!--        android:persistent="false" />-->
+
+    <!-- opens another nested subscreen -->
     <Preference
         android:key="@string/key_exif_settings"
         android:title="@string/exif_settings_title"
         android:summary="@string/exif_settings_summary"
-        android:persistent="false">
-
-    </Preference>
+        android:persistent="false" />
 
     <!-- opens another nested subscreen -->
     <Preference
         android:key="@string/key_debug_settings"
         android:title="@string/settings_show_debug_settings_title"
         android:summary="@string/settings_show_debug_settings_summary"
-        android:persistent="false">
+        android:persistent="false" />
 
-    </Preference>
+
 
 
 </PreferenceScreen>

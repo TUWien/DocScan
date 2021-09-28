@@ -6,18 +6,16 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-
-import androidx.documentfile.provider.DocumentFile;
 import androidx.exifinterface.media.ExifInterface;
-
 import android.net.Uri;
 import android.os.Build;
-
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
-import android.os.ParcelFileDescriptor;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -44,11 +42,12 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +56,6 @@ import java.util.concurrent.ExecutionException;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
-import at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment;
 
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESSAGE_CREATED_DOCUMENT;
@@ -114,8 +112,8 @@ public class PdfCreator {
     }
 
     private static boolean processFile(final String documentName, final ArrayList<File> files,
-                                       final CropRunnable cropRunnable, WeakReference<Context> context,
-                                       final FirebaseVisionText[] ocrResults, final File file) {
+                                    final CropRunnable cropRunnable, WeakReference<Context> context,
+                                    final FirebaseVisionText[] ocrResults, final File file) {
 
         try {
 
@@ -183,33 +181,20 @@ public class PdfCreator {
 
     }
 
-    private static void notifyPdfChanged(Uri uri, Context context) {
+    private static void notifyPdfChanged(File file, Context context) {
 
-        if (uri == null || context == null)
+        if (file == null || context == null)
             return;
 
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        mediaScanIntent.setData(uri);
+
+        Uri contentUri = Uri.fromFile(file);
+        mediaScanIntent.setData(contentUri);
 
 //                Send the broadcast:
         context.sendBroadcast(mediaScanIntent);
 
     }
-
-//    private static void notifyPdfChanged(File file, Context context) {
-//
-//        if (file == null || context == null)
-//            return;
-//
-//        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-//
-//        Uri contentUri = Uri.fromFile(file);
-//        mediaScanIntent.setData(contentUri);
-//
-////                Send the broadcast:
-//        context.sendBroadcast(mediaScanIntent);
-//
-//    }
 
     private static int getFinishCnt(FirebaseVisionText[] ocrResults) {
 
@@ -224,7 +209,7 @@ public class PdfCreator {
     }
 
     private static NotificationCompat.Builder getNotificationBuilder(String documentName,
-                                                                     NotificationManager notificationManager, Context context) {
+            NotificationManager notificationManager, Context context) {
 
         String title = context.getString(R.string.pdf_notification_exporting);
 
@@ -256,8 +241,8 @@ public class PdfCreator {
     }
 
     private static void progressNotification(String documentName, int progress,
-                                             NotificationManager notificationManager,
-                                             Context context, NotificationCompat.Builder builder) {
+                                                  NotificationManager notificationManager,
+                                                  Context context, NotificationCompat.Builder builder) {
 
         if (builder == null)
             return;
@@ -295,8 +280,8 @@ public class PdfCreator {
     }
 
     private static void errorNotification(String documentName,
-                                          NotificationManager notificationManager,
-                                          Context context, NotificationCompat.Builder builder) {
+                                            NotificationManager notificationManager,
+                                            Context context, NotificationCompat.Builder builder) {
 
         if (builder == null)
             return;
@@ -311,53 +296,96 @@ public class PdfCreator {
 
     }
 
+    private static Bitmap decodeFile(File f, int width, int height){
+        try {
+            //Decode image size
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+            if (options.outWidth > options.outHeight)
+                height = (int) (height * (float) width / options.outWidth);
+            else
+                width = (int) (width * (float) height / options.outHeight);
+            options.inSampleSize = calculateInSampleSize(options, width, height);
+
+            // Decode bitmap with inSampleSize set
+            options.inJustDecodeBounds = false;
+            return BitmapFactory.decodeStream(new FileInputStream(f), null, options);
+
+        } catch (FileNotFoundException e) {
+            FirebaseCrashlytics.getInstance().recordException(e);
+        }
+        return null;
+    }
+
+
+    private static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
 
     private static boolean savePdf(String documentName, ArrayList<File> files,
-                                   FirebaseVisionText[] ocrResults, CropRunnable cropRunnable, Context context) {
+                                FirebaseVisionText[] ocrResults, CropRunnable cropRunnable, Context context) {
 
         BitmapSize size = new BitmapSize(files.get(0));
         boolean landscapeFirst = isLandscape(size);
+
         Rectangle firstPageSize = getPageSize(size, landscapeFirst);
+        File outputFile = getPdfFile(documentName);
         Document document = new Document(firstPageSize, 0, 0, 0, 0);
 
         try {
-            OutputStream stream = null;
-            Uri uri = null;
-            if (Build.VERSION.SDK_INT >= 29) {
-                DocumentFile documentFile = getPdfFile(context, documentName);
-                if (documentFile != null) {
-                    stream = context.getContentResolver().openOutputStream(documentFile.getUri());
-                    uri = documentFile.getUri();
-                    // This is used to get the actual file name, because
-                    // DocumentFile.createFile may create a file like: file (2).pdf
-                    PdfProcessTask task = (PdfProcessTask) cropRunnable.mCropTask;
-                    task.setPdfName(documentFile.getName());
-                }
-            }
-            else {
-                File outputFile = getPdfFile(documentName);
-                if (outputFile != null) {
-                    stream = new FileOutputStream(outputFile);
-                    uri = Uri.parse(outputFile.getAbsolutePath());
-                    PdfProcessTask task = (PdfProcessTask) cropRunnable.mCropTask;
-                    task.setPdfName(outputFile.getName());
-                }
-            }
-
-            if (stream == null)
-                return false;
-
-            PdfWriter writer = PdfWriter.getInstance(document, stream);
-//            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputFile));
-
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(outputFile));
             document.open();
 
             for (int i = 0; i < files.size(); i++) {
                 File file = files.get(i);
                 int rotationInDegrees = Helper.getAngleFromExif(Helper.getExifOrientation(file));
 
-                //add the original image to the pdf and set the DPI of it to 600
-                Image image = Image.getInstance(file.getAbsolutePath());
+                // Get the user defined pdf quality:
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+                String qualityString = sharedPref.getString(context.getResources().getString(
+                        R.string.key_pdf_quality), "");
+                int qualityIdx = 3;
+                if (!qualityString.isEmpty())
+                    qualityIdx = Integer.valueOf(qualityString);
+
+//                Resample the image based on user settings:
+                TypedArray dpiValues =
+                    context.getResources().obtainTypedArray(R.array.pdf_dpi_values);
+                int dpi = dpiValues.getInt(qualityIdx, 300);
+//                Calculate the width / height based on the chosen dpi value. This assumes that the
+//                document is of size A4:
+                int widthInPixels = Math.round(dpi * 8.3f);
+                int heightInPixels = Math.round(dpi * 11.7f);
+                Bitmap bitmap = decodeFile(file, widthInPixels, heightInPixels);
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+//                Compress the image based on user settings:
+                TypedArray jpegValues =
+                        context.getResources().obtainTypedArray(R.array.pdf_jpg_values);
+                int jpeg = jpegValues.getInt(qualityIdx, 75);
+                bitmap.compress(Bitmap.CompressFormat.JPEG, jpeg, stream);
+
+                Image image = Image.getInstance(stream.toByteArray());
                 image.setRotationDegrees(-rotationInDegrees);
                 if (rotationInDegrees == 0 || rotationInDegrees == 180)
                     image.scaleAbsolute(document.getPageSize().getWidth(),
@@ -366,7 +394,6 @@ public class PdfCreator {
                     image.scaleAbsolute(document.getPageSize().getHeight(),
                             document.getPageSize().getWidth());
 
-                image.setDpi(600, 600);
                 document.add(image);
 
 
@@ -383,6 +410,7 @@ public class PdfCreator {
 
                     //int j = 0;
                     for (List<TextBlock> column : sortedBlocks) {
+
                         for (FirebaseVisionText.Line line : sortLinesInColumn(column)) {
                             // one FirebaseVisionText.Line corresponds to one line
                             // the rectangle we want to draw this line corresponds to the lines boundingBox
@@ -431,7 +459,7 @@ public class PdfCreator {
             }
 
             document.close();
-            notifyPdfChanged(uri, context);
+            notifyPdfChanged(outputFile, context);
             cropRunnable.mCropTask.handleState(MESSAGE_CREATED_DOCUMENT);
 
         } catch (Exception e) {
@@ -449,26 +477,6 @@ public class PdfCreator {
         String pdfName = documentName + ".pdf";
         return new File(Helper.getPDFStorageDir("DocScan"), pdfName);
     }
-
-    private static DocumentFile getPdfFile(Context context, String documentName) {
-
-        SharedPreferences sharedPref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context);
-        String dir = sharedPref.getString(
-                context.getResources().getString(R.string.key_pdf_dir),
-                null);
-
-        if (dir != null) {
-            Uri uri = Uri.parse(dir);
-            DocumentFile dfDir = DocumentFile.fromTreeUri(context, uri);
-            DocumentFile file = dfDir.createFile("application/pdf", documentName);
-            return file;
-        }
-
-        return null;
-
-    }
-
-
 
     private static boolean isLandscape(BitmapSize size) {
 

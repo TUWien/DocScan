@@ -157,6 +157,22 @@ class PdfFragment : Fragment() {
 
     }
 
+    fun removeFile(fileName: String) {
+        initPdfList()
+        val it = pdfList.iterator()
+        var idx = 0
+        while (it.hasNext()) {
+            val pdf = it.next()
+            if (pdf.name == fileName) {
+                pdfList.remove(pdf)
+                pdf_list.adapter?.notifyItemRemoved(idx)
+                return
+            }
+            idx++
+        }
+
+    }
+
     // TODO: replace this with KtHelper.getPdfDirectory
     /**
      * Returns the directory in which pdf's are saved.

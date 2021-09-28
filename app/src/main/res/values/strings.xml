@@ -407,6 +407,11 @@
     <string name="settings_show_grid_summary">Overlays a grid on the camera view</string>
     <string name="settings_flash_series_title">Flash after imaging</string>
     <string name="settings_flash_series_summary">Activates the flash for a second to show that a picture has been taken. This applies only to the series mode.</string>
+    <string name="settings_pdf_dpi_title">PDF resolution</string>
+    <string name="settings_pdf_dpi_summary">Change the resolution of your PDF.</string>
+
+
+
 
     <!-- DebugSettingsFragment -->
     <string name="debug_settings_title">Debug settings</string>
@@ -436,10 +441,14 @@
     <string name="settings_exif_copyright_title">Copyright</string>
     <string name="settings_exif_copyright_default_value"></string>
 
+    <!-- PdfSettingsFragment -->
+    <string name="pdf_settings_title">PDF quality</string>
+    <string name="pdf_settings_summary">Change the output quality of PDFs</string>
+    <string name="pdf_setings_list_title">Output quality</string>
+
     <string name="crop_view_title">Crop</string>
 
-
-    <!-- ImageViewFragmentment -->
+    <!-- ImageViewFragment -->
     <string name="page_slide_fragment_confirm_delete_text">Delete image?</string>
     <string name="page_slide_fragment_confirm_delete_confirm_title">Delete</string>
     <string name="page_slide_fragment_confirm_delete_cancel_text">Cancel</string>

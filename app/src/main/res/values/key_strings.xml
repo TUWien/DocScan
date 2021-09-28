@@ -13,6 +13,7 @@
     <string name="key_flash_series_mode">KEY_FLASH_SERIES_MODE</string>
     <string name="key_debug_settings">KEY_DEBUG_SETTINGS</string>
     <string name="key_exif_settings">KEY_EXIF_SETTINGS</string>
+    <string name="key_pdf_quality">KEY_PDF_QUALITY</string>
     <string name="key_show_debug_view">KEY_SHOW_DEBUG_VIEW</string>
     <string name="key_dpi">KEY_DPI</string>
     <string name="key_fragment_image_viewer_file_name">KEY_FRAGMENT_IMAGE_VIEWER_FILE_NAME</string>

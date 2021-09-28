@@ -126,7 +126,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         supportFragmentManager.findFragmentByTag(PdfFragment.TAG)?.apply {
             //                    Scan again for the files:
             if ((this as PdfFragment).isVisible)
-                updatePdfs()
+                name?.let { removeFile(it) }
         }
 
         showDocumentsDeletedSnackbar(name)
@@ -1465,7 +1465,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 when (intent?.action) {
                     INTENT_IMAGE_PROCESS_ACTION -> {
                         val defValue = -1
-                        val fileName = intent.getStringExtra(INTENT_FILE_NAME)
+                        val fileName = intent.getStringExtra(INTENT_FILE_NAME) + ".pdf"
 
                         when (intent.getIntExtra(INTENT_IMAGE_PROCESS_TYPE, defValue)) {
                             INTENT_PDF_PROCESS_FINISHED -> {
