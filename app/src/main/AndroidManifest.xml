@@ -132,11 +132,6 @@
             />
 
         <activity
-            android:name=".ui.settings.PdfPreferenceActivity"
-            android:exported="false"
-            />
-
-        <activity
             android:name=".ui.LogActivity"
             android:exported="false"
             android:parentActivityName=".ui.CameraActivity"
