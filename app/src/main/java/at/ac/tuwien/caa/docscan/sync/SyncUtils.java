@@ -5,14 +5,14 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.firebase.jobdispatcher.Constraint;
-import com.firebase.jobdispatcher.FirebaseJobDispatcher;
-import com.firebase.jobdispatcher.GooglePlayDriver;
-import com.firebase.jobdispatcher.Job;
-import com.firebase.jobdispatcher.JobTrigger;
-import com.firebase.jobdispatcher.Lifetime;
-import com.firebase.jobdispatcher.RetryStrategy;
-import com.firebase.jobdispatcher.Trigger;
+//import com.firebase.jobdispatcher.Constraint;
+//import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+//import com.firebase.jobdispatcher.GooglePlayDriver;
+//import com.firebase.jobdispatcher.Job;
+//import com.firebase.jobdispatcher.JobTrigger;
+//import com.firebase.jobdispatcher.Lifetime;
+//import com.firebase.jobdispatcher.RetryStrategy;
+//import com.firebase.jobdispatcher.Trigger;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
@@ -40,60 +40,60 @@ public class SyncUtils {
      * @param context
      */
     public static void startSyncJob(Context context, boolean restart) {
-
-        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
-
-        Log.d(CLASS_NAME, "startSyncJob");
-        DataLog.getInstance().writeUploadLog(context, CLASS_NAME, "startSyncJob");
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-
-        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(
-                R.string.key_upload_mobile_data), true);
-        int[] constraints;
-        if (useMobileConnection) {
-            constraints = new int[]{Constraint.ON_ANY_NETWORK};
-            Log.d(CLASS_NAME, "startSyncJob: using mobile connection");
-        } else {
-            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
-            Log.d(CLASS_NAME, "startSyncJob: using just wifi");
-        }
-
-        JobTrigger.ExecutionWindowTrigger timeWindow;
-        if (!restart)
-            timeWindow = Trigger.executionWindow(5, 10);
-        else
-            timeWindow = Trigger.executionWindow(30, 50);
-
-        Job syncJob = dispatcher.newJobBuilder()
-                // the JobService that will be called
-//                .setService(SyncService.class)
-                .setService(UploadService.class)
-                // uniquely identifies the job
-                .setTag(JOB_TAG)
-                // one-off job
-                .setRecurring(false)
-                // don't persist past a device reboot
-                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
-                .setTrigger(timeWindow)
-                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
-                .setReplaceCurrent(true)
-                // retry with exponential backoff
-                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
-                .setConstraints(
-                        constraints
-                )
-                .build();
-
-
-        dispatcher.mustSchedule(syncJob);
+//        TODO: This is currently commented and not working, since it needs to be migrated to AndroidX WorkManager
+//        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
+//
+//        Log.d(CLASS_NAME, "startSyncJob");
+//        DataLog.getInstance().writeUploadLog(context, CLASS_NAME, "startSyncJob");
+//
+//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+//
+//        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(
+//                R.string.key_upload_mobile_data), true);
+//        int[] constraints;
+//        if (useMobileConnection) {
+//            constraints = new int[]{Constraint.ON_ANY_NETWORK};
+//            Log.d(CLASS_NAME, "startSyncJob: using mobile connection");
+//        } else {
+//            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
+//            Log.d(CLASS_NAME, "startSyncJob: using just wifi");
+//        }
+//
+//        JobTrigger.ExecutionWindowTrigger timeWindow;
+//        if (!restart)
+//            timeWindow = Trigger.executionWindow(5, 10);
+//        else
+//            timeWindow = Trigger.executionWindow(30, 50);
+//
+//        Job syncJob = dispatcher.newJobBuilder()
+//                // the JobService that will be called
+////                .setService(SyncService.class)
+//                .setService(UploadService.class)
+//                // uniquely identifies the job
+//                .setTag(JOB_TAG)
+//                // one-off job
+//                .setRecurring(false)
+//                // don't persist past a device reboot
+//                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
+//                .setTrigger(timeWindow)
+//                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
+//                .setReplaceCurrent(true)
+//                // retry with exponential backoff
+//                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
+//                .setConstraints(
+//                        constraints
+//                )
+//                .build();
+//
+//
+//        dispatcher.mustSchedule(syncJob);
 
     }
 
     public static void cancel(Context context) {
-
-        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
-        dispatcher.cancelAll();
+//        TODO: This is currently commented and not working, since it needs to be migrated to AndroidX WorkManager
+//        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(context));
+//        dispatcher.cancelAll();
 
     }
 

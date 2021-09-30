@@ -178,21 +178,64 @@ dependencies {
     implementation 'org.tensorflow:tensorflow-lite-gpu:2.2.0'
 
     // koin - a lightweight dependency injection lib
-    implementation "org.koin:koin-androidx-viewmodel:$koin_version"
-    implementation "org.koin:koin-android:$koin_version"
+    implementation "io.insert-koin:koin-android:$koin_version"
 
-    // added due to the new onActivityResult callback
-    implementation 'androidx.fragment:fragment:1.3.0'
-    implementation 'androidx.fragment:fragment-ktx:1.3.0'
+    // fragment/navigation ktx related libs
+    implementation 'androidx.fragment:fragment-ktx:1.3.6'
+    implementation 'androidx.fragment:fragment:1.3.6'
+    implementation 'android.arch.navigation:navigation-fragment:1.0.0'
+    implementation 'android.arch.navigation:navigation-ui:1.0.0'
+    kapt 'androidx.annotation:annotation:1.2.0'
 
-    implementation 'androidx.room:room-compiler:2.2.6'
-    implementation 'androidx.test.uiautomator:uiautomator:2.2.0'
-    testImplementation 'junit:junit:4.13'
-    androidTestImplementation 'androidx.test:core:1.2.0'
+    // android view related libs
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.gridlayout:gridlayout:1.0.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 
-//	kapt("groupId:artifactId:version")
+    // custom view related
+    // TODO: Check if these custom view libs are really necessary.
+    implementation 'me.drakeet.support:toastcompat:1.1.0'
+    implementation 'it.xabaras.android.espresso:recyclerview-child-actions:1.0'
+    implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
 
-//    Took this lines from:
+    // firebase/google related libs
+    implementation 'com.google.firebase:firebase-core:19.0.1'
+    implementation 'com.google.firebase:firebase-crashlytics:18.2.1'
+    implementation 'com.google.firebase:firebase-analytics:19.0.1'
+
+    // libs for document sync/export
+    implementation 'com.dropbox.core:dropbox-core-sdk:3.1.3'
+    implementation 'com.itextpdf:itextg:5.5.10'
+    implementation 'com.github.smart-fun:XmlToJson:1.4.0'
+    implementation 'com.android.volley:volley:1.2.1'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
+    implementation 'androidx.documentfile:documentfile:1.0.1'
+
+    // firebase/google related
+// TODO: Migrate this to WorkManager, it is currently not working and commented
+//    implementation 'com.firebase:firebase-jobdispatcher:0.8.6'
+    implementation 'com.google.firebase:firebase-core:19.0.1'
+// TODO: Update the ml-kit, it will be necessary to take out only those dependencies that are really used.
+    implementation 'com.google.firebase:firebase-ml-vision:24.0.1'
+    implementation 'com.google.android.gms:play-services-auth:19.2.0'
+
+    // helper libs
+    implementation 'com.github.hollaus:OpenCVLibrary:1.0'
+    implementation 'androidx.exifinterface:exifinterface:1.3.3'
+    // we need this for the ProviderInstaller
+    implementation 'me.dm7.barcodescanner:zxing:1.9.8'
+    // TODO: ION and glide are usually libs for the same purpose.
+    implementation 'com.koushikdutta.ion:ion:3.1.0'
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    kapt 'com.github.bumptech.glide:compiler:4.10.0'
+
+    // testing related libs
+    // TODO: Check if the testing libs are even necessary
+    // TODO: Check if they can be easily updated to avoid com.android.support warnings
+    //    Took this lines from:
 //    https://medium.com/androiddevelopers/write-once-run-everywhere-tests-on-android-88adb2ba20c5
     androidTestImplementation('androidx.test:runner:1.2.0')
     androidTestImplementation('androidx.test.ext:junit:1.1.1')
@@ -201,45 +244,13 @@ dependencies {
     androidTestImplementation('androidx.test.ext:truth:1.2.0')
     testImplementation('org.robolectric:robolectric:4.3.1')
     testImplementation('org.robolectric:robolectric:4.3.1')
+    implementation 'androidx.test.uiautomator:uiautomator:2.2.0'
+    testImplementation 'junit:junit:4.13'
+    androidTestImplementation 'androidx.test:core:1.2.0'
 
     android {
         testOptions.unitTests.includeAndroidResources = true
     }
-
-    implementation 'com.github.hollaus:OpenCVLibrary:1.0'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.dropbox.core:dropbox-core-sdk:3.1.3'
-    implementation 'androidx.exifinterface:exifinterface:1.3.1'
-//    implementation 'androidx.exifinterface:exifinterface:1.3.1'
-    implementation 'androidx.preference:preference:1.1.0'
-    implementation 'androidx.cardview:cardview:1.0.0'
-//	TODO: check here for a stable version. The reason we switch here to beta is badge support:
-//	https://github.com/material-components/material-components-android/releases
-    implementation 'com.google.android.material:material:1.3.0'
-    implementation 'androidx.gridlayout:gridlayout:1.0.0'
-    implementation 'com.android.volley:volley:1.1.0'
-    implementation 'com.firebase:firebase-jobdispatcher:0.8.6'
-    implementation 'com.google.firebase:firebase-core:17.2.1'
-    implementation 'com.google.firebase:firebase-ml-vision:24.0.1'
-    implementation 'com.itextpdf:itextg:5.5.10'
-    implementation 'com.github.smart-fun:XmlToJson:1.4.0'
-    implementation 'androidx.multidex:multidex:2.0.1'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.3.0'
-    implementation 'com.koushikdutta.ion:ion:3.1.0'
-    implementation 'com.google.android.gms:play-services-auth:17.0.0'
-    // we need this for the ProviderInstaller
-    implementation 'me.dm7.barcodescanner:zxing:1.9.8'
-    implementation 'com.github.bumptech.glide:glide:4.10.0'
-    kapt 'com.github.bumptech.glide:compiler:4.10.0'
-    kapt 'androidx.annotation:annotation:1.1.0'
-    //	implementation project(':openCVLibrary')
-    implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
-    implementation 'me.drakeet.support:toastcompat:1.1.0'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    // Check for v11.4.2 or higher
-    implementation 'com.google.firebase:firebase-core:17.2.1'
-    implementation 'com.google.firebase:firebase-crashlytics:18.2.1'
-    implementation 'com.google.firebase:firebase-analytics:19.0.1'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0-alpha05', {
@@ -255,12 +266,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-core-utils'
         exclude group: 'com.android.support', module: 'recyclerview-v7'
     }
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'android.arch.navigation:navigation-fragment:1.0.0'
-    implementation 'android.arch.navigation:navigation-ui:1.0.0'
-    implementation 'it.xabaras.android.espresso:recyclerview-child-actions:1.0'
-    implementation 'androidx.documentfile:documentfile:1.0.1'
-
 }
 repositories {
     mavenCentral()
