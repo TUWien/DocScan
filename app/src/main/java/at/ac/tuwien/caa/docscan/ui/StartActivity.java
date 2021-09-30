@@ -340,7 +340,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
             return;
         }
         // Unfortunately scoped storage does not allow to recover the backup on Android level >= 30:
-        if (Build.VERSION.SDK_INT <= 29 && DocumentStorage.isBackupExisting(this))
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q && DocumentStorage.isBackupExisting(this))
             askForBackupRestore();
         else {
             DocumentStorage.clearInstance();

@@ -487,18 +487,14 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     }
 
     private void startGalleryWithTransition(Intent intent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
-            ActivityOptionsCompat activityOptionsCompat =
-                    ActivityOptionsCompat.makeSceneTransitionAnimation(this, imageView,
-                            imageView.getTransitionName());
+        PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+        ActivityOptionsCompat activityOptionsCompat =
+                ActivityOptionsCompat.makeSceneTransitionAnimation(this, imageView,
+                        imageView.getTransitionName());
 //                Log.d(CLASS_NAME, "transition name: " + imageView.getTransitionName());
-            mContext.startActivity(intent, activityOptionsCompat.toBundle());
-            mPagerAdapter = null;
-            finish();
-        } else {
-            startGalleryWithoutTransition(intent);
-        }
+        mContext.startActivity(intent, activityOptionsCompat.toBundle());
+        mPagerAdapter = null;
+        finish();
     }
 
     private void startGalleryWithoutTransition(Intent intent) {

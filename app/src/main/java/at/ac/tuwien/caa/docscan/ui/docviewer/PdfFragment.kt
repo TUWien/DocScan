@@ -92,7 +92,7 @@ class PdfFragment : Fragment() {
 
     private fun openDocScanDocumentDir() {
 
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (context != null) {
                 val docScanPdfUri = getDocScanPdfUri()
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
@@ -184,7 +184,7 @@ class PdfFragment : Fragment() {
     private fun addPdfToList(fileName: String) {
 
         val file: DocumentFile?
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val dir = getPdfDirectory() ?: return
 
             val uri = Uri.parse(dir)
@@ -331,7 +331,7 @@ class PdfFragment : Fragment() {
 
         super.onResume()
 
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
             val dir = getPdfDirectory()
 
@@ -363,7 +363,7 @@ class PdfFragment : Fragment() {
      */
     private fun isPermissionGiven(folder: String): Boolean {
 
-        if (Build.VERSION.SDK_INT >= 29) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
             val permissions = context?.contentResolver?.persistedUriPermissions
             if (permissions != null) {
@@ -380,7 +380,7 @@ class PdfFragment : Fragment() {
 
     private fun getPdfs(): MutableList<Pdf> {
 
-        return if (Build.VERSION.SDK_INT >= 29)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             getPdfsWithScopedStorage()
         else
             getPdfsWithDirectFilePaths()

@@ -1,12 +1,6 @@
 package at.ac.tuwien.caa.docscan.rest;
 
-/**
- * Created by fabian on 01.12.2016.
- */
-
 import android.content.Context;
-import android.os.Build;
-import android.util.Log;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -15,8 +9,6 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.HttpStack;
-import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
@@ -27,11 +19,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Created by fabian on 01.12.2016.
+ */
 public class RequestHandler {
 
     public static final int REQUEST_LOGIN = 0;
@@ -59,27 +52,7 @@ public class RequestHandler {
      * @return
      */
     public static RequestQueue createRequestQueue(Context context) {
-
-        RequestQueue requestQueue;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
-                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-            HttpStack stack = null;
-            try {
-                stack = new HurlStack(null, new TLSSocketFactory());
-            } catch (KeyManagementException e) {
-                FirebaseCrashlytics.getInstance().recordException(e);
-                stack = new HurlStack();
-            } catch (NoSuchAlgorithmException e) {
-                FirebaseCrashlytics.getInstance().recordException(e);
-                stack = new HurlStack();
-            }
-            requestQueue = Volley.newRequestQueue(context, stack);
-        } else {
-            requestQueue = Volley.newRequestQueue(context);
-        }
-
-        return requestQueue;
+        return Volley.newRequestQueue(context);
     }
 
     public static void processLoginRequest(final LoginRequest request) {

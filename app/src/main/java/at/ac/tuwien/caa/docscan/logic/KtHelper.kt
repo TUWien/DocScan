@@ -47,7 +47,7 @@ class KtHelper {
          */
         fun isPdfFolderPermissionGiven(context: Context): Boolean {
 
-            if (Build.VERSION.SDK_INT >= 29) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 //                Permission is not given if folder is null:
                 val folder = getPdfDirectory(context) ?: return false
 

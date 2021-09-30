@@ -241,9 +241,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
         if (!file.exists())
             return;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            imageView.setTransitionName(file.getAbsolutePath());
-        }
+        imageView.setTransitionName(file.getAbsolutePath());
 
         final String fileName = file.getAbsolutePath();
 
@@ -364,12 +362,10 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
 
     private void onImageLoadingDone(int position, String fileName) {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (scrollFileName != null && fileName.equalsIgnoreCase(scrollFileName))
-                mCallback.onScrollImageLoaded();
+        if (scrollFileName != null && fileName.equalsIgnoreCase(scrollFileName))
+            mCallback.onScrollImageLoaded();
 //            else if (position == 0)
 //                mCallback.onImageLoaded();
-        }
 
 //        if (position == 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
 //            mCallback.onImageLoaded();

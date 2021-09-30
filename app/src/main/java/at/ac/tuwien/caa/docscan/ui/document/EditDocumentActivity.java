@@ -309,11 +309,9 @@ public class EditDocumentActivity extends CreateDocumentActivity {
         AutoCompleteTextView textView = findViewById(R.id.create_series_readme_language_dropdown);
         String[] languages = getResources().getStringArray(R.array.create_document_languages);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            int selIdx = Arrays.asList(languages).indexOf(metaData.getLanguage());
-            if (selIdx != -1)
-                textView.setText(languages[selIdx], false);
-        }
+        int selIdx = Arrays.asList(languages).indexOf(metaData.getLanguage());
+        if (selIdx != -1)
+            textView.setText(languages[selIdx], false);
 
     }
 

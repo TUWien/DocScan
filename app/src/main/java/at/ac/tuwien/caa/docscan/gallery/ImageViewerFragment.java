@@ -130,9 +130,7 @@ public class ImageViewerFragment extends Fragment {
 
     public void refreshImageView() {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-            mImageView.setTransitionName(new File(mFileName).getAbsolutePath());
-
+        mImageView.setTransitionName(new File(mFileName).getAbsolutePath());
         mImageView.setImage(ImageSource.uri(mFileName));
 
         BitmapFactory.Options options = new BitmapFactory.Options();

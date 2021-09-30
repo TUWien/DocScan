@@ -32,15 +32,9 @@ public class ActivityUtils {
      * @param intent
      */
     public static void createBackStack(Activity activity, Intent intent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            TaskStackBuilder builder = TaskStackBuilder.create(activity);
-            builder.addNextIntentWithParentStack(intent);
-            builder.startActivities();
-        } else {
-            activity.startActivity(intent);
-            activity.finish();
-        }
-
+        TaskStackBuilder builder = TaskStackBuilder.create(activity);
+        builder.addNextIntentWithParentStack(intent);
+        builder.startActivities();
 //        Use our own animation - instead of the default scaling animation:
         activity.overridePendingTransition(R.anim.translate_in, R.anim.translate_out);
     }

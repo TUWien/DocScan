@@ -3405,11 +3405,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
             int dpi = getDPI();
             if (dpi != -1) {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                    Rational r = new Rational(dpi, 1);
-                    exif.setAttribute(ExifInterface.TAG_X_RESOLUTION, r.toString());
-                    exif.setAttribute(ExifInterface.TAG_Y_RESOLUTION, r.toString());
-                }
+                Rational r = new Rational(dpi, 1);
+                exif.setAttribute(ExifInterface.TAG_X_RESOLUTION, r.toString());
+                exif.setAttribute(ExifInterface.TAG_Y_RESOLUTION, r.toString());
             }
 
             exif.saveAttributes();

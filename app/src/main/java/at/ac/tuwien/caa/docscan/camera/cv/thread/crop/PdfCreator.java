@@ -323,7 +323,7 @@ public class PdfCreator {
         try {
             OutputStream stream = null;
             Uri uri = null;
-            if (Build.VERSION.SDK_INT >= 29) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 DocumentFile documentFile = getPdfFile(context, documentName);
                 if (documentFile != null) {
                     stream = context.getContentResolver().openOutputStream(documentFile.getUri());

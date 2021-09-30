@@ -83,9 +83,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         }
 
     override fun onScrollImageLoaded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            startPostponedEnterTransition()
-        }
+        startPostponedEnterTransition()
     }
 
     override fun onImageLoaded() {
@@ -1335,9 +1333,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
 //        Create the enter transition:
         if (fileName != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                postponeEnterTransition()
-            }
+            postponeEnterTransition()
             imagesFragment.scrollToFile(fileName)
         }
         val ft: FragmentTransaction = supportFragmentManager.beginTransaction()

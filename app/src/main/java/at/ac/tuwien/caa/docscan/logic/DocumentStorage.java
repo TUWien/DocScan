@@ -483,7 +483,7 @@ public class DocumentStorage {
                     FirebaseCrashlytics.getInstance().log("renameSuccess = false");
                 }
                 // The backup is not accessible anymore on Android 30:
-                else if (Build.VERSION.SDK_INT <= 29) {
+                else if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
 //                    Save the backupfile:
                     saveJSONBackup(context, storeFile);
                 }

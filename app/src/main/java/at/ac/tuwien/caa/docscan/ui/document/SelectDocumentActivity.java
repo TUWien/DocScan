@@ -39,9 +39,7 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
 
         setContentView(R.layout.activity_select_document);
         mListView = findViewById(R.id.upload_list_view);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mListView.setNestedScrollingEnabled(true);
-        }
+        mListView.setNestedScrollingEnabled(true);
 
         initAdapter();
         initSelectButton();
