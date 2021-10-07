@@ -14,7 +14,7 @@
             android:id="@+id/sync_coordinatorlayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_above="@id/viewer_navigation">
+            android:layout_above="@id/bottom_nav">
 
             <com.google.android.material.appbar.AppBarLayout
                 android:id="@+id/gallery_appbar"
@@ -46,9 +46,7 @@
                 <!--Dummy layout, to make both fab's overlapping-->
                 <FrameLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    >
+                    android:layout_height="wrap_content">
 
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/viewer_add_fab"
@@ -118,7 +116,7 @@
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/viewer_navigation"
+            android:id="@+id/bottom_nav"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"

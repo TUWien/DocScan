@@ -33,6 +33,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.SyncUtils;
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import at.ac.tuwien.caa.docscan.ui.settings.PreferenceActivity;
 

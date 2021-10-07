@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!--Taken from: https://www.bignerdranch.com/blog/splash-screens-the-right-way/  -->
     <item android:drawable="@color/colorPrimary" />
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/icon_splash_screen" />
-    </item>
+    <item
+        android:drawable="@drawable/ic_launcher_foreground"
+        android:gravity="center" />
 
 </layer-list>

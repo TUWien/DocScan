@@ -18,6 +18,7 @@ import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
 import me.drakeet.support.toast.ToastCompat;
 
 /**

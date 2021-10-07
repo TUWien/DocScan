@@ -7,20 +7,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-
-import androidx.exifinterface.media.ExifInterface;
-import androidx.appcompat.app.AlertDialog;
-
 import android.text.InputFilter;
-import android.text.Spanned;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.CheckBox;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.exifinterface.media.ExifInterface;
 
 import com.android.volley.VolleyError;
 import com.google.android.gms.common.ConnectionResult;
@@ -35,7 +30,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,9 +42,9 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.rest.RestRequest;
-import at.ac.tuwien.caa.docscan.sync.SyncInfo;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
-import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
+import timber.log.Timber;
 
 
 /**
@@ -182,6 +176,15 @@ public class Helper {
 
         return -1;
 
+    }
+
+    public static int getSafeExifOrientation(File outFile) {
+        try {
+            return getExifOrientation(outFile);
+        } catch (Exception e) {
+            Timber.e(e, "Exif orientation couldn't be determined!");
+            return -1;
+        }
     }
 
     public static int getExifOrientation(String fileName) throws IOException {
@@ -582,21 +585,6 @@ public class Helper {
 
         return seriesName;
 
-    }
-
-    public static boolean isDocumentCropped(Document document) {
-
-        if (document != null) {
-            ArrayList<File> files = document.getFiles();
-            if (files != null && !files.isEmpty()) {
-                for (File file : files) {
-                    if (!PageDetector.isCropped(file.getAbsolutePath()))
-                        return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     /**

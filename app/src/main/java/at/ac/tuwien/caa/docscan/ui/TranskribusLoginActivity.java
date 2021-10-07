@@ -1,11 +1,8 @@
 package at.ac.tuwien.caa.docscan.ui;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -27,6 +24,7 @@ import at.ac.tuwien.caa.docscan.rest.RequestHandler;
 import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import me.drakeet.support.toast.ToastCompat;
 

@@ -5,43 +5,24 @@ import android.app.Instrumentation
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
-import android.widget.TextView
-import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import org.junit.Test
 import org.junit.runner.RunWith
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.ViewAssertion
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.replaceText
-import androidx.test.espresso.assertion.ViewAssertions
-import androidx.test.espresso.contrib.RecyclerViewActions
-import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import at.ac.tuwien.caa.docscan.ui.CameraActivity
-import androidx.test.espresso.matcher.ViewMatchers.withParent
-import androidx.test.espresso.Espresso.onView
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.intent.Intents.intending
 import androidx.test.espresso.intent.matcher.IntentMatchers.*
-import androidx.test.espresso.matcher.PreferenceMatchers.withTitle
 import androidx.test.espresso.matcher.RootMatchers.isDialog
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.rule.GrantPermissionRule
-import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.UiObjectNotFoundException
-import androidx.test.uiautomator.UiSelector
 import it.xabaras.android.espresso.recyclerviewchildactions.RecyclerViewChildActions.Companion.actionOnChild
-import org.checkerframework.framework.qual.Bottom
 import org.hamcrest.CoreMatchers.*
-import org.junit.Rule
-import java.io.File
-import androidx.test.espresso.ViewAction as ViewAction
 
 
 @RunWith(AndroidJUnit4::class)

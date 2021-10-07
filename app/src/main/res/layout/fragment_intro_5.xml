@@ -67,7 +67,6 @@
                 android:id="@+id/document_create_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="createDocument"
                 android:layout_below="@id/intro_2_textview"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:layout_centerHorizontal="true"

@@ -24,7 +24,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,7 +35,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.TranskribusMetaData;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
-import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
 import me.drakeet.support.toast.ToastCompat;
 
 /**

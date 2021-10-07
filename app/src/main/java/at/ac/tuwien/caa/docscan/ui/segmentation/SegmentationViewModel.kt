@@ -1,6 +1,5 @@
 package at.ac.tuwien.caa.docscan.ui.segmentation
 
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
@@ -11,18 +10,19 @@ import androidx.lifecycle.viewModelScope
 import at.ac.tuwien.caa.docscan.DocScanApp
 import at.ac.tuwien.caa.docscan.logic.Event
 import at.ac.tuwien.caa.docscan.logic.FileHandler
-import at.ac.tuwien.caa.docscan.ui.segmentation.model.MetaResult
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.ModelExecutionResult
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.TFLiteModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 /**
  * @author matejbart
  */
-class SegmentationViewModel(extras: Bundle, val app: DocScanApp) : ViewModel() {
+class SegmentationViewModel(extras: Bundle, val app: DocScanApp, val fileHandler: FileHandler) :
+    ViewModel() {
 
     // retrieve the image file path
     private val imageAbsolutePath: String =
@@ -36,7 +36,7 @@ class SegmentationViewModel(extras: Bundle, val app: DocScanApp) : ViewModel() {
     val observableError = MutableLiveData<Event<Exception>>()
     private val observableModels = MutableLiveData<List<TFLiteModel>>()
     val models =
-        FileHandler.getAllTFModelsFromAssets(app).sortedByDescending { model -> model.inputSize }
+        fileHandler.getAllTFModelsFromAssets().sortedByDescending { model -> model.inputSize }
 
     // default case, perform segmentation with first model in the list.
     var latestModel = models.first()
@@ -111,11 +111,11 @@ class SegmentationViewModel(extras: Bundle, val app: DocScanApp) : ViewModel() {
                     )
                     list.add(result)
                 } catch (e: Exception) {
-                    Log.e("SegmentationViewModel", "Segmentation has failed!", e)
+                    Timber.e(e, "Segmentation has failed!")
                 }
             }
         } catch (e: Exception) {
-            Log.e("SegmentationViewModel", "Decoding of input image has failed!", e)
+            Timber.e(e, "Decoding of input image has failed!")
 
         }
         return list

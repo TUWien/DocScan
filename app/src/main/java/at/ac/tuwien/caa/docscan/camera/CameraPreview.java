@@ -28,7 +28,6 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.Camera;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
@@ -59,7 +58,7 @@ import java.util.Map;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
-import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
 
 import static android.hardware.Camera.Parameters.FLASH_MODE_OFF;
 import static android.hardware.Camera.Parameters.FLASH_MODE_TORCH;
@@ -587,7 +586,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // The camera field of view is normalized so that -1000,-1000 is top left and 1000, 1000 is
         // bottom right. Note that multiple areas are possible, but currently only one is used.
 
-        int orientation = calculatePreviewOrientation(mCameraInfo);
+        int orientation = calculatePreviewOrientation(getContext(), mCameraInfo);
 
         // Transform the point:
         PointF rotatedPoint = rotatePoint(touchScreen, orientation);
@@ -704,7 +703,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         if (mCamera == null)
             return;
 
-        int orientation = calculatePreviewOrientation(mCameraInfo);
+        int orientation = calculatePreviewOrientation(getContext(), mCameraInfo);
         mCamera.setDisplayOrientation(orientation);
 
         Camera.Parameters params = initParameters();
@@ -836,7 +835,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 //        so that the height returned the entire height without subtracting the height of the camera control layout.
 //        Therefore, we calculate the dimension of the preview manually.
 //        int height = getHeight();
-        Point dim = CameraActivity.getPreviewDimension();
+        // TODO: This is a dirty cast hack, which will only work here, this should be avoided
+        Point dim = ((CameraActivity) getContext()).getPreviewDimension();
         if (dim != null) {
             width = dim.x;
             height = dim.y;
@@ -919,10 +919,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      * {@link Camera#setDisplayOrientation(int)}.
      */
     @SuppressWarnings("deprecation")
-    public static int calculatePreviewOrientation(Camera.CameraInfo info) {
+    public static int calculatePreviewOrientation(Context context, Camera.CameraInfo info) {
 
         // Get the rotation of the screen to adjust the preview image accordingly.
-        int rotation = CameraActivity.getDisplayRotation();
+        int rotation = CameraActivity.getDisplayRotation(context);
 
         int degrees = 0;
 
@@ -1015,7 +1015,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         if (mCamera == null)
             return;
 
-        int cameraOrienation = calculatePreviewOrientation(mCameraInfo);
+        int cameraOrienation = calculatePreviewOrientation(getContext(), mCameraInfo);
         mCamera.setDisplayOrientation(cameraOrienation);
 
         mLastTouchPoint = null;

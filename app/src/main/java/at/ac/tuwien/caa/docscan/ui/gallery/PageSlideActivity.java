@@ -27,7 +27,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 
@@ -67,7 +66,7 @@ import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
-import at.ac.tuwien.caa.docscan.ui.CameraActivity;
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
 import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationActivity;
@@ -95,7 +94,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     public static final String KEY_FILE_NAME = "KEY_FILE_NAME";
     public static final String KEY_OPEN_GALLERY = "KEY_OPEN_GALLERY";
     public static final String KEY_RETAKE_IMAGE = "KEY_RETAKE_IMAGE";
-    public static final String KEY_RETAKE_IDX = "KEY_RETAKE_IDX";
+    public static final String KEY_RETAKE_IMAGE_ID = "KEY_RETAKE_IMAGE_ID";
 
     private static final int PERMISSION_ROTATE = 0;
     private static final int PERMISSION_DELETE = 1;
@@ -553,7 +552,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
                                 Intent intent = new Intent(context, CameraActivity.class);
 //                        Define which image / page should be replaced:
                                 intent.putExtra(KEY_RETAKE_IMAGE, true);
-                                intent.putExtra(KEY_RETAKE_IDX, idx);
+                                // TODO: Add the id of the image, not the index, since this can be easier determined
+                                intent.putExtra(KEY_RETAKE_IMAGE_ID, idx);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 //                                Make the current document active:
                                 DocumentStorage.getInstance(mContext).setTitle(mDocument.getTitle());
@@ -726,7 +726,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
         // set dialog message
         alertDialogBuilder
                 .setTitle(R.string.page_slide_fragment_confirm_delete_text)
-                .setPositiveButton(R.string.page_slide_fragment_confirm_delete_confirm_title, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.page_slide_fragment_confirm_delete_text, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 

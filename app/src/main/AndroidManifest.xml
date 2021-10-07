@@ -4,9 +4,12 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-feature android:name="android.hardware.camera" />
@@ -17,11 +20,13 @@
         android:name="android.hardware.location.gps"
         android:required="false" />
 
+    <!-- preserveLegacyExternalStorage is set to true, because -->
     <application
         android:name=".DocScanApp"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher_adaptive"
         android:label="@string/app_name"
+        android:preserveLegacyExternalStorage="true"
         android:requestLegacyExternalStorage="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -32,6 +37,7 @@
             android:value="ocr" />
 
         <!-- We need a file provider to enable a sharing of the log file (which is saved in internal memory) -->
+        <!-- TODO: Check if this is still needed -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="at.ac.tuwien.caa.fileprovider"
@@ -52,7 +58,7 @@
         <!--        </service>-->
 
         <activity
-            android:name=".ui.StartActivity"
+            android:name=".ui.start.StartActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/SplashTheme">
@@ -63,10 +69,27 @@
         </activity>
 
         <activity
+            android:name=".ui.intro.IntroActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:theme="@style/SplashTheme" />
+
+        <!--        <activity-->
+        <!--            android:name=".ui.StartActivity"-->
+        <!--            android:exported="true"-->
+        <!--            android:label="@string/app_name"-->
+        <!--            android:theme="@style/SplashTheme">-->
+        <!--            <intent-filter>-->
+        <!--                <action android:name="android.intent.action.MAIN" />-->
+        <!--                <category android:name="android.intent.category.LAUNCHER" />-->
+        <!--            </intent-filter>-->
+        <!--        </activity>-->
+
+        <activity
             android:name=".ui.AboutActivity"
             android:exported="true"
-            android:parentActivityName=".ui.CameraActivity" />
-        
+            android:parentActivityName=".ui.camera.CameraActivity" />
+
         <activity
             android:name=".ui.docviewer.SelectPdfDocumentActivity"
             android:exported="true" />
@@ -74,31 +97,39 @@
         <activity
             android:name=".ui.document.SelectDocumentActivity"
             android:exported="true"
-            android:parentActivityName=".ui.CameraActivity" />
+            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
             android:name=".ui.gallery.PageSlideActivity"
             android:exported="true"
-            android:parentActivityName=".ui.CameraActivity" />
+            android:parentActivityName=".ui.camera.CameraActivity" />
+
+        <activity
+            android:name=".ui.gallery.newPackage.PageSlideActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
             android:name=".ui.segmentation.SegmentationActivity"
             android:exported="true"
             android:parentActivityName=".ui.gallery.PageSlideActivity" />
 
+
+        <!-- TODO: Check if this is still needed -->
         <activity
             android:name=".ui.gallery.GalleryActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:parentActivityName=".ui.CameraActivity" />
+            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
             android:name=".ui.TranskribusLoginActivity"
             android:exported="false"
-            android:parentActivityName=".ui.CameraActivity" />
+            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
-            android:name=".ui.CameraActivity"
+            android:name=".ui.camera.CameraActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
             android:screenOrientation="portrait" />
@@ -125,7 +156,7 @@
         <activity
             android:name=".ui.settings.PreferenceActivity"
             android:exported="false"
-            android:parentActivityName=".ui.CameraActivity" />
+            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
             android:name=".ui.MapViewActivity"
@@ -142,22 +173,22 @@
         <activity
             android:name=".ui.LogActivity"
             android:exported="false"
-            android:parentActivityName=".ui.CameraActivity" />
+            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
             android:name=".ui.AccountActivity"
             android:exported="false"
-            android:parentActivityName=".ui.CameraActivity" />
+            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
             android:name=".ui.DropboxLoginActivity"
             android:exported="true"
-            android:parentActivityName=".ui.CameraActivity" />
+            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
             android:name=".ui.LogoutActivity"
             android:exported="false"
-            android:parentActivityName=".ui.CameraActivity" />
+            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <!--Debugging activities: -->
 
@@ -168,7 +199,7 @@
         <activity
             android:name=".ui.docviewer.DocumentViewerActivity"
             android:exported="true"
-            android:parentActivityName=".ui.CameraActivity" />
+            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
             android:name="com.dropbox.core.android.AuthActivity"

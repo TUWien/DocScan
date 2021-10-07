@@ -1,13 +1,8 @@
 package at.ac.tuwien.caa.docscan.ui.intro;
 
-import android.content.SharedPreferences;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-
-import androidx.fragment.app.Fragment;
-
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,12 +11,22 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.fragment.app.Fragment;
+
+import org.koin.java.KoinJavaComponent;
+
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
+import at.ac.tuwien.caa.docscan.logic.PreferencesHandler;
+import kotlin.Lazy;
 
 public class IntroFragment extends Fragment {
 
     protected final static String INTRO_FRAGMENT_NUM_KEY = "INTRO_FRAGMENT_NUM_KEY";
+
+    private final Lazy<PreferencesHandler> preferencesHandler = KoinJavaComponent.inject(PreferencesHandler.class);
 
     private Drawable mDrawable;
     private int mNum;
@@ -43,7 +48,7 @@ public class IntroFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         mNum = getArguments() != null ?
-                getArguments().getInt(INTRO_FRAGMENT_NUM_KEY) : null;
+                getArguments().getInt(INTRO_FRAGMENT_NUM_KEY) : -1;
 
     }
 
@@ -65,7 +70,7 @@ public class IntroFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         ViewGroup rootView = null;
@@ -100,6 +105,10 @@ public class IntroFragment extends Fragment {
         else if (mNum == 4) {
 
             rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_5, container, false);
+            AppCompatButton button = rootView.findViewById(R.id.document_create_button);
+            button.setOnClickListener(view -> {
+                // TODO: start creating documents
+            });
             final ImageView uploadImageView = rootView.findViewById(R.id.upload_imageview);
             GlideApp.with(this)
                     .load(R.drawable.upload_screenshot)
@@ -126,13 +135,9 @@ public class IntroFragment extends Fragment {
                     rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_4, container, false);
 //                    Initialize the trigger flash checkbox. Note that the button is checkbox can be
 //                    checked in case the user starts the intro from the AboutActivity
-
-                    SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(
-                            getContext());
-                    boolean check = sharedPref.getBoolean(getString(R.string.key_flash_series_mode),
-                            false);
                     CheckBox checkBox = rootView.findViewById(R.id.intro_4_trigger_flash_checkbox);
-                    checkBox.setChecked(check);
+                    checkBox.setChecked(preferencesHandler.getValue().isFlashSeriesMode());
+                    checkBox.setOnCheckedChangeListener((compoundButton, b) -> preferencesHandler.getValue().setFlashSeriesMode(compoundButton.isChecked()));
                     break;
             }
 
@@ -140,8 +145,6 @@ public class IntroFragment extends Fragment {
 
                 ImageView imageView = rootView.findViewById(R.id.intro_imageview);
                 mDrawable = imageView.getDrawable();
-                //            if (drawable != null && drawable instanceof Animatable)
-                //                ((Animatable) drawable).start();
 
             }
         }

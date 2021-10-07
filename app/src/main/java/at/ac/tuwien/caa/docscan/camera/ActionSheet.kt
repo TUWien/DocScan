@@ -9,10 +9,9 @@ import android.widget.TextView
 import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
-import at.ac.tuwien.caa.docscan.logic.Document
+import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.sheet_dialog_camera.*
-import java.io.File
 
 open class PdfActionSheet(
     private val pdf: DocumentFile, sheetActions: ArrayList<SheetAction>,
@@ -46,7 +45,7 @@ open class PdfActionSheet(
 }
 
 open class DocumentActionSheet(
-    private var document: Document, sheetActions: ArrayList<SheetAction>,
+    private var document: DocumentWithPages, sheetActions: ArrayList<SheetAction>,
     private var docListener: DocumentSheetSelection, dialogListener: DialogStatus
 ) :
     ActionSheet(sheetActions, null, dialogListener) {
@@ -63,13 +62,13 @@ open class DocumentActionSheet(
         super.onViewCreated(view, savedInstanceState)
 
         val titleField: TextView = view.findViewById(R.id.sheet_dialog_title)
-        titleField.text = document.title
+        titleField.text = document.document.title
     }
 
     override fun sheetClicked(sheetAction: SheetAction) {
 
 //        Close the BottomSheetDialogFragment:
-        docListener?.onDocumentSheetSelected(document, sheetAction)
+        docListener.onDocumentSheetSelected(document, sheetAction)
         dismiss()
     }
 
@@ -152,7 +151,7 @@ open class ActionSheet : BottomSheetDialogFragment {
     }
 
     interface DocumentSheetSelection {
-        fun onDocumentSheetSelected(document: Document, sheetAction: SheetAction)
+        fun onDocumentSheetSelected(document: DocumentWithPages, sheetAction: SheetAction)
     }
 
     interface SheetSelection {
