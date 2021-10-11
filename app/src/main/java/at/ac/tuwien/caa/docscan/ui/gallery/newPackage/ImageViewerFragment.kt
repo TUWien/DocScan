@@ -12,6 +12,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import java.util.*
@@ -19,6 +20,7 @@ import java.util.*
 class ImageViewerFragment : Fragment() {
 
     private val viewModel: ImageViewModel by viewModel { parametersOf(requireArguments()) }
+    private val sharedViewModel: PageSlideViewModel by sharedViewModel{ parametersOf(requireActivity().intent!!.extras)}
     private val fileHandler by inject<FileHandler>()
     private lateinit var binding: FragmentImageViewerBinding
 
@@ -34,9 +36,9 @@ class ImageViewerFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View {
         binding = FragmentImageViewerBinding.inflate(inflater, container, false)
         binding.imageViewerImageView.orientation = SubsamplingScaleImageView.ORIENTATION_USE_EXIF

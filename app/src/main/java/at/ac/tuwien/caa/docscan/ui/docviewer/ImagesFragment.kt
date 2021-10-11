@@ -1,22 +1,15 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.FragmentImagesBinding
-import at.ac.tuwien.caa.docscan.logic.Document
-import at.ac.tuwien.caa.docscan.logic.DocumentStorage
-import at.ac.tuwien.caa.docscan.logic.Helper
-import kotlinx.android.synthetic.main.fragment_images.*
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
-import java.io.File
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class ImagesFragment : Fragment() {
@@ -38,8 +31,7 @@ class ImagesFragment : Fragment() {
         }
 
         val TAG = "ImagesFragment"
-        // TODO: Remove the key
-        const val DOCUMENT_NAME_KEY = "DOCUMENT_NAME_KEY"
+
         const val ARG_DOCUMENT_ID = "ARG_DOCUMENT_ID"
         const val ARG_FILE_ID = "ARG_FILE_ID"
     }
@@ -47,12 +39,15 @@ class ImagesFragment : Fragment() {
     private val viewModel: ImagesViewModel by viewModel {
         parametersOf(requireArguments())
     }
+
+    private val sharedViewModel: DocumentViewerViewModel by sharedViewModel()
+
     private lateinit var binding: FragmentImagesBinding
-    private lateinit var galleryAdapter: ImagesAdapter
+    private lateinit var imagesAdapter: ImagesAdapterNew
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View {
         setHasOptionsMenu(true)
         binding = FragmentImagesBinding.inflate(inflater, container, false)
@@ -61,39 +56,35 @@ class ImagesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.imagesList.adapter = galleryAdapter
+        imagesAdapter = ImagesAdapterNew({
+            // TODO: handle selection states by clicks.
+            // TODO: If none is selected, then a click will open the gallery.
+        }, {
+            // TODO: handle selection state
+        })
         //        TODO: add here more columns for landscape mode:
         binding.imagesList.layoutManager = GridLayoutManager(context, 2)
+        binding.imagesList.adapter = imagesAdapter
         observe()
     }
 
     private fun observe() {
-//        viewModel.observableDocument.observe(viewLifecycleOwner, {
-//            galleryAdapter.files
-//        })
+        viewModel.observablePages.observe(viewLifecycleOwner, {
+            imagesAdapter.submitList(it.pages)
+            if (it.scrollTo != -1) {
+                it.scrollTo = -1
+                binding.imagesList.scrollToPosition(it.scrollTo)
+            }
+        })
+        viewModel.observableDoc.observe(viewLifecycleOwner, {
+            sharedViewModel.selectDocument(it)
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.images_menu, menu)
     }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        arguments?.getString(DOCUMENT_NAME_KEY)?.let {
-            val d: Document? = DocumentStorage.getInstance(context).getDocument(it)
-            if (d != null) {
-                // TODO: Use the new image adapter here
-//                document = d
-//                galleryAdapter = ImagesAdapter(context, document)
-//                galleryAdapter.setDocumentName(document?.title)
-//                galleryAdapter.setScrollFileName(scrollToFileName)
-            }
-        }
-
-    }
-
 
     /**
      * Updates the UI in case the images list is empty and returns true.
@@ -114,42 +105,42 @@ class ImagesFragment : Fragment() {
     /**
      * This updates all items. This is particulary necessary to hide all checkboxes:
      */
-    fun redrawItems() {
-        galleryAdapter.notifyDataSetChanged()
-    }
-
-    fun deselectAllItems() {
-        galleryAdapter.deselectAllItems()
-    }
-
-    fun getSelectedFiles(): ArrayList<File> {
-        return galleryAdapter.selectedFiles
-    }
-
-    fun getSelectionCount(): Int {
-        return galleryAdapter.selectedFiles.size
-    }
+//    fun redrawItems() {
+//        galleryAdapter.notifyDataSetChanged()
+//    }
+//
+//    fun deselectAllItems() {
+//        galleryAdapter.deselectAllItems()
+//    }
+//
+//    fun getSelectedFiles(): ArrayList<File> {
+//        return galleryAdapter.selectedFiles
+//    }
+//
+//    fun getSelectionCount(): Int {
+//        return galleryAdapter.selectedFiles.size
+//    }
 
 
     /**
      * Just updates the adapter, to show the loading circles.
      */
-    fun showCropStart() {
-        galleryAdapter.notifyDataSetChanged()
-    }
-
-    fun updateDocumentName(fileName: String) {
-        galleryAdapter.setDocumentName(fileName)
-    }
-
-    fun updateGallery(fileName: String) {
-        Log.d(TAG, "updateGallery")
-        galleryAdapter.updateImageView(fileName)
-    }
-
-    fun selectAll() {
-        galleryAdapter.selectAllItems()
-    }
+//    fun showCropStart() {
+//        galleryAdapter.notifyDataSetChanged()
+//    }
+//
+//    fun updateDocumentName(fileName: String) {
+//        galleryAdapter.setDocumentName(fileName)
+//    }
+//
+//    fun updateGallery(fileName: String) {
+//        Log.d(TAG, "updateGallery")
+//        galleryAdapter.updateImageView(fileName)
+//    }
+//
+//    fun selectAll() {
+//        galleryAdapter.selectAllItems()
+//    }
 
 //    fun deleteSelections() {
 //

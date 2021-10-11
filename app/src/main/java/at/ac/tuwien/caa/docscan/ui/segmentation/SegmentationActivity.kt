@@ -12,6 +12,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivitySegmentationBinding
+import at.ac.tuwien.caa.docscan.db.model.Page
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -170,9 +171,10 @@ class SegmentationActivity : AppCompatActivity() {
 
         const val EXTRA_IMAGE_FILE_PATH = "EXTRA_IMAGE_FILE_PATH"
 
-        fun newInstance(context: Context, path: String): Intent {
+        fun newInstance(context: Context, page: Page): Intent {
             return Intent(context, SegmentationActivity::class.java).apply {
-                putExtra(EXTRA_IMAGE_FILE_PATH, path)
+                // TODO: Add page to activity
+               // putExtra(EXTRA_IMAGE_FILE_PATH, path)
             }
         }
     }

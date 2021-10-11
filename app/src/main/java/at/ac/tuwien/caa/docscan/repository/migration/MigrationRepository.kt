@@ -1,10 +1,14 @@
 package at.ac.tuwien.caa.docscan.repository.migration
 
 import android.content.Context
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector
 import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.MetaData
 import at.ac.tuwien.caa.docscan.db.model.Page
+import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
+import at.ac.tuwien.caa.docscan.db.model.boundary.asPoint
+import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.migration.domain.JsonStorage
@@ -19,15 +23,15 @@ import java.util.*
  * @author matejbartalsky
  */
 class MigrationRepository(
-    private val docRepo: DocumentRepository,
-    private val fileHandler: FileHandler,
-    private val preferencesHandler: PreferencesHandler
+        private val docRepo: DocumentRepository,
+        private val fileHandler: FileHandler,
+        private val preferencesHandler: PreferencesHandler
 ) {
 
     val gson: Gson by lazy {
         GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
-            .disableHtmlEscaping()
-            .create()
+                .disableHtmlEscaping()
+                .create()
     }
 
     /**
@@ -64,15 +68,15 @@ class MigrationRepository(
                     val meta = jsonDocument.jsonMetaData
                     val metaData = if (meta != null) {
                         MetaData(
-                            author = meta.author,
-                            authority = meta.authority,
-                            genre = meta.genre,
-                            language = meta.language,
-                            isProjectReadme2020 = meta.readme2020,
-                            allowImagePublication = meta.readme2020Public,
-                            signature = meta.signature,
-                            url = meta.uri,
-                            writer = meta.writer
+                                author = meta.author,
+                                authority = meta.authority,
+                                genre = meta.genre,
+                                language = meta.language,
+                                isProjectReadme2020 = meta.readme2020,
+                                allowImagePublication = meta.readme2020Public,
+                                signature = meta.signature,
+                                url = meta.uri,
+                                writer = meta.writer
                         )
                     } else {
                         null
@@ -84,11 +88,25 @@ class MigrationRepository(
                         fileHandler.getFileByAbsolutePath(jsonPage.file.path)?.let {
                             try {
                                 fileHandler.copyFile(
-                                    it,
-                                    // we assume that all file types are jpeg files
-                                    fileHandler.createDocumentFile(newDocId, newPageId, FileType.JPEG)
+                                        it,
+                                        // we assume that all file types are jpeg files
+                                        fileHandler.createDocumentFile(newDocId, newPageId, FileType.JPEG)
                                 )
-                                newPages.add(Page(newPageId, newDocId, index))
+                                val result = PageDetector.getNormedCropPoints(it.absolutePath)
+                                // read out the old
+                                val singlePageBoundary = if (result.points.size == 4) {
+                                    SinglePageBoundary(result.points[0].asPoint(), result.points[1].asPoint(), result.points[2].asPoint(), result.points[3].asPoint())
+                                } else {
+                                    SinglePageBoundary.getDefault()
+                                }
+                                // read out old orientation
+                                val rotation = Helper.getNewSafeExifOrientation(it)
+
+                                // if cropping has been already perfromed, then this will be marked as done
+                                val processingState = if(PageDetector.isCropped(it.absolutePath)) PostProcessingState.DONE else PostProcessingState.DRAFT
+
+                                // TODO: Checkout how the uploaded state can be determined.
+                                newPages.add(Page(newPageId, newDocId, index, rotation, processingState, singlePageBoundary))
                             } catch (exception: Exception) {
                                 // TODO: Log copying has failed!
                                 // TODO: If the copying fails due to not enough storage, this should be prevented before.
@@ -96,21 +114,19 @@ class MigrationRepository(
                         }
                     }
                     newDocsWithPages.add(
-                        DocumentWithPages(
-                            Document(
-                                newDocId,
-                                title,
-                                isActive,
-                                metaData
-                            ),
-                            newPages
-                        )
+                            DocumentWithPages(
+                                    Document(
+                                            newDocId,
+                                            title,
+                                            isActive,
+                                            metaData
+                                    ),
+                                    newPages
+                            )
                     )
                 }
 
                 // TODO: Store into database
-
-
 
 
                 // mark as migration been performed
@@ -130,6 +146,7 @@ class MigrationRepository(
             }
         }
     }
+
 
     /**
      * Safely closes a [BufferedReader]

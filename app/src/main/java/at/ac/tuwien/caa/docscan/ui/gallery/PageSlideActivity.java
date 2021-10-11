@@ -90,9 +90,9 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     public static final String KEY_IMAGE_CHANGED = "KEY_IMAGE_CHANGED";
 
-    public static final String KEY_DOCUMENT_NAME = "KEY_DOCUMENT_NAME";
-    public static final String KEY_FILE_NAME = "KEY_FILE_NAME";
-    public static final String KEY_OPEN_GALLERY = "KEY_OPEN_GALLERY";
+//    public static final String KEY_DOCUMENT_NAME = "KEY_DOCUMENT_NAME";
+//    public static final String KEY_FILE_NAME = "KEY_FILE_NAME";
+//    public static final String KEY_OPEN_GALLERY = "KEY_OPEN_GALLERY";
     public static final String KEY_RETAKE_IMAGE = "KEY_RETAKE_IMAGE";
     public static final String KEY_RETAKE_IMAGE_ID = "KEY_RETAKE_IMAGE_ID";
 
@@ -479,9 +479,10 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 //            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
 //            Without this flag the activities would all be added to the back stack.
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra(KEY_OPEN_GALLERY, true);
-        intent.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
-        intent.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
+        // TODO: Activity will be removed anyway
+//        intent.putExtra(KEY_OPEN_GALLERY, true);
+//        intent.putExtra(KEY_DOCUMENT_NAME, mDocument.getTitle());
+//        intent.putExtra(KEY_FILE_NAME, mPage.getFile().getAbsolutePath());
         return intent;
     }
 
@@ -587,7 +588,8 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
     private void initSegmentationButton() {
         findViewById(R.id.page_view_buttons_layout_segmentation).setOnClickListener(v -> {
             if (mPage != null) {
-                startActivity(SegmentationActivity.Companion.newInstance(this, mPage.getFile().getAbsolutePath()));
+                // TODO: Adapt SegmentationActivity
+//                startActivity(SegmentationActivity.Companion.newInstance(this, mPage));
             }
         });
     }

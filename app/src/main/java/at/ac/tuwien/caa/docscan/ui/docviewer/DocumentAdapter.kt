@@ -116,7 +116,7 @@ class DocumentAdapter(
 }
 
 private fun loadThumbnail(thumbnail: ImageView, file: File, context: Context) {
-// TODO: This is duplicated across the entire app
+// TODO: This is duplicated across the entire app, introduce a GlideHandler class for this purpose.
     var exifOrientation = -1
 
     try {

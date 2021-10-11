@@ -13,24 +13,23 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 class ImagesViewModel(extras: Bundle, val repository: DocumentRepository) : ViewModel() {
-    
+
     val documentId: UUID = extras.getSerializable(ARG_DOCUMENT_ID) as UUID
     val fileId = extras.getSerializable(ARG_FILE_ID) as? UUID
 
-    val observablePages = MutableLiveData<List<PageSelection>>()
+    val observablePages = MutableLiveData<ImageModel>()
     val observableDoc = MutableLiveData<Document>()
 
     init {
         viewModelScope.launch {
             repository.getDocumentWithPagesAsFlow(documentId).collectLatest {
-                val pages = it?.pages ?: return@collectLatest // TODO: Add empty handling
-                observableDoc.postValue(it.document)
-                val currentPages = observablePages.value
-                observablePages.postValue(pages.map { page ->
-                    PageSelection(
-                        page,
-                        currentPages?.find { currentPage -> currentPage.page.id == page.id } != null)
-                })
+                val pages = it?.pages
+//                observableDoc.postValue(it.document)
+                val currentModel = observablePages.value
+                val selectionList = pages?.map { page -> PageSelection(page, currentModel?.pages?.find { currentPage -> currentPage.page.id == page.id } != null) }
+                        ?: listOf()
+                // TODO: Check scrolling mechanism, only scroll if necessary.
+                observablePages.postValue(ImageModel(selectionList, selectionList.indexOfFirst { page -> page.page.id == fileId }))
             }
         }
     }
@@ -45,7 +44,7 @@ class ImagesViewModel(extras: Bundle, val repository: DocumentRepository) : View
 
     fun setSelectedForAll(isSelected: Boolean) {
         val pages = observablePages.value ?: return
-        pages.forEach { page ->
+        pages.pages.forEach { page ->
             page.isSelected = isSelected
         }
         observablePages.postValue(pages)
@@ -53,7 +52,7 @@ class ImagesViewModel(extras: Bundle, val repository: DocumentRepository) : View
 
     fun setSelected(page: PageSelection, isSelected: Boolean) {
         val pages = observablePages.value ?: return
-        val foundPage = pages.find { currentPage -> currentPage.page.id == page.page.id }
+        val foundPage = pages.pages.find { currentPage -> currentPage.page.id == page.page.id }
         foundPage?.isSelected = isSelected
         observablePages.postValue(pages)
     }

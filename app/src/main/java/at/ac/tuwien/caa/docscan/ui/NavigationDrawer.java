@@ -350,6 +350,7 @@ public class NavigationDrawer implements NavigationView.OnNavigationItemSelected
      * List of all possible navigation items.
      * Howto remove menu items: Comment the item below and change the return value in the
      * corresponding getSelfNavDrawerItem() function.
+     * TODO: Using classes as a param for creating intents will bypass the activity's entry points.
      */
     public enum NavigationItemEnum {
 

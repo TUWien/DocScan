@@ -3,20 +3,29 @@ package at.ac.tuwien.caa.docscan.ui.gallery.newPackage
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DiffUtil
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityPageSlideBinding
+import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.Page
+import at.ac.tuwien.caa.docscan.db.model.asDocumentPageExtra
+import at.ac.tuwien.caa.docscan.gallery.PageImageView
+import at.ac.tuwien.caa.docscan.logic.FileType
+import at.ac.tuwien.caa.docscan.ui.CropViewActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
+import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
+import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import java.util.*
 
-class PageSlideActivity : AppCompatActivity() {
+// TODO: Checkout how to handle zoom out transitions.
+class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener {
 
     private lateinit var binding: ActivityPageSlideBinding
     private val viewModel: PageSlideViewModel by viewModel { parametersOf(intent.extras!!) }
@@ -25,10 +34,8 @@ class PageSlideActivity : AppCompatActivity() {
     private val callback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             super.onPageSelected(position)
-            updateTitle(
-                binding.slideViewpager.currentItem,
-                viewModel.observablePages.value?.first?.size ?: 0
-            )
+            updateTitle(binding.slideViewpager.currentItem, viewModel.observablePages.value?.first?.size
+                    ?: 0)
         }
     }
 
@@ -56,7 +63,14 @@ class PageSlideActivity : AppCompatActivity() {
 
         //       Take care that the mToolbar is not overlaid by the status bar:
         binding.imageViewerToolbar.setPadding(0, getStatusBarHeight(), 0, 0)
-        // TODO: Check if the navigation listeners are necessary
+
+        // Close the fragment if the user hits the back button in the toolbar:
+        binding.imageViewerToolbar.apply {
+            setNavigationOnClickListener { onBackPressed() }
+            setOnClickListener {
+                viewModel.navigateToDocumentViewer(binding.slideViewpager.currentItem)
+            }
+        }
 
         binding.slideViewpager.adapter = adapter
         initButtons()
@@ -78,6 +92,7 @@ class PageSlideActivity : AppCompatActivity() {
         viewModel.observablePages.observe(this, {
             binding.slideViewpager.unregisterOnPageChangeCallback(callback)
             adapter.setItems(it.first)
+            // scroll only if a valid position has been requested
             if (it.second != -1) {
                 binding.slideViewpager.currentItem = it.second
             }
@@ -85,9 +100,36 @@ class PageSlideActivity : AppCompatActivity() {
             binding.slideViewpager.registerOnPageChangeCallback(callback)
         })
         viewModel.observableInitCrop.observe(this, {
-            it.getContentIfNotHandled()?.let { page ->
-                // TODO: Start cropping activity
+            it.getContentIfNotHandled()?.let { pair ->
+                navigateToCropActivity(pair.first, pair.second)
                 // TODO: Zoom out of scale for this specific image view
+
+                //                    Zoom out before opening the CropViewActivity:
+//                PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
+//                SubsamplingScaleImageView.AnimationBuilder ab = imageView.animateScale(0);
+////            I am not sure, why this is happening, but it happened once on MotoG3
+//                if (ab == null) {
+//                    startCropView();
+//                    return;
+//                }
+//
+//                imageView.animateScale(0).withOnAnimationEventListener(new SubsamplingScaleImageView.OnAnimationEventListener() {
+//                    @Override
+//                    public void onComplete() {
+//                        startCropView();
+//
+//                    }
+//
+//                    @Override
+//                    public void onInterruptedByUser() {
+//                        startCropView();
+//                    }
+//
+//                    @Override
+//                    public void onInterruptedByNewAnim() {
+//                        startCropView();
+//                    }
+//                }).start();
             }
         })
         viewModel.observableInitRetake.observe(this, {
@@ -95,15 +137,36 @@ class PageSlideActivity : AppCompatActivity() {
                 startActivity(CameraActivity.newInstance(this, pair.first, pair.second))
             }
         })
+        viewModel.observableSharePage.observe(this, {
+            it.getContentIfNotHandled()?.let { uri ->
+                val shareIntent = Intent().apply {
+                    action = Intent.ACTION_SEND
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    setDataAndType(uri, contentResolver.getType(uri))
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    type = FileType.JPEG.mimeType
+                }
+                startActivity(Intent.createChooser(shareIntent, getString(R.string.page_slide_fragment_share_choose_app_text)))
+            }
+        })
+        viewModel.observableInitSegmentation.observe(this, {
+            it.getContentIfNotHandled()?.let { page ->
+                startActivity(SegmentationActivity.newInstance(this, page))
+            }
+        })
+        viewModel.observableInitDocumentViewer.observe(this, {
+            it.getContentIfNotHandled()?.let { page ->
+                startActivity(DocumentViewerActivity.newInstance(this, page.asDocumentPageExtra()))
+            }
+        })
     }
 
-    // TODO: Init buttons!
     private fun initButtons() {
         binding.pageViewButtons.pageViewButtonsLayoutDeleteButton.setOnClickListener {
             val builder = MaterialAlertDialogBuilder(this)
             builder.setTitle(R.string.page_slide_fragment_confirm_delete_text)
             builder.setPositiveButton(
-                R.string.page_slide_fragment_confirm_delete_text
+                    R.string.page_slide_fragment_confirm_delete_text
             ) { _, _ ->
                 viewModel.deletePageAtPosition(binding.slideViewpager.currentItem)
             }
@@ -115,33 +178,29 @@ class PageSlideActivity : AppCompatActivity() {
         binding.pageViewButtons.pageViewButtonsLayoutRotateButton.setOnClickListener {
             viewModel.retakeImageAtPosition(binding.slideViewpager.currentItem)
         }
+        binding.pageViewButtons.pageViewButtonsLayoutShareButton.setOnClickListener {
+            viewModel.shareImageAtPosition(binding.slideViewpager.currentItem)
+        }
+        binding.pageViewButtons.pageViewButtonsLayoutSegmentation.setOnClickListener {
+            viewModel.debugSegmentation(binding.slideViewpager.currentItem)
+        }
     }
-
-//    private void initButtons() {
-//
-//        mButtonsLayout = findViewById(R.id.page_view_buttons_layout);
-//        //       Take care that the mButtonsLayout is not overlaid by the navigation bar:
-//        //       mButtonsLayout.setPadding(0, 0, 0, getNavigationBarHeight());
-//
-//        //        initGalleryButton();
-//        initCropButton();
-//        initDeleteButton();
-//        initRotateButton();
-//        initShareButton();
-//        initSegmentationButton();
-//    }
 
     private fun updateTitle(current: Int, size: Int) {
         supportActionBar?.title = "${(current + 1)}" + "/" + size
     }
 
+    private fun navigateToCropActivity(doc: Document, page: Page) {
+        // TODO: Add doc and page, adapt the CropViewActivity
+        startActivity(CropViewActivity.newInstance(this))
+    }
 
     private inner class PageSlideAdapter(private var pages: MutableList<Page> = mutableListOf()) :
-        FragmentStateAdapter(this) {
+            FragmentStateAdapter(this) {
         override fun getItemCount() = pages.size
 
         override fun createFragment(position: Int) =
-            ImageViewerFragment.newInstance(pages[position].id)
+                ImageViewerFragment.newInstance(pages[position].id)
 
         fun setItems(pages: List<Page>) {
             val callback = PagerDiffUtil(this.pages, pages)
@@ -150,12 +209,11 @@ class PageSlideActivity : AppCompatActivity() {
             this.pages.addAll(pages)
             diff.dispatchUpdatesTo(this)
         }
-
     }
 
     private inner class PagerDiffUtil(
-        private val oldList: List<Page>,
-        private val newList: List<Page>
+            private val oldList: List<Page>,
+            private val newList: List<Page>
     ) : DiffUtil.Callback() {
 
         override fun getOldListSize() = oldList.size
@@ -169,6 +227,16 @@ class PageSlideActivity : AppCompatActivity() {
         override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
             // as long as the ids are ok, we do not provide any changes, because the changes to the file are taken care of the fragment.
             return oldList[oldItemPosition].id == newList[newItemPosition].id
+        }
+    }
+
+    override fun onSingleClick() {
+        if (binding.imageViewerToolbar.visibility == View.VISIBLE) {
+            binding.imageViewerToolbar.visibility = View.INVISIBLE
+            binding.pageViewButtons.pageViewButtonsLayout.visibility = View.INVISIBLE
+        } else {
+            binding.imageViewerToolbar.visibility = View.VISIBLE
+            binding.pageViewButtons.pageViewButtonsLayout.visibility = View.VISIBLE
         }
     }
 }

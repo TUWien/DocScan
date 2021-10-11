@@ -30,11 +30,9 @@ import java.net.URLEncoder
 class PdfFragment : Fragment() {
 
     companion object {
-        fun newInstance(bundle: Bundle): PdfFragment {
-            val fragment = PdfFragment()
-            fragment.arguments = bundle
-            return fragment
-        }
+
+        // TODO: new PDF keys are not passed as an intent anymore, check how this can be achieved.
+        fun newInstance() = PdfFragment()
 
         const val TAG = "PdfFragment"
         const val NEW_PDFS_KEY = "NEW_PDFS_KEY"
@@ -47,8 +45,8 @@ class PdfFragment : Fragment() {
 //    private lateinit var newPdfs: MutableList<String>
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
 
         return inflater.inflate(R.layout.fragment_pdfs, container, false)
@@ -74,13 +72,13 @@ class PdfFragment : Fragment() {
         val sm = context!!.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 
         val rootId =
-            if (sm.primaryStorageVolume.isEmulated)
-                "primary"
-            else
-                sm.primaryStorageVolume.uuid
+                if (sm.primaryStorageVolume.isEmulated)
+                    "primary"
+                else
+                    sm.primaryStorageVolume.uuid
 
         val rootUri =
-            DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", rootId)
+                DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", rootId)
         val documentsDir = Environment.DIRECTORY_DOCUMENTS
         val docScanDir = getString(R.string.app_name)
         val concatedDir = ":$documentsDir/$docScanDir"
@@ -110,10 +108,10 @@ class PdfFragment : Fragment() {
 
 
     override fun onActivityResult(
-        requestCode: Int, resultCode: Int, resultData: Intent?
+            requestCode: Int, resultCode: Int, resultData: Intent?
     ) {
         if (requestCode == PERSISTABLE_URI_PERMISSION
-            && resultCode == Activity.RESULT_OK
+                && resultCode == Activity.RESULT_OK
         ) {
             // The result data contains a URI for the document or directory that
             // the user selected.
@@ -129,8 +127,8 @@ class PdfFragment : Fragment() {
             return
         }
         context?.contentResolver?.takePersistableUriPermission(
-            uri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
         )
 
         val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
@@ -189,15 +187,14 @@ class PdfFragment : Fragment() {
 
             val uri = Uri.parse(dir)
             val uriFolder = DocumentsContract.buildChildDocumentsUriUsingTree(
-                uri,
-                DocumentsContract.getTreeDocumentId(uri)
+                    uri,
+                    DocumentsContract.getTreeDocumentId(uri)
             )
 
             val documentId = DocumentsContract.getDocumentId(uriFolder)
             val pdfUri = DocumentsContract.buildDocumentUriUsingTree(uri, "$documentId/$fileName")
             file = DocumentFile.fromSingleUri(context!!, pdfUri)
-        }
-        else {
+        } else {
             val pdfFolder = Helper.getPDFStorageDir(getString(R.string.app_name))
             val directPathFile = File(pdfFolder, fileName)
             file = DocumentFile.fromFile(directPathFile)
@@ -309,20 +306,20 @@ class PdfFragment : Fragment() {
 
     }
 
-//    TODO: check which functions can be taken from KtHelper
+    //    TODO: check which functions can be taken from KtHelper
     private fun showDirectoryPermissionRequiredAlert() {
 
         val text = getString(R.string.pdf_fragment_persisted_permission_text)
         val title = getString(R.string.pdf_fragment_persisted_permission_title)
 
         val alertDialogBuilder = AlertDialog.Builder(context!!)
-            .setTitle(title)
-            .setMessage(text)
-            .setPositiveButton(R.string.dialog_ok_text) { _, _ ->
-                openDocScanDocumentDir()
-            }
-            .setNegativeButton(R.string.dialog_cancel_text, null)
-            .setCancelable(true)
+                .setTitle(title)
+                .setMessage(text)
+                .setPositiveButton(R.string.dialog_ok_text) { _, _ ->
+                    openDocScanDocumentDir()
+                }
+                .setNegativeButton(R.string.dialog_cancel_text, null)
+                .setCancelable(true)
         alertDialogBuilder.create().show()
 
     }
@@ -351,8 +348,7 @@ class PdfFragment : Fragment() {
                     showDirectoryPermissionRequiredAlert()
                 }
             }
-        }
-        else {
+        } else {
             updatePdfs()
             pdf_list.layoutManager = LinearLayoutManager(context)
         }
@@ -387,9 +383,9 @@ class PdfFragment : Fragment() {
 
     }
 
-    private fun getPdfsWithDirectFilePaths() : MutableList<Pdf> {
+    private fun getPdfsWithDirectFilePaths(): MutableList<Pdf> {
 
-        val dir : File? = Helper.getPDFStorageDir(getString(R.string.app_name))
+        val dir: File? = Helper.getPDFStorageDir(getString(R.string.app_name))
         val pdfList: MutableList<Pdf> = ArrayList()
 
         if (dir != null) {
@@ -418,23 +414,23 @@ class PdfFragment : Fragment() {
 
         val uri = Uri.parse(dir)
         val uriFolder = DocumentsContract.buildChildDocumentsUriUsingTree(
-            uri,
-            DocumentsContract.getTreeDocumentId(uri)
+                uri,
+                DocumentsContract.getTreeDocumentId(uri)
         )
 
         val pdfList: MutableList<Pdf> = ArrayList()
         if (uriFolder != null && context != null) {
             val cursor = context?.contentResolver?.query(
-                uriFolder,
-                arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
-                null,
-                null,
-                null
+                    uriFolder,
+                    arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
+                    null,
+                    null,
+                    null
             )
             if (cursor != null && cursor.moveToFirst()) {
                 do {
                     val pdfUri =
-                        DocumentsContract.buildDocumentUriUsingTree(uri, cursor.getString(0))
+                            DocumentsContract.buildDocumentUriUsingTree(uri, cursor.getString(0))
                     val file = DocumentFile.fromSingleUri(context!!, pdfUri)
                     if (file?.type == "application/pdf") {
                         val pdf = fileToPdf(file)
@@ -469,7 +465,7 @@ class PdfFragment : Fragment() {
     }
 
     class Pdf(val name: String, val file: DocumentFile, val fileSize: String, var date: String) :
-        Comparable<Pdf> {
+            Comparable<Pdf> {
 
         //        the badge shows that the pdf is new:
         var showBadge = false

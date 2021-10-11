@@ -16,6 +16,9 @@ interface DocumentDao {
     suspend fun getDocumentWithPages(documentId: UUID): DocumentWithPages?
 
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_ID} =:documentId")
+    suspend fun getDocument(documentId: UUID): Document?
+
+    @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_ID} =:documentId")
     fun getDocumentWithPagesAsFlow(documentId: UUID): Flow<DocumentWithPages?>
 
     @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_ID} =:pageId")

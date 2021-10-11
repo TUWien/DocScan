@@ -30,7 +30,7 @@ class DocumentsFragment : Fragment() {
     ): View {
         binding = FragmentDocumentsBinding.inflate(inflater, container, false)
         adapter = DocumentAdapter({
-            sharedViewModel.selectDocument(it)
+            sharedViewModel.selectDocument(it.document)
         }, {
             sharedViewModel.selectDocumentOptions(it)
         })

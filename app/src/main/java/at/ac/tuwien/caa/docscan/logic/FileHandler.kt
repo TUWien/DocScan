@@ -12,6 +12,7 @@ import java.io.FileInputStream
 import java.util.*
 import android.media.MediaScannerConnection
 import android.media.MediaScannerConnection.OnScanCompletedListener
+import androidx.core.content.FileProvider
 
 
 /**
@@ -26,9 +27,9 @@ class FileHandler(private val context: Context) {
 
         private const val ASSET_FOLDER_SEGMENTATION = "segmentation"
         private val ASSET_FOLDER_SEGMENTATION_META =
-            ASSET_FOLDER_SEGMENTATION + File.separator + "meta"
+                ASSET_FOLDER_SEGMENTATION + File.separator + "meta"
         val ASSET_FOLDER_SEGMENTATION_MODELS =
-            ASSET_FOLDER_SEGMENTATION + File.separator + "models"
+                ASSET_FOLDER_SEGMENTATION + File.separator + "models"
         const val FOLDER_DOCUMENTS = "documents"
         const val FOLDER_TEMP = "temp"
     }
@@ -38,7 +39,7 @@ class FileHandler(private val context: Context) {
      * @return the internal cache temp folder.
      */
     private fun getCacheTempFolder() =
-        File(context.cacheDir.absolutePath + File.separator + FOLDER_TEMP)
+            File(context.cacheDir.absolutePath + File.separator + FOLDER_TEMP)
 
     /**
      * Post-Condition: No guarantees if the documents folder exists.
@@ -46,7 +47,7 @@ class FileHandler(private val context: Context) {
      */
     // TODO: Change this back to internal storage!
     private fun getDocumentsFolder() =
-        File(context.getExternalFilesDir("DocScan")!!.absolutePath + File.separator + FOLDER_DOCUMENTS)
+            File(context.getExternalFilesDir("DocScan")!!.absolutePath + File.separator + FOLDER_DOCUMENTS)
 
     /**
      * Post-Condition: No guarantees if the specific documents folder exists.
@@ -62,9 +63,9 @@ class FileHandler(private val context: Context) {
      * @return the file reference to the file for a specific document.
      */
     private fun getDocumentFileById(
-        docId: String,
-        fileId: String,
-        createIfNecessary: Boolean = false
+            docId: String,
+            fileId: String,
+            createIfNecessary: Boolean = false
     ): File {
         val specificDocFolder = getDocumentFolderById(docId)
         if (createIfNecessary) {
@@ -112,11 +113,11 @@ class FileHandler(private val context: Context) {
     @Throws(Exception::class)
     private fun Uri.fileInputStream(): FileInputStream {
         return FileInputStream(
-            context.contentResolver.openFileDescriptor(
-                this,
-                "r",
-                null
-            )!!.fileDescriptor
+                context.contentResolver.openFileDescriptor(
+                        this,
+                        "r",
+                        null
+                )!!.fileDescriptor
         )
     }
 
@@ -142,9 +143,9 @@ class FileHandler(private val context: Context) {
             try {
                 // open meta json
                 val json =
-                    context.assets.open(ASSET_FOLDER_SEGMENTATION_META + File.separator + it)
-                        .bufferedReader()
-                        .readText()
+                        context.assets.open(ASSET_FOLDER_SEGMENTATION_META + File.separator + it)
+                                .bufferedReader()
+                                .readText()
                 list.add(gson.fromJson(json, TFLiteModel::class.java))
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to open/parse $it", e)
@@ -160,9 +161,9 @@ class FileHandler(private val context: Context) {
 
     fun createDocumentFile(documentId: UUID, fileId: UUID, fileType: FileType): File {
         return getDocumentFileById(
-            documentId.toString(),
-            fileId = fileId.toString() + "." + fileType.extension,
-            createIfNecessary = true
+                documentId.toString(),
+                fileId = fileId.toString() + "." + fileType.extension,
+                createIfNecessary = true
         )
     }
 
@@ -214,7 +215,7 @@ class FileHandler(private val context: Context) {
 
     fun getImageFileByPage(docId: UUID, fileId: UUID): File? {
         val file =
-            getDocumentFileById(docId.toString(), fileId.toString() + "." + FileType.JPEG.extension)
+                getDocumentFileById(docId.toString(), fileId.toString() + "." + FileType.JPEG.extension)
         return if (file.exists()) {
             file
         } else {
@@ -226,10 +227,24 @@ class FileHandler(private val context: Context) {
     fun getFileByPage(page: Page): File? {
         return getImageFileByPage(page.docId, page.id)
     }
+
+    fun getUriByPage(page: Page): Uri? {
+        val file = getFileByPage(page) ?: return null
+        return try {
+            getUri(file)
+        } catch (e: Exception) {
+            Timber.w("Unable to retrieve uri from page!", e)
+            null
+        }
+    }
+
+    private fun getUri(file: File): Uri? {
+        return FileProvider.getUriForFile(context, "at.ac.tuwien.caa.fileprovider", file)
+    }
 }
 
-enum class FileType(val extension: String) {
-    JPEG("jpg")
+enum class FileType(val extension: String, val mimeType: String) {
+    JPEG("jpg", "image/jpg")
 }
 
 private fun File.safelyRecursiveDelete() {

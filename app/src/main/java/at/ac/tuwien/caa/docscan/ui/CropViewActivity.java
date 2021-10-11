@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.ui;
 
 import android.animation.Animator;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -46,11 +47,7 @@ import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 
-import static at.ac.tuwien.caa.docscan.ui.MapViewActivity.KEY_MAP_VIEW_ACTIVITY_FINISHED;
-import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_DOCUMENT_NAME;
-import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_FILE_NAME;
-import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_OPEN_GALLERY;
-
+//import static at.ac.tuwien.caa.docscan.ui.MapViewActivity.KEY_MAP_VIEW_ACTIVITY_FINISHED;
 /**
  * Created by fabian on 21.11.2017.
  */
@@ -70,6 +67,10 @@ public class CropViewActivity extends AppCompatActivity {
     private float mImageHeightWidthRatio;
 
     private static final String CLASS_NAME = "CropViewActivity";
+
+    public static Intent newInstance(Context context) {
+        return new Intent(context, CropViewActivity.class);
+    }
 
 //    /**
 //     * Static initialization of the OpenCV and docscan-native modules.
@@ -164,11 +165,12 @@ public class CropViewActivity extends AppCompatActivity {
 //        Determine if the MapViewActivity has just closed and the image has been cropped (and
 //        mapped). In this case we do not need the CropViewActivity, but we want to get back to its
 //        calling Activity (might be CameraActivity or GalleryActivity).
-        boolean hasMapViewActivityFinished = getIntent().getBooleanExtra(
-                KEY_MAP_VIEW_ACTIVITY_FINISHED, false);
-        if (hasMapViewActivityFinished) {
-            finish();
-        }
+        // TODO: Check if ths MapActivity is even used/necessary
+//        boolean hasMapViewActivityFinished = getIntent().getBooleanExtra(
+//                KEY_MAP_VIEW_ACTIVITY_FINISHED, false);
+//        if (hasMapViewActivityFinished) {
+//            finish();
+//        }
 
     }
 
@@ -401,13 +403,14 @@ public class CropViewActivity extends AppCompatActivity {
 
         MaterialButton openDocumentViewButton = layout.findViewById(R.id.open_document_viewer_button);
         openDocumentViewButton.setOnClickListener(view -> {
+            // TODO: Use the newInstance function to pass the correct doc/pageId
             final Intent intent = new Intent(getApplicationContext(), DocumentViewerActivity.class);
 //            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.
 //            Without this flag the activities would all be added to the back stack.
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.putExtra(KEY_OPEN_GALLERY, true);
-            intent.putExtra(KEY_DOCUMENT_NAME, mDocumentTitle);
-            intent.putExtra(KEY_FILE_NAME, mFileName);
+//            intent.putExtra(KEY_OPEN_GALLERY, true);
+//            intent.putExtra(KEY_DOCUMENT_NAME, mDocumentTitle);
+//            intent.putExtra(KEY_FILE_NAME, mFileName);
             startActivity(intent);
             finish();
 

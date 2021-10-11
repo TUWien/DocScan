@@ -36,7 +36,7 @@ public class PageImageView extends SubsamplingScaleImageView {
     public PageImageView(Context context, AttributeSet attr) {
         super(context, attr);
 
-//        mClickCallBack = (SingleClickListener) context;
+        mClickCallBack = (SingleClickListener) context;
 
         initPaint();
 

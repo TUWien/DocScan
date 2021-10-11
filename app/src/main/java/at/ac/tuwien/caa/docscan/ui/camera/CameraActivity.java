@@ -97,6 +97,7 @@ import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages;
 import at.ac.tuwien.caa.docscan.db.model.Page;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
+import at.ac.tuwien.caa.docscan.logic.DocumentViewerLaunchViewType;
 import at.ac.tuwien.caa.docscan.logic.Failure;
 import at.ac.tuwien.caa.docscan.logic.FileHandler;
 import at.ac.tuwien.caa.docscan.logic.Helper;
@@ -626,12 +627,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         checkAppVersion();
 
         FloatingActionButton fab = findViewById(R.id.document_fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(getApplicationContext(), DocumentViewerActivity.class));
-            }
-        });
+        fab.setOnClickListener(view -> startActivity(DocumentViewerActivity.Companion.newInstance(CameraActivity.this, DocumentViewerLaunchViewType.DOCUMENTS)));
 
     }
 

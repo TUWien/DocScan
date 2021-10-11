@@ -9,6 +9,9 @@ import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.Page
+import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
+import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
+import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
@@ -17,10 +20,10 @@ import java.io.File
 import java.util.*
 
 class DocumentRepository(
-    private val fileHandler: FileHandler,
-    private val pageDao: PageDao,
-    private val documentDao: DocumentDao,
-    private val db: AppDatabase
+        private val fileHandler: FileHandler,
+        private val pageDao: PageDao,
+        private val documentDao: DocumentDao,
+        private val db: AppDatabase
 ) {
 
     fun getPageByIdAsFlow(pageId: UUID) = documentDao.getPageAsFlow(pageId)
@@ -30,6 +33,9 @@ class DocumentRepository(
     fun getDocumentWithPagesAsFlow(documentId: UUID) = documentDao.getDocumentWithPagesAsFlow(documentId)
 
     suspend fun getDocumentWithPages(documentId: UUID) = documentDao.getDocumentWithPages(documentId)
+
+    @WorkerThread
+    suspend fun getDocument(documentId: UUID) = documentDao.getDocument(documentId)
 
     fun getAllDocuments() = documentDao.getAllDocumentWithPages()
 
@@ -50,10 +56,10 @@ class DocumentRepository(
         Timber.d("creating new active document!")
         // TODO: What should be the document's title in the default case?
         val doc = Document(
-            id = UUID.randomUUID(),
-            "Untitled document",
-            true,
-            null
+                id = UUID.randomUUID(),
+                "Untitled document",
+                true,
+                null
         )
         documentDao.insertDocument(doc)
         return doc
@@ -61,10 +67,10 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun saveNewImageForActiveDocument(
-        document: Document,
-        data: ByteArray,
-        fileId: UUID? = null,
-        exifMetaData: ImageExifMetaData
+            document: Document,
+            data: ByteArray,
+            fileId: UUID? = null,
+            exifMetaData: ImageExifMetaData
     ): Resource<Page> {
         Timber.d("Starting to save new image for document: ${document.title}")
         // TODO: Make a check here, if there is enough storage to save the file.
@@ -105,13 +111,13 @@ class DocumentRepository(
         // or increment the page number of the last page in the document.
         // TODO: The numbers do not work correctly.
         val pageNumber =
-            (pageDao.getPageById(newFileId) ?: pageDao.getPagesByDoc(newFileId)
-                .maxByOrNull { page -> page.number })?.number?.let {
-                // increment if there is an existing page
-                it + 1
-            } ?: 0
+                (pageDao.getPageById(newFileId) ?: pageDao.getPagesByDoc(newFileId)
+                        .maxByOrNull { page -> page.number })?.number?.let {
+                    // increment if there is an existing page
+                    it + 1
+                } ?: 0
 
-        val newPage = Page(id = newFileId, docId = document.id, number = pageNumber)
+        val newPage = Page(newFileId, document.id, pageNumber, Rotation.getRotationByExif(exifMetaData.exifOrientation), PostProcessingState.DRAFT, SinglePageBoundary.getDefault())
 
         // 4. Update file in database (create or update)
         db.withTransaction {
@@ -128,8 +134,8 @@ class DocumentRepository(
         try {
             val exif = ExifInterface(file)
             exif.setAttribute(
-                ExifInterface.TAG_ORIENTATION,
-                exifMetaData.exifOrientation.toString()
+                    ExifInterface.TAG_ORIENTATION,
+                    exifMetaData.exifOrientation.toString()
             )
             exif.setAttribute(ExifInterface.TAG_SOFTWARE, exifMetaData.exifSoftware)
             exifMetaData.exifArtist?.let {

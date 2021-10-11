@@ -41,6 +41,7 @@ import java.util.List;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
+import at.ac.tuwien.caa.docscan.db.model.exif.Rotation;
 import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
@@ -184,6 +185,15 @@ public class Helper {
         } catch (Exception e) {
             Timber.e(e, "Exif orientation couldn't be determined!");
             return -1;
+        }
+    }
+
+    public static Rotation getNewSafeExifOrientation(File outFile) {
+        try {
+            return Rotation.Companion.getRotationByExif(getExifOrientation(outFile));
+        } catch (Exception e) {
+            Timber.e(e, "Exif orientation couldn't be determined!");
+            return Rotation.Companion.getRotationByExif(-1);
         }
     }
 
