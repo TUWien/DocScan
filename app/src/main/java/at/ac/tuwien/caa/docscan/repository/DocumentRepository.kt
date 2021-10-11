@@ -7,7 +7,9 @@ import at.ac.tuwien.caa.docscan.camera.ImageExifMetaData
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
+import at.ac.tuwien.caa.docscan.db.exception.DBDocumentDuplicate
 import at.ac.tuwien.caa.docscan.db.model.Document
+import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
@@ -20,19 +22,21 @@ import java.io.File
 import java.util.*
 
 class DocumentRepository(
-        private val fileHandler: FileHandler,
-        private val pageDao: PageDao,
-        private val documentDao: DocumentDao,
-        private val db: AppDatabase
+    private val fileHandler: FileHandler,
+    private val pageDao: PageDao,
+    private val documentDao: DocumentDao,
+    private val db: AppDatabase
 ) {
 
     fun getPageByIdAsFlow(pageId: UUID) = documentDao.getPageAsFlow(pageId)
 
     fun getPageById(pageId: UUID) = documentDao.getPage(pageId)
 
-    fun getDocumentWithPagesAsFlow(documentId: UUID) = documentDao.getDocumentWithPagesAsFlow(documentId)
+    fun getDocumentWithPagesAsFlow(documentId: UUID) =
+        documentDao.getDocumentWithPagesAsFlow(documentId)
 
-    suspend fun getDocumentWithPages(documentId: UUID) = documentDao.getDocumentWithPages(documentId)
+    suspend fun getDocumentWithPages(documentId: UUID) =
+        documentDao.getDocumentWithPages(documentId)
 
     @WorkerThread
     suspend fun getDocument(documentId: UUID) = documentDao.getDocument(documentId)
@@ -52,25 +56,61 @@ class DocumentRepository(
     }
 
     @WorkerThread
+    suspend fun setDocumentAsActive(documentId: UUID) {
+        db.runInTransaction {
+            documentDao.setAllDocumentsInactive()
+            documentDao.setDocumentActive(documentId = documentId)
+        }
+    }
+
+    @WorkerThread
+    suspend fun removeDocument(documentWithPages: DocumentWithPages) {
+        withContext(NonCancellable) {
+            db.runInTransaction {
+                fileHandler.deleteEntireDocumentFolder(documentWithPages.document.id)
+                pageDao.deletePages(documentWithPages.pages)
+                documentDao.deleteDocument(documentWithPages.document)
+            }
+        }
+    }
+
+    @WorkerThread
     fun createNewActiveDocument(): Document {
         Timber.d("creating new active document!")
         // TODO: What should be the document's title in the default case?
         val doc = Document(
-                id = UUID.randomUUID(),
-                "Untitled document",
-                true,
-                null
+            id = UUID.randomUUID(),
+            "Untitled document",
+            true,
+            null
         )
         documentDao.insertDocument(doc)
         return doc
     }
 
     @WorkerThread
+    fun createOrUpdateDocument(document: Document): Resource<Document> {
+        val docByNewTitle = documentDao.getDocumentByTitle(documentTitle = document.title)
+        return if (docByNewTitle == null || docByNewTitle.id == document.id) {
+            db.runInTransaction {
+                //TODO: Check this, this should make it only active if it'S a new one
+                if (document.isActive) {
+                    documentDao.setAllDocumentsInactive()
+                }
+                documentDao.insertDocument(document)
+            }
+            Success(document)
+        } else {
+            Failure(DBDocumentDuplicate())
+        }
+    }
+
+    @WorkerThread
     suspend fun saveNewImageForActiveDocument(
-            document: Document,
-            data: ByteArray,
-            fileId: UUID? = null,
-            exifMetaData: ImageExifMetaData
+        document: Document,
+        data: ByteArray,
+        fileId: UUID? = null,
+        exifMetaData: ImageExifMetaData
     ): Resource<Page> {
         Timber.d("Starting to save new image for document: ${document.title}")
         // TODO: Make a check here, if there is enough storage to save the file.
@@ -111,13 +151,20 @@ class DocumentRepository(
         // or increment the page number of the last page in the document.
         // TODO: The numbers do not work correctly.
         val pageNumber =
-                (pageDao.getPageById(newFileId) ?: pageDao.getPagesByDoc(newFileId)
-                        .maxByOrNull { page -> page.number })?.number?.let {
-                    // increment if there is an existing page
-                    it + 1
-                } ?: 0
+            (pageDao.getPageById(newFileId) ?: pageDao.getPagesByDoc(newFileId)
+                .maxByOrNull { page -> page.number })?.number?.let {
+                // increment if there is an existing page
+                it + 1
+            } ?: 0
 
-        val newPage = Page(newFileId, document.id, pageNumber, Rotation.getRotationByExif(exifMetaData.exifOrientation), PostProcessingState.DRAFT, SinglePageBoundary.getDefault())
+        val newPage = Page(
+            newFileId,
+            document.id,
+            pageNumber,
+            Rotation.getRotationByExif(exifMetaData.exifOrientation),
+            PostProcessingState.DRAFT,
+            SinglePageBoundary.getDefault()
+        )
 
         // 4. Update file in database (create or update)
         db.withTransaction {
@@ -134,8 +181,8 @@ class DocumentRepository(
         try {
             val exif = ExifInterface(file)
             exif.setAttribute(
-                    ExifInterface.TAG_ORIENTATION,
-                    exifMetaData.exifOrientation.toString()
+                ExifInterface.TAG_ORIENTATION,
+                exifMetaData.exifOrientation.toString()
             )
             exif.setAttribute(ExifInterface.TAG_SOFTWARE, exifMetaData.exifSoftware)
             exifMetaData.exifArtist?.let {
@@ -159,5 +206,4 @@ class DocumentRepository(
             Timber.e(exception, "Couldn't save exif attributes!")
         }
     }
-
 }

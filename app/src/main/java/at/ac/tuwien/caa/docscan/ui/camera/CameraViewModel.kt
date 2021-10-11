@@ -18,7 +18,9 @@ import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -27,6 +29,7 @@ class CameraViewModel(
     private val preferencesHandler: PreferencesHandler,
     private val app: DocScanApp
 ) : ViewModel() {
+
     val observableActiveDocument: MutableLiveData<DocumentWithPages?> = MutableLiveData()
     val observableImageLoadingProgress: MutableLiveData<Boolean> = MutableLiveData()
     val observableTookImage: MutableLiveData<Event<Resource<Page>>> = MutableLiveData()
@@ -34,6 +37,8 @@ class CameraViewModel(
 
     private var retakePageId: UUID? = null
     private var retakeDocId: UUID? = null
+
+    private var collectorJob: Job? = null
 
     /**
      * @return true if the camera is in retake mode.
@@ -43,20 +48,24 @@ class CameraViewModel(
     fun load(docId: UUID?, pageId: UUID?) {
         retakePageId = pageId ?: retakePageId
         retakeDocId = docId ?: retakeDocId
-        viewModelScope.launch {
+
+        // cancel the old collector's job in case the load function is called again.
+        collectorJob?.cancel()
+        collectorJob = viewModelScope.launch {
             // if the doc can be found, then keep listening to it, only fallback to active if the
             // requested doc does not exist
             if (docId != null) {
                 val doc = documentRepository.getDocumentWithPages(docId)
                 if (doc != null) {
-                    documentRepository.getDocumentWithPagesAsFlow(docId).collectLatest {
-                        observableActiveDocument.postValue(it)
-                    }
+                    documentRepository.getDocumentWithPagesAsFlow(docId).distinctUntilChanged()
+                        .collectLatest {
+                            observableActiveDocument.postValue(it)
+                        }
                     return@launch
                 }
             }
 
-            documentRepository.getActiveDocumentAsFlow().collectLatest {
+            documentRepository.getActiveDocumentAsFlow().distinctUntilChanged().collectLatest {
                 observableActiveDocument.postValue(it)
             }
         }

@@ -13,7 +13,10 @@ interface PageDao {
     fun insertPage(page: Page)
 
     @Delete
-    fun removePage(page: Page)
+    fun deletePage(page: Page)
+
+    @Delete
+    fun deletePages(page: List<Page>)
 
     @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_ID} = :id")
     suspend fun getPageById(id: UUID): Page?

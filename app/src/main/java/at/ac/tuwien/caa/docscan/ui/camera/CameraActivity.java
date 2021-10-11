@@ -100,6 +100,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
 import at.ac.tuwien.caa.docscan.logic.DocumentViewerLaunchViewType;
 import at.ac.tuwien.caa.docscan.logic.Failure;
 import at.ac.tuwien.caa.docscan.logic.FileHandler;
+import at.ac.tuwien.caa.docscan.logic.GlideHelper;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler;
 import at.ac.tuwien.caa.docscan.logic.Resource;
@@ -141,11 +142,11 @@ import timber.log.Timber;
 /**
  * The main class of the app. It is responsible for creating the other views and handling
  * callbacks from the created views as well as user input.
+ * TODO: Show dialog(?) if there is no active dialog.
  */
 public class CameraActivity extends BaseNavigationActivity implements TaskTimer.TimerCallbacks,
         CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback {
 
-    private static final String CLASS_NAME = "CameraActivity";
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
     private static final String KEY_SHOW_EXPOSURE_LOCK_WARNING = "KEY_SHOW_EXPOSURE_LOCK_WARNING";
@@ -177,9 +178,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private PaintView mPaintView;
     private TextView mCounterView;
     private boolean mShowCounter = true;
-    // TODO: Retake mode should take a parcelable as argument
-    //    private int mRetakeIdx;
-    private int mRetakeImageId;
     private CVResult mCVResult;
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
@@ -279,15 +277,20 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void observe() {
         viewModel.getValue().getObservableActiveDocument().observe(this, documentWithPages -> {
+            String title;
+            List<Page> pages;
             ActionBar bar = getSupportActionBar();
-            if (documentWithPages == null) {
-                return;
+            if (documentWithPages != null) {
+                pages = new ArrayList<>(documentWithPages.getPages());
+                title = documentWithPages.getDocument().getTitle();
+            } else {
+                pages = new ArrayList<>();
+                title = "";
             }
             if (bar != null) {
-                bar.setTitle(documentWithPages.getDocument().getTitle());
+                bar.setTitle(title);
             }
-            // TODO: Is this really correct if an existing one has been edited?
-            updateThumbnail(documentWithPages);
+            updateThumbnail(pages);
         });
         viewModel.getValue().getObservableTookImage().observe(this, resourceEvent -> {
             Resource<Page> resource = resourceEvent.getContentIfNotHandled();
@@ -355,6 +358,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         super.onResume();
         Timber.d("onResume");
 
+        // TODO: onResume is called again for every image taken, this is because of the bad implementation of the permissions
         // start fetching requested doc or the active doc as default and fallback
         UUID documentId = null;
         if (getIntent().getSerializableExtra(EXTRA_DOC_ID) != null) {
@@ -1051,12 +1055,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      * @param qrText
      */
     private void startCreateSeriesActivity(String qrText) {
-
         stopQRMode();
-
-        Intent intent = new Intent(getApplicationContext(), CreateDocumentActivity.class);
-        intent.putExtra(DOCUMENT_QR_TEXT, qrText);
-        startActivityForResult(intent, CREATE_DOCUMENT_FROM_QR_REQUEST);
+        startActivityForResult(CreateDocumentActivity.Companion.newInstance(this, qrText), CREATE_DOCUMENT_FROM_QR_REQUEST);
     }
 
     @Override
@@ -1605,11 +1605,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void requestPictureSave(byte[] data) {
 
+        // TODO: Check this handling, because currently we are not using that permission for this operation.
         // Check if we have the permission to save images:
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             mPictureData = data;
-            // ask for permission:
+            //TODO:  ask for permission:
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
+            savePicture(data);
         } else
             savePicture(data);
 
@@ -3040,43 +3042,21 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     /**
      * Shows the last picture taken as a thumbnail on the gallery button.
      */
-    private void updateThumbnail(@Nullable DocumentWithPages documentWithPages) {
-        int visibility = loadThumbNail(documentWithPages) ? View.VISIBLE : View.INVISIBLE;
+    private void updateThumbnail(List<Page> pages) {
+        int visibility = loadThumbNail(pages) ? View.VISIBLE : View.INVISIBLE;
         mGalleryButton.setVisibility(visibility);
     }
 
-    private boolean loadThumbNail(@Nullable DocumentWithPages documentWithPages) {
-        if (documentWithPages == null || documentWithPages.getPages().isEmpty()) {
+    private boolean loadThumbNail(List<Page> pages) {
+        if (pages.isEmpty()) {
+            GlideHelper.INSTANCE.loadPageIntoImageView(null, mGalleryButton, GlideHelper.GlideStyles.CAMERA_THUMBNAIL);
             return false;
         }
 
-        List<Page> pages = documentWithPages.getPages();
         Page lastPage = pages.get(pages.size() - 1);
-        File file = fileHandler.getValue().getImageFileByPage(lastPage.getDocId(), lastPage.getId());
+        File file = fileHandler.getValue().getFileByPage(lastPage);
         if (file != null) {
-            //        Set up the caching strategy: i.e. reload the image after the orientation has changed:
-            int exifOrientation = -1;
-            try {
-                exifOrientation = Helper.getExifOrientation(file);
-            } catch (IOException e) {
-                Timber.e(e, "Cannot read exif orientation from thumbnail!");
-                FirebaseCrashlytics.getInstance().recordException(e);
-            }
-
-            if (exifOrientation != -1) {
-                GlideApp.with(getApplicationContext())
-                        .load(file)
-                        // TODO: add the mime type here
-                        .signature(new MediaStoreSignature("", 0, exifOrientation))
-                        .apply(RequestOptions.circleCropTransform())
-                        .into(mGalleryButton);
-            } else {
-                GlideApp.with(getApplicationContext())
-                        .load(file)
-                        .apply(RequestOptions.circleCropTransform())
-                        .into(mGalleryButton);
-            }
-
+            GlideHelper.INSTANCE.loadPageIntoImageView(lastPage, mGalleryButton, GlideHelper.GlideStyles.CAMERA_THUMBNAIL);
             return true;
         } else {
             return false;

@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.db.model
 
 import androidx.room.Embedded
 import androidx.room.Relation
+import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 
 data class DocumentWithPages(
     @Embedded
@@ -15,27 +16,14 @@ data class DocumentWithPages(
 )
 
 fun DocumentWithPages.isCropped(): Boolean {
-    //TODO: Implement this, it's currently wrong, this should be part of the Page domain
-    return false
+    return pages.firstOrNull { page -> page.postProcessingState != PostProcessingState.DONE } != null
 }
 
-fun DocumentWithPages.isuploaded(): Boolean {
+fun DocumentWithPages.isProcessing(): Boolean {
+    return pages.firstOrNull { page -> page.postProcessingState == PostProcessingState.PROCESSING } != null
+}
+
+fun DocumentWithPages.isUploaded(): Boolean {
     //TODO: Implement this, this is basically false and should be represented with a XOR enum in the Document
     return false
 }
-
-// TODO: Is document cropped is currently encoded in the exif, but this does not work very well, adding to DB?
-//public static boolean isDocumentCropped(DocumentWithPages document) {
-//
-//    if (document != null) {
-//        ArrayList<File> files = document.getPages();
-//        if (files != null && !files.isEmpty()) {
-//            for (File file : files) {
-//                if (!PageDetector.isCropped(file.getAbsolutePath()))
-//                    return false;
-//            }
-//        }
-//    }
-//
-//    return true;
-//}

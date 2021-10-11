@@ -2,7 +2,6 @@ package at.ac.tuwien.caa.docscan.logic
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.preference.PreferenceManager
 import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.R
 
@@ -42,6 +41,7 @@ class PreferencesHandler(val context: Context) {
         const val SERIES_MODE_ACTIVE_KEY = "SERIES_MODE_ACTIVE_KEY"
         const val SHOW_INTRO_KEY = "SHOW_INTRO_KEY"
         val KEY_FIRST_START_DATE = "KEY_FIRST_START_DATE"
+        const val SHOW_TRANSKRIBUS_METADATA_KEY = "SHOW_TRANSKRIBUS_METADATA"
 
         const val DB_MIGRATION_KEY = "DB_MIGRATION_KEY"
 
@@ -163,6 +163,15 @@ class PreferencesHandler(val context: Context) {
         set(value) {
             defaultSharedPreferences.edit()
                 .putBoolean(KEY_FLASH_SERIES_MODE, value)
+                .apply()
+        }
+
+    var showTranskribusMetaData: Boolean
+        get() =
+            defaultSharedPreferences.getBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, false)
+        set(value) {
+            defaultSharedPreferences.edit()
+                .putBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, value)
                 .apply()
         }
 

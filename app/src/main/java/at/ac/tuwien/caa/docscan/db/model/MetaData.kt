@@ -1,13 +1,24 @@
 package at.ac.tuwien.caa.docscan.db.model
 
+import android.os.Parcelable
 import androidx.annotation.Keep
 import androidx.room.ColumnInfo
+import kotlinx.android.parcel.Parcelize
 
 /**
- * TODO: The UI introduced a prefix, is it still relevant? (Is it even relevant for the upload?)
+ * TODO: The UI introduced a prefix, is it still relevant? (Is it even relevant for the upload?) it's probably relevant for the new export of images
  */
+@Parcelize
 @Keep
 data class MetaData(
+
+    /**
+     * Represents the related upload id, this is usually available when a document is created
+     * from a QR-code, which can be then used for uploads so that a document is associated to
+     * specific document in the backend already.
+     */
+    @ColumnInfo(name = KEY_RELATED_UPLOAD_ID)
+    var relatedUploadId: Int? = null,
     /**
      * Transkribus author related tag
      */
@@ -53,8 +64,9 @@ data class MetaData(
      */
     @ColumnInfo(name = KEY_WRITER)
     var writer: String?
-) {
+) : Parcelable {
     companion object {
+        const val KEY_RELATED_UPLOAD_ID = "related_upload_id"
         const val KEY_AUTHOR = "author"
         const val KEY_WRITER = "writer"
         const val KEY_GENRE = "genre"

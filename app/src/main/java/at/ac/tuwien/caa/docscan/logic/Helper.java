@@ -3,7 +3,6 @@ package at.ac.tuwien.caa.docscan.logic;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -44,7 +43,6 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation;
 import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
-import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
 import timber.log.Timber;
 
 
@@ -58,21 +56,6 @@ public class Helper {
     private static final String CLASS_NAME = "Helper";
     public static final String START_SAVE_JSON_CALLER = "START_SAVE_JSON_CALLER";
     public static final String END_SAVE_JSON_CALLER = "END_SAVE_JSON_CALLER";
-
-
-    /**
-     * Start the CameraActivity and remove everything from the back stack.
-     *
-     * @param context
-     */
-    public static void startCameraActivity(Context context) {
-
-        Intent intent = new Intent(context, CameraActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        context.startActivity(intent);
-
-    }
-
 
     public static void crashlyticsLog(String className, String methodName, String msg) {
 

@@ -56,47 +56,12 @@ class DocumentsFragment : Fragment() {
             }
 
             if (scroll) {
-                binding.documentsList.smoothScrollToPosition(it.indexOfFirst { doc -> doc.document.isActive })
+                val position = (it.indexOfFirst { doc -> doc.document.isActive })
+                if (position != -1) {
+                    binding.documentsList.smoothScrollToPosition(position)
+                }
                 scroll = false
             }
         })
     }
-
-
-    /**
-     * Checks for a given file if the processing status of the parenting document has changed and
-     * changes the list adapter in case of changes.
-     */
-// TODO: Add processing, upload etc. stuff for the document, this doesn't need to be performed manually, but rather through the DB.
-//    fun checkDocumentProcessStatus(file: File) {
-//
-////        Get the document or return if it is not found:
-//        val document = Helper.getParentDocument(context, file) ?: return
-//
-//        var docFromAdapter: Document? = null
-//
-////        Find the corresponding document in the adapter:
-//        var idx = 0
-//        val docIt = documents.iterator()
-//        while (docIt.hasNext()) {
-//            val doc = docIt.next()
-//            if (doc.title.equals(document.title, true)) {
-//                Log.d(TAG, "found the document")
-//                docFromAdapter = doc
-//                break
-//            }
-//            idx++
-//        }
-//
-////        Has the status changed?
-//        if (docFromAdapter != null) {
-////            Tell the adaptor about the change at position idx:
-//            val isProcessed = Helper.isCurrentlyProcessed(document)
-//            if (docFromAdapter.isCurrentlyProcessed != isProcessed) {
-//                docFromAdapter.setIsCurrentlyProcessed(isProcessed)
-//                documents_list.adapter!!.notifyItemChanged(idx)
-//            }
-//        }
-//
-//    }
 }

@@ -18,6 +18,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.syncui.OldDocumentAdapter;
 
+@Deprecated // class is unused
 public class SelectDocumentActivity extends BaseNoNavigationActivity implements
         OldDocumentAdapter.DocumentAdapterCallback {
 
@@ -65,7 +66,7 @@ public class SelectDocumentActivity extends BaseNoNavigationActivity implements
             public void onClick(View v) {
                 if (mSelectedDocument != null) {
                     DocumentStorage.getInstance(c).setTitle(mSelectedDocument.getTitle());
-                    Helper.startCameraActivity(mContext);
+//                    Helper.startCameraActivity(mContext);
                 }
 
             }

@@ -11,7 +11,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 /**
@@ -222,7 +222,7 @@ public class TranskribusMetaData {
 
             String escapedText = escapeReferences(text);
 
-            InputStream stream = new ByteArrayInputStream(escapedText.getBytes(Charset.forName("UTF-8")));
+            InputStream stream = new ByteArrayInputStream(escapedText.getBytes(StandardCharsets.UTF_8));
             parser.setInput(stream, null);
 
             TranskribusMetaData transkribusMetaData = new TranskribusMetaData();

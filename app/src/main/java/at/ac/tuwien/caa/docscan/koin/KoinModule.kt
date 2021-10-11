@@ -5,9 +5,11 @@ import at.ac.tuwien.caa.docscan.DocScanApp
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
-import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
+import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
 import at.ac.tuwien.caa.docscan.ui.camera.CameraViewModel
+import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentViewModel
+import at.ac.tuwien.caa.docscan.ui.document.EditDocumentViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentsViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.ImagesViewModel
@@ -38,6 +40,8 @@ val viewModelModule = module {
     viewModel { CameraViewModel(get(), get(), get()) }
     viewModel { DocumentsViewModel(get()) }
     viewModel { DocumentViewerViewModel(get()) }
+    viewModel { CreateDocumentViewModel(get()) }
+    viewModel { (extras: Bundle) -> EditDocumentViewModel(extras, get()) }
     viewModel { (extras: Bundle) -> PageSlideViewModel(extras, get(), get()) }
     viewModel { (extras: Bundle) -> ImageViewModel(extras, get()) }
     viewModel { (extras: Bundle) -> ImagesViewModel(extras, get()) }

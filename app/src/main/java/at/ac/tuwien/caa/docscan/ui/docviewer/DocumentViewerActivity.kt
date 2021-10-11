@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings.Global.getString
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -24,11 +23,10 @@ import at.ac.tuwien.caa.docscan.camera.ActionSheet
 import at.ac.tuwien.caa.docscan.camera.DocumentActionSheet
 import at.ac.tuwien.caa.docscan.camera.PdfActionSheet
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.*
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PdfCreator.PDF_FILE_NAME
 import at.ac.tuwien.caa.docscan.databinding.ActivityDocumentViewerBinding
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.isCropped
-import at.ac.tuwien.caa.docscan.db.model.isuploaded
+import at.ac.tuwien.caa.docscan.db.model.isUploaded
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.rest.User
 import at.ac.tuwien.caa.docscan.sync.SyncStorage
@@ -38,6 +36,7 @@ import at.ac.tuwien.caa.docscan.ui.AccountActivity
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer
 import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.*
@@ -61,34 +60,34 @@ import kotlin.collections.ArrayList
 // TODO: This gets otherwise very complicated.
 // TODO: Relocate stuff to their fragment, where it belongs to.
 class DocumentViewerActivity : BaseNavigationActivity(),
-        BottomNavigationView.OnNavigationItemSelectedListener,
-        ImagesAdapter.ImagesAdapterCallback,
-        ActionSheet.SheetSelection,
-        ActionSheet.DocumentSheetSelection,
-        ActionSheet.PdfSheetSelection,
-        ActionSheet.DialogStatus,
-        SelectableToolbar.SelectableToolbarCallback, PdfFragment.PdfListener {
+    BottomNavigationView.OnNavigationItemSelectedListener,
+    ImagesAdapter.ImagesAdapterCallback,
+    ActionSheet.SheetSelection,
+    ActionSheet.DocumentSheetSelection,
+    ActionSheet.PdfSheetSelection,
+    ActionSheet.DialogStatus,
+    SelectableToolbar.SelectableToolbarCallback, PdfFragment.PdfListener {
 
     private val fileHandler by inject<FileHandler>(FileHandler::class.java)
     private lateinit var binding: ActivityDocumentViewerBinding
     private val viewModel: DocumentViewerViewModel by viewModel()
 
     private val galleryResultCallback =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                if (it.resultCode == Activity.RESULT_OK) {
-                    it.data?.clipData?.let { clipData ->
-                        for (i in 0 until clipData.itemCount) {
-                            fileHandler.saveFile(clipData.getItemAt(i).uri)
-                        }
-                    } ?: run {
-                        it.data?.data?.let { uriFile ->
-                            fileHandler.saveFile(uriFile)
-                        }
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                it.data?.clipData?.let { clipData ->
+                    for (i in 0 until clipData.itemCount) {
+                        fileHandler.saveFile(clipData.getItemAt(i).uri)
                     }
-                    // refresh the UI after the new images have been imported.
-                    openDocumentsView()
+                } ?: run {
+                    it.data?.data?.let { uriFile ->
+                        fileHandler.saveFile(uriFile)
+                    }
                 }
+                // refresh the UI after the new images have been imported.
+                openDocumentsView()
             }
+        }
 
     override fun onScrollImageLoaded() {
         startPostponedEnterTransition()
@@ -140,7 +139,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         /**
          * @return an intent which will open one of the bottom navigation based on the type.
          */
-        fun newInstance(context: Context, documentViewerLaunchViewType: DocumentViewerLaunchViewType = DocumentViewerLaunchViewType.DOCUMENTS): Intent {
+        fun newInstance(
+            context: Context,
+            documentViewerLaunchViewType: DocumentViewerLaunchViewType = DocumentViewerLaunchViewType.DOCUMENTS
+        ): Intent {
             return Intent(context, DocumentViewerActivity::class.java).apply {
                 putExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW, documentViewerLaunchViewType)
             }
@@ -192,10 +194,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
         shareIntent.type = "application/pdf"
         startActivity(
-                Intent.createChooser(
-                        shareIntent,
-                        getString(R.string.page_slide_fragment_share_choose_app_text)
-                )
+            Intent.createChooser(
+                shareIntent,
+                getString(R.string.page_slide_fragment_share_choose_app_text)
+            )
         )
     }
 
@@ -239,13 +241,13 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         val deleteTitle = "${getString(R.string.viewer_delete_pdf_title)}: ${pdf.name}?"
 
         val alertDialogBuilder = AlertDialog.Builder(this)
-                .setTitle(deleteTitle)
-                .setMessage(deleteText)
-                .setPositiveButton(R.string.sync_confirm_delete_button_text) { dialogInterface, i ->
-                    deletePdf(pdf)
-                }
-                .setNegativeButton(R.string.sync_cancel_delete_button_text, null)
-                .setCancelable(true)
+            .setTitle(deleteTitle)
+            .setMessage(deleteText)
+            .setPositiveButton(R.string.sync_confirm_delete_button_text) { dialogInterface, i ->
+                deletePdf(pdf)
+            }
+            .setNegativeButton(R.string.sync_cancel_delete_button_text, null)
+            .setCancelable(true)
 
         // create alert dialog
         val alertDialog = alertDialogBuilder.create()
@@ -282,23 +284,23 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val prefix = resources.getString(R.string.gallery_confirm_delete_title_prefix)
         val postfix =
-                if (selCount == 1)
-                    resources.getString(R.string.gallery_confirm_delete_images_title_single_postfix)
-                else
-                    resources.getString(R.string.gallery_confirm_delete_images_title_multiple_postfix)
+            if (selCount == 1)
+                resources.getString(R.string.gallery_confirm_delete_images_title_single_postfix)
+            else
+                resources.getString(R.string.gallery_confirm_delete_images_title_multiple_postfix)
         val title = "$prefix $selCount $postfix"
 
         // set dialog message
         alertDialogBuilder
-                .setMessage(R.string.gallery_confirm_delete_text)
-                .setTitle(title)
-                .setPositiveButton(R.string.gallery_confirm_delete_confirm_button_text) { dialogInterface, i ->
-                    deleteImages(
-                            imgFragment
-                    )
-                }
-                .setNegativeButton(R.string.gallery_confirm_delete_cancel_button_text, null)
-                .setCancelable(true)
+            .setMessage(R.string.gallery_confirm_delete_text)
+            .setTitle(title)
+            .setPositiveButton(R.string.gallery_confirm_delete_confirm_button_text) { dialogInterface, i ->
+                deleteImages(
+                    imgFragment
+                )
+            }
+            .setNegativeButton(R.string.gallery_confirm_delete_cancel_button_text, null)
+            .setCancelable(true)
 
         // create alert dialog
         val alertDialog = alertDialogBuilder.create()
@@ -335,13 +337,14 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     }
 
 
-    override fun onDocumentSheetSelected(document: DocumentWithPages, sheetAction: ActionSheet.SheetAction) {
+    override fun onDocumentSheetSelected(
+        document: DocumentWithPages,
+        sheetAction: ActionSheet.SheetAction
+    ) {
 
         when (sheetAction.mId) {
             R.id.action_document_continue_item -> {
-//                DocumentStorage.getInstance(this).title = document.document.title
-                Helper.startCameraActivity(this)
-                finish()
+                viewModel.startImagingWith(document)
             }
             R.id.action_document_pdf_item -> {
                 if (KtHelper.isPdfFolderPermissionGiven(this)) {
@@ -356,11 +359,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 }
             }
             R.id.action_document_edit_item -> {
-//                Start the rename activity and wait for the result:
-                val intent = Intent(applicationContext, EditDocumentActivity::class.java)
-                intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, document.document.title)
-                startActivityForResult(intent, DOCUMENT_RENAMING_REQUEST)
-//                startActivity(intent)
+                startActivityForResult(
+                    EditDocumentActivity.newInstance(
+                        this,
+                        document = document.document
+                    ), DOCUMENT_RENAMING_REQUEST
+                )
             }
             R.id.action_document_delete_item -> showDeleteConfirmationDialog(document)
             R.id.action_document_crop_item -> {
@@ -373,7 +377,11 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             R.id.action_document_upload_item -> {
 
                 DataLog.getInstance()
-                        .writeUploadLog(this, TAG, "onDocumentSheetSelected: ${document.document.title}")
+                    .writeUploadLog(
+                        this,
+                        TAG,
+                        "onDocumentSheetSelected: ${document.document.title}"
+                    )
 
 //                Do nothing if the document is already uploaded:
                 //TODO: Handle this in the repository, warn the user that if something has been uploaded.
@@ -462,7 +470,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     private fun uploadDocument(document: DocumentWithPages) {
 
-        DataLog.getInstance().writeUploadLog(this, TAG, "uploadDocument: ${document.document.title}")
+        DataLog.getInstance()
+            .writeUploadLog(this, TAG, "uploadDocument: ${document.document.title}")
 
 //        First check if user is online
         if (!Helper.isOnline(this)) {
@@ -484,17 +493,17 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder
-                .setTitle(dialogTitle)
-                .setMessage(dialogText)
-                .setPositiveButton(R.string.dialog_yes_text) { _, _ ->
-                    run {
-                        val intent = Intent(applicationContext, AccountActivity::class.java)
-                        intent.putExtra(PARENT_ACTIVITY_NAME, this.javaClass.name)
-                        startActivity(intent)
-                    }
+            .setTitle(dialogTitle)
+            .setMessage(dialogText)
+            .setPositiveButton(R.string.dialog_yes_text) { _, _ ->
+                run {
+                    val intent = Intent(applicationContext, AccountActivity::class.java)
+                    intent.putExtra(PARENT_ACTIVITY_NAME, this.javaClass.name)
+                    startActivity(intent)
                 }
-                .setNegativeButton(R.string.dialog_cancel_text, null)
-                .setCancelable(true)
+            }
+            .setNegativeButton(R.string.dialog_cancel_text, null)
+            .setCancelable(true)
         alertDialogBuilder.create().show()
 
     }
@@ -504,7 +513,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         if (document != null) {
             DataLog.getInstance().writeUploadLog(this, TAG, "startUpload document: $document")
             DataLog.getInstance()
-                    .writeUploadLog(this, TAG, "startUpload document: ${document.document.title}")
+                .writeUploadLog(this, TAG, "startUpload document: ${document.document.title}")
         }
 
         var dirs = ArrayList<String>()
@@ -528,9 +537,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val snackbarText = "${getString(R.string.sync_snackbar_upload_started)}"
         val s = Snackbar.make(
-                findViewById(R.id.sync_coordinatorlayout),
-                snackbarText,
-                Snackbar.LENGTH_LONG
+            findViewById(R.id.sync_coordinatorlayout),
+            snackbarText,
+            Snackbar.LENGTH_LONG
         )
         s.show()
 
@@ -543,10 +552,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder
-                .setTitle(dialogTitle)
-                .setMessage(dialogText)
-                .setPositiveButton(R.string.dialog_ok_text, null)
-                .setCancelable(true)
+            .setTitle(dialogTitle)
+            .setMessage(dialogText)
+            .setPositiveButton(R.string.dialog_ok_text, null)
+            .setCancelable(true)
         alertDialogBuilder.create().show()
 
     }
@@ -567,12 +576,13 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
     }
 
+    // TODO: check if this is basically necessary
     override fun onBackPressed() {
 
         when (binding.bottomNav.selectedItemId) {
 
 //            Open the CameraActivity:
-            R.id.viewer_documents -> Helper.startCameraActivity(this)
+            R.id.viewer_documents -> startActivity(CameraActivity.newInstance(this))
 //            Open the DocumentsFragment:
             R.id.viewer_pdfs -> binding.bottomNav.selectedItemId = R.id.viewer_documents
 //            Special case for ImagesFragment:
@@ -620,14 +630,14 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     }
 
     private fun showNotCropDialog(
-            document: DocumentWithPages,
-            upload: Boolean,
-            extendedInfo: Boolean = false
+        document: DocumentWithPages,
+        upload: Boolean,
+        extendedInfo: Boolean = false
     ) {
 
         val proceed =
-                if (upload) getString(R.string.viewer_not_cropped_upload)
-                else getString(R.string.viewer_not_cropped_pdf)
+            if (upload) getString(R.string.viewer_not_cropped_upload)
+            else getString(R.string.viewer_not_cropped_pdf)
 
         val text: String
         if (extendedInfo)
@@ -641,17 +651,17 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder
-                .setTitle(cropTitle)
-                .setMessage(cropText)
-                .setPositiveButton(R.string.dialog_yes_text) { _, _ ->
-                    run {
-                        if (upload)
-                            uploadDocument(document)
-                        else
-                            showOCRAlertDialog(document)
-                    }
+            .setTitle(cropTitle)
+            .setMessage(cropText)
+            .setPositiveButton(R.string.dialog_yes_text) { _, _ ->
+                run {
+                    if (upload)
+                        uploadDocument(document)
+                    else
+                        showOCRAlertDialog(document)
                 }
-                .setNegativeButton(R.string.dialog_cancel_text, null)
+            }
+            .setNegativeButton(R.string.dialog_cancel_text, null)
         alertDialogBuilder.create().show()
 
     }
@@ -678,10 +688,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder
-                .setTitle(cropTitle)
-                .setMessage(cropText)
-                .setPositiveButton(R.string.dialog_ok_text, null)
-                .setCancelable(true)
+            .setTitle(cropTitle)
+            .setMessage(cropText)
+            .setPositiveButton(R.string.dialog_ok_text, null)
+            .setCancelable(true)
         alertDialogBuilder.create().show()
 
     }
@@ -689,17 +699,18 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     private fun showCropConfirmationDialog(document: DocumentWithPages) {
 
         val cropText = getString(R.string.viewer_crop_confirm_text)
-        val cropTitle = "${getString(R.string.viewer_crop_confirm_title)}: ${document.document.title}?"
+        val cropTitle =
+            "${getString(R.string.viewer_crop_confirm_title)}: ${document.document.title}?"
 
         val alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder
-                .setTitle(cropTitle)
-                .setMessage(cropText)
-                .setPositiveButton(R.string.dialog_yes_text) { dialogInterface, i ->
-                    cropDocument(document)
-                }
-                .setNegativeButton(R.string.dialog_cancel_text, null)
-                .setCancelable(true)
+            .setTitle(cropTitle)
+            .setMessage(cropText)
+            .setPositiveButton(R.string.dialog_yes_text) { dialogInterface, i ->
+                cropDocument(document)
+            }
+            .setNegativeButton(R.string.dialog_cancel_text, null)
+            .setCancelable(true)
         alertDialogBuilder.create().show()
 
     }
@@ -725,77 +736,39 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //    Delete functionality
 
     private fun showDeleteConfirmationDialog(document: DocumentWithPages) {
-
-
-//        val deleteText = resources.getString(R.string.sync_confirm_delete_prefix_text)
-
         val deleteText = getString(R.string.sync_confirm_delete_doc_prefix_text)
-        val deleteTitle = "${getString(R.string.sync_confirm_delete_title)}: ${document.document.title}?"
-
+        val deleteTitle =
+            "${getString(R.string.sync_confirm_delete_title)}: ${document.document.title}?"
 
         val alertDialogBuilder = AlertDialog.Builder(this)
-                .setTitle(deleteTitle)
-                .setMessage(deleteText)
-                .setPositiveButton(R.string.sync_confirm_delete_button_text) { dialogInterface, i ->
-                    // TODO: Add viewModel to delete document here
-//                deleteDocument(
-//                    document
-//                )
-                }
-                .setNegativeButton(R.string.sync_cancel_delete_button_text, null)
-                .setCancelable(true)
+            .setTitle(deleteTitle)
+            .setMessage(deleteText)
+            .setPositiveButton(R.string.sync_confirm_delete_button_text) { _, _ ->
+                viewModel.startDocumentDeletionFor(document)
+            }
+            .setNegativeButton(R.string.sync_cancel_delete_button_text, null)
+            .setCancelable(true)
 
         // create alert dialog
         val alertDialog = alertDialogBuilder.create()
 
         // show it
         alertDialog.show()
-
-    }
-
-    private fun deleteDocument(document: Document) {
-
-//        if (document == selectedDocument)
-//            selectedDocument = null
-
-//        Update the UI:
-
-//        Remove the document from the list:
-        // TODO: Delete in DB, this will be automatically updated through the flows, add message
-
-//        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-//            if ((this as DocumentsFragment).isVisible) {
-//                //                update the ui:
-////                deleteDocument(document)
-//                showDocumentsDeletedSnackbar(document.title)
-//            }
-//        }
-
-//        TODO: Close the ImagesFragment, if the request was called within it:
-//        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-//            if ((this as ImagesFragment).isVisible)
-//                binding.bottomNav.selectedItemId = R.id.viewer_documents
-//        }
-
-//                update the documents:
-        DocumentStorage.getInstance(this).documents.remove(document)
-        document.deleteImages()
-        DocumentStorage.saveJSON(this)
     }
 
     /**
      * Shows a snackbar indicating that images have been deleted.
+     * // TODO: This was previously not used
      */
     private fun showImagesDeletedSnackbar(count: Int) {
 
         val postfix = if (count == 1) "${getString(R.string.sync_snackbar_file_deleted_postfix)}"
         else "${getString(R.string.sync_snackbar_files_deleted_postfix)}"
-        val snackbarText =
-                "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $count $postfix"
+        val snackbarText = "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $count $postfix"
         val s = Snackbar.make(
-                findViewById(R.id.sync_coordinatorlayout),
-                snackbarText,
-                Snackbar.LENGTH_LONG
+            findViewById(R.id.sync_coordinatorlayout),
+            snackbarText,
+            Snackbar.LENGTH_LONG
         )
         s.show()
 
@@ -809,9 +782,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val snackbarText = "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $title"
         val s = Snackbar.make(
-                findViewById(R.id.sync_coordinatorlayout),
-                snackbarText,
-                Snackbar.LENGTH_LONG
+            findViewById(R.id.sync_coordinatorlayout),
+            snackbarText,
+            Snackbar.LENGTH_LONG
         )
         s.show()
 
@@ -821,9 +794,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val snackbarText = "${getString(R.string.viewer_pdf_created_snackbar_text)}: $title"
         val s = Snackbar.make(
-                findViewById(R.id.sync_coordinatorlayout),
-                snackbarText,
-                Snackbar.LENGTH_LONG
+            findViewById(R.id.sync_coordinatorlayout),
+            snackbarText,
+            Snackbar.LENGTH_LONG
         )
         s.show()
 
@@ -847,13 +820,13 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //        val title = getString(R.string.pdf_fragment_persisted_permission_title)
 
         val alertDialogBuilder = AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(text)
-                .setPositiveButton(R.string.dialog_ok_text) { _, _ ->
-                    grantPdfDirAccess()
-                }
-                .setNegativeButton(R.string.dialog_cancel_text, null)
-                .setCancelable(true)
+            .setTitle(title)
+            .setMessage(text)
+            .setPositiveButton(R.string.dialog_ok_text) { _, _ ->
+                grantPdfDirAccess()
+            }
+            .setNegativeButton(R.string.dialog_cancel_text, null)
+            .setCancelable(true)
         alertDialogBuilder.create().show()
 
     }
@@ -875,14 +848,14 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         // set dialog message
         alertDialogBuilder
-                .setTitle(R.string.gallery_confirm_no_ocr_available_title)
-                .setPositiveButton(R.string.dialog_yes_text) { dialog, which ->
-                    createPdf(document, false)
+            .setTitle(R.string.gallery_confirm_no_ocr_available_title)
+            .setPositiveButton(R.string.dialog_yes_text) { dialog, which ->
+                createPdf(document, false)
 //                    deselectListViewItems()
-                }
-                .setNegativeButton(R.string.dialog_no_text) { dialogInterface, i -> }
-                .setCancelable(true)
-                .setMessage(R.string.gallery_confirm_no_ocr_available_text)
+            }
+            .setNegativeButton(R.string.dialog_no_text) { dialogInterface, i -> }
+            .setCancelable(true)
+            .setMessage(R.string.gallery_confirm_no_ocr_available_text)
         alertDialogBuilder.create().show()
 
     }
@@ -893,10 +866,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         // set dialog message
         alertDialogBuilder
-                .setTitle(R.string.viewer_document_dir_set_title)
-                .setPositiveButton(R.string.dialog_ok_text) { _, _ -> }
-                .setCancelable(true)
-                .setMessage(R.string.viewer_document_dir_set_text)
+            .setTitle(R.string.viewer_document_dir_set_title)
+            .setPositiveButton(R.string.dialog_ok_text) { _, _ -> }
+            .setCancelable(true)
+            .setMessage(R.string.viewer_document_dir_set_text)
         alertDialogBuilder.create().show()
 
     }
@@ -917,21 +890,21 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         val alertDialogBuilder = AlertDialog.Builder(this)
         // set dialog message
         alertDialogBuilder
-                .setTitle(R.string.gallery_confirm_ocr_title)
-                .setPositiveButton(R.string.dialog_yes_text) { dialog, which ->
-                    createPdf(document, true)
+            .setTitle(R.string.gallery_confirm_ocr_title)
+            .setPositiveButton(R.string.dialog_yes_text) { dialog, which ->
+                createPdf(document, true)
 //                    deselectListViewItems()
-                }
-                .setNegativeButton(R.string.dialog_no_text) { dialogInterface, i ->
-                    createPdf(document, false)
+            }
+            .setNegativeButton(R.string.dialog_no_text) { dialogInterface, i ->
+                createPdf(document, false)
 //                    deselectListViewItems()
-                }
-                .setCancelable(true)
-                .setMessage(R.string.gallery_confirm_ocr_text)
+            }
+            .setCancelable(true)
+            .setMessage(R.string.gallery_confirm_ocr_text)
 
         val alertDialog = alertDialogBuilder.create()
         alertDialog.setButton(
-                AlertDialog.BUTTON_NEUTRAL, getString(R.string.dialog_cancel_text)
+            AlertDialog.BUTTON_NEUTRAL, getString(R.string.dialog_cancel_text)
         ) { dialog, which -> alertDialog.cancel() }
         alertDialog.show()
 
@@ -949,10 +922,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
     }
 
     fun startCamera(view: View) {
-
-        Helper.startCameraActivity(this)
+        startActivity(CameraActivity.newInstance(this))
         finish()
-
     }
 
     fun startGallery(view: View) {
@@ -991,9 +962,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder
-                .setTitle(dialogTitle)
-                .setMessage(dialogText)
-                .setPositiveButton(R.string.dialog_ok_text, null)
+            .setTitle(dialogTitle)
+            .setMessage(dialogText)
+            .setPositiveButton(R.string.dialog_ok_text, null)
         alertDialogBuilder.create().show()
 
 
@@ -1020,19 +991,19 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         val sheetActions = ArrayList<ActionSheet.SheetAction>()
 
         sheetActions.add(
-                ActionSheet.SheetAction(
-                        R.id.action_pdf_share_item,
-                        getString(R.string.action_pdf_share),
-                        R.drawable.ic_share_black_24dp
-                )
+            ActionSheet.SheetAction(
+                R.id.action_pdf_share_item,
+                getString(R.string.action_pdf_share),
+                R.drawable.ic_share_black_24dp
+            )
         )
 
         sheetActions.add(
-                ActionSheet.SheetAction(
-                        R.id.action_pdf_delete_item,
-                        getString(R.string.action_document_delete_document),
-                        R.drawable.ic_delete_black_24dp
-                )
+            ActionSheet.SheetAction(
+                R.id.action_pdf_delete_item,
+                getString(R.string.action_document_delete_document),
+                R.drawable.ic_delete_black_24dp
+            )
         )
 
         val actionSheet = PdfActionSheet(file, sheetActions, this, this)
@@ -1044,58 +1015,58 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val sheetActions = ArrayList<ActionSheet.SheetAction>()
         sheetActions.add(
-                ActionSheet.SheetAction(
-                        R.id.action_document_continue_item,
-                        getString(R.string.action_document_continue_document),
-                        R.drawable.ic_add_a_photo_black_24dp
-                )
+            ActionSheet.SheetAction(
+                R.id.action_document_continue_item,
+                getString(R.string.action_document_continue_document),
+                R.drawable.ic_add_a_photo_black_24dp
+            )
         )
         sheetActions.add(
-                ActionSheet.SheetAction(
-                        R.id.action_document_edit_item,
-                        getString(R.string.action_document_edit_document),
-                        R.drawable.ic_edit_black_24dp
-                )
+            ActionSheet.SheetAction(
+                R.id.action_document_edit_item,
+                getString(R.string.action_document_edit_document),
+                R.drawable.ic_edit_black_24dp
+            )
         )
 //        This options are just available if the document contains at least one image:
-        if (!document.pages.isEmpty()) {
+        if (document.pages.isNotEmpty()) {
             sheetActions.add(
-                    ActionSheet.SheetAction(
-                            R.id.action_document_crop_item,
-                            getString(R.string.action_document_crop_title),
-                            R.drawable.ic_transform_black_24dp
-                    )
+                ActionSheet.SheetAction(
+                    R.id.action_document_crop_item,
+                    getString(R.string.action_document_crop_title),
+                    R.drawable.ic_transform_black_24dp
+                )
             )
             sheetActions.add(
-                    ActionSheet.SheetAction(
-                            R.id.action_document_pdf_item,
-                            getString(R.string.action_document_pdf_title),
-                            R.drawable.ic_baseline_picture_as_pdf_24px
-                    )
+                ActionSheet.SheetAction(
+                    R.id.action_document_pdf_item,
+                    getString(R.string.action_document_pdf_title),
+                    R.drawable.ic_baseline_picture_as_pdf_24px
+                )
             )
-            if (!document.isuploaded())
+            if (!document.isUploaded())
                 sheetActions.add(
-                        ActionSheet.SheetAction(
-                                R.id.action_document_upload_item,
-                                getString(R.string.action_document_upload_document),
-                                R.drawable.ic_cloud_upload_black_24dp
-                        )
+                    ActionSheet.SheetAction(
+                        R.id.action_document_upload_item,
+                        getString(R.string.action_document_upload_document),
+                        R.drawable.ic_cloud_upload_black_24dp
+                    )
                 )
             else
                 sheetActions.add(
-                        ActionSheet.SheetAction(
-                                R.id.action_document_upload_item,
-                                getString(R.string.action_document_upload_document),
-                                R.drawable.ic_cloud_upload_gray_24dp
-                        )
+                    ActionSheet.SheetAction(
+                        R.id.action_document_upload_item,
+                        getString(R.string.action_document_upload_document),
+                        R.drawable.ic_cloud_upload_gray_24dp
+                    )
                 )
         }
         sheetActions.add(
-                ActionSheet.SheetAction(
-                        R.id.action_document_delete_item,
-                        getString(R.string.action_document_delete_document),
-                        R.drawable.ic_delete_black_24dp
-                )
+            ActionSheet.SheetAction(
+                R.id.action_document_delete_item,
+                getString(R.string.action_document_delete_document),
+                R.drawable.ic_delete_black_24dp
+            )
         )
 
         val actionSheet = DocumentActionSheet(document, sheetActions, this, this)
@@ -1167,7 +1138,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         initToolbar()
 
         val documentPage = intent.getParcelableExtra<DocumentPage>(EXTRA_DOCUMENT_PAGE)
-        val type = intent.getSerializableExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW) as? DocumentViewerLaunchViewType
+        val type =
+            intent.getSerializableExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW) as? DocumentViewerLaunchViewType
 
         // TODO: The entire fragment handling is a bit confusing.
 
@@ -1190,7 +1162,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         // TODO: Check if this is necessary, as the previous if statement should be exhaustive.
         // Just open the document view if no other fragment is already shown:
         if (supportFragmentManager.findFragmentByTag(ImagesFragment.TAG) == null &&
-                supportFragmentManager.findFragmentByTag(PdfFragment.TAG) == null
+            supportFragmentManager.findFragmentByTag(PdfFragment.TAG) == null
         ) {
             openDocumentsView()
         }
@@ -1210,6 +1182,18 @@ class DocumentViewerActivity : BaseNavigationActivity(),
                 if (selectableToolbar.isSelectMode) {
                     selectableToolbar.resetToolbar()
                 }
+            }
+        })
+        viewModel.observableInitDocumentOptions.observe(this, {
+            it?.getContentIfNotHandled()?.let { doc ->
+                showDocumentOptions(doc)
+            }
+        })
+
+        viewModel.observableInitCamera.observe(this, {
+            it?.getContentIfNotHandled()?.let {
+                startActivity(CameraActivity.newInstance(this))
+                finish()
             }
         })
     }
@@ -1252,12 +1236,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
         ft.setCustomAnimations(
-                R.anim.translate_right_to_left_in,
-                R.anim.translate_right_to_left_out
+            R.anim.translate_right_to_left_in,
+            R.anim.translate_right_to_left_out
         )
         ft.replace(
-                R.id.viewer_fragment_layout, documentsFragment,
-                DocumentsFragment.TAG
+            R.id.viewer_fragment_layout, documentsFragment,
+            DocumentsFragment.TAG
         ).commit()
 
         // TODO: Checkout scroll to current active document
@@ -1275,8 +1259,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         binding.bottomNav.removeBadge(R.id.viewer_pdfs)
         val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
         ft.setCustomAnimations(
-                R.anim.translate_left_to_right_in,
-                R.anim.translate_left_to_right_out
+            R.anim.translate_left_to_right_in,
+            R.anim.translate_left_to_right_out
         )
         ft.replace(R.id.viewer_fragment_layout, PdfFragment.newInstance(), PdfFragment.TAG).commit()
         showFAB(R.id.viewer_add_pdf_fab)
@@ -1303,13 +1287,13 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         //                The animation depends on the position of the selected item:
         if (binding.bottomNav.selectedItemId == R.id.viewer_documents)
             ft.setCustomAnimations(
-                    R.anim.translate_left_to_right_in,
-                    R.anim.translate_left_to_right_out
+                R.anim.translate_left_to_right_in,
+                R.anim.translate_left_to_right_out
             )
         else
             ft.setCustomAnimations(
-                    R.anim.translate_right_to_left_in,
-                    R.anim.translate_right_to_left_out
+                R.anim.translate_right_to_left_in,
+                R.anim.translate_right_to_left_out
             )
 
 ////                Create the shared element transition:
@@ -1328,13 +1312,16 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //        }
 
         ft.replace(
-                R.id.viewer_fragment_layout, imagesFragment,
-                ImagesFragment.TAG
+            R.id.viewer_fragment_layout, imagesFragment,
+            ImagesFragment.TAG
         ).commit()
 
     }
 
-    private fun openImagesFragmentFromIntent(document: DocumentWithPages, fileName: String? = null) {
+    private fun openImagesFragmentFromIntent(
+        document: DocumentWithPages,
+        fileName: String? = null
+    ) {
 
 //        selectedDocument = document
 
@@ -1347,8 +1334,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         }
         val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
         ft.replace(
-                R.id.viewer_fragment_layout, imagesFragment,
-                ImagesFragment.TAG
+            R.id.viewer_fragment_layout, imagesFragment,
+            ImagesFragment.TAG
         ).commit()
 
 //        selectNavigationItem(R.id.viewer_images)
@@ -1558,8 +1545,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         val snackbarText = resources.getString(R.string.sync_snackbar_offline_text)
 
         Snackbar.make(
-                findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_LONG
+            findViewById(R.id.sync_coordinatorlayout),
+            snackbarText, Snackbar.LENGTH_LONG
         ).show()
 
     }
@@ -1570,9 +1557,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         // set dialog message
         alertDialogBuilder
-                .setTitle(R.string.sync_file_deleted_title)
-                .setPositiveButton("OK", null)
-                .setMessage(R.string.sync_file_deleted_text)
+            .setTitle(R.string.sync_file_deleted_title)
+            .setPositiveButton("OK", null)
+            .setMessage(R.string.sync_file_deleted_text)
 
         // create alert dialog
         val alertDialog = alertDialogBuilder.create()
@@ -1593,8 +1580,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
 //        closeSnackbar()
         Snackbar.make(
-                findViewById(R.id.sync_coordinatorlayout),
-                snackbarText, Snackbar.LENGTH_LONG
+            findViewById(R.id.sync_coordinatorlayout),
+            snackbarText, Snackbar.LENGTH_LONG
         ).show()
 
 
@@ -1607,9 +1594,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         // set dialog message
         alertDialogBuilder
-                .setTitle(R.string.sync_error_upload_title)
-                .setPositiveButton("OK", null)
-                .setMessage(R.string.sync_error_upload_text)
+            .setTitle(R.string.sync_error_upload_title)
+            .setPositiveButton("OK", null)
+            .setMessage(R.string.sync_error_upload_text)
 
         // create alert dialog
         val alertDialog = alertDialogBuilder.create()

@@ -51,6 +51,9 @@
 
     <color name="text_selection">#283593</color>
 
+    <color name="document_icon_active">@color/text_selection</color>
+    <color name="document_icon_inactive">#757575</color>
+
     <!--<color name="photo_button_view_bg_color">#333</color>-->
 
 </resources>

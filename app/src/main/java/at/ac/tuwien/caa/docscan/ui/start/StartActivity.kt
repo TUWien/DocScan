@@ -8,9 +8,7 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import at.ac.tuwien.caa.docscan.databinding.MainContainerViewBinding
-import at.ac.tuwien.caa.docscan.logic.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.PermissionHandler
-import at.ac.tuwien.caa.docscan.sync.SyncStorage
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.intro.IntroActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -57,6 +55,7 @@ class StartActivity : AppCompatActivity() {
         viewModel.checkStartUpConditions()
     }
 
+    // TODO: Add handling for creating new documents
     private fun observe() {
         viewModel.loadingProgress.observe(this, {
             binding.progress.visibility = if (it) View.VISIBLE else View.GONE
@@ -85,15 +84,6 @@ class StartActivity : AppCompatActivity() {
     }
 
     private fun startCameraIntent() {
-        // TODO --- the old deprecated storage handling will be removed soon
-        if (DocumentStorage.isStoreFileExisting(this)) {
-            DocumentStorage.loadJSON(this)
-        } else {
-            DocumentStorage.clearInstance();
-        }
-        SyncStorage.loadJSON(this)
-        // TODO --- the old deprecated storage handling will be removed soon
-
         startActivity(CameraActivity.newInstance(this))
         finish()
     }

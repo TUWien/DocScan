@@ -254,6 +254,7 @@ class PdfFragment : Fragment() {
     override fun onStop() {
 
 //        Save the current adapter state to newPdfs list:
+        // TODO: kotlin.UninitializedPropertyAccessException: lateinit property newPdfs has not been initialized
         newPdfs.clear()
         if (::pdfList.isInitialized) {
             val it = pdfList.iterator()

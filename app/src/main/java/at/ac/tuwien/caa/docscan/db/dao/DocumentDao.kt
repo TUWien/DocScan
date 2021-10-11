@@ -9,15 +9,18 @@ import java.util.*
 
 @Dao
 interface DocumentDao {
+    @Transaction
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS}")
     fun getAllDocumentWithPages(): Flow<List<DocumentWithPages>>
 
+    @Transaction
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_ID} =:documentId")
     suspend fun getDocumentWithPages(documentId: UUID): DocumentWithPages?
 
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_ID} =:documentId")
     suspend fun getDocument(documentId: UUID): Document?
 
+    @Transaction
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_ID} =:documentId")
     fun getDocumentWithPagesAsFlow(documentId: UUID): Flow<DocumentWithPages?>
 
@@ -27,6 +30,7 @@ interface DocumentDao {
     @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_ID} =:pageId")
     fun getPage(pageId: UUID): Page?
 
+    @Transaction
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_IS_ACTIVE} = 1")
     fun getActiveDocumentasFlow(): Flow<DocumentWithPages?>
 
@@ -47,4 +51,7 @@ interface DocumentDao {
 
     @Query("UPDATE ${Document.TABLE_NAME_DOCUMENTS} SET ${Document.KEY_IS_ACTIVE}=1 WHERE ${Document.KEY_ID} =:documentId")
     fun setDocumentActive(documentId: UUID)
+
+    @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_TITLE} =:documentTitle")
+    fun getDocumentByTitle(documentTitle: String): Document?
 }

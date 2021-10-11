@@ -49,7 +49,7 @@ import at.ac.tuwien.caa.docscan.ui.widget.SelectionToolbar;
 /**
  * Created by fabian on 01.02.2018.
  */
-@Deprecated
+@Deprecated // unused
 public class GalleryActivity extends AppCompatActivity implements
         GalleryAdapter.GalleryAdapterCallback {
 
@@ -474,7 +474,7 @@ public class GalleryActivity extends AppCompatActivity implements
 
         if (mDocument != null && mDocument.getTitle() != null) {
             Intent intent = new Intent(getApplicationContext(), EditDocumentActivity.class);
-            intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, mDocument.getTitle());
+//            intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, mDocument.getTitle());
             startActivityForResult(intent, DOCUMENT_RENAMING);
         }
     }
