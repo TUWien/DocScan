@@ -28,18 +28,19 @@
                     app:layout_scrollFlags="scroll|enterAlways" />
             </com.google.android.material.appbar.AppBarLayout>
 
-            <!--This is where the fragments are placed:-->
-            <FrameLayout
-                android:id="@+id/viewer_fragment_layout"
+            <fragment
+                android:id="@+id/nav_host_fragment"
+                android:name="androidx.navigation.fragment.NavHostFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-                app:useCompatPadding="true" />
+                app:defaultNavHost="true"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                app:navGraph="@navigation/document_nav" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom|right"
+                android:layout_gravity="bottom|end"
                 android:orientation="vertical"
                 app:layout_dodgeInsetEdges="bottom">
 
@@ -55,6 +56,7 @@
                         android:layout_margin="12dp"
                         android:background="@color/colorControlHighlight"
                         android:backgroundTint="@color/colorControlHighlight"
+                        android:contentDescription="@null"
                         android:onClick="newDocument"
                         app:borderWidth="0dp"
                         app:layout_anchor="@+id/viewer_camera_fab"
@@ -68,6 +70,7 @@
                         android:layout_margin="12dp"
                         android:background="@color/colorControlHighlight"
                         android:backgroundTint="@color/colorControlHighlight"
+                        android:contentDescription="@null"
                         android:onClick="newPDF"
                         android:visibility="invisible"
                         app:borderWidth="0dp"
@@ -82,6 +85,7 @@
                         android:layout_margin="12dp"
                         android:background="@color/colorControlHighlight"
                         android:backgroundTint="@color/colorControlHighlight"
+                        android:contentDescription="@null"
                         android:onClick="uploadFABPressed"
                         android:visibility="invisible"
                         app:borderWidth="0dp"
@@ -94,6 +98,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="12dp"
+                    android:contentDescription="@null"
                     android:onClick="startCamera"
                     app:srcCompat="@drawable/ic_camera_alt_black_24dp" />
 
@@ -106,12 +111,6 @@
                     android:onClick="startGallery"
                     app:srcCompat="@drawable/ic_baseline_add_photo_alternate_24" />
             </LinearLayout>
-
-
-            <!--android:background="@color/colorPrimary"-->
-            <!--app:itemIconTint="@drawable/navigation_colors"-->
-            <!--app:itemTextColor="@drawable/navigation_colors"-->
-            <!---->
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

@@ -16,11 +16,14 @@ import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import at.ac.tuwien.caa.docscan.db.model.Page;
+import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary;
 
 public class PageDetector {
 
@@ -440,6 +443,10 @@ public class PageDetector {
     }
 
     private static void scalePoints(ArrayList<PointF> points, int width, int height) {
+        scalePointsGeneric(points, width, height);
+    }
+
+    public static void scalePointsGeneric(List<PointF> points, int width, int height) {
 
         for (PointF point : points) {
             point.x *= width;

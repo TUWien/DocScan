@@ -6,12 +6,10 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.MotionEvent;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 
@@ -22,7 +20,7 @@ import at.ac.tuwien.caa.docscan.R;
 public class PageImageView extends SubsamplingScaleImageView {
 
     private SingleClickListener mClickCallBack;
-    private ArrayList<PointF> mPoints;
+    private List<PointF> mPoints;
 //    private ArrayList<PointF> mPoints, mOuterPoints;
 
     private static final String CLASS_NAME = "PageImageView";
@@ -80,10 +78,10 @@ public class PageImageView extends SubsamplingScaleImageView {
 //
 //    }
 
-    public void setPoints(ArrayList<PointF> points, boolean isFocused) {
+    public void setPoints(List<PointF> points) {
 
         mPoints = points;
-        if (!isFocused && mQuadPaint != null)
+        if (mQuadPaint != null)
             mQuadPaint.setColor(getResources().getColor(R.color.hud_focus_unsharp_rect_color));
 
         invalidate();
@@ -132,7 +130,7 @@ public class PageImageView extends SubsamplingScaleImageView {
 
     }
 
-    private void drawQuad(Canvas canvas, ArrayList<PointF> points, Path path, Paint paint) {
+    private void drawQuad(Canvas canvas, List<PointF> points, Path path, Paint paint) {
 
 //        TODO: optimize the drawing speed! consider this link: https://developer.android.com/topic/performance/vitals/render#common-jank
         path.reset();

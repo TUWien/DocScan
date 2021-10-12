@@ -6,6 +6,7 @@ import at.ac.tuwien.caa.docscan.DocScanApp
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
+import at.ac.tuwien.caa.docscan.gallery.CropRectTransformNew
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
@@ -30,6 +31,7 @@ object GlideHelper {
                 loadIntoView(
                     app,
                     imageView,
+                    page,
                     file,
                     FileType.JPEG,
                     page.rotation,
@@ -47,6 +49,7 @@ object GlideHelper {
     private fun loadIntoView(
         context: Context,
         imageView: ImageView,
+        page: Page,
         file: File,
         @Suppress("SameParameterValue") fileType: FileType,
         rotation: Rotation,
@@ -73,6 +76,15 @@ object GlideHelper {
                     RoundedCorners(context.resources.getDimensionPixelSize(R.dimen.document_preview_corner_radius))
                 )
             }
+            GlideStyles.IMAGE_CROPPED -> {
+                glideRequest
+            }
+            GlideStyles.IMAGES_UNCROPPED -> {
+                glideRequest.transform(
+                    CropRectTransformNew(page, context)
+                )
+//                    TODO: check if this is necessary: .override(400, 400)
+            }
         }
 
         glideTransformRequest.into(imageView)
@@ -80,6 +92,8 @@ object GlideHelper {
 
     enum class GlideStyles {
         CAMERA_THUMBNAIL,
-        DOCUMENT_PREVIEW
+        DOCUMENT_PREVIEW,
+        IMAGE_CROPPED,
+        IMAGES_UNCROPPED
     }
 }

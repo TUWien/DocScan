@@ -18,6 +18,9 @@ import androidx.appcompat.widget.Toolbar
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentTransaction
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupWithNavController
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.ActionSheet
 import at.ac.tuwien.caa.docscan.camera.DocumentActionSheet
@@ -39,18 +42,13 @@ import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
-import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.*
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.java.KoinJavaComponent.inject
 import org.opencv.android.OpenCVLoader
 import java.io.File
-import java.util.*
-import kotlin.collections.ArrayList
-
 
 /**
  * Partly based on this tutorial:
@@ -60,45 +58,12 @@ import kotlin.collections.ArrayList
 // TODO: This gets otherwise very complicated.
 // TODO: Relocate stuff to their fragment, where it belongs to.
 class DocumentViewerActivity : BaseNavigationActivity(),
-    BottomNavigationView.OnNavigationItemSelectedListener,
     ImagesAdapter.ImagesAdapterCallback,
     ActionSheet.SheetSelection,
     ActionSheet.DocumentSheetSelection,
     ActionSheet.PdfSheetSelection,
     ActionSheet.DialogStatus,
     SelectableToolbar.SelectableToolbarCallback, PdfFragment.PdfListener {
-
-    private val fileHandler by inject<FileHandler>(FileHandler::class.java)
-    private lateinit var binding: ActivityDocumentViewerBinding
-    private val viewModel: DocumentViewerViewModel by viewModel()
-
-    private val galleryResultCallback =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (it.resultCode == Activity.RESULT_OK) {
-                it.data?.clipData?.let { clipData ->
-                    for (i in 0 until clipData.itemCount) {
-                        fileHandler.saveFile(clipData.getItemAt(i).uri)
-                    }
-                } ?: run {
-                    it.data?.data?.let { uriFile ->
-                        fileHandler.saveFile(uriFile)
-                    }
-                }
-                // refresh the UI after the new images have been imported.
-                openDocumentsView()
-            }
-        }
-
-    override fun onScrollImageLoaded() {
-        startPostponedEnterTransition()
-    }
-
-    override fun onImageLoaded() {
-//        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-//            startPostponedEnterTransition()
-//        }
-
-    }
 
     companion object {
         val TAG = "DocumentViewerActivity"
@@ -149,13 +114,111 @@ class DocumentViewerActivity : BaseNavigationActivity(),
         }
     }
 
-    //    This is needed if the Activity is opened with an intent extra in order to show a certain
-//    fragment: ImagesFragment or PdfFragment. In this case the fragments are created and the
-//    selected item should change, without doing anything else:
-//    private var updateSelectedNavigationItem = false
+    private val fileHandler by inject<FileHandler>(FileHandler::class.java)
+    private lateinit var binding: ActivityDocumentViewerBinding
+    private val viewModel: DocumentViewerViewModel by viewModel()
+
     private lateinit var messageReceiver: BroadcastReceiver
     private lateinit var selectableToolbar: SelectableToolbar
     private var newPdfs = mutableListOf<String?>()
+
+    private val galleryResultCallback =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                it.data?.clipData?.let { clipData ->
+                    for (i in 0 until clipData.itemCount) {
+                        fileHandler.saveFile(clipData.getItemAt(i).uri)
+                    }
+                } ?: run {
+                    it.data?.data?.let { uriFile ->
+                        fileHandler.saveFile(uriFile)
+                    }
+                }
+                // refresh the UI after the new images have been imported.
+                openDocumentsView()
+            }
+        }
+
+    private val topLevelDestinations = setOf(
+        R.id.viewer_documents,
+        R.id.viewer_images,
+        R.id.viewer_pdfs
+    )
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityDocumentViewerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        initToolbar()
+
+        val navController = findNavController(R.id.nav_host_fragment)
+        val appBarConfiguration = AppBarConfiguration(topLevelDestinations)
+        binding.mainToolbar.setupWithNavController(navController, appBarConfiguration)
+        binding.bottomNav.setupWithNavController(navController)
+
+        val documentPage = intent.getParcelableExtra<DocumentPage>(EXTRA_DOCUMENT_PAGE)
+        val type =
+            intent.getSerializableExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW) as? DocumentViewerLaunchViewType
+
+        // a navigation case when user wants to directly open the images fragment
+        if (documentPage != null) {
+            navController.navigate(
+                DocumentsFragmentDirections.actionViewerDocumentsToViewerImages(documentPage)
+            )
+        } else {
+            when (type) {
+                DocumentViewerLaunchViewType.PDFS -> {
+                    navController.navigate(DocumentsFragmentDirections.actionViewerDocumentsToViewerPdfs())
+                }
+                else -> {
+                    // ignore
+                }
+            }
+        }
+        observe()
+    }
+
+    private fun observe() {
+        viewModel.observableNumOfSelectedElements.observe(this, {
+            if (it > 0) {
+                if (selectableToolbar.isSelectMode) {
+                    selectableToolbar.update(it)
+                } else {
+                    selectableToolbar.selectToolbar(it)
+                }
+            } else {
+                if (selectableToolbar.isSelectMode) {
+                    selectableToolbar.resetToolbar()
+                }
+            }
+        })
+        viewModel.observableInitDocumentOptions.observe(this, {
+            it?.getContentIfNotHandled()?.let { doc ->
+                showDocumentOptions(doc)
+            }
+        })
+        viewModel.observableInitCamera.observe(this, {
+            it?.getContentIfNotHandled()?.let {
+                startActivity(CameraActivity.newInstance(this))
+                finish()
+            }
+        })
+        viewModel.observableSelectedDocument.observe(this, {
+
+        })
+    }
+
+
+    override fun onScrollImageLoaded() {
+        startPostponedEnterTransition()
+    }
+
+    override fun onImageLoaded() {
+//        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
+//            startPostponedEnterTransition()
+//        }
+
+    }
 
     override fun onPdfSheetSelected(pdf: DocumentFile, sheetAction: ActionSheet.SheetAction) {
 
@@ -764,7 +827,8 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
         val postfix = if (count == 1) "${getString(R.string.sync_snackbar_file_deleted_postfix)}"
         else "${getString(R.string.sync_snackbar_files_deleted_postfix)}"
-        val snackbarText = "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $count $postfix"
+        val snackbarText =
+            "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $count $postfix"
         val s = Snackbar.make(
             findViewById(R.id.sync_coordinatorlayout),
             snackbarText,
@@ -1129,120 +1193,52 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             fab.hide()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityDocumentViewerBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        binding.bottomNav.setOnNavigationItemSelectedListener(this)
-
-        initToolbar()
-
-        val documentPage = intent.getParcelableExtra<DocumentPage>(EXTRA_DOCUMENT_PAGE)
-        val type =
-            intent.getSerializableExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW) as? DocumentViewerLaunchViewType
-
-        // TODO: The entire fragment handling is a bit confusing.
-
-        if (documentPage != null) {
-            // TODO: Open the images fragment from here
-//            openImagesFragmentFromIntent(document, fileName)
-
-        } else {
-            when (type) {
-                DocumentViewerLaunchViewType.PDFS -> {
-                    // TODO: Check if the animations are correct
-                    openPDFsView()
-                }
-                DocumentViewerLaunchViewType.DOCUMENTS, null -> {
-                    openDocumentsView()
-                }
-            }
-        }
-
-        // TODO: Check if this is necessary, as the previous if statement should be exhaustive.
-        // Just open the document view if no other fragment is already shown:
-        if (supportFragmentManager.findFragmentByTag(ImagesFragment.TAG) == null &&
-            supportFragmentManager.findFragmentByTag(PdfFragment.TAG) == null
-        ) {
-            openDocumentsView()
-        }
-
-        observe()
-    }
-
-    private fun observe() {
-        viewModel.observableNumOfSelectedElements.observe(this, {
-            if (it > 0) {
-                if (selectableToolbar.isSelectMode) {
-                    selectableToolbar.update(it)
-                } else {
-                    selectableToolbar.selectToolbar(it)
-                }
-            } else {
-                if (selectableToolbar.isSelectMode) {
-                    selectableToolbar.resetToolbar()
-                }
-            }
-        })
-        viewModel.observableInitDocumentOptions.observe(this, {
-            it?.getContentIfNotHandled()?.let { doc ->
-                showDocumentOptions(doc)
-            }
-        })
-
-        viewModel.observableInitCamera.observe(this, {
-            it?.getContentIfNotHandled()?.let {
-                startActivity(CameraActivity.newInstance(this))
-                finish()
-            }
-        })
-    }
-
-    override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
-
-//        Do nothing in case the item is already selected:
-        if (binding.bottomNav.selectedItemId == menuItem.itemId)
-            return false
-
-
-        return openNavigationView(menuItem.itemId)
-
-    }
-
-    private fun openNavigationView(@IdRes itemId: Int): Boolean {
-
-        //        Clear the toolbar menu:
-        selectableToolbar.resetToolbar()
-        toolbar.menu.clear()
-
-        when (itemId) {
-            R.id.viewer_documents -> openDocumentsView()
-            R.id.viewer_images -> openImagesView()
-            R.id.viewer_pdfs -> openPDFsView()
-//            This should not happen:
-            else -> return false
-        }
-
-        //        Expand the AppBarLayout without any animation
-        findViewById<AppBarLayout>(R.id.gallery_appbar).setExpanded(true, false)
-
-        return true
-
-    }
+// TODO: Check navigation items
+//    override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
+//
+////        Do nothing in case the item is already selected:
+//        if (binding.bottomNav.selectedItemId == menuItem.itemId)
+//            return false
+//
+//
+//        return openNavigationView(menuItem.itemId)
+//
+//    }
+//
+//    private fun openNavigationView(@IdRes itemId: Int): Boolean {
+//
+//        //        Clear the toolbar menu:
+//        selectableToolbar.resetToolbar()
+//        toolbar.menu.clear()
+//
+////        when (itemId) {
+////            R.id.viewer_documents -> openDocumentsView()
+////            R.id.viewer_images -> openImagesView()
+////            R.id.viewer_pdfs -> openPDFsView()
+//////            This should not happen:
+////            else -> return false
+////        }
+//
+//        //        Expand the AppBarLayout without any animation
+//        findViewById<AppBarLayout>(R.id.gallery_appbar).setExpanded(true, false)
+//
+//        return true
+//
+//    }
 
     private fun openDocumentsView() {
 
         val documentsFragment = DocumentsFragment.newInstance()
 
-        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-        ft.setCustomAnimations(
-            R.anim.translate_right_to_left_in,
-            R.anim.translate_right_to_left_out
-        )
-        ft.replace(
-            R.id.viewer_fragment_layout, documentsFragment,
-            DocumentsFragment.TAG
-        ).commit()
+//        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
+//        ft.setCustomAnimations(
+//            R.anim.translate_right_to_left_in,
+//            R.anim.translate_right_to_left_out
+//        )
+//        ft.replace(
+//            R.id.viewer_fragment_layout, documentsFragment,
+//            DocumentsFragment.TAG
+//        ).commit()
 
         // TODO: Checkout scroll to current active document
 //        documentsFragment.scrollToActiveDocument()
@@ -1257,12 +1253,12 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 
 //        Hide any badge if existing:
         binding.bottomNav.removeBadge(R.id.viewer_pdfs)
-        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-        ft.setCustomAnimations(
-            R.anim.translate_left_to_right_in,
-            R.anim.translate_left_to_right_out
-        )
-        ft.replace(R.id.viewer_fragment_layout, PdfFragment.newInstance(), PdfFragment.TAG).commit()
+//        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
+//        ft.setCustomAnimations(
+//            R.anim.translate_left_to_right_in,
+//            R.anim.translate_left_to_right_out
+//        )
+//        ft.replace(R.id.viewer_fragment_layout, PdfFragment.newInstance(), PdfFragment.TAG).commit()
         showFAB(R.id.viewer_add_pdf_fab)
 
         toolbar.title = getText(R.string.document_navigation_pdfs)
@@ -1311,10 +1307,10 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //            }
 //        }
 
-        ft.replace(
-            R.id.viewer_fragment_layout, imagesFragment,
-            ImagesFragment.TAG
-        ).commit()
+//        ft.replace(
+//            R.id.viewer_fragment_layout, imagesFragment,
+//            ImagesFragment.TAG
+//        ).commit()
 
     }
 
@@ -1332,11 +1328,11 @@ class DocumentViewerActivity : BaseNavigationActivity(),
             postponeEnterTransition()
 //  TODO:          imagesFragment.scrollToFile(fileName)
         }
-        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-        ft.replace(
-            R.id.viewer_fragment_layout, imagesFragment,
-            ImagesFragment.TAG
-        ).commit()
+//        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
+//        ft.replace(
+//            R.id.viewer_fragment_layout, imagesFragment,
+//            ImagesFragment.TAG
+//        ).commit()
 
 //        selectNavigationItem(R.id.viewer_images)
         selectBottomNavigationViewMenuItem(R.id.viewer_images)
@@ -1351,7 +1347,7 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //            putString(DOCUMENT_NAME_KEY, document.document.title)
 //        }
         // TODO: This is not correct, just for debugging purposes!
-        val imagesFragment = ImagesFragment.newInstance(UUID.randomUUID(), UUID.randomUUID())
+        val imagesFragment = ImagesFragment()
 
 //        Setup the toolbar
         setupImagesFragmentToolbar(document)
@@ -1398,9 +1394,9 @@ class DocumentViewerActivity : BaseNavigationActivity(),
      * Selects the specified item in the bottom navigation view without triggering a callback.
      */
     private fun selectBottomNavigationViewMenuItem(@IdRes menuItemId: Int) {
-        binding.bottomNav.setOnNavigationItemSelectedListener(null)
-        binding.bottomNav.selectedItemId = menuItemId
-        binding.bottomNav.setOnNavigationItemSelectedListener(this)
+//        binding.bottomNav.setOnNavigationItemSelectedListener(null)
+//        binding.bottomNav.selectedItemId = menuItemId
+//        binding.bottomNav.setOnNavigationItemSelectedListener(this)
     }
 
     override fun onResume() {
@@ -1417,27 +1413,27 @@ class DocumentViewerActivity : BaseNavigationActivity(),
 //        Assure that the current fragment and the selected item are corresponding.
 //        We are using this, because the selection after resuming is not always corresponding to the
 //        fragment. It seems the behavior is different for different devices.
-        val selItemId = getItemIdOfActiveFragment()
-        if (selItemId != binding.bottomNav.selectedItemId)
-            selectBottomNavigationViewMenuItem(selItemId)
+//        val selItemId = getItemIdOfActiveFragment()
+//        if (selItemId != binding.bottomNav.selectedItemId)
+//            selectBottomNavigationViewMenuItem(selItemId)
 //            openNavigationView(selItemId)
 
 //        Assure that the FAB is correct:
-        when (selItemId) {
-            R.id.viewer_pdfs -> {
-                showFAB(R.id.viewer_add_pdf_fab)
-                toolbar.title = getText(R.string.document_navigation_pdfs)
-            }
-            R.id.viewer_images -> {
-                showFAB(R.id.viewer_upload_fab)
-                //TODO: Check the toolbars title
-//                selectedDocument?.let { toolbar.title = it.document.title }
-            }
-            R.id.viewer_documents -> {
-                showFAB(R.id.viewer_add_fab)
-                toolbar.title = getText(R.string.document_navigation_documents)
-            }
-        }
+//        when (selItemId) {
+//            R.id.viewer_pdfs -> {
+//                showFAB(R.id.viewer_add_pdf_fab)
+//                toolbar.title = getText(R.string.document_navigation_pdfs)
+//            }
+//            R.id.viewer_images -> {
+//                showFAB(R.id.viewer_upload_fab)
+//                //TODO: Check the toolbars title
+////                selectedDocument?.let { toolbar.title = it.document.title }
+//            }
+//            R.id.viewer_documents -> {
+//                showFAB(R.id.viewer_add_fab)
+//                toolbar.title = getText(R.string.document_navigation_documents)
+//            }
+//        }
 //        Assure that the title is correct:
 
 //            selectBottomNavigationViewMenuItem(selItemId)

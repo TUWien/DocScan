@@ -43,5 +43,7 @@
     <!-- the granularity step size for the dynamically adapted size !-->
     <dimen name="item_model_result_size_step">1dp</dimen>
 
+    <dimen name="images_padding">3dp</dimen>
+    <dimen name="images_selected_margin">-30dp</dimen>
 
 </resources>

@@ -1,23 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/document_nav">
-
+    android:id="@+id/document_nav"
+    app:startDestination="@+id/viewer_documents">
 
     <fragment
         android:id="@+id/viewer_documents"
         android:name="at.ac.tuwien.caa.docscan.ui.docviewer.DocumentsFragment"
-        tools:layout="@layout/fragment_documents" />
+        android:label="@string/document_navigation_documents"
+        tools:layout="@layout/fragment_documents">
+        <action
+            android:id="@+id/action_viewer_documents_to_viewer_images"
+            app:destination="@id/viewer_images" />
+        <action
+            android:id="@+id/action_viewer_documents_to_viewer_pdfs"
+            app:destination="@id/viewer_pdfs" />
+    </fragment>
 
     <fragment
         android:id="@+id/viewer_images"
         android:name="at.ac.tuwien.caa.docscan.ui.docviewer.ImagesFragment"
-        tools:layout="@layout/fragment_image_viewer" />
+        android:label="@string/document_navigation_images"
+        tools:layout="@layout/fragment_image_viewer">
+        <argument
+            android:name="documentPage"
+            android:defaultValue="@null"
+            app:argType="at.ac.tuwien.caa.docscan.logic.DocumentPage"
+            app:nullable="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/viewer_pdfs"
         android:name="at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment"
+        android:label="@string/document_navigation_pdfs"
         tools:layout="@layout/fragment_pdfs" />
-
 
 </navigation>

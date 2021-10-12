@@ -44,7 +44,7 @@ val viewModelModule = module {
     viewModel { (extras: Bundle) -> EditDocumentViewModel(extras, get()) }
     viewModel { (extras: Bundle) -> PageSlideViewModel(extras, get(), get()) }
     viewModel { (extras: Bundle) -> ImageViewModel(extras, get()) }
-    viewModel { (extras: Bundle) -> ImagesViewModel(extras, get()) }
+    viewModel { ImagesViewModel(get()) }
 }
 
 val repositoryModule = module {

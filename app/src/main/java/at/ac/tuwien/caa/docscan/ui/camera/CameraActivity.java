@@ -164,6 +164,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public static final int IMG_ORIENTATION_180 = 2;
     public static final int IMG_ORIENTATION_270 = 3;
 
+    // TODO: injection of the viewModel should be done with viewModel()
     private final Lazy<CameraViewModel> viewModel = KoinJavaComponent.inject(CameraViewModel.class);
     private final Lazy<PreferencesHandler> preferencesHandler = KoinJavaComponent.inject(PreferencesHandler.class);
     private final Lazy<FileHandler> fileHandler = KoinJavaComponent.inject(FileHandler.class);
@@ -3126,6 +3127,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //            int camTextOrientation = mTextOrientation;
 ////            Compensate the camera rotation:
+        // TODO: The camera orientation is currently a bit obsolete, because the phone is the activity
+        // TODO: is always in portrait mode.
+
         int camTextOrientation = IMG_ORIENTATION_0;
         if (mCameraOrientation == 90)
             camTextOrientation = IMG_ORIENTATION_90;

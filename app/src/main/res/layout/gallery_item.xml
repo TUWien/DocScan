@@ -1,37 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_view"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:gravity="center">
 
     <RelativeLayout
+        android:id="@+id/page_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/page_container">
+        tools:ignore="UselessParent">
 
         <ImageView
             android:id="@+id/page_imageview"
-            android:layout_below="@id/page_checkbox"
-            android:layout_toRightOf="@id/page_checkbox"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_below="@id/page_checkbox"
+            android:layout_toEndOf="@id/page_checkbox"
+            android:contentDescription="@null"
             android:scaleType="fitCenter" />
 
         <CheckBox
             android:id="@+id/page_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:clickable="false" />
+            android:clickable="false"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
         <ProgressBar
             android:id="@+id/page_progressbar"
-            android:visibility="visible"
             android:layout_width="100dp"
             android:layout_height="100dp"
-            android:layout_centerInParent="true" />
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            tools:visibility="visible" />
     </RelativeLayout>
 
 </LinearLayout>
-
-    <!--</android.support.v7.widget.CardView>-->
-    <!--</LinearLayout>-->

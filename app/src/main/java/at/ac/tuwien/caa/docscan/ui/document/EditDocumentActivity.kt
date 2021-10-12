@@ -63,7 +63,7 @@ class EditDocumentActivity : CreateDocumentActivity() {
             genre = binding.createSeriesGenreEdittext.text.toString(),
             language = binding.createSeriesReadmeLanguageDropdown.text.toString(),
             isProjectReadme2020 = binding.createSeriesReadmeCheckbox.isChecked,
-            allowImagePublication = binding.createSeriesReadmePrivateRadioButton.isChecked,
+            allowImagePublication = binding.createSeriesReadmePublicRadioButton.isChecked,
             signature = binding.createSeriesSignatureEdittext.text.toString(),
             url = binding.createSeriesUrlEdittext.text.toString(),
             writer = binding.createSeriesWriterEdittext.text.toString()

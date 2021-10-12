@@ -4,13 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.databinding.FragmentDocumentsBinding
+import at.ac.tuwien.caa.docscan.logic.DocumentPage
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class DocumentsFragment : Fragment() {
+class DocumentsFragment : BaseFragment() {
 
     companion object {
         fun newInstance() = DocumentsFragment()
@@ -31,6 +32,14 @@ class DocumentsFragment : Fragment() {
         binding = FragmentDocumentsBinding.inflate(inflater, container, false)
         adapter = DocumentAdapter({
             sharedViewModel.selectDocument(it.document)
+            findNavController().navigate(
+                DocumentsFragmentDirections.actionViewerDocumentsToViewerImages(
+                    DocumentPage(
+                        it.document.id,
+                        null
+                    )
+                )
+            )
         }, {
             sharedViewModel.selectDocumentOptions(it)
         })

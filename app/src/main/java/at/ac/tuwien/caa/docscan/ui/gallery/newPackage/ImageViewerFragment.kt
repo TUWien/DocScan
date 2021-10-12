@@ -7,8 +7,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import at.ac.tuwien.caa.docscan.databinding.FragmentImageViewerBinding
+import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.FileHandler
-import at.ac.tuwien.caa.docscan.logic.Helper
+import at.ac.tuwien.caa.docscan.logic.KtHelper.Companion.getScaledCropPoints
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import org.koin.android.ext.android.inject
@@ -20,7 +21,11 @@ import java.util.*
 class ImageViewerFragment : Fragment() {
 
     private val viewModel: ImageViewModel by viewModel { parametersOf(requireArguments()) }
-    private val sharedViewModel: PageSlideViewModel by sharedViewModel{ parametersOf(requireActivity().intent!!.extras)}
+    private val sharedViewModel: PageSlideViewModel by sharedViewModel {
+        parametersOf(
+            requireActivity().intent!!.extras
+        )
+    }
     private val fileHandler by inject<FileHandler>()
     private lateinit var binding: FragmentImageViewerBinding
 
@@ -36,9 +41,9 @@ class ImageViewerFragment : Fragment() {
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         binding = FragmentImageViewerBinding.inflate(inflater, container, false)
         binding.imageViewerImageView.orientation = SubsamplingScaleImageView.ORIENTATION_USE_EXIF
@@ -68,21 +73,24 @@ class ImageViewerFragment : Fragment() {
                     var imageHeight = options.outHeight
                     var imageWidth = options.outWidth
 
-                    val angle = Helper.getAngleFromExif(Helper.getSafeExifOrientation(it))
-                    if (angle == 0 || angle == 180) {
-                        imageHeight = options.outWidth;
-                        imageWidth = options.outHeight;
+                    val angle = page.rotation.angle
+                    if (angle == 90 || angle == 270) {
+                        imageHeight = options.outWidth
+                        imageWidth = options.outHeight
                     }
 
-                    // TODO: Add this to the page meta data, so it can be set here.
-//                    PageDetector.PageFocusResult result =
-//                    PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth);
-//                    if (result != null)
-//                        mImageView.setPoints(result.getPoints(), result.isFocused());
-
-                    // TODO: If not cropped, then reset points
-//                    resetPoints()
-
+                    if (page.postProcessingState != PostProcessingState.DONE) {
+                        binding.imageViewerImageView.setPoints(
+                            getScaledCropPoints(
+                                page,
+                                imageWidth,
+                                imageHeight
+                            )
+                        )
+                    } else {
+                        // TODO: Check if this is correct
+                        resetPoints()
+                    }
                 }
             }
         })

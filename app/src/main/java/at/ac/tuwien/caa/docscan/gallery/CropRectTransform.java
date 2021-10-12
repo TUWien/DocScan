@@ -17,16 +17,18 @@ import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 
+@Deprecated
 public class CropRectTransform extends BitmapTransformation {
 
     private static final String ID = "at.ac.tuwien.caa.docscan.gallery.CropRectTransform";
-    private static final byte[] ID_BYTES = ID.getBytes(Charset.forName("UTF-8"));
+    private static final byte[] ID_BYTES = ID.getBytes(StandardCharsets.UTF_8);
 
     private String mFileName;
     private Paint mQuadPaint;

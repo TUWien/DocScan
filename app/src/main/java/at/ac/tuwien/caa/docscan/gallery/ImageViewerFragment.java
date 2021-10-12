@@ -41,7 +41,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 
-
+@Deprecated
 public class ImageViewerFragment extends Fragment {
 
     private Page mPage;
@@ -170,8 +170,8 @@ public class ImageViewerFragment extends Fragment {
                         PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth);
 //                ArrayList<PointF> points =
 //                        PageDetector.getScaledCropPoints(mFileName, imageHeight, imageWidth).getPoints();
-                if (result != null)
-                    mImageView.setPoints(result.getPoints(), result.isFocused());
+//                if (result != null)
+//                    mImageView.setPoints(result.getPoints(), result.isFocused());
 
 //                ArrayList<PointF> outerPoints = PageDetector.getParallelPoints(points, mFileName);
 //                mImageView.setPoints(points, outerPoints);

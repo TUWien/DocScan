@@ -46,7 +46,7 @@ import static at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity.LAUNC
 /**
  * Created by fabian on 2/6/2018.
  */
-
+@Deprecated
 public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryViewHolder> {
 
     private static final String CLASS_NAME = "ImagesAdapter";

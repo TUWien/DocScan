@@ -77,6 +77,7 @@ import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationActivity;
 //import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 //import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
 
+@Deprecated
 public class PageSlideActivity extends AppCompatActivity implements PageImageView.SingleClickListener {
 
     private HackyViewPager mPager;

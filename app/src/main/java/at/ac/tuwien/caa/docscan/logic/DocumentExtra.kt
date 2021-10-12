@@ -5,7 +5,4 @@ import kotlinx.android.parcel.Parcelize
 import java.util.*
 
 @Parcelize
-data class DocumentPage(
-        val docId: UUID,
-        val pageId: UUID
-) : Parcelable
+data class DocumentPage(val docId: UUID, val pageId: UUID?) : Parcelable
