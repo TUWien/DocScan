@@ -135,7 +135,7 @@
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".ui.CropViewActivity"
+            android:name=".ui.crop.CropViewActivity"
             android:exported="true" />
 
         <activity

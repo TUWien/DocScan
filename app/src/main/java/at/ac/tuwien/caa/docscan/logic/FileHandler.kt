@@ -2,7 +2,6 @@ package at.ac.tuwien.caa.docscan.logic
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.core.content.FileProvider
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.TFLiteModel
@@ -12,14 +11,12 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
-
 /**
  * A utility class for file management
  * @author matejbart
  */
 class FileHandler(private val context: Context) {
 
-    private val TAG = "FileHandler"
     private val gson by lazy { GsonBuilder().create() }
 
     companion object {
@@ -147,13 +144,13 @@ class FileHandler(private val context: Context) {
                         .readText()
                 list.add(gson.fromJson(json, TFLiteModel::class.java))
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to open/parse $it", e)
+                Timber.e(e, "Failed to open/parse $it")
             }
         }
         return list
     }
 
-    fun createCacheFile(fileId: UUID, fileType: FileType): File {
+    fun createCacheFile(fileId: UUID, fileType: FileType = FileType.JPEG): File {
         val tempFolder = getCacheTempFolder().createFolderIfNecessary()
         return File(tempFolder.absolutePath + File.separator + fileId.toString() + "." + fileType.extension).createFileIfNecessary()
     }

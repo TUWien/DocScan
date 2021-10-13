@@ -3,25 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/rotate"
         android:icon="@drawable/ic_rotate_right_black_24dp"
         android:title="@string/crop_view_item_rotate"
         android:visible="true"
-        app:showAsAction="always"
-        android:onClick="rotateCropView" />
-
-    <!--    <item-->
-    <!--        android:icon="@drawable/ic_crop_black_24dp"-->
-    <!--        android:title="@string/crop_view_item_map"-->
-    <!--        android:visible="true"-->
-    <!--        app:showAsAction="always"-->
-    <!--        android:onClick="startMapView"-->
-    <!--        />-->
-
+        app:showAsAction="always" />
     <item
+        android:id="@+id/save"
         android:icon="@drawable/ic_done_black_24dp"
-        android:title="@string/crop_view_item_rotate"
+        android:title="@string/map_view_item_save"
         android:visible="true"
-        app:showAsAction="always"
-        android:onClick="applyChanges" />
+        app:showAsAction="always" />
 
 </menu>

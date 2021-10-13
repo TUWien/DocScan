@@ -1,8 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.syncui;
 
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.PointF;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +17,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.crop.CropInfo;
 import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
-
-import static at.ac.tuwien.caa.docscan.crop.CropInfo.CROP_INFO_NAME;
 
 /**
  * Created by fabian on 02.10.2017.

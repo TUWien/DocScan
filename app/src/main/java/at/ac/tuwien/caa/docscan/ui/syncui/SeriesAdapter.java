@@ -15,6 +15,7 @@ import at.ac.tuwien.caa.docscan.R;
  * Created by fabian on 26.09.2017.
  */
 
+@Deprecated
 public class SeriesAdapter extends BaseDocumentAdapter {
 
     //    private Context mContext;

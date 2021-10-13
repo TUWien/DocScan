@@ -56,6 +56,13 @@ class DocumentRepository(
     }
 
     @WorkerThread
+    suspend fun updatePage(page: Page) {
+        withContext(NonCancellable) {
+            pageDao.insertPage(page)
+        }
+    }
+
+    @WorkerThread
     suspend fun setDocumentAsActive(documentId: UUID) {
         db.runInTransaction {
             documentDao.setAllDocumentsInactive()
@@ -175,35 +182,5 @@ class DocumentRepository(
         }
 
         return Success(data = newPage)
-    }
-
-    private fun applyExifData(file: File, exifMetaData: ImageExifMetaData) {
-        try {
-            val exif = ExifInterface(file)
-            exif.setAttribute(
-                ExifInterface.TAG_ORIENTATION,
-                exifMetaData.exifOrientation.toString()
-            )
-            exif.setAttribute(ExifInterface.TAG_SOFTWARE, exifMetaData.exifSoftware)
-            exifMetaData.exifArtist?.let {
-                exif.setAttribute(ExifInterface.TAG_ARTIST, it)
-            }
-            exifMetaData.exifCopyRight?.let {
-                exif.setAttribute(ExifInterface.TAG_COPYRIGHT, it)
-            }
-            exifMetaData.location?.let {
-                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, it.gpsLat)
-                exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, it.gpsLatRef)
-                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, it.gpsLon)
-                exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, it.gpsLonRef)
-            }
-            exifMetaData.resolution?.let {
-                exif.setAttribute(ExifInterface.TAG_X_RESOLUTION, it.x)
-                exif.setAttribute(ExifInterface.TAG_Y_RESOLUTION, it.y)
-            }
-            exif.saveAttributes()
-        } catch (exception: Exception) {
-            Timber.e(exception, "Couldn't save exif attributes!")
-        }
     }
 }

@@ -15,7 +15,7 @@ import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.asDocumentPageExtra
 import at.ac.tuwien.caa.docscan.gallery.PageImageView
 import at.ac.tuwien.caa.docscan.logic.FileType
-import at.ac.tuwien.caa.docscan.ui.CropViewActivity
+import at.ac.tuwien.caa.docscan.ui.crop.CropViewActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationActivity
@@ -34,8 +34,10 @@ class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener
     private val callback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             super.onPageSelected(position)
-            updateTitle(binding.slideViewpager.currentItem, viewModel.observablePages.value?.first?.size
-                    ?: 0)
+            updateTitle(
+                binding.slideViewpager.currentItem, viewModel.observablePages.value?.first?.size
+                    ?: 0
+            )
         }
     }
 
@@ -146,7 +148,12 @@ class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener
                     putExtra(Intent.EXTRA_STREAM, uri)
                     type = FileType.JPEG.mimeType
                 }
-                startActivity(Intent.createChooser(shareIntent, getString(R.string.page_slide_fragment_share_choose_app_text)))
+                startActivity(
+                    Intent.createChooser(
+                        shareIntent,
+                        getString(R.string.page_slide_fragment_share_choose_app_text)
+                    )
+                )
             }
         })
         viewModel.observableInitSegmentation.observe(this, {
@@ -166,7 +173,7 @@ class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener
             val builder = MaterialAlertDialogBuilder(this)
             builder.setTitle(R.string.page_slide_fragment_confirm_delete_text)
             builder.setPositiveButton(
-                    R.string.page_slide_fragment_confirm_delete_text
+                R.string.page_slide_fragment_confirm_delete_text
             ) { _, _ ->
                 viewModel.deletePageAtPosition(binding.slideViewpager.currentItem)
             }
@@ -191,16 +198,15 @@ class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener
     }
 
     private fun navigateToCropActivity(doc: Document, page: Page) {
-        // TODO: Add doc and page, adapt the CropViewActivity
-        startActivity(CropViewActivity.newInstance(this))
+        startActivity(CropViewActivity.newInstance(this, page))
     }
 
     private inner class PageSlideAdapter(private var pages: MutableList<Page> = mutableListOf()) :
-            FragmentStateAdapter(this) {
+        FragmentStateAdapter(this) {
         override fun getItemCount() = pages.size
 
         override fun createFragment(position: Int) =
-                ImageViewerFragment.newInstance(pages[position].id)
+            ImageViewerFragment.newInstance(pages[position].id)
 
         fun setItems(pages: List<Page>) {
             val callback = PagerDiffUtil(this.pages, pages)
@@ -212,8 +218,8 @@ class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener
     }
 
     private inner class PagerDiffUtil(
-            private val oldList: List<Page>,
-            private val newList: List<Page>
+        private val oldList: List<Page>,
+        private val newList: List<Page>
     ) : DiffUtil.Callback() {
 
         override fun getOldListSize() = oldList.size

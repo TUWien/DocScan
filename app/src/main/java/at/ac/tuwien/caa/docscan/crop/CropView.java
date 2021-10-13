@@ -16,8 +16,10 @@ import android.util.Log;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.db.model.exif.Rotation;
 
 /**
  * Created by fabian on 21.11.2017.
@@ -46,7 +48,7 @@ import at.ac.tuwien.caa.docscan.R;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
+// TODO: Add a callback for the cropping points, every time they change, call the listener to inform the parent view.
 public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     private static final int TRANSPARENT = 0x00000000;
@@ -138,9 +140,9 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
     }
 
 
-    public void setPoints(ArrayList<PointF> normedPoints) {
+    public void setPoints(List<PointF> normedPoints) {
 
-        mNormedPoints = normedPoints;
+        mNormedPoints = new ArrayList(normedPoints);
 //        mCropQuad = new CropQuad(normedPoints, getBitmap().getWidth(), getBitmap().getHeight());
     }
 

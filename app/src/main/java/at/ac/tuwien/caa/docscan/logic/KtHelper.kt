@@ -3,7 +3,6 @@ package at.ac.tuwien.caa.docscan.logic
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.graphics.Point
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -14,10 +13,7 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.preference.PreferenceManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector.PageFocusResult
 import at.ac.tuwien.caa.docscan.db.model.Page
-import at.ac.tuwien.caa.docscan.db.model.boundary.PointF
-import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary.Companion.getDefault
 import at.ac.tuwien.caa.docscan.db.model.boundary.asClockwiseList
 import com.google.firebase.crashlytics.FirebaseCrashlytics

@@ -1,6 +1,5 @@
 package at.ac.tuwien.caa.docscan.ui.gallery.newPackage
 
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +9,7 @@ import at.ac.tuwien.caa.docscan.databinding.FragmentImageViewerBinding
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.KtHelper.Companion.getScaledCropPoints
+import at.ac.tuwien.caa.docscan.logic.calculateImageResolution
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import org.koin.android.ext.android.inject
@@ -64,34 +64,19 @@ class ImageViewerFragment : Fragment() {
                 // TODO: Check if the nullability should be ever handled
                 fileHandler.getFileByPage(page)?.let {
                     setImage(ImageSource.uri(it.absolutePath))
-
-                    // TODO: Check if this decoding stuff needs to be performed here
-                    val options = BitmapFactory.Options()
-                    options.inJustDecodeBounds = true
-                    BitmapFactory.decodeFile(it.absolutePath, options)
-
-                    var imageHeight = options.outHeight
-                    var imageWidth = options.outWidth
-
-                    val angle = page.rotation.angle
-                    if (angle == 90 || angle == 270) {
-                        imageHeight = options.outWidth
-                        imageWidth = options.outHeight
-                    }
-
+                    val resolution = calculateImageResolution(it, page.rotation)
                     if (page.postProcessingState != PostProcessingState.DONE) {
                         binding.imageViewerImageView.setPoints(
                             getScaledCropPoints(
                                 page,
-                                imageWidth,
-                                imageHeight
+                                resolution.width,
+                                resolution.height
                             )
                         )
                     } else {
-                        // TODO: Check if this is correct
                         resetPoints()
                     }
-                }
+                } ?: resetPoints()
             }
         })
     }

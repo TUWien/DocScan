@@ -1,7 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
 import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,12 +10,11 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.GalleryItemBinding
-import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.GlideHelper
+import at.ac.tuwien.caa.docscan.logic.calculateImageResolution
 import org.koin.java.KoinJavaComponent.inject
-import timber.log.Timber
 import kotlin.math.roundToInt
 
 class ImagesAdapterNew(
@@ -49,7 +47,10 @@ class ImagesAdapterNew(
             binding.root.setOnClickListener(this)
             binding.root.setOnLongClickListener(this)
 
-            val aspectRatio = aspectRatioForIndex(page.page)
+            val aspectRatio = fileHandler.getFileByPage(page.page)?.let {
+                calculateImageResolution(it, page.page.rotation).aspectRatio
+            } ?: .0
+
             val topView = binding.pageContainer
             // set item height based on ratio
             topView.layoutParams.height = if (aspectRatio != .0) {
@@ -115,28 +116,6 @@ class ImagesAdapterNew(
             onLongClick(getItem(adapterPosition))
             return true
         }
-    }
-
-    // TODO: This seems to be very heavy for the UI thread, consider adding this into the DB
-    private fun aspectRatioForIndex(page: Page): Double {
-        val file = fileHandler.getFileByPage(page) ?: return .0
-        try {
-            val options = BitmapFactory.Options()
-            options.inJustDecodeBounds = true
-            BitmapFactory.decodeFile(file.absolutePath, options)
-            var width = options.outWidth
-            var height = options.outHeight
-            val rotation = page.rotation
-            if (rotation.angle == 90 || rotation.angle == 270) {
-                val tmp = width
-                width = height
-                height = tmp
-            }
-            return width / height.toDouble()
-        } catch (e: Exception) {
-            Timber.e("Could not determine aspect ratio", e)
-        }
-        return .0
     }
 }
 

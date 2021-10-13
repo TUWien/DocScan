@@ -67,9 +67,8 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
-import at.ac.tuwien.caa.docscan.ui.CropViewActivity;
+import at.ac.tuwien.caa.docscan.ui.crop.CropViewActivity;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
-import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationActivity;
 
 //import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_FILE_NAME;
 //import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.INTENT_IMAGE_PROCESS_ACTION;
@@ -689,10 +688,10 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     private void startCropView() {
         Intent intent = new Intent(getApplicationContext(), CropViewActivity.class);
-        intent.putExtra(getString(R.string.key_crop_view_activity_file_name),
-                mPage.getFile().getAbsolutePath());
-        intent.putExtra(getString(R.string.key_crop_view_activity_document_name),
-                mDocument.getTitle());
+//        intent.putExtra(getString(R.string.key_crop_view_activity_file_name),
+//                mPage.getFile().getAbsolutePath());
+//        intent.putExtra(getString(R.string.key_crop_view_activity_document_name),
+//                mDocument.getTitle());
 
         mContext.startActivity(intent);
     }

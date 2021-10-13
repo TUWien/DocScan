@@ -42,6 +42,7 @@ class PreferencesHandler(val context: Context) {
         const val SHOW_INTRO_KEY = "SHOW_INTRO_KEY"
         val KEY_FIRST_START_DATE = "KEY_FIRST_START_DATE"
         const val SHOW_TRANSKRIBUS_METADATA_KEY = "SHOW_TRANSKRIBUS_METADATA"
+        private const val KEY_SKIP_CROPPING_INFO_DIALOG = "KEY_SKIP_CROPPING_INFO_DIALOG"
 
         const val DB_MIGRATION_KEY = "DB_MIGRATION_KEY"
 
@@ -172,6 +173,15 @@ class PreferencesHandler(val context: Context) {
         set(value) {
             defaultSharedPreferences.edit()
                 .putBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, value)
+                .apply()
+        }
+
+    var showCroppingInfo: Boolean
+        get() =
+            defaultSharedPreferences.getBoolean(KEY_SKIP_CROPPING_INFO_DIALOG, true)
+        set(value) {
+            defaultSharedPreferences.edit()
+                .putBoolean(KEY_SKIP_CROPPING_INFO_DIALOG, value)
                 .apply()
         }
 

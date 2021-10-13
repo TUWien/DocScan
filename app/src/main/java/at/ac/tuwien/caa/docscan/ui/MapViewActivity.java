@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.appcompat.app.AlertDialog;
 
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,8 +18,6 @@ import android.view.View;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-
-import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,12 +30,14 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.Mapper;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.ui.crop.CropViewActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 
 /**
  * Created by fabian on 24.11.2017.
  */
 
+@Deprecated
 public class MapViewActivity extends BaseNoNavigationActivity {
 
     public static final String KEY_MAP_VIEW_ACTIVITY_FINISHED = "KEY_MAP_VIEW_ACTIVITY_FINISHED";
@@ -83,7 +82,7 @@ public class MapViewActivity extends BaseNoNavigationActivity {
 
         Bundle b = getIntent().getExtras();
         if (b != null) {
-            mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
+//            mFileName = b.getString(getString(R.string.key_crop_view_activity_file_name), null);
 
             if (mFileName != null)
                 new MapTask().execute(mFileName);

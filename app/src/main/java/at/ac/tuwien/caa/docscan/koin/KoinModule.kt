@@ -6,8 +6,10 @@ import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
+import at.ac.tuwien.caa.docscan.repository.ImageProcessorRepository
 import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
 import at.ac.tuwien.caa.docscan.ui.camera.CameraViewModel
+import at.ac.tuwien.caa.docscan.ui.crop.CropViewModel
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentViewModel
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerViewModel
@@ -27,6 +29,7 @@ val appModule = module {
     single { PreferencesHandler(get()) }
     single { FileHandler(get()) }
     single { MigrationRepository(get(), get(), get()) }
+    single { ImageProcessorRepository(get()) }
 }
 
 val daoModule = module {
@@ -44,6 +47,7 @@ val viewModelModule = module {
     viewModel { (extras: Bundle) -> EditDocumentViewModel(extras, get()) }
     viewModel { (extras: Bundle) -> PageSlideViewModel(extras, get(), get()) }
     viewModel { (extras: Bundle) -> ImageViewModel(extras, get()) }
+    viewModel { (extras: Bundle) -> CropViewModel(extras, get(), get(), get(), get()) }
     viewModel { ImagesViewModel(get()) }
 }
 

@@ -8,6 +8,15 @@ enum class Rotation(val exifOrientation: Int, val angle: Int) {
     ORIENTATION_180(ExifInterface.ORIENTATION_ROTATE_180, 180),
     ORIENTATION_270(ExifInterface.ORIENTATION_ROTATE_270, 270);
 
+    fun rotateBy90Clockwise(): Rotation {
+        return when (this) {
+            ORIENTATION_NORMAL -> ORIENTATION_90
+            ORIENTATION_90 -> ORIENTATION_180
+            ORIENTATION_180 -> ORIENTATION_270
+            ORIENTATION_270 -> ORIENTATION_NORMAL
+        }
+    }
+
     companion object {
 
         /**
