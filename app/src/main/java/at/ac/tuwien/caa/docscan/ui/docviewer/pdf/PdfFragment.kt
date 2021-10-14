@@ -19,11 +19,10 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.R
-import at.ac.tuwien.caa.docscan.camera.ActionSheet
 import at.ac.tuwien.caa.docscan.camera.SheetAction
+import at.ac.tuwien.caa.docscan.databinding.FragmentPdfsBinding
 import at.ac.tuwien.caa.docscan.logic.Helper
 import at.ac.tuwien.caa.docscan.ui.docviewer.BaseFragment
-import kotlinx.android.synthetic.main.fragment_pdfs.*
 import java.io.File
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
@@ -43,6 +42,8 @@ class PdfFragment : BaseFragment() {
         const val PERSISTABLE_URI_PERMISSION = 0
     }
 
+    private lateinit var binding: FragmentPdfsBinding
+
     //    private lateinit var newPdfs: MutableList<String>
     private lateinit var pdfList: MutableList<Pdf>
 //    private lateinit var newPdfs: MutableList<String>
@@ -50,9 +51,9 @@ class PdfFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-
-        return inflater.inflate(R.layout.fragment_pdfs, container, false)
+    ): View {
+        binding = FragmentPdfsBinding.inflate(layoutInflater)
+        return binding.root
     }
 
 //    override fun onPdfSheetSelected(pdf: DocumentFile, sheetAction: ActionSheet.SheetAction) {
@@ -246,14 +247,14 @@ class PdfFragment : BaseFragment() {
 //                initPdfList()
 //        In case the list was empty before, we need to show the list and initialize the adapter:
                 if (pdfList.isEmpty()) {
-                    pdf_list.visibility = View.VISIBLE
-                    pdf_empty_layout.visibility = View.INVISIBLE
+                    binding.pdfList.visibility = View.VISIBLE
+                    binding.pdfEmptyLayout.visibility = View.INVISIBLE
 //                    updatePdfAdapter()
                 }
 
                 pdfList.add(0, pdf)
 
-                pdf_list.adapter?.notifyItemChanged(0)
+                binding.pdfList.adapter?.notifyItemChanged(0)
 
             }
         }
@@ -277,8 +278,8 @@ class PdfFragment : BaseFragment() {
 //                now update the required fields:
                 pdf.date = formatDate(pdf.file.lastModified())
                 pdf.showBadge = true
-                pdf_list.adapter?.notifyItemMoved(idx, 0)
-                pdf_list.scrollToPosition(0)
+                binding.pdfList.adapter?.notifyItemMoved(idx, 0)
+                binding.pdfList.scrollToPosition(0)
 
                 return true
             }
@@ -343,8 +344,8 @@ class PdfFragment : BaseFragment() {
 
 
         if (pdfList.isEmpty()) {
-            pdf_list.visibility = View.INVISIBLE
-            pdf_empty_layout.visibility = View.VISIBLE
+            binding.pdfList.visibility = View.INVISIBLE
+            binding.pdfEmptyLayout.visibility = View.VISIBLE
             return true
         }
 
@@ -388,7 +389,7 @@ class PdfFragment : BaseFragment() {
                 //        even happen).
                 isPermissionGiven(dir) -> {
 //                    updatePdfs()
-                    pdf_list.layoutManager = LinearLayoutManager(context)
+                    binding.pdfList.layoutManager = LinearLayoutManager(context)
                 }
                 //        No permission is given for the folder - so ask for it:
                 else -> {
@@ -397,7 +398,7 @@ class PdfFragment : BaseFragment() {
             }
         } else {
 //            updatePdfs()
-            pdf_list.layoutManager = LinearLayoutManager(context)
+            binding.pdfList.layoutManager = LinearLayoutManager(context)
         }
     }
 

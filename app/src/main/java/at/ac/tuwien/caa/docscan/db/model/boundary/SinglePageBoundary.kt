@@ -2,7 +2,7 @@ package at.ac.tuwien.caa.docscan.db.model.boundary
 
 import android.os.Parcelable
 import androidx.room.Embedded
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class SinglePageBoundary(

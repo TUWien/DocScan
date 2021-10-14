@@ -3,7 +3,7 @@ package at.ac.tuwien.caa.docscan.db.model
 import android.os.Parcelable
 import androidx.annotation.Keep
 import androidx.room.ColumnInfo
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 /**
  * TODO: The UI introduced a prefix, is it still relevant? (Is it even relevant for the upload?) it's probably relevant for the new export of images

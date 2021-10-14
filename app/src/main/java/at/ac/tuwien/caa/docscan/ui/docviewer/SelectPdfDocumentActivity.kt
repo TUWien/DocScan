@@ -4,33 +4,30 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.databinding.ActivityPdfSelectorBinding
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
-import kotlinx.android.synthetic.main.activity_pdf_selector.*
+import at.ac.tuwien.caa.docscan.ui.BaseActivity
 
-
-class SelectPdfDocumentActivity : AppCompatActivity(),
+// TODO: Adapt for the new domain structure
+class SelectPdfDocumentActivity : BaseActivity(),
     DocumentSelector {
 
     private lateinit var documents: ArrayList<Document>
     private lateinit var listener: DocumentSelector
+    private lateinit var binding: ActivityPdfSelectorBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_pdf_selector)
-
+        binding = ActivityPdfSelectorBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         listener = this
-
         initToolbar()
-
         loadDocuments()
         updateRecyclerView()
-
     }
 
     private fun initToolbar() {
@@ -67,8 +64,8 @@ class SelectPdfDocumentActivity : AppCompatActivity(),
             listener?.onDocumentSelected(document)
         }
 
-        documents_list.adapter = adapter
-        documents_list.layoutManager = LinearLayoutManager(this)
+        binding.documentsList.adapter = adapter
+        binding.documentsList.layoutManager = LinearLayoutManager(this)
     }
 
 

@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.Event
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 import timber.log.Timber
 

@@ -3,7 +3,7 @@ package at.ac.tuwien.caa.docscan.db.model.boundary
 import android.graphics.PointF
 import android.os.Parcelable
 import androidx.room.ColumnInfo
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class PointF(

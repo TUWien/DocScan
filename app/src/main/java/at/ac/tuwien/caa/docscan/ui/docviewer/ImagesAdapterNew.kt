@@ -129,6 +129,6 @@ class DiffPageCallback : DiffUtil.ItemCallback<PageSelection>() {
         newItem: PageSelection
     ): Boolean {
         // TODO: Check if this is sufficient
-        return oldItem.page.id == newItem.page.id && oldItem.page.number == newItem.page.number && oldItem.isSelected == newItem.isSelected
+        return oldItem.page == newItem.page
     }
 }

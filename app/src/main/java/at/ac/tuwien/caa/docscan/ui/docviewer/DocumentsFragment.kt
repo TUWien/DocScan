@@ -11,7 +11,6 @@ import at.ac.tuwien.caa.docscan.logic.DocumentPage
 import at.ac.tuwien.caa.docscan.logic.extractDocWithPages
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
-import at.ac.tuwien.caa.docscan.ui.dialog.ModalActionSheetViewModel
 import at.ac.tuwien.caa.docscan.ui.dialog.isPositive
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel

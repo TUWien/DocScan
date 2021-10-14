@@ -15,8 +15,7 @@ import at.ac.tuwien.caa.docscan.databinding.TitledSheetDialogCameraBinding
 import at.ac.tuwien.caa.docscan.logic.Event
 import at.ac.tuwien.caa.docscan.logic.extractDocWithPages
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.sheet_dialog_camera.*
+import kotlinx.parcelize.Parcelize
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 import timber.log.Timber
 

@@ -8,10 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.GridLayoutManager
-import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.databinding.SheetDialogCameraBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.synthetic.main.sheet_dialog_camera.*
+import kotlinx.parcelize.Parcelize
 
 @Deprecated(message = "Use AModalActionSheet.kt instead. This current implementation does not handle rotations correctly crashes due to constructor overload of fragments!")
 open class ActionSheet(
@@ -20,12 +19,14 @@ open class ActionSheet(
     private var dialogListener: DialogStatus? = null
 ) : BottomSheetDialogFragment() {
 
+    private lateinit var binding: SheetDialogCameraBinding
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-
-        return inflater.inflate(R.layout.sheet_dialog_camera, container, false)
+    ): View {
+        binding = SheetDialogCameraBinding.inflate(layoutInflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -35,7 +36,7 @@ open class ActionSheet(
 //        https://www.andreasjakl.com/recyclerview-kotlin-style-click-listener-android/
         val sheetAdapter =
             SheetAdapter(sheetActions) { sheetAction: SheetAction -> sheetClicked(sheetAction) }
-        sheet_dialog_recyclerview.apply {
+        binding.sheetDialogRecyclerview.apply {
             adapter = sheetAdapter
             layoutManager = GridLayoutManager(this@ActionSheet.context, 2)
         }
