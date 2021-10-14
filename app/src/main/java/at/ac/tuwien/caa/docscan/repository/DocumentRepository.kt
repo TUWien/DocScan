@@ -1,13 +1,14 @@
 package at.ac.tuwien.caa.docscan.repository
 
 import androidx.annotation.WorkerThread
-import androidx.exifinterface.media.ExifInterface
 import androidx.room.withTransaction
 import at.ac.tuwien.caa.docscan.camera.ImageExifMetaData
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.exception.DBDocumentDuplicate
+import at.ac.tuwien.caa.docscan.db.exception.DBError
+import at.ac.tuwien.caa.docscan.db.exception.DBException
 import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
@@ -25,7 +26,8 @@ class DocumentRepository(
     private val fileHandler: FileHandler,
     private val pageDao: PageDao,
     private val documentDao: DocumentDao,
-    private val db: AppDatabase
+    private val db: AppDatabase,
+    private val imageProcessorRepository: ImageProcessorRepository
 ) {
 
     fun getPageByIdAsFlow(pageId: UUID) = documentDao.getPageAsFlow(pageId)
@@ -71,7 +73,7 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    suspend fun removeDocument(documentWithPages: DocumentWithPages) {
+    suspend fun removeDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
         withContext(NonCancellable) {
             db.runInTransaction {
                 fileHandler.deleteEntireDocumentFolder(documentWithPages.document.id)
@@ -79,6 +81,25 @@ class DocumentRepository(
                 documentDao.deleteDocument(documentWithPages.document)
             }
         }
+        return Success(Unit)
+    }
+
+    @WorkerThread
+    suspend fun uploadDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
+        // TODO: Run constraints check
+        return Failure(DBDocumentDuplicate())
+    }
+
+    @WorkerThread
+    suspend fun processDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
+        // TODO: Run constraints check
+        return Failure(DBDocumentDuplicate())
+    }
+
+    @WorkerThread
+    suspend fun exportDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
+        // TODO: Run constraints check
+        return Failure(DBDocumentDuplicate())
     }
 
     @WorkerThread
@@ -180,6 +201,9 @@ class DocumentRepository(
             // insert the new page
             pageDao.insertPage(newPage)
         }
+
+        // 5. Spawn the page detection task
+        imageProcessorRepository.spawnPageDetection(newPage)
 
         return Success(data = newPage)
     }

@@ -3,9 +3,7 @@ package at.ac.tuwien.caa.docscan.ui.camera;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
-import static at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity.DOCUMENT_QR_TEXT;
 import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IMAGE;
-import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IMAGE_ID;
 
 import android.Manifest;
 import android.animation.Animator;
@@ -54,8 +52,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.exifinterface.media.ExifInterface;
 
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.signature.MediaStoreSignature;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -71,7 +67,6 @@ import org.koin.java.KoinJavaComponent;
 import org.opencv.android.OpenCVLoader;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -85,6 +80,7 @@ import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.DebugViewFragment;
 import at.ac.tuwien.caa.docscan.camera.LocationHandler;
 import at.ac.tuwien.caa.docscan.camera.PaintView;
+import at.ac.tuwien.caa.docscan.camera.SheetAction;
 import at.ac.tuwien.caa.docscan.camera.TaskTimer;
 import at.ac.tuwien.caa.docscan.camera.TextOrientationActionSheet;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
@@ -93,9 +89,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
-import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages;
 import at.ac.tuwien.caa.docscan.db.model.Page;
-import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
 import at.ac.tuwien.caa.docscan.logic.DocumentViewerLaunchViewType;
 import at.ac.tuwien.caa.docscan.logic.Failure;
@@ -110,7 +104,6 @@ import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
-import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import kotlin.Lazy;
 import kotlin.Pair;
 import me.drakeet.support.toast.ToastCompat;
@@ -638,11 +631,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void openRotateTextDirMenu() {
 
-        ArrayList<ActionSheet.SheetAction> actions = getRotateTextDirSheetActions();
+        ArrayList<SheetAction> actions = getRotateTextDirSheetActions();
 
         ActionSheet.SheetSelection s = action -> {
 
-            switch (action.getID()) {
+            switch (action.getId()) {
                 case R.id.action_rotate_text_dir_left:
                     mTextOrientation--;
                     break;
@@ -710,13 +703,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     @NotNull
-    private ArrayList<ActionSheet.SheetAction> getRotateTextDirSheetActions() {
-        ArrayList<ActionSheet.SheetAction> actions = new ArrayList<>();
-        actions.add(new ActionSheet.SheetAction(
+    private ArrayList<SheetAction> getRotateTextDirSheetActions() {
+        ArrayList<SheetAction> actions = new ArrayList<>();
+        actions.add(new SheetAction(
                 R.id.action_rotate_text_dir_left,
                 getString(R.string.action_rotate_left_title),
                 R.drawable.ic_rotate_left_white_24dp));
-        actions.add(new ActionSheet.SheetAction(
+        actions.add(new SheetAction(
                 R.id.action_rotate_text_dir_right,
                 getString(R.string.action_rotate_right_title),
                 R.drawable.ic_rotate_right_white_24dp));
@@ -725,13 +718,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void openSettingsMenu() {
 
-        ArrayList<ActionSheet.SheetAction> actions = getSettingsSheetActions();
+        ArrayList<SheetAction> actions = getSettingsSheetActions();
 
         ActionSheet.SheetSelection s = new ActionSheet.SheetSelection() {
             @Override
-            public void onSheetSelected(ActionSheet.SheetAction action) {
+            public void onSheetSelected(SheetAction action) {
 
-                switch (action.getID()) {
+                switch (action.getId()) {
                     case R.id.action_show_grid_item:
                         showGrid(true);
                         break;
@@ -794,14 +787,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     @NotNull
-    private ArrayList<ActionSheet.SheetAction> getSettingsSheetActions() {
+    private ArrayList<SheetAction> getSettingsSheetActions() {
 
-        ArrayList<ActionSheet.SheetAction> actions = new ArrayList<>();
+        ArrayList<SheetAction> actions = new ArrayList<>();
 
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
 //        Text orientation action:
-        actions.add(new ActionSheet.SheetAction(
+        actions.add(new SheetAction(
                 R.id.action_rotate_text_dir_item,
                 getString(R.string.action_setting_rotate_text_dir),
                 R.drawable.ic_rotate_text_gray_24px));
@@ -810,12 +803,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         boolean showGrid = sharedPref.getBoolean(getResources().getString(
                 R.string.key_show_grid), false);
         if (showGrid)
-            actions.add(new ActionSheet.SheetAction(
+            actions.add(new SheetAction(
                     R.id.action_hide_grid_item,
                     getString(R.string.action_setting_hide_grid),
                     R.drawable.ic_grid_off_gray_24dp));
         else
-            actions.add(new ActionSheet.SheetAction(
+            actions.add(new SheetAction(
                     R.id.action_show_grid_item,
                     getString(R.string.action_setting_show_grid),
                     R.drawable.ic_grid_on_gray_24dp));
@@ -826,18 +819,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             boolean wbLocked =
                     findViewById(R.id.lock_exposure_text_view).getVisibility() == View.VISIBLE;
             if (wbLocked)
-                actions.add(new ActionSheet.SheetAction(
+                actions.add(new SheetAction(
                         R.id.action_unlock_wb_item,
                         getString(R.string.action_setting_unlock_wb),
                         R.drawable.ic_lock_open_gray_24dp));
             else
-                actions.add(new ActionSheet.SheetAction(
+                actions.add(new SheetAction(
                         R.id.action_lock_wb_item,
                         getString(R.string.action_setting_lock_wb),
                         R.drawable.ic_lock_outline_gray_24dp));
         }
 
-        actions.add(new ActionSheet.SheetAction(
+        actions.add(new SheetAction(
                 R.id.action_document_qr_item,
                 getString(R.string.action_setting_qr_mode),
                 R.drawable.ic_qr_code_gray));
@@ -846,21 +839,21 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     @NotNull
-    private ArrayList<ActionSheet.SheetAction> getFABSheetActions() {
-        ArrayList<ActionSheet.SheetAction> actions = new ArrayList<>();
-        actions.add(new ActionSheet.SheetAction(
+    private ArrayList<SheetAction> getFABSheetActions() {
+        ArrayList<SheetAction> actions = new ArrayList<>();
+        actions.add(new SheetAction(
                 R.id.action_document_new_item,
                 getString(R.string.action_document_create_title),
                 R.drawable.ic_folder_gray_24dp));
-        actions.add(new ActionSheet.SheetAction(
+        actions.add(new SheetAction(
                 R.id.action_document_qr_item,
                 getString(R.string.action_document_qr_title),
                 R.drawable.ic_qr_code_gray));
-        actions.add(new ActionSheet.SheetAction(
+        actions.add(new SheetAction(
                 R.id.action_document_select_item,
                 getString(R.string.action_document_select_title),
                 R.drawable.ic_folder_open_gray_24dp));
-        actions.add(new ActionSheet.SheetAction(
+        actions.add(new SheetAction(
                 R.id.action_document_upload_item,
                 getString(R.string.action_document_upload_document),
                 R.drawable.ic_cloud_upload_gray_24dp));

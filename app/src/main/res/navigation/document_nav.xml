@@ -32,7 +32,7 @@
 
     <fragment
         android:id="@+id/viewer_pdfs"
-        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment"
+        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.pdf.PdfFragment"
         android:label="@string/document_navigation_pdfs"
         tools:layout="@layout/fragment_pdfs" />
 

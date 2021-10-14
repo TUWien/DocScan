@@ -14,6 +14,8 @@ import at.ac.tuwien.caa.docscan.R;
  * Created by fabian on 3/1/2018.
  */
 
+// can be removed entirely, because it has been replaced by the actionMode.
+@Deprecated
 public class SelectionToolbar {
 
     private final Context mContext;

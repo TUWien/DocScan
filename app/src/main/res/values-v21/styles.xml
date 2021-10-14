@@ -21,6 +21,7 @@
         <!--        <item name="materialButtonStyle">@style/ButtonStyle</item>-->
 
         <item name="android:windowContentTransitions">true</item>
+        <item name="windowActionModeOverlay">true</item>
     </style>
 
     <!--Taken from: https://stackoverflow.com/questions/27965662/how-can-i-change-default-dialog-button-text-color-in-android-5-->

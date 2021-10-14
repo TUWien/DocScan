@@ -41,7 +41,7 @@ import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.ui.gallery.GalleryActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 
-import static at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity.LAUNCH_VIEWER_REQUEST;
+//import static at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity.LAUNCH_VIEWER_REQUEST;
 
 /**
  * Created by fabian on 2/6/2018.
@@ -494,7 +494,7 @@ public class ImagesAdapter extends RecyclerView.Adapter<ImagesAdapter.GalleryVie
                     intent.putExtra(mContext.getString(R.string.key_document_file_name), mDocumentName);
                     Log.d(CLASS_NAME, "onClick: " + mDocumentName);
                     intent.putExtra(mContext.getString(R.string.key_page_position), position);
-                    ((Activity) mContext).startActivityForResult(intent, LAUNCH_VIEWER_REQUEST);
+//                    ((Activity) mContext).startActivityForResult(intent, LAUNCH_VIEWER_REQUEST);
 //                    mContext.startActivity(intent);
                 }
             } else {

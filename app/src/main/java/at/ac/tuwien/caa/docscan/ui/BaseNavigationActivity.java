@@ -2,7 +2,6 @@ package at.ac.tuwien.caa.docscan.ui;
 
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.util.Log;
@@ -30,7 +29,7 @@ import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
  * 4: Define the NavigationItemEnum (in NavigationDrawer)
  * 5: Define the Activity in AndroidManifest.xml
  */
-public abstract class BaseNavigationActivity extends AppCompatActivity implements
+public abstract class BaseNavigationActivity extends BaseActivity implements
         LoginRequest.LoginCallback, LogoutRequest.LogoutCallback {
 
     private static final String CLASS_NAME = "BaseNavigationActivity";

@@ -11,11 +11,10 @@ import at.ac.tuwien.caa.docscan.ui.gallery.newPackage.PageSlideActivity
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-
 class ImagesFragment : BaseFragment() {
 
     companion object {
-        val TAG = "ImagesFragment"
+        // this is dynamically determined before the adapter is created
         private var DYNAMIC_SCREEN_WIDTH = 0
         private var COLUMN_COUNT = 2
     }
@@ -27,6 +26,38 @@ class ImagesFragment : BaseFragment() {
 
     private lateinit var binding: FragmentImagesBinding
     private lateinit var imagesAdapter: ImagesAdapterNew
+    private var actionMode: ActionMode? = null
+
+    private val actionModeCallback: ActionMode.Callback =
+        object : ActionMode.Callback {
+            override fun onCreateActionMode(
+                mode: ActionMode,
+                menu: Menu
+            ): Boolean {
+                mode.menuInflater.inflate(R.menu.images_selected_menu, menu)
+                return true
+            }
+
+            override fun onPrepareActionMode(
+                mode: ActionMode,
+                menu: Menu
+            ): Boolean {
+                return false
+            }
+
+            override fun onActionItemClicked(
+                mode: ActionMode,
+                item: MenuItem
+            ): Boolean {
+                //TODO: respond to action click
+                return false
+            }
+
+            override fun onDestroyActionMode(mode: ActionMode) {
+                actionMode = null
+                viewModel.setSelectedForAll(false)
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -79,10 +110,12 @@ class ImagesFragment : BaseFragment() {
                     binding.imagesList.scrollToPosition(it.scrollTo)
                 }
             }
-
+            val result = it.pages.isSelectionActivated()
+            actionBarSelection(result.second)
+            sharedViewModel.setSelectedElements(result.second)
         })
-        viewModel.observableDoc.observe(viewLifecycleOwner, {
-            setTitle(it.title)
+        viewModel.observableDocWithPages.observe(viewLifecycleOwner, {
+            setTitle(it.document.title)
         })
         viewModel.observableInitGallery.observe(viewLifecycleOwner, {
             it.getContentIfNotHandled()?.let { page ->
@@ -91,8 +124,119 @@ class ImagesFragment : BaseFragment() {
         })
     }
 
+    override fun onPause() {
+        super.onPause()
+        if (isRemoving) {
+            actionMode?.finish()
+        }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.images_menu, menu)
     }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.image_options -> {
+                viewModel.observableDocWithPages.value?.let {
+                    sharedViewModel.initDocumentOptions(it)
+                }
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun actionBarSelection(selectedItems: Int) {
+        if (selectedItems == 0) {
+            actionMode?.finish()
+        } else {
+            if (actionMode == null) {
+                actionMode = requireActivity().startActionMode(actionModeCallback)
+            }
+            actionMode?.title = selectedItems.toString()
+        }
+    }
+
+// TODO: delete images dialog
+//    private fun deleteImagesDialog(imgFragment: ImagesFragment, selCount: Int) {
+//
+//        val alertDialogBuilder = AlertDialog.Builder(this)
+//
+//        val prefix = resources.getString(R.string.gallery_confirm_delete_title_prefix)
+//        val postfix =
+//            if (selCount == 1)
+//                resources.getString(R.string.gallery_confirm_delete_images_title_single_postfix)
+//            else
+//                resources.getString(R.string.gallery_confirm_delete_images_title_multiple_postfix)
+//        val title = "$prefix $selCount $postfix"
+//
+//        // set dialog message
+//        alertDialogBuilder
+//            .setMessage(R.string.gallery_confirm_delete_text)
+//            .setTitle(title)
+//            .setPositiveButton(R.string.gallery_confirm_delete_confirm_button_text) { dialogInterface, i ->
+//                deleteImages(
+//                    imgFragment
+//                )
+//            }
+//            .setNegativeButton(R.string.gallery_confirm_delete_cancel_button_text, null)
+//            .setCancelable(true)
+//
+//        // create alert dialog
+//        val alertDialog = alertDialogBuilder.create()
+//
+//        // show it
+//        alertDialog.show()
+//
+//    }
+
+//    fun rotateImages(item: MenuItem) {
+//// TODO: relocate into fragment
+////        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
+////            val files = (this as ImagesFragment).getSelectedFiles()
+////            for (file in files)
+////                rotateFile(file)
+////        }
+//    }
+
+
+// TODO: handle transitions
+//    private fun openImagesView(document: DocumentWithPages) {
+//
+//        val imagesFragment = setupImagesFragment(document)
+//
+//        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
+//        //                The animation depends on the position of the selected item:
+//        if (binding.bottomNav.selectedItemId == R.id.viewer_documents)
+//            ft.setCustomAnimations(
+//                R.anim.translate_left_to_right_in,
+//                R.anim.translate_left_to_right_out
+//            )
+//        else
+//            ft.setCustomAnimations(
+//                R.anim.translate_right_to_left_in,
+//                R.anim.translate_right_to_left_out
+//            )
+//
+//////                Create the shared element transition:
+////        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
+////            if ((this as DocumentsFragment).isVisible) {
+//////          Check if the document has pages, otherwise use no shared element transition:
+////                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && selectedDocument?.pages?.isNotEmpty()!!) {
+////                    setExitTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.fade))
+////                    imagesFragment.postponeEnterTransition()
+////                    imagesFragment.sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(R.transition.image_shared_element_transition)
+////                    var imageView = getImageView(document)
+////                    ft.addSharedElement(imageView!!, imageView!!.transitionName)
+////                    ft.setReorderingAllowed(true)
+////                }
+////            }
+////        }
+//
+////        ft.replace(
+////            R.id.viewer_fragment_layout, imagesFragment,
+////            ImagesFragment.TAG
+////        ).commit()
+
 }

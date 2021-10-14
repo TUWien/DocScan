@@ -17,7 +17,6 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
-import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -45,7 +44,6 @@ import com.itextpdf.text.pdf.PdfWriter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -57,7 +55,6 @@ import java.util.concurrent.ExecutionException;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
-import at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment;
 
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESSAGE_CREATED_DOCUMENT;

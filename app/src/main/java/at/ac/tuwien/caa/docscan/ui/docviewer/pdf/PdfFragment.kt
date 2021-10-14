@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.docviewer
+package at.ac.tuwien.caa.docscan.ui.docviewer.pdf
 
 import android.app.Activity
 import android.content.Context
@@ -7,24 +7,26 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.storage.StorageManager
 import android.provider.DocumentsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.camera.ActionSheet
+import at.ac.tuwien.caa.docscan.camera.SheetAction
 import at.ac.tuwien.caa.docscan.logic.Helper
+import at.ac.tuwien.caa.docscan.ui.docviewer.BaseFragment
 import kotlinx.android.synthetic.main.fragment_pdfs.*
 import java.io.File
-import java.text.SimpleDateFormat
-import android.os.Environment
-import androidx.annotation.RequiresApi
 import java.net.URLEncoder
+import java.text.SimpleDateFormat
 
 /**
  * TODO: Check PDF keys for a directory, re-check them every time when a DB change happenss
@@ -41,8 +43,7 @@ class PdfFragment : BaseFragment() {
         const val PERSISTABLE_URI_PERMISSION = 0
     }
 
-    private lateinit var newPdfs: MutableList<String>
-    private lateinit var listener: PdfListener
+    //    private lateinit var newPdfs: MutableList<String>
     private lateinit var pdfList: MutableList<Pdf>
 //    private lateinit var newPdfs: MutableList<String>
 
@@ -54,14 +55,41 @@ class PdfFragment : BaseFragment() {
         return inflater.inflate(R.layout.fragment_pdfs, container, false)
     }
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
+//    override fun onPdfSheetSelected(pdf: DocumentFile, sheetAction: ActionSheet.SheetAction) {
+//
+//        when (sheetAction.mId) {
+//            R.id.action_pdf_share_item -> {
+//                sharePdf(pdf)
+//            }
+//            R.id.action_pdf_delete_item -> {
+//                showDeletePdfConfirmationDialog(pdf)
+//            }
+//        }
+//    }
 
-        arguments?.getStringArrayList(NEW_PDFS_KEY)?.let {
-            newPdfs = it
-        }
+    private fun showDeletePdfConfirmationDialog(pdf: DocumentFile) {
 
-        listener = context as PdfListener
+
+//        val deleteText = resources.getString(R.string.sync_confirm_delete_prefix_text)
+
+        // TODO:
+        val deleteText = getString(R.string.viewer_delete_pdf_text)
+        val deleteTitle = "${getString(R.string.viewer_delete_pdf_title)}: ${pdf.name}?"
+
+        val alertDialogBuilder = AlertDialog.Builder(requireContext())
+            .setTitle(deleteTitle)
+            .setMessage(deleteText)
+            .setPositiveButton(R.string.sync_confirm_delete_button_text) { dialogInterface, i ->
+//                deletePdf(pdf)
+            }
+            .setNegativeButton(R.string.sync_cancel_delete_button_text, null)
+            .setCancelable(true)
+
+        // create alert dialog
+        val alertDialog = alertDialogBuilder.create()
+
+        // show it
+        alertDialog.show()
 
     }
 
@@ -71,7 +99,7 @@ class PdfFragment : BaseFragment() {
     @RequiresApi(Build.VERSION_CODES.N)
     fun getDocScanPdfUri(): Uri {
 
-        val sm = context!!.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+        val sm = requireContext().getSystemService(Context.STORAGE_SERVICE) as StorageManager
 
         val rootId =
             if (sm.primaryStorageVolume.isEmulated)
@@ -140,6 +168,23 @@ class PdfFragment : BaseFragment() {
 
     }
 
+    private fun sharePdf(pdf: DocumentFile) {
+        val uri = pdf.uri
+        val shareIntent = Intent()
+        shareIntent.action = Intent.ACTION_SEND
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // temp permission for receiving app to read this file
+        //                    check here if the content resolver is null
+        shareIntent.setDataAndType(uri, requireContext().contentResolver.getType(uri))
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+        shareIntent.type = "application/pdf"
+        startActivity(
+            Intent.createChooser(
+                shareIntent,
+                getString(R.string.page_slide_fragment_share_choose_app_text)
+            )
+        )
+    }
+
     /**
      *  Updates a file with a given path name if it is contained in the list. Otherwise it is added
      *  to the list.
@@ -170,15 +215,6 @@ class PdfFragment : BaseFragment() {
     }
 
     /**
-     * Initializes the pdfList if is not initialized.
-     */
-    private fun initPdfList() {
-        if (!::pdfList.isInitialized) {
-            pdfList = getPdfs()
-        }
-    }
-
-    /**
      * Adds a new pdf to the list and marks it with a badge in the UI.
      */
     private fun addPdfToList(fileName: String) {
@@ -195,7 +231,7 @@ class PdfFragment : BaseFragment() {
 
             val documentId = DocumentsContract.getDocumentId(uriFolder)
             val pdfUri = DocumentsContract.buildDocumentUriUsingTree(uri, "$documentId/$fileName")
-            file = DocumentFile.fromSingleUri(context!!, pdfUri)
+            file = DocumentFile.fromSingleUri(requireContext(), pdfUri)
         } else {
             val pdfFolder = Helper.getPDFStorageDir(getString(R.string.app_name))
             val directPathFile = File(pdfFolder, fileName)
@@ -207,12 +243,12 @@ class PdfFragment : BaseFragment() {
             if (pdf != null) {
                 pdf.showBadge = true
 
-                initPdfList()
+//                initPdfList()
 //        In case the list was empty before, we need to show the list and initialize the adapter:
                 if (pdfList.isEmpty()) {
                     pdf_list.visibility = View.VISIBLE
                     pdf_empty_layout.visibility = View.INVISIBLE
-                    updatePdfAdapter()
+//                    updatePdfAdapter()
                 }
 
                 pdfList.add(0, pdf)
@@ -230,7 +266,6 @@ class PdfFragment : BaseFragment() {
      */
     private fun updateList(fileName: String): Boolean {
 
-        initPdfList()
 
         val it = pdfList.iterator()
         var idx = 0
@@ -257,36 +292,55 @@ class PdfFragment : BaseFragment() {
 
 //        Save the current adapter state to newPdfs list:
         // TODO: kotlin.UninitializedPropertyAccessException: lateinit property newPdfs has not been initialized
-        newPdfs.clear()
-        if (::pdfList.isInitialized) {
-            val it = pdfList.iterator()
-            while (it.hasNext()) {
-                val pdf = it.next()
-                if (pdf.showBadge)
-                    newPdfs.add(pdf.file.uri.toString())
-            }
-        }
+////        newPdfs.clear()
+//        if (::pdfList.isInitialized) {
+//            val it = pdfList.iterator()
+//            while (it.hasNext()) {
+//                val pdf = it.next()
+//                if (pdf.showBadge)
+////                    newPdfs.add(pdf.file.uri.toString())
+//            }
+//        }
 
         super.onStop()
 
     }
+// TODO: Activity results
+//    DOCUMENT_PDF_SELECTION_REQUEST -> {
+//        if (resultCode == Activity.RESULT_OK && data!!.data != null) {
+//            val docName = data.data!!.toString()
+//// TODO: The selected doc via the chooser needs to be somehow retrieved in a different manner
+////                    val document = DocumentStorage.getInstance(this).getDocument(docName)
+////                    openPDFsView()
+////                    selectBottomNavigationViewMenuItem(R.id.viewer_pdfs)
+////                    showFAB(R.id.viewer_add_pdf_fab)
+////                    toolbar.title = getText(R.string.document_navigation_pdfs)
+////
+////                    if (Helper.isDocumentCropped(document))
+////                        showPdfOcrDialog(document)
+////                    else
+////                        showNotCropDialog(document, false)
+//        }
+//    }
 
-    fun updatePdfs() {
+    ////            Permissions:
+//            PERSISTABLE_URI_PERMISSION -> {
+//                if (resultCode == Activity.RESULT_OK) {
+//                    // The result data contains a URI for the document or directory that
+//                    // the user selected.
+//                    data?.data?.also { uri ->
+//                        KtHelper.saveDocumentDir(this, uri)
+//                        showDocumentDirSetDialog()
+//                    }
+//                }
+//            }
 
-        initPdfList()
-
-//        Show the user that no pdf is contained in the list:
-        if (!showEmptyList())
-            updatePdfAdapter()
-
-    }
 
     /**
      * Updates the UI in case the pdfList is empty and returns true.
      */
     private fun showEmptyList(): Boolean {
 
-        initPdfList()
 
         if (pdfList.isEmpty()) {
             pdf_list.visibility = View.INVISIBLE
@@ -298,16 +352,6 @@ class PdfFragment : BaseFragment() {
 
     }
 
-    private fun updatePdfAdapter() {
-
-        initPdfList()
-//        Set the adapter:
-        val pdfAdapter = PdfAdapter(context!!, pdfList) { file: DocumentFile ->
-            listener.onPdfOptions(file)
-        }
-        pdf_list.adapter = pdfAdapter
-
-    }
 
     //    TODO: check which functions can be taken from KtHelper
     private fun showDirectoryPermissionRequiredAlert() {
@@ -315,7 +359,7 @@ class PdfFragment : BaseFragment() {
         val text = getString(R.string.pdf_fragment_persisted_permission_text)
         val title = getString(R.string.pdf_fragment_persisted_permission_title)
 
-        val alertDialogBuilder = AlertDialog.Builder(context!!)
+        val alertDialogBuilder = AlertDialog.Builder(requireContext())
             .setTitle(title)
             .setMessage(text)
             .setPositiveButton(R.string.dialog_ok_text) { _, _ ->
@@ -343,7 +387,7 @@ class PdfFragment : BaseFragment() {
                 //        The directory is saved, check if the permission is also given (not sure if this can
                 //        even happen).
                 isPermissionGiven(dir) -> {
-                    updatePdfs()
+//                    updatePdfs()
                     pdf_list.layoutManager = LinearLayoutManager(context)
                 }
                 //        No permission is given for the folder - so ask for it:
@@ -352,7 +396,7 @@ class PdfFragment : BaseFragment() {
                 }
             }
         } else {
-            updatePdfs()
+//            updatePdfs()
             pdf_list.layoutManager = LinearLayoutManager(context)
         }
     }
@@ -396,9 +440,9 @@ class PdfFragment : BaseFragment() {
             for (file in files) {
                 val pdf = fileToPdf(DocumentFile.fromFile(file))
                 pdf?.let {
-                    if (newPdfs.contains(file.absolutePath))
-                        it.showBadge = true
-                    pdfList.add(it)
+//                    if (newPdfs.contains(file.absolutePath))
+//                        it.showBadge = true
+//                    pdfList.add(it)
                 }
 
             }
@@ -411,6 +455,7 @@ class PdfFragment : BaseFragment() {
 
     }
 
+    // TODO: recheck this
     private fun getPdfsWithScopedStorage(): MutableList<Pdf> {
 
         val dir = getPdfDirectory() ?: return ArrayList()
@@ -434,7 +479,7 @@ class PdfFragment : BaseFragment() {
                 do {
                     val pdfUri =
                         DocumentsContract.buildDocumentUriUsingTree(uri, cursor.getString(0))
-                    val file = DocumentFile.fromSingleUri(context!!, pdfUri)
+                    val file = DocumentFile.fromSingleUri(requireContext(), pdfUri)
                     if (file?.type == "application/pdf") {
                         val pdf = fileToPdf(file)
                         pdf?.let { pdfList.add(it) }
@@ -477,6 +522,64 @@ class PdfFragment : BaseFragment() {
             return other.file.lastModified().compareTo(file.lastModified())
         }
 
+    }
+
+
+    private fun openPDFsView() {
+
+        // TODO: Check badges, title fabs
+////        Hide any badge if existing:
+//        binding.bottomNav.removeBadge(R.id.viewer_pdfs)
+////        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
+////        ft.setCustomAnimations(
+////            R.anim.translate_left_to_right_in,
+////            R.anim.translate_left_to_right_out
+////        )
+////        ft.replace(R.id.viewer_fragment_layout, PdfFragment.newInstance(), PdfFragment.TAG).commit()
+//        showFAB(R.id.viewer_add_pdf_fab)
+//
+//        toolbar.title = getText(R.string.document_navigation_pdfs)
+    }
+
+
+    private fun showPdfOptions(file: DocumentFile) {
+
+        val sheetActions = ArrayList<SheetAction>()
+
+        sheetActions.add(
+            SheetAction(
+                R.id.action_pdf_share_item,
+                getString(R.string.action_pdf_share),
+                R.drawable.ic_share_black_24dp
+            )
+        )
+
+        sheetActions.add(
+            SheetAction(
+                R.id.action_pdf_delete_item,
+                getString(R.string.action_document_delete_document),
+                R.drawable.ic_delete_black_24dp
+            )
+        )
+
+//        val actionSheet = PdfActionSheet(file, sheetActions, this, this)
+//        supportFragmentManager.beginTransaction().add(actionSheet, "TAG").commit()
+
+    }
+
+    // TODO: Handle deletion of documents
+    private fun deletePdf(pdf: DocumentFile) {
+
+        val name = pdf.name
+        pdf.delete()
+
+//        supportFragmentManager.findFragmentByTag(PdfFragment.TAG)?.apply {
+//            //                    Scan again for the files:
+//            if ((this as PdfFragment).isVisible)
+//                updatePdfs()
+//        }
+
+//        showDocumentsDeletedSnackbar(name)
     }
 
     interface PdfListener {

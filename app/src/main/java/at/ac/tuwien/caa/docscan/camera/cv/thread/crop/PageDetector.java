@@ -4,6 +4,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.os.Looper;
 
+import androidx.annotation.WorkerThread;
 import androidx.exifinterface.media.ExifInterface;
 
 import android.util.Log;
@@ -22,8 +23,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.db.model.Page;
-import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary;
+import timber.log.Timber;
 
 public class PageDetector {
 
@@ -73,12 +73,13 @@ public class PageDetector {
 
     }
 
+    @WorkerThread
     public static PageFocusResult findRectAndFocus(String fileName) {
 
-        Log.d(CLASS_TAG, "findRectAndFocus");
+        Timber.d("findRectAndFocus");
 
         if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
-            Log.d(CLASS_TAG, "findRect: you should not perform this on the main thread!");
+            Timber.d("findRect: you should not perform this on the main thread!");
         }
 
         Mat inputMat = Imgcodecs.imread(fileName);

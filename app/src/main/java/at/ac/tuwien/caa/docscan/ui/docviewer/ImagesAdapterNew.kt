@@ -79,8 +79,7 @@ class ImagesAdapterNew(
             val isProcessing = page.page.postProcessingState == PostProcessingState.PROCESSING
             val isCropped = page.page.postProcessingState == PostProcessingState.DONE
             binding.pageProgressbar.visibility = if (isProcessing) View.VISIBLE else View.INVISIBLE
-            // TODO: Why is this even true for this state?
-            binding.pageCheckbox.isEnabled = isProcessing
+            binding.pageCheckbox.isEnabled = page.isSelectionActivated
 
             GlideHelper.loadPageIntoImageView(
                 page.page,

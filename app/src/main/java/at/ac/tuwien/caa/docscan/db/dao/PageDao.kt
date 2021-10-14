@@ -1,10 +1,8 @@
 package at.ac.tuwien.caa.docscan.db.dao
 
 import androidx.room.*
-import at.ac.tuwien.caa.docscan.db.model.Document
-import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
-import kotlinx.coroutines.flow.Flow
+import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import java.util.*
 
 @Dao
@@ -23,4 +21,7 @@ interface PageDao {
 
     @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_DOC_ID} = :docId")
     suspend fun getPagesByDoc(docId: UUID): List<Page>
+
+    @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_POST_PROCESSING_STATE}= :state WHERE ${Page.KEY_ID} = :pageId ")
+    fun updatePageProcessingState(pageId: UUID, state: PostProcessingState)
 }

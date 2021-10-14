@@ -8,21 +8,22 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.databinding.FragmentDocumentsBinding
 import at.ac.tuwien.caa.docscan.logic.DocumentPage
+import at.ac.tuwien.caa.docscan.logic.extractDocWithPages
+import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
+import at.ac.tuwien.caa.docscan.ui.dialog.ModalActionSheetViewModel
+import at.ac.tuwien.caa.docscan.ui.dialog.isPositive
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class DocumentsFragment : BaseFragment() {
-
-    companion object {
-        fun newInstance() = DocumentsFragment()
-        val TAG = "DocumentsFragment"
-    }
 
     private var scroll = true
     private lateinit var adapter: DocumentAdapter
     private lateinit var binding: FragmentDocumentsBinding
 
     private val viewModel: DocumentsViewModel by viewModel()
+    private val dialogViewModel: DialogViewModel by viewModel()
     private val sharedViewModel: DocumentViewerViewModel by sharedViewModel()
 
     override fun onCreateView(
@@ -31,7 +32,6 @@ class DocumentsFragment : BaseFragment() {
     ): View {
         binding = FragmentDocumentsBinding.inflate(inflater, container, false)
         adapter = DocumentAdapter({
-            sharedViewModel.selectDocument(it.document)
             findNavController().navigate(
                 DocumentsFragmentDirections.actionViewerDocumentsToViewerImages(
                     DocumentPage(
@@ -41,7 +41,7 @@ class DocumentsFragment : BaseFragment() {
                 )
             )
         }, {
-            sharedViewModel.selectDocumentOptions(it)
+            sharedViewModel.initDocumentOptions(it)
         })
         binding.documentsList.adapter = adapter
         binding.documentsList.layoutManager = LinearLayoutManager(context)
@@ -70,6 +70,22 @@ class DocumentsFragment : BaseFragment() {
                     binding.documentsList.smoothScrollToPosition(position)
                 }
                 scroll = false
+            }
+        })
+        dialogViewModel.observableDialogAction.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { result ->
+                when (result.dialogAction) {
+                    ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT -> {
+                        if (result.isPositive()) {
+                            result.arguments.extractDocWithPages()?.let { doc ->
+                                viewModel.deleteDocument(doc)
+                            }
+                        }
+                    }
+                    else -> {
+                        // ignore
+                    }
+                }
             }
         })
     }

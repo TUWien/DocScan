@@ -3,7 +3,6 @@ package at.ac.tuwien.caa.docscan.ui.docviewer
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.logic.Event
@@ -14,15 +13,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
 
-class ImagesViewModel(val repository: DocumentRepository) :
-    ViewModel() {
-
-//    val documentId: UUID = extras.getSerializable(ARG_DOCUMENT_ID) as UUID
-//    val fileId = extras.getSerializable(ARG_FILE_ID) as? UUID
+class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
 
     val observableProgress = MutableLiveData<Boolean>()
     val observablePages = MutableLiveData<ImageModel>()
-    val observableDoc = MutableLiveData<Document>()
+    val observableDocWithPages = MutableLiveData<DocumentWithPages>()
 
     val observableInitGallery = MutableLiveData<Event<Page>>()
 
@@ -54,7 +49,7 @@ class ImagesViewModel(val repository: DocumentRepository) :
         observableProgress.postValue(false)
         val pages = documentWithPages?.pages
         documentWithPages?.let {
-            observableDoc.postValue(it.document)
+            observableDocWithPages.postValue(it)
         }
 
         val currentModel = observablePages.value
@@ -64,7 +59,9 @@ class ImagesViewModel(val repository: DocumentRepository) :
             PageSelection(
                 page,
                 isSelectionActivated,
-                currentModel?.pages?.find { currentPage -> currentPage.page.id == page.id } != null)
+                currentModel?.pages?.find { currentPage -> currentPage.page.id == page.id }?.isSelected
+                    ?: false
+            )
         } ?: listOf()
         // TODO: Check scrolling mechanism, only scroll if necessary. selectionList.indexOfFirst { page -> page.page.id == documentPage?.pageId })
         observablePages.postValue(
@@ -87,32 +84,44 @@ class ImagesViewModel(val repository: DocumentRepository) :
     fun setSelectedForAll(isSelected: Boolean) {
         val pages = observablePages.value ?: return
         pages.pages.forEach { page ->
-            page.isSelectionActivated = true
             page.isSelected = isSelected
         }
-        observablePages.postValue(pages)
-    }
-
-    fun setSelected(page: PageSelection, isSelected: Boolean) {
-        val pages = observablePages.value ?: return
-        val foundPage = pages.pages.find { currentPage -> currentPage.page.id == page.page.id }
-        foundPage?.isSelected = isSelected
-        pages.pages.forEach {
-            // TODO: check selection mode status
-        }
+        pages.pages.checkSelectionState()
         observablePages.postValue(pages)
     }
 
     fun clickOnItem(page: PageSelection) {
         val pages = observablePages.value ?: return
         val isSelectionActivated =
-            pages.pages.firstOrNull { currentPage -> currentPage.isSelectionActivated } != null
-        if (!isSelectionActivated)
+            pages.pages.isSelectionActivated().first
+        if (!isSelectionActivated) {
             observableInitGallery.postValue(Event(page.page))
+        } else {
+            longClickOnItem(page)
+        }
     }
 
     fun longClickOnItem(page: PageSelection) {
-        val pages = observablePages.value ?: return
-        // TODO: activate/deactivate mode
+        val model = observablePages.value ?: return
+        val pageFound =
+            model.pages.find { currentPage -> currentPage.page.id == page.page.id } ?: return
+        // invert the selection
+        page.isSelected = !page.isSelected
+        model.pages.checkSelectionState()
+        observablePages.postValue(model)
     }
+}
+
+
+fun List<PageSelection>.checkSelectionState() {
+    val count = isSelectionActivated().second
+    forEach { page ->
+        page.isSelectionActivated = count > 0
+    }
+}
+
+fun List<PageSelection>.isSelectionActivated(): Pair<Boolean, Int> {
+    val isActivated = find { pageSelection -> pageSelection.isSelectionActivated } != null
+    val selectionCount = count { pageSelection -> pageSelection.isSelected }
+    return Pair(isActivated, selectionCount)
 }

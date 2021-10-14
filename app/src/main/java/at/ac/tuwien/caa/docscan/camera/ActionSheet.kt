@@ -2,95 +2,23 @@ package at.ac.tuwien.caa.docscan.camera
 
 import android.content.DialogInterface
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import androidx.documentfile.provider.DocumentFile
+import androidx.annotation.DrawableRes
 import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
-import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.sheet_dialog_camera.*
 
-open class PdfActionSheet(
-    private val pdf: DocumentFile, sheetActions: ArrayList<SheetAction>,
-    private var pdfListener: PdfSheetSelection, dialogListener: DialogStatus
-) :
-    ActionSheet(sheetActions, null, dialogListener) {
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-
-        return inflater.inflate(R.layout.titled_sheet_dialog_pdf, container, false)
-
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        val titleField: TextView = view.findViewById(R.id.sheet_dialog_title)
-        titleField.text = pdf.name
-    }
-
-    override fun sheetClicked(sheetAction: SheetAction) {
-
-//        Close the BottomSheetDialogFragment:
-        pdfListener?.onPdfSheetSelected(pdf, sheetAction)
-        dismiss()
-    }
-
-}
-
-open class DocumentActionSheet(
-    private var document: DocumentWithPages, sheetActions: ArrayList<SheetAction>,
-    private var docListener: DocumentSheetSelection, dialogListener: DialogStatus
-) :
-    ActionSheet(sheetActions, null, dialogListener) {
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-
-        return inflater.inflate(R.layout.titled_sheet_dialog_camera, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        val titleField: TextView = view.findViewById(R.id.sheet_dialog_title)
-        titleField.text = document.document.title
-    }
-
-    override fun sheetClicked(sheetAction: SheetAction) {
-
-//        Close the BottomSheetDialogFragment:
-        docListener.onDocumentSheetSelected(document, sheetAction)
-        dismiss()
-    }
-
-}
-
-open class ActionSheet : BottomSheetDialogFragment {
-
-    private val sheetActions: ArrayList<SheetAction>
-    protected var listener: SheetSelection? = null
-    protected var dialogListener: DialogStatus? = null
-    private val CLASS_NAME = "ActionSheet"
-
-    constructor(
-        sheetActions: ArrayList<SheetAction>,
-        listener: SheetSelection?,
-        dialogListener: DialogStatus
-    ) {
-
-        this.sheetActions = sheetActions
-        this.listener = listener
-        this.dialogListener = dialogListener
-    }
+@Deprecated(message = "Use AModalActionSheet.kt instead. This current implementation does not handle rotations correctly crashes due to constructor overload of fragments!")
+open class ActionSheet(
+    private val sheetActions: ArrayList<SheetAction>,
+    protected var listener: SheetSelection? = null,
+    private var dialogListener: DialogStatus? = null
+) : BottomSheetDialogFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -120,10 +48,6 @@ open class ActionSheet : BottomSheetDialogFragment {
         dismiss()
     }
 
-//    override fun onDismiss(dialog: DialogInterface?) {
-//        super.onDismiss(dialog)
-//    }
-
     override fun onResume() {
         super.onResume()
         dialogListener?.onShown()
@@ -134,26 +58,6 @@ open class ActionSheet : BottomSheetDialogFragment {
         dialogListener?.onDismiss()
     }
 
-    class SheetAction(id: Int, text: String, icon: Int) {
-
-        val mId = id
-        val mText = text
-        val mIcon = icon
-
-        fun getID(): Int {
-            return mId
-        }
-    }
-
-
-    interface PdfSheetSelection {
-        fun onPdfSheetSelected(pdf: DocumentFile, sheetAction: SheetAction)
-    }
-
-    interface DocumentSheetSelection {
-        fun onDocumentSheetSelected(document: DocumentWithPages, sheetAction: SheetAction)
-    }
-
     interface SheetSelection {
         fun onSheetSelected(sheetAction: SheetAction)
     }
@@ -162,6 +66,7 @@ open class ActionSheet : BottomSheetDialogFragment {
         fun onShown()
         fun onDismiss()
     }
-
-
 }
+
+@Parcelize
+data class SheetAction(val id: Int, val text: String, @DrawableRes val icon: Int) : Parcelable

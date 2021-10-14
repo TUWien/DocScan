@@ -20,9 +20,9 @@ import java.util.*
 
 class CropViewModel(
     extras: Bundle,
-    val documentRepository: DocumentRepository,
-    val imageProcessorRepository: ImageProcessorRepository,
-    val fileHandler: FileHandler,
+    private val documentRepository: DocumentRepository,
+    private val imageProcessorRepository: ImageProcessorRepository,
+    private val fileHandler: FileHandler,
     val preferencesHandler: PreferencesHandler
 ) : ViewModel() {
 
@@ -57,13 +57,14 @@ class CropViewModel(
                     return@launch
                 }
 
+            // clear the currently cached file
+            file.safelyDelete()
+
             // create a copy of the file, so any manipulations can be easily reverted.
             fileHandler.safelyCopyFile(
                 pageFile,
                 model.file
             )
-            // remove the rotation from the cached file
-//            imageProcessorRepository.removeRotationExif(model.file)
             observableLoadingProgress.postValue(false)
             observableModel.postValue(model)
         }

@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.docviewer
+package at.ac.tuwien.caa.docscan.ui.docviewer.pdf
 
 import android.content.ActivityNotFoundException
 import android.content.Context

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -57,7 +58,6 @@
                         android:background="@color/colorControlHighlight"
                         android:backgroundTint="@color/colorControlHighlight"
                         android:contentDescription="@null"
-                        android:onClick="newDocument"
                         app:borderWidth="0dp"
                         app:layout_anchor="@+id/viewer_camera_fab"
                         app:srcCompat="@drawable/ic_add_black_24dp"
@@ -71,7 +71,6 @@
                         android:background="@color/colorControlHighlight"
                         android:backgroundTint="@color/colorControlHighlight"
                         android:contentDescription="@null"
-                        android:onClick="newPDF"
                         android:visibility="invisible"
                         app:borderWidth="0dp"
                         app:layout_anchor="@+id/viewer_camera_fab"
@@ -86,7 +85,6 @@
                         android:background="@color/colorControlHighlight"
                         android:backgroundTint="@color/colorControlHighlight"
                         android:contentDescription="@null"
-                        android:onClick="uploadFABPressed"
                         android:visibility="invisible"
                         app:borderWidth="0dp"
                         app:srcCompat="@drawable/ic_cloud_upload_white_24dp"
@@ -99,7 +97,6 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="12dp"
                     android:contentDescription="@null"
-                    android:onClick="startCamera"
                     app:srcCompat="@drawable/ic_camera_alt_black_24dp" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -108,8 +105,9 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="12dp"
                     android:contentDescription="@null"
-                    android:onClick="startGallery"
-                    app:srcCompat="@drawable/ic_baseline_add_photo_alternate_24" />
+                    android:visibility="gone"
+                    app:srcCompat="@drawable/ic_baseline_add_photo_alternate_24"
+                    tools:visibility="visible" />
             </LinearLayout>
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
