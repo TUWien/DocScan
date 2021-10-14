@@ -277,6 +277,9 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
             it.getContentIfNotHandled()?.let { result ->
                 when (result.pressedSheetAction.id) {
                     R.id.action_document_continue_item -> {
+                        result.arguments.extractDocWithPages()?.let { doc ->
+                            // TODO: set this doc as active!
+                        }
                         startActivity(CameraActivity.newInstance(this))
                     }
                     R.id.action_document_pdf_item -> {
@@ -301,7 +304,6 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                 )
                             )
                         }
-
                     }
                     R.id.action_document_delete_item -> {
                         result.arguments.extractDocWithPages()?.let { doc ->
@@ -423,6 +425,8 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 // TODO: Upload the selected document
             }
             R.id.viewer_camera_fab -> {
+                // TODO: Set the current doc as active from which this has been clicked
+                // TODO: IF this has been clicked from the images fragment, then we need to activate the another document as active.
                 startActivity(CameraActivity.newInstance(this))
                 finish()
             }

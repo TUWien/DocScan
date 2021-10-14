@@ -17,7 +17,7 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
 
     val observableProgress = MutableLiveData<Boolean>()
     val observablePages = MutableLiveData<ImageModel>()
-    val observableDocWithPages = MutableLiveData<DocumentWithPages>()
+    val observableDocWithPages = MutableLiveData<DocumentWithPages?>()
 
     val observableInitGallery = MutableLiveData<Event<Page>>()
 
@@ -48,9 +48,7 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     private fun processDocumentPage(documentWithPages: DocumentWithPages?) {
         observableProgress.postValue(false)
         val pages = documentWithPages?.pages
-        documentWithPages?.let {
-            observableDocWithPages.postValue(it)
-        }
+        observableDocWithPages.postValue(documentWithPages)
 
         val currentModel = observablePages.value
         val isSelectionActivated =
@@ -74,11 +72,25 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     }
 
     fun rotateAllSelectedPages() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val pages = observablePages.value ?: return@launch
+            observableProgress.postValue(true)
+//            repository.processDocument()
 
+
+            observableProgress.postValue(false)
+        }
     }
 
+    // TODO: Add confirmation dialog
     fun deleteAllSelectedPages() {
-
+        viewModelScope.launch(Dispatchers.IO) {
+            val pages = observablePages.value ?: return@launch
+            observableProgress.postValue(true)
+            repository.deletePages(pages.pages.filter { page -> page.isSelected }
+                .map { page -> page.page })
+            observableProgress.postValue(false)
+        }
     }
 
     fun setSelectedForAll(isSelected: Boolean) {

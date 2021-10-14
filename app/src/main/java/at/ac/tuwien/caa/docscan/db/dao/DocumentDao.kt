@@ -46,6 +46,9 @@ interface DocumentDao {
     @Delete
     fun deletePage(page: Page)
 
+    @Delete
+    fun deletePages(page: List<Page>)
+
     @Query("UPDATE ${Document.TABLE_NAME_DOCUMENTS} SET ${Document.KEY_IS_ACTIVE}=0")
     fun setAllDocumentsInactive()
 

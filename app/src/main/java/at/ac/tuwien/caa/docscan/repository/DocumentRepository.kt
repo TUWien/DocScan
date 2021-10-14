@@ -49,6 +49,18 @@ class DocumentRepository(
 
     fun getActiveDocument() = documentDao.getActiveDocument()
 
+    // TODO: Check constraints
+    @WorkerThread
+    suspend fun deletePages(pages: List<Page>) {
+        withContext(NonCancellable) {
+            documentDao.deletePages(pages)
+            pages.forEach {
+                fileHandler.getFileByPage(it)?.safelyDelete()
+            }
+        }
+    }
+
+    // TODO: Check constraints
     @WorkerThread
     suspend fun deletePage(page: Page) {
         withContext(NonCancellable) {
@@ -57,6 +69,7 @@ class DocumentRepository(
         }
     }
 
+    // TODO: Check constraints
     @WorkerThread
     suspend fun updatePage(page: Page) {
         withContext(NonCancellable) {

@@ -49,8 +49,23 @@ class ImagesFragment : BaseFragment() {
                 mode: ActionMode,
                 item: MenuItem
             ): Boolean {
-                //TODO: respond to action click
-                return false
+                return when (item.itemId) {
+                    R.id.rotate -> {
+                        viewModel.rotateAllSelectedPages()
+                        true
+                    }
+                    R.id.select_all -> {
+                        viewModel.setSelectedForAll(true)
+                        true
+                    }
+                    R.id.delete -> {
+                        viewModel.deleteAllSelectedPages()
+                        true
+                    }
+                    else -> {
+                        false
+                    }
+                }
             }
 
             override fun onDestroyActionMode(mode: ActionMode) {
@@ -115,7 +130,7 @@ class ImagesFragment : BaseFragment() {
             sharedViewModel.setSelectedElements(result.second)
         })
         viewModel.observableDocWithPages.observe(viewLifecycleOwner, {
-            setTitle(it.document.title)
+            setTitle(it?.document?.title ?: getString(R.string.document_navigation_images))
         })
         viewModel.observableInitGallery.observe(viewLifecycleOwner, {
             it.getContentIfNotHandled()?.let { page ->
