@@ -31,7 +31,7 @@ val appModule = module {
     single { PreferencesHandler(get()) }
     single { FileHandler(get()) }
     single { MigrationRepository(get(), get(), get()) }
-    single { ImageProcessorRepository(get(), get()) }
+    single { ImageProcessorRepository(get(), get(), get()) }
 }
 
 val daoModule = module {

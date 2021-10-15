@@ -243,7 +243,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         )
                     }
                     DocumentAction.UPLOAD -> {
-
+                        // TODO: Check upload
                     }
                 }
             }
@@ -285,17 +285,23 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         }
                     }
                     R.id.action_document_pdf_item -> {
-                        // TODO: check PDF export
-                        if (KtHelper.isPdfFolderPermissionGiven(this)) {
-//                    if (document.isCropped())
-//                        showPdfOcrDialog(document)
-//                    else
-//                        showNotCropDialog(document, false)
-                        } else {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-//                        showDirectoryPermissionRequiredAlert()
-                            }
+                        result.arguments.extractDocWithPages()?.let { doc ->
+                            viewModel.applyActionFor(
+                                action = DocumentAction.EXPORT,
+                                documentWithPages = doc
+                            )
                         }
+//                        // TODO: check PDF export
+//                        if (KtHelper.isPdfFolderPermissionGiven(this)) {
+////                    if (document.isCropped())
+////                        showPdfOcrDialog(document)
+////                    else
+////                        showNotCropDialog(document, false)
+//                        } else {
+//                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+////                        showDirectoryPermissionRequiredAlert()
+//                            }
+//                        }
                     }
                     R.id.action_document_edit_item -> {
                         result.arguments.extractDocWithPages()?.let { doc ->
@@ -309,41 +315,29 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                     }
                     R.id.action_document_delete_item -> {
                         result.arguments.extractDocWithPages()?.let { doc ->
-                            showDialog(
-                                ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT.with(
-                                    customTitle = "${getString(R.string.sync_confirm_delete_title)} " + doc.document.title,
-                                    arguments = Bundle().appendDocWithPages(doc)
-                                )
+                            viewModel.applyActionFor(
+                                action = DocumentAction.DELETE,
+                                documentWithPages = doc
                             )
                         }
                     }
                     R.id.action_document_crop_item -> {
-                        // TODO: Check cropping dialogs and actions
-//                if (document.isCropped())
-//                    showNoCropDialog()
-//                else
-//                    showCropConfirmationDialog(document)
+                        result.arguments.extractDocWithPages()?.let { doc ->
+                            viewModel.applyActionFor(
+                                action = DocumentAction.CROP,
+                                documentWithPages = doc
+                            )
+                        }
                     }
-
                     R.id.action_document_upload_item -> {
-
-                        // TODO: Check upload
-//                        DataLog.getInstance()
-//                            .writeUploadLog(
-//                                requireContext(),
-//                                "DocumentViewerActivity",
-//                                "onDocumentSheetSelected: ${document.document.title}"
-//                            )
-
-
-                        // TODO: Check cropping dialogs and actions
-//                if (document.isCropped())
-//                    uploadDocument(document)
-//                else
-//                    showNotCropDialog(document, true)
+                        result.arguments.extractDocWithPages()?.let { doc ->
+                            viewModel.applyActionFor(
+                                action = DocumentAction.UPLOAD,
+                                documentWithPages = doc
+                            )
+                        }
                     }
                 }
-
             }
         })
     }

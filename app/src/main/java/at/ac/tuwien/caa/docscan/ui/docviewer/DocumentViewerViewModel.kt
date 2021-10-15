@@ -122,7 +122,7 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
             }
             val result = when (resource) {
                 is Failure -> {
-                    Failure<DocumentAction>(resource.exception)
+                    Failure(resource.exception)
                 }
                 is Success -> {
                     Success(action)

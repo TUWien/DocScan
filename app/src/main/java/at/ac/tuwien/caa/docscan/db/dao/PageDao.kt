@@ -24,4 +24,7 @@ interface PageDao {
 
     @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_POST_PROCESSING_STATE}= :state WHERE ${Page.KEY_ID} = :pageId ")
     fun updatePageProcessingState(pageId: UUID, state: PostProcessingState)
+
+    @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_POST_PROCESSING_STATE}= :state WHERE ${Page.KEY_DOC_ID} = :docId ")
+    fun updatePageProcessingStateForDocument(docId: UUID, state: PostProcessingState)
 }

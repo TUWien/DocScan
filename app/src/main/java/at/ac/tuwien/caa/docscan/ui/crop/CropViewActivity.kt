@@ -32,6 +32,8 @@ import timber.log.Timber
  *
  * As soon as the save operation is requested, the modified meta data is translated in the [Page]'s
  * structure and saved in the DB.
+ *
+ * TODO: CONSTRAINT - only crop if document is not locked.
  */
 class CropViewActivity : AppCompatActivity() {
 

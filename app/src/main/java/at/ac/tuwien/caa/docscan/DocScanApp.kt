@@ -35,6 +35,8 @@ class DocScanApp : Application() {
             if (a == null || a.options.apiKey.isEmpty()) Timber.d(getString(R.string.start_firebase_not_auth_text))
         }
 
+        // TODO: CONSTRAINT - Spawn job, that will re-check the processing/uploading state.
+        // TODO: CONSTRAINT - If e.g. the app was killed during this operation, the document would remain in this state.
         logFirstAppStart()
     }
 

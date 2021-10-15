@@ -27,6 +27,7 @@ import org.koin.core.parameter.parametersOf
 import java.util.*
 
 // TODO: Checkout how to handle zoom out transitions.
+// TODO: CONSTRAINT - only delete/retake if document is not locked.
 class PageSlideActivity : BaseActivity(), PageImageView.SingleClickListener {
 
     private lateinit var binding: ActivityPageSlideBinding

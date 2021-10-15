@@ -108,8 +108,9 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun processDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
-        // TODO: Run constraints check
-        return Failure(DBDocumentDuplicate())
+        // TODO: check pre-conditions & Run constraints check
+        imageProcessorRepository.cropDocument(documentWithPages.document)
+        return Success(Unit)
     }
 
     @WorkerThread
