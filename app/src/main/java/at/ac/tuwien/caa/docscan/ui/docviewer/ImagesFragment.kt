@@ -131,6 +131,9 @@ class ImagesFragment : BaseFragment() {
         })
         viewModel.observableDocWithPages.observe(viewLifecycleOwner, {
             setTitle(it?.document?.title ?: getString(R.string.document_navigation_images))
+            // this is important to call to inform the sharedViewModel about the document
+            // that is displayed here.
+            sharedViewModel.informAboutImageViewer(it)
         })
         viewModel.observableInitGallery.observe(viewLifecycleOwner, {
             it.getContentIfNotHandled()?.let { page ->

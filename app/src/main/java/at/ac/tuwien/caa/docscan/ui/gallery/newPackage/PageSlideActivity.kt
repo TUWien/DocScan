@@ -3,20 +3,22 @@ package at.ac.tuwien.caa.docscan.ui.gallery.newPackage
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DiffUtil
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityPageSlideBinding
-import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.asDocumentPageExtra
 import at.ac.tuwien.caa.docscan.gallery.PageImageView
 import at.ac.tuwien.caa.docscan.logic.FileType
-import at.ac.tuwien.caa.docscan.ui.crop.CropViewActivity
+import at.ac.tuwien.caa.docscan.ui.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
+import at.ac.tuwien.caa.docscan.ui.crop.CropViewActivity
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -25,7 +27,7 @@ import org.koin.core.parameter.parametersOf
 import java.util.*
 
 // TODO: Checkout how to handle zoom out transitions.
-class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener {
+class PageSlideActivity : BaseActivity(), PageImageView.SingleClickListener {
 
     private lateinit var binding: ActivityPageSlideBinding
     private val viewModel: PageSlideViewModel by viewModel { parametersOf(intent.extras!!) }
@@ -63,7 +65,7 @@ class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener
         setSupportActionBar(binding.imageViewerToolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        //       Take care that the mToolbar is not overlaid by the status bar:
+        // Take care that the mToolbar is not overlaid by the status bar:
         binding.imageViewerToolbar.setPadding(0, getStatusBarHeight(), 0, 0)
 
         // Close the fragment if the user hits the back button in the toolbar:
@@ -77,6 +79,20 @@ class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener
         binding.slideViewpager.adapter = adapter
         initButtons()
         observe()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.page_slide_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.all_images -> {
+                viewModel.navigateToDocumentViewer(binding.slideViewpager.currentItem)
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     // A method to find height of the status bar
@@ -103,7 +119,7 @@ class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener
         })
         viewModel.observableInitCrop.observe(this, {
             it.getContentIfNotHandled()?.let { pair ->
-                navigateToCropActivity(pair.first, pair.second)
+                navigateToCropActivity(pair.second)
                 // TODO: Zoom out of scale for this specific image view
 
                 //                    Zoom out before opening the CropViewActivity:
@@ -169,6 +185,9 @@ class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener
     }
 
     private fun initButtons() {
+        if (BuildConfig.DEBUG) {
+            binding.pageViewButtons.debugSegmentation.visibility = View.VISIBLE
+        }
         binding.pageViewButtons.pageViewButtonsLayoutDeleteButton.setOnClickListener {
             val builder = MaterialAlertDialogBuilder(this)
             builder.setTitle(R.string.page_slide_fragment_confirm_delete_text)
@@ -197,7 +216,7 @@ class PageSlideActivity : AppCompatActivity(), PageImageView.SingleClickListener
         supportActionBar?.title = "${(current + 1)}" + "/" + size
     }
 
-    private fun navigateToCropActivity(doc: Document, page: Page) {
+    private fun navigateToCropActivity(page: Page) {
         startActivity(CropViewActivity.newInstance(this, page))
     }
 

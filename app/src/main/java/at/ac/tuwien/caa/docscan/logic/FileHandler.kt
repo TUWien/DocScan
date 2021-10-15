@@ -9,6 +9,7 @@ import com.google.gson.GsonBuilder
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.util.*
 
 /**
@@ -72,34 +73,6 @@ class FileHandler(private val context: Context) {
             file.createNewFile()
         }
         return file
-    }
-
-    /**
-     * Saves [newImage] into the internal storage with the help of [DocumentStorage].
-     */
-    @Throws(Exception::class)
-    fun saveFile(newImage: Uri) {
-        // TODO: Importing images is just for debugging purposes, the storage handling has changed, this needs to be adapted
-//        try {
-//            val resolver = context.contentResolver
-//            val targetUri = CameraActivity.getFileName(context.getString(R.string.app_name))
-//            resolver.openFileDescriptor(targetUri, "w", null)?.let {
-//                val outputStream = FileOutputStream(it.fileDescriptor)
-//                val inputStream = newImage.fileInputStream()
-//                inputStream.copyTo(outputStream)
-//                outputStream.close()
-//                inputStream.close()
-//                it.close()
-//            }
-//
-//            val file = File(targetUri.path!!)
-//            if (!DocumentStorage.getInstance(context).addToActiveDocument(file)) {
-//                DocumentStorage.getInstance(context).generateDocument(file, context)
-//            }
-//            DocumentStorage.saveJSON(context)
-//        } catch (e: Exception) {
-//            Timber.e(e, "Failed to save image!")
-//        }
     }
 
     /**
@@ -194,6 +167,23 @@ class FileHandler(private val context: Context) {
             throw exception
         }
     }
+
+    @Throws(Exception::class)
+    fun copyUriToFile(from: Uri, to: File) {
+        try {
+            to.outputStream().use { output ->
+                from.fileInputStream().use { input ->
+                    input.copyTo(output)
+                }
+            }
+        } catch (exception: Exception) {
+            throw exception
+        }
+    }
+
+    @Throws(IOException::class)
+    fun readBytes(uri: Uri): ByteArray? =
+        context.contentResolver.openInputStream(uri)?.buffered()?.use { it.readBytes() }
 
     fun getFileByAbsolutePath(absolutePath: String): File? {
         val file = File(absolutePath)

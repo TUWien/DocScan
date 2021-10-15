@@ -1,12 +1,14 @@
 package at.ac.tuwien.caa.docscan.ui.segmentation.model
 
+import androidx.annotation.Keep
 import at.ac.tuwien.caa.docscan.logic.FileHandler
 import com.google.gson.annotations.SerializedName
 import java.io.File
 
 /**
- * @author matejbart
+ * @author matejbartalsky
  */
+@Keep
 data class TFLiteModel(
     @SerializedName("vsc_job_id")
     val vscJobId: Int,

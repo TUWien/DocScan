@@ -24,6 +24,7 @@ import java.nio.ByteOrder
 
 /**
  * Collection of image reading and manipulation utilities in the form of static functions.
+ * TODO: Most of this functions are duplicated.
  */
 abstract class ImageUtils {
     companion object {

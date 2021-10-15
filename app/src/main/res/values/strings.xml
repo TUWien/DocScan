@@ -195,6 +195,9 @@
     <string name="map_view_item_save">Save image</string>
     <string name="map_view_loading_text">Please wait</string>
 
+    <!-- PageSlideActivity -->
+    <string name="page_slide_toolbar_btn_all_images">All images</string>
+
     <!-- Preferences -->
 
     <!-- Image naming -->

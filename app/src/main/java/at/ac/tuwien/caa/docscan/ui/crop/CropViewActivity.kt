@@ -179,7 +179,9 @@ class CropViewActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        viewModel.updateCroppingPoints(binding.cropView.cropPoints)
+        binding.cropView.cropPoints?.let {
+            viewModel.updateCroppingPoints(it)
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

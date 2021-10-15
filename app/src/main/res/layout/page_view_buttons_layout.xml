@@ -13,9 +13,9 @@
         android:background="@drawable/transparent_to_dark_gradient"
         android:baselineAligned="false"
         android:orientation="horizontal"
-        android:paddingBottom="16dp"
+        android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingStart="16dp">
+        android:paddingBottom="16dp">
 
         <!--<RelativeLayout-->
         <!--android:layout_width="0dp"-->
@@ -34,17 +34,20 @@
         <!--</RelativeLayout>-->
 
         <RelativeLayout
+            android:id="@+id/debug_segmentation"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/page_view_buttons_layout_segmentation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="@null"
                 android:padding="8dp"
                 app:srcCompat="@drawable/ic_baseline_image_search_24" />
         </RelativeLayout>
@@ -59,8 +62,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="@null"
                 android:padding="8dp"
                 app:srcCompat="@drawable/ic_camera_retake" />
         </RelativeLayout>
@@ -75,8 +79,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="@null"
                 android:padding="8dp"
                 app:srcCompat="@drawable/ic_share_white_24dp" />
         </RelativeLayout>
@@ -92,8 +97,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="@null"
                 android:padding="8dp"
                 app:srcCompat="@drawable/ic_crop_rotate_white_24dp" />
         </RelativeLayout>
@@ -108,8 +114,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="@null"
                 android:padding="8dp"
                 app:srcCompat="@drawable/ic_delete_white_24dp" />
         </RelativeLayout>

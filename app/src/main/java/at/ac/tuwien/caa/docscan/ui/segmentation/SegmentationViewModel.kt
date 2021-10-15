@@ -3,11 +3,11 @@ package at.ac.tuwien.caa.docscan.ui.segmentation
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.ac.tuwien.caa.docscan.DocScanApp
+import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.logic.Event
 import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.ModelExecutionResult
@@ -19,14 +19,16 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 /**
- * @author matejbart
+ * @author matejbartalsky
  */
 class SegmentationViewModel(extras: Bundle, val app: DocScanApp, val fileHandler: FileHandler) :
     ViewModel() {
 
     // retrieve the image file path
-    private val imageAbsolutePath: String =
-        extras.getString(SegmentationActivity.EXTRA_IMAGE_FILE_PATH)!!
+    private val page: Page =
+        extras.getParcelable(SegmentationActivity.EXTRA_PAGE)!!
+
+    private val file = fileHandler.getFileByPage(page)!!
 
     val observableImagePath = MutableLiveData<Event<String>>()
     val observableResults = MutableLiveData<List<ModelExecutionResult>>()
@@ -55,7 +57,7 @@ class SegmentationViewModel(extras: Bundle, val app: DocScanApp, val fileHandler
     )
 
     init {
-        observableImagePath.value = Event(imageAbsolutePath)
+        observableImagePath.value = Event(file.absolutePath)
         observableModels.value = models
         performSegmentation(listOf(latestModel), true)
     }
@@ -98,7 +100,7 @@ class SegmentationViewModel(extras: Bundle, val app: DocScanApp, val fileHandler
     private fun work(models: List<TFLiteModel>, useGPU: Boolean): List<ModelExecutionResult> {
         val list = mutableListOf<ModelExecutionResult>()
         try {
-            val inputBitmap = BitmapFactory.decodeFile(imageAbsolutePath)
+            val inputBitmap = BitmapFactory.decodeFile(file.absolutePath)
             models.forEach { model ->
                 try {
                     val result = SegmentationExecutor().execute(

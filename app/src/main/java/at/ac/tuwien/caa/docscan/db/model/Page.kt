@@ -36,6 +36,9 @@ data class Page(
     val docId: UUID,
     /**
      * The ordering number of the page, across all pages in a single document.
+     *
+     * Do NOT take this as an index, since they might be gaps, the number only takes care of the
+     * ordering.
      */
     @ColumnInfo(name = KEY_NUMBER)
     val number: Int,

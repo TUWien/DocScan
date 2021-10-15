@@ -125,8 +125,7 @@ class CameraViewModel(
                     }
                 }
             )
-            // TODO: The order is still not correct
-            val result = documentRepository.saveNewImageForActiveDocument(
+            val result = documentRepository.saveNewImageForDocument(
                 doc,
                 data,
                 if (isRetakeMode) retakePageId else null,
@@ -135,12 +134,9 @@ class CameraViewModel(
             when (result) {
                 is Failure -> {
                     FirebaseCrashlytics.getInstance().recordException(result.exception)
-                    // TODO: Apply other necessary steps
+                    // TODO: Add error handling if necessary
                 }
                 is Success -> {
-                    // TODO: Apply image processor - how does it work, where is the prediction saved?
-                    // TODO: This needs to be invoked in a background dispatcher, which is independent from this.
-//                    ImageProcessor.pageDetection(File(uri))
                     if (isRetakeMode) {
                         initiateGallery()
                     }

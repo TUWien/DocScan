@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.ui.docviewer
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
@@ -27,7 +28,6 @@ import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import org.koin.java.KoinJavaComponent.inject
 import org.opencv.android.OpenCVLoader
 import timber.log.Timber
 
@@ -79,7 +79,6 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
         }
     }
 
-    private val fileHandler by inject<FileHandler>(FileHandler::class.java)
     private lateinit var binding: ActivityDocumentViewerBinding
     private val viewModel: DocumentViewerViewModel by viewModel()
     private val dialogViewModel: DialogViewModel by viewModel()
@@ -87,15 +86,16 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
 
     private val galleryResultCallback =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            // TODO: This needs rework, it needs to call the viewModel.
             if (it.resultCode == Activity.RESULT_OK) {
                 it.data?.clipData?.let { clipData ->
+                    val uris = mutableListOf<Uri>()
                     for (i in 0 until clipData.itemCount) {
-                        fileHandler.saveFile(clipData.getItemAt(i).uri)
+                        uris.add(clipData.getItemAt(i).uri)
                     }
+                    viewModel.addNewImages(uris)
                 } ?: run {
                     it.data?.data?.let { uriFile ->
-                        fileHandler.saveFile(uriFile)
+                        viewModel.addNewImages(listOf(uriFile))
                     }
                 }
             }
@@ -278,9 +278,11 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 when (result.pressedSheetAction.id) {
                     R.id.action_document_continue_item -> {
                         result.arguments.extractDocWithPages()?.let { doc ->
-                            // TODO: set this doc as active!
+                            viewModel.startImagingWith(doc.document.id)
+                        } ?: kotlin.run {
+                            // Check if this is ok to call
+                            viewModel.startImagingWith(null)
                         }
-                        startActivity(CameraActivity.newInstance(this))
                     }
                     R.id.action_document_pdf_item -> {
                         // TODO: check PDF export
@@ -425,10 +427,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 // TODO: Upload the selected document
             }
             R.id.viewer_camera_fab -> {
-                // TODO: Set the current doc as active from which this has been clicked
-                // TODO: IF this has been clicked from the images fragment, then we need to activate the another document as active.
-                startActivity(CameraActivity.newInstance(this))
-                finish()
+                viewModel.startImagingWith()
             }
             R.id.viewer_gallery_fab -> {
                 // TODO: encapsulate this in a helper class

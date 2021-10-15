@@ -18,7 +18,6 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     val observableProgress = MutableLiveData<Boolean>()
     val observablePages = MutableLiveData<ImageModel>()
     val observableDocWithPages = MutableLiveData<DocumentWithPages?>()
-
     val observableInitGallery = MutableLiveData<Event<Page>>()
 
     private var collectorJob: Job? = null
@@ -73,11 +72,10 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
 
     fun rotateAllSelectedPages() {
         viewModelScope.launch(Dispatchers.IO) {
-            val pages = observablePages.value ?: return@launch
+            val pages = getPagesCopy() ?: return@launch
             observableProgress.postValue(true)
 //            repository.processDocument()
-
-
+            // TODO: add implementation
             observableProgress.postValue(false)
         }
     }
@@ -85,7 +83,7 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     // TODO: Add confirmation dialog
     fun deleteAllSelectedPages() {
         viewModelScope.launch(Dispatchers.IO) {
-            val pages = observablePages.value ?: return@launch
+            val pages = getPagesCopy() ?: return@launch
             observableProgress.postValue(true)
             repository.deletePages(pages.pages.filter { page -> page.isSelected }
                 .map { page -> page.page })
@@ -94,7 +92,7 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     }
 
     fun setSelectedForAll(isSelected: Boolean) {
-        val pages = observablePages.value ?: return
+        val pages = getPagesCopy() ?: return
         pages.pages.forEach { page ->
             page.isSelected = isSelected
         }
@@ -103,7 +101,7 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     }
 
     fun clickOnItem(page: PageSelection) {
-        val pages = observablePages.value ?: return
+        val pages = getPagesCopy() ?: return
         val isSelectionActivated =
             pages.pages.isSelectionActivated().first
         if (!isSelectionActivated) {
@@ -114,13 +112,27 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     }
 
     fun longClickOnItem(page: PageSelection) {
-        val model = observablePages.value ?: return
+        val model = getPagesCopy() ?: return
         val pageFound =
             model.pages.find { currentPage -> currentPage.page.id == page.page.id } ?: return
         // invert the selection
-        page.isSelected = !page.isSelected
+        pageFound.isSelected = !pageFound.isSelected
         model.pages.checkSelectionState()
         observablePages.postValue(model)
+    }
+
+    /**
+     * A pages copy is necessary in order to correctly pass the difference information about
+     * selection states to the adapter.
+     * @return a deep copy of [observablePages]
+     */
+    private fun getPagesCopy(): ImageModel? {
+        val model = observablePages.value ?: return null
+        val pagesCopy = mutableListOf<PageSelection>()
+        model.pages.forEach { pageSelection ->
+            pagesCopy.add(pageSelection.copy())
+        }
+        return ImageModel(model.document?.copy(), pagesCopy, model.scrollTo)
     }
 }
 

@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,23 +12,33 @@ import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
 
-class DocumentViewerViewModel(val repository: DocumentRepository) : ViewModel() {
+class DocumentViewerViewModel(private val repository: DocumentRepository) : ViewModel() {
 
-    val observableInitDocumentOptions = MutableLiveData<Event<DocumentWithPages>>()
     val selectedScreen = MutableLiveData(DocumentViewerScreen.DOCUMENTS)
-    val observableNumOfSelectedElements = MutableLiveData<Int>()
-
+    val observableInitDocumentOptions = MutableLiveData<Event<DocumentWithPages>>()
     val observableInitCamera = MutableLiveData<Event<Unit>>()
+
+    val observableNumOfSelectedElements = MutableLiveData<Int>()
+    private val observableDocumentAtImages = MutableLiveData<DocumentWithPages?>()
+
 
     val observableResourceAction = MutableLiveData<Event<Resource<DocumentAction>>>()
     val observableResourceConfirmation =
         MutableLiveData<Event<Pair<DocumentAction, DocumentWithPages>>>()
 
+    /**
+     * This function needs to be called every time the selected fragment in the bottom nav changes.
+     */
     fun changeScreen(screen: DocumentViewerScreen) {
         // every time the screen is changed, the selected elements will get deleted.
         observableNumOfSelectedElements.postValue(0)
         selectedScreen.postValue(screen)
+    }
+
+    fun informAboutImageViewer(documentWithPages: DocumentWithPages?) {
+        observableDocumentAtImages.postValue(documentWithPages)
     }
 
     fun initDocumentOptions(documentWithPages: DocumentWithPages) {
@@ -38,9 +49,39 @@ class DocumentViewerViewModel(val repository: DocumentRepository) : ViewModel() 
         observableNumOfSelectedElements.postValue(selectedElements)
     }
 
-    fun startImagingWith(documentWithPages: DocumentWithPages) {
+    fun addNewImages(uris: List<Uri>) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.setDocumentAsActive(documentWithPages.document.id)
+            val doc = run {
+                if (selectedScreen.value == DocumentViewerScreen.IMAGES) {
+                    observableDocumentAtImages.value?.document
+                } else {
+                    null
+                }
+            } ?: return@launch
+            // TODO: Add error handling for image import
+            repository.saveNewImportedImageForDocument(doc, uris)
+        }
+    }
+
+    /**
+     * Starts imaging with a document, there are several scenarios.
+     * - If [docId] is available, then this will be the next active document.
+     * - If [docId] is null but [selectedScreen] is [DocumentViewerScreen.IMAGES], then
+     * the currently selected document will become active.
+     * - If none of the previous cases occur, imaging will be continued with the active document.
+     */
+    fun startImagingWith(docId: UUID? = null) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val docIdToBecomeActive = docId ?: run {
+                if (selectedScreen.value == DocumentViewerScreen.IMAGES) {
+                    observableDocumentAtImages.value?.document?.id
+                } else {
+                    null
+                }
+            }
+            docIdToBecomeActive?.let {
+                repository.setDocumentAsActive(it)
+            }
             observableInitCamera.postValue(Event(Unit))
         }
     }

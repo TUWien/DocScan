@@ -23,7 +23,8 @@ import org.koin.core.parameter.parametersOf
 import java.io.File
 
 /**
- * The segmentation activity which displays segmentation masks/results.
+ * The segmentation activity which displays segmentation masks/results, this is currently only
+ * for debugging purposes for TF deeplab segmentation models.
  *
  * @author matejbart
  */
@@ -169,12 +170,11 @@ class SegmentationActivity : AppCompatActivity() {
 
     companion object {
 
-        const val EXTRA_IMAGE_FILE_PATH = "EXTRA_IMAGE_FILE_PATH"
+        const val EXTRA_PAGE = "EXTRA_PAGE"
 
         fun newInstance(context: Context, page: Page): Intent {
             return Intent(context, SegmentationActivity::class.java).apply {
-                // TODO: Add page to activity
-               // putExtra(EXTRA_IMAGE_FILE_PATH, path)
+                putExtra(EXTRA_PAGE, page)
             }
         }
     }

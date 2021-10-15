@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.repository
 
+import android.net.Uri
 import androidx.annotation.WorkerThread
 import androidx.room.withTransaction
 import at.ac.tuwien.caa.docscan.camera.ImageExifMetaData
@@ -7,16 +8,16 @@ import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.exception.DBDocumentDuplicate
-import at.ac.tuwien.caa.docscan.db.exception.DBError
-import at.ac.tuwien.caa.docscan.db.exception.DBException
 import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
+import at.ac.tuwien.caa.docscan.db.model.sortByNumber
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
@@ -35,7 +36,7 @@ class DocumentRepository(
     fun getPageById(pageId: UUID) = documentDao.getPage(pageId)
 
     fun getDocumentWithPagesAsFlow(documentId: UUID) =
-        documentDao.getDocumentWithPagesAsFlow(documentId)
+        documentDao.getDocumentWithPagesAsFlow(documentId).sortByNumber()
 
     suspend fun getDocumentWithPages(documentId: UUID) =
         documentDao.getDocumentWithPages(documentId)
@@ -45,7 +46,9 @@ class DocumentRepository(
 
     fun getAllDocuments() = documentDao.getAllDocumentWithPages()
 
-    fun getActiveDocumentAsFlow() = documentDao.getActiveDocumentasFlow()
+    fun getActiveDocumentAsFlow(): Flow<DocumentWithPages?> {
+        return documentDao.getActiveDocumentasFlow().sortByNumber()
+    }
 
     fun getActiveDocument() = documentDao.getActiveDocument()
 
@@ -146,8 +149,43 @@ class DocumentRepository(
         }
     }
 
+    /**
+     * TODO: This is currently just for debugging purposes, there are no checks and the implmentation
+     * TODO: can be improved
+     */
     @WorkerThread
-    suspend fun saveNewImageForActiveDocument(
+    suspend fun saveNewImportedImageForDocument(
+        document: Document,
+        uris: List<Uri>
+    ) {
+        withContext(NonCancellable) {
+            uris.forEach { uri ->
+                try {
+                    fileHandler.readBytes(uri)?.let { bytes ->
+                        saveNewImageForDocument(
+                            document,
+                            bytes,
+                            null,
+                            ImageExifMetaData(
+                                // TODO: this is wrong and needs to be read out from the file
+                                Rotation.ORIENTATION_NORMAL.exifOrientation,
+                                "test",
+                                null,
+                                null,
+                                null,
+                                null
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e)
+                }
+            }
+        }
+    }
+
+    @WorkerThread
+    suspend fun saveNewImageForDocument(
         document: Document,
         data: ByteArray,
         fileId: UUID? = null,
@@ -188,15 +226,14 @@ class DocumentRepository(
         // 3. apply exif meta data to file
         applyExifData(file, exifMetaData)
 
-        // determine the new page number, either take the same number if there was an replacement
-        // or increment the page number of the last page in the document.
-        // TODO: The numbers do not work correctly.
+        // for a replacement, just take the number of the old page.
+        // for a new page, take the max number and add + 1 to it.
         val pageNumber =
-            (pageDao.getPageById(newFileId) ?: pageDao.getPagesByDoc(newFileId)
+            pageDao.getPageById(newFileId)?.number ?: (pageDao.getPagesByDoc(documentId)
                 .maxByOrNull { page -> page.number })?.number?.let {
-                // increment if there is an existing page
-                it + 1
-            } ?: 0
+                    // increment if there is an existing page
+                    it + 1
+                } ?: 0
 
         val newPage = Page(
             newFileId,

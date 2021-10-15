@@ -24,8 +24,7 @@ class ImagesAdapterNew(
     private val columnCount: Int,
     private val paddingPx: Int,
     private val marginPx: Int
-) :
-    ListAdapter<PageSelection, ImagesAdapterNew.ImageViewHolder>(DiffPageCallback()) {
+) : ListAdapter<PageSelection, ImagesAdapterNew.ImageViewHolder>(DiffPageCallback()) {
 
     private val itemWidth = screenWidth / columnCount
     private val fileHandler: FileHandler by inject(FileHandler::class.java)
@@ -47,6 +46,7 @@ class ImagesAdapterNew(
             binding.root.setOnClickListener(this)
             binding.root.setOnLongClickListener(this)
 
+            // TODO: Consider calling this in the viewModel on an IO thread
             val aspectRatio = fileHandler.getFileByPage(page.page)?.let {
                 calculateImageResolution(it, page.page.rotation).aspectRatio
             } ?: .0
@@ -92,16 +92,16 @@ class ImagesAdapterNew(
                 binding.pageCheckbox.isChecked = page.isSelected
             }
             binding.pageCheckbox.visibility =
-                if (binding.pageCheckbox.isChecked) View.VISIBLE else View.GONE
+                if (page.isSelectionActivated) View.VISIBLE else View.GONE
             binding.pageContainer.setBackgroundColor(
-                if (binding.pageCheckbox.isChecked) binding.root.resources.getColor(
-                    R.color.colorSelectLight
-                ) else binding.root.resources.getColor(R.color.white)
+                if (page.isSelectionActivated) binding.root.resources.getColor(R.color.colorSelectLight) else binding.root.resources.getColor(
+                    R.color.white
+                )
             )
             val params = binding.pageImageview.layoutParams as RelativeLayout.LayoutParams
             params.setMargins(
-                if (binding.pageCheckbox.isChecked) marginPx else 0,
-                if (binding.pageCheckbox.isChecked) marginPx else 0,
+                if (page.isSelectionActivated) marginPx else 0,
+                if (page.isSelectionActivated) marginPx else 0,
                 0,
                 0
             )
@@ -129,6 +129,6 @@ class DiffPageCallback : DiffUtil.ItemCallback<PageSelection>() {
         newItem: PageSelection
     ): Boolean {
         // TODO: Check if this is sufficient
-        return oldItem.page == newItem.page
+        return oldItem == newItem
     }
 }

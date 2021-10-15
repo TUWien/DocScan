@@ -52,6 +52,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.exifinterface.media.ExifInterface;
 
+import com.bumptech.glide.load.engine.GlideException;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -95,6 +96,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentViewerLaunchViewType;
 import at.ac.tuwien.caa.docscan.logic.Failure;
 import at.ac.tuwien.caa.docscan.logic.FileHandler;
 import at.ac.tuwien.caa.docscan.logic.GlideHelper;
+import at.ac.tuwien.caa.docscan.logic.GlideLegacyCallback;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler;
 import at.ac.tuwien.caa.docscan.logic.Resource;
@@ -299,7 +301,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
         });
         viewModel.getValue().getObservableImageLoadingProgress().observe(this, isLoading -> {
-            mGalleryButton.setVisibility(isLoading ? View.INVISIBLE : View.VISIBLE);
+            // the loading state will be managed by the glide loading functions
+            // this is done to prevent a blinking of the old image.
+            if (isLoading) {
+                mGalleryButton.setVisibility(View.INVISIBLE);
+            }
             mProgressBar.setVisibility(isLoading ? View.VISIBLE : View.INVISIBLE);
         });
         viewModel.getValue().getObservableOpenGallery().observe(this, event -> {
@@ -3037,23 +3043,32 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      * Shows the last picture taken as a thumbnail on the gallery button.
      */
     private void updateThumbnail(List<Page> pages) {
-        int visibility = loadThumbNail(pages) ? View.VISIBLE : View.INVISIBLE;
-        mGalleryButton.setVisibility(visibility);
+        loadThumbNail(pages);
     }
 
-    private boolean loadThumbNail(List<Page> pages) {
+    private void loadThumbNail(List<Page> pages) {
         if (pages.isEmpty()) {
             GlideHelper.INSTANCE.loadPageIntoImageView(null, mGalleryButton, GlideHelper.GlideStyles.CAMERA_THUMBNAIL);
-            return false;
+            mGalleryButton.setVisibility(View.INVISIBLE);
+            return;
         }
 
         Page lastPage = pages.get(pages.size() - 1);
         File file = fileHandler.getValue().getFileByPage(lastPage);
         if (file != null) {
-            GlideHelper.INSTANCE.loadPageIntoImageView(lastPage, mGalleryButton, GlideHelper.GlideStyles.CAMERA_THUMBNAIL);
-            return true;
+            GlideHelper.INSTANCE.loadPageIntoImageView(lastPage, mGalleryButton, GlideHelper.GlideStyles.CAMERA_THUMBNAIL, new GlideLegacyCallback() {
+                @Override
+                public void onResourceReady(boolean isFirstResource) {
+                    mGalleryButton.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onResourceFailed(boolean isFirstResource, @Nullable GlideException e) {
+                    mGalleryButton.setVisibility(View.VISIBLE);
+                }
+            });
         } else {
-            return false;
+            mGalleryButton.setVisibility(View.INVISIBLE);
         }
     }
 

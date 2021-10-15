@@ -11,12 +11,11 @@ import at.ac.tuwien.caa.docscan.gallery.CropRectTransformNew
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.CircleCrop
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.load.resource.bitmap.*
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.bumptech.glide.signature.MediaStoreSignature
 import org.koin.java.KoinJavaComponent.inject
 import timber.log.Timber
@@ -48,6 +47,21 @@ object GlideHelper {
             style,
             onResourceReady,
             onResourceFailed
+        )
+    }
+
+    fun loadPageIntoImageView(
+        page: Page?,
+        imageView: ImageView,
+        style: GlideStyles,
+        callback: GlideLegacyCallback
+    ) {
+        loadPageIntoImageView(
+            page,
+            imageView,
+            style,
+            callback::onResourceReady,
+            callback::onResourceFailed
         )
     }
 
@@ -101,7 +115,9 @@ object GlideHelper {
         onResourceReady: (isFirstResource: Boolean) -> Unit = {},
         onResourceFailed: (isFirstResource: Boolean, e: GlideException?) -> Unit = { _, _ -> }
     ) {
-        // TODO: add a cross fade as default, looks quite nice
+        // Needs to be added via factory to prevent issues with partially transparent images
+        // see http://bumptech.github.io/glide/doc/transitions.html#cross-fading-with-placeholders-and-transparent-images
+        val factory = DrawableCrossFadeFactory.Builder().setCrossFadeEnabled(true).build()
         val glideRequest = GlideApp.with(context)
             .load(file)
             .signature(
@@ -138,21 +154,21 @@ object GlideHelper {
                 glideRequest
             }
             GlideStyles.CAMERA_THUMBNAIL -> {
-                glideRequest.transform(CircleCrop())
+                glideRequest.transform(CircleCrop()).transition(withCrossFade(factory))
             }
             GlideStyles.DOCUMENT_PREVIEW -> {
                 glideRequest.transform(
                     CenterCrop(),
                     RoundedCorners(context.resources.getDimensionPixelSize(R.dimen.document_preview_corner_radius))
-                )
+                ).transition(withCrossFade(factory))
             }
             GlideStyles.IMAGE_CROPPED -> {
-                glideRequest
+                glideRequest.transition(withCrossFade(factory))
             }
             GlideStyles.IMAGES_UNCROPPED -> {
                 transformation?.let {
-                    glideRequest.transform(it)
-                } ?: glideRequest
+                    glideRequest.transform(it).transition(withCrossFade(factory))
+                } ?: glideRequest.transition(withCrossFade(factory))
 //                    TODO: check if this is necessary: .override(400, 400)
             }
         }
@@ -167,4 +183,9 @@ object GlideHelper {
         IMAGE_CROPPED,
         IMAGES_UNCROPPED
     }
+}
+
+interface GlideLegacyCallback {
+    fun onResourceReady(isFirstResource: Boolean)
+    fun onResourceFailed(isFirstResource: Boolean, e: GlideException?)
 }
