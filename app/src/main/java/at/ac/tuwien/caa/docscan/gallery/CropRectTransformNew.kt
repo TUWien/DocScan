@@ -68,15 +68,19 @@ class CropRectTransformNew(private val page: Page, context: Context) : BitmapTra
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is CropRectTransformNew
+        if (other is CropRectTransformNew) {
+            return other.page.singlePageBoundary == this.page.singlePageBoundary
+        }
+        return false
     }
 
     override fun hashCode(): Int {
-        return page.hashCode()
+        return page.singlePageBoundary.hashCode()
     }
 
     override fun updateDiskCacheKey(messageDigest: MessageDigest) {
-        // TODO: This seems to be wrong?
         messageDigest.update(ID_BYTES)
+        messageDigest.update(page.id.toString().toByteArray(StandardCharsets.UTF_8))
+        messageDigest.update(this.hashCode().toString().toByteArray(StandardCharsets.UTF_8))
     }
 }
