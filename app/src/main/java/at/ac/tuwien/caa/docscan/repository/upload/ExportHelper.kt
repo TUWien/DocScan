@@ -1,19 +1,5 @@
 package at.ac.tuwien.caa.docscan.repository.upload
 
-import android.content.Intent
-import android.os.Build
-import android.view.View
-import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
-import at.ac.tuwien.caa.docscan.R
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor
-import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
-import at.ac.tuwien.caa.docscan.logic.Helper
-import at.ac.tuwien.caa.docscan.logic.KtHelper
-import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
-import at.ac.tuwien.caa.docscan.ui.docviewer.SelectPdfDocumentActivity
-import com.google.android.material.snackbar.Snackbar
-
 // TODO: All utility functions for the PDF export
 
 //

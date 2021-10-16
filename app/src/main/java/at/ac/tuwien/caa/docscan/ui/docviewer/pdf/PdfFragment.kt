@@ -22,13 +22,15 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.SheetAction
 import at.ac.tuwien.caa.docscan.databinding.FragmentPdfsBinding
 import at.ac.tuwien.caa.docscan.logic.Helper
-import at.ac.tuwien.caa.docscan.ui.docviewer.BaseFragment
+import at.ac.tuwien.caa.docscan.ui.BaseFragment
 import java.io.File
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
 
 /**
  * TODO: Check PDF keys for a directory, re-check them every time when a DB change happenss
+ *
+ * TODO: Add possibility to load any PDFs which are in the public folder.
  */
 class PdfFragment : BaseFragment() {
 
@@ -38,7 +40,6 @@ class PdfFragment : BaseFragment() {
         fun newInstance() = PdfFragment()
 
         const val TAG = "PdfFragment"
-        const val NEW_PDFS_KEY = "NEW_PDFS_KEY"
         const val PERSISTABLE_URI_PERMISSION = 0
     }
 
@@ -135,6 +136,7 @@ class PdfFragment : BaseFragment() {
 
             }
         }
+
     }
 
 

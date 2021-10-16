@@ -74,35 +74,14 @@
             android:launchMode="singleTop"
             android:theme="@style/SplashTheme" />
 
-        <!--        <activity-->
-        <!--            android:name=".ui.StartActivity"-->
-        <!--            android:exported="true"-->
-        <!--            android:label="@string/app_name"-->
-        <!--            android:theme="@style/SplashTheme">-->
-        <!--            <intent-filter>-->
-        <!--                <action android:name="android.intent.action.MAIN" />-->
-        <!--                <category android:name="android.intent.category.LAUNCHER" />-->
-        <!--            </intent-filter>-->
-        <!--        </activity>-->
-
         <activity
             android:name=".ui.AboutActivity"
             android:exported="true"
             android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
-            android:name=".ui.docviewer.SelectPdfDocumentActivity"
+            android:name=".ui.docviewer.documents.selector.SelectPdfDocumentActivity"
             android:exported="true" />
-
-        <activity
-            android:name=".ui.document.SelectDocumentActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.camera.CameraActivity" />
-
-        <activity
-            android:name=".ui.gallery.PageSlideActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
             android:name=".ui.gallery.newPackage.PageSlideActivity"
@@ -113,15 +92,7 @@
         <activity
             android:name=".ui.segmentation.SegmentationActivity"
             android:exported="true"
-            android:parentActivityName=".ui.gallery.PageSlideActivity" />
-
-
-        <!-- TODO: Check if this is still needed -->
-        <activity
-            android:name=".ui.gallery.GalleryActivity"
-            android:exported="true"
-            android:launchMode="singleTop"
-            android:parentActivityName=".ui.camera.CameraActivity" />
+            android:parentActivityName=".ui.gallery.newPackage.PageSlideActivity" />
 
         <activity
             android:name=".ui.TranskribusLoginActivity"
@@ -143,12 +114,6 @@
             android:configChanges="orientation|screenSize"
             android:exported="true" />
 
-        <!--<activity-->
-        <!--android:name=".ui.docviewer.NewDocumentActivity"-->
-        <!--android:exported="true"-->
-        <!--android:configChanges="orientation|screenSize"-->
-        <!--/>-->
-
         <activity
             android:name=".ui.document.EditDocumentActivity"
             android:configChanges="orientation|screenSize" />
@@ -157,10 +122,6 @@
             android:name=".ui.settings.PreferenceActivity"
             android:exported="false"
             android:parentActivityName=".ui.camera.CameraActivity" />
-
-        <activity
-            android:name=".ui.MapViewActivity"
-            android:exported="false" />
 
         <activity
             android:name=".ui.settings.DebugPreferenceActivity"

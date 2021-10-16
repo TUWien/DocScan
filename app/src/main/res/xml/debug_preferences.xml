@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory android:title="@string/settings_preview_title">
+    <PreferenceCategory
+        android:title="@string/settings_preview_title"
+        app:iconSpaceReserved="false">
         <CheckBoxPreference
+            android:defaultValue="false"
             android:key="@string/key_show_focus_values"
             android:title="@string/settings_show_focus_values_checkbox_title"
-            android:defaultValue="false" />
+            app:iconSpaceReserved="false" />
 
 
         <CheckBoxPreference
+            android:defaultValue="false"
             android:key="@string/key_show_debug_view"
-            android:title="@string/settings_show_debug_view_checkbox_title"
             android:summary="@string/settings_show_debug_view_checkbox_summary"
-            android:defaultValue="false" />
+            android:title="@string/settings_show_debug_view_checkbox_title"
+            app:iconSpaceReserved="false" />
     </PreferenceCategory>
 
     <!--<CheckBoxPreference-->
@@ -22,21 +27,24 @@
     <!--android:defaultValue="false" />-->
 
     <CheckBoxPreference
+        android:defaultValue="false"
         android:key="@string/key_aggressive_autofocus"
-        android:title="@string/settings_aggressive_auto_focus_title"
         android:summary="@string/settings_aggressive_auto_focus_summary"
-        android:defaultValue="false" />
+        android:title="@string/settings_aggressive_auto_focus_title"
+        app:iconSpaceReserved="false" />
 
     <CheckBoxPreference
+        android:defaultValue="false"
         android:key="@string/key_hud_enabled"
-        android:title="@string/settings_hud_title"
         android:summary="@string/settings_hud_summary"
-        android:defaultValue="false" />
+        android:title="@string/settings_hud_title"
+        app:iconSpaceReserved="false" />
 
     <CheckBoxPreference
+        android:defaultValue="false"
         android:key="@string/key_use_test_server"
-        android:title="@string/settings_use_transkribus_test_server_title"
         android:summary="@string/settings_use_transkribus_test_server_summary"
-        android:defaultValue="false" />
+        android:title="@string/settings_use_transkribus_test_server_title"
+        app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

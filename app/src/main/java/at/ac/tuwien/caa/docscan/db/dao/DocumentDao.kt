@@ -34,6 +34,7 @@ interface DocumentDao {
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_IS_ACTIVE} = 1")
     fun getActiveDocumentasFlow(): Flow<DocumentWithPages?>
 
+    @Transaction
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_IS_ACTIVE} = 1")
     fun getActiveDocument(): DocumentWithPages?
 

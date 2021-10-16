@@ -1,7 +1,6 @@
-package at.ac.tuwien.caa.docscan.ui.docviewer
+package at.ac.tuwien.caa.docscan.ui
 
 import androidx.fragment.app.Fragment
-import at.ac.tuwien.caa.docscan.ui.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
 import at.ac.tuwien.caa.docscan.ui.dialog.show

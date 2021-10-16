@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.docviewer
+package at.ac.tuwien.caa.docscan.ui.docviewer.images
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -17,14 +17,14 @@ import at.ac.tuwien.caa.docscan.logic.calculateImageResolution
 import org.koin.java.KoinJavaComponent.inject
 import kotlin.math.roundToInt
 
-class ImagesAdapterNew(
+class ImagesAdapter(
     private val onClick: (PageSelection) -> Unit,
     private val onLongClick: (PageSelection) -> Unit,
     screenWidth: Int,
     private val columnCount: Int,
     private val paddingPx: Int,
     private val marginPx: Int
-) : ListAdapter<PageSelection, ImagesAdapterNew.ImageViewHolder>(DiffPageCallback()) {
+) : ListAdapter<PageSelection, ImagesAdapter.ImageViewHolder>(DiffPageCallback()) {
 
     private val itemWidth = screenWidth / columnCount
     private val fileHandler: FileHandler by inject(FileHandler::class.java)

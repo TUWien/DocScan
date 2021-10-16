@@ -63,7 +63,6 @@ import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.intro.IntroFragment;
 import at.ac.tuwien.caa.docscan.ui.intro.ZoomOutPageTransformer;
-import kotlin.Deprecated;
 
 import static at.ac.tuwien.caa.docscan.ui.AboutActivity.KEY_SHOW_INTRO;
 
@@ -74,7 +73,7 @@ import static at.ac.tuwien.caa.docscan.ui.AboutActivity.KEY_SHOW_INTRO;
  * Based on this example: <a href="https://github.com/googlesamples/android-RuntimePermissionsBasic">android-RuntimePermissionsBasic
  * </a>
  */
-@Deprecated(message = "Can be removed!")
+@Deprecated
 public class StartActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private AlertDialog mAlertDialog;

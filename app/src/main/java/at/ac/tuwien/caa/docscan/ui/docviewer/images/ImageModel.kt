@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.docviewer
+package at.ac.tuwien.caa.docscan.ui.docviewer.images
 
 import at.ac.tuwien.caa.docscan.db.model.Document
 

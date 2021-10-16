@@ -15,8 +15,8 @@ import at.ac.tuwien.caa.docscan.ui.dialog.ModalActionSheetViewModel
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentViewModel
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerViewModel
-import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentsViewModel
-import at.ac.tuwien.caa.docscan.ui.docviewer.ImagesViewModel
+import at.ac.tuwien.caa.docscan.ui.docviewer.documents.DocumentsViewModel
+import at.ac.tuwien.caa.docscan.ui.docviewer.images.ImagesViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.newPackage.ImageViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.newPackage.PageSlideViewModel
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationViewModel

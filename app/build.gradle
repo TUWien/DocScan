@@ -84,10 +84,6 @@ android {
         // When building a variant that uses this flavor, the following configurations
         // override those in the defaultConfig block.
         dev {
-            // To avoid using legacy multidex when building from the command line,
-            // set minSdkVersion to 21 or higher. When using Android Studio 2.3 or higher,
-            // the build automatically avoids legacy multidex when deploying to a device running
-            // API level 21 or higher—regardless of what you set as your minSdkVersion.
 //			applicationID "at.ac.tuwien.caa.docscan"
             dimension "version"
 //			minSdkVersion 21

@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.docviewer
+package at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector
 
 import android.app.Activity
 import android.content.Intent

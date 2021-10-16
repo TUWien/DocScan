@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.docviewer
+package at.ac.tuwien.caa.docscan.ui.docviewer.images
 
 import android.os.Bundle
 import android.view.*
@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.FragmentImagesBinding
 import at.ac.tuwien.caa.docscan.logic.computeScreenWidth
+import at.ac.tuwien.caa.docscan.ui.BaseFragment
+import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.newPackage.PageSlideActivity
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -25,7 +27,7 @@ class ImagesFragment : BaseFragment() {
     private val sharedViewModel: DocumentViewerViewModel by sharedViewModel()
 
     private lateinit var binding: FragmentImagesBinding
-    private lateinit var imagesAdapter: ImagesAdapterNew
+    private lateinit var imagesAdapter: ImagesAdapter
     private var actionMode: ActionMode? = null
 
     private val actionModeCallback: ActionMode.Callback =
@@ -87,7 +89,7 @@ class ImagesFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         DYNAMIC_SCREEN_WIDTH = computeScreenWidth(requireActivity())
-        imagesAdapter = ImagesAdapterNew(
+        imagesAdapter = ImagesAdapter(
             {
                 viewModel.clickOnItem(it)
             },

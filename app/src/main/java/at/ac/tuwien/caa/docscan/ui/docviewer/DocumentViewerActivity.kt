@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -26,6 +25,8 @@ import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.*
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
+import at.ac.tuwien.caa.docscan.ui.docviewer.documents.DocumentsFragmentDirections
+import at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector.SelectPdfDocumentActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.opencv.android.OpenCVLoader

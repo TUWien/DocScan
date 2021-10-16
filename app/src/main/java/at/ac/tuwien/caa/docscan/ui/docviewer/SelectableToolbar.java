@@ -14,6 +14,7 @@ import at.ac.tuwien.caa.docscan.R;
  * Created by fabian on 3/1/2018.
  */
 
+@Deprecated
 public class SelectableToolbar {
 
     private final Context mContext;

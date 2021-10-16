@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/viewer_documents"
-        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.DocumentsFragment"
+        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.documents.DocumentsFragment"
         android:label="@string/document_navigation_documents"
         tools:layout="@layout/fragment_documents">
         <action
@@ -20,7 +20,7 @@
 
     <fragment
         android:id="@+id/viewer_images"
-        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.ImagesFragment"
+        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.images.ImagesFragment"
         android:label="@string/document_navigation_images"
         tools:layout="@layout/fragment_image_viewer">
         <argument

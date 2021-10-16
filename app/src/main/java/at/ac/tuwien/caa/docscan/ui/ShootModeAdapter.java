@@ -14,6 +14,7 @@ import at.ac.tuwien.caa.docscan.R;
 /**
  * Created by fabian on 09.12.2016.
  */
+@Deprecated
 public class ShootModeAdapter extends ArrayAdapter<String> {
 
     private Context mContext;

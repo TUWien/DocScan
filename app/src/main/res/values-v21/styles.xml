@@ -16,7 +16,6 @@
         <item name="windowActionBarOverlay">true</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
-        <item name="preferenceTheme">@style/Preference</item>
         <item name="alertDialogTheme">@style/AlertDialogTheme</item>
         <!--        <item name="materialButtonStyle">@style/ButtonStyle</item>-->
 

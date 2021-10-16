@@ -23,7 +23,6 @@
         <item name="windowActionBarOverlay">true</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
-        <item name="preferenceTheme">@style/Preference</item>
         <item name="colorControlActivated">#00f</item>
         <item name="colorControlHighlight">#0f0</item>
         <item name="colorControlNormal">#f00</item>

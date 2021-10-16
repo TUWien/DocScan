@@ -1,9 +1,8 @@
 package at.ac.tuwien.caa.docscan.ui;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-
 import android.view.MenuItem;
+
+import androidx.appcompat.widget.Toolbar;
 
 import at.ac.tuwien.caa.docscan.R;
 
@@ -11,7 +10,7 @@ import at.ac.tuwien.caa.docscan.R;
  * Created by fabian on 25.08.2017.
  */
 
-public abstract class BaseNoNavigationActivity extends AppCompatActivity {
+public abstract class BaseNoNavigationActivity extends BaseActivity {
 
     /**
      * Sets the title of the toolbar.

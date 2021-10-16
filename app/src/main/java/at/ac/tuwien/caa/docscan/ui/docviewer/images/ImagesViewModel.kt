@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.docviewer
+package at.ac.tuwien.caa.docscan.ui.docviewer.images
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel

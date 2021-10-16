@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.ui.docviewer
+package at.ac.tuwien.caa.docscan.ui.docviewer.documents
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
