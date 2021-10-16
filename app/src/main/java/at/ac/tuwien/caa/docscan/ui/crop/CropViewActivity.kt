@@ -207,8 +207,8 @@ class CropViewActivity : AppCompatActivity() {
     private fun initToolbar() {
         setSupportActionBar(binding.toolbarInclude.mainToolbar)
         binding.toolbarInclude.mainToolbar.apply {
-            title = ""
             setNavigationIcon(R.drawable.ic_clear_black_24dp)
         }
+        supportActionBar?.title = ""
     }
 }
