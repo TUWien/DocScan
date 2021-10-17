@@ -35,6 +35,11 @@ data class Page(
     @ColumnInfo(name = KEY_DOC_ID)
     val docId: UUID,
     /**
+     * The hash of the page file.
+     */
+    @ColumnInfo(name = KEY_FILE_HASH)
+    var fileHash: String,
+    /**
      * The ordering number of the page, across all pages in a single document.
      *
      * Do NOT take this as an index, since they might be gaps, the number only takes care of the
@@ -66,6 +71,7 @@ data class Page(
         const val TABLE_NAME_PAGES = "pages"
         const val KEY_ID = "id"
         const val KEY_DOC_ID = "doc_id"
+        const val KEY_FILE_HASH = "file_hash"
         const val KEY_NUMBER = "number"
         const val KEY_ROTATION = "rotation"
         const val KEY_POST_PROCESSING_STATE = "post_processing_state"

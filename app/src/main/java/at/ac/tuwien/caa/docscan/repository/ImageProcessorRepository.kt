@@ -1,7 +1,9 @@
 package at.ac.tuwien.caa.docscan.repository
 
+import androidx.room.withTransaction
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.Mapper
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector
+import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.Document
@@ -9,22 +11,24 @@ import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary.Companion.getDefault
 import at.ac.tuwien.caa.docscan.db.model.boundary.asClockwiseList
 import at.ac.tuwien.caa.docscan.db.model.boundary.asPoint
+import at.ac.tuwien.caa.docscan.db.model.boundary.rotateBy90
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.setSinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
-import at.ac.tuwien.caa.docscan.logic.FileHandler
+import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.logic.applyRotation
-import at.ac.tuwien.caa.docscan.logic.removeRotation
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.google.common.hash.Hashing
+import com.google.common.io.Files.asByteSource
+import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.File
+import java.nio.file.Files
 
 class ImageProcessorRepository(
-    val pageDao: PageDao,
-    val documentDao: DocumentDao,
-    val fileHandler: FileHandler
+    private val pageDao: PageDao,
+    private val documentDao: DocumentDao,
+    private val fileHandler: FileHandler,
+    private val appDatabase: AppDatabase
 ) {
     // TODO: use own scope to launch work on images
     // TODO: Check how to maybe use a global scope to perform this stuff or if a work manager is necessary.
@@ -100,7 +104,50 @@ class ImageProcessorRepository(
         }
     }
 
+    /**
+     * Pre-Condition: The document is not locked.
+     */
+    suspend fun rotatePages90CW(pages: List<Page>) {
+        withContext(NonCancellable) {
+            Timber.d("ROTATION_DOCSCAN rotatePages90CW ")
+            appDatabase.withTransaction {
+                pages.forEach { page ->
+                    pageDao.updatePageProcessingState(page.id, PostProcessingState.PROCESSING)
+//                    pageDao.updatePageProcessingState(page.id, PostProcessingState.PROCESSING)
+//                    pageDao.updatePageProcessingState(page.id, PostProcessingState.PROCESSING)
+//                    pageDao.updatePageProcessingState(page.id, PostProcessingState.PROCESSING)
+                }
+            }
+            pages.forEach { page ->
+
+                page.rotatePageBy90CW()
+                Timber.d("ROTATION_DOCSCAN: new has after: ${page.fileHash}")
+                // TODO: Re-check this structure
+                appDatabase.withTransaction {
+                    pageDao.insertPage(page)
+                    pageDao.updatePageProcessingState(page.id, PostProcessingState.DRAFT)
+                }
+            }
+        }
+    }
+
     fun uploadDocument(document: Document) {
         // TODO: spawn upload job, check pre-elminaries before
+    }
+
+    private fun Page.rotatePageBy90CW() {
+        val newRotation = rotation.rotateBy90Clockwise()
+        rotation = newRotation
+        val cache = fileHandler.createCacheFile(id)
+        cache.safelyDelete()
+        val file = fileHandler.getFileByPage(this) ?: return
+        fileHandler.copyFile(file, cache)
+        cache.let {
+            applyRotation(it, newRotation)
+            this.fileHash = it.getFileHash()
+        }
+        fileHandler.copyFile(cache, file)
+        cache.safelyDelete()
+        singlePageBoundary?.rotateBy90()
     }
 }

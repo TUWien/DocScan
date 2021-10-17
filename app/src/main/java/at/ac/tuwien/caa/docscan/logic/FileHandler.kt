@@ -5,6 +5,8 @@ import android.net.Uri
 import androidx.core.content.FileProvider
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.TFLiteModel
+import com.google.common.hash.Hashing
+import com.google.common.io.Files
 import com.google.gson.GsonBuilder
 import timber.log.Timber
 import java.io.File
@@ -230,6 +232,20 @@ class FileHandler(private val context: Context) {
 
     private fun getUri(file: File): Uri? {
         return FileProvider.getUriForFile(context, "at.ac.tuwien.caa.fileprovider", file)
+    }
+}
+
+/**
+ * Computes a file hash with crc32, this is important for image files in order to detect
+ * changes via the DB.
+ * @return the hash string for the file, empty string if the hashing should fail
+ */
+fun File.getFileHash(): String {
+    return try {
+        Files.asByteSource(this).hash(Hashing.crc32()).toString()
+    } catch (e: Exception) {
+        Timber.e("Computing hash of file: $name")
+        ""
     }
 }
 

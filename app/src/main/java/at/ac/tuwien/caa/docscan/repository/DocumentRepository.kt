@@ -114,6 +114,12 @@ class DocumentRepository(
     }
 
     @WorkerThread
+    suspend fun rotatePagesBy90(pages: List<Page>): Resource<Unit> {
+        imageProcessorRepository.rotatePages90CW(pages)
+        return Success(Unit)
+    }
+
+    @WorkerThread
     suspend fun exportDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
         // TODO: Run constraints check
         return Failure(DBDocumentDuplicate())
@@ -239,6 +245,7 @@ class DocumentRepository(
         val newPage = Page(
             newFileId,
             document.id,
+            file.getFileHash(),
             pageNumber,
             Rotation.getRotationByExif(exifMetaData.exifOrientation),
             PostProcessingState.DRAFT,

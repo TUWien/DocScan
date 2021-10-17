@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.util.*
 
 class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
@@ -21,6 +22,7 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     val observableInitGallery = MutableLiveData<Event<Page>>()
 
     private var collectorJob: Job? = null
+    var isRotating: Boolean = false
 
     /**
      * Loads document pages by id with three different scenarios:
@@ -61,6 +63,7 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
             )
         } ?: listOf()
         // TODO: Check scrolling mechanism, only scroll if necessary. selectionList.indexOfFirst { page -> page.page.id == documentPage?.pageId })
+        Timber.d("ROTATION_DOCSCAN: filehash of first: ${selectionList.getOrNull(0)?.page?.fileHash}")
         observablePages.postValue(
             ImageModel(
                 documentWithPages?.document,
@@ -71,12 +74,19 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     }
 
     fun rotateAllSelectedPages() {
+        if (isRotating) {
+            return
+        } else {
+            isRotating = true
+        }
+        Timber.d("rotateAllSelectedPages")
         viewModelScope.launch(Dispatchers.IO) {
             val pages = getPagesCopy() ?: return@launch
             observableProgress.postValue(true)
-//            repository.processDocument()
-            // TODO: add implementation
+            repository.rotatePagesBy90(pages.pages.filter { selection -> selection.isSelected }
+                .map { selection -> selection.page })
             observableProgress.postValue(false)
+            isRotating = false
         }
     }
 
@@ -130,7 +140,13 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
         val model = observablePages.value ?: return null
         val pagesCopy = mutableListOf<PageSelection>()
         model.pages.forEach { pageSelection ->
-            pagesCopy.add(pageSelection.copy())
+            pagesCopy.add(
+                pageSelection.copy(
+                    page = pageSelection.page.copy(),
+                    isSelectionActivated = pageSelection.isSelectionActivated,
+                    isSelected = pageSelection.isSelected
+                )
+            )
         }
         return ImageModel(model.document?.copy(), pagesCopy, model.scrollTo)
     }

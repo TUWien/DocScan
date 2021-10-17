@@ -41,7 +41,7 @@ class ImagesAdapter(
         RecyclerView.ViewHolder(binding.root), View.OnClickListener, View.OnLongClickListener {
 
         fun bind(page: PageSelection, position: Int) {
-
+            val isProcessing = page.page.postProcessingState == PostProcessingState.PROCESSING
             // set click listeners
             binding.root.setOnClickListener(this)
             binding.root.setOnLongClickListener(this)
@@ -76,11 +76,9 @@ class ImagesAdapter(
 
             // set image view
             binding.pageImageview.transitionName = page.page.id.toString()
-            val isProcessing = page.page.postProcessingState == PostProcessingState.PROCESSING
             val isCropped = page.page.postProcessingState == PostProcessingState.DONE
             binding.pageProgressbar.visibility = if (isProcessing) View.VISIBLE else View.INVISIBLE
             binding.pageCheckbox.isEnabled = page.isSelectionActivated
-
             GlideHelper.loadPageIntoImageView(
                 page.page,
                 binding.pageImageview,

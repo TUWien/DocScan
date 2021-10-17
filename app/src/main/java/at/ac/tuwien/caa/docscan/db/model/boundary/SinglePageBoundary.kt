@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.db.model.boundary
 
 import android.os.Parcelable
 import androidx.room.Embedded
+import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -34,4 +35,11 @@ data class SinglePageBoundary(
 
 fun SinglePageBoundary.asClockwiseList(): MutableList<PointF> {
     return mutableListOf(topLeft, topRight, bottomLeft, bottomRight)
+}
+
+fun SinglePageBoundary.rotateBy90() {
+    topLeft.rotateNormedPointBy(Rotation.ORIENTATION_90)
+    topRight.rotateNormedPointBy(Rotation.ORIENTATION_90)
+    bottomLeft.rotateNormedPointBy(Rotation.ORIENTATION_90)
+    bottomRight.rotateNormedPointBy(Rotation.ORIENTATION_90)
 }
