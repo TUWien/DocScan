@@ -148,16 +148,15 @@ class CropViewActivity : AppCompatActivity() {
                     }
                     setListener(object : Animator.AnimatorListener {
                         override fun onAnimationStart(p0: Animator?) {
-                            areOnOptionsAvailable = false
                         }
 
                         override fun onAnimationEnd(p0: Animator?) {
-                            areOnOptionsAvailable = true
+                            viewModel.isRotating = false
                             binding.cropView.invalidate()
                         }
 
                         override fun onAnimationCancel(p0: Animator?) {
-                            areOnOptionsAvailable = true
+                            viewModel.isRotating = false
                         }
 
                         override fun onAnimationRepeat(p0: Animator?) {
@@ -187,7 +186,7 @@ class CropViewActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (!areOnOptionsAvailable) {
+        if (viewModel.isRotating) {
             return false
         }
         when (item.itemId) {

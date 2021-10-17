@@ -34,6 +34,8 @@ class CropViewModel(
     // note that the very first value of the model will force the image to load into the imageview.
     val observableModel = MutableLiveData<CropModel>()
 
+    var isRotating = false
+
     private val file = fileHandler.createCacheFile(page.id)
     var model = CropModel(
         page.id,
@@ -79,6 +81,10 @@ class CropViewModel(
     }
 
     fun rotateBy90Degree(croppingPoints: List<PointF>) {
+        if (isRotating) {
+            return
+        }
+        isRotating = true
         viewModelScope.launch(Dispatchers.IO) {
             model.points = croppingPoints
             model.previousRotation = model.rotation
