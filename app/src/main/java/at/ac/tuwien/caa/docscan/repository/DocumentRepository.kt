@@ -39,7 +39,7 @@ class DocumentRepository(
         documentDao.getDocumentWithPagesAsFlow(documentId).sortByNumber()
 
     suspend fun getDocumentWithPages(documentId: UUID) =
-        documentDao.getDocumentWithPages(documentId)
+        documentDao.getDocumentWithPages(documentId)?.sortByNumber()
 
     @WorkerThread
     suspend fun getDocument(documentId: UUID) = documentDao.getDocument(documentId)

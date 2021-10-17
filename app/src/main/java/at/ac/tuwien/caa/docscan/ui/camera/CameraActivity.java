@@ -137,7 +137,6 @@ import timber.log.Timber;
 /**
  * The main class of the app. It is responsible for creating the other views and handling
  * callbacks from the created views as well as user input.
- * TODO: Show dialog(?) if there is no active dialog.
  */
 public class CameraActivity extends BaseNavigationActivity implements TaskTimer.TimerCallbacks,
         CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback {
@@ -159,7 +158,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public static final int IMG_ORIENTATION_180 = 2;
     public static final int IMG_ORIENTATION_270 = 3;
 
-    // TODO: injection of the viewModel should be done with viewModel()
+    // TODO: CODE_STYLE - injection of the viewModel should be done with viewModel()
     private final Lazy<CameraViewModel> viewModel = KoinJavaComponent.inject(CameraViewModel.class);
     private final Lazy<PreferencesHandler> preferencesHandler = KoinJavaComponent.inject(PreferencesHandler.class);
     private final Lazy<FileHandler> fileHandler = KoinJavaComponent.inject(FileHandler.class);
@@ -272,22 +271,19 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      * Observes changes to the viewModel's livedata.
      */
     private void observe() {
-        viewModel.getValue().getObservableActiveDocument().observe(this, documentWithPages -> {
+        viewModel.getValue().getObservableDocumentWithPages().observe(this, documentWithPages -> {
             String title;
-            List<Page> pages;
             ActionBar bar = getSupportActionBar();
             if (documentWithPages != null) {
-                pages = new ArrayList<>(documentWithPages.getPages());
                 title = documentWithPages.getDocument().getTitle();
             } else {
-                pages = new ArrayList<>();
                 title = "";
             }
             if (bar != null) {
                 bar.setTitle(title);
             }
-            updateThumbnail(pages);
         });
+        viewModel.getValue().getObservableThumbnail().observe(this, page -> loadThumbNail(page));
         viewModel.getValue().getObservableTookImage().observe(this, resourceEvent -> {
             Resource<Page> resource = resourceEvent.getContentIfNotHandled();
             if (resource != null) {
@@ -321,11 +317,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     @Override
     public void onPause() {
-
         super.onPause();
-
-// TODO: remove this storage related stuff until full migration is performed.
-//        DocumentStorage.saveJSON(this);
 
         if (mPaintView != null)
             mPaintView.pause();
@@ -358,7 +350,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         super.onResume();
         Timber.d("onResume");
 
-        // TODO: onResume is called again for every image taken, this is because of the bad implementation of the permissions
         // start fetching requested doc or the active doc as default and fallback
         UUID documentId = null;
         if (getIntent().getSerializableExtra(EXTRA_DOC_ID) != null) {
@@ -391,7 +382,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // Read user settings:
 
-        // TODO: Use preferenceHandler for preferences
+        // TODO: CODE_STYLE - Use preferenceHandler for preferences
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
         boolean showFocusValues = sharedPref.getBoolean(getResources().getString(
@@ -496,7 +487,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     /**
-     * TODO: This is probably not necessary anymore
+     * TODO: LEGACY - Android 4 support is dropped, is this still necessary?
      * Checks if the ProviderInstaller is up-to-date. This is necessary to fix the SSL
      * SSLHandshakeException on Android 4 devices.
      * as it is stated here: https://stackoverflow.com/questions/31269425/how-do-i-tell-the-tls-version-in-android-volley
@@ -1605,11 +1596,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void requestPictureSave(byte[] data) {
 
-        // TODO: Check this handling, because currently we are not using that permission for this operation.
+        // TODO: ERROR_HANDLING - The storage permission is currently not necessary, evaluate if this is even nedded.
         // Check if we have the permission to save images:
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             mPictureData = data;
-            //TODO:  ask for permission:
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
             savePicture(data);
         } else
@@ -2511,33 +2501,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-// TODO: Start gallery activity, pass documentId and imageId
-//    private void startGalleryActivity() {
-//        String documentTitle = DocumentStorage.getInstance(this).getTitle();
-//        if (documentTitle != null) {
-//            if (DocumentStorage.getInstance(this).getDocument(documentTitle) == null)
-//                return;
-//
-//            Intent intent = new Intent(mContext, GalleryActivity.class);
-//            intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
-//            mContext.startActivity(intent);
-//        }
-//    }
-//
-//    public void startGalleryActivity(MenuItem item) {
-//
-//        String documentTitle = DocumentStorage.getInstance(this).getTitle();
-//        if (documentTitle != null) {
-//            if (DocumentStorage.getInstance(this).getDocument(documentTitle) == null)
-//                return;
-//
-//            Intent intent = new Intent(mContext, GalleryActivity.class);
-//            intent.putExtra(mContext.getString(R.string.key_document_file_name), documentTitle);
-//            mContext.startActivity(intent);
-//        }
-//
-//    }
-
     private void lockExposure() {
 
         if (mCameraPreview != null) {
@@ -3039,24 +3002,16 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     // =================  end: CameraPreview.DimensionChange CALLBACK =================
 
-    /**
-     * Shows the last picture taken as a thumbnail on the gallery button.
-     */
-    private void updateThumbnail(List<Page> pages) {
-        loadThumbNail(pages);
-    }
-
-    private void loadThumbNail(List<Page> pages) {
-        if (pages.isEmpty()) {
+    private void loadThumbNail(@Nullable Page page) {
+        if (page == null) {
             GlideHelper.INSTANCE.loadPageIntoImageView(null, mGalleryButton, GlideHelper.GlideStyles.CAMERA_THUMBNAIL);
             mGalleryButton.setVisibility(View.INVISIBLE);
             return;
         }
 
-        Page lastPage = pages.get(pages.size() - 1);
-        File file = fileHandler.getValue().getFileByPage(lastPage);
+        File file = fileHandler.getValue().getFileByPage(page);
         if (file != null) {
-            GlideHelper.INSTANCE.loadPageIntoImageView(lastPage, mGalleryButton, GlideHelper.GlideStyles.CAMERA_THUMBNAIL, new GlideLegacyCallback() {
+            GlideHelper.INSTANCE.loadPageIntoImageView(page, mGalleryButton, GlideHelper.GlideStyles.CAMERA_THUMBNAIL, new GlideLegacyCallback() {
                 @Override
                 public void onResourceReady(boolean isFirstResource) {
                     mGalleryButton.setVisibility(View.VISIBLE);
@@ -3135,9 +3090,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //            int camTextOrientation = mTextOrientation;
 ////            Compensate the camera rotation:
-        // TODO: The camera orientation is currently a bit obsolete, because the phone is the activity
-        // TODO: is always in portrait mode.
-
+// TODO: CAMERA_LOGIC - it seems that the camera rotation is ignored entirely?
         int camTextOrientation = IMG_ORIENTATION_0;
         if (mCameraOrientation == 90)
             camTextOrientation = IMG_ORIENTATION_90;
@@ -3182,278 +3135,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-
     @Override
     protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
         return NavigationDrawer.NavigationItemEnum.CAMERA;
     }
-
-//    // TODO: This will be relocated into the document repository.
-//    public static Uri getFileName(String appName) {
-//
-//        File mediaStorageDir = Helper.getMediaStorageDir(appName);
-//        if (mediaStorageDir == null)
-//            return null;
-//
-//        // Create a media file name
-//        String timeStamp = Helper.getFileTimeStamp();
-////        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmm").format(mLastTimeStamp);
-////        String prefix = mediaStorageDir.getPath() + File.separator +
-////                mContext.getString(R.string.img_prefix) + timeStamp;
-////        File mediaFile = new File(prefix  + ".jpg");
-//
-//        if (DocumentStorage.getInstance(mContext).getActiveDocument() == null)
-//            DocumentStorage.getInstance(mContext).generateDocument(mContext);
-//
-//        String docName;
-//        if (DocumentStorage.getInstance(mContext).getActiveDocument().getUseCustomFileName())
-//            docName = DocumentStorage.getInstance(mContext).getActiveDocument().getFileNamePrefix();
-//        else
-//            docName = DocumentStorage.getInstance(mContext).getActiveDocument().getTitle();
-//
-//        int pageNum = DocumentStorage.getInstance(mContext).getActiveDocument().getPages().size() + 1;
-//
-//        String fileName = Helper.getFileNamePrefix(timeStamp, docName, pageNum);
-//        File mediaFile = new File(mediaStorageDir, fileName + ".jpg");
-//
-////        Check if the file is existing:
-//        if (mediaFile.exists()) {
-////            add a number at the end:
-//            int idx = 2;
-//            while (mediaFile.exists()) {
-//                mediaFile = new File(mediaStorageDir, fileName + "_" + idx + ".jpg");
-//                idx++;
-//            }
-//        }
-//
-//        return Uri.fromFile(mediaFile);
-//
-//    }
-
-//    /**
-//     * Class used to save pictures in an own thread (AsyncTask).
-//     */
-//    private class FileSaver extends AsyncTask<Void, Void, String> {
-//
-//        private byte[] mData;
-//
-//        public FileSaver(byte[] data) {
-//
-//            mData = data;
-//
-//        }
-//
-//        @Override
-//        protected String doInBackground(Void... voids) {
-//
-//            Uri uri = getFileName(mContext.getString(R.string.app_name));
-//            Timber.d("FileSaver: uri %s", uri);
-//
-//            if (uri == null || uri.getPath() == null)
-//                return null;
-//
-//            final File file = new File(uri.getPath());
-//
-//            try {
-//
-////                runOnUiThread(new Runnable() {
-////                    @Override
-////                    public void run() {
-////                        mGalleryButton.setVisibility(View.INVISIBLE);
-////                        mProgressBar.setVisibility(View.VISIBLE);
-////                    }
-////                });
-//
-//                FileOutputStream fos = new FileOutputStream(file);
-//                fos.write(mData);
-//
-//                fos.close();
-//
-//                // Save exif information (especially the orientation):
-//                saveExif(file);
-//
-//                if (mRetakeMode) {
-//                    DocumentStorage.getInstance(mContext).getActiveDocument().replacePage(file, mRetakeIdx);
-//                } else {
-//                    boolean fileAdded = DocumentStorage.getInstance(mContext).addToActiveDocument(file);
-//                    if (!fileAdded)
-//                        DocumentStorage.getInstance(mContext).generateDocument(file, mContext);
-//                }
-//
-//                DocumentStorage.saveJSON(mContext);
-//
-////                mIsPictureSafe = true;
-//
-//                return uri.getPath();
-//
-//            } catch (Exception e) {
-//
-//                FirebaseCrashlytics.getInstance().recordException(e);
-//
-//                runOnUiThread(new Runnable() {
-//
-//                    @Override
-//                    public void run() {
-////                        mProgressBar.setVisibility(View.INVISIBLE);
-////                        mGalleryButton.setVisibility(View.VISIBLE);
-////                        mIsPictureSafe = false;
-////                        showSaveErrorDialog();
-//                    }
-//
-//                });
-//
-//
-////                Log.d(CLASS_NAME, "Could not save file: " + outFile);
-//            }
-//
-//
-//            return null;
-//
-//
-//        }
-//
-//        private void updateThumbnail(final File file) {
-//
-//            MediaScannerConnection.scanFile(getApplicationContext(), new String[]{file.toString()}, null, new MediaScannerConnection.OnScanCompletedListener() {
-//
-//                public void onScanCompleted(String path, Uri uri) {
-//
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            mProgressBar.setVisibility(View.INVISIBLE);
-//                            mGalleryButton.setVisibility(View.VISIBLE);
-////                            Check if the activity is closing. This might especially happen on slow
-////                            devices, where it takes some time to process the image and the app
-////                            is closed, before the thumbnail gets shown.
-//                            if (!((Activity) mContext).isFinishing())
-//                                GlideApp.with(mContext)
-//                                        .load(file.getPath())
-//                                        .apply(RequestOptions.circleCropTransform())
-//                                        .into(mGalleryButton);
-//                        }
-//                    });
-//
-//
-//                }
-//
-//            });
-//        }
-//
-//
-//        protected void onPostExecute(String uri) {
-//
-//            // Release the memory. Note this is essential, because otherwise allocated memory will increase.
-//            mData = null;
-//
-//            // Set the thumbnail on the gallery button, this must be done on the UI thread:
-//            if (uri != null) {
-//                updateThumbnail(new File(uri));
-//
-//                //            Start the page detection on the saved image:
-//                ImageProcessor.pageDetection(new File(uri));
-//
-//                if (mRetakeMode) {
-//                    viewModel.getValue().initiateGallery(mRetakeIdx);
-//                    GalleryActivity.fileRotated();
-//                    finish();
-//                }
-//            } else
-//                Log.d(CLASS_NAME, "onPostExecute: could not save file!");
-//
-//        }
-//
-//
-//    }
-
-//
-//    private void saveExif(File outFile) throws IOException {
-//
-//        final ExifInterface exif = new ExifInterface(outFile.getAbsolutePath());
-//
-//        // Save the orientation of the image:
-//        int orientation = getExifOrientation();
-//        String exifOrientation = Integer.toString(orientation);
-//        exif.setAttribute(ExifInterface.TAG_ORIENTATION, exifOrientation);
-//
-////                Save the docscan information:
-//        exif.setAttribute(ExifInterface.TAG_SOFTWARE, getString(R.string.app_name));
-//
-////                Save the user defined exif tags:
-//        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-//        String artist = sharedPref.getString(getResources().getString(R.string.key_exif_artist), "");
-//        if (!artist.isEmpty())
-//            exif.setAttribute(ExifInterface.TAG_ARTIST, artist);
-//        String copyright = sharedPref.getString(getResources().getString(R.string.key_exif_copyright), "");
-//        if (!copyright.isEmpty())
-//            exif.setAttribute(ExifInterface.TAG_COPYRIGHT, copyright);
-//
-//        // Save the GPS coordinates if available:
-//        Location location = LocationHandler.getInstance(mContext).getLocation();
-//        if (location != null) {
-//            double latitude = location.getLatitude();
-//            double longitude = location.getLongitude();
-////                        Taken from http://stackoverflow.com/questions/5280479/how-to-save-gps-coordinates-in-exif-data-on-android (post by fabien):
-//            exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, GPS.convert(latitude));
-//            exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE_REF, GPS.latitudeRef(latitude));
-//            exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, GPS.convert(longitude));
-//            exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE_REF, GPS.longitudeRef(longitude));
-//        }
-//
-//        int dpi = getDPI();
-//        if (dpi != -1) {
-//            Rational r = new Rational(dpi, 1);
-//            exif.setAttribute(ExifInterface.TAG_X_RESOLUTION, r.toString());
-//            exif.setAttribute(ExifInterface.TAG_Y_RESOLUTION, r.toString());
-//        }
-//
-//        exif.saveAttributes();
-//
-//    }
-
-
-//    private static Bitmap decodeFile(File f, int width, int height) {
-//        try {
-//            //Decode image size
-//            BitmapFactory.Options options = new BitmapFactory.Options();
-//            options.inJustDecodeBounds = true;
-//            BitmapFactory.decodeStream(new FileInputStream(f), null, options);
-//            if (options.outWidth > options.outHeight)
-//                height = (int) (height * (float) width / options.outWidth);
-//            else
-//                width = (int) (width * (float) height / options.outHeight);
-//            options.inSampleSize = calculateInSampleSize(options, width, height);
-//
-//            // Decode bitmap with inSampleSize set
-//            options.inJustDecodeBounds = false;
-//            return BitmapFactory.decodeStream(new FileInputStream(f), null, options);
-//
-//        } catch (FileNotFoundException e) {
-//            FirebaseCrashlytics.getInstance().recordException(e);
-//        }
-//        return null;
-//    }
-//
-//    private static int calculateInSampleSize(
-//            BitmapFactory.Options options, int reqWidth, int reqHeight) {
-//        // Raw height and width of image
-//        final int height = options.outHeight;
-//        final int width = options.outWidth;
-//        int inSampleSize = 1;
-//
-//        if (height > reqHeight || width > reqWidth) {
-//
-//            final int halfHeight = height / 2;
-//            final int halfWidth = width / 2;
-//
-//            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-//            // height and width larger than the requested height and width.
-//            while ((halfHeight / inSampleSize) >= reqHeight
-//                    && (halfWidth / inSampleSize) >= reqWidth) {
-//                inSampleSize *= 2;
-//            }
-//        }
-//
-//        return inSampleSize;
-//    }
 }
