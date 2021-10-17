@@ -37,10 +37,12 @@ class MigrationRepository(
     /**
      * Migrates the json data along with their image references into an internal database and file
      * storage.
+     * TODO: ERROR_HANDLING (1) - Files need to be copied & deleted one by one, otherwise storage issues might occur, if the space is already very limited.
+     * TODO: ERROR_HANDLING (2) - If the files have been previously on an external device (SD card), then even if (2) is considered, storage issues might occur.
+     * TODO: ERROR_HANDLING (3) - To mitigate (1) and (2), add a more sophisticated migration strategy, e.g. by asking the user if the data should even be migrated.
+     * TODO: MIGRATION_LOGIC - If the app is killed during migration and if (1) is considered, then we may loose some data, the name of the files in the public folder are probably necessary for this purpose.
      */
     suspend fun migrateJsonDataToDatabase(context: Context) {
-        // TODO: 1. get access to the internal json file and parse it
-        // TODO: Use the filehandler instead
         if (!preferencesHandler.shouldPerformDBMigration) {
             return
         }
@@ -50,15 +52,6 @@ class MigrationRepository(
                 val reader = documentStorageFile.bufferedReader()
                 val storage = gson.fromJson(reader, JsonStorage::class.java)
                 reader.safeClose()
-
-
-                // TODO: Not enough storage issue: The user might have a large number of photos, i.e. copying the entire files to their new destination
-                // TODO: And deleting it just afterwards might not be the best option, this maybe needs to be done partially.
-
-                // TODO: If the files have been previously on an external device (SD card) then this might be necessary check
-                // TODO: otherwise, the migration could fail because of missing storage on the internal device storage.
-
-                // TODO: drop the entire documents and tables since if someone has closed the app during the migration, this might cause problems.
 
                 val newDocsWithPages = mutableListOf<DocumentWithPages>()
                 storage.documents.forEach { jsonDocument ->
@@ -115,7 +108,6 @@ class MigrationRepository(
                                 val processingState =
                                     if (PageDetector.isCropped(it.absolutePath)) PostProcessingState.DONE else PostProcessingState.DRAFT
 
-                                // TODO: Checkout how the uploaded state can be determined.
                                 newPages.add(
                                     Page(
                                         newPageId,
@@ -146,9 +138,6 @@ class MigrationRepository(
                     )
                 }
 
-                // TODO: Store into database
-
-
                 // mark as migration been performed
                 preferencesHandler.shouldPerformDBMigration = false
                 // If copying the files was successful, drop the public files
@@ -158,7 +147,6 @@ class MigrationRepository(
                     fileHandler.getFileByAbsolutePath(page.file.path)?.safelyDelete()
                 }
 
-                // TODO: delete documents file and mark it in the preferences
                 documentStorageFile.safelyDelete()
 
             } catch (exception: Exception) {

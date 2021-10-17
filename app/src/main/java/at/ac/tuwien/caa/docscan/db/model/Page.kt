@@ -19,6 +19,7 @@ import java.util.*
 /**
  * Represents the [Page] entity, which is uniquely represented in the storage by the [docId] and
  * [id].
+ * TODO: DOMAIN_LOGIC - Add missing state for uploads and related upload ids.
  */
 @Parcelize
 @Entity(tableName = TABLE_NAME_PAGES)
@@ -58,15 +59,12 @@ data class Page(
      */
     @ColumnInfo(name = KEY_POST_PROCESSING_STATE)
     val postProcessingState: PostProcessingState,
-    // TODO: add state for uploading
     /**
      * An optional (cropping) boundary with 4 points.
      */
-    // TODO: Check if this is ok to be nullable
     @Embedded(prefix = KEY_SINGLE_PAGE_BOUNDARY_PREFIX)
     var singlePageBoundary: SinglePageBoundary?
 ) : Parcelable {
-    // TODO: Hash of the image file to determine if it has changed or not.
     companion object {
         const val TABLE_NAME_PAGES = "pages"
         const val KEY_ID = "id"
