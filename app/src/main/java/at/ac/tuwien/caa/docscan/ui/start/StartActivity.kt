@@ -13,6 +13,11 @@ import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.intro.IntroActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
+/**
+ * TODO: DOMAIN_LOGIC - Handle creation of new documents for the tutorial.
+ * TODO: DOMAIN_LOGIC - Handle introduction dialogs, re-check the old StartActivity.java
+ * TODO: MIGRATION_LOGIC - Check if more sophisticated migration options with user feedback are necessary.
+ */
 class StartActivity : AppCompatActivity() {
 
     private val viewModel: StartActivityViewModel by viewModel()
@@ -55,7 +60,6 @@ class StartActivity : AppCompatActivity() {
         viewModel.checkStartUpConditions()
     }
 
-    // TODO: Add handling for creating new documents
     private fun observe() {
         viewModel.loadingProgress.observe(this, {
             binding.progress.visibility = if (it) View.VISIBLE else View.GONE

@@ -104,7 +104,7 @@ class ImagesFragment : BaseFragment() {
         // TODO: add here more columns for landscape mode:
         binding.imagesList.layoutManager = GridLayoutManager(context, COLUMN_COUNT)
         binding.imagesList.adapter = imagesAdapter
-        viewModel.loadDocumentPagesById(args.documentPage?.docId)
+        viewModel.loadDocumentPagesById(args.documentPage?.docId, args.documentPage?.pageId)
         observe()
     }
 
@@ -123,8 +123,9 @@ class ImagesFragment : BaseFragment() {
                 binding.imagesList.visibility = View.VISIBLE
                 binding.imagesEmptyLayout.visibility = View.INVISIBLE
                 if (it.scrollTo != -1) {
+                    val scrollToTmp = it.scrollTo
                     it.scrollTo = -1
-                    binding.imagesList.scrollToPosition(it.scrollTo)
+                    binding.imagesList.layoutManager?.scrollToPosition(scrollToTmp)
                 }
             }
             val result = it.pages.isSelectionActivated()
@@ -174,7 +175,8 @@ class ImagesFragment : BaseFragment() {
             if (actionMode == null) {
                 actionMode = requireActivity().startActionMode(actionModeCallback)
             }
-            actionMode?.title = selectedItems.toString()
+            actionMode?.title =
+                selectedItems.toString() + " " + getString(R.string.gallery_selected)
         }
     }
 
@@ -209,15 +211,6 @@ class ImagesFragment : BaseFragment() {
 //        // show it
 //        alertDialog.show()
 //
-//    }
-
-//    fun rotateImages(item: MenuItem) {
-//// TODO: relocate into fragment
-////        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-////            val files = (this as ImagesFragment).getSelectedFiles()
-////            for (file in files)
-////                rotateFile(file)
-////        }
 //    }
 
 

@@ -244,7 +244,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         )
                     }
                     DocumentAction.UPLOAD -> {
-                        // TODO: Check upload
+                        // TODO: UPLOAD_LOGIC - Add upload logic for the viewModel.
                     }
                 }
             }
@@ -292,7 +292,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                 documentWithPages = doc
                             )
                         }
-//                        // TODO: check PDF export
+                        // TODO: EXPORT_LOGIC - Add (PDF) export logic to the viewModel.
 //                        if (KtHelper.isPdfFolderPermissionGiven(this)) {
 ////                    if (document.isCropped())
 ////                        showPdfOcrDialog(document)
@@ -419,13 +419,13 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 )
             }
             R.id.viewer_upload_fab -> {
-                // TODO: Upload the selected document
+                // TODO: UPLOAD_LOGIC - Add upload logic for the viewModel.
             }
             R.id.viewer_camera_fab -> {
                 viewModel.startImagingWith()
             }
             R.id.viewer_gallery_fab -> {
-                // TODO: encapsulate this in a helper class
+                // TODO: CODE_STYLE - Encapsulate this in a helper class.
                 val intent = Intent(Intent.ACTION_GET_CONTENT)
                 intent.type = "image/*"
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);

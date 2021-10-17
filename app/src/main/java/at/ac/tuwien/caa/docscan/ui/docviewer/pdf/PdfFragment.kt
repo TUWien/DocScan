@@ -28,15 +28,13 @@ import java.net.URLEncoder
 import java.text.SimpleDateFormat
 
 /**
- * TODO: Check PDF keys for a directory, re-check them every time when a DB change happenss
- *
- * TODO: Add possibility to load any PDFs which are in the public folder.
+ * TODO: EXPORT_LOGIC - Refactor this fragment to allow exports of documents as before.
+ * TODO: EXPORT_LOGIC - Check the necessary requirements of the access storage framework.
  */
 class PdfFragment : BaseFragment() {
 
     companion object {
 
-        // TODO: new PDF keys are not passed as an intent anymore, check how this can be achieved.
         fun newInstance() = PdfFragment()
 
         const val TAG = "PdfFragment"

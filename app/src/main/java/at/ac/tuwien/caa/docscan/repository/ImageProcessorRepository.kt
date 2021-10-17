@@ -109,7 +109,6 @@ class ImageProcessorRepository(
      */
     suspend fun rotatePages90CW(pages: List<Page>) {
         withContext(NonCancellable) {
-            Timber.d("ROTATION_DOCSCAN rotatePages90CW ")
             appDatabase.withTransaction {
                 pages.forEach { page ->
                     pageDao.updatePageProcessingState(page.id, PostProcessingState.PROCESSING)
@@ -119,10 +118,7 @@ class ImageProcessorRepository(
                 }
             }
             pages.forEach { page ->
-
                 page.rotatePageBy90CW()
-                Timber.d("ROTATION_DOCSCAN: new has after: ${page.fileHash}")
-                // TODO: Re-check this structure
                 appDatabase.withTransaction {
                     pageDao.insertPage(page)
                     pageDao.updatePageProcessingState(page.id, PostProcessingState.DRAFT)

@@ -23,30 +23,38 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
 
     private var collectorJob: Job? = null
     var isRotating: Boolean = false
+    private var shouldScroll = true
 
     /**
      * Loads document pages by id with three different scenarios:
      * - if the param [documentId] is not null, a stream of that document is going to be collected.
      * - if the param is null, the active document is being collected.
      */
-    fun loadDocumentPagesById(documentId: UUID?) {
+    fun loadDocumentPagesById(documentId: UUID?, pageId: UUID?) {
         collectorJob?.cancel()
         collectorJob = viewModelScope.launch(Dispatchers.IO) {
             observableProgress.postValue(true)
             if (documentId != null) {
                 repository.getDocumentWithPagesAsFlow(documentId = documentId)
                     .collectLatest {
-                        processDocumentPage(it)
+                        processDocumentPage(
+                            it, if (shouldScroll) {
+                                shouldScroll = false
+                                pageId
+                            } else {
+                                null
+                            }
+                        )
                     }
             } else {
                 repository.getActiveDocumentAsFlow().collectLatest {
-                    processDocumentPage(it)
+                    processDocumentPage(it, null)
                 }
             }
         }
     }
 
-    private fun processDocumentPage(documentWithPages: DocumentWithPages?) {
+    private fun processDocumentPage(documentWithPages: DocumentWithPages?, scrollToPageId: UUID?) {
         observableProgress.postValue(false)
         val pages = documentWithPages?.pages
         observableDocWithPages.postValue(documentWithPages)
@@ -62,13 +70,11 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
                     ?: false
             )
         } ?: listOf()
-        // TODO: Check scrolling mechanism, only scroll if necessary. selectionList.indexOfFirst { page -> page.page.id == documentPage?.pageId })
-        Timber.d("ROTATION_DOCSCAN: filehash of first: ${selectionList.getOrNull(0)?.page?.fileHash}")
         observablePages.postValue(
             ImageModel(
                 documentWithPages?.document,
                 selectionList,
-                -1
+                selectionList.indexOfFirst { page -> page.page.id == scrollToPageId }
             )
         )
     }
@@ -90,7 +96,6 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
         }
     }
 
-    // TODO: Add confirmation dialog
     fun deleteAllSelectedPages() {
         viewModelScope.launch(Dispatchers.IO) {
             val pages = getPagesCopy() ?: return@launch

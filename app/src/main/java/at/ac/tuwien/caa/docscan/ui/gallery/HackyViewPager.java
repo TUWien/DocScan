@@ -14,6 +14,7 @@ import android.view.MotionEvent;
  * I hope it is an android issue: http://code.google.com/p/android/issues/detail?id=18990
  * Got this from: https://github.com/chrisbanes/PhotoView (under issues)
  */
+@Deprecated
 public class HackyViewPager extends ViewPager {
 
     public HackyViewPager(@NonNull Context context) {

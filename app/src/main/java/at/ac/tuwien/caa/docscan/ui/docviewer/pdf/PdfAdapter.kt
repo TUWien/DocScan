@@ -15,7 +15,7 @@ import at.ac.tuwien.caa.docscan.logic.Helper
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import java.io.File
 
-// TODO: Adapt this to the new domain structure
+// TODO: EXPORT_LOGIC - Refactor this fragment to allow exports of documents as before.
 class PdfAdapter(
     private val context: Context,
     private val pdfs: MutableList<PdfFragment.Pdf>,

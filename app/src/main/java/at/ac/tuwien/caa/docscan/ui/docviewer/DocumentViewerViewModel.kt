@@ -14,6 +14,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
+/**
+ * TODO: ERROR_HANDLING/DB_CONSTRAINTS: Add missing error handling and confirmation of actions.
+ */
 class DocumentViewerViewModel(private val repository: DocumentRepository) : ViewModel() {
 
     val selectedScreen = MutableLiveData(DocumentViewerScreen.DOCUMENTS)
@@ -58,7 +61,6 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
                     null
                 }
             } ?: return@launch
-            // TODO: Add error handling for image import
             repository.saveNewImportedImageForDocument(doc, uris)
         }
     }
@@ -83,13 +85,6 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
                 repository.setDocumentAsActive(it)
             }
             observableInitCamera.postValue(Event(Unit))
-        }
-    }
-
-    fun deleteEntireDocument(documentWithPages: DocumentWithPages) {
-        viewModelScope.launch(Dispatchers.IO) {
-            // TODO: Check constraints and inform observableResourceAction
-            repository.removeDocument(documentWithPages)
         }
     }
 
