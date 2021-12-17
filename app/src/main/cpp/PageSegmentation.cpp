@@ -489,7 +489,7 @@ namespace dsc {
         Utils::print("C++ updateMap took: " + std::to_string(secs) + " seconds", "DkPageSegmentation");
 
         t0 = cv::getTickCount();
-        remap( input, dst, map_x, map_y, cv::INTER_LANCZOS4, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0) );
+        remap( input, dst, map_x, map_y, cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0) );
         t1 = cv::getTickCount();
         secs = (t1-t0)/cv::getTickFrequency();
         Utils::print("C++ remap took: " + std::to_string(secs) + " seconds", "DkPageSegmentation");

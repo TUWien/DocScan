@@ -70,7 +70,7 @@ class Remap {
         Log.d("Remap", "Java updateMap took: " + secs + " seconds");
 
         t0 = Core.getTickCount();
-        Imgproc.remap(input, dst, mapX, mapY, Imgproc.INTER_LANCZOS4);
+        Imgproc.remap(input, dst, mapX, mapY, Imgproc.INTER_NEAREST);
         t1 = Core.getTickCount();
         secs = (t1-t0) / Core.getTickFrequency();
         Log.d("Remap", "Java remap took: " + secs + " seconds");
