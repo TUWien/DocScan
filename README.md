@@ -1,4 +1,4 @@
-# peed comparison between native and Java OpenCV calls
+# Speed comparison between native and Java OpenCV calls
 This is just a quick and dirty branch for measuring OpenCV timings.
 
 Results gained on Pixel 4A (in seconds). Mat size is 3000x4000.
