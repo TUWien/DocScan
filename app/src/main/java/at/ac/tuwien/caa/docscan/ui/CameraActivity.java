@@ -222,7 +222,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             Log.d(CLASS_NAME, "Error while initializing OpenCV.");
         } else {
 
-            System.loadLibrary("opencv_java3");
+            System.loadLibrary("opencv_java4");
             System.loadLibrary("docscan-native");
 
             Log.d(CLASS_NAME, "OpenCV initialized");

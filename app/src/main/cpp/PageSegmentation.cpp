@@ -130,7 +130,8 @@ namespace dsc {
                                                int channel, int thr) const {
 
         cv::Mat imgLab;
-        cv::cvtColor(img, imgLab, CV_RGB2Lab);    // luminance channel is better than grayscale
+
+        cv::cvtColor(img, imgLab, cv::COLOR_RGB2Lab);    // luminance channel is better than grayscale
 
         std::vector<int> indexes;
 
@@ -161,7 +162,7 @@ namespace dsc {
 
         // downscale
         if (scale != 1.0f)
-            cv::resize(imgL, imgL, cv::Size(), scale, scale, CV_INTER_LINEAR);
+            cv::resize(imgL, imgL, cv::Size(), scale, scale, cv::INTER_LINEAR);
 
         std::vector<std::vector<cv::Point> > contours;
 
@@ -201,7 +202,7 @@ namespace dsc {
             cv::erode(gray, gray, cv::Mat(), cv::Point(-1, -1));
 
             // find contours and store them all as a list
-            findContours(gray, contours, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
+            findContours(gray, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
             if (looseDetection) {
                 std::vector<std::vector<cv::Point> > hull;
@@ -464,25 +465,99 @@ namespace dsc {
         }
     }
 
+    void update_map( int ind, cv::Mat &map_x, cv::Mat &map_y );
+
     std::vector<DkPolyRect>
     DkPageSegmentation::apply(const cv::Mat &src, bool useLab, const DkPolyRect &oldRect) {
 
         std::vector<DkPolyRect> pageRects;
+//        Utils::print("starting remap...", "DkPageSegmentation");
 
-        // run the page segmentation
-        DkPageSegmentation segM(src, oldRect);
-        segM.compute(useLab);
-        segM.filterDuplicates();
+        int64 t0 = cv::getTickCount();
+        cv::Mat input = cv::Mat::zeros(4000, 3000, src.type());
+        cv::Mat dst(input.size(), src.type());
+        cv::Mat map_x(input.size(), CV_32FC1);
+        cv::Mat map_y(input.size(), CV_32FC1);
+        int64 t1 = cv::getTickCount();
+        double secs = (t1-t0)/cv::getTickFrequency();
+        Utils::print("C++ init took: " + std::to_string(secs) + " seconds", "DkPageSegmentation");
 
-        //pageRects = segM.getRects();
+        t0 = cv::getTickCount();
+        update_map(0, map_x, map_y);
+        t1 = cv::getTickCount();
+        secs = (t1-t0)/cv::getTickFrequency();
+        Utils::print("C++ updateMap took: " + std::to_string(secs) + " seconds", "DkPageSegmentation");
 
-        DkPolyRect r = segM.getDocumentRect();
-
-        if (!r.empty())
-            pageRects.push_back(r);
+        t0 = cv::getTickCount();
+        remap( input, dst, map_x, map_y, cv::INTER_LANCZOS4, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0) );
+        t1 = cv::getTickCount();
+        secs = (t1-t0)/cv::getTickFrequency();
+        Utils::print("C++ remap took: " + std::to_string(secs) + " seconds", "DkPageSegmentation");
 
         return pageRects;
+
     }
+
+    void update_map( int ind, cv::Mat &map_x, cv::Mat &map_y )
+    {
+        for( int i = 0; i < map_x.rows; i++ )
+        {
+            for( int j = 0; j < map_x.cols; j++ )
+            {
+                switch( ind )
+                {
+                    case 0:
+                        if( j > map_x.cols*0.25 && j < map_x.cols*0.75 && i > map_x.rows*0.25 && i < map_x.rows*0.75 )
+                        {
+                            map_x.at<float>(i, j) = 2*( j - map_x.cols*0.25f ) + 0.5f;
+                            map_y.at<float>(i, j) = 2*( i - map_x.rows*0.25f ) + 0.5f;
+                        }
+                        else
+                        {
+                            map_x.at<float>(i, j) = 0;
+                            map_y.at<float>(i, j) = 0;
+                        }
+                        break;
+                    case 1:
+                        map_x.at<float>(i, j) = (float)j;
+                        map_y.at<float>(i, j) = (float)(map_x.rows - i);
+                        break;
+                    case 2:
+                        map_x.at<float>(i, j) = (float)(map_x.cols - j);
+                        map_y.at<float>(i, j) = (float)i;
+                        break;
+                    case 3:
+                        map_x.at<float>(i, j) = (float)(map_x.cols - j);
+                        map_y.at<float>(i, j) = (float)(map_x.rows - i);
+                        break;
+                    default:
+                        break;
+                } // end of switch
+            }
+        }
+//        ind = (ind+1) % 4;
+    }
+
+
+//    std::vector<DkPolyRect>
+//    DkPageSegmentation::apply(const cv::Mat &src, bool useLab, const DkPolyRect &oldRect) {
+//
+//        std::vector<DkPolyRect> pageRects;
+//
+//        // run the page segmentation
+//        DkPageSegmentation segM(src, oldRect);
+//        segM.compute(useLab);
+//        segM.filterDuplicates();
+//
+//        //pageRects = segM.getRects();
+//
+//        DkPolyRect r = segM.getDocumentRect();
+//
+//        if (!r.empty())
+//            pageRects.push_back(r);
+//
+//        return pageRects;
+//    }
 
 
 };

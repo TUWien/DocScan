@@ -330,7 +330,7 @@ namespace dsc {
             return false;
 
         if (mSrcImg.channels() != 1)
-            cv::cvtColor(mSrcImg, mSrcImg, CV_RGB2GRAY);
+            cv::cvtColor(mSrcImg, mSrcImg, cv::COLOR_RGB2GRAY);
 
         if (mSrcImg.depth() != CV_32F)
             mSrcImg.convertTo(mSrcImg, CV_32F);
@@ -483,7 +483,8 @@ namespace dsc {
 
         cv::Mat binImg;
         mSrcImg.convertTo(binImg, CV_8U);
-        cv::threshold(binImg, binImg, 0, 255, CV_THRESH_BINARY_INV | CV_THRESH_OTSU);
+
+        cv::threshold(binImg, binImg, 0, 255, cv::THRESH_BINARY_INV | cv::THRESH_OTSU);
         binImg.convertTo(binImg, CV_32F);
 
         return compute(fm, binImg, binary);
@@ -506,7 +507,7 @@ namespace dsc {
         mSrcImg = img;
 
         if (mSrcImg.channels() != 1) {
-            cv::cvtColor(mSrcImg, mSrcImg, CV_RGB2GRAY);
+            cv::cvtColor(mSrcImg, mSrcImg, cv::COLOR_RGB2GRAY);
         }
 
         if (mSrcImg.depth() == CV_8U)

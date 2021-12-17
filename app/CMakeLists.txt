@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.4.1)
 include_directories(${PATH_TO_OPENCV_NATIVE}/jni/include/)
 
 add_library(lib_opencv SHARED IMPORTED)
-set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${PATH_TO_OPENCV_NATIVE}/libs/${ANDROID_ABI}/libopencv_java3.so)
+set_target_properties(lib_opencv PROPERTIES IMPORTED_LOCATION ${PATH_TO_OPENCV_NATIVE}/libs/${ANDROID_ABI}/libopencv_java4.so)
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -30,7 +30,7 @@ add_library( # Sets the name of the library.
         src/main/cpp/PageSegmentationUtils.cpp
         src/main/cpp/PageSegmentation.cpp
         src/main/cpp/Utils.cpp
-        src/main/cpp/Illumination.cpp)
+        )
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by

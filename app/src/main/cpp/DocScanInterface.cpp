@@ -37,6 +37,11 @@
 #include <string>
 #include <iostream>
 
+//
+//JNIEXPORT void JNICALL
+//Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeDummyWarp(JNIEnv *env, jclass clazz) {
+//
+//}
 
 JNIEXPORT jobjectArray JNICALL
 Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(JNIEnv *env,
@@ -44,6 +49,8 @@ Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(
                                                                                 jlong src,
                                                                                 jboolean useLab,
                                                                                 jobject jOldRect) {
+
+
 
     dsc::DkPolyRect oldRect = cvt::jPolyRectToC(env, jOldRect);
 
@@ -95,8 +102,13 @@ Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(
     }
 
     return outJRects;
-
+//    return NULL;
 }
+
+//JNIEXPORT void JNICALL
+//Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeDummyWarp(JNIEnv *env, jclass clazz) {
+//    // TODO: implement nativeDummyWarp()
+//}
 
 JNIEXPORT jobjectArray JNICALL
 Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetFocusMeasures(JNIEnv *env,
@@ -153,7 +165,10 @@ Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetFocusMeasures(JNI
 
     }
 
+//return NULL;
+
 }
+
 
 namespace cvt {
 

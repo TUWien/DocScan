@@ -44,6 +44,14 @@ public class NativeWrapper {
     private static boolean mUseLab = true;
     private static DkPolyRect mOldRect = new DkPolyRect();
 
+//    public static void dummyWarp() {
+//
+//        nativeDummyWarp();
+//
+//    }
+
+
+
     /**
      * Returns an array of Patch objects, containing focus measurement results.
      *
@@ -66,9 +74,14 @@ public class NativeWrapper {
      */
     public static DkPolyRect[] getPageSegmentation(Mat src) {
 
+        new Remap().run(src);
+
         DkPolyRect[] rects = nativeGetPageSegmentation(src.getNativeObjAddr(), mUseLab, mOldRect);
 
-        if (rects.length > 0)
+        if (rects == null)
+            rects = new DkPolyRect[0];
+
+        if (rects != null && rects.length > 0)
             mOldRect = rects[0];
         else
             mOldRect = new DkPolyRect();
@@ -95,9 +108,6 @@ public class NativeWrapper {
 
     }
 
-    public static double getIllumination(Mat src, DkPolyRect polyRect) {
-        return nativeGetIllumination(src.getNativeObjAddr(), polyRect);
-    }
 
     /**
      * Native method for focus measurement.
@@ -118,15 +128,8 @@ public class NativeWrapper {
     @SuppressWarnings("JniMissingFunction")
     private static native DkPolyRect[] nativeGetPageSegmentation(long src, boolean useLab, DkPolyRect polyRect);
 
-    /**
-     * Native method for illumination computation.
-     *
-     * @param src      input image
-     * @param polyRect rectangle describing the page
-     * @return double value measuring the illumination quality
-     */
-    @SuppressWarnings("JniMissingFunction")
-    private static native double nativeGetIllumination(long src, DkPolyRect polyRect);
+//    @SuppressWarnings("JniMissingFunction")
+//    private static native void nativeDummyWarp();
 
     public static void setUseLab(boolean useLab) {
         mUseLab = useLab;

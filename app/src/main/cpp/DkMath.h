@@ -40,7 +40,7 @@
 #endif
 
 #include "opencv2/core.hpp"
-#include "opencv/cxcore.h"    // c functions e.g. dsc::round
+//#include "opencv/cxcore.h"    // c functions e.g. dsc::round
 
 #include "Utils.h"
 

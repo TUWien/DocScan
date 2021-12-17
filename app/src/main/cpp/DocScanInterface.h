@@ -36,7 +36,13 @@ Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(
                                                                                 jlong srcImg,
                                                                                 jboolean useLab,
                                                                                 jobject oldRect);
-}
+
+JNIEXPORT void JNICALL
+Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeDummyWarp(JNIEnv *env, jclass clazz);
+
+//JNIEXPORT void JNICALL
+//Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeDummyWarp(JNIEnv *env, jclass clazz);
+
 
 namespace dsc {
     class DkPolyRect;
@@ -47,3 +53,9 @@ namespace cvt {
 }
 
 #endif // #ifndef NO_JNI
+//extern "C"
+//JNIEXPORT jobjectArray JNICALL
+//Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeDummyWarp(JNIEnv *env, jclass clazz) {
+//    // TODO: implement nativeDummyWarp()
+//}
+}

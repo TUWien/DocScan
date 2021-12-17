@@ -54,6 +54,10 @@
             android:name=".ui.docviewer.SelectPdfDocumentActivity"
             android:exported="true"
             />
+        <activity
+            android:name=".ui.DewarpActivity"
+            android:exported="true"
+            />
 
         <activity
             android:name=".ui.document.SelectDocumentActivity"
