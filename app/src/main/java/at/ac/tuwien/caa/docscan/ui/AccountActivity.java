@@ -19,8 +19,9 @@ import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.rest.UserHandler;
 import at.ac.tuwien.caa.docscan.sync.DropboxUtils;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
+import at.ac.tuwien.caa.docscan.ui.transkribus.TranskribusLoginActivity;
 
-import static at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME;
+import static at.ac.tuwien.caa.docscan.ui.transkribus.TranskribusLoginActivity.PARENT_ACTIVITY_NAME;
 
 /**
  * Created by fabian on 22.08.2017.

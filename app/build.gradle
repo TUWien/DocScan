@@ -234,8 +234,8 @@ dependencies {
     // firebase/google related
 // TODO: Migrate this to WorkManager, it is currently not working and commented
 //    implementation 'com.firebase:firebase-jobdispatcher:0.8.6'
-    implementation 'androidx.work:work-runtime:2.7.1'
-    runtimeOnly 'androidx.work:work-runtime-ktx:2.7.1'
+//    implementation 'androidx.work:work-runtime:2.7.1'
+    implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation 'com.google.firebase:firebase-core:20.0.2'
 // TODO: Update the ml-kit, it will be necessary to take out only those dependencies that are really used.
     implementation 'com.google.firebase:firebase-ml-vision:24.0.1'

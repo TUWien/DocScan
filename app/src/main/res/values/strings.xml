@@ -142,6 +142,9 @@
     <string name="login_loading_text">Login, please wait</string>
     <string name="login_auth_error_text">User name or password is incorrect. Please reenter your credentials.</string>
 
+    <string name="login_dialog_success_title">Welcome %s!</string>
+    <string name="login_dialog_success_text">You have successfully logged in!</string>
+
     <!--  These are the error messages for handling specific VolleyError's:  -->
     <string name="login_no_connection_error_title">No internet connection</string>
     <string name="login_no_connection_error_text">Your device is not connected to the internet. Please connect to the internet and try again to log in.</string>

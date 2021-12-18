@@ -1,22 +1,5 @@
 package at.ac.tuwien.caa.docscan.repository.upload
 
-import android.content.Context
-import android.content.Intent
-import android.view.View
-import androidx.appcompat.app.AlertDialog
-import at.ac.tuwien.caa.docscan.R
-import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
-import at.ac.tuwien.caa.docscan.logic.DataLog
-import at.ac.tuwien.caa.docscan.logic.Helper
-import at.ac.tuwien.caa.docscan.rest.User
-import at.ac.tuwien.caa.docscan.sync.SyncStorage
-import at.ac.tuwien.caa.docscan.sync.SyncUtils
-import at.ac.tuwien.caa.docscan.sync.UploadService
-import at.ac.tuwien.caa.docscan.ui.AccountActivity
-import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity
-import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
-import com.google.android.material.snackbar.Snackbar
-
 // TODO: Contains all utility classes for the upload of documents
 //private fun uploadDocument(context: Context, document: DocumentWithPages) {
 //

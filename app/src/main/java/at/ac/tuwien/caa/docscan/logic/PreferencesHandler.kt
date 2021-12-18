@@ -48,6 +48,16 @@ class PreferencesHandler(val context: Context) {
 
         const val KEY_DPI = "KEY_DPI"
         const val DEFAULT_INT_VALUE = -1
+
+        // session related keys
+        private const val FIRST_NAME_KEY = "firstName"
+        private const val LAST_NAME_KEY = "lastName"
+        private const val NAME_KEY = "userName"
+        private const val TRANSKRIBUS_PASSWORD_KEY = "userPassword"
+        private const val DROPBOX_TOKEN_KEY = "dropboxToken"
+        private const val CONNECTION_KEY = "connection"
+
+        private const val KEY_TRANSKRIBUS_SESSION_COOKIE = "TRANSKRIBUS_SESSION_COOKIE"
     }
 
     var shouldPerformDBMigration: Boolean
@@ -185,11 +195,27 @@ class PreferencesHandler(val context: Context) {
                 .apply()
         }
 
+    var transkribusCookie: String?
+        get() {
+            return defaultSharedPreferences.getString(KEY_TRANSKRIBUS_SESSION_COOKIE, null)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                .putString(KEY_TRANSKRIBUS_SESSION_COOKIE, value)
+                .apply()
+        }
+
+    fun clearTranskribusUserData() {
+        transkribusCookie = null
+    }
+
     init {
         // check for migrations
         if (BuildConfig.VERSION_CODE > 156) {
 //            showIntro = installedVersionCode == DEFAULT_INT_VALUE
             // TODO: migrate from default to settings preferences
+            // TODO: migrate session data from transkribus
+            // TODO: Clear dropbox data.
 //            firstStartDate = defaultSharedPreferences.getString(KEY_FIRST_START_DATE, null);
         }
 

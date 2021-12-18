@@ -1,8 +1,37 @@
 package at.ac.tuwien.caa.docscan.logic
 
+import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.db.exception.*
+import at.ac.tuwien.caa.docscan.sync.transkribus.DocScanError
+import at.ac.tuwien.caa.docscan.sync.transkribus.DocScanException
+import at.ac.tuwien.caa.docscan.ui.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentAction
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+
+fun Throwable.handleError(activity: BaseActivity) {
+    when (this) {
+        is DocScanException -> {
+            when (this.docScanError) {
+                is DocScanError.TranskribusRestError.HttpError -> {
+
+                }
+                is DocScanError.TranskribusRestError.IOError -> {
+                    val pair = getErrorMessageFromThrowable(this)
+                    val dialogModel = DialogModel(
+                        dialogAction = ADialog.DialogAction.CUSTOM,
+                        customTitle = activity.getString(pair.first),
+                        customMessage = activity.getString(pair.second)
+                    )
+                    activity.showDialog(dialogModel)
+                }
+            }
+        }
+    }
+}
 
 /**
  * TODO: This is not completed
@@ -84,5 +113,26 @@ fun Exception.getDialogByDocumentAction(documentAction: DocumentAction): ADialog
         else -> {
             ADialog.DialogAction.GENERIC
         }
+    }
+}
+
+private fun handleGenericThrowable() {
+
+}
+
+
+private fun getErrorMessageFromThrowable(throwable: Throwable): Pair<Int, Int> {
+    // TODO: Handle server errors!
+    return when (throwable) {
+        is UnknownHostException,
+        is ConnectException -> Pair(
+            R.string.login_no_connection_error_title,
+            R.string.login_no_connection_error_text
+        )
+        is SocketTimeoutException -> Pair(
+            R.string.login_timeout_error_title,
+            R.string.login_timeout_error_text
+        )
+        else -> Pair(R.string.login_network_error_title, R.string.login_network_error_text)
     }
 }

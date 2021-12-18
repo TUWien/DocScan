@@ -5,6 +5,7 @@ import at.ac.tuwien.caa.docscan.koin.appModule
 import at.ac.tuwien.caa.docscan.koin.daoModule
 import at.ac.tuwien.caa.docscan.koin.repositoryModule
 import at.ac.tuwien.caa.docscan.koin.viewModelModule
+import at.ac.tuwien.caa.docscan.koin.networkModule
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -46,7 +47,7 @@ class DocScanApp : Application() {
             // currently a workaround for koin (see https://github.com/InsertKoinIO/koin/issues/1188)
             androidLogger(if (BuildConfig.DEBUG) Level.ERROR else Level.NONE)
             androidContext(this@DocScanApp)
-            modules(listOf(appModule, daoModule, repositoryModule, viewModelModule))
+            modules(listOf(appModule, daoModule, repositoryModule, viewModelModule, networkModule))
         }
     }
 

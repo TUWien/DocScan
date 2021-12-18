@@ -95,7 +95,7 @@
             android:parentActivityName=".ui.gallery.newPackage.PageSlideActivity" />
 
         <activity
-            android:name=".ui.TranskribusLoginActivity"
+            android:name=".ui.transkribus.TranskribusLoginActivity"
             android:exported="false"
             android:parentActivityName=".ui.camera.CameraActivity" />
 

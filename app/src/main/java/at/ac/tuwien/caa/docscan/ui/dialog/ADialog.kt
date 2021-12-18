@@ -128,8 +128,13 @@ class ADialog : AppCompatDialogFragment() {
         ),
 
         // TODO: adapt strings.
-        GENERIC(R.string.login_network_error_title, R.string.document_dir_existing_postfix_message)
-
+        GENERIC(R.string.login_network_error_title, R.string.document_dir_existing_postfix_message),
+        LOGIN_SUCCESS(
+            R.string.login_dialog_success_title,
+            R.string.login_dialog_success_text,
+            isCancellable = false
+        ),
+        CUSTOM(0, 0)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
