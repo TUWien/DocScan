@@ -27,7 +27,7 @@ class StartActivity : AppCompatActivity() {
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
 
-        ) { map: MutableMap<String, Boolean> ->
+        ) { map: Map<String, Boolean> ->
             if (map.filter { entry -> !entry.value }.isEmpty()) {
                 viewModel.checkStartUpConditions()
             } else {

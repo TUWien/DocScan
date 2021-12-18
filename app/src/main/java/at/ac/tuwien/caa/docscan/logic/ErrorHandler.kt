@@ -26,6 +26,7 @@ fun Exception.getDialogByDocumentAction(documentAction: DocumentAction): ADialog
                         DocumentAction.UPLOAD -> {
 
                         }
+                        DocumentAction.EXPORT -> TODO()
                     }
                     ADialog.DialogAction.GENERIC
                 }

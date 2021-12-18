@@ -12,6 +12,7 @@ import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
@@ -42,7 +43,8 @@ class DocScanApp : Application() {
 
     private fun insertKoin() {
         startKoin {
-            if (BuildConfig.DEBUG) androidLogger()
+            // currently a workaround for koin (see https://github.com/InsertKoinIO/koin/issues/1188)
+            androidLogger(if (BuildConfig.DEBUG) Level.ERROR else Level.NONE)
             androidContext(this@DocScanApp)
             modules(listOf(appModule, daoModule, repositoryModule, viewModelModule))
         }
