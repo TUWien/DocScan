@@ -3,32 +3,39 @@ package at.ac.tuwien.caa.docscan.repository
 import android.net.Uri
 import androidx.annotation.WorkerThread
 import androidx.room.withTransaction
+import androidx.work.*
 import at.ac.tuwien.caa.docscan.camera.ImageExifMetaData
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.exception.DBDocumentDuplicate
+import at.ac.tuwien.caa.docscan.db.exception.DBDocumentLocked
+import at.ac.tuwien.caa.docscan.db.exception.DBDuplicateAction
+import at.ac.tuwien.caa.docscan.db.exception.DocumentLockStatus
+import at.ac.tuwien.caa.docscan.db.model.*
 import at.ac.tuwien.caa.docscan.db.model.Document
-import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
-import at.ac.tuwien.caa.docscan.db.model.sortByNumber
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
+import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.*
+import at.ac.tuwien.caa.docscan.sync.UploadWorker
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class DocumentRepository(
     private val fileHandler: FileHandler,
     private val pageDao: PageDao,
     private val documentDao: DocumentDao,
     private val db: AppDatabase,
-    private val imageProcessorRepository: ImageProcessorRepository
+    private val imageProcessorRepository: ImageProcessorRepository,
+    private val workManager: WorkManager
 ) {
 
     fun getPageByIdAsFlow(pageId: UUID) = documentDao.getPageAsFlow(pageId)
@@ -44,7 +51,7 @@ class DocumentRepository(
     @WorkerThread
     suspend fun getDocument(documentId: UUID) = documentDao.getDocument(documentId)
 
-    fun getAllDocuments() = documentDao.getAllDocumentWithPages()
+    fun getAllDocuments() = documentDao.getAllDocumentWithPagesAsFlow()
 
     fun getActiveDocumentAsFlow(): Flow<DocumentWithPages?> {
         return documentDao.getActiveDocumentasFlow().sortByNumber()
@@ -102,8 +109,47 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun uploadDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
-        // TODO: Run constraints check
-        return Failure(DBDocumentDuplicate())
+        val documentWithPagesFresh =
+            documentDao.getDocumentWithPages(documentId = documentWithPages.document.id)
+                // TODO: wrong error
+                ?: return Failure(
+                    DBDuplicateAction()
+                )
+        if (documentWithPagesFresh.isLocked()) {
+            // TODO: The failure is wrong here, this needs to be determined!
+            return Failure(DBDocumentLocked(DocumentLockStatus.UPLOAD))
+        } else {
+            // TODO: Check some preliminary conditions, like if the user is authenticated etc. before doing this.
+            pageDao.updateUploadStateForDocument(
+                documentWithPagesFresh.document.id,
+                UploadState.UPLOAD_IN_PROGRESS
+            )
+        }
+        val tag = "transkribus_image_uploader"
+        val uploadPhotosWorkRequest = OneTimeWorkRequest.Builder(UploadWorker::class.java)
+            .addTag(tag)
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            )
+            // the backoff criteria is set to quite a short time, since a retry is only performed if there is an
+            // internet connection, i.e. if the user should be offline, the work is not retried due to the connected
+            // constraint, but as soon as the user gets online, this will take only 5seconds to upload.
+            .setBackoffCriteria(
+                BackoffPolicy.LINEAR,
+                5,
+                TimeUnit.SECONDS
+            )
+            .build()
+
+        Timber.i("Requesting WorkManager to queue UploadWorker")
+        // the existing policy needs to be always KEEP, otherwise it may be possible that multiple work requests
+        // are started, e.g. REPLACE would cancel work, but if this function is called a lot of times, cancelled
+        // work would still be ongoing, therefore we need to ensure that this is set to KEEP, so that only one request
+        // is performed at a time.
+        workManager.enqueueUniqueWork(tag, ExistingWorkPolicy.KEEP, uploadPhotosWorkRequest)
+        return Success(Unit)
     }
 
     @WorkerThread

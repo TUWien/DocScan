@@ -12,6 +12,7 @@ import at.ac.tuwien.caa.docscan.db.model.boundary.asClockwiseList
 import at.ac.tuwien.caa.docscan.db.model.boundary.asPoint
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
+import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.DocumentPage
 import kotlinx.parcelize.Parcelize
 import java.util.*
@@ -63,7 +64,10 @@ data class Page(
      * An optional (cropping) boundary with 4 points.
      */
     @Embedded(prefix = KEY_SINGLE_PAGE_BOUNDARY_PREFIX)
-    var singlePageBoundary: SinglePageBoundary?
+    var singlePageBoundary: SinglePageBoundary?,
+
+    @Embedded(prefix = KEY_UPLOAD_PREFIX)
+    var transkribusUpload: Upload = Upload()
 ) : Parcelable {
     companion object {
         const val TABLE_NAME_PAGES = "pages"
@@ -72,10 +76,19 @@ data class Page(
         const val KEY_FILE_HASH = "file_hash"
         const val KEY_NUMBER = "number"
         const val KEY_ROTATION = "rotation"
+        const val KEY_UPLOAD_PREFIX = "upload"
         const val KEY_POST_PROCESSING_STATE = "post_processing_state"
         const val KEY_SINGLE_PAGE_BOUNDARY = "single_page_boundary"
         const val KEY_SINGLE_PAGE_BOUNDARY_PREFIX = "spb"
     }
+}
+
+fun Page.isUploaded(): Boolean {
+    return transkribusUpload.state == UploadState.UPLOADED
+}
+
+fun Page.isUploadInProgress(): Boolean {
+    return transkribusUpload.state == UploadState.UPLOAD_IN_PROGRESS
 }
 
 fun Page.getSingleBoundaryPoints(): MutableList<PointF> {

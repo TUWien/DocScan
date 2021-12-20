@@ -25,7 +25,34 @@ fun DocumentWithPages.isProcessing(): Boolean {
     return pages.firstOrNull { page -> page.postProcessingState == PostProcessingState.PROCESSING } != null
 }
 
+/**
+ * @return true if all of the pages have been uploaded.
+ */
 fun DocumentWithPages.isUploaded(): Boolean {
-    //TODO: Implement this, this is basically false and should be represented with a XOR enum in the Document
+    pages.forEach { page ->
+        if (!page.isUploaded()) {
+            return false
+        }
+    }
+    return true
+}
+
+/**
+ * @return true if any of the pages is currently being uplodead.
+ */
+fun DocumentWithPages.isUploadInProgress(): Boolean {
+    pages.forEach { page ->
+        if (page.isUploadInProgress()) {
+            return true
+        }
+    }
     return false
+}
+
+/**
+ * @return true if the entire document and its pages are locked, i.e. no operations on that file
+ * should be allowed.
+ */
+fun DocumentWithPages.isLocked(): Boolean {
+    return isProcessing() || isUploadInProgress()
 }

@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.db.converter
 import androidx.room.TypeConverter
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
+import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import java.util.*
 
 class DatabaseTypeConverter {
@@ -35,5 +36,15 @@ class DatabaseTypeConverter {
     @TypeConverter
     fun fromPostProcessingToString(postProcessingState: PostProcessingState): String {
         return postProcessingState.id
+    }
+
+    @TypeConverter
+    fun fromStringToUploadState(id: String): UploadState {
+        return UploadState.getUploadStateById(id)
+    }
+
+    @TypeConverter
+    fun fromPostProcessingToString(uploadState: UploadState): String {
+        return uploadState.id
     }
 }

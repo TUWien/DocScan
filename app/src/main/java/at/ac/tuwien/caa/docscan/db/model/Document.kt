@@ -29,7 +29,15 @@ data class Document(
      * Represents the active state of a document, only one document can be active.
      */
     @Embedded(prefix = KEY_META_DATA_PREFIX)
-    var metaData: MetaData? = null
+    var metaData: MetaData? = null,
+    /**
+     * Represents the transkribus upload id, which is used to associate uploads of documents with an id.
+     * A soon as the upload is entirely finished, this id correponds to the document id of the Transkribus BE.
+     *
+     * see [Upload] or [TranskribusAPIService] for more information.
+     */
+    @ColumnInfo(name = KEY_TRANSKRIBUS_UPLOAD_ID)
+    var uploadId: Int? = null
 ) : Parcelable {
     companion object {
         const val TABLE_NAME_DOCUMENTS = "documents"
@@ -37,6 +45,7 @@ data class Document(
         const val KEY_TITLE = "title"
         const val KEY_META_DATA_PREFIX = "metadata_"
         const val KEY_IS_ACTIVE = "is_active"
+        const val KEY_TRANSKRIBUS_UPLOAD_ID = "transkribus_upload_id"
     }
 }
 

@@ -54,6 +54,10 @@ fun Throwable?.is403(): Boolean {
     return isHttpCode(HttpURLConnection.HTTP_FORBIDDEN)
 }
 
+fun Throwable?.is404(): Boolean {
+    return isHttpCode(HttpURLConnection.HTTP_NOT_FOUND)
+}
+
 private fun Throwable?.isHttpCode(httpCode: Int): Boolean {
     return when (val doscScanError = (this as? DocScanException)?.docScanError) {
         is DocScanError.TranskribusRestError.HttpError -> {

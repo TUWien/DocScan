@@ -4,6 +4,9 @@ import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
+import at.ac.tuwien.caa.docscan.db.model.Upload
+import at.ac.tuwien.caa.docscan.db.model.state.UPLOAD_STATE_ID_UPLOAD_IN_PROGRESS
+import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 
@@ -11,7 +14,11 @@ import java.util.*
 interface DocumentDao {
     @Transaction
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS}")
-    fun getAllDocumentWithPages(): Flow<List<DocumentWithPages>>
+    fun getAllDocumentWithPagesAsFlow(): Flow<List<DocumentWithPages>>
+
+    @Transaction
+    @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS}")
+    fun getAllDocumentWithPages(): List<DocumentWithPages>
 
     @Transaction
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_ID} =:documentId")

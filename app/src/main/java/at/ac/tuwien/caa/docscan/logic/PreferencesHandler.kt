@@ -87,13 +87,23 @@ class PreferencesHandler(val context: Context) {
                 .apply()
         }
 
-    var collectionId: Int
-        get() =
-            sharedPreferences.getInt(COLLECTION_ID_KEY, DEFAULT_INT_VALUE)
+    var collectionId: Int?
+        get() {
+            val id = sharedPreferences.getInt(COLLECTION_ID_KEY, 0)
+            return if (id == 0) {
+                null
+            } else {
+                id
+            }
+        }
         set(value) {
-            sharedPreferences.edit()
-                .putInt(COLLECTION_ID_KEY, value)
-                .apply()
+            value?.let {
+                sharedPreferences.edit()
+                    .putInt(COLLECTION_ID_KEY, value)
+                    .apply()
+            } ?: let {
+                sharedPreferences.edit().remove(COLLECTION_ID_KEY).apply()
+            }
         }
 
     var hasShownDocumentHint: Boolean

@@ -5,13 +5,12 @@ import android.net.Uri
 import androidx.core.content.FileProvider
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.TFLiteModel
-import com.google.common.hash.Hashing
-import com.google.common.io.Files
 import com.google.gson.GsonBuilder
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.security.MessageDigest
 import java.util.*
 
 /**
@@ -201,7 +200,7 @@ class FileHandler(private val context: Context) {
         }
     }
 
-    fun getImageFileByPage(docId: UUID, fileId: UUID): File? {
+    private fun getImageFileByPage(docId: UUID, fileId: UUID): File? {
         val file =
             getDocumentFileById(docId.toString(), fileId.toString() + "." + FileType.JPEG.extension)
         return if (file.exists()) {
@@ -212,7 +211,8 @@ class FileHandler(private val context: Context) {
         }
     }
 
-    fun getFileByPage(page: Page): File? {
+    fun getFileByPage(page: Page?): File? {
+        if (page == null) return null
         return getImageFileByPage(page.docId, page.id)
     }
 
@@ -242,11 +242,33 @@ class FileHandler(private val context: Context) {
  */
 fun File.getFileHash(): String {
     return try {
-        Files.asByteSource(this).hash(Hashing.crc32()).toString()
+        return calcHash().toHexString()
+//        Files.asByteSource(this).hash(Hashing.crc32()).toString()
     } catch (e: Exception) {
         Timber.e("Computing hash of file: $name")
         ""
     }
+}
+
+private fun File.calcHash(algorithm: String = "MD5", bufferSize: Int = 1024): ByteArray {
+    this.inputStream().use { input ->
+        val buffer = ByteArray(bufferSize)
+        val digest = MessageDigest.getInstance(algorithm)
+
+        read@ while (true) {
+            when (val bytesRead = input.read(buffer)) {
+                -1 -> break@read
+                else -> digest.update(buffer, 0, bytesRead)
+            }
+        }
+
+        return digest.digest()
+    }
+}
+
+private fun ByteArray.toHexString(): String {
+    return this.fold(StringBuilder()) { result, b -> result.append(String.format("%02X", b)) }
+        .toString()
 }
 
 enum class FileType(val extension: String, val mimeType: String) {

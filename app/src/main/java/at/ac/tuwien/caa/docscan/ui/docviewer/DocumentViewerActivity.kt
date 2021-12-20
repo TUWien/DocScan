@@ -334,7 +334,9 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         result.arguments.extractDocWithPages()?.let { doc ->
                             viewModel.applyActionFor(
                                 action = DocumentAction.UPLOAD,
-                                documentWithPages = doc
+                                documentWithPages = doc,
+                                // TODO: Do not force this option!
+                                force = true
                             )
                         }
                     }

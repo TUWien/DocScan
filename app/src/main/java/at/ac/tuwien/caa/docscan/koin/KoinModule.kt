@@ -36,7 +36,6 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
 
 val appModule = module {
     single { androidApplication() as DocScanApp }
@@ -71,7 +70,7 @@ val viewModelModule = module {
 }
 
 val repositoryModule = module {
-    single { DocumentRepository(get(), get(), get(), get(), get()) }
+    single { DocumentRepository(get(), get(), get(), get(), get(), get()) }
     single { UserRepository(get(), get()) }
 }
 
