@@ -1,12 +1,12 @@
 package at.ac.tuwien.caa.docscan.repository
 
-import androidx.work.*
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
-import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
+import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.Upload
-import at.ac.tuwien.caa.docscan.db.model.isUploadInProgress
+import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
+import at.ac.tuwien.caa.docscan.db.model.sanitizedTitle
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.sync.UploadWorker
@@ -15,15 +15,12 @@ import at.ac.tuwien.caa.docscan.sync.transkribus.mapToMultiPartBody
 import at.ac.tuwien.caa.docscan.sync.transkribus.model.collection.CollectionResponse
 import at.ac.tuwien.caa.docscan.sync.transkribus.model.collection.DocResponse
 import at.ac.tuwien.caa.docscan.sync.transkribus.model.uploads.*
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.io.File
 import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.Exception
 
 class UploadRepository(
     private val api: TranskribusAPIService,
@@ -33,39 +30,33 @@ class UploadRepository(
     private val fileHandler: FileHandler
 ) {
 
-    suspend fun initUploadWorker() {
-
-    }
-
-    // TODO: Return error/success only if some of
-    suspend fun uploadPendingDocuments(): Resource<Unit> {
-        val docsForUpload = documentDao.getAllDocumentWithPages().filter { documentWithPages ->
-            documentWithPages.isUploadInProgress()
-        }
-
-        docsForUpload.forEach { docWithPages ->
-            when(val resource = uploadDocument(docWithPages.document.id)){
-                is Failure -> {
-                    return Failure(resource.exception)
-                }
-                is Success -> {
-                    // continue with next upload
-                }
+    /**
+     * Uploads a document with all its pages, call this function only from the [UploadWorker].
+     *
+     * Pre-Conditions:
+     * - The doc has to be entirely locked to prevent any unwanted manipulations.
+     *
+     * Post-Conditions:
+     * - The doc will be only unlocked, if this entire operation is successful or there is an
+     * unrecoverable error.
+     */
+    suspend fun uploadDocument(documentId: UUID): Resource<UploadStatusResponse> {
+        try {
+            return uploadDocumentInternal(documentId)
+        } catch (e: CancellationException) {
+            Timber.i("The upload job has been cancelled - tearing down upload!")
+            withContext(NonCancellable) {
+                tearDownUpload(documentId, true)
             }
+            throw e
         }
-
-        return Success(Unit)
     }
 
-    private suspend fun uploadDocument(documentId: UUID): Resource<UploadStatusResponse> {
-        // 1. lock the document
+    private suspend fun uploadDocumentInternal(documentId: UUID): Resource<UploadStatusResponse> {
+        // 1. Retrieve the current document with its pages.
         val documentWithPages = documentDao.getDocumentWithPages(documentId) ?: kotlin.run {
-            // TODO: Could only occur if the doc has been meanwhile deleted.
-            return Failure(Exception())
+            return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
         }
-
-        val pages = documentWithPages.pages.sortedBy { it.number }
-
         // 2. obtain the collection id, where the document will be added.
         val collectionId = run {
             when (val resource = getCollectionId()) {
@@ -83,63 +74,89 @@ class UploadRepository(
         val uploadStatusResponse =
             when (uploadCreateResource) {
                 is Failure -> {
-                    return Failure(uploadCreateResource.exception)
+                    val docScanError =
+                        (uploadCreateResource.exception as? DocScanException)?.docScanError
+                            ?: return Failure(uploadCreateResource.exception)
+                    return when (docScanError) {
+                        is DocScanError.DBError -> {
+                            if (docScanError.code == DBErrorCode.DOCUMENT_ALREADY_UPLOADED) {
+                                tearDownUpload(documentId, uploadNonRecoverableFailure = true)
+                            }
+                            Failure(uploadCreateResource.exception)
+                        }
+                        else -> {
+                            Failure(uploadCreateResource.exception)
+                        }
+                    }
                 }
                 is Success -> {
                     uploadCreateResource.data
                 }
             }
 
-        var lastUploadStatusResponse: Resource<UploadStatusResponse> = uploadCreateResource
-        uploadStatusResponse.pageList.pages.forEach { pageStatus ->
+        val pagesToUpload = when (val expectationCheckResult =
+            checkUploadExpectations(documentId, uploadStatusResponse)) {
+            is Failure -> {
+                return Failure(expectationCheckResult.exception)
+            }
+            is Success -> {
+                // update the uploadId in the doc
+                documentDao.updateUploadIdForDoc(
+                    documentId = documentWithPages.document.id,
+                    uploadStatusResponse.uploadId
+                )
+                expectationCheckResult.data
+            }
+        }
+        var lastUploadStatusResponse = uploadStatusResponse
 
-            // TODO: Check for mainly not uploaded files
+        // update the upload state for already uploaded pages
+        pagesToUpload.filter { page -> page.uploadStatus.pageUploaded }.forEach {
+            pageDao.updateUploadState(it.page.id, UploadState.UPLOADED)
+        }
 
-            // obtain the current page from the DB to get the corresponding file
-            val page =
-                documentDao.getDocumentWithPages(documentWithPages.document.id)?.pages?.find { page -> page.transkribusUpload.uploadFileName == pageStatus.fileName }
-            val file = fileHandler.getFileByPage(page)
-            if (file == null) {
-                // TODO: Throw an error here
-                return Failure(Exception())
-            } else {
-                val uploadResource: Resource<UploadStatusResponse> =
-                    transkribusResource(apiCall =
-                    {
-                        api.uploadFile(
-                            uploadStatusResponse.uploadId,
-                            mapToMultiPartBody(pageStatus.fileName, file)
-                        )
-                    })
+        for (page in pagesToUpload) {
+            if (page.uploadStatus.pageUploaded) {
+                continue
+            }
+            val uploadResource: Resource<UploadStatusResponse> =
+                transkribusResource(apiCall =
+                {
+                    api.uploadFile(
+                        uploadStatusResponse.uploadId,
+                        mapToMultiPartBody(page.uploadStatus.fileName, page.file)
+                    )
+                })
 
-                when (uploadResource) {
-                    is Failure -> {
-                        // TODO: Stop entirely and return error
-                        return Failure(uploadResource.exception)
-                    }
-                    is Success -> {
-                        lastUploadStatusResponse = uploadResource
-                        // TODO: Update file that has been already uploaded.
-                    }
+            when (uploadResource) {
+                is Failure -> {
+                    return Failure(uploadResource.exception)
+                }
+                is Success -> {
+                    pageDao.updateUploadState(page.page.id, UploadState.UPLOADED)
+                    lastUploadStatusResponse = uploadResource.data
                 }
             }
         }
-
-        return lastUploadStatusResponse
+        return Success(lastUploadStatusResponse)
     }
 
-    // TODO: Handle the case, when the user wants to start a completely new upload (even if some data has been partially uploaded)
-    // TODO: Handle the case, when the server returns a 404 for the uploadId, for which the document has already been uploaded completely, pull the document instead!
+    private data class UploadPageWrapper(
+        val page: Page,
+        val file: File,
+        val uploadStatus: UploadStatusPage
+    )
+
+    /**
+     * Prepares the pages for the upload. Since the upload needs to be registered first
+     */
     private suspend fun prepareForUpload(
         collectionId: Int,
         documentWithPages: DocumentWithPages
     ): Resource<UploadStatusResponse> {
-        // TODO: relatedUploadId in the meta files and the real upload id.
-        var uploadId: Int? = null
-        uploadId = 123
-        uploadId.let {
+        documentWithPages.document.uploadId?.let {
             val resource: Resource<UploadStatusResponse> = transkribusResource(apiCall = {
-                api.getUploadStatus(uploadId)
+                api.getUploadStatus(it)
             })
             when (resource) {
                 is Success -> {
@@ -155,8 +172,7 @@ class UploadRepository(
             })
             when (docResource) {
                 is Success -> {
-                    // TODO: Add an error here, that the doc with the uploadId is already uploaded, the question is what should be done in this case? (E.g. drop the associated uploadId and start from scratch?)
-                    return Failure(Exception())
+                    return DBErrorCode.DOCUMENT_ALREADY_UPLOADED.asFailure()
                 }
                 is Failure -> {
                     // if the failure is a 404, then this is an expected error, since we have ensured
@@ -169,12 +185,15 @@ class UploadRepository(
         }
 
         // prepare pages for upload
-        val docTitle = documentWithPages.document.title.replace(" ", "").lowercase()
+        val docTitle = documentWithPages.document.sanitizedTitle()
         val uploadPages = mutableListOf<UploadPage>()
         for ((index, page) in documentWithPages.pages.sortedBy { it.number }.withIndex()) {
             val pageNr = index + 1
+            // TODO: Check if the checksum should be really added.
             val checkSum = if (page.fileHash.isNotEmpty()) page.fileHash else null
-            val fileName = "${docTitle}_${pageNr}.${FileType.JPEG.extension}"
+            val fileName = "${docTitle}_${pageNr}.${page.fileType.extension}"
+
+            // add to the list
             uploadPages.add(
                 UploadPage(
                     fileName = fileName,
@@ -183,17 +202,18 @@ class UploadRepository(
                 )
             )
 
-            // update the state
+            // update the state and save the filename in the database
             val upload = Upload(state = UploadState.UPLOAD_IN_PROGRESS, uploadFileName = fileName)
             page.transkribusUpload = upload
             pageDao.insertPage(page)
         }
-        // save the values in the DB
+
+        // create the meta data upload object
         val uploadMetaData =
             documentWithPages.document.metaData?.toUploadMetaData(documentWithPages.document.title)
                 ?: UploadMetaData(title = documentWithPages.document.title)
 
-        // create a new upload page
+        // create a new upload page on the transkribus backend
         val resource: Resource<UploadStatusResponse> = transkribusResource(apiCall = {
             api.createUpload(
                 collectionId,
@@ -208,6 +228,10 @@ class UploadRepository(
 
     /**
      * @return a resource with the collection id where the documents should be assigned.
+     * TODO: log the collection operation failures
+     * Every document must belong to a collection, however, from the client's perspective, there is
+     * just a single collection called [TranskribusAPIService.TRANSKRIBUS_UPLOAD_COLLECTION_NAME], so
+     * this logic will try to get the collectionId and only create a new collection if necessary.
      */
     private suspend fun getCollectionId(): Resource<Int> {
         preferencesHandler.collectionId?.let {
@@ -241,5 +265,69 @@ class UploadRepository(
                 Failure(newCollection.exception)
             }
         }
+    }
+
+    /**
+     * Checks upload expectations, every upload has to be created first before files are going to be
+     * uploaded. The BE returns a status of all pages, this needs to correspond with our internal
+     * structure, otherwise, the document's pages have been manipulated.
+     *
+     * The checks are performed on the:
+     * - Unique file name of the page.
+     * - The page number.
+     */
+    private suspend fun checkUploadExpectations(
+        documentId: UUID,
+        statusResponse: UploadStatusResponse
+    ): Resource<List<UploadPageWrapper>> {
+        val docWithPages = documentDao.getDocumentWithPages(documentId)
+            ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        val pagesToUpload = mutableListOf<UploadPageWrapper>()
+        for ((index, page) in docWithPages.pages.sortedBy { it.number }.withIndex()) {
+            val uploadStatusPage = statusResponse.pageList.pages.firstOrNull { uploadStatusPage ->
+                uploadStatusPage.fileName == page.transkribusUpload.uploadFileName &&
+                        uploadStatusPage.pageNr == (index + 1)
+            } ?: kotlin.run {
+                Timber.e("Inconsistencies in the upload expectations!")
+                return DBErrorCode.DOCUMENT_DIFFERENT_UPLOAD_EXPECTATIONS.asFailure()
+            }
+            val file = fileHandler.getFileByPage(page)
+            if (file == null || !file.exists()) {
+                Timber.e("File for page:${page.id} cannot be found!")
+                return DBErrorCode.DOCUMENT_PAGE_FILE_FOR_UPLOAD_MISSING.asFailure()
+            }
+            pagesToUpload.add(UploadPageWrapper(page, file, uploadStatusPage))
+        }
+        return Success(pagesToUpload)
+    }
+
+    /**
+     * Tears down an upload for a document.
+     * @param uploadNonRecoverableFailure if true, then this tears down operation is performed in a way
+     * so that the entire association with the upload job is removed.
+     */
+    private suspend fun tearDownUpload(
+        documentId: UUID,
+        uploadNonRecoverableFailure: Boolean = false
+    ) {
+        val doc = documentDao.getDocumentWithPages(documentId) ?: return
+        pageDao.updateUploadStateForDocument(
+            documentId,
+            if (uploadNonRecoverableFailure) UploadState.NONE else UploadState.UPLOADED
+        )
+        unLockDocAfterLongRunningOperation(doc.document.id)
+
+        // delete the associated upload if something goes terribly wrong
+        if (uploadNonRecoverableFailure) {
+            doc.document.uploadId?.let {
+                val result: Resource<Void> = transkribusResource(apiCall = {
+                    api.deleteUpload(it)
+                })
+            }
+            // clear the uploadId from the doc
+            documentDao.updateUploadIdForDoc(documentId, null)
+        }
+
+        // TODO: Clear page upload object
     }
 }

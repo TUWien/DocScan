@@ -38,6 +38,7 @@ class DocScanApp : Application() {
         }
 
         // TODO: CONSTRAINT - Spawn job, that will re-check the processing/uploading state.
+        // TODO: CONSTRAINT - Eventually, check every day if there isn't some missing stuff.
         // TODO: CONSTRAINT - If e.g. the app was killed during this operation, the document would remain in this state.
         logFirstAppStart()
     }

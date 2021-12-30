@@ -4,9 +4,7 @@ import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
-import at.ac.tuwien.caa.docscan.db.model.Upload
-import at.ac.tuwien.caa.docscan.db.model.state.UPLOAD_STATE_ID_UPLOAD_IN_PROGRESS
-import at.ac.tuwien.caa.docscan.db.model.state.UploadState
+import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 
@@ -60,9 +58,15 @@ interface DocumentDao {
     @Query("UPDATE ${Document.TABLE_NAME_DOCUMENTS} SET ${Document.KEY_IS_ACTIVE}=0")
     fun setAllDocumentsInactive()
 
+    @Query("UPDATE ${Document.TABLE_NAME_DOCUMENTS} SET ${Document.KEY_TRANSKRIBUS_UPLOAD_ID}=:uploadId WHERE ${Document.KEY_ID} =:documentId")
+    fun updateUploadIdForDoc(documentId: UUID, uploadId: Int?)
+
     @Query("UPDATE ${Document.TABLE_NAME_DOCUMENTS} SET ${Document.KEY_IS_ACTIVE}=1 WHERE ${Document.KEY_ID} =:documentId")
     fun setDocumentActive(documentId: UUID)
 
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_TITLE} =:documentTitle")
     fun getDocumentByTitle(documentTitle: String): Document?
+
+    @Query("UPDATE ${Document.TABLE_NAME_DOCUMENTS} SET ${Document.KEY_LOCK_STATE} = :state WHERE ${Document.KEY_ID} = :documentId")
+    fun setDocumentLock(documentId: UUID, state: LockState)
 }

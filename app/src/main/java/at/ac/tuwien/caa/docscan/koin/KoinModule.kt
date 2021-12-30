@@ -70,7 +70,7 @@ val viewModelModule = module {
 }
 
 val repositoryModule = module {
-    single { DocumentRepository(get(), get(), get(), get(), get(), get()) }
+    single { DocumentRepository(get(), get(), get(), get(), get(), get(), get()) }
     single { UserRepository(get(), get()) }
 }
 
@@ -101,7 +101,7 @@ private fun provideOkHttp(
 ): OkHttpClient {
     val okHttpBuilder = OkHttpClient.Builder()
         .retryOnConnectionFailure(true)
-// TODO: Check timeouts for requests
+// TODO: Check timeouts for requests (especially for uploads)
 //            .connectTimeout(10, TimeUnit.SECONDS)
 //            .readTimeout(10, TimeUnit.SECONDS)
     if (BuildConfig.DEBUG) {

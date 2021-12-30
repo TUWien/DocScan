@@ -14,6 +14,7 @@ import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.DocumentPage
+import at.ac.tuwien.caa.docscan.logic.PageFileType
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -55,6 +56,12 @@ data class Page(
      */
     @ColumnInfo(name = KEY_ROTATION)
     var rotation: Rotation,
+
+    /**
+     * Represents the page file type.
+     */
+    @ColumnInfo(name = KEY_FILE_TYPE)
+    val fileType: PageFileType,
     /**
      * Represents the processing state of the page.
      */
@@ -78,9 +85,14 @@ data class Page(
         const val KEY_ROTATION = "rotation"
         const val KEY_UPLOAD_PREFIX = "upload"
         const val KEY_POST_PROCESSING_STATE = "post_processing_state"
+        const val KEY_FILE_TYPE = "file_type"
         const val KEY_SINGLE_PAGE_BOUNDARY = "single_page_boundary"
         const val KEY_SINGLE_PAGE_BOUNDARY_PREFIX = "spb"
     }
+}
+
+fun Page.isLocked(): Boolean {
+    return postProcessingState == PostProcessingState.PROCESSING || transkribusUpload.state == UploadState.UPLOAD_IN_PROGRESS
 }
 
 fun Page.isUploaded(): Boolean {

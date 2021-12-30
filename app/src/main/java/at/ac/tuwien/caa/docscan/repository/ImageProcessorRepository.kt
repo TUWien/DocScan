@@ -16,13 +16,9 @@ import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.setSinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.logic.applyRotation
-import com.google.common.hash.Hashing
-import com.google.common.io.Files.asByteSource
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.File
-import java.nio.file.Files
 
 class ImageProcessorRepository(
     private val pageDao: PageDao,
@@ -30,8 +26,6 @@ class ImageProcessorRepository(
     private val fileHandler: FileHandler,
     private val appDatabase: AppDatabase
 ) {
-    // TODO: use own scope to launch work on images
-    // TODO: Check how to maybe use a global scope to perform this stuff or if a work manager is necessary.
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -125,10 +119,6 @@ class ImageProcessorRepository(
                 }
             }
         }
-    }
-
-    fun uploadDocument(document: Document) {
-        // TODO: spawn upload job, check pre-elminaries before
     }
 
     private fun Page.rotatePageBy90CW() {

@@ -4,12 +4,14 @@ import android.os.Parcelable
 import androidx.annotation.Keep
 import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.model.Document.Companion.TABLE_NAME_DOCUMENTS
+import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
 /**
  * TODO: Consider adding a pipeline status for processing, awaitingUpload, and uploading and also editing.
  * TODO: Save the relatedUploadURL which is retrieved from the URL
+ * TODO: It's probably better to remove the doc from being active, when an upload/export is performed.
  */
 @Parcelize
 @Keep
@@ -25,6 +27,11 @@ data class Document(
      */
     @ColumnInfo(name = KEY_IS_ACTIVE)
     var isActive: Boolean,
+    /**
+     * Represents the lock state of a document.
+     */
+    @ColumnInfo(name = KEY_LOCK_STATE)
+    var lockState: LockState = LockState.NONE,
     /**
      * Represents the active state of a document, only one document can be active.
      */
@@ -45,8 +52,13 @@ data class Document(
         const val KEY_TITLE = "title"
         const val KEY_META_DATA_PREFIX = "metadata_"
         const val KEY_IS_ACTIVE = "is_active"
+        const val KEY_LOCK_STATE = "lock_state"
         const val KEY_TRANSKRIBUS_UPLOAD_ID = "transkribus_upload_id"
     }
+}
+
+fun Document.sanitizedTitle(): String {
+    return title.replace(" ", "").lowercase()
 }
 
 fun Document.edit(title: String, metaData: MetaData?): Document {

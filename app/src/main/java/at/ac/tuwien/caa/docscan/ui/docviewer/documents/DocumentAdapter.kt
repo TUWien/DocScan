@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.DocumentRowLayoutBinding
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
-import at.ac.tuwien.caa.docscan.db.model.isProcessing
+import at.ac.tuwien.caa.docscan.db.model.isLocked
 import at.ac.tuwien.caa.docscan.logic.GlideHelper
 
 class DocumentAdapter(
@@ -76,7 +76,7 @@ class DocumentAdapter(
 
             // TODO: add uploading states too, awaitingUpload=ic_cloud_upload_gray_24dp and isUploaded=ic_cloud_done_gray_24dp
             // TODO: Add the help message                 desc += "\n${itemView.context.getText(R.string.sync_dir_pending_text)}"
-            val imageResource: Int = if (document.isProcessing()) {
+            val imageResource: Int = if (document.isLocked()) {
                 viewBinding.documentProgressBar.visibility = View.VISIBLE
                 desc += "\n${itemView.context.getText(R.string.sync_dir_processing_text)}"
                 R.drawable.ic_do_not_disturb_black_24dp
@@ -103,6 +103,6 @@ class DiffDocumentCallback : DiffUtil.ItemCallback<DocumentWithPages>() {
         newItem: DocumentWithPages
     ): Boolean {
         // TODO: Check if this is sufficient
-        return oldItem.document.title == newItem.document.title && oldItem.pages.size == newItem.pages.size && oldItem.isProcessing() == newItem.isProcessing() && oldItem.document.metaData == newItem.document.metaData
+        return oldItem.document.title == newItem.document.title && oldItem.pages.size == newItem.pages.size && oldItem.isLocked() == newItem.isLocked() && oldItem.document.metaData == newItem.document.metaData
     }
 }

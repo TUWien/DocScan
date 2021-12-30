@@ -8,6 +8,7 @@ import at.ac.tuwien.caa.docscan.db.model.MetaData
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.boundary.asPoint
+import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
@@ -86,7 +87,7 @@ class MigrationRepository(
                                     fileHandler.createDocumentFile(
                                         newDocId,
                                         newPageId,
-                                        FileType.JPEG
+                                        PageFileType.JPEG
                                     )
                                 )
                                 val result = PageDetector.getNormedCropPoints(it.absolutePath)
@@ -115,6 +116,7 @@ class MigrationRepository(
                                         it.getFileHash(),
                                         index,
                                         rotation,
+                                        PageFileType.JPEG,
                                         processingState,
                                         singlePageBoundary
                                     )
@@ -131,6 +133,7 @@ class MigrationRepository(
                                 newDocId,
                                 title,
                                 isActive,
+                                LockState.NONE,
                                 metaData
                             ),
                             newPages

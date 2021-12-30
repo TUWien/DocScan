@@ -8,14 +8,11 @@ import at.ac.tuwien.caa.docscan.camera.ImageExifMetaData
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
-import at.ac.tuwien.caa.docscan.db.exception.DBDocumentDuplicate
-import at.ac.tuwien.caa.docscan.db.exception.DBDocumentLocked
-import at.ac.tuwien.caa.docscan.db.exception.DBDuplicateAction
-import at.ac.tuwien.caa.docscan.db.exception.DocumentLockStatus
 import at.ac.tuwien.caa.docscan.db.model.*
 import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
+import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
@@ -27,7 +24,6 @@ import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 class DocumentRepository(
     private val fileHandler: FileHandler,
@@ -35,7 +31,8 @@ class DocumentRepository(
     private val documentDao: DocumentDao,
     private val db: AppDatabase,
     private val imageProcessorRepository: ImageProcessorRepository,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    private val userRepository: UserRepository
 ) {
 
     fun getPageByIdAsFlow(pageId: UUID) = documentDao.getPageAsFlow(pageId)
@@ -59,32 +56,28 @@ class DocumentRepository(
 
     fun getActiveDocument() = documentDao.getActiveDocument()
 
-    // TODO: Check constraints
     @WorkerThread
     suspend fun deletePages(pages: List<Page>) {
-        withContext(NonCancellable) {
-            documentDao.deletePages(pages)
-            pages.forEach {
+        pages.forEach {
+            performPageOperation(it.docId, it.id, operation = { doc, page ->
+                documentDao.deletePage(page)
                 fileHandler.getFileByPage(it)?.safelyDelete()
-            }
+                return@performPageOperation Success(Unit)
+            })
         }
     }
 
-    // TODO: Check constraints
     @WorkerThread
     suspend fun deletePage(page: Page) {
-        withContext(NonCancellable) {
-            documentDao.deletePage(page)
-            fileHandler.getFileByPage(page)?.safelyDelete()
-        }
+        deletePages(listOf(page))
     }
 
-    // TODO: Check constraints
     @WorkerThread
     suspend fun updatePage(page: Page) {
-        withContext(NonCancellable) {
+        performPageOperation(page.docId, page.id, operation = { _, _ ->
             pageDao.insertPage(page)
-        }
+            return@performPageOperation Success(Unit)
+        })
     }
 
     @WorkerThread
@@ -97,58 +90,36 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun removeDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
-        withContext(NonCancellable) {
-            db.runInTransaction {
-                fileHandler.deleteEntireDocumentFolder(documentWithPages.document.id)
-                pageDao.deletePages(documentWithPages.pages)
-                documentDao.deleteDocument(documentWithPages.document)
-            }
-        }
-        return Success(Unit)
+        return performDocOperation(documentWithPages.document.id, operation = { doc ->
+            fileHandler.deleteEntireDocumentFolder(doc.id)
+            pageDao.deletePages(documentWithPages.pages)
+            documentDao.deleteDocument(documentWithPages.document)
+            Success(Unit)
+        })
     }
 
     @WorkerThread
     suspend fun uploadDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
-        val documentWithPagesFresh =
-            documentDao.getDocumentWithPages(documentId = documentWithPages.document.id)
-                // TODO: wrong error
-                ?: return Failure(
-                    DBDuplicateAction()
-                )
-        if (documentWithPagesFresh.isLocked()) {
-            // TODO: The failure is wrong here, this needs to be determined!
-            return Failure(DBDocumentLocked(DocumentLockStatus.UPLOAD))
-        } else {
-            // TODO: Check some preliminary conditions, like if the user is authenticated etc. before doing this.
-            pageDao.updateUploadStateForDocument(
-                documentWithPagesFresh.document.id,
-                UploadState.UPLOAD_IN_PROGRESS
-            )
+        when(val result = userRepository.checkLogin()) {
+            is Failure -> {
+                return Failure(result.exception)
+            }
+            is Success -> {
+                // ignore - since user is logged in and therefore the upload can be started.
+            }
         }
-        val tag = "transkribus_image_uploader"
-        val uploadPhotosWorkRequest = OneTimeWorkRequest.Builder(UploadWorker::class.java)
-            .addTag(tag)
-            .setConstraints(
-                Constraints.Builder()
-                    .setRequiredNetworkType(NetworkType.CONNECTED)
-                    .build()
-            )
-            // the backoff criteria is set to quite a short time, since a retry is only performed if there is an
-            // internet connection, i.e. if the user should be offline, the work is not retried due to the connected
-            // constraint, but as soon as the user gets online, this will take only 5seconds to upload.
-            .setBackoffCriteria(
-                BackoffPolicy.LINEAR,
-                5,
-                TimeUnit.SECONDS
-            )
-            .build()
 
-        Timber.i("Requesting WorkManager to queue UploadWorker")
-        // the existing policy needs to be always KEEP, otherwise it may be possible that multiple work requests
-        // are started, e.g. REPLACE would cancel work, but if this function is called a lot of times, cancelled
-        // work would still be ongoing, therefore we need to ensure that this is set to KEEP, so that only one request
-        // is performed at a time.
-        workManager.enqueueUniqueWork(tag, ExistingWorkPolicy.KEEP, uploadPhotosWorkRequest)
+        when(val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
+            is Failure -> {
+                // TODO: Add reason why the doc is locked
+                return Failure(result.exception)
+            }
+            is Success -> {
+                // ignore, and perform check
+            }
+        }
+        pageDao.updateUploadStateForDocument(documentWithPages.document.id, UploadState.UPLOAD_IN_PROGRESS)
+        UploadWorker.spawnUploadJob(workManager, documentWithPages.document.id)
         return Success(Unit)
     }
 
@@ -167,8 +138,15 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun exportDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
-        // TODO: Run constraints check
-        return Failure(DBDocumentDuplicate())
+        return when(val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
+            is Failure -> {
+                Failure(result.exception)
+            }
+            is Success -> {
+                // TODO: Spawn export job
+                Success(Unit)
+            }
+        }
     }
 
     @WorkerThread
@@ -178,8 +156,7 @@ class DocumentRepository(
         val doc = Document(
             id = UUID.randomUUID(),
             "Untitled document",
-            true,
-            null
+            true
         )
         documentDao.insertDocument(doc)
         return doc
@@ -198,7 +175,7 @@ class DocumentRepository(
             }
             Success(document)
         } else {
-            Failure(DBDocumentDuplicate())
+            DBErrorCode.DUPLICATE.asFailure()
         }
     }
 
@@ -249,17 +226,20 @@ class DocumentRepository(
         // if fileId is provided, then it means that a file is being replaced.
         val newFileId = fileId ?: UUID.randomUUID()
         val documentId = document.id
-        val file = fileHandler.createDocumentFile(documentId, newFileId, FileType.JPEG)
+        val file = fileHandler.createDocumentFile(documentId, newFileId, PageFileType.JPEG)
 
         var tempFile: File? = null
         // 1. make a safe copy of the current file if it exists to rollback changes in case of something fails.
         if (file.exists()) {
-            tempFile = fileHandler.createCacheFile(newFileId, FileType.JPEG)
+            tempFile = fileHandler.createCacheFile(newFileId, PageFileType.JPEG)
             try {
                 fileHandler.copyFile(file, tempFile)
             } catch (e: Exception) {
                 tempFile.safelyDelete()
-                return Failure(Exception("TODO: Add correct error here!"))
+                if(fileId == null) {
+                    file.safelyDelete()
+                }
+                return Failure(DocScanException(DocScanError.IOError(e)))
             }
         }
 
@@ -273,7 +253,7 @@ class DocumentRepository(
             tempFile?.let {
                 fileHandler.safelyCopyFile(it, file)
             }
-            return Failure(Exception("TODO: Add correct error here!"))
+            return Failure(DocScanException(DocScanError.IOError(e)))
         }
 
         // 3. apply exif meta data to file
@@ -294,6 +274,7 @@ class DocumentRepository(
             file.getFileHash(),
             pageNumber,
             Rotation.getRotationByExif(exifMetaData.exifOrientation),
+            PageFileType.JPEG,
             PostProcessingState.DRAFT,
             SinglePageBoundary.getDefault()
         )

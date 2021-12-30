@@ -124,12 +124,12 @@ class FileHandler(private val context: Context) {
         return list
     }
 
-    fun createCacheFile(fileId: UUID, fileType: FileType = FileType.JPEG): File {
+    fun createCacheFile(fileId: UUID, fileType: PageFileType = PageFileType.JPEG): File {
         val tempFolder = getCacheTempFolder().createFolderIfNecessary()
         return File(tempFolder.absolutePath + File.separator + fileId.toString() + "." + fileType.extension).createFileIfNecessary()
     }
 
-    fun createDocumentFile(documentId: UUID, fileId: UUID, fileType: FileType): File {
+    fun createDocumentFile(documentId: UUID, fileId: UUID, fileType: PageFileType): File {
         return getDocumentFileById(
             documentId.toString(),
             fileId = fileId.toString() + "." + fileType.extension,
@@ -202,7 +202,10 @@ class FileHandler(private val context: Context) {
 
     private fun getImageFileByPage(docId: UUID, fileId: UUID): File? {
         val file =
-            getDocumentFileById(docId.toString(), fileId.toString() + "." + FileType.JPEG.extension)
+            getDocumentFileById(
+                docId.toString(),
+                fileId.toString() + "." + PageFileType.JPEG.extension
+            )
         return if (file.exists()) {
             file
         } else {
@@ -236,7 +239,7 @@ class FileHandler(private val context: Context) {
 }
 
 /**
- * Computes a file hash with crc32, this is important for image files in order to detect
+ * Computes a file hash with MD5, this is important for image files in order to detect
  * changes via the DB.
  * @return the hash string for the file, empty string if the hashing should fail
  */
@@ -271,8 +274,20 @@ private fun ByteArray.toHexString(): String {
         .toString()
 }
 
-enum class FileType(val extension: String, val mimeType: String) {
-    JPEG("jpg", "image/jpg")
+enum class PageFileType(val extension: String, val mimeType: String) {
+    JPEG("jpg", "image/jpg");
+
+    companion object {
+        fun getFileTypeByExtension(extension: String?): PageFileType {
+            extension ?: return JPEG
+            values().forEach { fileType ->
+                if (fileType.extension == extension) {
+                    return JPEG
+                }
+            }
+            return JPEG
+        }
+    }
 }
 
 private fun File.safelyRecursiveDelete() {

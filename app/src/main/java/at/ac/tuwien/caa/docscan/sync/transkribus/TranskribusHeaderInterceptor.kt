@@ -14,7 +14,7 @@ class TranskribusHeaderInterceptor constructor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val requestBuilder = request.newBuilder()
-        // as long as the Accept header is not explicitely set for the request, then the
+        // as long as the Accept header is not explicitly set for the request, then the
         // default one will always be json.
         if (request.header("Accept") == null) {
             // accepts responses only in json format, otherwise the API would return an XML

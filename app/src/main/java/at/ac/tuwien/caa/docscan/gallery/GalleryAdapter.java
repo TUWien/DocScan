@@ -33,7 +33,7 @@ import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 /**
  * Created by fabian on 2/6/2018.
  */
-
+@Deprecated
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder> {
 
     private static final String CLASS_NAME = "GalleryAdapter";

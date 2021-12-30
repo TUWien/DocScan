@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package at.ac.tuwien.caa.docscan.sync.transkribus
 
 import at.ac.tuwien.caa.docscan.sync.transkribus.TranskribusAPIService.Companion.TRANSKRIBUS_UPLOAD_COLLECTION_NAME
@@ -90,6 +92,11 @@ interface TranskribusAPIService {
         @Path(PARAM_URL_COLLECTION_ID) collectionId: Int,
         @Path(PARAM_URL_DOC_ID) docId: Int
     ): Response<DocResponse>
+
+    @DELETE("uploads/{$PARAM_URL_UPLOAD_ID}")
+    suspend fun deleteUpload(
+        @Path(PARAM_URL_DOC_ID) docId: Int
+    ): Response<Void>
 
     @POST("collections/createCollection")
     @Headers("Accept: text/plain;charset=utf-8")

@@ -4,8 +4,8 @@ import androidx.annotation.IntRange
 import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Resource
 import at.ac.tuwien.caa.docscan.logic.Success
-import at.ac.tuwien.caa.docscan.sync.transkribus.DocScanError
-import at.ac.tuwien.caa.docscan.sync.transkribus.DocScanException
+import at.ac.tuwien.caa.docscan.logic.DocScanError
+import at.ac.tuwien.caa.docscan.logic.DocScanException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
@@ -32,7 +32,7 @@ suspend fun <ApiType, ResourceType> transkribusResource(
                     loadFromDisk,
                     apiCall
                 )
-                if(resource is Success) {
+                if (resource is Success) {
                     persistNetworkResponse(resource.data)
                 }
                 transformToResourceType(resource)

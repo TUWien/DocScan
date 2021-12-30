@@ -21,8 +21,8 @@ fun DocumentWithPages.isCropped(): Boolean {
     return pages.firstOrNull { page -> page.postProcessingState != PostProcessingState.DONE } != null
 }
 
-fun DocumentWithPages.isProcessing(): Boolean {
-    return pages.firstOrNull { page -> page.postProcessingState == PostProcessingState.PROCESSING } != null
+fun DocumentWithPages.isLocked(): Boolean {
+    return document.lockState.isLocked() || pages.firstOrNull { page -> page.isLocked() } != null
 }
 
 /**
@@ -47,12 +47,4 @@ fun DocumentWithPages.isUploadInProgress(): Boolean {
         }
     }
     return false
-}
-
-/**
- * @return true if the entire document and its pages are locked, i.e. no operations on that file
- * should be allowed.
- */
-fun DocumentWithPages.isLocked(): Boolean {
-    return isProcessing() || isUploadInProgress()
 }

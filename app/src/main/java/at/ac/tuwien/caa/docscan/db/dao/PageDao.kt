@@ -4,7 +4,6 @@ import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.Upload
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
-import at.ac.tuwien.caa.docscan.db.model.state.UPLOAD_STATE_ID_UPLOAD_IN_PROGRESS
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import java.util.*
 
@@ -22,6 +21,9 @@ interface PageDao {
     @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_ID} = :id")
     suspend fun getPageById(id: UUID): Page?
 
+    @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_ID} = :id")
+    fun getPageByIdNonSuspendable(id: UUID): Page?
+
     @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_DOC_ID} = :docId")
     suspend fun getPagesByDoc(docId: UUID): List<Page>
 
@@ -31,6 +33,9 @@ interface PageDao {
     @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_POST_PROCESSING_STATE}= :state WHERE ${Page.KEY_DOC_ID} = :docId ")
     fun updatePageProcessingStateForDocument(docId: UUID, state: PostProcessingState)
 
-        @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :state WHERE ${Page.KEY_DOC_ID} = :docId ")
+    @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :state WHERE ${Page.KEY_ID} = :pageId ")
+    fun updateUploadState(pageId: UUID, state: UploadState)
+
+    @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :state WHERE ${Page.KEY_DOC_ID} = :docId ")
     fun updateUploadStateForDocument(docId: UUID, state: UploadState)
 }

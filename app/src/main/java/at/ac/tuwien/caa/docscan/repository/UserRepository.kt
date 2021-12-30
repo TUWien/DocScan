@@ -32,4 +32,9 @@ class UserRepository(
             Success(null as Void)
         }
     }
+
+    suspend fun checkLogin(): Resource<LoginResponse> {
+        // TODO: This is just a placeholder which will always fail, need to retrieve the real username and password.
+        return login(username = "username", password = "password")
+    }
 }

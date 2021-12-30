@@ -15,6 +15,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -872,7 +874,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     }
 
-    private Bitmap getBitmap() {
+    @Nullable
+    public Bitmap getBitmap() {
         Bitmap bm = null;
         Drawable d = getDrawable();
         if (d != null && d instanceof BitmapDrawable) bm = ((BitmapDrawable) d).getBitmap();

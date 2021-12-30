@@ -15,7 +15,7 @@ import at.ac.tuwien.caa.docscan.databinding.ActivityPageSlideBinding
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.asDocumentPageExtra
 import at.ac.tuwien.caa.docscan.gallery.PageImageView
-import at.ac.tuwien.caa.docscan.logic.FileType
+import at.ac.tuwien.caa.docscan.logic.PageFileType
 import at.ac.tuwien.caa.docscan.ui.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.crop.CropViewActivity
@@ -163,7 +163,7 @@ class PageSlideActivity : BaseActivity(), PageImageView.SingleClickListener {
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     setDataAndType(uri, contentResolver.getType(uri))
                     putExtra(Intent.EXTRA_STREAM, uri)
-                    type = FileType.JPEG.mimeType
+                    type = PageFileType.JPEG.mimeType
                 }
                 startActivity(
                     Intent.createChooser(
