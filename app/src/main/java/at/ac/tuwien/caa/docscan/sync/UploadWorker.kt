@@ -2,16 +2,14 @@ package at.ac.tuwien.caa.docscan.sync
 
 import android.content.Context
 import androidx.work.*
+import at.ac.tuwien.caa.docscan.extensions.asUUID
 import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.logic.isRecoverable
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.UploadRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.inject
 import timber.log.Timber
 import java.util.*
@@ -40,19 +38,18 @@ class UploadWorker(
      * 5) "Upload ist fehlgeschlagen. User session abgelaufen."
      */
     override suspend fun doWork(): Result {
-        val docId = inputData.keyValueMap[INPUT_PARAM_DOC_ID] as? UUID ?: run {
+        val docId = inputData.getString(INPUT_PARAM_DOC_ID)?.asUUID() ?: run {
             Timber.e("UploadWorker has failed, docId is null!")
             return Result.failure()
         }
         // TODO: Show initial notification
-        withContext(Dispatchers.IO) {
-            documentCollectorJob = launch {
+        return withContext(Dispatchers.IO) {
+            documentCollectorJob = async {
                 documentRepository.getDocumentWithPagesAsFlow(documentId = docId).collectLatest {
                     // TODO: Update progress notification
+                    Timber.d("doc has changed!")
                 }
             }
-        }
-        return withContext(Dispatchers.IO) {
             val resource = uploadRepository.uploadDocument(docId)
             documentCollectorJob?.cancel()
             // TODO: Update notification with final message!
@@ -79,7 +76,7 @@ class UploadWorker(
                 .addTag(UPLOAD_TAG)
                 .setInputData(
                     workDataOf(
-                        INPUT_PARAM_DOC_ID to documentId
+                        INPUT_PARAM_DOC_ID to documentId.toString()
                     )
                 )
                 .setConstraints(

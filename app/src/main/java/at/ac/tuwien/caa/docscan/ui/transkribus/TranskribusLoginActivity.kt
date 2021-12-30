@@ -1,11 +1,13 @@
 package at.ac.tuwien.caa.docscan.ui.transkribus
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityLoginBinding
 import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
+import at.ac.tuwien.caa.docscan.extensions.bindInvisible
+import at.ac.tuwien.caa.docscan.extensions.hideKeyboard
 import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.logic.handleError
@@ -35,6 +37,7 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
         super.initToolbarTitle(R.string.login_title)
         binding.loginButton.setOnClickListener {
             login()
+            hideKeyboard()
         }
         observe()
 
@@ -51,7 +54,7 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
             when (it) {
                 is Failure -> {
                     // http forbidden means that the username/password is wrong.
-                    if(it.exception.is403()) {
+                    if (it.exception.is403()) {
                         binding.passwordEdittext.error =
                             resources.getString(R.string.login_auth_error_text)
                     } else {
@@ -77,7 +80,7 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
         })
         dialogViewModel.observableDialogAction.observe(this, {
             it.getContentIfNotHandled()?.let { result ->
-                when(result.dialogAction) {
+                when (result.dialogAction) {
                     ADialog.DialogAction.LOGIN_SUCCESS -> {
                         // Start the parent activity and remove everything from the back stack:
                         val intent = Intent(applicationContext, mParentClass)
@@ -110,18 +113,15 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
     }
 
     private fun showLoadingLayout(showLoading: Boolean) {
-        val loginFieldsLayout = findViewById<View>(R.id.login_fields_layout)
-        val loginLoadingLayout = findViewById<View>(R.id.login_loading_layout)
-        if (showLoading) {
-            loginFieldsLayout.visibility = View.INVISIBLE
-            loginLoadingLayout.visibility = View.VISIBLE
-        } else {
-            loginFieldsLayout.visibility = View.VISIBLE
-            loginLoadingLayout.visibility = View.INVISIBLE
-        }
+        binding.loginFieldsLayout.bindInvisible(showLoading)
+        binding.loginLoadingLayout.bindInvisible(!showLoading)
     }
 
     companion object {
+        fun newInstance(context: Context): Intent {
+            return Intent(context, TranskribusLoginActivity::class.java)
+        }
+
         const val PARENT_ACTIVITY_NAME = "PARENT_ACTIVITY_NAME"
     }
 }

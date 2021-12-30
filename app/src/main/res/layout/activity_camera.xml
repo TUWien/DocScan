@@ -15,8 +15,8 @@
 
         <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
         <fragment
-            android:name="at.ac.tuwien.caa.docscan.camera.CameraPaintFragment"
             android:id="@+id/camera_paint_fragment"
+            android:name="at.ac.tuwien.caa.docscan.camera.CameraPaintFragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:tag="CameraPaintFragment" />

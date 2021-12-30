@@ -139,6 +139,7 @@ class ADialog : AppCompatDialogFragment() {
             R.string.login_dialog_success_text,
             isCancellable = false
         ),
+        ACTIVITY_NOT_FOUND(R.string.activity_not_found_title, R.string.activity_not_found_text),
         CUSTOM(0, 0)
     }
 

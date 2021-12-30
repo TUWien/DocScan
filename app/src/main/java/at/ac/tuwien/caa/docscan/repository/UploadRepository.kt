@@ -53,6 +53,7 @@ class UploadRepository(
     }
 
     private suspend fun uploadDocumentInternal(documentId: UUID): Resource<UploadStatusResponse> {
+        Timber.d("Starting upload for $documentId")
         // 1. Retrieve the current document with its pages.
         val documentWithPages = documentDao.getDocumentWithPages(documentId) ?: kotlin.run {
             return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
@@ -138,6 +139,9 @@ class UploadRepository(
                 }
             }
         }
+
+        // tear down the upload
+        tearDownUpload(documentId, false)
         return Success(lastUploadStatusResponse)
     }
 
@@ -320,14 +324,14 @@ class UploadRepository(
         // delete the associated upload if something goes terribly wrong
         if (uploadNonRecoverableFailure) {
             doc.document.uploadId?.let {
-                val result: Resource<Void> = transkribusResource(apiCall = {
+                transkribusResource<Void, Void>(apiCall = {
                     api.deleteUpload(it)
                 })
             }
-            // clear the uploadId from the doc
-            documentDao.updateUploadIdForDoc(documentId, null)
         }
-
-        // TODO: Clear page upload object
+        // clear the uploadId from the doc
+        documentDao.updateUploadIdForDoc(documentId, null)
+        // clear the upload file names
+        pageDao.clearDocumentPagesUploadFileNames(documentId)
     }
 }

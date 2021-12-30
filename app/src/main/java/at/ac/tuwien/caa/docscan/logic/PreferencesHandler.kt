@@ -58,6 +58,7 @@ class PreferencesHandler(val context: Context) {
         private const val CONNECTION_KEY = "connection"
 
         private const val KEY_TRANSKRIBUS_SESSION_COOKIE = "TRANSKRIBUS_SESSION_COOKIE"
+        private const val KEY_TRANSKRIBUS_PASSWORD = "TRANSKRIBUS_PASSWORD"
     }
 
     var shouldPerformDBMigration: Boolean
@@ -205,6 +206,7 @@ class PreferencesHandler(val context: Context) {
                 .apply()
         }
 
+    // TODO: Use encrypted preferences
     var transkribusCookie: String?
         get() {
             return defaultSharedPreferences.getString(KEY_TRANSKRIBUS_SESSION_COOKIE, null)
@@ -215,9 +217,16 @@ class PreferencesHandler(val context: Context) {
                 .apply()
         }
 
-    fun clearTranskribusUserData() {
-        transkribusCookie = null
-    }
+    // TODO: Use encrypted preferences
+    var transkribusPassword: String?
+        get() {
+            return defaultSharedPreferences.getString(KEY_TRANSKRIBUS_PASSWORD, null)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                .putString(KEY_TRANSKRIBUS_PASSWORD, value)
+                .apply()
+        }
 
     init {
         // check for migrations
@@ -227,6 +236,18 @@ class PreferencesHandler(val context: Context) {
             // TODO: migrate session data from transkribus
             // TODO: Clear dropbox data.
 //            firstStartDate = defaultSharedPreferences.getString(KEY_FIRST_START_DATE, null);
+
+            // TODO: migrate previous transkribus login
+
+            // used previously to store the dropbox token
+            defaultSharedPreferences.edit().remove("dropboxToken").apply()
+            // used previously to distinguish between dropbox/transkribus login
+            defaultSharedPreferences.edit().remove("connection").apply()
+
+//            private static final String FIRST_NAME_KEY = "firstName";
+//            private static final String LAST_NAME_KEY = "lastName";
+//            private static final String NAME_KEY = "userName";
+//            private static final String TRANSKRIBUS_PASSWORD_KEY = "userPassword";
         }
 
         installedVersionCode = BuildConfig.VERSION_CODE

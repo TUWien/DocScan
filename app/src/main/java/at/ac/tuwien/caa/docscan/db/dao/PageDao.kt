@@ -38,4 +38,7 @@ interface PageDao {
 
     @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :state WHERE ${Page.KEY_DOC_ID} = :docId ")
     fun updateUploadStateForDocument(docId: UUID, state: UploadState)
+
+    @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_FILE_NAME} = null WHERE ${Page.KEY_DOC_ID} = :docId ")
+    suspend fun clearDocumentPagesUploadFileNames(docId: UUID)
 }

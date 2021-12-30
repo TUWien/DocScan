@@ -520,7 +520,7 @@
     <string name="action_setting_qr_mode">Create Document from QR code</string>
 
     <string name="viewer_document_uploaded_title">Already uploaded</string>
-    <string name="viewer_document_uploaded_text">The document is already uploaded. You have to add a new image to start a new upload process.</string>
+    <string name="viewer_document_uploaded_text">The document is already uploaded. Do you want to upload it again?</string>
 
 
     <string name="viewer_crop_confirm_title">Crop</string>

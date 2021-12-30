@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.exifinterface.media.ExifInterface;
 
@@ -21,7 +22,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
-import org.jetbrains.annotations.NotNull;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 
@@ -774,7 +774,7 @@ public class Helper {
      * @param pageNum
      * @return
      */
-    @NotNull
+    @NonNull
     public static String getFileNamePrefix(String timeStamp, String docName, int pageNum) {
         String leadingZeros = "00000";
         String page = Integer.toString(pageNum);
@@ -913,6 +913,7 @@ public class Helper {
      *
      * @param context
      */
+    @Deprecated
     public static void showActivityNotFoundAlert(Context context) {
 
         final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);

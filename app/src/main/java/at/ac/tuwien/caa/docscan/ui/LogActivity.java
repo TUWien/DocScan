@@ -1,9 +1,12 @@
 package at.ac.tuwien.caa.docscan.ui;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
+
+import androidx.annotation.NonNull;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
@@ -22,18 +25,16 @@ public class LogActivity extends BaseNavigationActivity {
 
         Button sendButton = findViewById(R.id.share_log_button);
         final Activity activity = this;
-        sendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DataLog.getInstance().shareLog(activity);
-            }
-        });
-
+        sendButton.setOnClickListener(v -> DataLog.getInstance().shareLog(activity));
     }
 
+    @NonNull
     @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.SHARE_LOG;
+    protected NavigationDrawer.NavigationItem getSelfNavDrawerItem() {
+        return NavigationDrawer.NavigationItem.SHARE_LOG;
     }
 
+    public static Intent newInstance(Context context) {
+        return new Intent(context, LogActivity.class);
+    }
 }

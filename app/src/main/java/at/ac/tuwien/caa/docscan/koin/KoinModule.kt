@@ -9,10 +9,12 @@ import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.ImageProcessorRepository
+import at.ac.tuwien.caa.docscan.repository.UploadRepository
 import at.ac.tuwien.caa.docscan.repository.UserRepository
 import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
 import at.ac.tuwien.caa.docscan.sync.transkribus.TranskribusAPIService
 import at.ac.tuwien.caa.docscan.sync.transkribus.TranskribusHeaderInterceptor
+import at.ac.tuwien.caa.docscan.ui.base.UserViewModel
 import at.ac.tuwien.caa.docscan.ui.camera.CameraViewModel
 import at.ac.tuwien.caa.docscan.ui.crop.CropViewModel
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
@@ -27,6 +29,7 @@ import at.ac.tuwien.caa.docscan.ui.gallery.newPackage.PageSlideViewModel
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationViewModel
 import at.ac.tuwien.caa.docscan.ui.start.StartActivityViewModel
 import at.ac.tuwien.caa.docscan.ui.transkribus.LoginViewModel
+import at.ac.tuwien.caa.docscan.ui.transkribus.logout.LogoutViewModel
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
@@ -50,6 +53,7 @@ val appModule = module {
 val daoModule = module {
     single { (get() as AppDatabase).documentDao() }
     single { (get() as AppDatabase).pageDao() }
+    single { (get() as AppDatabase).userDao() }
 }
 
 val viewModelModule = module {
@@ -66,12 +70,15 @@ val viewModelModule = module {
     viewModel { ImagesViewModel(get()) }
     viewModel { DialogViewModel() }
     viewModel { ModalActionSheetViewModel() }
-    viewModel { LoginViewModel(get(), get(), get()) }
+    viewModel { LoginViewModel(get()) }
+    viewModel { UserViewModel(get()) }
+    viewModel { LogoutViewModel(get()) }
 }
 
 val repositoryModule = module {
     single { DocumentRepository(get(), get(), get(), get(), get(), get(), get()) }
-    single { UserRepository(get(), get()) }
+    single { UserRepository(get(), get(), get()) }
+    single { UploadRepository(get(), get(), get(), get(), get()) }
 }
 
 val networkModule = module {
@@ -106,7 +113,7 @@ private fun provideOkHttp(
 //            .readTimeout(10, TimeUnit.SECONDS)
     if (BuildConfig.DEBUG) {
         okHttpBuilder.addNetworkInterceptor(HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = HttpLoggingInterceptor.Level.BODY
         })
     }
     okHttpBuilder.addInterceptor(transkribusHeaderInterceptor)
@@ -126,4 +133,3 @@ private fun <T> provideService(
         .build()
         .create(type)
 }
-

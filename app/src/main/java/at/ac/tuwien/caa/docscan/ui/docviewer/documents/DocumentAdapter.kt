@@ -2,7 +2,6 @@ package at.ac.tuwien.caa.docscan.ui.docviewer.documents
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -10,8 +9,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.DocumentRowLayoutBinding
-import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
-import at.ac.tuwien.caa.docscan.db.model.isLocked
+import at.ac.tuwien.caa.docscan.db.model.*
+import at.ac.tuwien.caa.docscan.extensions.bindInvisible
 import at.ac.tuwien.caa.docscan.logic.GlideHelper
 
 class DocumentAdapter(
@@ -34,7 +33,8 @@ class DocumentAdapter(
             viewBinding.documentTitleText.text = document.document.title
             itemView.setOnClickListener { clickListener(document) }
 
-            if (document.pages.isNotEmpty()) {
+            val isEmpty = document.pages.isEmpty()
+            if (!isEmpty) {
                 val page = document.pages[0]
                 GlideHelper.loadPageIntoImageView(
                     page,
@@ -42,51 +42,57 @@ class DocumentAdapter(
                     GlideHelper.GlideStyles.DOCUMENT_PREVIEW
                 )
                 viewBinding.documentThumbnailImageview.transitionName = page.id.toString()
-            } else {
-                viewBinding.documentThumbnailImageview.setImageResource(R.drawable.ic_do_not_disturb_black_24dp)
-                viewBinding.documentThumbnailImageview.setBackgroundColor(
-                    itemView.resources.getColor(
-                        R.color.second_light_gray
-                    )
-                )
             }
 
-//            1 image or  many images?
             val docDesc =
                 if (document.pages.size == 1) itemView.context.getText(R.string.sync_doc_image)
                 else itemView.context.getText(R.string.sync_doc_images)
 
             var desc = "${document.pages.size} $docDesc"
 
-//            Display the active document in a special color - and print it on the screen:
             if (document.document.isActive) {
                 viewBinding.documentTitleText.setTextColor(itemView.resources.getColor(R.color.text_selection))
-                desc =
-                    "$desc ${itemView.context.getText(R.string.sync_doc_active_text)}"
-
                 viewBinding.documentDescriptionTextview.setTextColor(itemView.resources.getColor(R.color.text_selection))
+                desc = "$desc ${itemView.context.getText(R.string.sync_doc_active_text)}"
             }
 
             viewBinding.documentUploadStateIcon.setColorFilter(
                 ContextCompat.getColor(
                     viewBinding.root.context,
-                    if (document.document.isActive) R.color.document_icon_active else R.color.document_icon_inactive
+                    if (isEmpty) R.color.second_light_gray else if (document.document.isActive) R.color.document_icon_active else R.color.document_icon_inactive
                 ), android.graphics.PorterDuff.Mode.SRC_IN
             )
 
-            // TODO: add uploading states too, awaitingUpload=ic_cloud_upload_gray_24dp and isUploaded=ic_cloud_done_gray_24dp
-            // TODO: Add the help message                 desc += "\n${itemView.context.getText(R.string.sync_dir_pending_text)}"
-            val imageResource: Int = if (document.isLocked()) {
-                viewBinding.documentProgressBar.visibility = View.VISIBLE
-                desc += "\n${itemView.context.getText(R.string.sync_dir_processing_text)}"
-                R.drawable.ic_do_not_disturb_black_24dp
-            } else {
-                viewBinding.documentProgressBar.visibility = View.INVISIBLE
-                R.drawable.ic_cloud_queue_gray_24dp
+            val imageResource = when {
+                isEmpty -> {
+                    R.drawable.ic_do_not_disturb_black_24dp
+                }
+                document.isUploadInProgress() -> {
+                    R.drawable.ic_cloud_upload_blue_24dp
+                }
+                document.isUploaded() -> {
+                    R.drawable.ic_cloud_done_blue_24dp
+                }
+                else -> {
+                    R.drawable.ic_cloud_queue_blue_24dp
+                }
+            }
+            val isProgressBarShown = document.isUploadInProgress() || document.isProcessing()
+            viewBinding.documentProgressBar.bindInvisible(isProgressBarShown)
+            desc += when {
+                document.isUploadInProgress() -> {
+                    "\n${itemView.context.getText(R.string.sync_dir_pending_text)}"
+                }
+                document.isProcessing() -> {
+                    "\n${itemView.context.getText(R.string.sync_dir_processing_text)}"
+                }
+                else -> {
+                    ""
+                }
             }
 
             viewBinding.documentUploadStateIcon.setImageResource(imageResource)
-            viewBinding.documentDescriptionTextview.text = "$desc"
+            viewBinding.documentDescriptionTextview.text = desc
             viewBinding.documentMoreButton.setOnClickListener { optionsListener(document) }
         }
     }
@@ -103,6 +109,10 @@ class DiffDocumentCallback : DiffUtil.ItemCallback<DocumentWithPages>() {
         newItem: DocumentWithPages
     ): Boolean {
         // TODO: Check if this is sufficient
-        return oldItem.document.title == newItem.document.title && oldItem.pages.size == newItem.pages.size && oldItem.isLocked() == newItem.isLocked() && oldItem.document.metaData == newItem.document.metaData
+        return oldItem.document.title == newItem.document.title &&
+                oldItem.pages.size == newItem.pages.size &&
+                oldItem.isProcessing() == newItem.isProcessing() &&
+                oldItem.isUploadInProgress() == newItem.isUploadInProgress() &&
+                oldItem.document.metaData == newItem.document.metaData
     }
 }

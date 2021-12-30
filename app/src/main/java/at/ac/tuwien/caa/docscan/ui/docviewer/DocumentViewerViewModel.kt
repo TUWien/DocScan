@@ -6,12 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
+import at.ac.tuwien.caa.docscan.db.model.isUploaded
 import at.ac.tuwien.caa.docscan.logic.Event
-import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Resource
 import at.ac.tuwien.caa.docscan.logic.asFailure
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
-import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
@@ -27,7 +26,6 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
 
     val observableNumOfSelectedElements = MutableLiveData<Int>()
     private val observableDocumentAtImages = MutableLiveData<DocumentWithPages?>()
-
 
     val observableResourceAction = MutableLiveData<Event<Pair<DocumentAction, Resource<Unit>>>>()
     val observableResourceConfirmation =
@@ -90,26 +88,40 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
         }
     }
 
-    fun uploadSelectedDocument() {
+    fun uploadSelectedDocument(forceAction: Boolean = false) {
         // TODO: Perform similar checks as in startImagingWith!
         val docWithPages = observableDocumentAtImages.value ?: kotlin.run {
-            observableResourceAction.postValue(Event(Pair(DocumentAction.UPLOAD, DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure())))
+            observableResourceAction.postValue(
+                Event(
+                    Pair(
+                        DocumentAction.UPLOAD,
+                        DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+                    )
+                )
+            )
             return
         }
-        applyActionFor(action = DocumentAction.UPLOAD, documentWithPages = docWithPages)
+        applyActionFor(
+            action = DocumentAction.UPLOAD,
+            forceAction = forceAction,
+            documentWithPages = docWithPages
+        )
     }
 
     fun applyActionFor(
-        force: Boolean = false,
+        isConfirmed: Boolean = false,
         action: DocumentAction,
-        documentWithPages: DocumentWithPages
+        documentWithPages: DocumentWithPages,
+        forceAction: Boolean = false
     ) {
         viewModelScope.launch(Dispatchers.IO) {
 
-            // ask for confirmation first
-            if (!force && action.needsConfirmation) {
-                observableResourceConfirmation.postValue(Event(Pair(action, documentWithPages)))
-                return@launch
+            if (!skipConfirmation(action, documentWithPages)) {
+                // ask for confirmation first, if forceAction, then confirmation is not necessary anymore.
+                if (!forceAction && !isConfirmed && action.needsConfirmation) {
+                    observableResourceConfirmation.postValue(Event(Pair(action, documentWithPages)))
+                    return@launch
+                }
             }
 
             val resource = when (action) {
@@ -123,11 +135,27 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
                     repository.processDocument(documentWithPages)
                 }
                 DocumentAction.UPLOAD -> {
-                    repository.uploadDocument(documentWithPages)
+                    repository.uploadDocument(documentWithPages, forceUpload = forceAction)
                 }
             }
             observableResourceAction.postValue(Event(Pair(action, resource)))
         }
+    }
+}
+
+/**
+ * Evaluates if the confirmation can be skipped.
+ */
+private fun skipConfirmation(
+    action: DocumentAction,
+    documentWithPages: DocumentWithPages,
+): Boolean {
+    return when (action) {
+        DocumentAction.UPLOAD -> {
+            // if the doc is already uploaded, we do not need to ask for further confirmation
+            documentWithPages.isUploaded()
+        }
+        else -> false
     }
 }
 

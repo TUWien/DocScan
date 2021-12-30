@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic
 
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.ui.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
@@ -31,13 +32,22 @@ fun Throwable.handleError(activity: BaseActivity) {
                     activity.showDialog(dialogModel)
                 }
                 is DocScanError.DBError -> {
-                    // TODO: Adapt error handling
-                    val dialogModel = DialogModel(
-                        dialogAction = ADialog.DialogAction.CUSTOM,
-                        customTitle = "DBError",
-                        customMessage = "Error code occurred: ${error.code.name}"
-                    )
-                    activity.showDialog(dialogModel)
+                    if(error.code == DBErrorCode.DOCUMENT_ALREADY_UPLOADED) {
+                        val dialogModel = DialogModel(
+                            dialogAction = ADialog.DialogAction.CUSTOM,
+                            customTitle = "DBError",
+                            customMessage = "Error code occurred: ${error.code.name}"
+                        )
+                        activity.showDialog(ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED)
+                    } else {
+                        // TODO: Adapt error handling
+                        val dialogModel = DialogModel(
+                            dialogAction = ADialog.DialogAction.CUSTOM,
+                            customTitle = "DBError",
+                            customMessage = "Error code occurred: ${error.code.name}"
+                        )
+                        activity.showDialog(dialogModel)
+                    }
                 }
                 is DocScanError.IOError -> {
                     // TODO: Adapt error handling

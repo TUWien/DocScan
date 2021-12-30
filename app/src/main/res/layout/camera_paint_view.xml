@@ -176,7 +176,7 @@
 
         <include
             layout="@layout/toolbar"
-            android:id="@+id/toolbar" />
+            android:id="@+id/main_toolbar" />
 
 
     </FrameLayout>

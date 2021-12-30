@@ -47,8 +47,6 @@ import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -65,6 +63,8 @@ import static android.hardware.Camera.Parameters.FLASH_MODE_TORCH;
 import static android.hardware.Camera.Parameters.FOCUS_MODE_AUTO;
 import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
 import static com.google.zxing.BarcodeFormat.QR_CODE;
+
+import androidx.annotation.NonNull;
 
 
 /**
@@ -728,7 +728,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     }
 
-    @NotNull
+    @NonNull
     private Camera.Parameters initParameters() {
 
         //        Load the camera parameters:
@@ -752,7 +752,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             params.setFlashMode(mFlashMode);
     }
 
-    @NotNull
+    @NonNull
     private Camera.Size initPictureSize(Camera.Parameters params) {
         Camera.Size pictureSize = getLargestPictureSize();
         params.setPictureSize(pictureSize.width, pictureSize.height);

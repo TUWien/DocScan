@@ -1,8 +1,10 @@
 package at.ac.tuwien.caa.docscan.ui.settings;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.preference.PreferenceFragmentCompat;
 
 import at.ac.tuwien.caa.docscan.R;
@@ -13,6 +15,10 @@ import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
  * Created by fabian on 26.01.2018.
  */
 public class PreferenceActivity extends BaseNavigationActivity {
+
+    public static Intent newInstance(Context context) {
+        return new Intent(context, PreferenceActivity.class);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +49,9 @@ public class PreferenceActivity extends BaseNavigationActivity {
         }
     }
 
+    @NonNull
     @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.SETTINGS;
+    protected NavigationDrawer.NavigationItem getSelfNavDrawerItem() {
+        return NavigationDrawer.NavigationItem.SETTINGS;
     }
 }

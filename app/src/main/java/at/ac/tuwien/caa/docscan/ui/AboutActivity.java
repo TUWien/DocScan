@@ -72,7 +72,11 @@ public class AboutActivity extends BaseNavigationActivity {
     }
 
     @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.ABOUT;
+    protected NavigationDrawer.NavigationItem getSelfNavDrawerItem() {
+        return NavigationDrawer.NavigationItem.ABOUT;
+    }
+
+    public static Intent newInstance(Context context) {
+        return new Intent(context, AboutActivity.class);
     }
 }

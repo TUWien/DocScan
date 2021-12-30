@@ -103,6 +103,10 @@ fun Page.isUploadInProgress(): Boolean {
     return transkribusUpload.state == UploadState.UPLOAD_IN_PROGRESS
 }
 
+fun Page.isProcessing(): Boolean {
+    return postProcessingState == PostProcessingState.PROCESSING
+}
+
 fun Page.getSingleBoundaryPoints(): MutableList<PointF> {
     return (singlePageBoundary?.asClockwiseList() ?: SinglePageBoundary.getDefault()
         .asClockwiseList()).map { point ->

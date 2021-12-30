@@ -41,8 +41,6 @@ import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -330,8 +328,7 @@ public class PdfCreator {
                     PdfProcessTask task = (PdfProcessTask) cropRunnable.mCropTask;
                     task.setPdfName(documentFile.getName());
                 }
-            }
-            else {
+            } else {
                 File outputFile = getPdfFile(documentName);
                 if (outputFile != null) {
                     stream = new FileOutputStream(outputFile);
@@ -441,7 +438,7 @@ public class PdfCreator {
 
     }
 
-    @NotNull
+    @NonNull
     private static File getPdfFile(String documentName) {
         String pdfName = documentName + ".pdf";
         return new File(Helper.getPDFStorageDir("DocScan"), pdfName);
@@ -464,7 +461,6 @@ public class PdfCreator {
         return null;
 
     }
-
 
 
     private static boolean isLandscape(BitmapSize size) {

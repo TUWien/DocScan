@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.logic
 
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.sync.transkribus.model.uploads.UploadStatusResponse
+import java.net.HttpURLConnection
 
 sealed class Resource<T>
 data class Success<T>(val data: T) : Resource<T>()
@@ -9,6 +10,17 @@ data class Failure<T>(val exception: Throwable) : Resource<T>()
 
 fun <T> DBErrorCode.asFailure(): Failure<T> {
     return Failure(DocScanException(DocScanError.DBError(this)))
+}
+
+fun <T> asUnauthorizedFailure(): Failure<T> {
+    return Failure(
+        DocScanException(
+            DocScanError.TranskribusRestError.HttpError(
+                HttpURLConnection.HTTP_UNAUTHORIZED,
+                null
+            )
+        )
+    )
 }
 
 /**
@@ -20,7 +32,7 @@ fun Resource<UploadStatusResponse>.isRecoverable(): Boolean {
         is Failure -> {
             when (exception) {
                 is DocScanException -> {
-                    return when(exception.docScanError) {
+                    return when (exception.docScanError) {
                         is DocScanError.DBError -> {
                             false
                         }

@@ -30,6 +30,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
@@ -53,8 +54,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
@@ -473,7 +472,7 @@ public class PageSlideActivity extends AppCompatActivity implements PageImageVie
 
     }
 
-    @NotNull
+    @NonNull
     private Intent getGalleryIntent() {
         final Intent intent = new Intent(mContext, DocumentViewerActivity.class);
 //            This is used to prevent cycling between the GalleryActivity and the PageSlideActivity.

@@ -82,6 +82,8 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
         }
     }
 
+    override val selfNavDrawerItem = NavigationDrawer.NavigationItem.DOCUMENTS
+
     private lateinit var binding: ActivityDocumentViewerBinding
     private val viewModel: DocumentViewerViewModel by viewModel()
     private val dialogViewModel: DialogViewModel by viewModel()
@@ -114,7 +116,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         binding = ActivityDocumentViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.mainToolbar)
 
         binding.viewerAddFab.setOnClickListener(this)
         binding.viewerAddPdfFab.setOnClickListener(this)
@@ -290,6 +292,12 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                             viewModel.applyActionFor(true, DocumentAction.UPLOAD, doc)
                         }
                     }
+                    ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED -> {
+                        if(result.isPositive()) {
+                            // TODO: This call is not good, because we do not know which document was tried.
+                            viewModel.uploadSelectedDocument(forceAction = true)
+                        }
+                    }
                     else -> {
                         // ignore
                     }
@@ -311,6 +319,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         result.arguments.extractDocWithPages()?.let { doc ->
                             viewModel.applyActionFor(
                                 action = DocumentAction.EXPORT,
+                                forceAction = false,
                                 documentWithPages = doc
                             )
                         }
@@ -355,10 +364,9 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                     R.id.action_document_upload_item -> {
                         result.arguments.extractDocWithPages()?.let { doc ->
                             viewModel.applyActionFor(
+                                isConfirmed = false,
                                 action = DocumentAction.UPLOAD,
-                                documentWithPages = doc,
-                                // TODO: Do not force this option!
-                                force = true
+                                documentWithPages = doc
                             )
                         }
                     }
@@ -392,10 +400,6 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
             }
         }
         return super.onOptionsItemSelected(item)
-    }
-
-    override fun getSelfNavDrawerItem(): NavigationDrawer.NavigationItemEnum {
-        return NavigationDrawer.NavigationItemEnum.DOCUMENTS
     }
 
     private fun handleFABVisibilityForScreen(screen: DocumentViewerScreen, force: Boolean? = null) {

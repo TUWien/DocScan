@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="at.ac.tuwien.caa.docscan">
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -48,15 +49,6 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!--TODO: Temporarily disabled until migration to androidx workmanager is performed-->
-        <!--        <service-->
-        <!--            android:name=".sync.UploadService"-->
-        <!--            android:exported="false">-->
-        <!--            <intent-filter>-->
-        <!--                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />-->
-        <!--            </intent-filter>-->
-        <!--        </service>-->
-
         <activity
             android:name=".ui.start.StartActivity"
             android:exported="true"
@@ -99,11 +91,14 @@
             android:exported="false"
             android:parentActivityName=".ui.camera.CameraActivity" />
 
+<!-- The orientation is set to portrait, since the CameraActivity would crash at on rotation, see ActionSheet.kt -->
         <activity
             android:name=".ui.camera.CameraActivity"
+            android:launchMode="singleTop"
             android:configChanges="orientation|screenSize"
             android:exported="true"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:name=".ui.crop.CropViewActivity"
@@ -147,7 +142,7 @@
             android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
-            android:name=".ui.LogoutActivity"
+            android:name=".ui.transkribus.logout.LogoutActivity"
             android:exported="false"
             android:parentActivityName=".ui.camera.CameraActivity" />
 

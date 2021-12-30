@@ -46,7 +46,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.PopupMenu;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -63,7 +62,6 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.zxing.Result;
 
-import org.jetbrains.annotations.NotNull;
 import org.koin.java.KoinJavaComponent;
 import org.opencv.android.OpenCVLoader;
 
@@ -255,8 +253,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        // TODO: Deprecated flags
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         observe();
         initActivity();
     }
@@ -547,15 +545,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         mCounterView = findViewById(R.id.counter_view);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-//        toolbar.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                showSeriesPopup(null);
-//            }
-//        });
-
-        setSupportActionBar(toolbar);
         setupToolbar();
         setupNavigationDrawer();
         setupDebugView();
@@ -699,7 +688,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    @NotNull
+    @NonNull
     private ArrayList<SheetAction> getRotateTextDirSheetActions() {
         ArrayList<SheetAction> actions = new ArrayList<>();
         actions.add(new SheetAction(
@@ -783,7 +772,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         t.getTabAt(mLastTabPosition).select();
     }
 
-    @NotNull
+    @NonNull
     private ArrayList<SheetAction> getSettingsSheetActions() {
 
         ArrayList<SheetAction> actions = new ArrayList<>();
@@ -835,7 +824,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         return actions;
     }
 
-    @NotNull
+    @NonNull
     private ArrayList<SheetAction> getFABSheetActions() {
         ArrayList<SheetAction> actions = new ArrayList<>();
         actions.add(new SheetAction(
@@ -1545,8 +1534,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         photoButton.setImageResource(drawable);
 
-        if (mIsSeriesMode)
+        if (mIsSeriesMode) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
 
 //        // Show the SeriesGeneralActivity just if the user started the series mode and the hide
 //        // dialog setting is not true:
@@ -3136,7 +3128,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     @Override
-    protected NavigationDrawer.NavigationItemEnum getSelfNavDrawerItem() {
-        return NavigationDrawer.NavigationItemEnum.CAMERA;
+    protected NavigationDrawer.NavigationItem getSelfNavDrawerItem() {
+        return NavigationDrawer.NavigationItem.CAMERA;
     }
 }

@@ -130,6 +130,7 @@ class ImageProcessorRepository(
         fileHandler.copyFile(file, cache)
         cache.let {
             applyRotation(it, newRotation)
+            // TODO: Any time the hash changes, then the uploaded state should change too.
             this.fileHash = it.getFileHash()
         }
         fileHandler.copyFile(cache, file)

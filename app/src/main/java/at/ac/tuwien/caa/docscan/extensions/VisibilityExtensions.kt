@@ -29,5 +29,5 @@ fun View.bindHidden(any: Any?) {
 
 @BindingAdapter("invisible")
 fun View.bindInvisible(any: Any?) {
-    visibility = if (isVisible(any)) View.INVISIBLE else View.VISIBLE
+    visibility = if (isVisible(any)) View.VISIBLE else View.INVISIBLE
 }

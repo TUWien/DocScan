@@ -1,6 +1,8 @@
 package at.ac.tuwien.caa.docscan.ui
 
+import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
 import at.ac.tuwien.caa.docscan.extensions.snackbar
@@ -15,6 +17,17 @@ import com.google.android.material.snackbar.Snackbar
 open class BaseActivity : AppCompatActivity() {
 
     private var snackbar: Snackbar? = null
+
+    protected var keepScreenOn: Boolean = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (keepScreenOn) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
 
     fun showDialog(dialogAction: ADialog.DialogAction) {
         dialogAction.show(supportFragmentManager)

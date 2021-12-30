@@ -99,8 +99,22 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    suspend fun uploadDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
-        when(val result = userRepository.checkLogin()) {
+    suspend fun uploadDocument(
+        documentWithPages: DocumentWithPages,
+        forceUpload: Boolean = false
+    ): Resource<Unit> {
+        if (documentDao.getDocumentWithPages(documentWithPages.document.id)?.isUploaded() == true) {
+            // if forced, then reset upload state to NONE
+            if (forceUpload) {
+                pageDao.updateUploadStateForDocument(
+                    documentWithPages.document.id,
+                    UploadState.NONE
+                )
+            } else {
+                return DBErrorCode.DOCUMENT_ALREADY_UPLOADED.asFailure()
+            }
+        }
+        when (val result = userRepository.checkLogin()) {
             is Failure -> {
                 return Failure(result.exception)
             }
@@ -109,7 +123,7 @@ class DocumentRepository(
             }
         }
 
-        when(val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
+        when (val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
             is Failure -> {
                 // TODO: Add reason why the doc is locked
                 return Failure(result.exception)
@@ -118,7 +132,10 @@ class DocumentRepository(
                 // ignore, and perform check
             }
         }
-        pageDao.updateUploadStateForDocument(documentWithPages.document.id, UploadState.UPLOAD_IN_PROGRESS)
+        pageDao.updateUploadStateForDocument(
+            documentWithPages.document.id,
+            UploadState.UPLOAD_IN_PROGRESS
+        )
         UploadWorker.spawnUploadJob(workManager, documentWithPages.document.id)
         return Success(Unit)
     }
@@ -138,7 +155,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun exportDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
-        return when(val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
+        return when (val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
             is Failure -> {
                 Failure(result.exception)
             }
@@ -236,7 +253,7 @@ class DocumentRepository(
                 fileHandler.copyFile(file, tempFile)
             } catch (e: Exception) {
                 tempFile.safelyDelete()
-                if(fileId == null) {
+                if (fileId == null) {
                     file.safelyDelete()
                 }
                 return Failure(DocScanException(DocScanError.IOError(e)))

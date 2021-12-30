@@ -245,7 +245,7 @@ class FileHandler(private val context: Context) {
  */
 fun File.getFileHash(): String {
     return try {
-        return calcHash().toHexString()
+        return calcHash().toHexString().lowercase()
 //        Files.asByteSource(this).hash(Hashing.crc32()).toString()
     } catch (e: Exception) {
         Timber.e("Computing hash of file: $name")

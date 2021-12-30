@@ -21,6 +21,10 @@ fun DocumentWithPages.isCropped(): Boolean {
     return pages.firstOrNull { page -> page.postProcessingState != PostProcessingState.DONE } != null
 }
 
+fun DocumentWithPages.isProcessing(): Boolean {
+    return pages.firstOrNull { page -> page.isProcessing() } != null
+}
+
 fun DocumentWithPages.isLocked(): Boolean {
     return document.lockState.isLocked() || pages.firstOrNull { page -> page.isLocked() } != null
 }
