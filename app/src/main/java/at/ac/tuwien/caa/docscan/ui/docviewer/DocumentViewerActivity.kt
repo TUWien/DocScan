@@ -18,6 +18,7 @@ import at.ac.tuwien.caa.docscan.camera.SheetAction
 import at.ac.tuwien.caa.docscan.databinding.ActivityDocumentViewerBinding
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.isUploaded
+import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.NavigationDrawer
@@ -28,6 +29,7 @@ import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.docviewer.documents.DocumentsFragmentDirections
 import at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector.SelectPdfDocumentActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.opencv.android.OpenCVLoader
 import timber.log.Timber
@@ -195,22 +197,33 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
             }
         })
         viewModel.observableResourceAction.observe(this, {
-            it.getContentIfNotHandled()?.let { resource ->
-                when (resource) {
+            it.getContentIfNotHandled()?.let { pair ->
+                when (val resource = pair.second) {
                     is Failure -> {
-                        // TODO: handle no crop dialog
-                        when (resource.exception) {
-
+                        when (pair.first) {
+                            DocumentAction.DELETE -> {
+                                resource.exception.handleError(this)
+                            }
+                            DocumentAction.EXPORT -> {
+                                resource.exception.handleError(this)
+                            }
+                            DocumentAction.CROP -> {
+                                resource.exception.handleError(this)
+                            }
+                            DocumentAction.UPLOAD -> {
+                                resource.exception.handleError(this)
+                            }
                         }
                     }
                     is Success -> {
-                        // TODO:         singleSnackbar(
-                        //            binding.syncCoordinatorlayout,
-                        //            SnackbarOptions(
-                        //                "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $title",
-                        //                Snackbar.LENGTH_LONG
-                        //            )
-                        //        )
+                        // TODO: Add translated string for successful action!
+                        singleSnackbar(
+                            binding.syncCoordinatorlayout,
+                            SnackbarOptions(
+                                pair.first.name + " has been successfully initiated!",
+                                Snackbar.LENGTH_LONG
+                            )
+                        )
                     }
                 }
             }
@@ -244,7 +257,11 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         )
                     }
                     DocumentAction.UPLOAD -> {
-                        // TODO: UPLOAD_LOGIC - Add upload logic for the viewModel.
+                        showDialog(
+                            ADialog.DialogAction.CONFIRM_UPLOAD.with(
+                                arguments = Bundle().appendDocWithPages(pair.second)
+                            )
+                        )
                     }
                 }
             }
@@ -266,6 +283,11 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                     ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
                         result.arguments.extractDocWithPages()?.let { doc ->
                             viewModel.applyActionFor(true, DocumentAction.EXPORT, doc)
+                        }
+                    }
+                    ADialog.DialogAction.CONFIRM_UPLOAD -> {
+                        result.arguments.extractDocWithPages()?.let { doc ->
+                            viewModel.applyActionFor(true, DocumentAction.UPLOAD, doc)
                         }
                     }
                     else -> {
@@ -421,7 +443,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 )
             }
             R.id.viewer_upload_fab -> {
-                // TODO: UPLOAD_LOGIC - Add upload logic for the viewModel.
+                viewModel.uploadSelectedDocument()
             }
             R.id.viewer_camera_fab -> {
                 viewModel.startImagingWith()

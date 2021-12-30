@@ -489,6 +489,9 @@
     <string name="gallery_unfocused_title">Focus issues</string>
     <string name="gallery_unfocused_text">Some images appear to be not focused and should be checked and eventually be replaced. These images are marked with a red rectangle.</string>
 
+    <string name="document_viewer_confirm_upload_title">Upload?</string>
+    <string name="document_viewer_confirm_upload_text">Do you really want to upload the document?</string>
+
     <string name="action_document_create_title">New document</string>
     <string name="action_document_select_title">Select document</string>
     <string name="action_document_crop_title">Crop images</string>

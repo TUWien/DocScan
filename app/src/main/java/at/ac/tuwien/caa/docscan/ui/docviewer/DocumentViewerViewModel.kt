@@ -5,11 +5,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
+import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.logic.Event
 import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Resource
-import at.ac.tuwien.caa.docscan.logic.Success
+import at.ac.tuwien.caa.docscan.logic.asFailure
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
+import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
@@ -27,7 +29,7 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
     private val observableDocumentAtImages = MutableLiveData<DocumentWithPages?>()
 
 
-    val observableResourceAction = MutableLiveData<Event<Resource<DocumentAction>>>()
+    val observableResourceAction = MutableLiveData<Event<Pair<DocumentAction, Resource<Unit>>>>()
     val observableResourceConfirmation =
         MutableLiveData<Event<Pair<DocumentAction, DocumentWithPages>>>()
 
@@ -88,6 +90,15 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
         }
     }
 
+    fun uploadSelectedDocument() {
+        // TODO: Perform similar checks as in startImagingWith!
+        val docWithPages = observableDocumentAtImages.value ?: kotlin.run {
+            observableResourceAction.postValue(Event(Pair(DocumentAction.UPLOAD, DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure())))
+            return
+        }
+        applyActionFor(action = DocumentAction.UPLOAD, documentWithPages = docWithPages)
+    }
+
     fun applyActionFor(
         force: Boolean = false,
         action: DocumentAction,
@@ -115,15 +126,7 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
                     repository.uploadDocument(documentWithPages)
                 }
             }
-            val result = when (resource) {
-                is Failure -> {
-                    Failure(resource.exception)
-                }
-                is Success -> {
-                    Success(action)
-                }
-            }
-            observableResourceAction.postValue(Event(result))
+            observableResourceAction.postValue(Event(Pair(action, resource)))
         }
     }
 }

@@ -126,6 +126,11 @@ class ADialog : AppCompatDialogFragment() {
             negativeBtn = R.string.dialog_no_text,
             neutralBtn = R.string.dialog_cancel_text
         ),
+        CONFIRM_UPLOAD(
+            R.string.document_viewer_confirm_upload_title,
+            R.string.document_viewer_confirm_upload_text,
+            negativeBtn = R.string.dialog_no_text
+        ),
 
         // TODO: adapt strings.
         GENERIC(R.string.login_network_error_title, R.string.document_dir_existing_postfix_message),
