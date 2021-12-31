@@ -10,6 +10,7 @@ import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.MetaData
 import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Success
+import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
@@ -35,7 +36,7 @@ class EditDocumentActivity : CreateDocumentActivity() {
                 when (resource) {
                     is Failure -> {
                         // TODO: Check if this is even necessary, because now we can handle duplicates like this!
-                        showDirExistingCreatedAlert()
+                        showDialog(ADialog.DialogAction.CREATE_DOCUMENT_DUPLICATE)
                     }
                     is Success -> {
                         finish()

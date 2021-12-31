@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.exifinterface.media.ExifInterface;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -889,41 +888,6 @@ public class Helper {
         return isConnected;
 
     }
-
-    /**
-     * Shows a dialog in case of ActivityNotFoundExceptions. This exceptions happen if the user
-     * wants to share a file with another app and no app is found for that purpose.
-     *
-     * @param context
-     */
-    @Deprecated
-    public static void showActivityNotFoundAlert(Context context) {
-
-        final AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-
-        // set dialog message
-        alertDialogBuilder
-                .setTitle(R.string.activity_not_found_title)
-                .setPositiveButton(R.string.dialog_ok_text, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                })
-                .setCancelable(true)
-                .setMessage(R.string.activity_not_found_text);
-
-        final AlertDialog alertDialog = alertDialogBuilder.create();
-//        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.dialog_cancel_text),
-//                new DialogInterface.OnClickListener() {
-//            @Override
-//            public void onClick(DialogInterface dialog, int which) {
-//                alertDialog.cancel();
-//            }
-//        });
-        alertDialog.show();
-
-    }
-
 
     /**
      * Check the device to make sure it has the Google Play Services APK. Taken from:

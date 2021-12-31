@@ -75,6 +75,7 @@ class PdfAdapter(
                         }
                     }
 
+                // TODO: Use Intent extensions for this check
                 // uri should never be null, because the list is filtered for *.pdf extension
                 if (uri != null) {
                     val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -85,7 +86,8 @@ class PdfAdapter(
                         context.startActivity(intent)
                     } catch (e: ActivityNotFoundException) {
                         FirebaseCrashlytics.getInstance().recordException(e)
-                        Helper.showActivityNotFoundAlert(context)
+
+//                        Helper.showActivityNotFoundAlert(context)
                     }
                 }
             }

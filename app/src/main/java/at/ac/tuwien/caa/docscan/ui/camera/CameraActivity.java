@@ -42,7 +42,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.app.ActivityCompat;
@@ -55,6 +54,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
@@ -69,7 +69,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import at.ac.tuwien.caa.docscan.ui.base.ActivityUtils;
 import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.ActionSheet;
@@ -101,6 +100,7 @@ import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.logic.Success;
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer;
+import at.ac.tuwien.caa.docscan.ui.dialog.ADialog;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
@@ -862,7 +862,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void showUIChangesDialog() {
 
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(CameraActivity.this);
 
         String dialogTitle = getString(R.string.ui_changes_title);
         alertDialog.setTitle(dialogTitle);
@@ -871,7 +871,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         alertDialog.setMessage(text);
         alertDialog.setPositiveButton(getString(R.string.dialog_yes_text),
                 (dialog, which) -> {
-
+                    // TODO: Use intent extensions for this check
                     String pdfUrl = "https://github.com/TUWien/DocScan/wiki/UI-changes-in-version-1.7";
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW);
                     browserIntent.setData(Uri.parse(pdfUrl));
@@ -879,7 +879,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                         startActivity(browserIntent);
                     } catch (ActivityNotFoundException e) {
                         FirebaseCrashlytics.getInstance().recordException(e);
-                        Helper.showActivityNotFoundAlert(getApplicationContext());
+                        showDialog(ADialog.DialogAction.ACTIVITY_NOT_FOUND);
                     }
 
                 });
@@ -898,7 +898,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (!showDialog)
             return;
 
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(CameraActivity.this);
         LayoutInflater adbInflater = LayoutInflater.from(this);
         View eulaLayout = adbInflater.inflate(R.layout.check_box_dialog, null);
 
@@ -1066,7 +1066,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     private void showNoFileFoundDialog() {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(CameraActivity.this);
         builder.setMessage(R.string.no_file_found_msg).setTitle(R.string.no_file_found_title);
 
         builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
@@ -1074,8 +1074,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
         });
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        builder.create().show();
 
     }
 
@@ -1225,7 +1224,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 } else
                     resumeSeriesModeAfterClose = false;
 
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(CameraActivity.this);
+                MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(CameraActivity.this);
 
                 String statusText = mTextView.getText().toString();
                 String dialogTitle = getString(R.string.camera_status_title_prefix) + " " +
@@ -1611,7 +1610,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void showSaveErrorDialog() {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(CameraActivity.this);
         builder.setMessage(R.string.picture_save_error_text).setTitle(R.string.picture_save_error_title);
 
         builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
@@ -1620,8 +1619,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
         });
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        builder.create().show();
 
     }
 

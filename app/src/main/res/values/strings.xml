@@ -555,6 +555,9 @@
     <!-- PdfSelectorActivity -->
     <string name="pdf_selector_title">Save document as PDF</string>
 
+    <string name="dialog_create_document_error_duplicate_title">No document created</string>>
+    <string name="dialog_create_document_error_duplicate_text">There is already a document with the same name, please choose another name!</string>>
+
     <string-array name="create_document_languages">
         <item>Arabic</item>
         <item>Basque</item>

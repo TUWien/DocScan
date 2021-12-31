@@ -140,6 +140,9 @@ class ADialog : AppCompatDialogFragment() {
             isCancellable = false
         ),
         ACTIVITY_NOT_FOUND(R.string.activity_not_found_title, R.string.activity_not_found_text),
+        CREATE_DOCUMENT_DUPLICATE(R.string.dialog_create_document_error_duplicate_title, R.string.dialog_create_document_error_duplicate_text),
+        CREATE_DOCUMENT_INVALID_URL(R.string.document_invalid_url_title, R.string.document_invalid_url_message),
+        CREATE_DOCUMENT_INVALID_QR_CODE(R.string.document_qr_parse_error_title, R.string.document_qr_parse_error_message),
         CUSTOM(0, 0)
     }
 

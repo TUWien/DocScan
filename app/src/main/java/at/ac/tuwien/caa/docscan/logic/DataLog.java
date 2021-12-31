@@ -102,11 +102,12 @@ public class DataLog {
         uris.add(syncUri);
         intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
 
+        // TODO: Use intent extensions for this check
         try {
             activity.startActivity(intent);
         } catch (ActivityNotFoundException e) {
             FirebaseCrashlytics.getInstance().recordException(e);
-            Helper.showActivityNotFoundAlert(activity.getApplicationContext());
+//            Helper.showActivityNotFoundAlert(activity.getApplicationContext());
         }
 
     }

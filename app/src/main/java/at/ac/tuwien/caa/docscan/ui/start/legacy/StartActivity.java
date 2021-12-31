@@ -33,14 +33,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 
@@ -267,7 +268,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     private void showPermissionRequiredAlert(String alertText) {
 
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder alertDialogBuilder = new MaterialAlertDialogBuilder(this);
 
         alertText += "\n" + getResources().getString(R.string.start_permission_retry_text);
 
@@ -305,6 +306,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 //        is killed by the system, the grantResults provided are not correct, because the
 //        permissions are asked again:
 
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if ((ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED)) {
             showPermissionRequiredAlert(getResources().getString(
@@ -362,7 +364,7 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
 
     private void askForBackupRestore() {
 
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+        MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(this);
 
 //        TODO: test, check permission in background...
 

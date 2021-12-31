@@ -9,13 +9,14 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatImageButton
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityCreateDocumentBinding
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
+import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
 import com.google.android.material.textfield.TextInputEditText
 import me.drakeet.support.toast.ToastCompat
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -79,7 +80,9 @@ open class CreateDocumentActivity : BaseNoNavigationActivity() {
             val qrText = extras.getString(DOCUMENT_QR_TEXT, initString)
             if (qrText != initString) {
                 mTranskribusMetaData = processQRCode(qrText)
-                if (mTranskribusMetaData != null) fillViews(mTranskribusMetaData) else showQRCodeErrorAlert()
+                if (mTranskribusMetaData != null) fillViews(mTranskribusMetaData) else showDialog(
+                    ADialog.DialogAction.CREATE_DOCUMENT_INVALID_QR_CODE
+                )
             }
         }
 
@@ -90,8 +93,8 @@ open class CreateDocumentActivity : BaseNoNavigationActivity() {
         viewModel.observableResource.observe(this, {
             when (it) {
                 is Failure -> {
-                    // TODO: Check if the error is sufficient
-                    showNoDirCreatedAlert()
+                    // TODO: Handle the duplicate error here excplititly
+                    it.exception.handleError(this)
                 }
                 is Success -> {
                     val intent = CameraActivity.newInstance(this)
@@ -472,71 +475,12 @@ open class CreateDocumentActivity : BaseNoNavigationActivity() {
             View.GONE
     }
 
-    protected fun showDirExistingCreatedAlert() {
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        val msg = "There is already a document with the same name, please choose another one!"
-        // set dialog message
-        alertDialogBuilder
-            .setTitle(R.string.document_no_dir_created_title)
-            .setCancelable(true)
-            .setPositiveButton("OK", null)
-            .setMessage(msg)
-
-        // create alert dialog
-        val alertDialog = alertDialogBuilder.create()
-
-        // show it
-        alertDialog.show()
-    }
-
     private fun showUrlNotValidAlert(url: String) {
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        val text = resources.getString(R.string.document_invalid_url_message) + " " + url
-        // set dialog message
-        alertDialogBuilder
-            .setTitle(R.string.document_invalid_url_title)
-            .setCancelable(true)
-            .setPositiveButton("OK", null)
-            .setMessage(text)
-
-        // create alert dialog
-        val alertDialog = alertDialogBuilder.create()
-
-        // show it
-        alertDialog.show()
-    }
-
-    private fun showQRCodeErrorAlert() {
-        val alertDialogBuilder = AlertDialog.Builder(this)
-
-        // set dialog message
-        alertDialogBuilder
-            .setTitle(R.string.document_qr_parse_error_title)
-            .setCancelable(true)
-            .setPositiveButton("OK", null)
-            .setMessage(R.string.document_qr_parse_error_message)
-
-        // create alert dialog
-        val alertDialog = alertDialogBuilder.create()
-
-        // show it
-        alertDialog.show()
-    }
-
-    private fun showNoDirCreatedAlert() {
-        val alertDialogBuilder = AlertDialog.Builder(this)
-
-        // set dialog message
-        alertDialogBuilder
-            .setTitle(R.string.document_no_dir_created_title)
-            .setCancelable(true)
-            .setPositiveButton("OK", null)
-            .setMessage(R.string.document_no_dir_created_message)
-
-        // create alert dialog
-        val alertDialog = alertDialogBuilder.create()
-
-        // show it
-        alertDialog.show()
+        showDialog(
+            DialogModel(
+                ADialog.DialogAction.CREATE_DOCUMENT_INVALID_URL,
+                customMessage = resources.getString(R.string.document_invalid_url_message) + " " + url
+            )
+        )
     }
 }

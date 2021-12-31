@@ -14,7 +14,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.documentfile.provider.DocumentFile
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,6 +22,7 @@ import at.ac.tuwien.caa.docscan.camera.SheetAction
 import at.ac.tuwien.caa.docscan.databinding.FragmentPdfsBinding
 import at.ac.tuwien.caa.docscan.logic.Helper
 import at.ac.tuwien.caa.docscan.ui.base.BaseFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
@@ -76,7 +76,7 @@ class PdfFragment : BaseFragment() {
         val deleteText = getString(R.string.viewer_delete_pdf_text)
         val deleteTitle = "${getString(R.string.viewer_delete_pdf_title)}: ${pdf.name}?"
 
-        val alertDialogBuilder = AlertDialog.Builder(requireContext())
+        val alertDialogBuilder = MaterialAlertDialogBuilder(requireContext())
             .setTitle(deleteTitle)
             .setMessage(deleteText)
             .setPositiveButton(R.string.sync_confirm_delete_button_text) { dialogInterface, i ->
@@ -360,7 +360,7 @@ class PdfFragment : BaseFragment() {
         val text = getString(R.string.pdf_fragment_persisted_permission_text)
         val title = getString(R.string.pdf_fragment_persisted_permission_title)
 
-        val alertDialogBuilder = AlertDialog.Builder(requireContext())
+        val alertDialogBuilder = MaterialAlertDialogBuilder(requireContext())
             .setTitle(title)
             .setMessage(text)
             .setPositiveButton(R.string.dialog_ok_text) { _, _ ->
