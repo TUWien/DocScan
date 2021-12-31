@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/drawer_layout"
-    android:fitsSystemWindows="true">
+    android:id="@+id/drawer_layout">
 
     <FrameLayout
         android:id="@+id/main_frame_layout"
@@ -18,7 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <include layout="@layout/toolbar_autohide" />
+            <include layout="@layout/toolbar" />
         </com.google.android.material.appbar.AppBarLayout>
 
         <RelativeLayout

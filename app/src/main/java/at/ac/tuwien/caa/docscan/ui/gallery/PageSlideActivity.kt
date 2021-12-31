@@ -65,9 +65,6 @@ class PageSlideActivity : BaseActivity(), PageImageView.SingleClickListener {
         setSupportActionBar(binding.imageViewerToolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        // Take care that the mToolbar is not overlaid by the status bar:
-        binding.imageViewerToolbar.setPadding(0, getStatusBarHeight(), 0, 0)
-
         // Close the fragment if the user hits the back button in the toolbar:
         binding.imageViewerToolbar.apply {
             setNavigationOnClickListener { onBackPressed() }

@@ -175,7 +175,7 @@
         </FrameLayout>
 
         <include
-            layout="@layout/toolbar"
+            layout="@layout/toolbar_camera"
             android:id="@+id/main_toolbar" />
 
 

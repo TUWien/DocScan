@@ -116,7 +116,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         binding = ActivityDocumentViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setSupportActionBar(binding.mainToolbar)
+        setSupportActionBar(binding.mainToolbar.mainToolbar)
 
         binding.viewerAddFab.setOnClickListener(this)
         binding.viewerAddPdfFab.setOnClickListener(this)
@@ -126,7 +126,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
 
         val navController = findNavController(R.id.nav_host_fragment)
         val appBarConfiguration = AppBarConfiguration(topLevelDestinations, binding.drawerLayout)
-        binding.mainToolbar.setupWithNavController(navController, appBarConfiguration)
+        binding.mainToolbar.mainToolbar.setupWithNavController(navController, appBarConfiguration)
         binding.bottomNav.setupWithNavController(navController)
         binding.bottomNav.setOnItemReselectedListener {
             // ignore the reselection, otherwise the fragment would be recreated again.
