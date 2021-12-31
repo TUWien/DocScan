@@ -35,7 +35,7 @@ import timber.log.Timber
  */
 class NavigationDrawer(
     private val activity: BaseActivity,
-    private val selectedItem: NavigationItem
+    val selectedItem: NavigationItem
 ) : NavigationView.OnNavigationItemSelectedListener {
 
 
@@ -187,16 +187,12 @@ class NavigationDrawer(
 
     private fun itemSelected(item: NavigationItem) {
         val intent = getIntentByNavItem(item)
-        when (item) {
-            NavigationItem.HELP -> {
-                if (!activity.safeStartActivity(intent)) {
-                    activity.showDialog(ADialog.DialogAction.ACTIVITY_NOT_FOUND)
-                }
-            }
-            else -> {
-                activity.finish()
-                activity.startActivity(intent)
-            }
+        if (!activity.safeStartActivity(intent)) {
+            activity.showDialog(ADialog.DialogAction.ACTIVITY_NOT_FOUND)
+        }
+        // if the activity has a drawer, it will mean that the root activity can be closed.
+        if (item.hasDrawer) {
+            activity.finish()
         }
     }
 
@@ -239,39 +235,47 @@ class NavigationDrawer(
      * corresponding getSelfNavDrawerItem() function.
      */
     enum class NavigationItem(
-        val id: Int, val titleResource: Int, val iconResource: Int
+        val id: Int, val titleResource: Int, val iconResource: Int, val hasDrawer: Boolean
     ) {
         CAMERA(
             R.id.camera_item, R.string.camera_item_text,
-            R.drawable.ic_camera_alt_black_24dp
+            R.drawable.ic_camera_alt_black_24dp,
+            true
         ),
         ABOUT(
             R.id.about_item, R.string.about_item_text,
-            R.drawable.ic_info_black_24dp
+            R.drawable.ic_info_black_24dp,
+            true
         ),
         SHARE_LOG(
             R.id.share_log_item, R.string.share_log_item_text,
-            R.drawable.ic_share_black_24dp
+            R.drawable.ic_share_black_24dp,
+            true
         ),
         LOGIN(
             R.id.account_edit_item, R.string.account_edit_text,
-            R.drawable.ic_account_box_black_24dp
+            R.drawable.ic_account_box_black_24dp,
+            false
         ),
         LOGOUT(
             R.id.account_logout_item, R.string.account_logout,
-            R.drawable.ic_remove_circle_outline_black_24dp
+            R.drawable.ic_remove_circle_outline_black_24dp,
+            false
         ),
         SETTINGS(
             R.id.settings_item, R.string.settings_item_text,
-            R.drawable.ic_settings_black_24dp
+            R.drawable.ic_settings_black_24dp,
+            true
         ),
         DOCUMENTS(
             R.id.documents_item, R.string.documents_item_text,
-            R.drawable.ic_library_books_black_24dp
+            R.drawable.ic_library_books_black_24dp,
+            true
         ),
         HELP(
             R.id.help_item, R.string.help_item_text,
-            R.drawable.ic_help_black_24dp
+            R.drawable.ic_help_black_24dp,
+            false
         );
 
         companion object {

@@ -55,7 +55,7 @@ open class CreateDocumentActivity : BaseNoNavigationActivity() {
             layoutInflater
         )
         setContentView(binding.root)
-        super.initToolbarTitle(R.string.create_series_title)
+        super.initWithTitle(R.string.create_series_title)
         initOkButton()
         initUrlButton()
         initEditField()

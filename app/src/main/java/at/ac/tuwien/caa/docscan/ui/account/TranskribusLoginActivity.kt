@@ -33,10 +33,15 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        super.initToolbarTitle(R.string.login_title)
+        super.initWithTitle(R.string.login_title)
         binding.loginButton.setOnClickListener {
             login()
             hideKeyboard()
+        }
+        binding.loginButton.setOnLongClickListener {
+            binding.usernameEdittext.setText("matej.bartalsky@gmail.com")
+            binding.passwordEdittext.setText("XDP5HaPtRtwt6e3")
+            true
         }
         observe()
 

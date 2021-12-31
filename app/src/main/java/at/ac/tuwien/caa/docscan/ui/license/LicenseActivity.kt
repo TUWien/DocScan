@@ -15,15 +15,11 @@ class LicenseActivity : BaseNoNavigationActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLicensesBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        initWithTitle(R.string.license_title)
         val licenseAdapter = LicenseAdapter(generateLicenses())
 
         binding.licensesRecyclerView.adapter = licenseAdapter
         binding.licensesRecyclerView.layoutManager = LinearLayoutManager(this@LicenseActivity)
-
-        val toolbar: Toolbar = findViewById(R.id.main_toolbar)
-        toolbar.title = getString(R.string.license_title)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     class License(name: String, copyright: String, license: String, url: String) {

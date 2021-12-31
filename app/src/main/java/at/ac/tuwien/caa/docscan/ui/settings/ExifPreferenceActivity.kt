@@ -10,7 +10,7 @@ class ExifPreferenceActivity : BaseNoNavigationActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_debug_preferences)
-        initToolbarTitle(R.string.exif_settings_title)
+        initWithTitle(R.string.exif_settings_title)
         supportFragmentManager.beginTransaction()
             .replace(R.id.settings_framelayout, ExifPreferenceFragment())
             .commit()

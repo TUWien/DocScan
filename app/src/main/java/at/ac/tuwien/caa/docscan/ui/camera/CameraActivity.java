@@ -423,9 +423,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     private void navigateToGallery(@NonNull UUID docId, @Nullable UUID fileId) {
-        Intent intent = PageSlideActivity.newInstance(this, docId, fileId);
-        ActivityUtils.createBackStack(this, intent);
-        finish();
+        startActivity(PageSlideActivity.newInstance(this, docId, fileId));
     }
 
     private void showControlsLayout(boolean showControls) {

@@ -293,7 +293,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         }
                     }
                     ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED -> {
-                        if(result.isPositive()) {
+                        if (result.isPositive()) {
                             // TODO: This call is not good, because we do not know which document was tried.
                             viewModel.uploadSelectedDocument(forceAction = true)
                         }
@@ -383,7 +383,9 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
         }
         when (binding.bottomNav.selectedItemId) {
 //            Open the CameraActivity:
-            R.id.viewer_documents -> startActivity(CameraActivity.newInstance(this))
+            R.id.viewer_documents -> {
+                super.onBackPressed()
+            }
 //            Open the DocumentsFragment:
             R.id.viewer_pdfs -> binding.bottomNav.selectedItemId = R.id.viewer_documents
 //            Special case for ImagesFragment:

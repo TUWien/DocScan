@@ -22,7 +22,7 @@ class EditDocumentActivity : CreateDocumentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        super.initToolbarTitle(R.string.edit_series_title)
+        super.initWithTitle(R.string.edit_series_title)
         observe()
     }
 

@@ -4,13 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityPdfSelectorBinding
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
-import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
 
 // TODO: Adapt for the new domain structure
@@ -26,7 +24,7 @@ class SelectPdfDocumentActivity : BaseNoNavigationActivity(),
         binding = ActivityPdfSelectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
         listener = this
-        initToolbarTitle(R.string.select_document_title)
+        initWithTitle(R.string.select_document_title)
         loadDocuments()
         updateRecyclerView()
     }

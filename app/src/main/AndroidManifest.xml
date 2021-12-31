@@ -68,8 +68,7 @@
 
         <activity
             android:name=".ui.info.AboutActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.camera.CameraActivity" />
+            android:exported="true" />
 
         <activity
             android:name=".ui.docviewer.documents.selector.SelectPdfDocumentActivity"
@@ -78,25 +77,22 @@
         <activity
             android:name=".ui.gallery.PageSlideActivity"
             android:exported="true"
-            android:launchMode="singleTop"
-            android:parentActivityName=".ui.camera.CameraActivity" />
+            android:launchMode="singleTop" />
 
         <activity
             android:name=".ui.segmentation.SegmentationActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.gallery.PageSlideActivity" />
+            android:exported="true" />
 
         <activity
             android:name=".ui.account.TranskribusLoginActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.camera.CameraActivity" />
+            android:exported="false" />
 
-<!-- The orientation is set to portrait, since the CameraActivity would crash at on rotation, see ActionSheet.kt -->
+        <!-- The orientation is set to portrait, since the CameraActivity would crash at on rotation, see ActionSheet.kt -->
         <activity
             android:name=".ui.camera.CameraActivity"
-            android:launchMode="singleTop"
             android:configChanges="orientation|screenSize"
             android:exported="true"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
 
@@ -115,8 +111,7 @@
 
         <activity
             android:name=".ui.settings.PreferenceActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.camera.CameraActivity" />
+            android:exported="false" />
 
         <activity
             android:name=".ui.settings.DebugPreferenceActivity"
@@ -128,13 +123,11 @@
 
         <activity
             android:name=".ui.info.LogActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.camera.CameraActivity" />
+            android:exported="false" />
 
         <activity
             android:name=".ui.account.logout.LogoutActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.camera.CameraActivity" />
+            android:exported="false" />
 
         <!--Debugging activities: -->
 
@@ -144,8 +137,7 @@
 
         <activity
             android:name=".ui.docviewer.DocumentViewerActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.camera.CameraActivity" />
+            android:exported="true" />
 
         <!--<receiver android:name=".sync.BootReceiver">-->
         <!--<intent-filter>-->

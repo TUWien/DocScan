@@ -16,7 +16,7 @@ public class DebugPreferenceActivity extends BaseNoNavigationActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_debug_preferences);
-        initToolbarTitle(R.string.debug_settings_title);
+        initWithTitle(R.string.debug_settings_title);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.settings_framelayout, new DebugPreferenceFragment())
                 .commit();

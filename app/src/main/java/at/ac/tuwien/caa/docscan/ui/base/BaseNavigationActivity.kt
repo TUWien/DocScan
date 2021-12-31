@@ -5,6 +5,7 @@ import android.view.View
 import androidx.appcompat.widget.Toolbar
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer.NavigationItem
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
@@ -57,6 +58,20 @@ abstract class BaseNavigationActivity : BaseActivity() {
     private fun setToolbarForNavigation(toolbar: Toolbar) {
         toolbar.setNavigationIcon(R.drawable.ic_menu_black_24dp)
         toolbar.setNavigationOnClickListener { drawer.showNavigation() }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        if (drawer.selectedItem != NavigationItem.CAMERA) {
+            handleBackNavigation()
+        }
+    }
+
+    /**
+     * Pre-Condition: The onBackPress event on a navigation activity has been called
+     */
+    private fun handleBackNavigation() {
+        startActivity(CameraActivity.newInstance(this))
     }
 
     /**

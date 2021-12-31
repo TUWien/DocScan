@@ -15,7 +15,7 @@ import at.ac.tuwien.caa.docscan.databinding.ActivityPageSlideBinding
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.asDocumentPageExtra
 import at.ac.tuwien.caa.docscan.logic.PageFileType
-import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
+import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.crop.CropViewActivity
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
@@ -27,7 +27,7 @@ import java.util.*
 
 // TODO: Checkout how to handle zoom out transitions.
 // TODO: CONSTRAINT - only delete/retake if document is not locked.
-class PageSlideActivity : BaseActivity(), PageImageView.SingleClickListener {
+class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickListener {
 
     private lateinit var binding: ActivityPageSlideBinding
     private val viewModel: PageSlideViewModel by viewModel { parametersOf(intent.extras!!) }
@@ -61,12 +61,10 @@ class PageSlideActivity : BaseActivity(), PageImageView.SingleClickListener {
         super.onCreate(savedInstanceState)
         binding = ActivityPageSlideBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        setSupportActionBar(binding.imageViewerToolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        initWithTitle(null)
 
         // Close the fragment if the user hits the back button in the toolbar:
-        binding.imageViewerToolbar.apply {
+        binding.mainToolbar.apply {
             setNavigationOnClickListener { onBackPressed() }
             setOnClickListener {
                 viewModel.navigateToDocumentViewer(binding.slideViewpager.currentItem)
@@ -253,11 +251,11 @@ class PageSlideActivity : BaseActivity(), PageImageView.SingleClickListener {
     }
 
     override fun onSingleClick() {
-        if (binding.imageViewerToolbar.visibility == View.VISIBLE) {
-            binding.imageViewerToolbar.visibility = View.INVISIBLE
+        if (binding.mainToolbar.visibility == View.VISIBLE) {
+            binding.mainToolbar.visibility = View.INVISIBLE
             binding.pageViewButtons.pageViewButtonsLayout.visibility = View.INVISIBLE
         } else {
-            binding.imageViewerToolbar.visibility = View.VISIBLE
+            binding.mainToolbar.visibility = View.VISIBLE
             binding.pageViewButtons.pageViewButtonsLayout.visibility = View.VISIBLE
         }
     }
