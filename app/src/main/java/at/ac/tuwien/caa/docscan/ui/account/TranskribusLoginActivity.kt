@@ -56,6 +56,8 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
                     if (it.exception.is403()) {
                         binding.passwordEdittext.error =
                             resources.getString(R.string.login_auth_error_text)
+                        // focus view so that edittexts error is focused
+                        binding.passwordEdittext.requestFocus()
                     } else {
 //                        TODO: Log error
 //                        FirebaseCrashlytics.getInstance().log("login error: " + "login_timeout_error")
@@ -105,15 +107,12 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
             )
             return
         }
-//        User.getInstance().userName = email
-//        User.getInstance().password = pw
-
         viewModel.login(email, pw)
     }
 
     private fun showLoadingLayout(showLoading: Boolean) {
-        binding.loginFieldsLayout.bindInvisible(showLoading)
-        binding.loginLoadingLayout.bindInvisible(!showLoading)
+        binding.loginFieldsLayout.bindInvisible(!showLoading)
+        binding.loginLoadingLayout.bindInvisible(showLoading)
     }
 
     companion object {
