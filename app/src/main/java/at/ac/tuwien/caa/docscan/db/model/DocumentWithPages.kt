@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.db.model
 
 import android.os.Parcelable
+import androidx.room.DatabaseView
 import androidx.room.Embedded
 import androidx.room.Relation
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
@@ -23,10 +24,6 @@ fun DocumentWithPages.isCropped(): Boolean {
 
 fun DocumentWithPages.isProcessing(): Boolean {
     return pages.firstOrNull { page -> page.isProcessing() } != null
-}
-
-fun DocumentWithPages.isLocked(): Boolean {
-    return document.lockState.isLocked() || pages.firstOrNull { page -> page.isLocked() } != null
 }
 
 /**

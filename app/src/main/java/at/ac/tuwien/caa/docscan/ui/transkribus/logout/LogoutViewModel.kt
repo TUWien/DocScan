@@ -11,8 +11,7 @@ class LogoutViewModel(
 ) : ViewModel() {
     fun logout() {
         viewModelScope.launch(Dispatchers.IO) {
-            // TODO: Needs to cancel all ongoing uploads!
-            userRepository.logout()
+            userRepository.logout(initiatedByUser = true)
         }
     }
 }

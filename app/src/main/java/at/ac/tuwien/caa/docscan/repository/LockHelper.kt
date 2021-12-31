@@ -5,7 +5,7 @@ import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
-import at.ac.tuwien.caa.docscan.db.model.isLocked
+import at.ac.tuwien.caa.docscan.db.model.isUploadingOrProcessing
 import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
@@ -187,7 +187,7 @@ private suspend fun tryToUnlockDoc(documentId: UUID, pageId: UUID?) {
             var lockedBecauseOfOtherPage = false
             run lit@{
                 docWithPages.pages.forEach {
-                    if (it.isLocked() && it.id != pageId) {
+                    if (it.isUploadingOrProcessing() && it.id != pageId) {
                         lockedBecauseOfOtherPage = true
                         return@lit
                     }

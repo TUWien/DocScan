@@ -104,6 +104,9 @@ class UploadWorker(
 
         private fun getWorkNameByDocId(documentId: UUID) = UPLOAD_TAG + "_" + documentId.toString()
 
+        /**
+         * Cancels a worker job per documentId.
+         */
         fun cancelWorkByDocumentId(workManager: WorkManager, documentId: UUID) {
             workManager.cancelUniqueWork(getWorkNameByDocId(documentId))
         }

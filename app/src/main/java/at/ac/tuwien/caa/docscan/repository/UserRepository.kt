@@ -1,8 +1,11 @@
 package at.ac.tuwien.caa.docscan.repository
 
+import androidx.work.WorkManager
+import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.dao.UserDao
 import at.ac.tuwien.caa.docscan.db.model.User
 import at.ac.tuwien.caa.docscan.logic.*
+import at.ac.tuwien.caa.docscan.sync.UploadWorker
 import at.ac.tuwien.caa.docscan.sync.transkribus.TranskribusAPIService
 import at.ac.tuwien.caa.docscan.sync.transkribus.model.login.LoginResponse
 import kotlinx.coroutines.NonCancellable
@@ -11,8 +14,10 @@ import kotlinx.coroutines.withContext
 
 class UserRepository(
     private val userDao: UserDao,
+    private val pageDao: PageDao,
     private val api: TranskribusAPIService,
-    private val preferencesHandler: PreferencesHandler
+    private val preferencesHandler: PreferencesHandler,
+    private val workManager: WorkManager
 ) {
 
     fun getUser(): Flow<User?> {
@@ -38,7 +43,7 @@ class UserRepository(
         return when (resource) {
             is Failure -> {
                 if (resource.exception.is401() || resource.exception.is403()) {
-                    clearUser()
+                    logout()
                 }
                 resource
             }
@@ -48,11 +53,26 @@ class UserRepository(
         }
     }
 
-    suspend fun logout() {
+    /**
+     * Forces a logout for the user.
+     * - Tries to perform a logout request.
+     * - Stops all uploads.
+     * - Clears the user session.
+     */
+    suspend fun logout(initiatedByUser: Boolean = false) {
         return withContext(NonCancellable) {
             // logout response doesn't matter
             transkribusResource<Void, Void>(apiCall = { api.logout() })
+            // stop all documents with ongoing uplodas
+            pageDao.getAllUploadingPagesWithDistinctDocIds().forEach {
+                UploadWorker.cancelWorkByDocumentId(workManager, it)
+            }
+            // clear the user
             clearUser()
+
+            if (!initiatedByUser) {
+                // TODO: Show system notification that user has been logged out!
+            }
         }
     }
 
@@ -76,7 +96,7 @@ class UserRepository(
         if (username != null && password != null) {
             return Success(Pair(username, password))
         }
-        clearUser()
+        logout()
         return asUnauthorizedFailure()
     }
 

@@ -91,8 +91,8 @@ data class Page(
     }
 }
 
-fun Page.isLocked(): Boolean {
-    return postProcessingState == PostProcessingState.PROCESSING || transkribusUpload.state == UploadState.UPLOAD_IN_PROGRESS
+fun Page.isUploadingOrProcessing(): Boolean {
+    return isUploadInProgress() || isProcessing()
 }
 
 fun Page.isUploaded(): Boolean {
