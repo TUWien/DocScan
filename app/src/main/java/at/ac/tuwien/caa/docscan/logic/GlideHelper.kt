@@ -7,7 +7,8 @@ import at.ac.tuwien.caa.docscan.DocScanApp
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
-import at.ac.tuwien.caa.docscan.gallery.CropRectTransformNew
+import at.ac.tuwien.caa.docscan.glidemodule.CropRectTransform
+import at.ac.tuwien.caa.docscan.glidemodule.FileSignature
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -92,7 +93,7 @@ object GlideHelper {
                 loadIntoView(
                     app,
                     imageView,
-                    CropRectTransformNew(page, imageView.context),
+                    CropRectTransform(page, imageView.context),
                     fileHash,
                     file,
                     PageFileType.JPEG,

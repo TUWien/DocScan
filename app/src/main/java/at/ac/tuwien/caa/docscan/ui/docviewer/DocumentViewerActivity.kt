@@ -20,8 +20,8 @@ import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.isUploaded
 import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity
-import at.ac.tuwien.caa.docscan.ui.NavigationDrawer
+import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity
+import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.*
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity

@@ -12,8 +12,8 @@ import at.ac.tuwien.caa.docscan.repository.ImageProcessorRepository
 import at.ac.tuwien.caa.docscan.repository.UploadRepository
 import at.ac.tuwien.caa.docscan.repository.UserRepository
 import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
-import at.ac.tuwien.caa.docscan.sync.transkribus.TranskribusAPIService
-import at.ac.tuwien.caa.docscan.sync.transkribus.TranskribusHeaderInterceptor
+import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
+import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusHeaderInterceptor
 import at.ac.tuwien.caa.docscan.ui.base.UserViewModel
 import at.ac.tuwien.caa.docscan.ui.camera.CameraViewModel
 import at.ac.tuwien.caa.docscan.ui.crop.CropViewModel
@@ -24,12 +24,12 @@ import at.ac.tuwien.caa.docscan.ui.document.EditDocumentViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.documents.DocumentsViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.images.ImagesViewModel
-import at.ac.tuwien.caa.docscan.ui.gallery.newPackage.ImageViewModel
-import at.ac.tuwien.caa.docscan.ui.gallery.newPackage.PageSlideViewModel
+import at.ac.tuwien.caa.docscan.ui.gallery.ImageViewModel
+import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideViewModel
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationViewModel
 import at.ac.tuwien.caa.docscan.ui.start.StartActivityViewModel
-import at.ac.tuwien.caa.docscan.ui.transkribus.LoginViewModel
-import at.ac.tuwien.caa.docscan.ui.transkribus.logout.LogoutViewModel
+import at.ac.tuwien.caa.docscan.ui.account.LoginViewModel
+import at.ac.tuwien.caa.docscan.ui.account.logout.LogoutViewModel
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient

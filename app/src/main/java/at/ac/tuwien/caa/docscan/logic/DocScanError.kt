@@ -1,7 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic
 
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
-import at.ac.tuwien.caa.docscan.sync.transkribus.model.error.TranskribusApiError
+import at.ac.tuwien.caa.docscan.api.transkribus.model.error.TranskribusApiError
 
 class DocScanException(val docScanError: DocScanError) : Exception()
 

@@ -14,7 +14,7 @@ import androidx.appcompat.widget.AppCompatImageButton
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityCreateDocumentBinding
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity
+import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import com.google.android.material.textfield.TextInputEditText
 import me.drakeet.support.toast.ToastCompat

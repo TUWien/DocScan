@@ -22,7 +22,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.SheetAction
 import at.ac.tuwien.caa.docscan.databinding.FragmentPdfsBinding
 import at.ac.tuwien.caa.docscan.logic.Helper
-import at.ac.tuwien.caa.docscan.ui.BaseFragment
+import at.ac.tuwien.caa.docscan.ui.base.BaseFragment
 import java.io.File
 import java.net.URLEncoder
 import java.text.SimpleDateFormat

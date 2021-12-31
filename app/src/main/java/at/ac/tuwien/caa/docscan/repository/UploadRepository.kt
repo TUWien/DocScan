@@ -10,11 +10,11 @@ import at.ac.tuwien.caa.docscan.db.model.sanitizedTitle
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.sync.UploadWorker
-import at.ac.tuwien.caa.docscan.sync.transkribus.TranskribusAPIService
-import at.ac.tuwien.caa.docscan.sync.transkribus.mapToMultiPartBody
-import at.ac.tuwien.caa.docscan.sync.transkribus.model.collection.CollectionResponse
-import at.ac.tuwien.caa.docscan.sync.transkribus.model.collection.DocResponse
-import at.ac.tuwien.caa.docscan.sync.transkribus.model.uploads.*
+import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
+import at.ac.tuwien.caa.docscan.api.transkribus.mapToMultiPartBody
+import at.ac.tuwien.caa.docscan.api.transkribus.model.collection.CollectionResponse
+import at.ac.tuwien.caa.docscan.api.transkribus.model.collection.DocResponse
+import at.ac.tuwien.caa.docscan.api.transkribus.model.uploads.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext

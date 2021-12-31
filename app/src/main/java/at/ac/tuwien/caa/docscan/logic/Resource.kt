@@ -1,7 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic
 
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
-import at.ac.tuwien.caa.docscan.sync.transkribus.model.uploads.UploadStatusResponse
+import at.ac.tuwien.caa.docscan.api.transkribus.model.uploads.UploadStatusResponse
 import java.net.HttpURLConnection
 
 sealed class Resource<T>

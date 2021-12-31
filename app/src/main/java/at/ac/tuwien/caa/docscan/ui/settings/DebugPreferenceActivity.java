@@ -5,7 +5,7 @@ import android.os.Bundle;
 import androidx.preference.PreferenceFragmentCompat;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity;
+import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity;
 
 /**
  * Created by fabian on 26.01.2018.

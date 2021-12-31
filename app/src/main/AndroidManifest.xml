@@ -67,7 +67,7 @@
             android:theme="@style/SplashTheme" />
 
         <activity
-            android:name=".ui.AboutActivity"
+            android:name=".ui.info.AboutActivity"
             android:exported="true"
             android:parentActivityName=".ui.camera.CameraActivity" />
 
@@ -76,7 +76,7 @@
             android:exported="true" />
 
         <activity
-            android:name=".ui.gallery.newPackage.PageSlideActivity"
+            android:name=".ui.gallery.PageSlideActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:parentActivityName=".ui.camera.CameraActivity" />
@@ -84,10 +84,10 @@
         <activity
             android:name=".ui.segmentation.SegmentationActivity"
             android:exported="true"
-            android:parentActivityName=".ui.gallery.newPackage.PageSlideActivity" />
+            android:parentActivityName=".ui.gallery.PageSlideActivity" />
 
         <activity
-            android:name=".ui.transkribus.TranskribusLoginActivity"
+            android:name=".ui.account.TranskribusLoginActivity"
             android:exported="false"
             android:parentActivityName=".ui.camera.CameraActivity" />
 
@@ -127,12 +127,12 @@
             android:exported="false" />
 
         <activity
-            android:name=".ui.LogActivity"
+            android:name=".ui.info.LogActivity"
             android:exported="false"
             android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
-            android:name=".ui.transkribus.logout.LogoutActivity"
+            android:name=".ui.account.logout.LogoutActivity"
             android:exported="false"
             android:parentActivityName=".ui.camera.CameraActivity" />
 

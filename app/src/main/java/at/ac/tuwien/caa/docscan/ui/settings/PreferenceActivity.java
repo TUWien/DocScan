@@ -8,8 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.preference.PreferenceFragmentCompat;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
-import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
+import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity;
+import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer;
 
 /**
  * Created by fabian on 26.01.2018.

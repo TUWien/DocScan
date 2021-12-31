@@ -3,17 +3,12 @@ package at.ac.tuwien.caa.docscan.sync;
 import android.content.Context;
 import android.util.Log;
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 //import com.koushikdutta.async.future.FutureCallback;
 //import com.koushikdutta.ion.Ion;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
@@ -22,7 +17,6 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.logic.Settings;
-import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.logic.DocumentJSONParser;
 
 /**
@@ -545,7 +539,7 @@ public class TranskribusUtils {
 
     public void onError() {
 
-        User.getInstance().setLoggedIn(false);
+//        User.getInstance().setLoggedIn(false);
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onError");
         Log.d(CLASS_NAME, "unfinished size: " + SyncStorage.getInstance(mContext).getUnfinishedUploadIDs().size());
 

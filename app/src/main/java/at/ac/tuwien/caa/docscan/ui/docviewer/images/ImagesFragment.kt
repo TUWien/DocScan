@@ -7,9 +7,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.FragmentImagesBinding
 import at.ac.tuwien.caa.docscan.logic.computeScreenWidth
-import at.ac.tuwien.caa.docscan.ui.BaseFragment
+import at.ac.tuwien.caa.docscan.ui.base.BaseFragment
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerViewModel
-import at.ac.tuwien.caa.docscan.ui.gallery.newPackage.PageSlideActivity
+import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 

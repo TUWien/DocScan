@@ -2,7 +2,7 @@ package at.ac.tuwien.caa.docscan.logic
 
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
-import at.ac.tuwien.caa.docscan.ui.BaseActivity
+import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
 import java.net.ConnectException

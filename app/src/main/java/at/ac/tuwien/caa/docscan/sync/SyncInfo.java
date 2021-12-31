@@ -1,8 +1,6 @@
 package at.ac.tuwien.caa.docscan.sync;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 //import com.firebase.jobdispatcher.Constraint;
@@ -16,17 +14,12 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DataLog;
-import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
 
 /**
  * Created by fabian on 18.08.2017.
@@ -162,15 +155,15 @@ public class SyncInfo implements Serializable {
         if (mUploadDirs == null)
             return;
 
-        for (File dir : mUploadDirs) {
-            File[] files = SyncAdapter.getFiles(dir);
-            if ((files == null) || files.length == 0)
-                continue;
-
-            for (File file : files) {
-                mAwaitingUploadFiles.add(file);
-            }
-        }
+//        for (File dir : mUploadDirs) {
+//            File[] files = SyncAdapter.getFiles(dir);
+//            if ((files == null) || files.length == 0)
+//                continue;
+//
+//            for (File file : files) {
+//                mAwaitingUploadFiles.add(file);
+//            }
+//        }
 
     }
 

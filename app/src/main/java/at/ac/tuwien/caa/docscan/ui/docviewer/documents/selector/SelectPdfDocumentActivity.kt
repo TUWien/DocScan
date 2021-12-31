@@ -10,7 +10,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityPdfSelectorBinding
 import at.ac.tuwien.caa.docscan.logic.Document
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage
-import at.ac.tuwien.caa.docscan.ui.BaseActivity
+import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 
 // TODO: Adapt for the new domain structure
 class SelectPdfDocumentActivity : BaseActivity(),

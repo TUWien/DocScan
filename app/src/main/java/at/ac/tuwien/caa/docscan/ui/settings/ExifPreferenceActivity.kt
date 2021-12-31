@@ -3,7 +3,7 @@ package at.ac.tuwien.caa.docscan.ui.settings
 import android.os.Bundle
 import androidx.preference.PreferenceFragmentCompat
 import at.ac.tuwien.caa.docscan.R
-import at.ac.tuwien.caa.docscan.ui.BaseNoNavigationActivity
+import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
 
 class ExifPreferenceActivity : BaseNoNavigationActivity() {
 

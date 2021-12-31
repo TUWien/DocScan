@@ -3,7 +3,6 @@ package at.ac.tuwien.caa.docscan.ui.camera;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
-import static at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.KEY_RETAKE_IMAGE;
 
 import android.Manifest;
 import android.animation.Animator;
@@ -70,7 +69,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import at.ac.tuwien.caa.docscan.ActivityUtils;
+import at.ac.tuwien.caa.docscan.ui.base.ActivityUtils;
 import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.ActionSheet;
@@ -100,10 +99,11 @@ import at.ac.tuwien.caa.docscan.logic.PreferencesHandler;
 import at.ac.tuwien.caa.docscan.logic.Resource;
 import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.logic.Success;
-import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity;
-import at.ac.tuwien.caa.docscan.ui.NavigationDrawer;
+import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity;
+import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
+import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
 import kotlin.Lazy;
 import kotlin.Pair;
 import me.drakeet.support.toast.ToastCompat;
@@ -208,7 +208,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     public static Intent newInstance(Context context, UUID docId, UUID pageId) {
         Intent intent = new Intent(context, CameraActivity.class);
-        intent.putExtra(KEY_RETAKE_IMAGE, true);
         intent.putExtra(EXTRA_DOC_ID, docId);
         intent.putExtra(EXTRA_PAGE_ID, pageId);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -424,7 +423,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     private void navigateToGallery(@NonNull UUID docId, @Nullable UUID fileId) {
-        Intent intent = at.ac.tuwien.caa.docscan.ui.gallery.newPackage.PageSlideActivity.newInstance(this, docId, fileId);
+        Intent intent = PageSlideActivity.newInstance(this, docId, fileId);
         ActivityUtils.createBackStack(this, intent);
         finish();
     }

@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.databinding.FragmentDocumentsBinding
 import at.ac.tuwien.caa.docscan.logic.DocumentPage
 import at.ac.tuwien.caa.docscan.logic.extractDocWithPages
-import at.ac.tuwien.caa.docscan.ui.BaseFragment
+import at.ac.tuwien.caa.docscan.ui.base.BaseFragment
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
 import at.ac.tuwien.caa.docscan.ui.dialog.isPositive

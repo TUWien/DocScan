@@ -12,7 +12,7 @@
     <!--android:layout_height="match_parent"-->
     <!--android:background="@color/black"/>-->
 
-    <at.ac.tuwien.caa.docscan.gallery.PageImageView
+    <at.ac.tuwien.caa.docscan.ui.gallery.PageImageView
         android:id="@+id/image_viewer_image_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
