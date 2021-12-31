@@ -17,7 +17,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.exifinterface.media.ExifInterface;
 
-import com.android.volley.VolleyError;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -41,7 +40,6 @@ import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation;
-import at.ac.tuwien.caa.docscan.rest.RestRequest;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import timber.log.Timber;
 
@@ -892,21 +890,6 @@ public class Helper {
 
     }
 
-    public static String getNetworkResponse(VolleyError error) {
-
-        try {
-            if (error == null || error.networkResponse == null || error.networkResponse.data == null)
-                return "error is null";
-            String body = new String(error.networkResponse.data, "UTF-8");
-            return body;
-        } catch (UnsupportedEncodingException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
-//            This should not be null, because we should use the proper encoding:
-            return null;
-        }
-
-    }
-
     /**
      * Shows a dialog in case of ActivityNotFoundExceptions. This exceptions happen if the user
      * wants to share a file with another app and no app is found for that purpose.
@@ -956,23 +939,6 @@ public class Helper {
             return false;
         }
         return true;
-
-    }
-
-    /**
-     * Returns the url of the production or test server, depending on the user setting.
-     *
-     * @param context
-     * @return
-     */
-    public static String getTranskribusBaseUrl(Context context) {
-
-        boolean useTestServer = useTranskribusTestServer(context);
-
-        if (useTestServer)
-            return RestRequest.BASE_TEST_URL;
-        else
-            return RestRequest.BASE_URL;
 
     }
 

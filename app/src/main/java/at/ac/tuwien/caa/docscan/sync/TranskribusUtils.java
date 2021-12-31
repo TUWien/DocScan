@@ -4,14 +4,13 @@ import android.content.Context;
 import android.util.Log;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.koushikdutta.async.future.FutureCallback;
-import com.koushikdutta.ion.Ion;
+//import com.koushikdutta.async.future.FutureCallback;
+//import com.koushikdutta.ion.Ion;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,11 +22,6 @@ import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.Page;
 import at.ac.tuwien.caa.docscan.logic.Settings;
-import at.ac.tuwien.caa.docscan.rest.Collection;
-import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
-import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
-import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
-import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
 import at.ac.tuwien.caa.docscan.rest.User;
 import at.ac.tuwien.caa.docscan.logic.DocumentJSONParser;
 
@@ -35,7 +29,7 @@ import at.ac.tuwien.caa.docscan.logic.DocumentJSONParser;
  * A class responsible for handling functionality that is connected to Transkribus. Other (more
  * general) functionality should be included in SyncService.
  */
-
+@Deprecated
 public class TranskribusUtils {
 
     public static final String TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads";
@@ -122,11 +116,11 @@ public class TranskribusUtils {
 
         mSelectedDirs = selectedDirs;
         mIsCollectionCreated = false;
-
-        if (isCollectionIDSaved())
-            new CollectionsRequest(mContext);
-        else
-            createDocScanCollection();
+//
+//        if (isCollectionIDSaved())
+//            new CollectionsRequest(mContext);
+//        else
+//            createDocScanCollection();
 
 //        new CollectionsRequest(mContext);
 
@@ -148,8 +142,8 @@ public class TranskribusUtils {
 //        corresponding SyncStorage member:
         mUnfinishedUploadIDsProcessed = new ArrayList<>(unfinishedIDs);
 
-        for (Integer id : unfinishedIDs)
-            new UploadStatusRequest(mContext, id);
+//        for (Integer id : unfinishedIDs)
+//            new UploadStatusRequest(mContext, id);
 
         Log.d(CLASS_NAME, "startFindingUnfinishedUploads2");
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "startFindingUnfinishedUploads2");
@@ -274,60 +268,60 @@ public class TranskribusUtils {
 
     }
 
-    public void onCollections(List<Collection> collections) {
-
-        Log.d(CLASS_NAME, "onCollections");
-        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onCollections");
-
-        int savedCollectionID = getDocScanCollectionID();
-
-        int maxId = -1;
-
-        for (Collection collection : collections) {
-            if (collection.getName().compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
-//                docScanCollectionFound(collection);
-//                return;
-
-//                Is the collection id not saved yet?
-                if ((savedCollectionID == Settings.NO_ENTRY) || mIsCollectionCreated) {
-                    int id = collection.getID();
-                    if (id > maxId)
-                        maxId = id;
-//                    mIsCollectionCreated = false;
-//                    Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, collection.getID());
-//                    docScanCollectionFound(collection);
+//    public void onCollections(List<Collection> collections) {
+//
+//        Log.d(CLASS_NAME, "onCollections");
+//        DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "onCollections");
+//
+//        int savedCollectionID = getDocScanCollectionID();
+//
+//        int maxId = -1;
+//
+//        for (Collection collection : collections) {
+//            if (collection.getName().compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
+////                docScanCollectionFound(collection);
+////                return;
+//
+////                Is the collection id not saved yet?
+//                if ((savedCollectionID == Settings.NO_ENTRY) || mIsCollectionCreated) {
+//                    int id = collection.getID();
+//                    if (id > maxId)
+//                        maxId = id;
+////                    mIsCollectionCreated = false;
+////                    Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, collection.getID());
+////                    docScanCollectionFound(collection);
+////                    return;
+//                } else if ((savedCollectionID == collection.getID())) {
+//                    Log.d(CLASS_NAME, "onCollections: docScanCollectionFound");
+//                    docScanCollectionFound(collection.getID());
 //                    return;
-                } else if ((savedCollectionID == collection.getID())) {
-                    Log.d(CLASS_NAME, "onCollections: docScanCollectionFound");
-                    docScanCollectionFound(collection.getID());
-                    return;
-                }
-
-            }
-        }
-
-        if (maxId > -1) {
-
-            Log.d(CLASS_NAME, "onCollections: saveDocScanCollectionID");
-            mIsCollectionCreated = false;
-            saveDocScanCollectionID(maxId);
-//            Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, maxId);
-            docScanCollectionFound(maxId);
-            return;
-
-        }
-
-        createDocScanCollection();
-
-    }
+//                }
+//
+//            }
+//        }
+//
+//        if (maxId > -1) {
+//
+//            Log.d(CLASS_NAME, "onCollections: saveDocScanCollectionID");
+//            mIsCollectionCreated = false;
+//            saveDocScanCollectionID(maxId);
+////            Settings.getInstance().saveIntKey(mContext, Settings.SettingEnum.COLLECTION_ID_KEY, maxId);
+//            docScanCollectionFound(maxId);
+//            return;
+//
+//        }
+//
+//        createDocScanCollection();
+//
+//    }
 
 
     private void createDocScanCollection() {
 
         DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "createDocScanCollection");
-
-        if (mContext != null)
-            new CreateCollectionRequest(mContext, TRANSKRIBUS_UPLOAD_COLLECTION_NAME);
+//
+//        if (mContext != null)
+//            new CreateCollectionRequest(mContext, TRANSKRIBUS_UPLOAD_COLLECTION_NAME);
 
     }
 
@@ -338,7 +332,7 @@ public class TranskribusUtils {
 
         if (collName.compareTo(TRANSKRIBUS_UPLOAD_COLLECTION_NAME) == 0) {
             mIsCollectionCreated = true;
-            new CollectionsRequest(mContext);
+//            new CollectionsRequest(mContext);
         }
 
     }
@@ -382,18 +376,18 @@ public class TranskribusUtils {
                 String jsonString = DocumentJSONParser.toJSONString(document);
                 Log.d(CLASS_NAME, "uploadDirs: json: " + jsonString);
                 DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME, "uploadDirs: json: " + jsonString);
-
-                try {
-                    JSONObject jsonObject = new JSONObject(jsonString);
-                    new StartUploadRequest(mContext, jsonObject, collectionId);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-//                    TODO: tell the user that an error happened:
-                    FirebaseCrashlytics.getInstance().recordException(e);
-                    DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
-                            "error while parsing json string: " + jsonString);
-                }
+//
+//                try {
+////                    JSONObject jsonObject = new JSONObject(jsonString);
+////                    new StartUploadRequest(mContext, jsonObject, collectionId);
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+////                    TODO: tell the user that an error happened:
+//                    FirebaseCrashlytics.getInstance().recordException(e);
+//                    DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
+//                            "error while parsing json string: " + jsonString);
+//                }
             } else {
                 it.remove();
             }
@@ -476,50 +470,50 @@ public class TranskribusUtils {
 
         DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "uploading file: " + syncFile.toString());
 
-        Ion.with(context)
-                .load("PUT", Helper.getTranskribusBaseUrl(mContext) + "uploads/" +
-                        Integer.toString(syncFile.getUploadId()))
-                .setHeader("Cookie", "JSESSIONID=" + User.getInstance().getSessionID())
-                .setMultipartContentType("multipart/form-data")
-                .setMultipartFile("img", "application/octet-stream", file)
-                .asString()
-                .setCallback(new FutureCallback<String>() {
-                    @Override
-                    public void onCompleted(Exception e, String result) {
-
-                        if (e == null) {
-//                            Log.d(getClass().getName(), "uploaded file: " + fileSync.toString());
-                            callback.onUploadComplete(syncFile);
-                            Log.d(CLASS_NAME, "uploaded file to collectionID: " +
-                                    syncFile.getUploadId() + " file: " + syncFile.toString());
-                            DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils",
-                                    "uploaded file: " + syncFile.toString());
-
-                            if (result.contains("<finished>")) {
-                                removeFromSyncStorageUnfinishedList(syncFile.getUploadId());
-
-                                Log.d(getClass().getName(), "finished upload with ID: " + syncFile.getUploadId());
-//                                Log.d(getClass().getName(), "response: " + result);
-                                DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "finished upload with ID: " + syncFile.getUploadId());
-                            }
-
-                        } else {
-                            if (e instanceof FileNotFoundException) {
-                                DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
-                                        "FileNotFoundException: " + syncFile.getFile().toString());
-                                Log.d(CLASS_NAME, "FileNotFoundException: " +
-                                        syncFile.getFile().toString());
-                                handleMissingFile(syncFile, context);
-                                removeFromSyncStorageUnfinishedList(syncFile.getUploadId());
-                            } else {
-                                callback.onError(e);
-                            }
-                            Log.d(getClass().getName(), "error uploading file with upload ID: " + syncFile.getUploadId() + " fileSync: " + syncFile.toString());
-                            DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "error uploading file: " + e);
-                        }
-
-                    }
-                });
+//        Ion.with(context)
+//                .load("PUT", Helper.getTranskribusBaseUrl(mContext) + "uploads/" +
+//                        Integer.toString(syncFile.getUploadId()))
+//                .setHeader("Cookie", "JSESSIONID=" + User.getInstance().getSessionID())
+//                .setMultipartContentType("multipart/form-data")
+//                .setMultipartFile("img", "application/octet-stream", file)
+//                .asString()
+//                .setCallback(new FutureCallback<String>() {
+//                    @Override
+//                    public void onCompleted(Exception e, String result) {
+//
+//                        if (e == null) {
+////                            Log.d(getClass().getName(), "uploaded file: " + fileSync.toString());
+//                            callback.onUploadComplete(syncFile);
+//                            Log.d(CLASS_NAME, "uploaded file to collectionID: " +
+//                                    syncFile.getUploadId() + " file: " + syncFile.toString());
+//                            DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils",
+//                                    "uploaded file: " + syncFile.toString());
+//
+//                            if (result.contains("<finished>")) {
+//                                removeFromSyncStorageUnfinishedList(syncFile.getUploadId());
+//
+//                                Log.d(getClass().getName(), "finished upload with ID: " + syncFile.getUploadId());
+////                                Log.d(getClass().getName(), "response: " + result);
+//                                DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "finished upload with ID: " + syncFile.getUploadId());
+//                            }
+//
+//                        } else {
+//                            if (e instanceof FileNotFoundException) {
+//                                DataLog.getInstance().writeUploadLog(mContext, CLASS_NAME,
+//                                        "FileNotFoundException: " + syncFile.getFile().toString());
+//                                Log.d(CLASS_NAME, "FileNotFoundException: " +
+//                                        syncFile.getFile().toString());
+//                                handleMissingFile(syncFile, context);
+//                                removeFromSyncStorageUnfinishedList(syncFile.getUploadId());
+//                            } else {
+//                                callback.onError(e);
+//                            }
+//                            Log.d(getClass().getName(), "error uploading file with upload ID: " + syncFile.getUploadId() + " fileSync: " + syncFile.toString());
+//                            DataLog.getInstance().writeUploadLog(mContext, "TranskribusUtils", "error uploading file: " + e);
+//                        }
+//
+//                    }
+//                });
     }
 
     //    TODO: test what we really need here!

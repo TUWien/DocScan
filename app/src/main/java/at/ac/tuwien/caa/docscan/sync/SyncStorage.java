@@ -19,6 +19,7 @@ import at.ac.tuwien.caa.docscan.logic.DataLog;
 import at.ac.tuwien.caa.docscan.logic.Document;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
 
+@Deprecated
 public class SyncStorage {
 
     public static final String SYNC_STORAGE_FILE_NAME = "syncstorage.json";
@@ -251,8 +252,8 @@ public class SyncStorage {
 
     public void addDropboxFile(File file, String documentName) {
 
-        if (mFileSyncList != null)
-            mFileSyncList.add(new DropboxSyncFile(file, documentName));
+//        if (mFileSyncList != null)
+//            mFileSyncList.add(new DropboxSyncFile(file, documentName));
 
 
     }

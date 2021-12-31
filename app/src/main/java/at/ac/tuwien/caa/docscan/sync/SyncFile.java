@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.sync;
 
 import java.io.File;
 
+@Deprecated
 public class SyncFile {
 
     public static final int STATE_NOT_UPLOADED = 0;

@@ -71,7 +71,42 @@ class UploadWorker(
         private const val INPUT_PARAM_DOC_ID = "INPUT_PARAM_DOC_ID"
         private const val UPLOAD_TAG = "transkribus_image_uploader"
 
-        fun spawnUploadJob(workManager: WorkManager, documentId: UUID) {
+        fun spawnUploadJob(
+            workManager: WorkManager,
+            documentId: UUID
+        ) {
+// TODO: Check old constraints
+            //        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+//
+//        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(
+//                R.string.key_upload_mobile_data), true);
+//        int[] constraints;
+//        if (useMobileConnection) {
+//            constraints = new int[]{Constraint.ON_ANY_NETWORK};
+//            Log.d(CLASS_NAME, "startSyncJob: using mobile connection");
+//        } else {
+//            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
+//            Log.d(CLASS_NAME, "startSyncJob: using just wifi");
+//        }
+            //        Job syncJob = dispatcher.newJobBuilder()
+//                // the JobService that will be called
+////                .setService(SyncService.class)
+//                .setService(UploadService.class)
+//                // uniquely identifies the job
+//                .setTag(JOB_TAG)
+//                // one-off job
+//                .setRecurring(false)
+//                // don't persist past a device reboot
+//                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
+//                .setTrigger(timeWindow)
+//                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
+//                .setReplaceCurrent(true)
+//                // retry with exponential backoff
+//                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
+//                .setConstraints(
+//                        constraints
+//                )
+//                .build();
             val uploadImages = OneTimeWorkRequest.Builder(UploadWorker::class.java)
                 .addTag(UPLOAD_TAG)
                 .setInputData(

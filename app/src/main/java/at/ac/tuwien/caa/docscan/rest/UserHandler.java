@@ -10,6 +10,7 @@ import static at.ac.tuwien.caa.docscan.rest.User.SYNC_DROPBOX;
 /**
  * Created by fabian on 09.02.2017.
  */
+@Deprecated
 public class UserHandler {
 
 

@@ -32,6 +32,7 @@ import at.ac.tuwien.caa.docscan.ui.syncui.SyncAdapter;
  * Created by fabian on 18.08.2017.
  */
 
+@Deprecated
 public class SyncInfo implements Serializable {
 
     private static final long serialVersionUID = -1078733185746102614L;

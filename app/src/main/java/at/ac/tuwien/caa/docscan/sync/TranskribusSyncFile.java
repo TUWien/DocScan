@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.sync;
 
 import java.io.File;
 
+@Deprecated
 public class TranskribusSyncFile extends SyncFile {
 
     private int mUploadId;

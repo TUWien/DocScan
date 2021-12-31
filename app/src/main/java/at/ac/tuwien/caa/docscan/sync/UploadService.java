@@ -1,51 +1,15 @@
 package at.ac.tuwien.caa.docscan.sync;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
-
-import androidx.core.app.NotificationCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-
-import android.util.Log;
-
-import com.android.volley.VolleyError;
 //import com.firebase.jobdispatcher.JobParameters;
 //import com.firebase.jobdispatcher.JobService;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.logic.DataLog;
-import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
-import at.ac.tuwien.caa.docscan.logic.Helper;
-import at.ac.tuwien.caa.docscan.rest.Collection;
-import at.ac.tuwien.caa.docscan.rest.CollectionsRequest;
-import at.ac.tuwien.caa.docscan.rest.CreateCollectionRequest;
-import at.ac.tuwien.caa.docscan.rest.LoginRequest;
-import at.ac.tuwien.caa.docscan.rest.RestRequest;
-import at.ac.tuwien.caa.docscan.rest.StartUploadRequest;
-import at.ac.tuwien.caa.docscan.rest.UploadStatusRequest;
-import at.ac.tuwien.caa.docscan.rest.User;
-import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
-
-import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
 
 /**
  * Created by fabian on 18.08.2017.
  * Based on: @see <a href="https://developer.android.com/guide/components/services.html#ExtendingService"/>
  */
-// TODO: This is currently commented and not working, since it needs to be migrated to AndroidX WorkManager
+// TODO: Check the notifications logic
+@Deprecated
 public class UploadService {
     public static final String INTENT_UPLOAD_ACTION = "INTENT_UPLOAD_ACTION";
     public static final String UPLOAD_INTEND_TYPE = "UPLOAD_INTEND_TYPE";

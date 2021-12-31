@@ -5,6 +5,7 @@ import android.net.Uri;
 /**
  * Created by fabian on 01.12.2016.
  */
+@Deprecated
 public class User {
 
     private static User mInstance = null;

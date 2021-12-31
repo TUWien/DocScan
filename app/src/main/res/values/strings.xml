@@ -226,13 +226,13 @@
     <string name="picture_save_error_title">Image saving error</string>
 
     <!-- Sync: -->
-    <string name="sync_connect_dropbox_button_text">Dropbox</string>
+<!--    <string name="sync_connect_dropbox_button_text">Dropbox</string>-->
     <string name="sync_connect_transkribus_button_text">Transkribus</string>
-    <string name="sync_dropbox_text">Dropbox</string>
+<!--    <string name="sync_dropbox_text">Dropbox</string>-->
     <string name="sync_transkribus_text">Transkribus</string>
     <string name="sync_not_connected_text">Offline</string>
 
-    <!-- DropboxLoginActivity: -->
+    <!-- DropboxLoginActivity: TODO: Remove unused strings -->
     <string name="dropbox_text">It is necessary to allow DocScan to access your Dropbox
         account. This authentication will be done in your browser.</string>
     <string name="dropbox_title">Dropbox Authentication</string>
@@ -247,7 +247,7 @@
     <string name="logout_confirm_button_text">Logout</string>
     <string name="logout_cancel_button_text">Cancel</string>
 
-    <!-- AccountActivity -->
+    <!-- AccountActivity TODO: Remove unused strings -->
     <string name="account_heading_text">Your current account:</string>
     <string name="account_user_textview_text">Name:</string>
     <string name="account_cloud_textview_text">Cloud service:</string>

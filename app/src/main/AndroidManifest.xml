@@ -132,16 +132,6 @@
             android:parentActivityName=".ui.camera.CameraActivity" />
 
         <activity
-            android:name=".ui.AccountActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.camera.CameraActivity" />
-
-        <activity
-            android:name=".ui.DropboxLoginActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.camera.CameraActivity" />
-
-        <activity
             android:name=".ui.transkribus.logout.LogoutActivity"
             android:exported="false"
             android:parentActivityName=".ui.camera.CameraActivity" />
@@ -156,20 +146,6 @@
             android:name=".ui.docviewer.DocumentViewerActivity"
             android:exported="true"
             android:parentActivityName=".ui.camera.CameraActivity" />
-
-        <activity
-            android:name="com.dropbox.core.android.AuthActivity"
-            android:configChanges="orientation|keyboard"
-            android:exported="true"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <data android:scheme="@string/dropbox_api_key" />
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
 
         <!--<receiver android:name=".sync.BootReceiver">-->
         <!--<intent-filter>-->
