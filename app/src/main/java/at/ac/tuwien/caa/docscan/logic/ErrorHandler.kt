@@ -32,7 +32,7 @@ fun Throwable.handleError(activity: BaseActivity) {
                     activity.showDialog(dialogModel)
                 }
                 is DocScanError.DBError -> {
-                    if(error.code == DBErrorCode.DOCUMENT_ALREADY_UPLOADED) {
+                    if (error.code == DBErrorCode.DOCUMENT_ALREADY_UPLOADED) {
                         val dialogModel = DialogModel(
                             dialogAction = ADialog.DialogAction.CUSTOM,
                             customTitle = "DBError",
@@ -59,6 +59,15 @@ fun Throwable.handleError(activity: BaseActivity) {
                     activity.showDialog(dialogModel)
                 }
             }
+        }
+    }
+}
+
+fun Throwable.getDocScanDBError(): DocScanError.DBError? {
+    return when (val error = (this as? DocScanException)?.docScanError) {
+        is DocScanError.DBError -> error
+        else -> {
+            null
         }
     }
 }

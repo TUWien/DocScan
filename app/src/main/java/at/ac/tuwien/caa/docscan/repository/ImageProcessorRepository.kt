@@ -14,6 +14,7 @@ import at.ac.tuwien.caa.docscan.db.model.boundary.asPoint
 import at.ac.tuwien.caa.docscan.db.model.boundary.rotateBy90
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.setSinglePageBoundary
+import at.ac.tuwien.caa.docscan.db.model.sortByNumber
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
 import kotlinx.coroutines.*
@@ -39,8 +40,10 @@ class ImageProcessorRepository(
 
     // TODO: Define the type of detection
     // TODO: define if a single/double page detection should be performed.
-
     /**
+     * TODO: The boundaries are still kept after a cropping operation has been performed
+     * TODO: Re-compute the hash each time for every page operation
+     * TODO: Check the locking mechanisms
      * Pre-Condition: The document is not locked.
      */
     fun spawnPageDetection(page: Page) {
@@ -65,17 +68,19 @@ class ImageProcessorRepository(
     }
 
     /**
+     * TODO: The boundaries are still kept after a cropping operation has been performed
+     * TODO: Re-compute the hash each time for every page operation
+     * TODO: Check the locking mechanisms
      * Pre-Condition: The document is not locked.
      */
     fun cropDocument(document: Document) {
         scope.launch {
-            documentDao.getDocumentWithPages(document.id)?.let { doc ->
+            documentDao.getDocumentWithPages(document.id)?.sortByNumber()?.let { doc ->
                 pageDao.updatePageProcessingStateForDocument(
                     doc.document.id,
                     PostProcessingState.PROCESSING
                 )
                 // TODO: This can be performed on multiple threads to speed up the processing.
-                // TODO: Perform the processing based on the numbering order.
                 doc.pages.forEach { page ->
                     fileHandler.getFileByPage(page)?.let {
                         val points = (page.singlePageBoundary?.asClockwiseList()
@@ -86,7 +91,7 @@ class ImageProcessorRepository(
                             Timber.e("Cropping has failed!", e)
                         }
                     }
-                    // TODO: The boundaries are sometimes still shown.
+                    // TODO: The single page boundary here is still kept, maybe it's better to remove it.
                     pageDao.updatePageProcessingState(page.id, PostProcessingState.DONE)
                 }
                 // TODO: This shouldn't be actually necessary
@@ -106,16 +111,17 @@ class ImageProcessorRepository(
             appDatabase.withTransaction {
                 pages.forEach { page ->
                     pageDao.updatePageProcessingState(page.id, PostProcessingState.PROCESSING)
-//                    pageDao.updatePageProcessingState(page.id, PostProcessingState.PROCESSING)
-//                    pageDao.updatePageProcessingState(page.id, PostProcessingState.PROCESSING)
-//                    pageDao.updatePageProcessingState(page.id, PostProcessingState.PROCESSING)
                 }
             }
             pages.forEach { page ->
                 page.rotatePageBy90CW()
                 appDatabase.withTransaction {
                     pageDao.insertPage(page)
-                    pageDao.updatePageProcessingState(page.id, PostProcessingState.DRAFT)
+                    // if the document was already processed, keep the done status.
+                    pageDao.updatePageProcessingState(
+                        page.id,
+                        if (page.postProcessingState == PostProcessingState.DONE) PostProcessingState.DONE else PostProcessingState.DRAFT
+                    )
                 }
             }
         }

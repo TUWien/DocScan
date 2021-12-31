@@ -89,6 +89,7 @@ class CropViewModel(
             model.points = croppingPoints
             model.previousRotation = model.rotation
             model.rotation = model.rotation.rotateBy90Clockwise()
+            // TODO: Call the document repository instead an use a resource to detect if the change may happen.
             imageProcessorRepository.rotateFile(model.file, model.rotation)
             model.meta = calculateImageResolution(model.file, model.rotation)
             observableModel.postValue(model)

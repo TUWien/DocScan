@@ -17,6 +17,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.SheetAction
 import at.ac.tuwien.caa.docscan.databinding.ActivityDocumentViewerBinding
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
+import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.isUploaded
 import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
 import at.ac.tuwien.caa.docscan.logic.*
@@ -213,7 +214,13 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                 resource.exception.handleError(this)
                             }
                             DocumentAction.UPLOAD -> {
-                                resource.exception.handleError(this)
+                                resource.exception.getDocScanDBError()?.let { dbError ->
+                                    if (dbError.code == DBErrorCode.DOCUMENT_ALREADY_UPLOADED) {
+                                        // TODO: Append the document extra here, otherwise the dialog will be ignored!
+                                        showDialog(ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED)
+                                        return@observe
+                                    }
+                                }
                             }
                         }
                     }
@@ -271,35 +278,41 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
 
         dialogViewModel.observableDialogAction.observe(this, {
             it.getContentIfNotHandled()?.let { result ->
-                when (result.dialogAction) {
-                    ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            viewModel.applyActionFor(true, DocumentAction.CROP, doc)
+                if (result.isPositive()) {
+                    when (result.dialogAction) {
+                        ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION -> {
+                            result.arguments.extractDocWithPages()?.let { doc ->
+                                viewModel.applyActionFor(true, DocumentAction.CROP, doc)
+                            }
                         }
-                    }
-                    ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            viewModel.applyActionFor(true, DocumentAction.DELETE, doc)
+                        ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT -> {
+                            result.arguments.extractDocWithPages()?.let { doc ->
+                                viewModel.applyActionFor(true, DocumentAction.DELETE, doc)
+                            }
                         }
-                    }
-                    ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            viewModel.applyActionFor(true, DocumentAction.EXPORT, doc)
+                        ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
+                            result.arguments.extractDocWithPages()?.let { doc ->
+                                viewModel.applyActionFor(true, DocumentAction.EXPORT, doc)
+                            }
                         }
-                    }
-                    ADialog.DialogAction.CONFIRM_UPLOAD -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            viewModel.applyActionFor(true, DocumentAction.UPLOAD, doc)
+                        ADialog.DialogAction.CONFIRM_UPLOAD -> {
+                            result.arguments.extractDocWithPages()?.let { doc ->
+                                viewModel.applyActionFor(true, DocumentAction.UPLOAD, doc)
+                            }
                         }
-                    }
-                    ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED -> {
-                        if (result.isPositive()) {
-                            // TODO: This call is not good, because we do not know which document was tried.
-                            viewModel.uploadSelectedDocument(forceAction = true)
+                        ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED -> {
+                            result.arguments.extractDocWithPages()?.let { doc ->
+                                viewModel.applyActionFor(
+                                    true,
+                                    DocumentAction.UPLOAD,
+                                    doc,
+                                    forceAction = true
+                                )
+                            }
                         }
-                    }
-                    else -> {
-                        // ignore
+                        else -> {
+                            // ignore
+                        }
                     }
                 }
             }
