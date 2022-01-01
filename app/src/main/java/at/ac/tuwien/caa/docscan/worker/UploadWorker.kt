@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.sync
+package at.ac.tuwien.caa.docscan.worker
 
 import android.content.Context
 import androidx.work.*

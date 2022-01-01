@@ -248,6 +248,7 @@ class FileHandler(private val context: Context) {
         getDocumentFolderById(docId.toString()).safelyRecursiveDelete()
     }
 
+    // TODO: Check the file provider, since the paths have changed!
     fun getUriByPage(page: Page): Uri? {
         val file = getFileByPage(page) ?: return null
         return try {

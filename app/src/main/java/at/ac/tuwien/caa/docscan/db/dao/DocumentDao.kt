@@ -19,6 +19,10 @@ interface DocumentDao {
     fun getAllDocumentWithPages(): List<DocumentWithPages>
 
     @Transaction
+    @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE NOT ${Document.KEY_LOCK_STATE} = :state")
+    fun getAllLockedDocumentWithPages(state: LockState = LockState.NONE): List<DocumentWithPages>
+
+    @Transaction
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_ID} =:documentId")
     suspend fun getDocumentWithPages(documentId: UUID): DocumentWithPages?
 

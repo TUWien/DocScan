@@ -25,7 +25,7 @@ class EditDocumentViewModel(extras: Bundle, val documentRepository: DocumentRepo
         viewModelScope.launch(Dispatchers.IO) {
             observableRequestResource.postValue(
                 Event(
-                    documentRepository.createOrUpdateDocument(
+                    documentRepository.updateDocument(
                         document.edit(title, metaData)
                     )
                 )

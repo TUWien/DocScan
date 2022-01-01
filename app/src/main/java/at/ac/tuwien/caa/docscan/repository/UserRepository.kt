@@ -5,7 +5,7 @@ import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.dao.UserDao
 import at.ac.tuwien.caa.docscan.db.model.User
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.sync.UploadWorker
+import at.ac.tuwien.caa.docscan.worker.UploadWorker
 import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
 import at.ac.tuwien.caa.docscan.api.transkribus.model.login.LoginResponse
 import kotlinx.coroutines.NonCancellable

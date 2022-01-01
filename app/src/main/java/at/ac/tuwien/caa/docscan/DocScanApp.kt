@@ -1,12 +1,14 @@
 package at.ac.tuwien.caa.docscan
 
 import android.app.Application
+import androidx.work.WorkManager
 import at.ac.tuwien.caa.docscan.koin.appModule
 import at.ac.tuwien.caa.docscan.koin.daoModule
 import at.ac.tuwien.caa.docscan.koin.repositoryModule
 import at.ac.tuwien.caa.docscan.koin.viewModelModule
 import at.ac.tuwien.caa.docscan.koin.networkModule
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
+import at.ac.tuwien.caa.docscan.worker.DocumentSanitizeWorker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import org.koin.android.ext.android.inject
@@ -24,6 +26,7 @@ import java.util.*
 class DocScanApp : Application() {
 
     private val preferencesHandler by inject<PreferencesHandler>()
+    private val workManager by inject<WorkManager>()
 
     override fun onCreate() {
         super.onCreate()
@@ -37,9 +40,8 @@ class DocScanApp : Application() {
             if (a == null || a.options.apiKey.isEmpty()) Timber.d(getString(R.string.start_firebase_not_auth_text))
         }
 
-        // TODO: CONSTRAINT - Spawn job, that will re-check the processing/uploading state.
-        // TODO: CONSTRAINT - Eventually, check every day if there isn't some missing stuff.
-        // TODO: CONSTRAINT - If e.g. the app was killed during this operation, the document would remain in this state.
+        // spawn the sanitizer to check potential broken states
+        DocumentSanitizeWorker.spawnSanitize(workManager)
         logFirstAppStart()
     }
 

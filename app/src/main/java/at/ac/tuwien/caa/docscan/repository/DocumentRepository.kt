@@ -15,10 +15,11 @@ import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
+import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.sync.UploadWorker
+import at.ac.tuwien.caa.docscan.worker.UploadWorker
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -56,6 +57,27 @@ class DocumentRepository(
     }
 
     fun getActiveDocument() = documentDao.getActiveDocument()
+
+    @WorkerThread
+    suspend fun sanitizeDocuments(): Resource<Unit> {
+        documentDao.getAllLockedDocumentWithPages().forEach {
+            if (it.document.lockState == LockState.PARTIAL_LOCK) {
+                it.pages.forEach { page ->
+                    if (page.isProcessing()) {
+                        pageDao.updatePageProcessingState(page.id, PostProcessingState.DRAFT)
+                    }
+                    tryToUnlockDoc(it.document.id, page.id)
+                }
+            } else if (it.document.lockState == LockState.FULL_LOCK) {
+                if (it.isUploadInProgress()) {
+                    UploadWorker.spawnUploadJob(workManager, it.document.id)
+                } else {
+                    tryToUnlockDoc(it.document.id, null)
+                }
+            }
+        }
+        return Success(Unit)
+    }
 
     @WorkerThread
     suspend fun deletePages(pages: List<Page>) {
@@ -183,8 +205,23 @@ class DocumentRepository(
         return doc
     }
 
+    /**
+     * Pre-Condition: The [document] is not in the DB.
+     */
     @WorkerThread
-    fun createOrUpdateDocument(document: Document): Resource<Document> {
+    suspend fun createDocument(document: Document): Resource<Document> {
+        return createOrUpdateDocument(document)
+    }
+
+    @WorkerThread
+    suspend fun updateDocument(document: Document): Resource<Document> {
+        return performDocOperation(document.id, operation = {
+            createOrUpdateDocument(document)
+        })
+    }
+
+    @WorkerThread
+    suspend fun createOrUpdateDocument(document: Document): Resource<Document> {
         val docByNewTitle = documentDao.getDocumentByTitle(documentTitle = document.title)
         return if (docByNewTitle == null || docByNewTitle.id == document.id) {
             db.runInTransaction {

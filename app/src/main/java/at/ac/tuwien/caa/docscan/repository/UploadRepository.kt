@@ -9,7 +9,7 @@ import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.sanitizedTitle
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.sync.UploadWorker
+import at.ac.tuwien.caa.docscan.worker.UploadWorker
 import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
 import at.ac.tuwien.caa.docscan.api.transkribus.mapToMultiPartBody
 import at.ac.tuwien.caa.docscan.api.transkribus.model.collection.CollectionResponse

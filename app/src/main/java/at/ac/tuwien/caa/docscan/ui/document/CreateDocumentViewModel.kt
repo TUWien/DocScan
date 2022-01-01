@@ -33,7 +33,7 @@ class CreateDocumentViewModel(val repository: DocumentRepository) : ViewModel() 
                     writer = transkribusMetaData.writer
                 )
             }
-            observableResource.postValue(repository.createOrUpdateDocument(document))
+            observableResource.postValue(repository.createDocument(document))
         }
     }
 }
