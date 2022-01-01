@@ -127,7 +127,8 @@ class FileHandler(private val context: Context) {
 
     fun createCacheFile(fileId: UUID, fileType: PageFileType = PageFileType.JPEG): File {
         val tempFolder = getCacheTempFolder().createFolderIfNecessary()
-        val file = File(tempFolder.absolutePath + File.separator + fileId.toString() + "." + fileType.extension)
+        val file =
+            File(tempFolder.absolutePath + File.separator + fileId.toString() + "." + fileType.extension)
         // delete the previous cached file
         file.safelyDelete()
         // create it if necessary

@@ -6,6 +6,7 @@ import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import timber.log.Timber
 import java.io.File
+import java.io.InputStream
 
 fun applyExifData(file: File, exifMetaData: ImageExifMetaData) {
     try {
@@ -59,6 +60,21 @@ fun applyRotationResource(file: File, rotation: Rotation): Resource<Unit> {
     } catch (exception: Exception) {
         Timber.e(exception, "Unable to apply exif orientation!")
         IOErrorCode.APPLY_EXIF_ROTATION_ERROR.asFailure(exception)
+    }
+}
+
+fun getRotation(file: File): Rotation {
+    return try {
+        val exif = ExifInterface(file)
+        Rotation.getRotationByExif(
+            exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_NORMAL
+            )
+        )
+    } catch (exception: Exception) {
+        Timber.e(exception, "Couldn't read orientation exif attribute!")
+        Rotation.ORIENTATION_NORMAL
     }
 }
 

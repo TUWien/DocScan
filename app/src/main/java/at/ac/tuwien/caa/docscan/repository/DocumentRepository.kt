@@ -74,14 +74,6 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    suspend fun updatePage(page: Page) {
-        performPageOperation(page.docId, page.id, operation = { _, _ ->
-            pageDao.insertPage(page)
-            return@performPageOperation Success(Unit)
-        })
-    }
-
-    @WorkerThread
     suspend fun setDocumentAsActive(documentId: UUID) {
         db.runInTransaction {
             documentDao.setAllDocumentsInactive()
@@ -209,38 +201,32 @@ class DocumentRepository(
     }
 
     /**
-     * TODO: This is currently just for debugging purposes, there are no checks and the implmentation
-     * TODO: can be improved
+     * Currently used only for debugging purposes.
      */
     @WorkerThread
     suspend fun saveNewImportedImageForDocument(
         document: Document,
         uris: List<Uri>
-    ) {
-        withContext(NonCancellable) {
-            uris.forEach { uri ->
-                try {
-                    fileHandler.readBytes(uri)?.let { bytes ->
-                        saveNewImageForDocument(
-                            document,
-                            bytes,
-                            null,
-                            ImageExifMetaData(
-                                // TODO: this is wrong and needs to be read out from the file
-                                Rotation.ORIENTATION_NORMAL.exifOrientation,
-                                "test",
-                                null,
-                                null,
+    ): Resource<Unit> {
+        return performDocOperation(document.id, operation = {
+            withContext(NonCancellable) {
+                uris.forEach { uri ->
+                    try {
+                        fileHandler.readBytes(uri)?.let { bytes ->
+                            saveNewImageForDocument(
+                                document,
+                                bytes,
                                 null,
                                 null
                             )
-                        )
+                        }
+                    } catch (e: Exception) {
+                        Timber.e(e)
                     }
-                } catch (e: Exception) {
-                    Timber.e(e)
                 }
             }
-        }
+            Success(Unit)
+        })
     }
 
     @WorkerThread
@@ -248,7 +234,7 @@ class DocumentRepository(
         document: Document,
         data: ByteArray,
         fileId: UUID? = null,
-        exifMetaData: ImageExifMetaData
+        exifMetaData: ImageExifMetaData?
     ): Resource<Page> {
         Timber.d("Starting to save new image for document: ${document.title}")
         // TODO: Make a check here, if there is enough storage to save the file.
@@ -285,9 +271,16 @@ class DocumentRepository(
             return IOErrorCode.FILE_COPY_ERROR.asFailure(e)
         }
 
-        // 3. apply exif meta data to file
-        applyExifData(file, exifMetaData)
+        // TODO: Apply exif only here, not in the viewModels
+        // 3. apply external exif data if available, otherwise assume that exif is already set.
+        val rotation = if (exifMetaData != null) {
+            applyExifData(file, exifMetaData)
+            Rotation.getRotationByExif(exifMetaData.exifOrientation)
+        } else {
+            getRotation(file)
+        }
 
+        // TODO: When adding/removing pages, add a generic check to adapt the page number correctly.
         // for a replacement, just take the number of the old page.
         // for a new page, take the max number and add + 1 to it.
         val pageNumber =
@@ -302,7 +295,7 @@ class DocumentRepository(
             document.id,
             file.getFileHash(),
             pageNumber,
-            Rotation.getRotationByExif(exifMetaData.exifOrientation),
+            rotation,
             PageFileType.JPEG,
             PostProcessingState.DRAFT,
             SinglePageBoundary.getDefault()
