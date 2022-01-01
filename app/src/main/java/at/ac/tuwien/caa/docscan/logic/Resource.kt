@@ -2,14 +2,32 @@ package at.ac.tuwien.caa.docscan.logic
 
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.api.transkribus.model.uploads.UploadStatusResponse
+import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import java.net.HttpURLConnection
 
 sealed class Resource<T>
 data class Success<T>(val data: T) : Resource<T>()
 data class Failure<T>(val exception: Throwable) : Resource<T>()
 
+/**
+ * A helper function for applying [success] if [Resource] is [Success].
+ */
+fun <T> Resource<T>.applyOnSuccess(success: (T) -> Unit): Resource<T> {
+    return when (this) {
+        is Failure -> this
+        is Success -> {
+            success(this.data)
+            this
+        }
+    }
+}
+
 fun <T> DBErrorCode.asFailure(): Failure<T> {
     return Failure(DocScanException(DocScanError.DBError(this)))
+}
+
+fun <T> IOErrorCode.asFailure(exception: Throwable? = null): Failure<T> {
+    return Failure(DocScanException(DocScanError.IOError(this, exception)))
 }
 
 fun <T> asUnauthorizedFailure(): Failure<T> {

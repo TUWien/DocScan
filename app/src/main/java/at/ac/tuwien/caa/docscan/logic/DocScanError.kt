@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.logic
 
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.api.transkribus.model.error.TranskribusApiError
+import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 
 class DocScanException(val docScanError: DocScanError) : Exception()
 
@@ -30,5 +31,6 @@ sealed class DocScanError {
     /**
      * An IO error that may happen when performing internal IO operations.
      */
-    data class IOError(val throwable: Throwable) : DocScanError()
+    data class IOError(val ioErrorCode: IOErrorCode, val throwable: Throwable? = null) :
+        DocScanError()
 }

@@ -220,6 +220,8 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                         showDialog(ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED)
                                         return@observe
                                     }
+                                } ?: run {
+                                    resource.exception.handleError(this)
                                 }
                             }
                         }

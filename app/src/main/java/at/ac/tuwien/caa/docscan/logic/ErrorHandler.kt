@@ -54,7 +54,7 @@ fun Throwable.handleError(activity: BaseActivity) {
                     val dialogModel = DialogModel(
                         dialogAction = ADialog.DialogAction.CUSTOM,
                         customTitle = "DocScanError.IOError",
-                        customMessage = "Error code occurred: ${error.throwable.message}"
+                        customMessage = "Error code occurred: ${error.ioErrorCode.name} ${error.throwable?.message}"
                     )
                     activity.showDialog(dialogModel)
                 }

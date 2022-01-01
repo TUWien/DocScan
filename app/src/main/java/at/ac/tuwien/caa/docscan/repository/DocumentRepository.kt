@@ -13,6 +13,7 @@ import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
+import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
@@ -142,15 +143,26 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun processDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
-        // TODO: check pre-conditions & Run constraints check
-        imageProcessorRepository.cropDocument(documentWithPages.document)
-        return Success(Unit)
+        return when (val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
+            is Failure -> {
+                Failure(result.exception)
+            }
+            is Success -> {
+                imageProcessorRepository.cropDocument(documentWithPages.document)
+                Success(Unit)
+            }
+        }
     }
 
     @WorkerThread
     suspend fun rotatePagesBy90(pages: List<Page>): Resource<Unit> {
-        imageProcessorRepository.rotatePages90CW(pages)
-        return Success(Unit)
+        val firstPage = pages.firstOrNull() ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        return performDocOperation(firstPage.docId, operation = {
+            withContext(NonCancellable) {
+                imageProcessorRepository.rotatePages90CW(pages)
+            }
+            Success(Unit)
+        })
     }
 
     @WorkerThread
@@ -256,7 +268,7 @@ class DocumentRepository(
                 if (fileId == null) {
                     file.safelyDelete()
                 }
-                return Failure(DocScanException(DocScanError.IOError(e)))
+                return IOErrorCode.FILE_COPY_ERROR.asFailure(e)
             }
         }
 
@@ -270,7 +282,7 @@ class DocumentRepository(
             tempFile?.let {
                 fileHandler.safelyCopyFile(it, file)
             }
-            return Failure(DocScanException(DocScanError.IOError(e)))
+            return IOErrorCode.FILE_COPY_ERROR.asFailure(e)
         }
 
         // 3. apply exif meta data to file
@@ -304,7 +316,8 @@ class DocumentRepository(
             pageDao.insertPage(newPage)
         }
 
-        // 5. Spawn the page detection task
+        // 5. Add a partial lock and spawn page detection
+        lockDoc(document.id, newPage.id)
         imageProcessorRepository.spawnPageDetection(newPage)
 
         return Success(data = newPage)

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
 import at.ac.tuwien.caa.docscan.db.model.Page
+import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.TFLiteModel
 import com.google.gson.GsonBuilder
 import timber.log.Timber
@@ -126,7 +127,12 @@ class FileHandler(private val context: Context) {
 
     fun createCacheFile(fileId: UUID, fileType: PageFileType = PageFileType.JPEG): File {
         val tempFolder = getCacheTempFolder().createFolderIfNecessary()
-        return File(tempFolder.absolutePath + File.separator + fileId.toString() + "." + fileType.extension).createFileIfNecessary()
+        val file = File(tempFolder.absolutePath + File.separator + fileId.toString() + "." + fileType.extension)
+        // delete the previous cached file
+        file.safelyDelete()
+        // create it if necessary
+        file.createFileIfNecessary()
+        return file
     }
 
     fun createDocumentFile(documentId: UUID, fileId: UUID, fileType: PageFileType): File {
@@ -155,6 +161,15 @@ class FileHandler(private val context: Context) {
                 to.safelyDelete()
             }
             throw exception
+        }
+    }
+
+    fun copyFileResource(from: File, to: File, deleteOnFail: Boolean = false): Resource<Unit> {
+        return try {
+            copyFile(from, to, deleteOnFail)
+            Success(Unit)
+        } catch (exception: Exception) {
+            IOErrorCode.FILE_COPY_ERROR.asFailure(exception)
         }
     }
 
@@ -219,6 +234,15 @@ class FileHandler(private val context: Context) {
         return getImageFileByPage(page.docId, page.id)
     }
 
+    fun getFileByPageResource(page: Page?): Resource<File> {
+        val file = getFileByPage(page)
+        return if (file == null) {
+            IOErrorCode.FILE_MISSING.asFailure()
+        } else {
+            Success(file)
+        }
+    }
+
     fun deleteEntireDocumentFolder(docId: UUID) {
         getDocumentFolderById(docId.toString()).safelyRecursiveDelete()
     }
@@ -239,14 +263,13 @@ class FileHandler(private val context: Context) {
 }
 
 /**
- * Computes a file hash with MD5, this is important for image files in order to detect
- * changes via the DB.
+ * Computes a MD5 file hash.
+ * - The has needs to be in lowercase format, which is expected by the transkribus backend.
  * @return the hash string for the file, empty string if the hashing should fail
  */
 fun File.getFileHash(): String {
     return try {
         return calcHash().toHexString().lowercase()
-//        Files.asByteSource(this).hash(Hashing.crc32()).toString()
     } catch (e: Exception) {
         Timber.e("Computing hash of file: $name")
         ""

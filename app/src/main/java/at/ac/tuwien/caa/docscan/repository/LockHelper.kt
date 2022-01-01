@@ -63,7 +63,7 @@ suspend fun lockDocForLongRunningOperation(documentId: UUID): Resource<Unit> {
  */
 suspend fun <T> performDocOperation(
     documentId: UUID,
-    operation: (document: Document) -> Resource<T>
+    operation: suspend (document: Document) -> Resource<T>
 ): Resource<T> {
     return lockForOperation(documentId, null) { document, _ ->
         return@lockForOperation operation(document)
@@ -77,7 +77,7 @@ suspend fun <T> performDocOperation(
 suspend fun <T> performPageOperation(
     documentId: UUID,
     pageId: UUID,
-    operation: (document: Document, page: Page) -> Resource<T>
+    operation: suspend (document: Document, page: Page) -> Resource<T>
 ): Resource<T> {
     return lockForOperation(documentId, pageId) { document, page ->
         if (page != null) {
@@ -90,7 +90,7 @@ suspend fun <T> performPageOperation(
 private suspend fun <T> lockForOperation(
     documentId: UUID,
     pageId: UUID?,
-    operation: (document: Document, page: Page?) -> Resource<T>
+    operation: suspend (document: Document, page: Page?) -> Resource<T>
 ): Resource<T> {
     return withContext(dbLockDispatcher) {
         val doc = docDao.getDocument(documentId)
@@ -164,14 +164,14 @@ private fun checkLock(doc: Document, page: Page?): Resource<Unit> {
     return Success(Unit)
 }
 
-private fun lockDoc(documentId: UUID, pageId: UUID? = null) {
+fun lockDoc(documentId: UUID, pageId: UUID? = null) {
     docDao.setDocumentLock(
         documentId,
         if (pageId == null) LockState.FULL_LOCK else LockState.PARTIAL_LOCK
     )
 }
 
-private suspend fun tryToUnlockDoc(documentId: UUID, pageId: UUID?) {
+suspend fun tryToUnlockDoc(documentId: UUID, pageId: UUID?) {
     // it might happen that this won't return anything, this is because some operations like deleting
     // a document would remove this.
     val docWithPages = docDao.getDocumentWithPages(documentId) ?: return

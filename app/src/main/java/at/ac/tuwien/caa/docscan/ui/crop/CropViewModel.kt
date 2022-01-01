@@ -89,7 +89,6 @@ class CropViewModel(
             model.points = croppingPoints
             model.previousRotation = model.rotation
             model.rotation = model.rotation.rotateBy90Clockwise()
-            // TODO: Call the document repository instead an use a resource to detect if the change may happen.
             imageProcessorRepository.rotateFile(model.file, model.rotation)
             model.meta = calculateImageResolution(model.file, model.rotation)
             observableModel.postValue(model)
@@ -99,25 +98,14 @@ class CropViewModel(
     fun save(croppingPoints: List<PointF>) {
         viewModelScope.launch(Dispatchers.IO) {
             model.points = croppingPoints
-            documentRepository.getPageById(page.id)?.apply {
-                page.rotation = model.rotation
-                page.setSinglePageBoundary(model.points)
-                val pageFile = fileHandler.getFileByPage(page) ?: kotlin.run {
-                    // in case the original file cannot be found anymore, delete the page.
-                    documentRepository.deletePage(page)
-                    return@apply
-                }
-                val cachedFile = model.file
-                // copy the cached file to the original file
-                fileHandler.safelyCopyFile(
-                    cachedFile,
-                    pageFile
-                )
-                // delete the cache file
-                cachedFile.safelyDelete()
-                // update the page in the DB
-                documentRepository.updatePage(page)
-            }
+            imageProcessorRepository.replacePageFileBy(
+                pageId = page.id,
+                cachedFile = model.file,
+                rotation = model.rotation,
+                croppingPoints = model.points
+            )
+            model.file.safelyDelete()
+
             if (preferencesHandler.showCroppingInfo) {
                 observableShowCroppingInfo.postValue(Event(Unit))
             } else {

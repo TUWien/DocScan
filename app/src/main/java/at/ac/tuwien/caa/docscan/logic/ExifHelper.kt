@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.logic
 
 import androidx.exifinterface.media.ExifInterface
 import at.ac.tuwien.caa.docscan.camera.ImageExifMetaData
+import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import timber.log.Timber
 import java.io.File
@@ -46,6 +47,18 @@ fun applyRotation(file: File, rotation: Rotation) {
         exif.saveAttributes()
     } catch (exception: Exception) {
         Timber.e(exception, "Couldn't save exif attributes!")
+    }
+}
+
+fun applyRotationResource(file: File, rotation: Rotation): Resource<Unit> {
+    return try {
+        val exif = ExifInterface(file)
+        exif.setAttribute(ExifInterface.TAG_ORIENTATION, rotation.exifOrientation.toString())
+        exif.saveAttributes()
+        Success(Unit)
+    } catch (exception: Exception) {
+        Timber.e(exception, "Unable to apply exif orientation!")
+        IOErrorCode.APPLY_EXIF_ROTATION_ERROR.asFailure(exception)
     }
 }
 

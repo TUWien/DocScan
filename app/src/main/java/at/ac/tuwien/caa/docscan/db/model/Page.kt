@@ -10,18 +10,17 @@ import at.ac.tuwien.caa.docscan.db.model.Page.Companion.TABLE_NAME_PAGES
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.boundary.asClockwiseList
 import at.ac.tuwien.caa.docscan.db.model.boundary.asPoint
+import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
-import at.ac.tuwien.caa.docscan.logic.DocumentPage
-import at.ac.tuwien.caa.docscan.logic.PageFileType
+import at.ac.tuwien.caa.docscan.logic.*
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
 /**
  * Represents the [Page] entity, which is uniquely represented in the storage by the [docId] and
  * [id].
- * TODO: DOMAIN_LOGIC - Add missing state for uploads and related upload ids.
  */
 @Parcelize
 @Entity(tableName = TABLE_NAME_PAGES)
@@ -66,7 +65,7 @@ data class Page(
      * Represents the processing state of the page.
      */
     @ColumnInfo(name = KEY_POST_PROCESSING_STATE)
-    val postProcessingState: PostProcessingState,
+    var postProcessingState: PostProcessingState,
     /**
      * An optional (cropping) boundary with 4 points.
      */
@@ -130,3 +129,8 @@ fun Page.asDocumentPageExtra(): DocumentPage {
     return DocumentPage(docId = this.docId, pageId = this.id)
 }
 
+fun Page.computeFileHash(fileHandler: FileHandler): Resource<Unit> {
+    val file = fileHandler.getFileByPage(this) ?: return IOErrorCode.FILE_MISSING.asFailure()
+    fileHash = file.getFileHash()
+    return Success(Unit)
+}
