@@ -34,11 +34,11 @@
 
         <!-- Download the ML kit model for OCR, after the app is installed from the play store -->
         <meta-data
-            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="ocr" />
 
         <!-- We need a file provider to enable a sharing of the log file (which is saved in internal memory) -->
-        <!-- TODO: Check if this is still needed -->
+        <!-- TODO: Needs to be adapted, currently sharing pictures is not possible -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="at.ac.tuwien.caa.fileprovider"

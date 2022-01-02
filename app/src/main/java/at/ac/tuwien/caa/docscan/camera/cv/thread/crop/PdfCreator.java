@@ -24,11 +24,12 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.google.firebase.ml.vision.FirebaseVision;
-import com.google.firebase.ml.vision.common.FirebaseVisionImage;
-import com.google.firebase.ml.vision.text.FirebaseVisionText;
-import com.google.firebase.ml.vision.text.FirebaseVisionText.TextBlock;
-import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.Text.TextBlock;
+import com.google.mlkit.vision.text.TextRecognizer;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
@@ -60,7 +61,7 @@ import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESS
 public class PdfCreator {
 
     private static final String CLASS_NAME = "PdfCreator";
-    private static FirebaseVisionTextRecognizer sTextRecognizer;
+    private static TextRecognizer sTextRecognizer;
     public static final String PDF_INTENT = "PDF_INTENT";
     public static final String PDF_FILE_NAME = "PDF_FILE_NAME";
     public static final String PDF_CHANNEL_ID = "PDF_CHANNEL_ID";
@@ -93,7 +94,7 @@ public class PdfCreator {
     public static void createPdfWithOCR(final String documentName, final ArrayList<File> files,
                                         final CropRunnable cropRunnable, WeakReference<Context> context) {
 
-        final FirebaseVisionText[] ocrResults = new FirebaseVisionText[files.size()];
+        final Text[] ocrResults = new Text[files.size()];
 
         for (final File file : files) {
             boolean success =
@@ -110,12 +111,12 @@ public class PdfCreator {
 
     private static boolean processFile(final String documentName, final ArrayList<File> files,
                                        final CropRunnable cropRunnable, WeakReference<Context> context,
-                                       final FirebaseVisionText[] ocrResults, final File file) {
+                                       final Text[] ocrResults, final File file) {
 
         try {
 
 
-            FirebaseVisionImage image = FirebaseVisionImage.fromFilePath(context.get(),
+            InputImage image = InputImage.fromFilePath(context.get(),
                     Uri.fromFile(file));
 
             final Context contextF = context.get();
@@ -124,15 +125,15 @@ public class PdfCreator {
             final NotificationCompat.Builder builder = getNotificationBuilder(documentName,
                     notificationManager, contextF);
 
-            Task<FirebaseVisionText> task = getTextRecognizer().processImage(image);
+            Task<Text> task = getTextRecognizer().process(image);
 
             try {
 
                 Tasks.await(task);
 
-                task.addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
+                task.addOnSuccessListener(new OnSuccessListener<Text>() {
                     @Override
-                    public void onSuccess(FirebaseVisionText result) {
+                    public void onSuccess(Text result) {
 
                         ocrResults[files.indexOf(file)] = result;
 
@@ -206,11 +207,11 @@ public class PdfCreator {
 //
 //    }
 
-    private static int getFinishCnt(FirebaseVisionText[] ocrResults) {
+    private static int getFinishCnt(Text[] ocrResults) {
 
         int finishCnt = 0;
 
-        for (FirebaseVisionText r : ocrResults) {
+        for (Text r : ocrResults) {
             if (r != null)
                 finishCnt++;
         }
@@ -308,7 +309,7 @@ public class PdfCreator {
 
 
     private static boolean savePdf(String documentName, ArrayList<File> files,
-                                   FirebaseVisionText[] ocrResults, CropRunnable cropRunnable, Context context) {
+                                   Text[] ocrResults, CropRunnable cropRunnable, Context context) {
 
         BitmapSize size = new BitmapSize(files.get(0));
         boolean landscapeFirst = isLandscape(size);
@@ -372,12 +373,12 @@ public class PdfCreator {
                     BaseFont bf = BaseFont.createFont();
 
                     //sort the result based on the y-Axis so that the markup order is correct
-                    List<List<FirebaseVisionText.TextBlock>> sortedBlocks = sortBlocks(ocrResults[i]);
+                    List<List<Text.TextBlock>> sortedBlocks = sortBlocks(ocrResults[i]);
                     size = new BitmapSize(file);
 
                     //int j = 0;
                     for (List<TextBlock> column : sortedBlocks) {
-                        for (FirebaseVisionText.Line line : sortLinesInColumn(column)) {
+                        for (Text.Line line : sortLinesInColumn(column)) {
                             // one FirebaseVisionText.Line corresponds to one line
                             // the rectangle we want to draw this line corresponds to the lines boundingBox
 
@@ -485,17 +486,17 @@ public class PdfCreator {
 
 
     @NonNull
-    private static List<List<FirebaseVisionText.TextBlock>> sortBlocks(FirebaseVisionText ocrResult) {
-        List<List<FirebaseVisionText.TextBlock>> sortedBlocks = new ArrayList<>();
-        List<FirebaseVisionText.TextBlock> biggestBlocks = new ArrayList<>();
-        List<FirebaseVisionText.TextBlock> blocksSortedByWidth = sortByWidth(ocrResult.getTextBlocks());
-        for (FirebaseVisionText.TextBlock block : blocksSortedByWidth) {
+    private static List<List<Text.TextBlock>> sortBlocks(Text ocrResult) {
+        List<List<Text.TextBlock>> sortedBlocks = new ArrayList<>();
+        List<Text.TextBlock> biggestBlocks = new ArrayList<>();
+        List<Text.TextBlock> blocksSortedByWidth = sortByWidth(ocrResult.getTextBlocks());
+        for (Text.TextBlock block : blocksSortedByWidth) {
 
             if (block.getBoundingBox() == null)
                 continue;
 
             if (sortedBlocks.isEmpty()) {
-                List<FirebaseVisionText.TextBlock> blocks = new ArrayList<>();
+                List<Text.TextBlock> blocks = new ArrayList<>();
                 blocks.add(block);
                 biggestBlocks.add(block);
                 sortedBlocks.add(blocks);
@@ -517,7 +518,7 @@ public class PdfCreator {
                     }
                 }
                 if (!added) {
-                    List<FirebaseVisionText.TextBlock> blocks = new ArrayList<>();
+                    List<Text.TextBlock> blocks = new ArrayList<>();
                     blocks.add(block);
                     int i = 0;
                     while (i < biggestBlocks.size()) {
@@ -541,8 +542,8 @@ public class PdfCreator {
 
     @NonNull
     private static List<TextBlock> sortByWidth(List<TextBlock> result) {
-        List<FirebaseVisionText.TextBlock> sortedBlocks = new ArrayList<>();
-        for (FirebaseVisionText.TextBlock textBlock : result) {
+        List<Text.TextBlock> sortedBlocks = new ArrayList<>();
+        for (Text.TextBlock textBlock : result) {
 
             if (textBlock.getBoundingBox() == null)
                 continue;
@@ -566,10 +567,10 @@ public class PdfCreator {
     }
 
     @NonNull
-    private static List<FirebaseVisionText.Line> sortLinesInColumn(List<TextBlock> result) {
-        List<FirebaseVisionText.Line> sortedLines = new ArrayList<>();
-        for (FirebaseVisionText.TextBlock textBlock : result) {
-            for (FirebaseVisionText.Line line : textBlock.getLines())
+    private static List<Text.Line> sortLinesInColumn(List<TextBlock> result) {
+        List<Text.Line> sortedLines = new ArrayList<>();
+        for (Text.TextBlock textBlock : result) {
+            for (Text.Line line : textBlock.getLines())
 
 //                if (line.getCornerPoints() == null || line.getCornerPoints().length == 0)
 //                    continue;
@@ -606,9 +607,9 @@ public class PdfCreator {
 //        return docsFolder;
 //    }
 
-    private static FirebaseVisionTextRecognizer getTextRecognizer() {
+    private static TextRecognizer getTextRecognizer() {
         if (sTextRecognizer == null) {
-            sTextRecognizer = FirebaseVision.getInstance().getOnDeviceTextRecognizer();
+            sTextRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         }
         return sTextRecognizer;
     }
