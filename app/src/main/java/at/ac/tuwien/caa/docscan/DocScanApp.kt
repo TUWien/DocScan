@@ -60,7 +60,7 @@ class DocScanApp : Application() {
             preferencesHandler.firstStartDate = timeStamp
             // set for the crashlytics instance
             FirebaseCrashlytics.getInstance()
-                .setCustomKey(PreferencesHandler.KEY_FIRST_START_DATE, timeStamp)
+                    .setCustomKey(PreferencesHandler.KEY_FIRST_START_DATE, timeStamp)
         }
     }
 }

@@ -1,7 +1,5 @@
 package at.ac.tuwien.caa.docscan.db.model.state
 
-import at.ac.tuwien.caa.docscan.repository.migration.domain.JsonDocument
-
 /**
  * Represents the [Page]'s post processing state.
  */
@@ -34,4 +32,3 @@ enum class PostProcessingState(val id: String) {
         }
     }
 }
-

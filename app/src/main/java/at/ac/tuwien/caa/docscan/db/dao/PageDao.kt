@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.db.dao
 import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.Upload
+import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UPLOAD_STATE_ID_UPLOAD_IN_PROGRESS
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
@@ -36,6 +37,9 @@ interface PageDao {
 
     @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_POST_PROCESSING_STATE}= :state WHERE ${Page.KEY_DOC_ID} = :docId ")
     fun updatePageProcessingStateForDocument(docId: UUID, state: PostProcessingState)
+
+    @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_EXPORT_STATE}= :state WHERE ${Page.KEY_DOC_ID} = :docId ")
+    fun updatePageExportStateForDocument(docId: UUID, state: ExportState)
 
     @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :state WHERE ${Page.KEY_ID} = :pageId ")
     fun updateUploadState(pageId: UUID, state: UploadState)

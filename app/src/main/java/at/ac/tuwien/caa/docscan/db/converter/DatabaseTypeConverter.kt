@@ -2,10 +2,10 @@ package at.ac.tuwien.caa.docscan.db.converter
 
 import androidx.room.TypeConverter
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
+import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
-import at.ac.tuwien.caa.docscan.logic.PageFileType
 import java.util.*
 
 class DatabaseTypeConverter {
@@ -61,12 +61,12 @@ class DatabaseTypeConverter {
     }
 
     @TypeConverter
-    fun fromStringToPageFileType(id: String?): PageFileType {
-        return PageFileType.getFileTypeByExtension(id)
+    fun fromStringToExportState(id: String?): ExportState {
+        return ExportState.getExportStateById(id)
     }
 
     @TypeConverter
-    fun fromPageFileTypeToString(pageFileType: PageFileType): String {
-        return pageFileType.extension
+    fun fromExportStateToString(pageFileType: ExportState): String {
+        return pageFileType.id
     }
 }

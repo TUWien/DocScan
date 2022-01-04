@@ -17,7 +17,7 @@ class DocumentsViewModel(
 
     init {
         viewModelScope.launch {
-            repository.getAllDocuments().collectLatest {
+            repository.getAllDocumentsAsFlow().collectLatest {
                 // sort alphabetically
                 observableDocuments.postValue(it.sortedBy { doc -> doc.document.title })
             }

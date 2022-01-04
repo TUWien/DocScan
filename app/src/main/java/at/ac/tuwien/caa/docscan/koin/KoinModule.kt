@@ -7,13 +7,10 @@ import at.ac.tuwien.caa.docscan.DocScanApp
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
-import at.ac.tuwien.caa.docscan.repository.DocumentRepository
-import at.ac.tuwien.caa.docscan.repository.ImageProcessorRepository
-import at.ac.tuwien.caa.docscan.repository.UploadRepository
-import at.ac.tuwien.caa.docscan.repository.UserRepository
 import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
 import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
 import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusHeaderInterceptor
+import at.ac.tuwien.caa.docscan.repository.*
 import at.ac.tuwien.caa.docscan.ui.base.UserViewModel
 import at.ac.tuwien.caa.docscan.ui.camera.CameraViewModel
 import at.ac.tuwien.caa.docscan.ui.crop.CropViewModel
@@ -30,6 +27,7 @@ import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationViewModel
 import at.ac.tuwien.caa.docscan.ui.start.StartActivityViewModel
 import at.ac.tuwien.caa.docscan.ui.account.LoginViewModel
 import at.ac.tuwien.caa.docscan.ui.account.logout.LogoutViewModel
+import at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector.SelectDocumentViewModel
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
@@ -73,19 +71,21 @@ val viewModelModule = module {
     viewModel { LoginViewModel(get()) }
     viewModel { UserViewModel(get()) }
     viewModel { LogoutViewModel(get()) }
+    viewModel { SelectDocumentViewModel(get()) }
 }
 
 val repositoryModule = module {
     single { DocumentRepository(get(), get(), get(), get(), get(), get(), get()) }
     single { UserRepository(get(), get(), get(), get(), get()) }
     single { UploadRepository(get(), get(), get(), get(), get()) }
+    single { ExportRepository(get(), get(), get()) }
 }
 
 val networkModule = module {
     single {
         GsonBuilder()
-            .setLenient()
-            .create()
+                .setLenient()
+                .create()
     }
     single {
         TranskribusHeaderInterceptor(get())
@@ -95,19 +95,19 @@ val networkModule = module {
     }
     single {
         provideService(
-            TranskribusAPIService.BASE_URL,
-            get(),
-            get(),
-            TranskribusAPIService::class.java
+                TranskribusAPIService.BASE_URL,
+                get(),
+                get(),
+                TranskribusAPIService::class.java
         )
     }
 }
 
 private fun provideOkHttp(
-    transkribusHeaderInterceptor: TranskribusHeaderInterceptor
+        transkribusHeaderInterceptor: TranskribusHeaderInterceptor
 ): OkHttpClient {
     val okHttpBuilder = OkHttpClient.Builder()
-        .retryOnConnectionFailure(true)
+            .retryOnConnectionFailure(true)
 // TODO: Check timeouts for requests (especially for uploads)
 //            .connectTimeout(10, TimeUnit.SECONDS)
 //            .readTimeout(10, TimeUnit.SECONDS)
@@ -121,15 +121,15 @@ private fun provideOkHttp(
 }
 
 private fun <T> provideService(
-    @Suppress("SameParameterValue") baseUrl: String,
-    gson: Gson,
-    okHttpClient: OkHttpClient,
-    type: Class<out T>
+        @Suppress("SameParameterValue") baseUrl: String,
+        gson: Gson,
+        okHttpClient: OkHttpClient,
+        type: Class<out T>
 ): T {
     return Retrofit.Builder()
-        .baseUrl(baseUrl)
-        .addConverterFactory(GsonConverterFactory.create(gson))
-        .client(okHttpClient)
-        .build()
-        .create(type)
+            .baseUrl(baseUrl)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .client(okHttpClient)
+            .build()
+            .create(type)
 }

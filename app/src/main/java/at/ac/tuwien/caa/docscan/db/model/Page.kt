@@ -12,6 +12,7 @@ import at.ac.tuwien.caa.docscan.db.model.boundary.asClockwiseList
 import at.ac.tuwien.caa.docscan.db.model.boundary.asPoint
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
+import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.*
@@ -25,55 +26,60 @@ import java.util.*
 @Parcelize
 @Entity(tableName = TABLE_NAME_PAGES)
 data class Page(
-    /**
-     * Uniquely identifies the page.
-     */
-    @PrimaryKey
-    @ColumnInfo(name = KEY_ID)
-    val id: UUID,
-    /**
-     * The id of [Document] to which the page belongs to.
-     */
-    @ColumnInfo(name = KEY_DOC_ID)
-    val docId: UUID,
-    /**
-     * The hash of the page file.
-     */
-    @ColumnInfo(name = KEY_FILE_HASH)
-    var fileHash: String,
-    /**
-     * The ordering number of the page, across all pages in a single document.
-     *
-     * Do NOT take this as an index, since they might be gaps, the number only takes care of the
-     * ordering.
-     */
-    @ColumnInfo(name = KEY_NUMBER)
-    val number: Int,
-    /**
-     * The rotation of the page. The exif info is saved separately into the file, this
-     * column is necessary to keep track of file changes in the DB.
-     */
-    @ColumnInfo(name = KEY_ROTATION)
-    var rotation: Rotation,
+        /**
+         * Uniquely identifies the page.
+         */
+        @PrimaryKey
+        @ColumnInfo(name = KEY_ID)
+        val id: UUID,
+        /**
+         * The id of [Document] to which the page belongs to.
+         */
+        @ColumnInfo(name = KEY_DOC_ID)
+        val docId: UUID,
+        /**
+         * The hash of the page file.
+         */
+        @ColumnInfo(name = KEY_FILE_HASH)
+        var fileHash: String,
+        /**
+         * The ordering number of the page, across all pages in a single document.
+         *
+         * Do NOT take this as an index, since they might be gaps, the number only takes care of the
+         * ordering.
+         */
+        @ColumnInfo(name = KEY_NUMBER)
+        val number: Int,
+        /**
+         * The rotation of the page. The exif info is saved separately into the file, this
+         * column is necessary to keep track of file changes in the DB.
+         */
+        @ColumnInfo(name = KEY_ROTATION)
+        var rotation: Rotation,
 
-    /**
-     * Represents the page file type.
-     */
-    @ColumnInfo(name = KEY_FILE_TYPE)
-    val fileType: PageFileType,
-    /**
-     * Represents the processing state of the page.
-     */
-    @ColumnInfo(name = KEY_POST_PROCESSING_STATE)
-    var postProcessingState: PostProcessingState,
-    /**
-     * An optional (cropping) boundary with 4 points.
-     */
-    @Embedded(prefix = KEY_SINGLE_PAGE_BOUNDARY_PREFIX)
-    var singlePageBoundary: SinglePageBoundary?,
+        /**
+         * Represents the page file type.
+         */
+        @ColumnInfo(name = KEY_FILE_TYPE)
+        val fileType: PageFileType,
+        /**
+         * Represents the processing state of the page.
+         */
+        @ColumnInfo(name = KEY_POST_PROCESSING_STATE)
+        var postProcessingState: PostProcessingState,
+        /**
+         * Represents the export state of the page.
+         */
+        @ColumnInfo(name = KEY_EXPORT_STATE)
+        var exportState: ExportState,
+        /**
+         * An optional (cropping) boundary with 4 points.
+         */
+        @Embedded(prefix = KEY_SINGLE_PAGE_BOUNDARY_PREFIX)
+        var singlePageBoundary: SinglePageBoundary?,
 
-    @Embedded(prefix = KEY_UPLOAD_PREFIX)
-    var transkribusUpload: Upload = Upload()
+        @Embedded(prefix = KEY_UPLOAD_PREFIX)
+        var transkribusUpload: Upload = Upload()
 ) : Parcelable {
     companion object {
         const val TABLE_NAME_PAGES = "pages"
@@ -86,6 +92,7 @@ data class Page(
         const val KEY_POST_PROCESSING_STATE = "post_processing_state"
         const val KEY_FILE_TYPE = "file_type"
         const val KEY_SINGLE_PAGE_BOUNDARY = "single_page_boundary"
+        const val KEY_EXPORT_STATE = "export_state"
         const val KEY_SINGLE_PAGE_BOUNDARY_PREFIX = "spb"
     }
 }
@@ -106,9 +113,13 @@ fun Page.isProcessing(): Boolean {
     return postProcessingState == PostProcessingState.PROCESSING
 }
 
+fun Page.isExporting(): Boolean {
+    return exportState == ExportState.EXPORTING
+}
+
 fun Page.getSingleBoundaryPoints(): MutableList<PointF> {
     return (singlePageBoundary?.asClockwiseList() ?: SinglePageBoundary.getDefault()
-        .asClockwiseList()).map { point ->
+            .asClockwiseList()).map { point ->
         point.asPoint()
     }.toMutableList()
 }
@@ -118,10 +129,10 @@ fun Page.getSingleBoundaryPoints(): MutableList<PointF> {
  */
 fun Page.setSinglePageBoundary(points: List<PointF>) {
     singlePageBoundary = SinglePageBoundary(
-        points[0].asPoint(),
-        points[1].asPoint(),
-        points[2].asPoint(),
-        points[3].asPoint()
+            points[0].asPoint(),
+            points[1].asPoint(),
+            points[2].asPoint(),
+            points[3].asPoint()
     )
 }
 

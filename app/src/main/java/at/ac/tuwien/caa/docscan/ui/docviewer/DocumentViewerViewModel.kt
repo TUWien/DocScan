@@ -8,6 +8,7 @@ import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.isUploaded
 import at.ac.tuwien.caa.docscan.logic.Event
+import at.ac.tuwien.caa.docscan.logic.ExportFormat
 import at.ac.tuwien.caa.docscan.logic.Resource
 import at.ac.tuwien.caa.docscan.logic.asFailure
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
@@ -129,7 +130,7 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
                     repository.removeDocument(documentWithPages)
                 }
                 DocumentAction.EXPORT -> {
-                    repository.exportDocument(documentWithPages)
+                    repository.exportDocument(documentWithPages, forceExport = forceAction, ExportFormat.PDF)
                 }
                 DocumentAction.CROP -> {
                     repository.processDocument(documentWithPages)

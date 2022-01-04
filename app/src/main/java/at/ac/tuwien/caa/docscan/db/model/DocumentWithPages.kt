@@ -9,13 +9,13 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class DocumentWithPages(
-    @Embedded
-    val document: Document,
-    @Relation(
-        parentColumn = Document.KEY_ID,
-        entityColumn = Page.KEY_DOC_ID
-    )
-    var pages: List<Page> = listOf()
+        @Embedded
+        val document: Document,
+        @Relation(
+                parentColumn = Document.KEY_ID,
+                entityColumn = Page.KEY_DOC_ID
+        )
+        var pages: List<Page> = listOf()
 ) : Parcelable
 
 fun DocumentWithPages.isCropped(): Boolean {
@@ -26,16 +26,8 @@ fun DocumentWithPages.isProcessing(): Boolean {
     return pages.firstOrNull { page -> page.isProcessing() } != null
 }
 
-/**
- * @return true if all of the pages have been uploaded.
- */
-fun DocumentWithPages.isUploaded(): Boolean {
-    pages.forEach { page ->
-        if (!page.isUploaded()) {
-            return false
-        }
-    }
-    return true
+fun DocumentWithPages.isExporting(): Boolean {
+    return pages.firstOrNull { page -> page.isExporting() } != null
 }
 
 /**
@@ -48,4 +40,16 @@ fun DocumentWithPages.isUploadInProgress(): Boolean {
         }
     }
     return false
+}
+
+/**
+ * @return true if all of the pages have been uploaded.
+ */
+fun DocumentWithPages.isUploaded(): Boolean {
+    pages.forEach { page ->
+        if (!page.isUploaded()) {
+            return false
+        }
+    }
+    return true
 }
