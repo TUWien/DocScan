@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.logic
 import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
+import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.TFLiteModel
@@ -26,10 +27,11 @@ class FileHandler(private val context: Context) {
 
         private const val ASSET_FOLDER_SEGMENTATION = "segmentation"
         private val ASSET_FOLDER_SEGMENTATION_META =
-            ASSET_FOLDER_SEGMENTATION + File.separator + "meta"
+                ASSET_FOLDER_SEGMENTATION + File.separator + "meta"
         val ASSET_FOLDER_SEGMENTATION_MODELS =
-            ASSET_FOLDER_SEGMENTATION + File.separator + "models"
+                ASSET_FOLDER_SEGMENTATION + File.separator + "models"
         const val FOLDER_DOCUMENTS = "documents"
+        const val FOLDER_EXPORTS = "exports"
         const val FOLDER_TEMP = "temp"
     }
 
@@ -38,7 +40,14 @@ class FileHandler(private val context: Context) {
      * @return the internal cache temp folder.
      */
     private fun getCacheTempFolder() =
-        File(context.cacheDir.absolutePath + File.separator + FOLDER_TEMP)
+            File(context.cacheDir.absolutePath + File.separator + FOLDER_TEMP)
+
+    /**
+     * Post-Condition: No guarantees if the documents folder exists.
+     * @return the internal cache temp folder.
+     */
+    private fun getExportCacheFolder() =
+            File(context.cacheDir.absolutePath + File.separator + FOLDER_EXPORTS)
 
     /**
      * Post-Condition: No guarantees if the documents folder exists.
@@ -46,7 +55,7 @@ class FileHandler(private val context: Context) {
      */
     // TODO: Change this back to internal storage!
     private fun getDocumentsFolder() =
-        File(context.getExternalFilesDir("DocScan")!!.absolutePath + File.separator + FOLDER_DOCUMENTS)
+            File(context.getExternalFilesDir("DocScan")!!.absolutePath + File.separator + FOLDER_DOCUMENTS)
 
     /**
      * Post-Condition: No guarantees if the specific documents folder exists.
@@ -62,9 +71,9 @@ class FileHandler(private val context: Context) {
      * @return the file reference to the file for a specific document.
      */
     private fun getDocumentFileById(
-        docId: String,
-        fileId: String,
-        createIfNecessary: Boolean = false
+            docId: String,
+            fileId: String,
+            createIfNecessary: Boolean = false
     ): File {
         val specificDocFolder = getDocumentFolderById(docId)
         if (createIfNecessary) {
@@ -84,11 +93,11 @@ class FileHandler(private val context: Context) {
     @Throws(Exception::class)
     private fun Uri.fileInputStream(): FileInputStream {
         return FileInputStream(
-            context.contentResolver.openFileDescriptor(
-                this,
-                "r",
-                null
-            )!!.fileDescriptor
+                context.contentResolver.openFileDescriptor(
+                        this,
+                        "r",
+                        null
+                )!!.fileDescriptor
         )
     }
 
@@ -114,9 +123,9 @@ class FileHandler(private val context: Context) {
             try {
                 // open meta json
                 val json =
-                    context.assets.open(ASSET_FOLDER_SEGMENTATION_META + File.separator + it)
-                        .bufferedReader()
-                        .readText()
+                        context.assets.open(ASSET_FOLDER_SEGMENTATION_META + File.separator + it)
+                                .bufferedReader()
+                                .readText()
                 list.add(gson.fromJson(json, TFLiteModel::class.java))
             } catch (e: Exception) {
                 Timber.e(e, "Failed to open/parse $it")
@@ -128,7 +137,18 @@ class FileHandler(private val context: Context) {
     fun createCacheFile(fileId: UUID, fileType: PageFileType = PageFileType.JPEG): File {
         val tempFolder = getCacheTempFolder().createFolderIfNecessary()
         val file =
-            File(tempFolder.absolutePath + File.separator + fileId.toString() + "." + fileType.extension)
+                File(tempFolder.absolutePath + File.separator + fileId.toString() + "." + fileType.extension)
+        // delete the previous cached file
+        file.safelyDelete()
+        // create it if necessary
+        file.createFileIfNecessary()
+        return file
+    }
+
+    fun createCacheFileForExport(fileId: UUID, fileType: PageFileType = PageFileType.PDF): File {
+        val tempFolder = getExportCacheFolder().createFolderIfNecessary()
+        val file =
+                File(tempFolder.absolutePath + File.separator + fileId.toString() + "." + fileType.extension)
         // delete the previous cached file
         file.safelyDelete()
         // create it if necessary
@@ -138,9 +158,9 @@ class FileHandler(private val context: Context) {
 
     fun createDocumentFile(documentId: UUID, fileId: UUID, fileType: PageFileType): File {
         return getDocumentFileById(
-            documentId.toString(),
-            fileId = fileId.toString() + "." + fileType.extension,
-            createIfNecessary = true
+                documentId.toString(),
+                fileId = fileId.toString() + "." + fileType.extension,
+                createIfNecessary = true
         )
     }
 
@@ -200,7 +220,7 @@ class FileHandler(private val context: Context) {
 
     @Throws(IOException::class)
     fun readBytes(uri: Uri): ByteArray? =
-        context.contentResolver.openInputStream(uri)?.buffered()?.use { it.readBytes() }
+            context.contentResolver.openInputStream(uri)?.buffered()?.use { it.readBytes() }
 
     fun getFileByAbsolutePath(absolutePath: String): File? {
         val file = File(absolutePath)
@@ -218,10 +238,10 @@ class FileHandler(private val context: Context) {
 
     private fun getImageFileByPage(docId: UUID, fileId: UUID): File? {
         val file =
-            getDocumentFileById(
-                docId.toString(),
-                fileId.toString() + "." + PageFileType.JPEG.extension
-            )
+                getDocumentFileById(
+                        docId.toString(),
+                        fileId.toString() + "." + PageFileType.JPEG.extension
+                )
         return if (file.exists()) {
             file
         } else {
@@ -259,8 +279,8 @@ class FileHandler(private val context: Context) {
         }
     }
 
-    private fun getUri(file: File): Uri? {
-        return FileProvider.getUriForFile(context, "at.ac.tuwien.caa.fileprovider", file)
+    fun getUri(file: File): Uri? {
+        return FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.fileprovider", file)
     }
 }
 
@@ -296,11 +316,12 @@ private fun File.calcHash(algorithm: String = "MD5", bufferSize: Int = 1024): By
 
 private fun ByteArray.toHexString(): String {
     return this.fold(StringBuilder()) { result, b -> result.append(String.format("%02X", b)) }
-        .toString()
+            .toString()
 }
 
 enum class PageFileType(val extension: String, val mimeType: String) {
-    JPEG("jpg", "image/jpg");
+    JPEG("jpg", "image/jpg"),
+    PDF("pdf", "application/pdf");
 
     companion object {
         fun getFileTypeByExtension(extension: String?): PageFileType {

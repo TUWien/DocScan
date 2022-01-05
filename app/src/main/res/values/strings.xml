@@ -558,6 +558,11 @@
     <string name="dialog_create_document_error_duplicate_title">No document created</string>>
     <string name="dialog_create_document_error_duplicate_text">There is already a document with the same name, please choose another name!</string>>
 
+    <string name="notification_channel_exports_title">Exports</string>
+    <string name="notification_channel_exports_text">Exports</string>
+    <string name="notification_channel_uploads_title">Uploads</string>
+    <string name="notification_channel_uploads_text">Uploads</string>
+
     <string-array name="create_document_languages">
         <item>Arabic</item>
         <item>Basque</item>

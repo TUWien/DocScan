@@ -10,6 +10,7 @@ import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
 import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
 import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
 import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusHeaderInterceptor
+import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.repository.*
 import at.ac.tuwien.caa.docscan.ui.base.UserViewModel
 import at.ac.tuwien.caa.docscan.ui.camera.CameraViewModel
@@ -46,6 +47,7 @@ val appModule = module {
     single { MigrationRepository(get(), get(), get()) }
     single { ImageProcessorRepository(get(), get(), get(), get()) }
     single { WorkManager.getInstance(get()) }
+    single { NotificationHandler(get()) }
 }
 
 val daoModule = module {
@@ -78,7 +80,7 @@ val repositoryModule = module {
     single { DocumentRepository(get(), get(), get(), get(), get(), get(), get()) }
     single { UserRepository(get(), get(), get(), get(), get()) }
     single { UploadRepository(get(), get(), get(), get(), get()) }
-    single { ExportRepository(get(), get(), get()) }
+    single { ExportRepository(get(), get(), get(), get(), get()) }
 }
 
 val networkModule = module {

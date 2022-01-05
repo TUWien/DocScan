@@ -23,10 +23,10 @@ public class PdfRunnable extends CropRunnable {
     protected void performTask(boolean performOCR, String pdfName, ArrayList<File> files,
                                WeakReference<Context> context) {
 
-        if (performOCR)
-            PdfCreator.createPdfWithOCR(pdfName, files, this, context);
-        else
-            PdfCreator.createPdfWithoutOCR(pdfName, files, this, context);
+//        if (performOCR)
+//            PdfCreator.createPdfWithOCR(pdfName, files, this, context);
+//        else
+//            PdfCreator.createPdfWithoutOCR(pdfName, files, this, context);
     }
 
 }

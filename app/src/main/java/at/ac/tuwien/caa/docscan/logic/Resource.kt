@@ -22,6 +22,10 @@ fun <T> Resource<T>.applyOnSuccess(success: (T) -> Unit): Resource<T> {
     }
 }
 
+fun <T> Throwable.asResource(): Resource<T> {
+    return Failure(this)
+}
+
 fun <T> DBErrorCode.asFailure(): Failure<T> {
     return Failure(DocScanException(DocScanError.DBError(this)))
 }
@@ -32,12 +36,12 @@ fun <T> IOErrorCode.asFailure(exception: Throwable? = null): Failure<T> {
 
 fun <T> asUnauthorizedFailure(): Failure<T> {
     return Failure(
-        DocScanException(
-            DocScanError.TranskribusRestError.HttpError(
-                HttpURLConnection.HTTP_UNAUTHORIZED,
-                null
+            DocScanException(
+                    DocScanError.TranskribusRestError.HttpError(
+                            HttpURLConnection.HTTP_UNAUTHORIZED,
+                            null
+                    )
             )
-        )
     )
 }
 

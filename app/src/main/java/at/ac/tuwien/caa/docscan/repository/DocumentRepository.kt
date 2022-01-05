@@ -164,7 +164,9 @@ class DocumentRepository(
             forceExport: Boolean = false,
             exportFormat: ExportFormat): Resource<Unit> {
 
-        if (forceExport && documentDao.getDocumentWithPages(documentWithPages.document.id)?.isCropped() == false) {
+        // TODO: Check permission of the file folder to which the PDF will be exported!
+
+        if (!forceExport && documentDao.getDocumentWithPages(documentWithPages.document.id)?.isCropped() == false) {
             return DBErrorCode.DOCUMENT_NOT_CROPPED.asFailure()
         }
 

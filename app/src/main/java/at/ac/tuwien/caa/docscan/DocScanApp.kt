@@ -8,6 +8,7 @@ import at.ac.tuwien.caa.docscan.koin.repositoryModule
 import at.ac.tuwien.caa.docscan.koin.viewModelModule
 import at.ac.tuwien.caa.docscan.koin.networkModule
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
+import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.worker.DocumentSanitizeWorker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -27,6 +28,7 @@ class DocScanApp : Application() {
 
     private val preferencesHandler by inject<PreferencesHandler>()
     private val workManager by inject<WorkManager>()
+    private val notificationHandler by inject<NotificationHandler>()
 
     override fun onCreate() {
         super.onCreate()
@@ -40,6 +42,8 @@ class DocScanApp : Application() {
             if (a == null || a.options.apiKey.isEmpty()) Timber.d(getString(R.string.start_firebase_not_auth_text))
         }
 
+        // initializes notification channels
+        notificationHandler.initNotificationChannels()
         // spawn the sanitizer to check potential broken states
         DocumentSanitizeWorker.spawnSanitize(workManager)
         logFirstAppStart()

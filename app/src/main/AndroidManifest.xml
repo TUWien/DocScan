@@ -41,7 +41,7 @@
         <!-- TODO: Needs to be adapted, currently sharing pictures is not possible -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="at.ac.tuwien.caa.fileprovider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
