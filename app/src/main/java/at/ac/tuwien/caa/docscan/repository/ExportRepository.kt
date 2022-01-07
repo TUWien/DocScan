@@ -8,6 +8,8 @@ import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.state.ExportState
+import at.ac.tuwien.caa.docscan.extensions.asURI
+import at.ac.tuwien.caa.docscan.extensions.saveFile
 import at.ac.tuwien.caa.docscan.logic.*
 import com.google.mlkit.vision.text.Text
 import kotlinx.coroutines.*
@@ -42,6 +44,12 @@ class ExportRepository(
         // 1. Retrieve the current document with its pages.
         val documentWithPages = documentDao.getDocumentWithPages(documentId) ?: kotlin.run {
             return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        }
+        val exportDirectory = preferencesHandler.exportDirectoryUri?.asURI() ?: kotlin.run {
+            return IOErrorCode.EXPORT_FILE_MISSING_PERMISSION.asFailure()
+        }
+        if (!PermissionHandler.isPermissionGiven(context, exportDirectory.toString())) {
+            return IOErrorCode.EXPORT_FILE_MISSING_PERMISSION.asFailure()
         }
         withContext(Dispatchers.IO) {
 
@@ -84,8 +92,8 @@ class ExportRepository(
                     return@withContext Failure<Unit>(pdfCreatorResult.exception)
                 }
                 is Success -> {
-                    // TODO: Check write permissions of the uri folder
-                    // TODO: Copy file to target output folder!
+                    // TODO: Adapt display name
+                    saveFile(context, fileHandler, outputFile, exportDirectory, "testpdf.pdf", PageFileType.PDF.mimeType)
                     outputFile.safelyDelete()
                 }
             }

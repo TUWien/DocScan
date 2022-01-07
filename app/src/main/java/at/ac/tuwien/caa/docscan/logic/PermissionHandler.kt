@@ -19,4 +19,13 @@ object PermissionHandler {
             requiredMandatoryPermissions.all {
                 ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
             }
+
+    /**
+     * @return true if a writable persistedUriPermission is given for a folder
+     */
+    fun isPermissionGiven(context: Context, folder: String): Boolean {
+        return context.contentResolver?.persistedUriPermissions?.firstOrNull { uriPermission ->
+            uriPermission.uri.toString() == folder
+        } != null
+    }
 }

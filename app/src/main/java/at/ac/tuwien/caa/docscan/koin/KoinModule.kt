@@ -29,6 +29,7 @@ import at.ac.tuwien.caa.docscan.ui.start.StartActivityViewModel
 import at.ac.tuwien.caa.docscan.ui.account.LoginViewModel
 import at.ac.tuwien.caa.docscan.ui.account.logout.LogoutViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector.SelectDocumentViewModel
+import at.ac.tuwien.caa.docscan.ui.docviewer.pdf.PdfViewModel
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
@@ -74,6 +75,7 @@ val viewModelModule = module {
     viewModel { UserViewModel(get()) }
     viewModel { LogoutViewModel(get()) }
     viewModel { SelectDocumentViewModel(get()) }
+    viewModel { PdfViewModel(get(), get()) }
 }
 
 val repositoryModule = module {

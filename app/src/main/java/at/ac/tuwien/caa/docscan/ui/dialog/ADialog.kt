@@ -48,113 +48,115 @@ class ADialog : AppCompatDialogFragment() {
     }
 
     enum class DialogAction(
-        @StringRes val title: Int,
-        @StringRes val message: Int,
-        @StringRes val positiveBtn: Int = R.string.button_ok,
-        @StringRes val negativeBtn: Int = EMPTY_RES_PLACEHOLDER,
-        @StringRes val neutralBtn: Int = EMPTY_RES_PLACEHOLDER,
-        @DrawableRes val icon: Int = EMPTY_RES_PLACEHOLDER,
-        val isCancellable: Boolean = true
+            @StringRes val title: Int,
+            @StringRes val message: Int,
+            @StringRes val positiveBtn: Int = R.string.button_ok,
+            @StringRes val negativeBtn: Int = EMPTY_RES_PLACEHOLDER,
+            @StringRes val neutralBtn: Int = EMPTY_RES_PLACEHOLDER,
+            @DrawableRes val icon: Int = EMPTY_RES_PLACEHOLDER,
+            val isCancellable: Boolean = true
     ) {
         DOCUMENT_ALREADY_UPLOADED(
-            R.string.viewer_document_uploaded_title,
-            R.string.viewer_document_uploaded_text
+                R.string.viewer_document_uploaded_title,
+                R.string.viewer_document_uploaded_text
         ),
 
         // TODO: Should not be necessary
         DOCUMENT_PAGE_DELETED_DURING_UPLOAD(
-            R.string.sync_file_deleted_title,
-            R.string.sync_file_deleted_text
+                R.string.sync_file_deleted_title,
+                R.string.sync_file_deleted_text
         ),
         GENERIC_UPLOAD_ERROR(R.string.sync_file_deleted_title, R.string.sync_file_deleted_text),
 
         // the title is dynamic in this case
         CONFIRM_DELETE_SELECTED_PDFS(
-            R.string.viewer_delete_pdf_title,
-            R.string.viewer_delete_pdf_text
+                R.string.viewer_delete_pdf_title,
+                R.string.viewer_delete_pdf_text
         ),
         UPLOAD_FAILED_NO_LOGIN(
-            R.string.viewer_not_logged_in_title,
-            R.string.sync_not_logged_in_text,
-            negativeBtn = R.string.dialog_cancel_text
+                R.string.viewer_not_logged_in_title,
+                R.string.sync_not_logged_in_text,
+                negativeBtn = R.string.dialog_cancel_text
         ),
         UPLOAD_FAILED_NO_INTERNET_CONNECTION(
-            R.string.viewer_offline_title,
-            R.string.viewer_offline_text
+                R.string.viewer_offline_title,
+                R.string.viewer_offline_text
         ),
         UPLOAD_WARNING_IMAGE_CROP_MISSING(
-            R.string.viewer_not_cropped_upload,
-            R.string.viewer_not_cropped_confirm_text
+                R.string.viewer_not_cropped_upload,
+                R.string.viewer_not_cropped_confirm_text
         ),
         EXPORT_WARNING_IMAGE_CROP_MISSING(
-            R.string.viewer_not_cropped_pdf,
-            R.string.viewer_images_fragment_not_cropped_confirm_text
+                R.string.viewer_not_cropped_pdf,
+                R.string.viewer_images_fragment_not_cropped_confirm_text
         ),
         HINT_DOCUMENT_ALREADY_CROPPED(
-            R.string.viewer_all_cropped_title,
-            R.string.viewer_all_cropped_text
+                R.string.viewer_all_cropped_title,
+                R.string.viewer_all_cropped_text
         ),
 
         // title is dynamic
         CONFIRM_DOCUMENT_CROP_OPERATION(
-            R.string.viewer_crop_confirm_title,
-            R.string.viewer_crop_confirm_text,
-            negativeBtn = R.string.dialog_cancel_text
+                R.string.viewer_crop_confirm_title,
+                R.string.viewer_crop_confirm_text,
+                negativeBtn = R.string.dialog_cancel_text
         ),
 
         // title is dynamic
         CONFIRM_DELETE_DOCUMENT(
-            R.string.sync_confirm_delete_title,
-            R.string.sync_confirm_delete_doc_prefix_text
+                R.string.sync_confirm_delete_title,
+                R.string.sync_confirm_delete_doc_prefix_text
         ),
         REQUIRE_PDF_EXPORT_PERMISSION(
-            R.string.viewer_document_dir_permission_title,
-            R.string.viewer_document_dir_permission_title
+                R.string.viewer_document_dir_permission_title,
+                R.string.viewer_document_dir_permission_title
         ),
         HINT_PDF_EXPORT_PERMISSION_GIVEN(
-            R.string.viewer_document_dir_set_title,
-            R.string.viewer_document_dir_set_text
+                R.string.viewer_document_dir_set_title,
+                R.string.viewer_document_dir_set_text
         ),
         OCR_NOT_AVAILABLE(
-            R.string.gallery_confirm_no_ocr_available_title,
-            R.string.gallery_confirm_no_ocr_available_text,
-            negativeBtn = R.string.dialog_cancel_text
+                R.string.gallery_confirm_no_ocr_available_title,
+                R.string.gallery_confirm_no_ocr_available_text,
+                negativeBtn = R.string.dialog_cancel_text
         ),
         CONFIRM_OCR_SCAN(
-            R.string.gallery_confirm_ocr_title,
-            R.string.gallery_confirm_ocr_text,
-            negativeBtn = R.string.dialog_no_text,
-            neutralBtn = R.string.dialog_cancel_text
+                R.string.gallery_confirm_ocr_title,
+                R.string.gallery_confirm_ocr_text,
+                negativeBtn = R.string.dialog_no_text,
+                neutralBtn = R.string.dialog_cancel_text
         ),
         CONFIRM_UPLOAD(
-            R.string.document_viewer_confirm_upload_title,
-            R.string.document_viewer_confirm_upload_text,
-            negativeBtn = R.string.dialog_no_text
+                R.string.document_viewer_confirm_upload_title,
+                R.string.document_viewer_confirm_upload_text,
+                negativeBtn = R.string.dialog_no_text
         ),
 
         // TODO: adapt strings.
         GENERIC(R.string.login_network_error_title, R.string.document_dir_existing_postfix_message),
         LOGIN_SUCCESS(
-            R.string.login_dialog_success_title,
-            R.string.login_dialog_success_text,
-            isCancellable = false
+                R.string.login_dialog_success_title,
+                R.string.login_dialog_success_text,
+                isCancellable = false
         ),
         ACTIVITY_NOT_FOUND(R.string.activity_not_found_title, R.string.activity_not_found_text),
         CREATE_DOCUMENT_DUPLICATE(R.string.dialog_create_document_error_duplicate_title, R.string.dialog_create_document_error_duplicate_text),
         CREATE_DOCUMENT_INVALID_URL(R.string.document_invalid_url_title, R.string.document_invalid_url_message),
         CREATE_DOCUMENT_INVALID_QR_CODE(R.string.document_qr_parse_error_title, R.string.document_qr_parse_error_message),
+        DELETE_PDF(R.string.viewer_delete_pdf_title, R.string.viewer_delete_pdf_text, positiveBtn = R.string.sync_confirm_delete_button_text, negativeBtn = R.string.sync_cancel_delete_button_text),
+        EXPORT_FOLDER_PERMISSION(R.string.pdf_fragment_persisted_permission_title, R.string.pdf_fragment_persisted_permission_text, negativeBtn = R.string.sync_cancel_delete_button_text),
         CUSTOM(0, 0)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val model = arguments?.getParcelable<DialogModel>(EXTRA_DIALOG_MODEL)
-            ?: throw IllegalArgumentException("No arguments passed!")
+                ?: throw IllegalArgumentException("No arguments passed!")
         val action = model.dialogAction
 
         val builder = MaterialAlertDialogBuilder(requireActivity())
-            .setTitle(model.customTitle ?: getString(action.title))
-            .setMessage(model.customMessage ?: getString(action.message))
-            .setCancelable(model.customIsCancellable ?: action.isCancellable)
+                .setTitle(model.customTitle ?: getString(action.title))
+                .setMessage(model.customMessage ?: getString(action.message))
+                .setCancelable(model.customIsCancellable ?: action.isCancellable)
 
         builder.setPositiveButton(model.customPosButton ?: getString(action.positiveBtn)) { _, _ ->
             viewModel.select(action, DialogButton.POSITIVE, model.arguments)
@@ -163,7 +165,7 @@ class ADialog : AppCompatDialogFragment() {
         // only add negative button if it's specified
         if (model.customNegButton != null || action.negativeBtn != 0) {
             builder.setNegativeButton(
-                model.customNegButton ?: getString(action.negativeBtn)
+                    model.customNegButton ?: getString(action.negativeBtn)
             ) { _, _ ->
                 viewModel.select(action, DialogButton.NEGATIVE, model.arguments)
             }
@@ -172,7 +174,7 @@ class ADialog : AppCompatDialogFragment() {
         // only add negative button if it's specified
         if (model.customNeuButton != null || action.neutralBtn != 0) {
             builder.setNeutralButton(
-                model.customNegButton ?: getString(action.negativeBtn)
+                    model.customNegButton ?: getString(action.negativeBtn)
             ) { _, _ ->
                 viewModel.select(action, DialogButton.NEUTRAL, model.arguments)
             }
@@ -184,8 +186,8 @@ class ADialog : AppCompatDialogFragment() {
     fun show(fragmentManager: FragmentManager) {
         val fragment = fragmentManager.findFragmentByTag(TAG)
         if (fragment == null ||
-            fragment is ADialog &&
-            fragment.dialog?.isShowing != true
+                fragment is ADialog &&
+                fragment.dialog?.isShowing != true
         ) {
             fragmentManager.beginTransaction().add(this, TAG).commitAllowingStateLoss()
         } else {
@@ -196,15 +198,15 @@ class ADialog : AppCompatDialogFragment() {
 
 @Parcelize
 data class DialogModel(
-    val dialogAction: ADialog.DialogAction,
-    val customTitle: String? = null,
-    val customMessage: String? = null,
-    val customPosButton: String? = null,
-    val customNegButton: String? = null,
-    val customNeuButton: String? = null,
-    @DrawableRes val customTitleIcon: Int? = null,
-    val customIsCancellable: Boolean? = null,
-    val arguments: Bundle = Bundle()
+        val dialogAction: ADialog.DialogAction,
+        val customTitle: String? = null,
+        val customMessage: String? = null,
+        val customPosButton: String? = null,
+        val customNegButton: String? = null,
+        val customNeuButton: String? = null,
+        @DrawableRes val customTitleIcon: Int? = null,
+        val customIsCancellable: Boolean? = null,
+        val arguments: Bundle = Bundle()
 ) : Parcelable
 
 enum class DialogButton {
@@ -214,9 +216,9 @@ enum class DialogButton {
 }
 
 data class DialogResult(
-    val dialogAction: ADialog.DialogAction,
-    val pressedAction: DialogButton,
-    val arguments: Bundle
+        val dialogAction: ADialog.DialogAction,
+        val pressedAction: DialogButton,
+        val arguments: Bundle
 )
 
 class DialogViewModel : ViewModel() {
@@ -224,33 +226,33 @@ class DialogViewModel : ViewModel() {
     val observableDialogAction = MutableLiveData<Event<DialogResult>>()
 
     internal fun select(
-        dialogAction: ADialog.DialogAction,
-        dialogButton: DialogButton,
-        arguments: Bundle
+            dialogAction: ADialog.DialogAction,
+            dialogButton: DialogButton,
+            arguments: Bundle
     ) {
         observableDialogAction.value = Event(DialogResult(dialogAction, dialogButton, arguments))
     }
 }
 
 fun ADialog.DialogAction.with(
-    customTitle: String? = null,
-    customMessage: String? = null,
-    arguments: Bundle = Bundle()
+        customTitle: String? = null,
+        customMessage: String? = null,
+        arguments: Bundle = Bundle()
 ): DialogModel {
     return DialogModel(
-        this,
-        customTitle = customTitle,
-        customMessage = customMessage,
-        arguments = arguments
+            this,
+            customTitle = customTitle,
+            customMessage = customMessage,
+            arguments = arguments
     )
 }
 
 fun ADialog.DialogAction.show(
-    fragmentManager: FragmentManager
+        fragmentManager: FragmentManager
 ) = ADialog.newInstance(DialogModel(this)).show(fragmentManager)
 
 fun DialogModel.show(
-    fragmentManager: FragmentManager
+        fragmentManager: FragmentManager
 ) {
     ADialog.newInstance(this).show(fragmentManager)
 }

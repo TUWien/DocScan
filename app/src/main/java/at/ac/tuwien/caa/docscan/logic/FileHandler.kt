@@ -11,6 +11,7 @@ import com.google.gson.GsonBuilder
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
 import java.security.MessageDigest
 import java.util.*
@@ -96,6 +97,21 @@ class FileHandler(private val context: Context) {
                 context.contentResolver.openFileDescriptor(
                         this,
                         "r",
+                        null
+                )!!.fileDescriptor
+        )
+    }
+
+    /**
+     * Pre-Condition: [this] [Uri] has write access.
+     * @return [FileOutputStream] of [Uri].
+     */
+    @Throws(Exception::class)
+    private fun Uri.fileOutputStream(): FileOutputStream {
+        return FileOutputStream(
+                context.contentResolver.openFileDescriptor(
+                        this,
+                        "rw",
                         null
                 )!!.fileDescriptor
         )
@@ -210,6 +226,19 @@ class FileHandler(private val context: Context) {
         try {
             to.outputStream().use { output ->
                 from.fileInputStream().use { input ->
+                    input.copyTo(output)
+                }
+            }
+        } catch (exception: Exception) {
+            throw exception
+        }
+    }
+
+    @Throws(Exception::class)
+    fun copyFileToUri(from: File, to: Uri) {
+        try {
+            from.inputStream().use { input ->
+                to.fileOutputStream().use { output ->
                     input.copyTo(output)
                 }
             }
