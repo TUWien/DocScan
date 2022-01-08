@@ -71,7 +71,7 @@ abstract class BaseNavigationActivity : BaseActivity() {
      * Pre-Condition: The onBackPress event on a navigation activity has been called
      */
     private fun handleBackNavigation() {
-        startActivity(CameraActivity.newInstance(this))
+        startActivity(CameraActivity.newInstance(this, false))
     }
 
     /**

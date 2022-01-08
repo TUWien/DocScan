@@ -3,14 +3,14 @@ package at.ac.tuwien.caa.docscan.ui.intro
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import at.ac.tuwien.caa.docscan.databinding.ActivityIntroBinding
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
+import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
+import com.google.android.material.tabs.TabLayoutMediator
 import org.koin.android.ext.android.inject
 
-class IntroActivity : AppCompatActivity() {
+class IntroActivity : BaseActivity() {
 
     private val preferencesHandler by inject<PreferencesHandler>()
     private lateinit var binding: ActivityIntroBinding
@@ -28,11 +28,12 @@ class IntroActivity : AppCompatActivity() {
         // mark intro as false to not show it again
         preferencesHandler.showIntro = false
 
-        val pagerAdapter = PageSlideAdapter(supportFragmentManager)
-
-        binding.introViewpager.setPageTransformer(true, ZoomOutPageTransformer())
-        binding.introViewpager.adapter = pagerAdapter
-        binding.tabDots.setupWithViewPager(binding.introViewpager, true)
+        binding.viewpager2?.run {
+            adapter = PageSlideAdapter()
+            setPageTransformer(ZoomOutPageTransformer())
+            TabLayoutMediator(binding.tabDots, this) { _, _ ->
+            }.attach()
+        }
 
         binding.introSkipButton.setOnClickListener {
             // fallback to previous activities
@@ -40,10 +41,10 @@ class IntroActivity : AppCompatActivity() {
         }
     }
 
-    private class PageSlideAdapter(fm: FragmentManager) :
-        FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
-
-        override fun getItem(position: Int): IntroFragment = IntroFragment.newInstance(position)
-        override fun getCount() = 5
+    inner class PageSlideAdapter :
+            FragmentStateAdapter(this) {
+        override fun getItemCount() = 5
+        override fun createFragment(position: Int): IntroFragment =
+                IntroFragment.newInstance(position)
     }
 }

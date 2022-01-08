@@ -16,7 +16,6 @@ import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer;
 /**
  * Created by fabian on 09.03.2017.
  */
-
 public class LogActivity extends BaseNavigationActivity {
 
     @Override

@@ -13,7 +13,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class StartActivityViewModel(
+class StartViewModel(
     private val app: DocScanApp,
     private val migrationRepository: MigrationRepository,
     private val preferencesHandler: PreferencesHandler

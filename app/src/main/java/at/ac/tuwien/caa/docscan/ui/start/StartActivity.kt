@@ -6,10 +6,12 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import at.ac.tuwien.caa.docscan.databinding.MainContainerViewBinding
 import at.ac.tuwien.caa.docscan.logic.PermissionHandler
+import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
+import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
 import at.ac.tuwien.caa.docscan.ui.intro.IntroActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
@@ -18,26 +20,28 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
  * TODO: DOMAIN_LOGIC - Handle introduction dialogs, re-check the old StartActivity.java
  * TODO: MIGRATION_LOGIC - Check if more sophisticated migration options with user feedback are necessary.
  */
-class StartActivity : AppCompatActivity() {
+class StartActivity : BaseActivity() {
 
-    private val viewModel: StartActivityViewModel by viewModel()
+    private val viewModel: StartViewModel by viewModel()
+    private val dialogViewModel: DialogViewModel by viewModel()
+
     private lateinit var binding: MainContainerViewBinding
 
     private val requestPermissionLauncher =
-        registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
+            registerForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions()
 
-        ) { map: Map<String, Boolean> ->
-            if (map.filter { entry -> !entry.value }.isEmpty()) {
-                viewModel.checkStartUpConditions()
-            } else {
-                // Explain to the user that the feature is unavailable because the
-                // features requires a permission that the user has denied. At the
-                // same time, respect the user's decision. Don't link to system
-                // settings in an effort to convince the user to change their
-                // decision.
+            ) { map: Map<String, Boolean> ->
+                if (map.filter { entry -> !entry.value }.isEmpty()) {
+                    viewModel.checkStartUpConditions()
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // features requires a permission that the user has denied. At the
+                    // same time, respect the user's decision. Don't link to system
+                    // settings in an effort to convince the user to change their
+                    // decision.
+                }
             }
-        }
 
 
     companion object {
@@ -76,8 +80,8 @@ class StartActivity : AppCompatActivity() {
                     StartDestination.PERMISSIONS -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             if (shouldShowRequestPermissionRationale(PermissionHandler.requiredMandatoryPermissions.first())) {
-                                // TODO: show rationale dialog
-//                                return@let
+                                showDialog(ADialog.DialogAction.RATIONALE_CAMERA_PERMISSION)
+                                return@let
                             }
                         }
                         requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
@@ -85,10 +89,22 @@ class StartActivity : AppCompatActivity() {
                 }
             }
         })
+        dialogViewModel.observableDialogAction.observe(this, {
+            it.getContentIfNotHandled()?.let { dialogResult ->
+                when (dialogResult.dialogAction) {
+                    ADialog.DialogAction.RATIONALE_CAMERA_PERMISSION -> {
+                        requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
+                    }
+                    else -> {
+                        // ignore
+                    }
+                }
+            }
+        })
     }
 
     private fun startCameraIntent() {
-        startActivity(CameraActivity.newInstance(this))
+        startActivity(CameraActivity.newInstance(this, false))
         finish()
     }
 }

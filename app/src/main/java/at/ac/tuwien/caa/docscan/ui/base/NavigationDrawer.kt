@@ -199,7 +199,7 @@ class NavigationDrawer(
     private fun getIntentByNavItem(item: NavigationItem): Intent {
         return when (item) {
             NavigationItem.CAMERA -> {
-                CameraActivity.newInstance(activity)
+                CameraActivity.newInstance(activity, false)
             }
             NavigationItem.ABOUT -> {
                 AboutActivity.newInstance(activity)

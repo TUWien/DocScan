@@ -101,7 +101,7 @@ open class CreateDocumentActivity : BaseNoNavigationActivity() {
                     }
                 }
                 is Success -> {
-                    val intent = CameraActivity.newInstance(this)
+                    val intent = CameraActivity.newInstance(this, true)
                     Helper.hideKeyboard(this)
                     startActivity(intent)
                     finish()

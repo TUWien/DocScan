@@ -107,7 +107,7 @@ class MigrationRepository(
                                 // read out old orientation
                                 val rotation = Helper.getNewSafeExifOrientation(it)
 
-                                // if cropping has been already perfromed, then this will be marked as done
+                                // if cropping has been already performed, then this will be marked as done
                                 val processingState =
                                         if (PageDetector.isCropped(it.absolutePath)) PostProcessingState.DONE else PostProcessingState.DRAFT
 

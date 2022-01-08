@@ -145,6 +145,7 @@ class ADialog : AppCompatDialogFragment() {
         CREATE_DOCUMENT_INVALID_QR_CODE(R.string.document_qr_parse_error_title, R.string.document_qr_parse_error_message),
         DELETE_PDF(R.string.viewer_delete_pdf_title, R.string.viewer_delete_pdf_text, positiveBtn = R.string.sync_confirm_delete_button_text, negativeBtn = R.string.sync_cancel_delete_button_text),
         EXPORT_FOLDER_PERMISSION(R.string.pdf_fragment_persisted_permission_title, R.string.pdf_fragment_persisted_permission_text, negativeBtn = R.string.sync_cancel_delete_button_text),
+        RATIONALE_CAMERA_PERMISSION(R.string.start_permission_title, R.string.start_permission_camera_text, negativeBtn = R.string.dialog_no_text),
         CUSTOM(0, 0)
     }
 

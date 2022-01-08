@@ -193,10 +193,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private boolean mRestoreTab = false;
     private boolean mIsQRActive = false;
 
-    public static Intent newInstance(Context context) {
+    public static Intent newInstance(Context context, boolean newTask) {
         Intent intent = new Intent(context, CameraActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        if (newTask) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        }
         return intent;
     }
 

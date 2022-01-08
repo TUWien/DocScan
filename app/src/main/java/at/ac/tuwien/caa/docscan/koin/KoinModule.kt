@@ -25,7 +25,7 @@ import at.ac.tuwien.caa.docscan.ui.docviewer.images.ImagesViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.ImageViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideViewModel
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationViewModel
-import at.ac.tuwien.caa.docscan.ui.start.StartActivityViewModel
+import at.ac.tuwien.caa.docscan.ui.start.StartViewModel
 import at.ac.tuwien.caa.docscan.ui.account.LoginViewModel
 import at.ac.tuwien.caa.docscan.ui.account.logout.LogoutViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector.SelectDocumentViewModel
@@ -59,7 +59,7 @@ val daoModule = module {
 
 val viewModelModule = module {
     viewModel { (extras: Bundle) -> SegmentationViewModel(extras, get(), get()) }
-    viewModel { StartActivityViewModel(get(), get(), get()) }
+    viewModel { StartViewModel(get(), get(), get()) }
     viewModel { CameraViewModel(get(), get(), get()) }
     viewModel { DocumentsViewModel(get()) }
     viewModel { DocumentViewerViewModel(get()) }

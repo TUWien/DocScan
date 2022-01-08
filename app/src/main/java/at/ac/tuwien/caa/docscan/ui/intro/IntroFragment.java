@@ -20,6 +20,7 @@ import org.koin.java.KoinJavaComponent;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp;
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler;
+import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import kotlin.Lazy;
 
 public class IntroFragment extends Fragment {
@@ -106,9 +107,7 @@ public class IntroFragment extends Fragment {
 
             rootView = (ViewGroup) inflater.inflate(R.layout.fragment_intro_5, container, false);
             AppCompatButton button = rootView.findViewById(R.id.document_create_button);
-            button.setOnClickListener(view -> {
-                // TODO: start creating documents
-            });
+            button.setOnClickListener(view -> startActivity(CreateDocumentActivity.Companion.newInstance(requireActivity(), null)));
             final ImageView uploadImageView = rootView.findViewById(R.id.upload_imageview);
             GlideApp.with(this)
                     .load(R.drawable.upload_screenshot)

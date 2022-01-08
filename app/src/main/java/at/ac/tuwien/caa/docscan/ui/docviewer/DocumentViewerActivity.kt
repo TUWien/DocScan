@@ -192,7 +192,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
         })
         viewModel.observableInitCamera.observe(this, {
             it?.getContentIfNotHandled()?.let {
-                startActivity(CameraActivity.newInstance(this))
+                startActivity(CameraActivity.newInstance(this, false))
                 finish()
             }
         })
