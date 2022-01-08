@@ -6,6 +6,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector
 import at.ac.tuwien.caa.docscan.db.model.Page.Companion.TABLE_NAME_PAGES
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.boundary.asClockwiseList
@@ -144,4 +145,17 @@ fun Page.computeFileHash(fileHandler: FileHandler): Resource<Unit> {
     val file = fileHandler.getFileByPage(this) ?: return IOErrorCode.FILE_MISSING.asFailure()
     fileHash = file.getFileHash()
     return Success(Unit)
+}
+
+fun Page.getScaledCropPoints(
+        width: Int,
+        height: Int
+): List<android.graphics.PointF> {
+    val points =
+            (singlePageBoundary?.asClockwiseList()
+                    ?: SinglePageBoundary.getDefault().asClockwiseList()).map { point ->
+                android.graphics.PointF(point.x, point.y)
+            }
+    PageDetector.scalePointsGeneric(points, width, height)
+    return points
 }

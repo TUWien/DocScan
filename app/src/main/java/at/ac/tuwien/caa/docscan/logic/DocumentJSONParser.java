@@ -12,6 +12,7 @@ import java.util.ArrayList;
  * Note that we do not directly generate a JSON from the document, because we have to exclude several
  * values from the JSON that are needed in DocumentStorage (which uses the the default JSON parser).
  */
+@Deprecated
 public class DocumentJSONParser {
 
     private static String CLASS_NAME = "DocumentJSONParser";

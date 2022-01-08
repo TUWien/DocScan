@@ -2,9 +2,10 @@ package at.ac.tuwien.caa.docscan.glidemodule
 
 import android.content.Context
 import android.graphics.*
+import androidx.core.content.ContextCompat
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.db.model.Page
-import at.ac.tuwien.caa.docscan.logic.KtHelper
+import at.ac.tuwien.caa.docscan.db.model.getScaledCropPoints
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.load.resource.bitmap.BitmapTransformation
 import java.nio.charset.StandardCharsets
@@ -24,7 +25,7 @@ class CropRectTransform(private val page: Page, context: Context) : BitmapTransf
         mQuadPaint.apply {
             style = Paint.Style.STROKE
             strokeWidth = context.resources.getDimension(R.dimen.page_gallery_stroke_width)
-            color = context.resources.getColor(R.color.hud_page_rect_color)
+            color = ContextCompat.getColor(context, R.color.hud_page_rect_color)
             isAntiAlias = true
         }
     }
@@ -44,7 +45,7 @@ class CropRectTransform(private val page: Page, context: Context) : BitmapTransf
         val resized = Bitmap.createScaledBitmap(original, original.width, original.height, true)
         // Draw the original Bitmap onto the result Bitmap with a transformation:
         canvas.drawBitmap(resized, 0f, 0f, paint)
-        val pfResult = KtHelper.getScaledCropPoints(page, original.width, original.height)
+        val pfResult = page.getScaledCropPoints(original.width, original.height)
         drawQuad(canvas, pfResult, mQuadPath, mQuadPaint)
 
         return result

@@ -1,11 +1,7 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
-import androidx.preference.PreferenceManager
-import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.extensions.await
@@ -28,40 +24,10 @@ import java.util.*
 object PdfCreator {
 
     suspend fun analyzeFileWithOCR(context: Context, uri: Uri): Resource<Text> {
+        @Suppress("BlockingMethodInNonBlockingContext")
         val image = InputImage.fromFilePath(context, uri)
         val task = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS).process(image)
         return task.await()
-    }
-
-    private fun notifyPdfChanged(uri: Uri?, context: Context?) {
-        if (uri == null || context == null) return
-        val mediaScanIntent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-        mediaScanIntent.data = uri
-
-//                Send the broadcast:
-        context.sendBroadcast(mediaScanIntent)
-    }
-
-    //    private static void notifyPdfChanged(File file, Context context) {
-    //
-    //        if (file == null || context == null)
-    //            return;
-    //
-    //        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-    //
-    //        Uri contentUri = Uri.fromFile(file);
-    //        mediaScanIntent.setData(contentUri);
-    //
-    ////                Send the broadcast:
-    //        context.sendBroadcast(mediaScanIntent);
-    //
-    //    }
-    private fun getFinishCnt(ocrResults: Array<Text?>): Int {
-        var finishCnt = 0
-        for (r in ocrResults) {
-            if (r != null) finishCnt++
-        }
-        return finishCnt
     }
 
     fun savePDF(outputFile: File, files: List<PDFCreatorFileWrapper>, ocrResults: List<Text>? = null): Resource<Unit> {
@@ -144,24 +110,6 @@ object PdfCreator {
                 return IOErrorCode.PDF_EXPORT_FAILED.asFailure(e)
             }
         }
-    }
-
-    private fun getPdfFile(documentName: String): File {
-        val pdfName = "$documentName.pdf"
-        return File(Helper.getPDFStorageDir("DocScan"), pdfName)
-    }
-
-    private fun getPdfFile(context: Context?, documentName: String): DocumentFile? {
-        val sharedPref = PreferenceManager.getDefaultSharedPreferences(context)
-        val dir = sharedPref.getString(
-                context!!.resources.getString(R.string.key_pdf_dir),
-                null)
-        if (dir != null) {
-            val uri = Uri.parse(dir)
-            val dfDir = DocumentFile.fromTreeUri(context, uri)
-            return dfDir!!.createFile("application/pdf", documentName)
-        }
-        return null
     }
 
     private fun isLandscape(size: ImageMeta): Boolean {

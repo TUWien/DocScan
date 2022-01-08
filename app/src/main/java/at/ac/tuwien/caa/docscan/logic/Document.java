@@ -7,7 +7,7 @@ import java.util.Iterator;
 /**
  * Created by fabian on 01.02.2018.
  */
-
+@Deprecated
 public class Document {
 
     private String mTitle;

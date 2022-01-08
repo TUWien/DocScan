@@ -48,6 +48,7 @@ class MigrationRepository(
         if (!preferencesHandler.shouldPerformDBMigration) {
             return
         }
+        @Suppress("Deprecation")
         val documentStorageFile = File(context.filesDir, DocumentStorage.DOCUMENT_STORE_FILE_NAME)
         if (documentStorageFile.exists()) {
             try {

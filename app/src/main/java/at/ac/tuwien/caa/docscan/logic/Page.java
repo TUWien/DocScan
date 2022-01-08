@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * Created by fabian on 01.02.2018.
  */
-
+@Deprecated
 public class Page {
 
     private File mFile;

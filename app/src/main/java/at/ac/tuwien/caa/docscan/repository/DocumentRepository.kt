@@ -84,7 +84,7 @@ class DocumentRepository(
     @WorkerThread
     suspend fun deletePages(pages: List<Page>) {
         pages.forEach {
-            performPageOperation(it.docId, it.id, operation = { doc, page ->
+            performPageOperation(it.docId, it.id, operation = { _, page ->
                 documentDao.deletePage(page)
                 fileHandler.getFileByPage(it)?.safelyDelete()
                 return@performPageOperation Success(Unit)

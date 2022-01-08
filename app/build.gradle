@@ -47,6 +47,13 @@ android {
         }
     }
 
+    kotlinOptions {
+        // Disabling coroutine's ExperimentalCoroutinesApi warning
+        freeCompilerArgs += [
+                "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
+        ]
+    }
+
     externalNativeBuild {
         cmake {
             path "CMakeLists.txt"

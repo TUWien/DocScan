@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
  * A class used for loading and saving of settings that are accessed by multiple activities or need
  * to be stored in a static way (by making use of singleton).
  */
+@Deprecated
 public class Settings {
 
     private static Settings mSettings = null;

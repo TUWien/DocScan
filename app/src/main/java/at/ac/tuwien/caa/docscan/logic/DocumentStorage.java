@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
+@Deprecated
 public class DocumentStorage {
 
     public static final String DOCUMENT_STORE_FILE_NAME = "documentstorage.json";
@@ -366,7 +367,7 @@ public class DocumentStorage {
         if (backupFile == null || !backupFile.exists())
             return false;
 
-        return KtHelper.Companion.copyFile(backupFile, storeFile);
+        return false;
 
     }
 
@@ -510,7 +511,7 @@ public class DocumentStorage {
 
         File dest = getBackupFile(context);
         if (dest != null)
-            return KtHelper.Companion.copyFile(storeFile, dest);
+            return false;
         else
             return false;
 

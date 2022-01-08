@@ -51,8 +51,8 @@ class DocumentAdapter(
             var desc = "${document.pages.size} $docDesc"
 
             if (document.document.isActive) {
-                viewBinding.documentTitleText.setTextColor(itemView.resources.getColor(R.color.text_selection))
-                viewBinding.documentDescriptionTextview.setTextColor(itemView.resources.getColor(R.color.text_selection))
+                viewBinding.documentTitleText.setTextColor(ContextCompat.getColor(itemView.context, R.color.text_selection))
+                viewBinding.documentDescriptionTextview.setTextColor(ContextCompat.getColor(itemView.context, R.color.text_selection))
                 desc = "$desc ${itemView.context.getText(R.string.sync_doc_active_text)}"
             }
 

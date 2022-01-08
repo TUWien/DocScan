@@ -33,11 +33,6 @@ fun Throwable.handleError(activity: BaseActivity) {
                 }
                 is DocScanError.DBError -> {
                     if (error.code == DBErrorCode.DOCUMENT_ALREADY_UPLOADED) {
-                        val dialogModel = DialogModel(
-                            dialogAction = ADialog.DialogAction.CUSTOM,
-                            customTitle = "DBError",
-                            customMessage = "Error code occurred: ${error.code.name}"
-                        )
                         activity.showDialog(ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED)
                     } else {
                         // TODO: Adapt error handling

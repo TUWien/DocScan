@@ -47,7 +47,7 @@ import java.util.Date;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 
-
+@Deprecated
 public class DataLog {
 
     private static DataLog mDataLog = null;

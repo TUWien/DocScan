@@ -17,6 +17,7 @@ import at.ac.tuwien.caa.docscan.sync.SyncInfo;
  * A class that is used for a migration of how the old documents (with serialization) are saved to
  * the way new documents are saved (via DocumentStorage and json). Note that new is always better.
  */
+@Deprecated
 public class DocumentMigrator {
 
 

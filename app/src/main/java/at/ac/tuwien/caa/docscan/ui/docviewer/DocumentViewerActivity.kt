@@ -43,10 +43,6 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
 
     companion object {
 
-        // TODO: can be relocated to the PDF only
-        const val DOCUMENT_PDF_SELECTION_REQUEST = 2
-        const val PERSISTABLE_URI_PERMISSION = 3
-
         private const val EXTRA_DOCUMENT_PAGE = "EXTRA_DOCUMENT_PAGE"
         private const val EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW = "EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW"
 
@@ -170,10 +166,10 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 }
             }
         }
-        observe()
+        observeViewModel()
     }
 
-    private fun observe() {
+    private fun observeViewModel() {
         viewModel.selectedScreen.observe(this, { screen ->
             // do not update the FABs since this will be already updated in this case.
             if ((viewModel.observableNumOfSelectedElements.value ?: 0) > 0) {
@@ -447,11 +443,11 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 startActivity(CreateDocumentActivity.newInstance(this, null))
             }
             R.id.viewer_add_pdf_fab -> {
-                startActivityForResult(
+                startActivity(
                         Intent(
                                 applicationContext,
                                 SelectPdfDocumentActivity::class.java
-                        ), DOCUMENT_PDF_SELECTION_REQUEST
+                        )
                 )
             }
             R.id.viewer_upload_fab -> {

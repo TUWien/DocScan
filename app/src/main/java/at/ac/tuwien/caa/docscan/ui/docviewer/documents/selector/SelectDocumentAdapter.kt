@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -42,7 +43,7 @@ class SelectDocumentAdapter(private val clickListener: (DocumentWithPages) -> Un
                 binding.documentThumbnailImageview.transitionName = page.id.toString()
             } else {
                 binding.documentThumbnailImageview.setImageResource(R.drawable.ic_do_not_disturb_black_24dp)
-                binding.documentThumbnailImageview.setBackgroundColor(itemView.resources.getColor(R.color.second_light_gray))
+                binding.documentThumbnailImageview.setBackgroundColor(ContextCompat.getColor(itemView.context, R.color.second_light_gray))
             }
 
             binding.documentTitleText.text = document.document.title

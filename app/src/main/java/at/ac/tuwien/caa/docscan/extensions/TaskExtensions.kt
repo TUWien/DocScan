@@ -5,7 +5,6 @@ import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.logic.asResource
 import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
@@ -14,10 +13,9 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  * Awaits for completion of the task without blocking a thread.
  *
  * This suspending function is cancellable.
- * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this function
+ * If the Job of the current coroutine is cancelled or completed while this suspending function is waiting, this function
  * stops waiting for the completion stage and immediately resumes with [CancellationException].
  */
-@ExperimentalCoroutinesApi
 suspend fun <T> Task<T>.await(): Resource<T> {
     // fast path
     if (isComplete) {
