@@ -36,7 +36,7 @@ class ImagesFragment : BaseFragment() {
                 mode: ActionMode,
                 menu: Menu
             ): Boolean {
-                mode.menuInflater.inflate(R.menu.images_selected_menu, menu)
+                mode.menuInflater.inflate(R.menu.images_action_menu, menu)
                 return true
             }
 

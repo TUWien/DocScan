@@ -3,12 +3,14 @@ package at.ac.tuwien.caa.docscan.ui.docviewer.pdf
 import android.content.Intent
 import android.net.Uri
 import android.os.Parcelable
+import androidx.activity.result.ActivityResultLauncher
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import at.ac.tuwien.caa.docscan.DocScanApp
 import at.ac.tuwien.caa.docscan.extensions.asURI
 import at.ac.tuwien.caa.docscan.extensions.getDocumentFilesForDirectoryTree
+import at.ac.tuwien.caa.docscan.extensions.getExportFolderPermissionIntent
 import at.ac.tuwien.caa.docscan.logic.PageFileType
 import at.ac.tuwien.caa.docscan.logic.PermissionHandler
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
@@ -23,7 +25,7 @@ class PdfViewModel(val app: DocScanApp, val preferencesHandler: PreferencesHandl
         val folderUri = uri ?: preferencesHandler.exportDirectoryUri?.asURI()
         if (folderUri != null && PermissionHandler.isPermissionGiven(app, folderUri.toString())) {
             val list = mutableListOf<ExportList>()
-            val header = ExportList.ExportHeader(folderUri.path ?: "Unknown path!")
+//            val header = ExportList.ExportHeader(folderUri.path ?: "Unknown path!")
             val files = getDocumentFilesForDirectoryTree(app, folderUri, PageFileType.PDF).map { file ->
                 ExportList.File(file, pageFileType = PageFileType.PDF, file.name ?: "Unknown name!")
             }
@@ -35,11 +37,16 @@ class PdfViewModel(val app: DocScanApp, val preferencesHandler: PreferencesHandl
         }
     }
 
+    /**
+     * Persists [uri] and releases old folder uri for exports.
+     */
     fun persistFolderUri(uri: Uri) {
         app.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        // release the old permissions
+        // release the old permissions only if they have changed.
         preferencesHandler.exportDirectoryUri?.asURI()?.let {
-            app.contentResolver.releasePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            if (it != uri) {
+                app.contentResolver.releasePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+            }
         }
         // save the new permissions
         preferencesHandler.exportDirectoryUri = uri.toString()
@@ -49,6 +56,10 @@ class PdfViewModel(val app: DocScanApp, val preferencesHandler: PreferencesHandl
     fun deleteFile(file: ExportList.File) {
         at.ac.tuwien.caa.docscan.extensions.deleteFile(file.documentFile)
         load()
+    }
+
+    fun launchFolderSelection(folderPermissionResultCallback: ActivityResultLauncher<Intent>) {
+        folderPermissionResultCallback.launch(getExportFolderPermissionIntent(app, preferencesHandler.exportDirectoryUri?.asURI()))
     }
 }
 

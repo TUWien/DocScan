@@ -2,11 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- TODO: fix hardcoded strings -->
     <item
         android:id="@+id/image_options"
         android:icon="@drawable/ic_more_vert_black_24dp"
-        android:title="Options"
+        android:title="@string/menu_options"
         app:showAsAction="always" />
 
 </menu>

@@ -141,3 +141,17 @@ data class SheetModel(
 fun SheetModel.show(
         fragmentManager: FragmentManager
 ) = DocumentSheet.newInstance(this).show(fragmentManager)
+
+/**
+ * Represents action ids, which were introduced to avoid unnecessary menu file references.
+ */
+enum class SheetActionId(val id: Int) {
+    DELETE(1),
+    SHARE(2),
+    CONTINUE_IMAGING(3),
+    EDIT(4),
+    CROP(5),
+    EXPORT(6),
+    UPLOAD(7),
+    QR(8);
+}

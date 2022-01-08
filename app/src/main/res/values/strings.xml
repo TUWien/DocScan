@@ -164,6 +164,9 @@
 
     <string name="login_title">Login to Transkribus</string>
 
+    <string name="menu_switch_folder">Switch folder</string>
+    <string name="menu_options">Options</string>
+
     <!-- AutoLoginActivity -->
 
     <!-- Menus -->

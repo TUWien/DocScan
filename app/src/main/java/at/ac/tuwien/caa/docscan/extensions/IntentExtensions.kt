@@ -34,12 +34,22 @@ fun FragmentActivity.safeStartActivity(intent: Intent): Boolean {
     }
 }
 
-fun getExportFolderPermissionIntent(context: Context): Intent {
+fun getImageImportIntent(): Intent {
+    val intent = Intent(Intent.ACTION_GET_CONTENT)
+    intent.type = "image/*"
+    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+    return intent
+}
+
+/**
+ * @return an intent to ask for access of an entire public folder with [Intent.ACTION_OPEN_DOCUMENT_TREE]
+ * @param initialUri if set, then the initial folder will be set, fallbacks to [getDocScanPdfUri]
+ */
+fun getExportFolderPermissionIntent(context: Context, initialUri: Uri?): Intent {
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        // TODO: Check if this is really necessary
-        val docScanPdfUri = getDocScanPdfUri(context)
-        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, docScanPdfUri)
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri
+                ?: getDocScanPdfUri(context))
     }
     // TODO: This is a system setting which may not work
     intent.putExtra("android.provider.extra.SHOW_ADVANCED", true)
@@ -49,6 +59,7 @@ fun getExportFolderPermissionIntent(context: Context): Intent {
     return intent
 }
 
+// TODO: Check if this is really necessary
 @RequiresApi(Build.VERSION_CODES.N)
 private fun getDocScanPdfUri(context: Context): Uri {
 

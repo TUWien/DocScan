@@ -821,28 +821,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         return actions;
     }
 
-    @NonNull
-    private ArrayList<SheetAction> getFABSheetActions() {
-        ArrayList<SheetAction> actions = new ArrayList<>();
-        actions.add(new SheetAction(
-                R.id.action_document_new_item,
-                getString(R.string.action_document_create_title),
-                R.drawable.ic_folder_gray_24dp));
-        actions.add(new SheetAction(
-                R.id.action_document_qr_item,
-                getString(R.string.action_document_qr_title),
-                R.drawable.ic_qr_code_gray));
-        actions.add(new SheetAction(
-                R.id.action_document_select_item,
-                getString(R.string.action_document_select_title),
-                R.drawable.ic_folder_open_gray_24dp));
-        actions.add(new SheetAction(
-                R.id.action_document_upload_item,
-                getString(R.string.action_document_upload_document),
-                R.drawable.ic_cloud_upload_gray_24dp));
-        return actions;
-    }
-
     private void checkAppVersion() {
 
         // Load the last version number saved:
@@ -2640,17 +2618,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mFlashModes == null)
             return;
 
-        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO))
-            mFlashPopupMenu.getMenu().findItem(R.id.flash_auto_item).setVisible(false);
-
-        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_ON))
-            mFlashPopupMenu.getMenu().findItem(R.id.flash_on_item).setVisible(false);
-
-        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_OFF))
-            mFlashPopupMenu.getMenu().findItem(R.id.flash_off_item).setVisible(false);
-
-        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_TORCH))
-            mFlashPopupMenu.getMenu().findItem(R.id.flash_torch_item).setVisible(false);
+//        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_AUTO))
+//            mFlashPopupMenu.getMenu().findItem(R.id.flash_auto_item).setVisible(false);
+//
+//        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_ON))
+//            mFlashPopupMenu.getMenu().findItem(R.id.flash_on_item).setVisible(false);
+//
+//        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_OFF))
+//            mFlashPopupMenu.getMenu().findItem(R.id.flash_off_item).setVisible(false);
+//
+//        if (!mFlashModes.contains(Camera.Parameters.FLASH_MODE_TORCH))
+//            mFlashPopupMenu.getMenu().findItem(R.id.flash_torch_item).setVisible(false);
 
     }
 
