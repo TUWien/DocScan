@@ -55,10 +55,8 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
-import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
@@ -78,7 +76,6 @@ import static at.ac.tuwien.caa.docscan.ui.info.AboutActivity.KEY_SHOW_INTRO;
 public class StartActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     private AlertDialog mAlertDialog;
-    private static final String KEY_FIRST_START_DATE = "KEY_FIRST_START_DATE";
     private static final int CREATE_DOCUMENT = 0;
     private boolean mDocumentCreateRequest = false;
     private static final String CLASS_NAME = "StartActivity";
@@ -95,19 +92,17 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
             }
         }
 
-        logFirstAppStart();
-
         //initialize Firebase
         FirebaseApp a = FirebaseApp.initializeApp(this);
         if (a == null || a.getOptions().getApiKey().isEmpty())
             Log.d(CLASS_NAME, getString(R.string.start_firebase_not_auth_text));
 
-        int lastInstalledVersion = Settings.getInstance().loadIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY);
-//        The user has already started the app:
-        if (lastInstalledVersion != Settings.NO_ENTRY)
-            startAppNoIntro();
-        else
-            startIntro();
+//        int lastInstalledVersion = Settings.getInstance().loadIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY);
+////        The user has already started the app:
+//        if (lastInstalledVersion != Settings.NO_ENTRY)
+//            startAppNoIntro();
+//        else
+//            startIntro();
 
     }
 
@@ -123,8 +118,8 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
     private void startIntro() {
 
         //        We save the version here, so that the intro is shown just once also in case the intro has stopped:
-        int currentVersion = BuildConfig.VERSION_CODE;
-        Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
+//        int currentVersion = BuildConfig.VERSION_CODE;
+//        Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
 
         setContentView(R.layout.activity_intro);
 
@@ -192,24 +187,6 @@ public class StartActivity extends AppCompatActivity implements ActivityCompat.O
         setContentView(R.layout.main_container_view);
         askForPermissions();
 
-    }
-
-
-    private void logFirstAppStart() {
-        //        Log the first start of the app:
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        if (sharedPref != null) {
-            String firstStart = sharedPref.getString(KEY_FIRST_START_DATE, null);
-            if (firstStart == null) {
-                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-//                Log in the app:
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString(KEY_FIRST_START_DATE, timeStamp);
-                editor.commit();
-//                Save in Crashlytics:
-                FirebaseCrashlytics.getInstance().setCustomKey(KEY_FIRST_START_DATE, timeStamp);
-            }
-        }
     }
 
 

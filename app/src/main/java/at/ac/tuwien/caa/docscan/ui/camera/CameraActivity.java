@@ -12,7 +12,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Point;
@@ -20,7 +19,6 @@ import android.graphics.PointF;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -69,7 +67,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.ActionSheet;
 import at.ac.tuwien.caa.docscan.camera.CameraPaintLayout;
@@ -87,7 +84,6 @@ import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.db.model.Page;
-import at.ac.tuwien.caa.docscan.logic.DocumentMigrator;
 import at.ac.tuwien.caa.docscan.logic.DocumentViewerLaunchViewType;
 import at.ac.tuwien.caa.docscan.logic.Failure;
 import at.ac.tuwien.caa.docscan.logic.FileHandler;
@@ -96,7 +92,6 @@ import at.ac.tuwien.caa.docscan.logic.GlideLegacyCallback;
 import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler;
 import at.ac.tuwien.caa.docscan.logic.Resource;
-import at.ac.tuwien.caa.docscan.logic.Settings;
 import at.ac.tuwien.caa.docscan.logic.Success;
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer;
@@ -141,7 +136,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
-    private static final String KEY_SHOW_EXPOSURE_LOCK_WARNING = "KEY_SHOW_EXPOSURE_LOCK_WARNING";
     private static final String KEY_SHOW_TEXT_DIR_DIALOG = "KEY_SHOW_TEXT_DIR_DIALOG";
     private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
     private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
@@ -379,30 +373,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         // Read user settings:
 
-        // TODO: CODE_STYLE - Use preferenceHandler for preferences
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        mPaintView.drawFocusText(preferencesHandler.getValue().getShowFocusValues());
+        mPaintView.drawGrid(preferencesHandler.getValue().getShowGrid());
+        NativeWrapper.setUseLab(!preferencesHandler.getValue().isFastSegmentation());
 
-        boolean showFocusValues = sharedPref.getBoolean(getResources().getString(
-                R.string.key_show_focus_values), false);
-        mPaintView.drawFocusText(showFocusValues);
-
-        boolean showGrid = sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
-        mPaintView.drawGrid(showGrid);
-
-        boolean useFastPageDetection = sharedPref.getBoolean(getResources().getString(
-                R.string.key_fast_segmentation), true);
-        NativeWrapper.setUseLab(!useFastPageDetection);
-
-        mIsFocusMeasured = sharedPref.getBoolean(getResources().getString(R.string.key_focus_measure),
-                true);
+        mIsFocusMeasured = preferencesHandler.getValue().isFocusMeasure();
         mCVResult.setMeasureFocus(mIsFocusMeasured);
         IPManager.getInstance().setIsFocusMeasured(mIsFocusMeasured);
 
-        mTextOrientation = sharedPref.getInt(getResources().getString(R.string.key_text_orientation), IMG_ORIENTATION_90);
+        mTextOrientation = preferencesHandler.getValue().getTextOrientation();
         mPaintView.setTextOrientation(mTextOrientation);
 
-        boolean isDebugViewShown = sharedPref.getBoolean(getResources().getString(R.string.key_show_debug_view), false);
-        showDebugView(isDebugViewShown);
+        showDebugView(preferencesHandler.getValue().getShowDebugView());
 
         showControlsLayout(!mIsQRActive);
 
@@ -604,9 +586,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             }
         });
 
-//        Check app version:
-        checkAppVersion();
-
         FloatingActionButton fab = findViewById(R.id.document_fab);
         fab.setOnClickListener(view -> startActivity(DocumentViewerActivity.Companion.newInstance(CameraActivity.this, DocumentViewerLaunchViewType.DOCUMENTS)));
 
@@ -677,12 +656,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     private void saveTextOrientation() {
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt(getString(R.string.key_text_orientation), mTextOrientation);
-        editor.commit();
-
+        preferencesHandler.getValue().setTextOrientation(mTextOrientation);
     }
 
     @NonNull
@@ -774,18 +748,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         ArrayList<SheetAction> actions = new ArrayList<>();
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
 //        Text orientation action:
         actions.add(new SheetAction(
                 R.id.action_rotate_text_dir_item,
                 getString(R.string.action_setting_rotate_text_dir),
                 R.drawable.ic_rotate_text_gray_24px));
 
-//        Grid action:
-        boolean showGrid = sharedPref.getBoolean(getResources().getString(
-                R.string.key_show_grid), false);
-        if (showGrid)
+        if (preferencesHandler.getValue().getShowGrid())
             actions.add(new SheetAction(
                     R.id.action_hide_grid_item,
                     getString(R.string.action_setting_hide_grid),
@@ -821,23 +790,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         return actions;
     }
 
-    private void checkAppVersion() {
-
-        // Load the last version number saved:
-        int lastInstalledVersion = Settings.getInstance().loadIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY);
-        int currentVersion = BuildConfig.VERSION_CODE;
-
-        // Save the current version:
-        Settings.getInstance().saveIntKey(this, Settings.SettingEnum.INSTALLED_VERSION_KEY, currentVersion);
-
-        if (lastInstalledVersion <= 35 && lastInstalledVersion != -1)
-            DocumentMigrator.migrate(this);
-
-        if (lastInstalledVersion <= 116 && lastInstalledVersion != -1)
-            showUIChangesDialog();
-
-    }
-
     private void showUIChangesDialog() {
 
         MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(CameraActivity.this);
@@ -869,11 +821,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     private void showLockedExposureDialog() {
-
-        final SharedPreferences sharedPref = androidx.preference.PreferenceManager.
-                getDefaultSharedPreferences(this);
-        boolean showDialog = sharedPref.getBoolean(KEY_SHOW_EXPOSURE_LOCK_WARNING, true);
-        if (!showDialog)
+        if (!preferencesHandler.getValue().getShowExposureLockWarning())
             return;
 
         MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(CameraActivity.this);
@@ -888,9 +836,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         alertDialog.setPositiveButton(getString(R.string.button_ok),
                 (dialog, which) -> {
                     if (checkBox.isChecked()) {
-                        SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putBoolean(KEY_SHOW_EXPOSURE_LOCK_WARNING, false);
-                        editor.commit();
+                        preferencesHandler.getValue().setShowExposureLockWarning(false);
                     }
                 });
 
@@ -1257,8 +1203,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void initHudButton() {
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean showHudButton = sharedPref.getBoolean(getResources().getString(R.string.key_hud_enabled), false);
+        boolean showHudButton = preferencesHandler.getValue().getShowHUD();
 
         AppCompatImageButton hudButton = findViewById(R.id.hud_button);
         if (!showHudButton)
@@ -1542,11 +1487,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             @Override
             public void onShutter() {
                 mPaintView.showFlicker();
-
-                SharedPreferences sharedPref =
-                        PreferenceManager.getDefaultSharedPreferences(CameraActivity.this);
-                boolean flashInSeriesMode = sharedPref.getBoolean(getResources().getString(
-                        R.string.key_flash_series_mode), false);
+                boolean flashInSeriesMode = preferencesHandler.getValue().isFlashSeriesMode();
 
                 if (flashInSeriesMode && mIsSeriesMode)
                     mCameraPreview.shortFlash();
@@ -2437,26 +2378,20 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private void showGrid(boolean showGrid) {
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         mPaintView.drawGrid(showGrid);
 
 //        Save the new setting:
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putBoolean(getResources().getString(R.string.key_show_grid), showGrid);
-        editor.commit();
+        preferencesHandler.getValue().setShowGrid(showGrid);
 
     }
 
     public void showGrid(MenuItem item) {
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean showGrid = !sharedPref.getBoolean(getResources().getString(R.string.key_show_grid), false);
+        boolean showGrid = !preferencesHandler.getValue().getShowGrid();
         mPaintView.drawGrid(showGrid);
 
 //        Save the new setting:
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putBoolean(getResources().getString(R.string.key_show_grid), showGrid);
-        editor.commit();
+        preferencesHandler.getValue().setShowGrid(showGrid);
 
 //        Change the item text:
         if (showGrid)

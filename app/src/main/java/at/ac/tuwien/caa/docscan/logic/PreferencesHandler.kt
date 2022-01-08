@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity.IMG_ORIENTATION_90
 
 class PreferencesHandler(val context: Context) {
     private val preferencesName: String by lazy { "settings" }
@@ -41,8 +42,10 @@ class PreferencesHandler(val context: Context) {
         const val SERIES_MODE_ACTIVE_KEY = "SERIES_MODE_ACTIVE_KEY"
         const val SHOW_INTRO_KEY = "SHOW_INTRO_KEY"
         val KEY_FIRST_START_DATE = "KEY_FIRST_START_DATE"
+
         const val SHOW_TRANSKRIBUS_METADATA_KEY = "SHOW_TRANSKRIBUS_METADATA"
         private const val KEY_SKIP_CROPPING_INFO_DIALOG = "KEY_SKIP_CROPPING_INFO_DIALOG"
+        const val KEY_SHOW_EXPOSURE_LOCK_WARNING = "KEY_SHOW_EXPOSURE_LOCK_WARNING"
 
         const val DB_MIGRATION_KEY = "DB_MIGRATION_KEY"
 
@@ -113,6 +116,96 @@ class PreferencesHandler(val context: Context) {
         set(value) {
             sharedPreferences.edit()
                     .putBoolean(DOCUMENT_HINT_SHOWN_KEY, value)
+                    .apply()
+        }
+
+    var useTranskribusTestServer: Boolean
+        get() {
+            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_use_test_server), false)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                    .putBoolean(context.getString(R.string.key_use_test_server), value)
+                    .apply()
+        }
+
+    var showFocusValues: Boolean
+        get() {
+            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_show_focus_values), false)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                    .putBoolean(context.getString(R.string.key_show_focus_values), value)
+                    .apply()
+        }
+
+    var showGrid: Boolean
+        get() {
+            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_show_grid), false)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                    .putBoolean(context.getString(R.string.key_show_grid), value)
+                    .apply()
+        }
+
+    var isFastSegmentation:Boolean
+        get() {
+            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_fast_segmentation), false)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                    .putBoolean(context.getString(R.string.key_fast_segmentation), value)
+                    .apply()
+        }
+
+    var isFocusMeasure: Boolean
+        get() {
+            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_focus_measure), true)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                    .putBoolean(context.getString(R.string.key_focus_measure), value)
+                    .apply()
+        }
+
+    var textOrientation: Int
+        get() {
+            return defaultSharedPreferences.getInt(context.getString(R.string.key_text_orientation), IMG_ORIENTATION_90)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                    .putInt(context.getString(R.string.key_text_orientation), value)
+                    .apply()
+        }
+
+    var showDebugView: Boolean
+        get() {
+            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_show_debug_view), false)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                    .putBoolean(context.getString(R.string.key_show_debug_view), value)
+                    .apply()
+        }
+
+    var showHUD: Boolean
+        get() {
+            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_hud_enabled), false)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                    .putBoolean(context.getString(R.string.key_hud_enabled), value)
+                    .apply()
+        }
+
+    var showExposureLockWarning: Boolean
+        get() {
+            return defaultSharedPreferences.getBoolean(KEY_SHOW_EXPOSURE_LOCK_WARNING, true)
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                    .putBoolean(KEY_SHOW_EXPOSURE_LOCK_WARNING, value)
                     .apply()
         }
 
