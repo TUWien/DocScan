@@ -14,6 +14,7 @@ import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.migration.domain.JsonStorage
+import at.ac.tuwien.caa.docscan.sync.SyncStorage
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -25,15 +26,15 @@ import java.util.*
  * @author matejbartalsky
  */
 class MigrationRepository(
-        private val docRepo: DocumentRepository,
-        private val fileHandler: FileHandler,
-        private val preferencesHandler: PreferencesHandler
+    private val docRepo: DocumentRepository,
+    private val fileHandler: FileHandler,
+    private val preferencesHandler: PreferencesHandler
 ) {
 
     val gson: Gson by lazy {
         GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
-                .disableHtmlEscaping()
-                .create()
+            .disableHtmlEscaping()
+            .create()
     }
 
     /**
@@ -49,7 +50,13 @@ class MigrationRepository(
             return
         }
         @Suppress("Deprecation")
+        // the main storage file which contains references to images
         val documentStorageFile = File(context.filesDir, DocumentStorage.DOCUMENT_STORE_FILE_NAME)
+        // the sync storage file which is completely omitted, since partial uploads are ignored.
+        val syncStorageFile = File(context.filesDir, SyncStorage.SYNC_STORAGE_FILE_NAME)
+        // the documentBackupStorageFile is usually in the public storage which doesn't matter, since for new app installs it cannot be retrieved anyway.
+        val documentBackupStorageFile =
+            File(context.filesDir, DocumentStorage.DOCUMENT_STORE_BACKUP_FILE_NAME)
         if (documentStorageFile.exists()) {
             try {
                 val reader = documentStorageFile.bufferedReader()
@@ -64,15 +71,15 @@ class MigrationRepository(
                     val meta = jsonDocument.jsonMetaData
                     val metaData = if (meta != null) {
                         MetaData(
-                                author = meta.author,
-                                authority = meta.authority,
-                                genre = meta.genre,
-                                language = meta.language,
-                                isProjectReadme2020 = meta.readme2020,
-                                allowImagePublication = meta.readme2020Public,
-                                signature = meta.signature,
-                                url = meta.uri,
-                                writer = meta.writer
+                            author = meta.author,
+                            authority = meta.authority,
+                            genre = meta.genre,
+                            language = meta.language,
+                            isProjectReadme2020 = meta.readme2020,
+                            allowImagePublication = meta.readme2020Public,
+                            signature = meta.signature,
+                            url = meta.uri,
+                            writer = meta.writer
                         )
                     } else {
                         null
@@ -84,22 +91,22 @@ class MigrationRepository(
                         fileHandler.getFileByAbsolutePath(jsonPage.file.path)?.let {
                             try {
                                 fileHandler.copyFile(
-                                        it,
-                                        // we assume that all file types are jpeg files
-                                        fileHandler.createDocumentFile(
-                                                newDocId,
-                                                newPageId,
-                                                PageFileType.JPEG
-                                        )
+                                    it,
+                                    // we assume that all file types are jpeg files
+                                    fileHandler.createDocumentFile(
+                                        newDocId,
+                                        newPageId,
+                                        PageFileType.JPEG
+                                    )
                                 )
                                 val result = PageDetector.getNormedCropPoints(it.absolutePath)
                                 // read out the old
                                 val singlePageBoundary = if (result.points.size == 4) {
                                     SinglePageBoundary(
-                                            result.points[0].asPoint(),
-                                            result.points[1].asPoint(),
-                                            result.points[2].asPoint(),
-                                            result.points[3].asPoint()
+                                        result.points[0].asPoint(),
+                                        result.points[1].asPoint(),
+                                        result.points[2].asPoint(),
+                                        result.points[3].asPoint()
                                     )
                                 } else {
                                     SinglePageBoundary.getDefault()
@@ -109,20 +116,20 @@ class MigrationRepository(
 
                                 // if cropping has been already performed, then this will be marked as done
                                 val processingState =
-                                        if (PageDetector.isCropped(it.absolutePath)) PostProcessingState.DONE else PostProcessingState.DRAFT
+                                    if (PageDetector.isCropped(it.absolutePath)) PostProcessingState.DONE else PostProcessingState.DRAFT
 
                                 newPages.add(
-                                        Page(
-                                                newPageId,
-                                                newDocId,
-                                                it.getFileHash(),
-                                                index,
-                                                rotation,
-                                                PageFileType.JPEG,
-                                                processingState,
-                                                ExportState.NONE,
-                                                singlePageBoundary
-                                        )
+                                    Page(
+                                        newPageId,
+                                        newDocId,
+                                        it.getFileHash(),
+                                        index,
+                                        rotation,
+                                        PageFileType.JPEG,
+                                        processingState,
+                                        ExportState.NONE,
+                                        singlePageBoundary
+                                    )
                                 )
                             } catch (exception: Exception) {
                                 // TODO: Log copying has failed!
@@ -131,16 +138,16 @@ class MigrationRepository(
                         }
                     }
                     newDocsWithPages.add(
-                            DocumentWithPages(
-                                    Document(
-                                            newDocId,
-                                            title,
-                                            isActive,
-                                            LockState.NONE,
-                                            metaData
-                                    ),
-                                    newPages
-                            )
+                        DocumentWithPages(
+                            Document(
+                                newDocId,
+                                title,
+                                isActive,
+                                LockState.NONE,
+                                metaData
+                            ),
+                            newPages
+                        )
                     )
                 }
 
@@ -154,6 +161,8 @@ class MigrationRepository(
                 }
 
                 documentStorageFile.safelyDelete()
+                syncStorageFile.safelyDelete()
+                documentBackupStorageFile.safelyDelete()
 
             } catch (exception: Exception) {
                 // T

@@ -6,6 +6,7 @@ import at.ac.tuwien.caa.docscan.extensions.asUUID
 import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.logic.isRecoverable
+import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.UploadRepository
 import kotlinx.coroutines.*
@@ -25,6 +26,7 @@ class UploadWorker(
 
     private val uploadRepository by inject<UploadRepository>(UploadRepository::class.java)
     private val documentRepository by inject<DocumentRepository>(DocumentRepository::class.java)
+    private val notificationHandler by inject<NotificationHandler>(NotificationHandler::class.java)
 
     private var documentCollectorJob: Job? = null
 
@@ -42,7 +44,6 @@ class UploadWorker(
             Timber.e("UploadWorker has failed, docId is null!")
             return Result.failure()
         }
-        // TODO: Show initial notification
         return withContext(Dispatchers.IO) {
             documentCollectorJob = async {
                 documentRepository.getDocumentWithPagesAsFlow(documentId = docId).collectLatest {

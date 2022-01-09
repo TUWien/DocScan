@@ -1,21 +1,21 @@
 package at.ac.tuwien.caa.docscan.db.model
 
 import android.os.Parcelable
-import androidx.room.DatabaseView
 import androidx.room.Embedded
 import androidx.room.Relation
+import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class DocumentWithPages(
-        @Embedded
-        val document: Document,
-        @Relation(
-                parentColumn = Document.KEY_ID,
-                entityColumn = Page.KEY_DOC_ID
-        )
-        var pages: List<Page> = listOf()
+    @Embedded
+    val document: Document,
+    @Relation(
+        parentColumn = Document.KEY_ID,
+        entityColumn = Page.KEY_DOC_ID
+    )
+    var pages: List<Page> = listOf()
 ) : Parcelable
 
 fun DocumentWithPages.isCropped(): Boolean {
@@ -28,6 +28,10 @@ fun DocumentWithPages.isProcessing(): Boolean {
 
 fun DocumentWithPages.isExporting(): Boolean {
     return pages.firstOrNull { page -> page.isExporting() } != null
+}
+
+fun DocumentWithPages.numberOfFinishedExports(): Int {
+    return pages.count { page -> page.exportState == ExportState.DONE }
 }
 
 /**

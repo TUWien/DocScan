@@ -19,11 +19,11 @@ import java.util.*
 import kotlin.coroutines.cancellation.CancellationException
 
 class ExportRepository(
-        private val context: Context,
-        private val documentDao: DocumentDao,
-        private val pageDao: PageDao,
-        private val fileHandler: FileHandler,
-        private val preferencesHandler: PreferencesHandler
+    private val context: Context,
+    private val documentDao: DocumentDao,
+    private val pageDao: PageDao,
+    private val fileHandler: FileHandler,
+    private val preferencesHandler: PreferencesHandler
 ) {
 
     suspend fun exportDoc(documentId: UUID, exportFormat: ExportFormat): Resource<Unit> {
@@ -39,7 +39,11 @@ class ExportRepository(
         }
     }
 
-    private suspend fun exportDocInternal(documentId: UUID, exportFormat: ExportFormat, outputFile: File): Resource<Unit> {
+    private suspend fun exportDocInternal(
+        documentId: UUID,
+        exportFormat: ExportFormat,
+        outputFile: File
+    ): Resource<Unit> {
         Timber.d("Starting export for $documentId")
         // 1. Retrieve the current document with its pages.
         val documentWithPages = documentDao.getDocumentWithPages(documentId) ?: kotlin.run {
@@ -58,11 +62,14 @@ class ExportRepository(
                 textBlocks = mutableListOf()
                 val deferredResults = mutableListOf<Deferred<Resource<Text>>>()
                 documentWithPages.pages.forEach { page ->
+                    // TODO: Only for debugging purposes
+                    //delay(1000)
                     val deferredResult = async {
                         val file = fileHandler.getFileByPage(page)
-                                ?: return@async DBErrorCode.DOCUMENT_PAGE_FILE_FOR_EXPORT_MISSING.asFailure()
-                        PdfCreator.analyzeFileWithOCR(context, Uri.fromFile(file))
-                        // TODO: Add new page
+                            ?: return@async DBErrorCode.DOCUMENT_PAGE_FILE_FOR_EXPORT_MISSING.asFailure()
+                        val result = PdfCreator.analyzeFileWithOCR(context, Uri.fromFile(file))
+                        pageDao.updateExportState(page.id, ExportState.DONE)
+                        result
                     }
                     deferredResults.add(deferredResult)
                 }
@@ -70,7 +77,9 @@ class ExportRepository(
                 deferredResults.awaitAll().forEach {
                     when (it) {
                         is Failure -> {
-                            return@withContext IOErrorCode.ML_KIT_OCR_ANALYSIS_FAILED.asFailure<Unit>(it.exception)
+                            return@withContext IOErrorCode.ML_KIT_OCR_ANALYSIS_FAILED.asFailure<Unit>(
+                                it.exception
+                            )
                         }
                         is Success -> {
                             textBlocks.add(it.data)
@@ -83,17 +92,25 @@ class ExportRepository(
 
             val filesForExport = documentWithPages.pages.map { page ->
                 val pageFile = fileHandler.getFileByPage(page)
-                        ?: return@withContext IOErrorCode.FILE_MISSING
+                    ?: return@withContext IOErrorCode.FILE_MISSING
                 PdfCreator.PDFCreatorFileWrapper(pageFile, page.rotation)
             }
-            when (val pdfCreatorResult = PdfCreator.savePDF(outputFile, filesForExport, textBlocks)) {
+            when (val pdfCreatorResult =
+                PdfCreator.savePDF(outputFile, filesForExport, textBlocks)) {
                 is Failure -> {
                     outputFile.safelyDelete()
                     return@withContext Failure<Unit>(pdfCreatorResult.exception)
                 }
                 is Success -> {
                     // TODO: Adapt display name
-                    saveFile(context, fileHandler, outputFile, exportDirectory, "testpdf.pdf", PageFileType.PDF.mimeType)
+                    saveFile(
+                        context,
+                        fileHandler,
+                        outputFile,
+                        exportDirectory,
+                        "testpdf.pdf",
+                        PageFileType.PDF.mimeType
+                    )
                     outputFile.safelyDelete()
                 }
             }
@@ -102,11 +119,15 @@ class ExportRepository(
         return Success(Unit)
     }
 
-    private suspend fun tearDownExport(documentId: UUID, outputFile: File, isCancelled: Boolean = false) {
+    private suspend fun tearDownExport(
+        documentId: UUID,
+        outputFile: File,
+        isCancelled: Boolean = false
+    ) {
         outputFile.safelyDelete()
         pageDao.updatePageExportStateForDocument(
-                documentId,
-                if (isCancelled) ExportState.NONE else ExportState.DONE
+            documentId,
+            if (isCancelled) ExportState.NONE else ExportState.DONE
         )
 
         tryToUnlockDoc(documentId, null)

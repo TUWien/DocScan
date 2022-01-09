@@ -44,6 +44,9 @@ interface PageDao {
     @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :state WHERE ${Page.KEY_ID} = :pageId ")
     fun updateUploadState(pageId: UUID, state: UploadState)
 
+    @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_EXPORT_STATE} = :state WHERE ${Page.KEY_ID} = :pageId")
+    fun updateExportState(pageId: UUID, state: ExportState)
+
     @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :state WHERE ${Page.KEY_DOC_ID} = :docId ")
     fun updateUploadStateForDocument(docId: UUID, state: UploadState)
 

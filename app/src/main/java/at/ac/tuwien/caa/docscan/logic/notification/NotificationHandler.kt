@@ -11,8 +11,12 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
+import at.ac.tuwien.caa.docscan.db.model.numberOfFinishedExports
+import at.ac.tuwien.caa.docscan.logic.DocumentViewerLaunchViewType
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
 import timber.log.Timber
+import java.util.*
 
 class NotificationHandler(val context: Context) {
 
@@ -20,13 +24,103 @@ class NotificationHandler(val context: Context) {
         private const val PDF_INTENT = "PDF_INTENT"
         private const val PDF_FILE_NAME = "PDF_FILE_NAME"
         private const val PDF_CHANNEL_ID = "PDF_CHANNEL_ID"
-        private val PDF_CHANNEL_NAME: CharSequence = "DocScan Pdf" // The user-visible name of the channel.
+
+        // TODO: Remove this channel in the migration
+        private val PDF_CHANNEL_NAME: CharSequence =
+            "DocScan Pdf" // The user-visible name of the channel.
+    }
+
+    sealed class ExportNotification(val title: String, val showCancelButton: Boolean) {
+        class Init(title: String) : ExportNotification(title, true)
+        class Progress(title: String, val documentWithPages: DocumentWithPages) :
+            ExportNotification(title, true)
+
+        class Success(title: String, val text: String) : ExportNotification(title, false)
+        class Failure(title: String, val throwable: Throwable) :
+            ExportNotification(title, false)
+    }
+
+    fun showExportNotification(
+        docId: UUID,
+        exportNotification: ExportNotification
+    ) {
+        val notification = createBuilder(
+            DocScanNotificationChannel.CHANNEL_EXPORT,
+            null,
+            exportNotification.title,
+            null,
+            null
+        )
+
+        when (exportNotification) {
+            is ExportNotification.Failure -> {
+                // TODO: Add docscan error message
+                notification.setContentText(exportNotification.throwable.toString())
+            }
+            is ExportNotification.Init -> {
+                notification.setProgress(0, 0, true)
+            }
+            is ExportNotification.Progress -> {
+                notification.setProgress(
+                    exportNotification.documentWithPages.pages.size,
+                    exportNotification.documentWithPages.numberOfFinishedExports(),
+                    false
+                )
+            }
+            is ExportNotification.Success -> {
+                notification.setContentText(exportNotification.text)
+                notification.setTicker(exportNotification.text)
+            }
+        }
+
+        // Create an explicit intent for an Activity in your app
+        val intent =
+            DocumentViewerActivity.newInstance(context, DocumentViewerLaunchViewType.PDFS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+
+//        val cancelIntent = Intent(this, MyBroadcastReceiver::class.java).apply {
+//            action = ACTION_SNOOZE
+//            putExtra(EXTRA_NOTIFICATION_ID, 0)
+//        }
+//        val cancelIntent: PendingIntent =
+//            PendingIntent.getBroadcast(this, 0, snoozeIntent, 0)
+
+
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            flags
+        )
+
+        notification.setContentIntent(pendingIntent)
+
+        if (exportNotification.showCancelButton) {
+            // TODO: Add the cancel intent
+            notification.addAction(
+                R.drawable.ic_cancel_white_24dp, context.getString(R.string.dialog_cancel_text),
+                pendingIntent
+            )
+        }
+
+        showNotification(
+            DocScanNotificationChannel.CHANNEL_EXPORT.tag,
+            docId.hashCode(),
+            notification.build()
+        )
     }
 
     fun showNotification(
-            tag: String,
-            notificationId: Int,
-            notification: Notification
+        tag: String,
+        notificationId: Int,
+        notification: Notification
     ) {
         getNotificationManager(context).notify(tag, notificationId, notification)
     }
@@ -52,8 +146,8 @@ class NotificationHandler(val context: Context) {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private fun createNotificationChannel(
-            context: Context,
-            notificationChannel: NotificationChannel
+        context: Context,
+        notificationChannel: NotificationChannel
     ) {
         getNotificationManager(context).createNotificationChannel(notificationChannel)
     }
@@ -69,8 +163,8 @@ class NotificationHandler(val context: Context) {
             return getNotificationManager(context).getNotificationChannel(channelId)
         } catch (exception: Exception) {
             Timber.w(
-                    exception, "Error at loading notification channel with channelId: " + channelId +
-                    ". This might be expected behaviour if the channel simply does not yet exist!"
+                exception, "Error at loading notification channel with channelId: " + channelId +
+                        ". This might be expected behaviour if the channel simply does not yet exist!"
             )
         }
         return null
@@ -80,33 +174,32 @@ class NotificationHandler(val context: Context) {
      * Use this method to check, if the main system notifications for the app are enabled.
      */
     private fun areSystemNotificationsEnabled(context: Context) =
-            NotificationManagerCompat.from(context).areNotificationsEnabled()
+        NotificationManagerCompat.from(context).areNotificationsEnabled()
 
     private fun getNotificationManager(context: Context) =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
 
     fun createBuilder(
-            context: Context,
-            docScanNotificationChannel: DocScanNotificationChannel,
-            groupKey: String?,
-            contentTitle: String,
-            contentText: String,
-            ticker: String,
-            date: Long = System.currentTimeMillis()
+        docScanNotificationChannel: DocScanNotificationChannel,
+        groupKey: String? = null,
+        contentTitle: String,
+        contentText: String?,
+        ticker: String?,
+        date: Long = System.currentTimeMillis()
     ): NotificationCompat.Builder {
 
         val builder = NotificationCompat.Builder(context, docScanNotificationChannel.channelId)
-                .setSmallIcon(R.drawable.ic_docscan_notification)
-                .setContentText(contentText)
-                .setContentTitle(contentTitle)
-                .setWhen(date)
-                .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_SUMMARY)
+            .setSmallIcon(R.drawable.ic_docscan_notification)
+            .setContentText(contentText)
+            .setContentTitle(contentTitle)
+            .setWhen(date)
+            .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_SUMMARY)
 //                .setSound(channelEnum.ringTone)
-                .setAutoCancel(docScanNotificationChannel.isAutoCancel)
-                .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
-                .setTicker(ticker)
-                .setGroup(groupKey)
+            .setAutoCancel(docScanNotificationChannel.isAutoCancel)
+            .setBadgeIconType(NotificationCompat.BADGE_ICON_LARGE)
+            .setTicker(ticker)
+            .setGroup(groupKey)
 
         // priority is only necessary if the channel importance is not set.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -135,22 +228,22 @@ class NotificationHandler(val context: Context) {
      * Creates a new [NotificationCompat.Builder] object, for a summay.
      */
     fun createBuilderForSummary(
-            docScanNotificationChannel: DocScanNotificationChannel,
-            groupKey: String
+        docScanNotificationChannel: DocScanNotificationChannel,
+        groupKey: String
     ): NotificationCompat.Builder {
         return NotificationCompat.Builder(context, docScanNotificationChannel.channelId)
-                .setSmallIcon(R.drawable.ic_docscan_notification)
-                .setGroupSummary(true)
-                .setGroup(groupKey)
-                .setAutoCancel(docScanNotificationChannel.isAutoCancel)
+            .setSmallIcon(R.drawable.ic_docscan_notification)
+            .setGroupSummary(true)
+            .setGroup(groupKey)
+            .setAutoCancel(docScanNotificationChannel.isAutoCancel)
     }
 
     /**
      * Add bigTextStyle with text to builder.
      */
     fun addBigTextStyleToBuilder(
-            builder: NotificationCompat.Builder,
-            bigText: String
+        builder: NotificationCompat.Builder,
+        bigText: String
     ) {
 
         val bigTextStyle = NotificationCompat.BigTextStyle()
@@ -174,12 +267,12 @@ class NotificationHandler(val context: Context) {
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
     private fun getNotificationChannelTemplate(
-            docScanNotificationChannel: DocScanNotificationChannel
+        docScanNotificationChannel: DocScanNotificationChannel
     ): NotificationChannel {
         return NotificationChannel(
-                docScanNotificationChannel.channelId,
-                context.getString(docScanNotificationChannel.channelNameResource),
-                docScanNotificationChannel.importance
+            docScanNotificationChannel.channelId,
+            context.getString(docScanNotificationChannel.channelNameResource),
+            docScanNotificationChannel.importance
         ).apply {
             description = context.getString(docScanNotificationChannel.channelDescriptionResource)
             enableLights(true)
@@ -199,7 +292,9 @@ class NotificationHandler(val context: Context) {
             return false // do nothing, otherwise notification will be persisted.
         }
         // only if the channel has been already created and is disabled, we won't show the notification.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isNotificationChannelEnabled(docScanNotificationChannel.channelId) == false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && isNotificationChannelEnabled(
+                docScanNotificationChannel.channelId
+            ) == false
         ) {
             return false // do nothing, otherwise notification will be persisted.
         }
@@ -207,22 +302,27 @@ class NotificationHandler(val context: Context) {
     }
 
     // TODO: Refactor the notifications for exports and uploads
-    private fun getNotificationBuilder(documentName: String,
-                                       notificationManager: NotificationManager, context: Context?): NotificationCompat.Builder {
-        val title = context!!.getString(R.string.pdf_notification_exporting)
+    private fun getNotificationBuilder(
+        documentName: String,
+        notificationManager: NotificationManager
+    ): NotificationCompat.Builder {
+        val title = "title"
 
         //        Create an intent that is started, if the user clicks on the notification:
         val intent = Intent(context, DocumentViewerActivity::class.java)
         intent.putExtra(NotificationHandler.PDF_INTENT, true)
 //        intent.putExtra(NotificationHandler.PDF_FILE_NAME, PdfCreator.getPdfFile(documentName).absolutePath)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
-        val pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        val builder = NotificationCompat.Builder(context,
-                NotificationHandler.PDF_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_docscan_notification)
-                .setContentTitle(title)
-                .setContentIntent(pendingIntent)
-                .setChannelId(NotificationHandler.PDF_CHANNEL_ID)
+        val pendingIntent =
+            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val builder = NotificationCompat.Builder(
+            context,
+            NotificationHandler.PDF_CHANNEL_ID
+        )
+            .setSmallIcon(R.drawable.ic_docscan_notification)
+            .setContentTitle(title)
+            .setContentIntent(pendingIntent)
+            .setChannelId(NotificationHandler.PDF_CHANNEL_ID)
 
         // On Android O we need a NotificationChannel, otherwise the notification is not shown.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -236,41 +336,51 @@ class NotificationHandler(val context: Context) {
     }
 
     // TODO: Refactor the progress notification for exports and uploads
-    private fun progressNotification(documentName: String, progress: Int,
-                                     notificationManager: NotificationManager,
-                                     context: Context?, builder: NotificationCompat.Builder?) {
+    private fun progressNotification(
+        documentName: String, progress: Int,
+        notificationManager: NotificationManager,
+        context: Context?, builder: NotificationCompat.Builder?
+    ) {
         if (builder == null) return
-        if (progress != -1) builder.setContentTitle(context!!.getString(R.string.pdf_notification_exporting))
-                .setContentText(documentName)
-                .setProgress(100, progress, false) else builder.setContentTitle(context!!.getString(R.string.pdf_notification_exporting))
-                .setContentText(documentName) // Removes the progress bar
-                .setProgress(0, 0, false)
+        if (progress != -1) builder.setContentTitle("title")
+            .setContentText(documentName)
+            .setProgress(
+                100,
+                progress,
+                false
+            ) else builder.setContentTitle("title")
+            .setContentText(documentName) // Removes the progress bar
+            .setProgress(0, 0, false)
 
         // show the new notification:
         notificationManager.notify(25, builder.build())
     }
 
     // TODO: Refactor the progress notification for exports and uploads
-    private fun successNotification(documentName: String,
-                                    notificationManager: NotificationManager,
-                                    context: Context?, builder: NotificationCompat.Builder?) {
+    private fun successNotification(
+        documentName: String,
+        notificationManager: NotificationManager,
+        context: Context?, builder: NotificationCompat.Builder?
+    ) {
         if (builder == null) return
-        builder.setContentTitle(context!!.getString(R.string.pdf_notification_done))
-                .setContentText(documentName) // Removes the progress bar
-                .setProgress(0, 0, false)
+        builder.setContentTitle("success")
+            .setContentText(documentName) // Removes the progress bar
+            .setProgress(0, 0, false)
 
         // show the new notification:
         notificationManager.notify(25, builder.build())
     }
 
     // TODO: Refactor the progress notification for exports and uploads
-    private fun errorNotification(documentName: String,
-                                  notificationManager: NotificationManager,
-                                  context: Context?, builder: NotificationCompat.Builder?) {
+    private fun errorNotification(
+        documentName: String,
+        notificationManager: NotificationManager,
+        context: Context?, builder: NotificationCompat.Builder?
+    ) {
         if (builder == null) return
-        builder.setContentTitle(context!!.getString(R.string.pdf_notification_error))
-                .setContentText(documentName) // Removes the progress bar
-                .setProgress(0, 0, false)
+        builder.setContentTitle("error")
+            .setContentText(documentName) // Removes the progress bar
+            .setProgress(0, 0, false)
 
         // show the new notification:
         notificationManager.notify(25, builder.build())

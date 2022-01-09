@@ -274,9 +274,13 @@
     <string name="sync_notification_time_out_text">Server is temporary not responding.</string>
 
     <!-- PdfCreator -->
-    <string name="pdf_notification_exporting">Exporting pdf</string>
-    <string name="pdf_notification_done">Pdf exported</string>
-    <string name="pdf_notification_error">An error happened while creating your pdf, sorry!</string>
+
+    <!-- Exporting a PDF -->
+    <string name="notification_export_title_progress">Exporting PDF</string>
+    <string name="notification_export_title_success">PDF exported!</string>
+    <string name="notification_export_text_success">%s has been successfully exported.</string>
+    <string name="notification_export_title_error">PDF export has failed!</string>
+    <string name="notification_export_text_error">An error happened while creating your pdf, sorry!</string>
 
     <!-- OpenDocumentActivity -->
     <string name="document_no_dir_created_title">No document created</string>
