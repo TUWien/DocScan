@@ -14,7 +14,7 @@ import kotlinx.parcelize.Parcelize
 
 @Deprecated(message = "Use AModalActionSheet.kt instead. This current implementation does not handle rotations correctly crashes due to constructor overload of fragments!")
 open class ActionSheet(
-    private val sheetActions: ArrayList<SheetAction>,
+    protected val sheetActions: ArrayList<SheetAction>,
     protected var listener: SheetSelection? = null,
     private var dialogListener: DialogStatus? = null
 ) : BottomSheetDialogFragment() {

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.annotation.Nullable
+import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.TextDirSheetDialogBinding
 
@@ -20,8 +21,6 @@ class TextOrientationActionSheet(
 
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
         val style: Int =
             if (opaque)
                 R.style.BottomSheetDialogDarkTheme
@@ -29,8 +28,16 @@ class TextOrientationActionSheet(
                 R.style.TransparentBottomSheetDialogDarkTheme
 
         setStyle(STYLE_NORMAL, style)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        //        Lambda for RecyclerView clicks. Got this from:
+//        https://www.andreasjakl.com/recyclerview-kotlin-style-click-listener-android/
+        val sheetAdapter =
+            SheetAdapter(sheetActions) { sheetAction: SheetAction -> sheetClicked(sheetAction) }
         binding.sheetDialogRecyclerview.apply {
-            setStyle(STYLE_NORMAL, style)
+            adapter = sheetAdapter
+            layoutManager = GridLayoutManager(this@TextOrientationActionSheet.context, 2)
         }
     }
 
