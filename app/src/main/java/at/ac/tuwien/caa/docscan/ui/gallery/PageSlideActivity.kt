@@ -15,22 +15,24 @@ import at.ac.tuwien.caa.docscan.databinding.ActivityPageSlideBinding
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.asDocumentPageExtra
 import at.ac.tuwien.caa.docscan.logic.PageFileType
+import at.ac.tuwien.caa.docscan.logic.handleError
 import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.crop.CropViewActivity
+import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
+import at.ac.tuwien.caa.docscan.ui.dialog.isPositive
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationActivity
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import java.util.*
 
-// TODO: Checkout how to handle zoom out transitions.
-// TODO: CONSTRAINT - only delete/retake if document is not locked.
 class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickListener {
 
     private lateinit var binding: ActivityPageSlideBinding
     private val viewModel: PageSlideViewModel by viewModel { parametersOf(intent.extras!!) }
+    private val dialogViewModel: DialogViewModel by viewModel()
     private val adapter = PageSlideAdapter()
 
     private val callback = object : ViewPager2.OnPageChangeCallback() {
@@ -90,17 +92,6 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
         return super.onOptionsItemSelected(item)
     }
 
-    // A method to find height of the status bar
-    //    Based on: https://gist.github.com/hamakn/8939eb68a920a6d7a498
-    private fun getStatusBarHeight(): Int {
-        var result = 0
-        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
-        if (resourceId > 0) {
-            result = resources.getDimensionPixelSize(resourceId)
-        }
-        return result
-    }
-
     private fun observe() {
         viewModel.observablePages.observe(this, {
             binding.slideViewpager.unregisterOnPageChangeCallback(callback)
@@ -113,8 +104,9 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
             binding.slideViewpager.registerOnPageChangeCallback(callback)
         })
         viewModel.observableInitCrop.observe(this, {
-            it.getContentIfNotHandled()?.let { pair ->
-                navigateToCropActivity(pair.second)
+            it.getContentIfNotHandled()?.let { page ->
+                navigateToCropActivity(page)
+                // TODO: Checkout how to handle zoom out transitions.
                 // TODO: Zoom out of scale for this specific image view
 
                 //                    Zoom out before opening the CropViewActivity:
@@ -177,6 +169,30 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
                 startActivity(DocumentViewerActivity.newInstance(this, page.asDocumentPageExtra()))
             }
         })
+        viewModel.observableError.observe(this, {
+            it.getContentIfNotHandled()?.let { throwable ->
+                throwable.handleError(this)
+            }
+        })
+        dialogViewModel.observableDialogAction.observe(this, {
+            it.getContentIfNotHandled()?.let { dialogResult ->
+                when (dialogResult.dialogAction) {
+                    ADialog.DialogAction.CONFIRM_DELETE_PAGE -> {
+                        if (dialogResult.isPositive()) {
+                            viewModel.deletePageAtPosition(binding.slideViewpager.currentItem)
+                        }
+                    }
+                    ADialog.DialogAction.CONFIRM_RETAKE_IMAGE -> {
+                        if (dialogResult.isPositive()) {
+                            viewModel.retakeImageAtPosition(binding.slideViewpager.currentItem)
+                        }
+                    }
+                    else -> {
+                        // ignore
+                    }
+                }
+            }
+        })
     }
 
     private fun initButtons() {
@@ -184,20 +200,13 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
             binding.pageViewButtons.debugSegmentation.visibility = View.VISIBLE
         }
         binding.pageViewButtons.pageViewButtonsLayoutDeleteButton.setOnClickListener {
-            val builder = MaterialAlertDialogBuilder(this)
-            builder.setTitle(R.string.page_slide_fragment_confirm_delete_text)
-            builder.setPositiveButton(
-                R.string.page_slide_fragment_confirm_delete_text
-            ) { _, _ ->
-                viewModel.deletePageAtPosition(binding.slideViewpager.currentItem)
-            }
-            builder.show()
+            showDialog(ADialog.DialogAction.CONFIRM_DELETE_PAGE)
         }
         binding.pageViewButtons.pageViewButtonsLayoutCropButton.setOnClickListener {
             viewModel.cropPageAtPosition(binding.slideViewpager.currentItem)
         }
         binding.pageViewButtons.pageViewButtonsLayoutRotateButton.setOnClickListener {
-            viewModel.retakeImageAtPosition(binding.slideViewpager.currentItem)
+            showDialog(ADialog.DialogAction.CONFIRM_RETAKE_IMAGE)
         }
         binding.pageViewButtons.pageViewButtonsLayoutShareButton.setOnClickListener {
             viewModel.shareImageAtPosition(binding.slideViewpager.currentItem)

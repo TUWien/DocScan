@@ -20,4 +20,8 @@ open class BaseFragment : Fragment() {
     fun showDialog(dialogModel: DialogModel) {
         dialogModel.show(childFragmentManager)
     }
+
+    protected fun requireBaseActivity(): BaseActivity {
+        return requireActivity() as BaseActivity
+    }
 }

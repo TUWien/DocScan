@@ -277,41 +277,53 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
 
         dialogViewModel.observableDialogAction.observe(this, {
             it.getContentIfNotHandled()?.let { result ->
-                if (result.isPositive()) {
-                    when (result.dialogAction) {
-                        ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION -> {
-                            result.arguments.extractDocWithPages()?.let { doc ->
+                when (result.dialogAction) {
+                    ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION -> {
+                        result.arguments.extractDocWithPages()?.let { doc ->
+                            if(result.isPositive()) {
                                 viewModel.applyActionFor(true, DocumentAction.CROP, doc)
                             }
                         }
-                        ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT -> {
-                            result.arguments.extractDocWithPages()?.let { doc ->
+                    }
+                    ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT -> {
+                        result.arguments.extractDocWithPages()?.let { doc ->
+                            if(result.isPositive()) {
                                 viewModel.applyActionFor(true, DocumentAction.DELETE, doc)
                             }
                         }
-                        ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
-                            result.arguments.extractDocWithPages()?.let { doc ->
-                                viewModel.applyActionFor(true, DocumentAction.EXPORT, doc)
+                    }
+                    ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
+                        result.arguments.extractDocWithPages()?.let { doc ->
+                            when(result.pressedAction) {
+                                DialogButton.POSITIVE -> {
+                                    viewModel.applyActionFor(true, DocumentAction.EXPORT, doc)
+                                }
+                                DialogButton.NEGATIVE -> {
+                                    viewModel.applyActionFor(false, DocumentAction.EXPORT, doc)
+                                }
+                                DialogButton.NEUTRAL -> {
+                                    // ignore
+                                }
                             }
                         }
-                        ADialog.DialogAction.CONFIRM_UPLOAD -> {
-                            result.arguments.extractDocWithPages()?.let { doc ->
-                                viewModel.applyActionFor(true, DocumentAction.UPLOAD, doc)
-                            }
+                    }
+                    ADialog.DialogAction.CONFIRM_UPLOAD -> {
+                        result.arguments.extractDocWithPages()?.let { doc ->
+                            viewModel.applyActionFor(true, DocumentAction.UPLOAD, doc)
                         }
-                        ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED -> {
-                            result.arguments.extractDocWithPages()?.let { doc ->
-                                viewModel.applyActionFor(
-                                        true,
-                                        DocumentAction.UPLOAD,
-                                        doc,
-                                        forceAction = true
-                                )
-                            }
+                    }
+                    ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED -> {
+                        result.arguments.extractDocWithPages()?.let { doc ->
+                            viewModel.applyActionFor(
+                                true,
+                                DocumentAction.UPLOAD,
+                                doc,
+                                forceAction = true
+                            )
                         }
-                        else -> {
-                            // ignore
-                        }
+                    }
+                    else -> {
+                        // ignore
                     }
                 }
             }

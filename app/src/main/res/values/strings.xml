@@ -25,6 +25,16 @@
     <string name="dialog_yes_text">Yes</string>
     <string name="dialog_cancel_text">Cancel</string>
 
+    <string name="dialog_btn_delete">Delete</string>
+    <string name="dialog_btn_crop">Crop</string>
+
+    <string name="dialog_delete_image_title_singular">Delete image?</string>
+    <string name="dialog_delete_image_title_plural">Delete images?</string>
+    <string name="dialog_delete_image_text">Do you really want to delete this image?</string>
+
+    <string name="dialog_delete_images_text_singular">Do you want to delete %1$d image?</string>
+    <string name="dialog_delete_images_text_plural">Do you want to delete %1$d images?</string>
+
     <string name="activity_not_found_title">No standard app found</string>
     <string name="activity_not_found_text">Sorry, we could not find an app to open the file.</string>
 
@@ -498,6 +508,9 @@
 
     <string name="document_viewer_confirm_upload_title">Upload?</string>
     <string name="document_viewer_confirm_upload_text">Do you really want to upload the document?</string>
+
+    <string name="images_no_active_document">No active document/nPlease select a document first!</string>
+    <string name="images_no_images">No images for document/nPlease take an image first!</string>
 
     <string name="action_document_create_title">New document</string>
     <string name="action_document_select_title">Select document</string>

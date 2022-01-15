@@ -36,12 +36,12 @@ fun <T> IOErrorCode.asFailure(exception: Throwable? = null): Failure<T> {
 
 fun <T> asUnauthorizedFailure(): Failure<T> {
     return Failure(
-            DocScanException(
-                    DocScanError.TranskribusRestError.HttpError(
-                            HttpURLConnection.HTTP_UNAUTHORIZED,
-                            null
-                    )
+        DocScanException(
+            DocScanError.TranskribusRestError.HttpError(
+                HttpURLConnection.HTTP_UNAUTHORIZED,
+                null
             )
+        )
     )
 }
 

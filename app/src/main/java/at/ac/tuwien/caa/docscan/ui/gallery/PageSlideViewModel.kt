@@ -5,10 +5,8 @@ import android.os.Bundle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.Page
-import at.ac.tuwien.caa.docscan.logic.Event
-import at.ac.tuwien.caa.docscan.logic.FileHandler
+import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.Companion.EXTRA_DOCUMENT_ID
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.Companion.EXTRA_SELECTED_PAGE_ID
@@ -17,17 +15,21 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
 
-class PageSlideViewModel(extras: Bundle, val repository: DocumentRepository, val fileHandler: FileHandler) : ViewModel() {
+class PageSlideViewModel(
+    extras: Bundle,
+    val repository: DocumentRepository,
+    val fileHandler: FileHandler
+) : ViewModel() {
 
     private val docId = extras.getSerializable(EXTRA_DOCUMENT_ID) as UUID
     private val selectedPageId = extras.getSerializable(EXTRA_SELECTED_PAGE_ID) as UUID?
     val observablePages = MutableLiveData<Pair<List<Page>, Int>>()
-    val observableInitCrop = MutableLiveData<Event<Pair<Document, Page>>>()
+    val observableInitCrop = MutableLiveData<Event<Page>>()
     val observableInitRetake = MutableLiveData<Event<Pair<UUID, UUID>>>()
     val observableSharePage = MutableLiveData<Event<Uri>>()
     val observableInitSegmentation = MutableLiveData<Event<Page>>()
     val observableInitDocumentViewer = MutableLiveData<Event<Page>>()
-    // TODO: Add error handling in case the file is being processed.
+    val observableError = MutableLiveData<Event<Throwable>>()
 
     private var scrollToSpecificPage = true
 
@@ -58,37 +60,74 @@ class PageSlideViewModel(extras: Bundle, val repository: DocumentRepository, val
 
     fun deletePageAtPosition(index: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val page = getPageByIndex(index) ?: return@launch
-            repository.deletePage(page)
+            when (val result = repository.deletePage(getPageByIndex(index))) {
+                is Failure -> {
+                    observableError.postValue(Event(result.exception))
+                }
+                is Success -> {
+                    // ignore
+                }
+            }
         }
     }
 
     fun cropPageAtPosition(index: Int) {
-        val page = getPageByIndex(index) ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            val doc = repository.getDocument(docId) ?: return@launch
-            observableInitCrop.postValue(Event(Pair(doc, page)))
+            when (val result = repository.checkPageLock(getPageByIndex(index))) {
+                is Failure -> {
+                    observableError.postValue(Event(result.exception))
+                }
+                is Success -> {
+                    observableInitCrop.postValue(Event(result.data))
+                }
+            }
         }
     }
 
     fun retakeImageAtPosition(index: Int) {
-        val page = getPageByIndex(index) ?: return
-        observableInitRetake.postValue(Event(Pair(docId, page.id)))
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val result = repository.checkPageLock(getPageByIndex(index))) {
+                is Failure -> {
+                    observableError.postValue(Event(result.exception))
+                }
+                is Success -> {
+                    observableInitRetake.postValue(Event(Pair(docId, result.data.id)))
+                }
+            }
+        }
     }
 
     fun shareImageAtPosition(index: Int) {
-        val page = getPageByIndex(index) ?: return
-        val uriToShare = fileHandler.getUriByPage(page) ?: return
-        observableSharePage.postValue(Event(uriToShare))
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val result = repository.checkPageLock(getPageByIndex(index))) {
+                is Failure -> {
+                    observableError.postValue(Event(result.exception))
+                }
+                is Success -> {
+                    when (val uriResource = fileHandler.getUriByPageResource(result.data)) {
+                        is Failure -> {
+                            observableError.postValue(Event(uriResource.exception))
+                        }
+                        is Success -> {
+                            observableSharePage.postValue(Event(uriResource.data))
+                        }
+                    }
+                }
+            }
+        }
     }
 
     fun debugSegmentation(index: Int) {
-        val page = getPageByIndex(index) ?: return
-        observableInitSegmentation.postValue(Event(page))
-    }
-
-    fun onSingleTap() {
-
+        viewModelScope.launch(Dispatchers.IO) {
+            when (val result = repository.checkPageLock(getPageByIndex(index))) {
+                is Failure -> {
+                    observableError.postValue(Event(result.exception))
+                }
+                is Success -> {
+                    observableInitSegmentation.postValue(Event(result.data))
+                }
+            }
+        }
     }
 
     fun navigateToDocumentViewer(index: Int) {

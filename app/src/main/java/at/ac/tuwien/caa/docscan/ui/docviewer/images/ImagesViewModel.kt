@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.logic.Event
+import at.ac.tuwien.caa.docscan.logic.Failure
+import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -16,13 +18,14 @@ import java.util.*
 
 class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
 
-    val observableProgress = MutableLiveData<Boolean>()
     val observablePages = MutableLiveData<ImageModel>()
     val observableDocWithPages = MutableLiveData<DocumentWithPages?>()
     val observableInitGallery = MutableLiveData<Event<Page>>()
+    val observableError = MutableLiveData<Event<Throwable>>()
+    val observableConfirmDelete = MutableLiveData<Event<Int>>()
 
     private var collectorJob: Job? = null
-    var isRotating: Boolean = false
+    private var isRotating: Boolean = false
     private var shouldScroll = true
 
     /**
@@ -33,7 +36,6 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     fun loadDocumentPagesById(documentId: UUID?, pageId: UUID?) {
         collectorJob?.cancel()
         collectorJob = viewModelScope.launch(Dispatchers.IO) {
-            observableProgress.postValue(true)
             if (documentId != null) {
                 repository.getDocumentWithPagesAsFlow(documentId = documentId)
                     .collectLatest {
@@ -55,7 +57,6 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
     }
 
     private fun processDocumentPage(documentWithPages: DocumentWithPages?, scrollToPageId: UUID?) {
-        observableProgress.postValue(false)
         val pages = documentWithPages?.pages
         observableDocWithPages.postValue(documentWithPages)
 
@@ -88,21 +89,37 @@ class ImagesViewModel(val repository: DocumentRepository) : ViewModel() {
         Timber.d("rotateAllSelectedPages")
         viewModelScope.launch(Dispatchers.IO) {
             val pages = getPagesCopy() ?: return@launch
-            observableProgress.postValue(true)
-            repository.rotatePagesBy90(pages.pages.filter { selection -> selection.isSelected }
-                .map { selection -> selection.page })
-            observableProgress.postValue(false)
+            when (val resource =
+                repository.rotatePagesBy90(pages.pages.filter { selection -> selection.isSelected }
+                    .map { selection -> selection.page })) {
+                is Failure -> {
+                    observableError.postValue(Event(resource.exception))
+                }
+                is Success -> {
+                    // ignore success
+                }
+            }
             isRotating = false
         }
     }
 
-    fun deleteAllSelectedPages() {
+    fun deleteAllSelectedPages(force: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             val pages = getPagesCopy() ?: return@launch
-            observableProgress.postValue(true)
-            repository.deletePages(pages.pages.filter { page -> page.isSelected }
-                .map { page -> page.page })
-            observableProgress.postValue(false)
+            val selectedPages =
+                pages.pages.filter { page -> page.isSelected }.map { page -> page.page }
+            if (!force) {
+                observableConfirmDelete.postValue(Event(selectedPages.count()))
+                return@launch
+            }
+            when (val resource = repository.deletePages(selectedPages)) {
+                is Failure -> {
+                    observableError.postValue(Event(resource.exception))
+                }
+                is Success -> {
+                    // ignore success
+                }
+            }
         }
     }
 

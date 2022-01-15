@@ -23,7 +23,8 @@ object PermissionHandler {
     /**
      * @return true if a writable persistedUriPermission is given for a folder
      */
-    fun isPermissionGiven(context: Context, folder: String): Boolean {
+    fun isPermissionGiven(context: Context, folder: String?): Boolean {
+        folder ?: return false
         return context.contentResolver?.persistedUriPermissions?.firstOrNull { uriPermission ->
             uriPermission.uri.toString() == folder
         } != null

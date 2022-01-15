@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <plurals name="confirm_delete_pages_with_count">
+        <item quantity="one">@string/dialog_delete_images_text_singular</item>
+        <item quantity="other">@string/dialog_delete_images_text_plural</item>
+    </plurals>
+
+    <plurals name="confirm_delete_pages">
+        <item quantity="one">@string/dialog_delete_image_title_singular</item>
+        <item quantity="other">@string/dialog_delete_image_title_plural</item>
+    </plurals>
+
+</resources>

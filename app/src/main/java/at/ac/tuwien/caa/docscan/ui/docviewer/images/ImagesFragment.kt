@@ -7,7 +7,12 @@ import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.FragmentImagesBinding
 import at.ac.tuwien.caa.docscan.logic.computeScreenWidth
+import at.ac.tuwien.caa.docscan.logic.handleError
 import at.ac.tuwien.caa.docscan.ui.base.BaseFragment
+import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
+import at.ac.tuwien.caa.docscan.ui.dialog.isPositive
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
@@ -18,11 +23,14 @@ class ImagesFragment : BaseFragment() {
     companion object {
         // this is dynamically determined before the adapter is created
         private var DYNAMIC_SCREEN_WIDTH = 0
+
+        // TODO: add here more columns when landscape mode is used
         private var COLUMN_COUNT = 2
     }
 
     private val args: ImagesFragmentArgs by navArgs()
     private val viewModel: ImagesViewModel by viewModel()
+    private val dialogViewModel: DialogViewModel by viewModel()
 
     private val sharedViewModel: DocumentViewerViewModel by sharedViewModel()
 
@@ -61,7 +69,7 @@ class ImagesFragment : BaseFragment() {
                         true
                     }
                     R.id.delete -> {
-                        viewModel.deleteAllSelectedPages()
+                        viewModel.deleteAllSelectedPages(force = false)
                         true
                     }
                     else -> {
@@ -101,7 +109,6 @@ class ImagesFragment : BaseFragment() {
             resources.getDimensionPixelSize(R.dimen.images_padding),
             resources.getDimensionPixelSize(R.dimen.images_selected_margin)
         )
-        // TODO: add here more columns for landscape mode:
         binding.imagesList.layoutManager = GridLayoutManager(context, COLUMN_COUNT)
         binding.imagesList.adapter = imagesAdapter
         viewModel.loadDocumentPagesById(args.documentPage?.docId, args.documentPage?.pageId)
@@ -114,11 +121,13 @@ class ImagesFragment : BaseFragment() {
             if (it.pages.isEmpty()) {
                 binding.imagesList.visibility = View.INVISIBLE
                 binding.imagesEmptyLayout.visibility = View.VISIBLE
-                binding.emptyMessage.text = if (it.document == null) {
-                    "No active document\nPlease select a document first"
-                } else {
-                    "No images for document\nPlease take an image first"
-                }
+                binding.emptyMessage.text = getString(
+                    if (it.document == null) {
+                        R.string.images_no_active_document
+                    } else {
+                        R.string.images_no_images
+                    }
+                )
             } else {
                 binding.imagesList.visibility = View.VISIBLE
                 binding.imagesEmptyLayout.visibility = View.INVISIBLE
@@ -141,6 +150,41 @@ class ImagesFragment : BaseFragment() {
         viewModel.observableInitGallery.observe(viewLifecycleOwner, {
             it.getContentIfNotHandled()?.let { page ->
                 startActivity(PageSlideActivity.newInstance(requireActivity(), page.docId, page.id))
+            }
+        })
+        viewModel.observableError.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { throwable ->
+                throwable.handleError(requireBaseActivity())
+            }
+        })
+        viewModel.observableConfirmDelete.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { pageCount ->
+                val title = resources.getQuantityString(R.plurals.confirm_delete_pages, pageCount)
+                val message = resources.getQuantityString(
+                    R.plurals.confirm_delete_pages_with_count,
+                    pageCount,
+                    pageCount
+                )
+                val dialogModel = DialogModel(
+                    ADialog.DialogAction.CONFIRM_DELETE_PAGES,
+                    customTitle = title,
+                    customMessage = message
+                )
+                showDialog(dialogModel)
+            }
+        })
+        dialogViewModel.observableDialogAction.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let { result ->
+                when (result.dialogAction) {
+                    ADialog.DialogAction.CONFIRM_DELETE_PAGES -> {
+                        if (result.isPositive()) {
+                            viewModel.deleteAllSelectedPages(force = true)
+                        }
+                    }
+                    else -> {
+                        // ignore
+                    }
+                }
             }
         })
     }
@@ -179,40 +223,6 @@ class ImagesFragment : BaseFragment() {
                 selectedItems.toString() + " " + getString(R.string.gallery_selected)
         }
     }
-
-// TODO: delete images dialog
-//    private fun deleteImagesDialog(imgFragment: ImagesFragment, selCount: Int) {
-//
-//        val alertDialogBuilder = AlertDialog.Builder(this)
-//
-//        val prefix = resources.getString(R.string.gallery_confirm_delete_title_prefix)
-//        val postfix =
-//            if (selCount == 1)
-//                resources.getString(R.string.gallery_confirm_delete_images_title_single_postfix)
-//            else
-//                resources.getString(R.string.gallery_confirm_delete_images_title_multiple_postfix)
-//        val title = "$prefix $selCount $postfix"
-//
-//        // set dialog message
-//        alertDialogBuilder
-//            .setMessage(R.string.gallery_confirm_delete_text)
-//            .setTitle(title)
-//            .setPositiveButton(R.string.gallery_confirm_delete_confirm_button_text) { dialogInterface, i ->
-//                deleteImages(
-//                    imgFragment
-//                )
-//            }
-//            .setNegativeButton(R.string.gallery_confirm_delete_cancel_button_text, null)
-//            .setCancelable(true)
-//
-//        // create alert dialog
-//        val alertDialog = alertDialogBuilder.create()
-//
-//        // show it
-//        alertDialog.show()
-//
-//    }
-
 
 // TODO: handle transitions
 //    private fun openImagesView(document: DocumentWithPages) {

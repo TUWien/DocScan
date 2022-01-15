@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.repository
 
+import android.content.Context
 import android.net.Uri
 import androidx.annotation.WorkerThread
 import androidx.room.withTransaction
@@ -30,13 +31,15 @@ import java.io.File
 import java.util.*
 
 class DocumentRepository(
-        private val fileHandler: FileHandler,
-        private val pageDao: PageDao,
-        private val documentDao: DocumentDao,
-        private val db: AppDatabase,
-        private val imageProcessorRepository: ImageProcessorRepository,
-        private val workManager: WorkManager,
-        private val userRepository: UserRepository
+    private val context: Context,
+    private val preferencesHandler: PreferencesHandler,
+    private val fileHandler: FileHandler,
+    private val pageDao: PageDao,
+    private val documentDao: DocumentDao,
+    private val db: AppDatabase,
+    private val imageProcessorRepository: ImageProcessorRepository,
+    private val workManager: WorkManager,
+    private val userRepository: UserRepository
 ) {
 
     fun getPageByIdAsFlow(pageId: UUID) = documentDao.getPageAsFlow(pageId)
@@ -44,10 +47,10 @@ class DocumentRepository(
     fun getPageById(pageId: UUID) = documentDao.getPage(pageId)
 
     fun getDocumentWithPagesAsFlow(documentId: UUID) =
-            documentDao.getDocumentWithPagesAsFlow(documentId).sortByNumber()
+        documentDao.getDocumentWithPagesAsFlow(documentId).sortByNumber()
 
     suspend fun getDocumentWithPages(documentId: UUID) =
-            documentDao.getDocumentWithPages(documentId)?.sortByNumber()
+        documentDao.getDocumentWithPages(documentId)?.sortByNumber()
 
     @WorkerThread
     suspend fun getDocument(documentId: UUID) = documentDao.getDocument(documentId)
@@ -82,19 +85,29 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    suspend fun deletePages(pages: List<Page>) {
+    suspend fun deletePages(pages: List<Page>): Resource<Unit> {
         pages.forEach {
-            performPageOperation(it.docId, it.id, operation = { _, page ->
+            val result = performPageOperation(it.docId, it.id, operation = { _, page ->
                 documentDao.deletePage(page)
                 fileHandler.getFileByPage(it)?.safelyDelete()
                 return@performPageOperation Success(Unit)
             })
+            when(result) {
+                is Failure -> {
+                    return Failure(result.exception)
+                }
+                is Success -> {
+                    // ignore - continue loop
+                }
+            }
         }
+        return Success(Unit)
     }
 
     @WorkerThread
-    suspend fun deletePage(page: Page) {
-        deletePages(listOf(page))
+    suspend fun deletePage(page: Page?): Resource<Unit> {
+        page ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        return deletePages(listOf(page))
     }
 
     @WorkerThread
@@ -103,6 +116,12 @@ class DocumentRepository(
             documentDao.setAllDocumentsInactive()
             documentDao.setDocumentActive(documentId = documentId)
         }
+    }
+
+    @WorkerThread
+    suspend fun checkPageLock(page: Page?): Resource<Page> {
+        page ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        return isPageLocked(page.docId, page.id)
     }
 
     @WorkerThread
@@ -117,21 +136,27 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun uploadDocument(
-            documentWithPages: DocumentWithPages,
-            forceUpload: Boolean = false
+        documentWithPages: DocumentWithPages,
+        forceUpload: Boolean = false
     ): Resource<Unit> {
-        // TODO: Add check for if doc has been cropped!
         if (documentDao.getDocumentWithPages(documentWithPages.document.id)?.isUploaded() == true) {
             // if forced, then reset upload state to NONE
             if (forceUpload) {
                 pageDao.updateUploadStateForDocument(
-                        documentWithPages.document.id,
-                        UploadState.NONE
+                    documentWithPages.document.id,
+                    UploadState.NONE
                 )
             } else {
                 return DBErrorCode.DOCUMENT_ALREADY_UPLOADED.asFailure()
             }
         }
+
+        if (!forceUpload || documentDao.getDocumentWithPages(documentWithPages.document.id)
+                ?.isCropped() == false
+        ) {
+            return DBErrorCode.DOCUMENT_NOT_CROPPED.asFailure()
+        }
+
         when (val result = userRepository.checkLogin()) {
             is Failure -> {
                 return Failure(result.exception)
@@ -151,8 +176,8 @@ class DocumentRepository(
             }
         }
         pageDao.updateUploadStateForDocument(
-                documentWithPages.document.id,
-                UploadState.UPLOAD_IN_PROGRESS
+            documentWithPages.document.id,
+            UploadState.UPLOAD_IN_PROGRESS
         )
         UploadWorker.spawnUploadJob(workManager, documentWithPages.document.id)
         return Success(Unit)
@@ -160,19 +185,23 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun exportDocument(
-            documentWithPages: DocumentWithPages,
-            forceExport: Boolean = false,
-            exportFormat: ExportFormat): Resource<Unit> {
+        documentWithPages: DocumentWithPages,
+        forceExport: Boolean = false,
+        exportFormat: ExportFormat
+    ): Resource<Unit> {
 
-        // TODO: Check permission of the file folder to which the PDF will be exported!
+        if (!PermissionHandler.isPermissionGiven(context, preferencesHandler.exportDirectoryUri)) {
+            return IOErrorCode.EXPORT_FILE_MISSING_PERMISSION.asFailure()
+        }
 
-        if (!forceExport && documentDao.getDocumentWithPages(documentWithPages.document.id)?.isCropped() == false) {
+        if (!forceExport || documentDao.getDocumentWithPages(documentWithPages.document.id)
+                ?.isCropped() == false
+        ) {
             return DBErrorCode.DOCUMENT_NOT_CROPPED.asFailure()
         }
 
         when (val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
             is Failure -> {
-                // TODO: Add reason why the doc is locked
                 return Failure(result.exception)
             }
             is Success -> {
@@ -180,8 +209,8 @@ class DocumentRepository(
             }
         }
         pageDao.updatePageExportStateForDocument(
-                documentWithPages.document.id,
-                ExportState.EXPORTING
+            documentWithPages.document.id,
+            ExportState.EXPORTING
         )
         ExportWorker.spawnExportJob(workManager, documentWithPages.document.id, exportFormat)
         return Success(Unit)
@@ -216,17 +245,14 @@ class DocumentRepository(
         Timber.d("creating new active document!")
         // TODO: What should be the document's title in the default case?
         val doc = Document(
-                id = UUID.randomUUID(),
-                "Untitled document",
-                true
+            id = UUID.randomUUID(),
+            "Untitled document",
+            true
         )
         documentDao.insertDocument(doc)
         return doc
     }
 
-    /**
-     * Pre-Condition: The [document] is not in the DB.
-     */
     @WorkerThread
     suspend fun createDocument(document: Document): Resource<Document> {
         return createOrUpdateDocument(document)
@@ -261,8 +287,8 @@ class DocumentRepository(
      */
     @WorkerThread
     suspend fun saveNewImportedImageForDocument(
-            document: Document,
-            uris: List<Uri>
+        document: Document,
+        uris: List<Uri>
     ): Resource<Unit> {
         return performDocOperation(document.id, operation = {
             withContext(NonCancellable) {
@@ -270,10 +296,10 @@ class DocumentRepository(
                     try {
                         fileHandler.readBytes(uri)?.let { bytes ->
                             saveNewImageForDocument(
-                                    document,
-                                    bytes,
-                                    null,
-                                    null
+                                document,
+                                bytes,
+                                null,
+                                null
                             )
                         }
                     } catch (e: Exception) {
@@ -287,10 +313,10 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun saveNewImageForDocument(
-            document: Document,
-            data: ByteArray,
-            fileId: UUID? = null,
-            exifMetaData: ImageExifMetaData?
+        document: Document,
+        data: ByteArray,
+        fileId: UUID? = null,
+        exifMetaData: ImageExifMetaData?
     ): Resource<Page> {
         Timber.d("Starting to save new image for document: ${document.title}")
         // TODO: Make a check here, if there is enough storage to save the file.
@@ -340,22 +366,22 @@ class DocumentRepository(
         // for a replacement, just take the number of the old page.
         // for a new page, take the max number and add + 1 to it.
         val pageNumber =
-                pageDao.getPageById(newFileId)?.number ?: (pageDao.getPagesByDoc(documentId)
-                        .maxByOrNull { page -> page.number })?.number?.let {
-                            // increment if there is an existing page
-                            it + 1
-                        } ?: 0
+            pageDao.getPageById(newFileId)?.number ?: (pageDao.getPagesByDoc(documentId)
+                .maxByOrNull { page -> page.number })?.number?.let {
+                    // increment if there is an existing page
+                    it + 1
+                } ?: 0
 
         val newPage = Page(
-                newFileId,
-                document.id,
-                file.getFileHash(),
-                pageNumber,
-                rotation,
-                PageFileType.JPEG,
-                PostProcessingState.DRAFT,
-                ExportState.NONE,
-                SinglePageBoundary.getDefault()
+            newFileId,
+            document.id,
+            file.getFileHash(),
+            pageNumber,
+            rotation,
+            PageFileType.JPEG,
+            PostProcessingState.DRAFT,
+            ExportState.NONE,
+            SinglePageBoundary.getDefault()
         )
 
         // 4. Update file in database (create or update)
