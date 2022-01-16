@@ -11,4 +11,9 @@
         <item quantity="other">@string/dialog_delete_image_title_plural</item>
     </plurals>
 
+    <plurals name="images">
+        <item quantity="one">@string/sync_doc_image</item>
+        <item quantity="other">@string/sync_doc_images</item>
+    </plurals>
+
 </resources>

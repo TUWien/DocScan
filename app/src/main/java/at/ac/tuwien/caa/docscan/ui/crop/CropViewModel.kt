@@ -8,9 +8,7 @@ import androidx.lifecycle.viewModelScope
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.getSingleBoundaryPoints
-import at.ac.tuwien.caa.docscan.db.model.setSinglePageBoundary
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.ImageProcessorRepository
 import at.ac.tuwien.caa.docscan.ui.crop.CropViewActivity.Companion.EXTRA_PAGE
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +18,6 @@ import java.util.*
 
 class CropViewModel(
     extras: Bundle,
-    private val documentRepository: DocumentRepository,
     private val imageProcessorRepository: ImageProcessorRepository,
     private val fileHandler: FileHandler,
     val preferencesHandler: PreferencesHandler
@@ -29,7 +26,7 @@ class CropViewModel(
     val page = extras.getParcelable<Page>(EXTRA_PAGE)!!
     val observableInitBackNavigation = MutableLiveData<Event<Unit>>()
     val observableShowCroppingInfo = MutableLiveData<Event<Unit>>()
-    val observableLoadingProgress = MutableLiveData<Boolean>()
+    val observableError = MutableLiveData<Event<Throwable>>()
 
     // note that the very first value of the model will force the image to load into the imageview.
     val observableModel = MutableLiveData<CropModel>()
@@ -52,7 +49,6 @@ class CropViewModel(
 
     private fun init() {
         viewModelScope.launch(Dispatchers.IO) {
-            observableLoadingProgress.postValue(true)
             val pageFile = fileHandler.getFileByPage(page)
                 ?: kotlin.run {
                     observableInitBackNavigation.postValue(Event(Unit))
@@ -67,7 +63,6 @@ class CropViewModel(
                 pageFile,
                 model.file
             )
-            observableLoadingProgress.postValue(false)
             observableModel.postValue(model)
         }
 
@@ -98,18 +93,23 @@ class CropViewModel(
     fun save(croppingPoints: List<PointF>) {
         viewModelScope.launch(Dispatchers.IO) {
             model.points = croppingPoints
-            imageProcessorRepository.replacePageFileBy(
+            when(val resource = imageProcessorRepository.replacePageFileBy(
                 pageId = page.id,
                 cachedFile = model.file,
                 rotation = model.rotation,
                 croppingPoints = model.points
-            )
-            model.file.safelyDelete()
-
-            if (preferencesHandler.showCroppingInfo) {
-                observableShowCroppingInfo.postValue(Event(Unit))
-            } else {
-                observableInitBackNavigation.postValue(Event(Unit))
+            )) {
+                is Failure -> {
+                    observableError.postValue(Event(resource.exception))
+                }
+                is Success -> {
+                    model.file.safelyDelete()
+                    if (preferencesHandler.showCroppingInfo) {
+                        observableShowCroppingInfo.postValue(Event(Unit))
+                    } else {
+                        observableInitBackNavigation.postValue(Event(Unit))
+                    }
+                }
             }
         }
     }

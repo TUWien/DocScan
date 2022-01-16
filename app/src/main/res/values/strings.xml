@@ -378,8 +378,8 @@
     <string name="sync_menu_select_all_item_title">Select all items</string>
     <string name="sync_pages_text">Images: </string>
     <string name="sync_doc_active_text"> - active</string>
-    <string name="sync_doc_image">image</string>
-    <string name="sync_doc_images">images</string>
+    <string name="sync_doc_image">%1$d image</string>
+    <string name="sync_doc_images">%1$d images</string>
     <string name="sync_cancel_login_button_text">Cancel</string>
     <string name="sync_confirm_login_button_text">Login</string>
     <string name="sync_not_logged_in_title">Cannot start upload</string>

@@ -7,7 +7,6 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.lifecycle.lifecycleScope
 import at.ac.tuwien.caa.docscan.R
@@ -16,6 +15,8 @@ import at.ac.tuwien.caa.docscan.databinding.CropInfoDialogBinding
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.logic.DocumentPage
 import at.ac.tuwien.caa.docscan.logic.GlideHelper
+import at.ac.tuwien.caa.docscan.logic.handleError
+import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.delay
@@ -38,9 +39,8 @@ import timber.log.Timber
  * As soon as the save operation is requested, the modified meta data is translated in the [Page]'s
  * structure and saved in the DB.
  *
- * TODO: CONSTRAINT - only crop if document is not locked.
  */
-class CropViewActivity : AppCompatActivity() {
+class CropViewActivity : BaseActivity() {
 
     companion object {
         private const val INITIAL_SCALE = 1.0F
@@ -109,6 +109,11 @@ class CropViewActivity : AppCompatActivity() {
         viewModel.observableInitBackNavigation.observe(this, {
             it.getContentIfNotHandled()?.let {
                 finish()
+            }
+        })
+        viewModel.observableError.observe(this, {
+            it.getContentIfNotHandled()?.let { throwable ->
+                throwable.handleError(this)
             }
         })
         viewModel.observableShowCroppingInfo.observe(this, {

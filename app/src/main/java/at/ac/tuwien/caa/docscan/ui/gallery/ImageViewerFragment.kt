@@ -57,7 +57,6 @@ class ImageViewerFragment : Fragment() {
 
     private fun observe() {
         viewModel.observablePage.observe(viewLifecycleOwner, { page ->
-            // TODO: Add loading state
             binding.imageViewerImageView.apply {
                 transitionName = page.id.toString()
 

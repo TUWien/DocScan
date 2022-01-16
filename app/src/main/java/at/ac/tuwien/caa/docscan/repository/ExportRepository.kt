@@ -62,7 +62,7 @@ class ExportRepository(
                 textBlocks = mutableListOf()
                 val deferredResults = mutableListOf<Deferred<Resource<Text>>>()
                 documentWithPages.pages.forEach { page ->
-                    // TODO: Only for debugging purposes
+                    // Only for debugging purposes
                     //delay(1000)
                     val deferredResult = async {
                         val file = fileHandler.getFileByPage(page)

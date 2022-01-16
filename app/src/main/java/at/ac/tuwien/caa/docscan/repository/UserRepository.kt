@@ -76,7 +76,6 @@ class UserRepository(
         }
     }
 
-    // TODO: This could also check the login via the sessionId
     suspend fun checkLogin(): Resource<LoginResponse> {
         return withContext(NonCancellable) {
             return@withContext when (val credentials = checkCredentials()) {

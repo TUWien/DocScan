@@ -44,11 +44,7 @@ class DocumentAdapter(
                 viewBinding.documentThumbnailImageview.transitionName = page.id.toString()
             }
 
-            val docDesc =
-                if (document.pages.size == 1) itemView.context.getText(R.string.sync_doc_image)
-                else itemView.context.getText(R.string.sync_doc_images)
-
-            var desc = "${document.pages.size} $docDesc"
+            var desc = itemView.resources.getQuantityString(R.plurals.images, document.pages.size, document.pages.size)
 
             if (document.document.isActive) {
                 viewBinding.documentTitleText.setTextColor(ContextCompat.getColor(itemView.context, R.color.text_selection))

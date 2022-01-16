@@ -72,7 +72,6 @@ sealed class ExportModel {
 sealed class ExportList {
     data class ExportHeader(val directory: String) : ExportList()
 
-    // TODO: Take care of the raw value of the documentFile
     @Parcelize
     data class File(val documentFile: @RawValue DocumentFile, val pageFileType: PageFileType, val name: String) : ExportList(), Parcelable
 }

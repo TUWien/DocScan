@@ -67,7 +67,7 @@ val viewModelModule = module {
     viewModel { (extras: Bundle) -> EditDocumentViewModel(extras, get()) }
     viewModel { (extras: Bundle) -> PageSlideViewModel(extras, get(), get()) }
     viewModel { (extras: Bundle) -> ImageViewModel(extras, get()) }
-    viewModel { (extras: Bundle) -> CropViewModel(extras, get(), get(), get(), get()) }
+    viewModel { (extras: Bundle) -> CropViewModel(extras, get(), get(), get()) }
     viewModel { ImagesViewModel(get()) }
     viewModel { DialogViewModel() }
     viewModel { ModalActionSheetViewModel() }

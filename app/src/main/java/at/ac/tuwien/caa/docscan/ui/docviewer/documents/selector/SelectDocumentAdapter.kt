@@ -55,17 +55,7 @@ class SelectDocumentAdapter(private val clickListener: (DocumentWithPages) -> Un
 
             binding.documentTitleText.text = document.document.title
             itemView.setOnClickListener { clickListener(document) }
-
-
-            // TODO: Add a plural strings file for this case
-//            1 image or  many images?
-            val docDesc =
-                if (document.pages.size == 1) itemView.context.getText(R.string.sync_doc_image)
-                else itemView.context.getText(R.string.sync_doc_images)
-
-            var desc = "${document.pages.size} $docDesc"
-            binding.documentDescriptionTextview.text = "$desc"
-
+            binding.documentDescriptionTextview.text = itemView.resources.getQuantityString(R.plurals.images, document.pages.size, document.pages.size)
         }
     }
 }

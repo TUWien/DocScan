@@ -26,9 +26,6 @@ import timber.log.Timber
 
 /**
  * Created by fabian on 24.10.2017.
- * TODO: cleanup code
- * TODO: Use viewbinding
- * TODO: split create/edit document activity
  */
 open class CreateDocumentActivity : BaseNoNavigationActivity() {
 

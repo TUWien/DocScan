@@ -35,6 +35,10 @@ class PreferencesHandler(val context: Context) {
         context.getString(R.string.key_extended_debug_messages)
     }
 
+    private val KEY_UPLOAD_MOBILE_DATA by lazy {
+        context.getString(R.string.key_upload_mobile_data)
+    }
+
     companion object {
         const val TEST_COLLECTION_ID_KEY = "TEST_COLLECTION_ID_KEY"
         const val COLLECTION_ID_KEY = "COLLECTION_ID_KEY"
@@ -322,6 +326,15 @@ class PreferencesHandler(val context: Context) {
         set(value) {
             defaultSharedPreferences.edit()
                 .putBoolean(KEY_SKIP_CROPPING_INFO_DIALOG, value)
+                .apply()
+        }
+
+    var isMobileDataAllowed: Boolean
+        get() =
+            defaultSharedPreferences.getBoolean(KEY_UPLOAD_MOBILE_DATA, true)
+        set(value) {
+            defaultSharedPreferences.edit()
+                .putBoolean(KEY_UPLOAD_MOBILE_DATA, value)
                 .apply()
         }
 

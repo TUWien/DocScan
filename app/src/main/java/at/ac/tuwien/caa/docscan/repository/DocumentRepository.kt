@@ -74,7 +74,7 @@ class DocumentRepository(
             } else if (it.document.lockState == LockState.FULL_LOCK) {
                 when {
                     it.isUploadInProgress() -> {
-                        UploadWorker.spawnUploadJob(workManager, it.document.id)
+                        UploadWorker.spawnUploadJob(workManager, it.document.id, preferencesHandler.isMobileDataAllowed)
                     }
                     it.isExporting() -> {
                         // exporting operation are usually very fast, if this should ever occur
@@ -188,7 +188,7 @@ class DocumentRepository(
             documentWithPages.document.id,
             UploadState.UPLOAD_IN_PROGRESS
         )
-        UploadWorker.spawnUploadJob(workManager, documentWithPages.document.id)
+        UploadWorker.spawnUploadJob(workManager, documentWithPages.document.id, preferencesHandler.isMobileDataAllowed)
         return Success(Unit)
     }
 

@@ -7,8 +7,8 @@ import android.util.Log;
 
 /**
  * Created by fabian on 24.10.2017.
+ * TODO: Is a boot receiver necessary? Wouldn't it be sufficient to re-check the existing worker jobs at app start?
  */
-
 public class BootReceiver extends BroadcastReceiver {
 
     private static final String CLASS_NAME = "BootReceiver";
@@ -29,7 +29,6 @@ public class BootReceiver extends BroadcastReceiver {
                 Log.d(CLASS_NAME, "onReceive");
 
 //                SyncInfo.readFromDisk(context);
-// TODO: check how to handle the restarts
 //                SyncStorage.loadJSON(context);
 //
 //                if (SyncStorage.getInstance(context).getUploadDocumentTitles() != null &&

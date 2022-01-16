@@ -74,40 +74,9 @@ class UploadWorker(
 
         fun spawnUploadJob(
             workManager: WorkManager,
-            documentId: UUID
+            documentId: UUID,
+            allowMobileData: Boolean
         ) {
-// TODO: Check old constraints
-            //        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-//
-//        boolean useMobileConnection = sharedPref.getBoolean(context.getResources().getString(
-//                R.string.key_upload_mobile_data), true);
-//        int[] constraints;
-//        if (useMobileConnection) {
-//            constraints = new int[]{Constraint.ON_ANY_NETWORK};
-//            Log.d(CLASS_NAME, "startSyncJob: using mobile connection");
-//        } else {
-//            constraints = new int[]{Constraint.ON_UNMETERED_NETWORK};
-//            Log.d(CLASS_NAME, "startSyncJob: using just wifi");
-//        }
-            //        Job syncJob = dispatcher.newJobBuilder()
-//                // the JobService that will be called
-////                .setService(SyncService.class)
-//                .setService(UploadService.class)
-//                // uniquely identifies the job
-//                .setTag(JOB_TAG)
-//                // one-off job
-//                .setRecurring(false)
-//                // don't persist past a device reboot
-//                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
-//                .setTrigger(timeWindow)
-//                // overwrite an existing job with the same tag - this assures that just one job is running at a time:
-//                .setReplaceCurrent(true)
-//                // retry with exponential backoff
-//                .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
-//                .setConstraints(
-//                        constraints
-//                )
-//                .build();
             val uploadImages = OneTimeWorkRequest.Builder(UploadWorker::class.java)
                 .addTag(UPLOAD_TAG)
                 .setInputData(
@@ -117,20 +86,17 @@ class UploadWorker(
                 )
                 .setConstraints(
                     Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .setRequiredNetworkType(if (allowMobileData) NetworkType.METERED else NetworkType.UNMETERED)
                         .build()
                 )
-                // the backoff criteria is set to quite a short time, since a retry is only performed if there is an
-                // internet connection, i.e. if the user should be offline, the work is not retried due to the connected
-                // constraint, but as soon as the user gets online, this will take only 5seconds to upload.
-                .setBackoffCriteria(BackoffPolicy.LINEAR, 5, TimeUnit.SECONDS)
+                .setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
+                    TimeUnit.MILLISECONDS
+                )
                 .build()
 
             Timber.i("Requesting WorkManager to queue UploadWorker")
-            // the existing policy needs to be always KEEP, otherwise it may be possible that multiple work requests
-            // are started, e.g. REPLACE would cancel work, but if this function is called a lot of times, cancelled
-            // work would still be ongoing, therefore we need to ensure that this is set to KEEP, so that only one request
-            // is performed at a time.
             workManager.enqueueUniqueWork(
                 getWorkNameByDocId(documentId),
                 ExistingWorkPolicy.KEEP,

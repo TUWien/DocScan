@@ -14,9 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-/**
- * TODO: ERROR_HANDLING/DB_CONSTRAINTS: Add missing error handling and confirmation of actions.
- */
 class DocumentViewerViewModel(private val repository: DocumentRepository) : ViewModel() {
 
     val selectedScreen = MutableLiveData(DocumentViewerScreen.DOCUMENTS)
