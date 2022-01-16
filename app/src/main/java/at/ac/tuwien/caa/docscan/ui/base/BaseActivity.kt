@@ -33,6 +33,10 @@ open class BaseActivity : AppCompatActivity() {
         dialogAction.show(supportFragmentManager)
     }
 
+    fun showDialog(dialogAction: ADialog.DialogAction, arguments: Bundle) {
+        showDialog(DialogModel(dialogAction, arguments = arguments))
+    }
+
     fun showDialog(dialogModel: DialogModel) {
         dialogModel.show(supportFragmentManager)
     }

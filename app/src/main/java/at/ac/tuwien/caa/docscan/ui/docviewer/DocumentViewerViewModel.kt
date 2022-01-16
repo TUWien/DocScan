@@ -1,16 +1,14 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
 import android.net.Uri
+import android.os.Bundle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.isUploaded
-import at.ac.tuwien.caa.docscan.logic.Event
-import at.ac.tuwien.caa.docscan.logic.ExportFormat
-import at.ac.tuwien.caa.docscan.logic.Resource
-import at.ac.tuwien.caa.docscan.logic.asFailure
+import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,9 +26,9 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
     val observableNumOfSelectedElements = MutableLiveData<Int>()
     private val observableDocumentAtImages = MutableLiveData<DocumentWithPages?>()
 
-    val observableResourceAction = MutableLiveData<Event<Pair<DocumentAction, Resource<Unit>>>>()
+    val observableResourceAction = MutableLiveData<Event<DocumentViewerModel>>()
     val observableResourceConfirmation =
-        MutableLiveData<Event<Pair<DocumentAction, DocumentWithPages>>>()
+        MutableLiveData<Event<DocumentConfirmationModel>>()
 
     /**
      * This function needs to be called every time the selected fragment in the bottom nav changes.
@@ -89,14 +87,22 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
         }
     }
 
-    fun uploadSelectedDocument(forceAction: Boolean = false) {
-        // TODO: Perform similar checks as in startImagingWith!
-        val docWithPages = observableDocumentAtImages.value ?: kotlin.run {
+    fun uploadSelectedDocument() {
+        val docWithPages =
+            if (selectedScreen.value == DocumentViewerScreen.IMAGES) {
+                observableDocumentAtImages.value ?: kotlin.run {
+                    null
+                }
+            } else {
+                null
+            }
+        docWithPages ?: kotlin.run {
             observableResourceAction.postValue(
                 Event(
-                    Pair(
+                    DocumentViewerModel(
                         DocumentAction.UPLOAD,
-                        DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+                        DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure<Unit>(),
+                        Bundle()
                     )
                 )
             )
@@ -104,23 +110,49 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
         }
         applyActionFor(
             action = DocumentAction.UPLOAD,
-            forceAction = forceAction,
+            documentActionArguments = Bundle().appendDocWithPages(docWithPages),
             documentWithPages = docWithPages
         )
     }
 
     fun applyActionFor(
-        isConfirmed: Boolean = false,
         action: DocumentAction,
-        documentWithPages: DocumentWithPages,
-        forceAction: Boolean = false
+        documentActionArguments: Bundle
+    ) {
+        val documentWithPages = documentActionArguments.extractDocWithPages() ?: kotlin.run {
+            observableResourceAction.postValue(
+                Event(
+                    DocumentViewerModel(
+                        action,
+                        DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure<Unit>(),
+                        documentActionArguments
+                    )
+                )
+            )
+            return
+        }
+        applyActionFor(action, documentActionArguments, documentWithPages)
+    }
+
+    private fun applyActionFor(
+        action: DocumentAction,
+        documentActionArguments: Bundle,
+        documentWithPages: DocumentWithPages
     ) {
         viewModelScope.launch(Dispatchers.IO) {
 
             if (!skipConfirmation(action, documentWithPages)) {
                 // ask for confirmation first, if forceAction, then confirmation is not necessary anymore.
-                if (!forceAction && !isConfirmed && action.needsConfirmation) {
-                    observableResourceConfirmation.postValue(Event(Pair(action, documentWithPages)))
+                if (action.needsConfirmation && !documentActionArguments.extractIsConfirmed()) {
+                    observableResourceConfirmation.postValue(
+                        Event(
+                            DocumentConfirmationModel(
+                                action,
+                                documentWithPages,
+                                documentActionArguments.appendDocWithPages(documentWithPages)
+                            )
+                        )
+                    )
                     return@launch
                 }
             }
@@ -130,16 +162,32 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
                     repository.removeDocument(documentWithPages)
                 }
                 DocumentAction.EXPORT -> {
-                    repository.exportDocument(documentWithPages, forceExport = forceAction, ExportFormat.PDF)
+                    repository.exportDocument(
+                        documentWithPages,
+                        skipCropRestriction = documentActionArguments.extractSkipCropRestriction(),
+                        ExportFormat.PDF
+                    )
                 }
                 DocumentAction.CROP -> {
-                    repository.processDocument(documentWithPages)
+                    repository.cropDocument(documentWithPages)
                 }
                 DocumentAction.UPLOAD -> {
-                    repository.uploadDocument(documentWithPages, forceUpload = forceAction)
+                    repository.uploadDocument(
+                        documentWithPages,
+                        skipCropRestriction = documentActionArguments.extractSkipCropRestriction(),
+                        skipAlreadyUploadedRestriction = documentActionArguments.extractSkipAlreadyUploadedRestriction()
+                    )
                 }
             }
-            observableResourceAction.postValue(Event(Pair(action, resource)))
+            observableResourceAction.postValue(
+                Event(
+                    DocumentViewerModel(
+                        action,
+                        resource,
+                        documentActionArguments
+                    )
+                )
+            )
         }
     }
 }
@@ -159,6 +207,18 @@ private fun skipConfirmation(
         else -> false
     }
 }
+
+data class DocumentViewerModel(
+    val action: DocumentAction,
+    val resource: Resource<*>,
+    val arguments: Bundle
+)
+
+data class DocumentConfirmationModel(
+    val action: DocumentAction,
+    val documentWithPages: DocumentWithPages,
+    val arguments: Bundle
+)
 
 enum class DocumentAction(val needsConfirmation: Boolean) {
     DELETE(true),

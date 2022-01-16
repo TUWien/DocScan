@@ -114,6 +114,10 @@ fun Page.isProcessing(): Boolean {
     return postProcessingState == PostProcessingState.PROCESSING
 }
 
+fun Page.isPostProcessed(): Boolean {
+    return postProcessingState == PostProcessingState.DONE
+}
+
 fun Page.isExporting(): Boolean {
     return exportState == ExportState.EXPORTING
 }

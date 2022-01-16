@@ -4,7 +4,6 @@ import android.os.Parcelable
 import androidx.room.Embedded
 import androidx.room.Relation
 import at.ac.tuwien.caa.docscan.db.model.state.ExportState
-import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -17,10 +16,6 @@ data class DocumentWithPages(
     )
     var pages: List<Page> = listOf()
 ) : Parcelable
-
-fun DocumentWithPages.isCropped(): Boolean {
-    return pages.firstOrNull { page -> page.postProcessingState != PostProcessingState.DONE } != null
-}
 
 fun DocumentWithPages.isProcessing(): Boolean {
     return pages.firstOrNull { page -> page.isProcessing() } != null
@@ -52,6 +47,15 @@ fun DocumentWithPages.isUploadInProgress(): Boolean {
 fun DocumentWithPages.isUploaded(): Boolean {
     pages.forEach { page ->
         if (!page.isUploaded()) {
+            return false
+        }
+    }
+    return true
+}
+
+fun DocumentWithPages.isCropped(): Boolean {
+    pages.forEach { page ->
+        if (!page.isPostProcessed()) {
             return false
         }
     }

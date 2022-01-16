@@ -92,7 +92,7 @@ class DocumentRepository(
                 fileHandler.getFileByPage(it)?.safelyDelete()
                 return@performPageOperation Success(Unit)
             })
-            when(result) {
+            when (result) {
                 is Failure -> {
                     return Failure(result.exception)
                 }
@@ -137,22 +137,23 @@ class DocumentRepository(
     @WorkerThread
     suspend fun uploadDocument(
         documentWithPages: DocumentWithPages,
-        forceUpload: Boolean = false
+        skipAlreadyUploadedRestriction: Boolean = false,
+        skipCropRestriction: Boolean = false
     ): Resource<Unit> {
-        if (documentDao.getDocumentWithPages(documentWithPages.document.id)?.isUploaded() == true) {
-            // if forced, then reset upload state to NONE
-            if (forceUpload) {
-                pageDao.updateUploadStateForDocument(
-                    documentWithPages.document.id,
-                    UploadState.NONE
-                )
-            } else {
-                return DBErrorCode.DOCUMENT_ALREADY_UPLOADED.asFailure()
-            }
+        if (!skipAlreadyUploadedRestriction && documentDao.getDocumentWithPages(documentWithPages.document.id)
+                ?.isUploaded() == true
+        ) {
+            return DBErrorCode.DOCUMENT_ALREADY_UPLOADED.asFailure()
         }
 
-        if (!forceUpload || documentDao.getDocumentWithPages(documentWithPages.document.id)
-                ?.isCropped() == false
+        // if forced, then reset upload state to NONE
+        pageDao.updateUploadStateForDocument(
+            documentWithPages.document.id,
+            UploadState.NONE
+        )
+
+        if (!skipCropRestriction && documentDao.getDocumentWithPages(documentWithPages.document.id)
+                ?.isCropped() != true
         ) {
             return DBErrorCode.DOCUMENT_NOT_CROPPED.asFailure()
         }
@@ -186,7 +187,7 @@ class DocumentRepository(
     @WorkerThread
     suspend fun exportDocument(
         documentWithPages: DocumentWithPages,
-        forceExport: Boolean = false,
+        skipCropRestriction: Boolean = false,
         exportFormat: ExportFormat
     ): Resource<Unit> {
 
@@ -194,8 +195,14 @@ class DocumentRepository(
             return IOErrorCode.EXPORT_FILE_MISSING_PERMISSION.asFailure()
         }
 
-        if (!forceExport || documentDao.getDocumentWithPages(documentWithPages.document.id)
-                ?.isCropped() == false
+        // TODO: Check if the play services check is really ok, since it has other states too!
+        // TODO: The playservices check could be avoided if the ml-kit binary would be added to our apk instead.
+        if (exportFormat == ExportFormat.PDF_WITH_OCR && !Helper.checkPlayServices(context)) {
+            return IOErrorCode.EXPORT_GOOGLE_PLAYSTORE_NOT_INSTALLED_FOR_OCR.asFailure()
+        }
+
+        if (!skipCropRestriction && documentDao.getDocumentWithPages(documentWithPages.document.id)
+                ?.isCropped() != true
         ) {
             return DBErrorCode.DOCUMENT_NOT_CROPPED.asFailure()
         }
@@ -217,7 +224,7 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    suspend fun processDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
+    suspend fun cropDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
         return when (val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
             is Failure -> {
                 Failure(result.exception)

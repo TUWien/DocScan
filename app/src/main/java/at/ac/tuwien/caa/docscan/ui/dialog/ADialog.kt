@@ -34,7 +34,7 @@ class ADialog : AppCompatDialogFragment() {
     }
 
     companion object {
-        private val TAG = Dialog::class.java.simpleName
+        private val TAG = "ADialog"
         const val EMPTY_RES_PLACEHOLDER = 0
         const val EXTRA_DIALOG_MODEL = "EXTRA_DIALOG_MODEL"
 
@@ -56,17 +56,23 @@ class ADialog : AppCompatDialogFragment() {
         @DrawableRes val icon: Int = EMPTY_RES_PLACEHOLDER,
         val isCancellable: Boolean = true
     ) {
-        DOCUMENT_ALREADY_UPLOADED(
+        GENERIC(R.string.generic_network_error_title, R.string.generic_network_error_text),
+        UPLOAD_WARNING_DOC_ALREADY_UPLOADED(
             R.string.viewer_document_uploaded_title,
-            R.string.viewer_document_uploaded_text
+            R.string.viewer_document_uploaded_text,
+            positiveBtn = R.string.dialog_btn_upload_again
         ),
 
-        // TODO: Should not be necessary
+        // TODO: Use this message in the error handler for the notifications
         DOCUMENT_PAGE_DELETED_DURING_UPLOAD(
             R.string.sync_file_deleted_title,
             R.string.sync_file_deleted_text
         ),
+
+        // TODO: Use this message in the error handler for the notifications
         GENERIC_UPLOAD_ERROR(R.string.sync_file_deleted_title, R.string.sync_file_deleted_text),
+
+        // TODO: Use this message in the error handler for the notifications
         UPLOAD_FAILED_NO_LOGIN(
             R.string.viewer_not_logged_in_title,
             R.string.sync_not_logged_in_text,
@@ -76,18 +82,24 @@ class ADialog : AppCompatDialogFragment() {
             R.string.viewer_offline_title,
             R.string.viewer_offline_text
         ),
-        UPLOAD_WARNING_IMAGE_CROP_MISSING(
-            R.string.viewer_not_cropped_upload,
-            R.string.viewer_not_cropped_confirm_text
-        ),
-        EXPORT_WARNING_IMAGE_CROP_MISSING(
-            R.string.viewer_not_cropped_pdf,
-            R.string.viewer_images_fragment_not_cropped_confirm_text
-        ),
+        // TODO: Necessary to show? (images that are already cropped would be simply ignored)
         HINT_DOCUMENT_ALREADY_CROPPED(
             R.string.viewer_all_cropped_title,
             R.string.viewer_all_cropped_text
         ),
+        UPLOAD_WARNING_IMAGE_CROP_MISSING(
+            R.string.viewer_not_cropped_confirm_title,
+            R.string.viewer_not_cropped_upload_confirm_text,
+            positiveBtn = R.string.dialog_btn_proceed,
+            negativeBtn = R.string.dialog_cancel_text,
+        ),
+        EXPORT_WARNING_IMAGE_CROP_MISSING(
+            R.string.viewer_not_cropped_confirm_title,
+            R.string.viewer_not_cropped_export_confirm_text,
+            positiveBtn = R.string.dialog_btn_proceed,
+            negativeBtn = R.string.dialog_cancel_text,
+        ),
+
         // title is dynamic
         CONFIRM_DOCUMENT_CROP_OPERATION(
             R.string.viewer_crop_confirm_title,
@@ -103,8 +115,6 @@ class ADialog : AppCompatDialogFragment() {
             positiveBtn = R.string.dialog_btn_delete,
             negativeBtn = R.string.dialog_cancel_text
         ),
-
-        // title is dynamic
         CONFIRM_DELETE_PAGE(
             R.string.dialog_delete_image_title_singular,
             R.string.dialog_delete_image_text,
@@ -123,33 +133,30 @@ class ADialog : AppCompatDialogFragment() {
             positiveBtn = R.string.page_slide_fragment_retake_image_dialog_confirm_text,
             negativeBtn = R.string.dialog_cancel_text
         ),
-        REQUIRE_PDF_EXPORT_PERMISSION(
-            R.string.viewer_document_dir_permission_title,
-            R.string.viewer_document_dir_permission_title
-        ),
+        // TODO: This can no longer be tracked that easily
         HINT_PDF_EXPORT_PERMISSION_GIVEN(
             R.string.viewer_document_dir_set_title,
             R.string.viewer_document_dir_set_text
         ),
-        OCR_NOT_AVAILABLE(
+        EXPORT_WARNING_OCR_NOT_AVAILABLE(
             R.string.gallery_confirm_no_ocr_available_title,
             R.string.gallery_confirm_no_ocr_available_text,
+            positiveBtn = R.string.dialog_yes_text,
             negativeBtn = R.string.dialog_cancel_text
         ),
         CONFIRM_OCR_SCAN(
             R.string.gallery_confirm_ocr_title,
             R.string.gallery_confirm_ocr_text,
+            positiveBtn = R.string.dialog_yes_text,
             negativeBtn = R.string.dialog_no_text,
             neutralBtn = R.string.dialog_cancel_text
         ),
         CONFIRM_UPLOAD(
             R.string.document_viewer_confirm_upload_title,
             R.string.document_viewer_confirm_upload_text,
-            negativeBtn = R.string.dialog_no_text
+            positiveBtn = R.string.dialog_btn_upload,
+            negativeBtn = R.string.dialog_cancel_text,
         ),
-
-        // TODO: adapt strings.
-        GENERIC(R.string.login_network_error_title, R.string.document_dir_existing_postfix_message),
         LOGIN_SUCCESS(
             R.string.login_dialog_success_title,
             R.string.login_dialog_success_text,
@@ -192,10 +199,15 @@ class ADialog : AppCompatDialogFragment() {
             ?: throw IllegalArgumentException("No arguments passed!")
         val action = model.dialogAction
 
+        val isCancelable = model.customIsCancellable ?: action.isCancellable
+
         val builder = MaterialAlertDialogBuilder(requireActivity())
             .setTitle(model.customTitle ?: getString(action.title))
             .setMessage(model.customMessage ?: getString(action.message))
-            .setCancelable(model.customIsCancellable ?: action.isCancellable)
+            .setCancelable(isCancelable)
+
+        // cancelable setting needs to be set for the fragment as well
+        setCancelable(isCancelable)
 
         builder.setPositiveButton(model.customPosButton ?: getString(action.positiveBtn)) { _, _ ->
             viewModel.select(action, DialogButton.POSITIVE, model.arguments)
@@ -210,15 +222,14 @@ class ADialog : AppCompatDialogFragment() {
             }
         }
 
-        // only add negative button if it's specified
+        // only add neutral button if it's specified
         if (model.customNeuButton != null || action.neutralBtn != 0) {
             builder.setNeutralButton(
-                model.customNegButton ?: getString(action.negativeBtn)
+                model.customNeuButton ?: getString(action.neutralBtn)
             ) { _, _ ->
                 viewModel.select(action, DialogButton.NEUTRAL, model.arguments)
             }
         }
-
         return builder.create()
     }
 

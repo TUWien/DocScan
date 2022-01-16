@@ -18,6 +18,7 @@ import at.ac.tuwien.caa.docscan.camera.SheetAction
 import at.ac.tuwien.caa.docscan.databinding.ActivityDocumentViewerBinding
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
+import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.isUploaded
 import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
 import at.ac.tuwien.caa.docscan.extensions.getImageImportIntent
@@ -71,8 +72,8 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
          * @return an intent which will open one of the bottom navigation based on the type.
          */
         fun newInstance(
-                context: Context,
-                documentViewerLaunchViewType: DocumentViewerLaunchViewType = DocumentViewerLaunchViewType.DOCUMENTS
+            context: Context,
+            documentViewerLaunchViewType: DocumentViewerLaunchViewType = DocumentViewerLaunchViewType.DOCUMENTS
         ): Intent {
             return Intent(context, DocumentViewerActivity::class.java).apply {
                 putExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW, documentViewerLaunchViewType)
@@ -88,26 +89,26 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
     private val modalSheetViewModel: ModalActionSheetViewModel by viewModel()
 
     private val galleryResultCallback =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                if (it.resultCode == Activity.RESULT_OK) {
-                    it.data?.clipData?.let { clipData ->
-                        val uris = mutableListOf<Uri>()
-                        for (i in 0 until clipData.itemCount) {
-                            uris.add(clipData.getItemAt(i).uri)
-                        }
-                        viewModel.addNewImages(uris)
-                    } ?: run {
-                        it.data?.data?.let { uriFile ->
-                            viewModel.addNewImages(listOf(uriFile))
-                        }
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                it.data?.clipData?.let { clipData ->
+                    val uris = mutableListOf<Uri>()
+                    for (i in 0 until clipData.itemCount) {
+                        uris.add(clipData.getItemAt(i).uri)
+                    }
+                    viewModel.addNewImages(uris)
+                } ?: run {
+                    it.data?.data?.let { uriFile ->
+                        viewModel.addNewImages(listOf(uriFile))
                     }
                 }
             }
+        }
 
     private val topLevelDestinations = setOf(
-            R.id.viewer_documents,
-            R.id.viewer_images,
-            R.id.viewer_pdfs
+        R.id.viewer_documents,
+        R.id.viewer_images,
+        R.id.viewer_pdfs
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -149,12 +150,12 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
 
         val documentPage = intent.getParcelableExtra<DocumentPage>(EXTRA_DOCUMENT_PAGE)
         val type =
-                intent.getSerializableExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW) as? DocumentViewerLaunchViewType
+            intent.getSerializableExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW) as? DocumentViewerLaunchViewType
 
         // a navigation case when user wants to directly open the images fragment
         if (documentPage != null) {
             navController.navigate(
-                    DocumentsFragmentDirections.actionViewerDocumentsToViewerImages(documentPage)
+                DocumentsFragmentDirections.actionViewerDocumentsToViewerImages(documentPage)
             )
         } else {
             when (type) {
@@ -197,14 +198,32 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
             }
         })
         viewModel.observableResourceAction.observe(this, {
-            it.getContentIfNotHandled()?.let { pair ->
-                when (val resource = pair.second) {
+            it.getContentIfNotHandled()?.let { model ->
+                when (val resource = model.resource) {
                     is Failure -> {
-                        when (pair.first) {
+                        when (model.action) {
                             DocumentAction.DELETE -> {
                                 resource.exception.handleError(this)
                             }
                             DocumentAction.EXPORT -> {
+                                resource.exception.getDocScanDBError()?.let { dbError ->
+                                    if (dbError.code == DBErrorCode.DOCUMENT_NOT_CROPPED) {
+                                        showDialog(
+                                            ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING,
+                                            model.arguments
+                                        )
+                                        return@observe
+                                    }
+                                }
+                                resource.exception.getDocScanIOError()?.let { dbError ->
+                                    if (dbError.ioErrorCode == IOErrorCode.EXPORT_GOOGLE_PLAYSTORE_NOT_INSTALLED_FOR_OCR) {
+                                        showDialog(
+                                            ADialog.DialogAction.EXPORT_WARNING_OCR_NOT_AVAILABLE,
+                                            model.arguments
+                                        )
+                                        return@observe
+                                    }
+                                }
                                 resource.exception.handleError(this)
                             }
                             DocumentAction.CROP -> {
@@ -212,25 +231,39 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                             }
                             DocumentAction.UPLOAD -> {
                                 resource.exception.getDocScanDBError()?.let { dbError ->
-                                    if (dbError.code == DBErrorCode.DOCUMENT_ALREADY_UPLOADED) {
-                                        // TODO: Append the document extra here, otherwise the dialog will be ignored!
-                                        showDialog(ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED)
-                                        return@observe
+                                    when (dbError.code) {
+                                        DBErrorCode.DOCUMENT_ALREADY_UPLOADED -> {
+                                            showDialog(
+                                                ADialog.DialogAction.UPLOAD_WARNING_DOC_ALREADY_UPLOADED,
+                                                model.arguments
+                                            )
+                                            return@observe
+                                        }
+                                        DBErrorCode.DOCUMENT_NOT_CROPPED -> {
+                                            showDialog(
+                                                ADialog.DialogAction.UPLOAD_WARNING_IMAGE_CROP_MISSING,
+                                                model.arguments
+                                            )
+                                            return@observe
+                                        }
+                                        else -> {
+                                            resource.exception.handleError(this)
+                                            return@observe
+                                        }
                                     }
-                                } ?: run {
-                                    resource.exception.handleError(this)
                                 }
+                                resource.exception.handleError(this)
                             }
                         }
                     }
-                    is Success -> {
+                    is Success<*> -> {
                         // TODO: Add translated string for successful action!
                         singleSnackbar(
-                                binding.syncCoordinatorlayout,
-                                SnackbarOptions(
-                                        pair.first.name + " has been successfully initiated!",
-                                        Snackbar.LENGTH_LONG
-                                )
+                            binding.syncCoordinatorlayout,
+                            SnackbarOptions(
+                                model.action.name + " has been successfully initiated!",
+                                Snackbar.LENGTH_LONG
+                            )
                         )
                     }
                 }
@@ -238,37 +271,37 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
         })
 
         viewModel.observableResourceConfirmation.observe(this, {
-            it.getContentIfNotHandled()?.let { pair ->
-                when (pair.first) {
+            it.getContentIfNotHandled()?.let { model ->
+                when (model.action) {
                     DocumentAction.DELETE -> {
                         showDialog(
-                                ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT.with(
-                                        customTitle = "${getString(R.string.sync_confirm_delete_title)} " + pair.second.document.title,
-                                        arguments = Bundle().appendDocWithPages(pair.second)
-                                )
+                            ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT.with(
+                                customTitle = "${getString(R.string.sync_confirm_delete_title)} " + model.documentWithPages.document.title,
+                                arguments = model.arguments
+                            )
                         )
                     }
                     DocumentAction.EXPORT -> {
                         showDialog(
-                                ADialog.DialogAction.CONFIRM_OCR_SCAN.with(
-                                        customTitle = "${getString(R.string.gallery_confirm_ocr_title)} " + pair.second.document.title,
-                                        arguments = Bundle().appendDocWithPages(pair.second)
-                                )
+                            ADialog.DialogAction.CONFIRM_OCR_SCAN.with(
+                                customTitle = "${getString(R.string.gallery_confirm_ocr_title)} " + model.documentWithPages.document.title,
+                                arguments = model.arguments
+                            )
                         )
                     }
                     DocumentAction.CROP -> {
                         showDialog(
-                                ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION.with(
-                                        customTitle = "${getString(R.string.viewer_crop_confirm_title)} " + pair.second.document.title,
-                                        arguments = Bundle().appendDocWithPages(pair.second)
-                                )
+                            ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION.with(
+                                customTitle = "${getString(R.string.viewer_crop_confirm_title)} " + model.documentWithPages.document.title,
+                                arguments = model.arguments
+                            )
                         )
                     }
                     DocumentAction.UPLOAD -> {
                         showDialog(
-                                ADialog.DialogAction.CONFIRM_UPLOAD.with(
-                                        arguments = Bundle().appendDocWithPages(pair.second)
-                                )
+                            ADialog.DialogAction.CONFIRM_UPLOAD.with(
+                                arguments = model.arguments
+                            )
                         )
                     }
                 }
@@ -279,46 +312,77 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
             it.getContentIfNotHandled()?.let { result ->
                 when (result.dialogAction) {
                     ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            if(result.isPositive()) {
-                                viewModel.applyActionFor(true, DocumentAction.CROP, doc)
-                            }
+                        if (result.isPositive()) {
+                            viewModel.applyActionFor(
+                                DocumentAction.CROP,
+                                result.arguments.appendIsConfirmed(true)
+                            )
                         }
                     }
                     ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            if(result.isPositive()) {
-                                viewModel.applyActionFor(true, DocumentAction.DELETE, doc)
-                            }
+                        if (result.isPositive()) {
+                            viewModel.applyActionFor(
+                                DocumentAction.DELETE,
+                                result.arguments.appendIsConfirmed(true)
+                            )
                         }
                     }
                     ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            when(result.pressedAction) {
-                                DialogButton.POSITIVE -> {
-                                    viewModel.applyActionFor(true, DocumentAction.EXPORT, doc)
-                                }
-                                DialogButton.NEGATIVE -> {
-                                    viewModel.applyActionFor(false, DocumentAction.EXPORT, doc)
-                                }
-                                DialogButton.NEUTRAL -> {
-                                    // ignore
-                                }
+                        when (result.pressedAction) {
+                            DialogButton.POSITIVE -> {
+                                viewModel.applyActionFor(
+                                    DocumentAction.EXPORT,
+                                    result.arguments.appendIsConfirmed(true).appendUseOCR(true)
+                                )
+                            }
+                            DialogButton.NEGATIVE -> {
+                                viewModel.applyActionFor(
+                                    DocumentAction.EXPORT,
+                                    result.arguments.appendIsConfirmed(true).appendUseOCR(false)
+                                )
+                            }
+                            DialogButton.NEUTRAL -> {
+                                // ignore
                             }
                         }
                     }
                     ADialog.DialogAction.CONFIRM_UPLOAD -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            viewModel.applyActionFor(true, DocumentAction.UPLOAD, doc)
+                        if (result.isPositive()) {
+                            viewModel.applyActionFor(
+                                DocumentAction.UPLOAD,
+                                result.arguments.appendIsConfirmed(true)
+                            )
                         }
                     }
-                    ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
+                    ADialog.DialogAction.UPLOAD_WARNING_DOC_ALREADY_UPLOADED -> {
+                        if (result.isPositive()) {
                             viewModel.applyActionFor(
-                                true,
                                 DocumentAction.UPLOAD,
-                                doc,
-                                forceAction = true
+                                result.arguments.appendSkipAlreadyUploadedRestriction(true)
+                            )
+                        }
+                    }
+                    ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING -> {
+                        if (result.isPositive()) {
+                            viewModel.applyActionFor(
+                                DocumentAction.EXPORT,
+                                result.arguments.appendSkipCropRestriction(true)
+                            )
+                        }
+                    }
+                    ADialog.DialogAction.UPLOAD_WARNING_IMAGE_CROP_MISSING -> {
+                        if (result.isPositive()) {
+                            viewModel.applyActionFor(
+                                DocumentAction.UPLOAD,
+                                result.arguments.appendSkipCropRestriction(true)
+                            )
+                        }
+                    }
+                    ADialog.DialogAction.EXPORT_WARNING_OCR_NOT_AVAILABLE -> {
+                        if (result.isPositive()) {
+                            viewModel.applyActionFor(
+                                DocumentAction.EXPORT,
+                                result.arguments.appendUseOCR(false)
                             )
                         }
                     }
@@ -339,50 +403,27 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                             viewModel.startImagingWith(null)
                         }
                     }
-                    // TODO: EXPORT_LOGIC - Show isCropped dialog for export.
                     SheetActionId.EXPORT.id -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            viewModel.applyActionFor(
-                                    action = DocumentAction.EXPORT,
-                                    forceAction = false,
-                                    documentWithPages = doc
-                            )
-                        }
+                        viewModel.applyActionFor(DocumentAction.EXPORT, result.arguments)
                     }
                     SheetActionId.EDIT.id -> {
                         result.arguments.extractDocWithPages()?.let { doc ->
                             startActivity(
-                                    EditDocumentActivity.newInstance(
-                                            this,
-                                            document = doc.document
-                                    )
+                                EditDocumentActivity.newInstance(
+                                    this,
+                                    document = doc.document
+                                )
                             )
                         }
                     }
                     SheetActionId.DELETE.id -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            viewModel.applyActionFor(
-                                    action = DocumentAction.DELETE,
-                                    documentWithPages = doc
-                            )
-                        }
+                        viewModel.applyActionFor(DocumentAction.DELETE, result.arguments)
                     }
                     SheetActionId.CROP.id -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            viewModel.applyActionFor(
-                                    action = DocumentAction.CROP,
-                                    documentWithPages = doc
-                            )
-                        }
+                        viewModel.applyActionFor(DocumentAction.CROP, result.arguments)
                     }
                     SheetActionId.UPLOAD.id -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            viewModel.applyActionFor(
-                                    isConfirmed = false,
-                                    action = DocumentAction.UPLOAD,
-                                    documentWithPages = doc
-                            )
-                        }
+                        viewModel.applyActionFor(DocumentAction.UPLOAD, result.arguments)
                     }
                 }
             }
@@ -420,24 +461,24 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
 
     private fun handleFABVisibilityForScreen(screen: DocumentViewerScreen, force: Boolean? = null) {
         setFABVisibility(
-                binding.viewerGalleryFab,
-                force ?: BuildConfig.DEBUG && screen == DocumentViewerScreen.IMAGES
+            binding.viewerGalleryFab,
+            force ?: BuildConfig.DEBUG && screen == DocumentViewerScreen.IMAGES
         )
         setFABVisibility(
-                binding.viewerAddFab,
-                force ?: screen == DocumentViewerScreen.DOCUMENTS
+            binding.viewerAddFab,
+            force ?: screen == DocumentViewerScreen.DOCUMENTS
         )
         setFABVisibility(
-                binding.viewerAddPdfFab,
-                force ?: screen == DocumentViewerScreen.PDFS
+            binding.viewerAddPdfFab,
+            force ?: screen == DocumentViewerScreen.PDFS
         )
         setFABVisibility(
-                binding.viewerUploadFab,
-                force ?: screen == DocumentViewerScreen.IMAGES
+            binding.viewerUploadFab,
+            force ?: screen == DocumentViewerScreen.IMAGES
         )
         setFABVisibility(
-                binding.viewerCameraFab,
-                force ?: true
+            binding.viewerCameraFab,
+            force ?: true
         )
     }
 
@@ -456,10 +497,10 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
             }
             R.id.viewer_add_pdf_fab -> {
                 startActivity(
-                        Intent(
-                                applicationContext,
-                                SelectPdfDocumentActivity::class.java
-                        )
+                    Intent(
+                        applicationContext,
+                        SelectPdfDocumentActivity::class.java
+                    )
                 )
             }
             R.id.viewer_upload_fab -> {
@@ -478,58 +519,58 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
 
         val sheetActions = ArrayList<SheetAction>()
         sheetActions.add(
-                SheetAction(
-                        SheetActionId.CONTINUE_IMAGING.id,
-                        getString(R.string.action_document_continue_document),
-                        R.drawable.ic_add_a_photo_black_24dp
-                )
+            SheetAction(
+                SheetActionId.CONTINUE_IMAGING.id,
+                getString(R.string.action_document_continue_document),
+                R.drawable.ic_add_a_photo_black_24dp
+            )
         )
         sheetActions.add(
-                SheetAction(
-                        SheetActionId.EDIT.id,
-                        getString(R.string.action_document_edit_document),
-                        R.drawable.ic_edit_black_24dp
-                )
+            SheetAction(
+                SheetActionId.EDIT.id,
+                getString(R.string.action_document_edit_document),
+                R.drawable.ic_edit_black_24dp
+            )
         )
 //        This options are just available if the document contains at least one image:
         if (document.pages.isNotEmpty()) {
             sheetActions.add(
-                    SheetAction(
-                            SheetActionId.CROP.id,
-                            getString(R.string.action_document_crop_title),
-                            R.drawable.ic_transform_black_24dp
-                    )
+                SheetAction(
+                    SheetActionId.CROP.id,
+                    getString(R.string.action_document_crop_title),
+                    R.drawable.ic_transform_black_24dp
+                )
             )
             sheetActions.add(
-                    SheetAction(
-                            SheetActionId.EXPORT.id,
-                            getString(R.string.action_document_pdf_title),
-                            R.drawable.ic_baseline_picture_as_pdf_24px
-                    )
+                SheetAction(
+                    SheetActionId.EXPORT.id,
+                    getString(R.string.action_document_pdf_title),
+                    R.drawable.ic_baseline_picture_as_pdf_24px
+                )
             )
             if (!document.isUploaded())
                 sheetActions.add(
-                        SheetAction(
-                                SheetActionId.UPLOAD.id,
-                                getString(R.string.action_document_upload_document),
-                                R.drawable.ic_cloud_upload_black_24dp
-                        )
+                    SheetAction(
+                        SheetActionId.UPLOAD.id,
+                        getString(R.string.action_document_upload_document),
+                        R.drawable.ic_cloud_upload_black_24dp
+                    )
                 )
             else
                 sheetActions.add(
-                        SheetAction(
-                                SheetActionId.UPLOAD.id,
-                                getString(R.string.action_document_upload_document),
-                                R.drawable.ic_cloud_upload_gray_24dp
-                        )
+                    SheetAction(
+                        SheetActionId.UPLOAD.id,
+                        getString(R.string.action_document_upload_document),
+                        R.drawable.ic_cloud_upload_gray_24dp
+                    )
                 )
         }
         sheetActions.add(
-                SheetAction(
-                        SheetActionId.DELETE.id,
-                        getString(R.string.action_document_delete_document),
-                        R.drawable.ic_delete_black_24dp
-                )
+            SheetAction(
+                SheetActionId.DELETE.id,
+                getString(R.string.action_document_delete_document),
+                R.drawable.ic_delete_black_24dp
+            )
         )
 
         SheetModel(sheetActions, Bundle().appendDocWithPages(document)).show(supportFragmentManager)

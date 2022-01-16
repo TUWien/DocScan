@@ -27,6 +27,9 @@
 
     <string name="dialog_btn_delete">Delete</string>
     <string name="dialog_btn_crop">Crop</string>
+    <string name="dialog_btn_upload">Upload</string>
+    <string name="dialog_btn_upload_again">Upload again</string>
+    <string name="dialog_btn_proceed">Proceed</string>
 
     <string name="dialog_delete_image_title_singular">Delete image?</string>
     <string name="dialog_delete_image_title_plural">Delete images?</string>
@@ -176,6 +179,9 @@
 
     <string name="menu_switch_folder">Switch folder</string>
     <string name="menu_options">Options</string>
+
+    <string name="generic_network_error_title">Unknown error</string>
+    <string name="generic_network_error_text">An unknown error has occurred, please try again later!</string>
 
     <!-- AutoLoginActivity -->
 
@@ -550,7 +556,8 @@
     <string name="viewer_all_cropped_title">Nothing to do</string>
     <string name="viewer_all_cropped_text">The document contains only images that are already cropped.</string>
     <string name="viewer_not_cropped_confirm_title">Uncropped images</string>
-    <string name="viewer_not_cropped_confirm_text">Some images are not cropped.\nDo you want to proceed with the</string>
+    <string name="viewer_not_cropped_upload_confirm_text">Some images are not cropped.\nDo you want to proceed with the upload?</string>
+    <string name="viewer_not_cropped_export_confirm_text">Some images are not cropped.\nDo you want to proceed with the export?</string>
     <string name="viewer_images_fragment_not_cropped_confirm_text">Some images are not cropped. Cropping option can be found in the overflow menu at the top-right.\nDo you want to proceed with the</string>
     <string name="viewer_not_cropped_pdf">PDF export</string>
     <string name="viewer_not_cropped_upload">upload</string>

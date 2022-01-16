@@ -9,6 +9,9 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
+/**
+ * A default error handler for all errors which are not explicitly handled in the views itself.
+ */
 fun Throwable.handleError(activity: BaseActivity) {
     when (this) {
         is DocScanException -> {
@@ -33,7 +36,7 @@ fun Throwable.handleError(activity: BaseActivity) {
                 }
                 is DocScanError.DBError -> {
                     if (error.code == DBErrorCode.DOCUMENT_ALREADY_UPLOADED) {
-                        activity.showDialog(ADialog.DialogAction.DOCUMENT_ALREADY_UPLOADED)
+                        activity.showDialog(ADialog.DialogAction.UPLOAD_WARNING_DOC_ALREADY_UPLOADED)
                     } else {
                         // TODO: Adapt error handling
                         val dialogModel = DialogModel(
@@ -44,6 +47,7 @@ fun Throwable.handleError(activity: BaseActivity) {
                         activity.showDialog(dialogModel)
                     }
                 }
+                // TODO: handle EXPORT_FILE_MISSING_PERMISSION explicitely!
                 is DocScanError.IOError -> {
                     // TODO: Adapt error handling
                     val dialogModel = DialogModel(
@@ -61,6 +65,24 @@ fun Throwable.handleError(activity: BaseActivity) {
 fun Throwable.getDocScanDBError(): DocScanError.DBError? {
     return when (val error = (this as? DocScanException)?.docScanError) {
         is DocScanError.DBError -> error
+        else -> {
+            null
+        }
+    }
+}
+
+fun Throwable.getDocScanIOError(): DocScanError.IOError? {
+    return when (val error = (this as? DocScanException)?.docScanError) {
+        is DocScanError.IOError -> error
+        else -> {
+            null
+        }
+    }
+}
+
+fun Throwable.getDocScanTranskribusRESTError(): DocScanError.TranskribusRestError? {
+    return when (val error = (this as? DocScanException)?.docScanError) {
+        is DocScanError.TranskribusRestError -> error
         else -> {
             null
         }
