@@ -269,7 +269,7 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    suspend fun createDocument(document: Document): Resource<Document> {
+    fun createDocument(document: Document): Resource<Document> {
         return createOrUpdateDocument(document)
     }
 
@@ -281,11 +281,10 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    suspend fun createOrUpdateDocument(document: Document): Resource<Document> {
+    fun createOrUpdateDocument(document: Document): Resource<Document> {
         val docByNewTitle = documentDao.getDocumentByTitle(documentTitle = document.title)
         return if (docByNewTitle == null || docByNewTitle.id == document.id) {
             db.runInTransaction {
-                //TODO: Check this, this should make it only active if it'S a new one
                 if (document.isActive) {
                     documentDao.setAllDocumentsInactive()
                 }

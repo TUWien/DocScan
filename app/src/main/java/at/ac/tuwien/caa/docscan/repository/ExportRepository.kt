@@ -102,13 +102,12 @@ class ExportRepository(
                     return@withContext Failure<Unit>(pdfCreatorResult.exception)
                 }
                 is Success -> {
-                    // TODO: Adapt display name
                     saveFile(
                         context,
                         fileHandler,
                         outputFile,
                         exportDirectory,
-                        "testpdf.pdf",
+                        "${documentWithPages.document.title}.${PageFileType.PDF.extension}",
                         PageFileType.PDF.mimeType
                     )
                     outputFile.safelyDelete()
