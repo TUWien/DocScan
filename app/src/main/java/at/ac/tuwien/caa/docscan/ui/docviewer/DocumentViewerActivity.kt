@@ -257,11 +257,21 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         }
                     }
                     is Success<*> -> {
-                        // TODO: Add translated string for successful action!
+                        if (!model.action.showSuccessMessage) {
+                            return@observe
+                        }
+                        val name = when (model.action) {
+                            DocumentAction.DELETE, DocumentAction.CROP -> ""
+                            DocumentAction.EXPORT -> getString(R.string.operation_export)
+                            DocumentAction.UPLOAD -> getString(R.string.operation_upload)
+                        }
                         singleSnackbar(
                             binding.syncCoordinatorlayout,
                             SnackbarOptions(
-                                model.action.name + " has been successfully initiated!",
+                                String.format(
+                                    getString(R.string.viewer_document_operation_success),
+                                    name
+                                ),
                                 Snackbar.LENGTH_LONG
                             )
                         )

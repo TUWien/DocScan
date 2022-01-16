@@ -41,6 +41,9 @@
     <string name="activity_not_found_title">No standard app found</string>
     <string name="activity_not_found_text">Sorry, we could not find an app to open the file.</string>
 
+    <string name="operation_export">Export</string>
+    <string name="operation_upload">Upload</string>
+
     <!-- StartActivity -->
     <string name="start_permission_title">Permission required</string>
     <string name="start_permission_retry_text">Do you want to give this permission?</string>
@@ -180,8 +183,35 @@
     <string name="menu_switch_folder">Switch folder</string>
     <string name="menu_options">Options</string>
 
-    <string name="generic_network_error_title">Unknown error</string>
-    <string name="generic_network_error_text">An unknown error has occurred, please try again later!</string>
+    <string name="generic_error_title">Unknown error</string>
+    <string name="generic_error_text">An unknown error has occurred, please try again later!</string>
+
+    <string name="generic_server_error_title">Unknown server error</string>
+    <string name="generic_server_error_text">An unknown server error has occurred, please try again later!</string>
+
+    <string name="generic_export_error_title">Export has failed!</string>
+    <string name="generic_export_error_text">The export has failed due to an unknown error!</string>
+
+    <string name="error_document_busy_title">Document is busy!</string>
+    <string name="error_document_busy_text">The document is currently being operated on, please try again later!</string>
+
+    <string name="error_page_busy_title">Page is busy!</string>
+    <string name="error_page_busy_text">The page is currently being operated on, please try again later!</string>
+
+    <string name="error_different_upload_expectations_title">Upload failed</string>
+    <string name="error_different_upload_expectations_text">The upload has failed, the pages have been modified during the upload, please try again!</string>
+
+    <string name="error_upload_file_missing_title">Missing file for upload!</string>
+    <string name="error_upload_file_missing_text">The upload has failed, because a file is missing, please try again!</string>
+
+    <string name="error_export_file_missing_title">Missing file for export!</string>
+    <string name="error_export_file_missing_text">The export has failed, because a file is missing, please try again!</string>
+
+    <string name="error_export_missing_permission_title">Missing permission for export!</string>
+    <string name="error_export_missing_permission_text">The export has failed due to missing folder permissions!</string>
+
+    <string name="error_missing_file_title">Missing file!</string>
+    <string name="error_missing_file_text">An internal file is missing!</string>
 
     <!-- AutoLoginActivity -->
 
@@ -440,6 +470,7 @@
     <!-- DebugSettingsFragment -->
     <string name="debug_settings_title">Debug settings</string>
     <string name="settings_preview_title">Live preview</string>
+    <string name="settings_debug_title">Debug settings</string>
     <string name="settings_show_focus_values_checkbox_title">Show focus values</string>
 
     <string name="settings_show_debug_view_checkbox_title">Show debug view</string>
@@ -450,6 +481,9 @@
 
     <string name="settings_use_transkribus_test_server_title">Use Transkribus test server</string>
     <string name="settings_use_transkribus_test_server_summary">Please restart the app, if you change this. Warning: This setting should only be used for testing the app and the Transkribus server.</string>
+
+    <string name="settings_extended_debug_messages_title">Extended debug messages</string>
+    <string name="settings_extended_debug_messages_summary">Dialogs will show extended information about the errors which occur, this setting is only honored for debug builds!</string>
 
     <string name="settings_aggressive_auto_focus_title">Use aggressive auto-focus</string>
     <string name="settings_aggressive_auto_focus_summary">Every new page is auto-focused in series mode.</string>
@@ -545,9 +579,19 @@
     <string name="action_setting_no_flash_series">No flash after automated imaging</string>
     <string name="action_setting_qr_mode">Create Document from QR code</string>
 
+    <string name="viewer_document_operation_success">The %1$s has been successfully initiated!</string>
+
     <string name="viewer_document_uploaded_title">Already uploaded</string>
     <string name="viewer_document_uploaded_text">The document is already uploaded. Do you want to upload it again?</string>
 
+    <string name="viewer_document_error_not_cropped_title">Uncropped images</string>
+    <string name="viewer_document_error_not_cropped_text">The document is not cropped!</string>
+
+    <string name="viewer_document_error_duplicate_title">Duplicate entry</string>
+    <string name="viewer_document_error_duplicate_text">There is already an existing entity!</string>
+
+    <string name="viewer_document_error_missing_entry_title">Entry missing</string>
+    <string name="viewer_document_error_missing_entry_text">The entry cannot be found in the database!</string>
 
     <string name="viewer_crop_confirm_title">Crop</string>
     <string name="viewer_crop_confirm_text">Are you sure you want to crop all images in the document?

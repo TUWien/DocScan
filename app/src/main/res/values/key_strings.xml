@@ -18,6 +18,7 @@
     <string name="key_document_file_name">KEY_DOCUMENT_FILE_NAME</string>
     <string name="key_page_position">KEY_PAGE_POSITION</string>
     <string name="key_use_test_server">KEY_USE_DEBUG_SERVER</string>
+    <string name="key_extended_debug_messages">KEY_EXTENDED_DEBUG_MESSAGES</string>
     <string name="key_exif_artist">KEY_EXIF_ARTIST</string>
     <string name="key_exif_copyright">KEY_EXIF_COPYRIGHT</string>
     <string name="key_hud_enabled">KEY_HUD_ENABLED</string>

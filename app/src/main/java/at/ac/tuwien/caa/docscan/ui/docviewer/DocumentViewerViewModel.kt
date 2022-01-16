@@ -220,11 +220,11 @@ data class DocumentConfirmationModel(
     val arguments: Bundle
 )
 
-enum class DocumentAction(val needsConfirmation: Boolean) {
-    DELETE(true),
-    EXPORT(true),
-    CROP(true),
-    UPLOAD(true)
+enum class DocumentAction(val needsConfirmation: Boolean, val showSuccessMessage: Boolean) {
+    DELETE(true, false),
+    EXPORT(true, true),
+    CROP(true, false),
+    UPLOAD(true, true)
 }
 
 enum class DocumentViewerScreen {

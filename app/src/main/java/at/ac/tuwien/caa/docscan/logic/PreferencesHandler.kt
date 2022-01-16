@@ -6,17 +6,18 @@ import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity.IMG_ORIENTATION_90
 
+@Suppress("PrivatePropertyName")
 class PreferencesHandler(val context: Context) {
     private val preferencesName: String by lazy { "settings" }
     private val preferencesMode = Context.MODE_PRIVATE
 
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(
-            preferencesName,
-            preferencesMode
+        preferencesName,
+        preferencesMode
     )
 
     private val defaultSharedPreferences =
-            androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
+        androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
 
     private val KEY_FLASH_SERIES_MODE by lazy {
         context.getString(R.string.key_flash_series_mode)
@@ -30,8 +31,9 @@ class PreferencesHandler(val context: Context) {
         context.getString(R.string.key_exif_copyright)
     }
 
-    // TODO: migrate and delete key "server_changed_shown_key"
-    // TODO: migrate and delete key "SERIES_MODE_PAUSED_KEY" (since it's not used anymore)
+    private val KEY_EXTENDED_DEBUG_ERROR_MESSAGES by lazy {
+        context.getString(R.string.key_extended_debug_messages)
+    }
 
     companion object {
         const val TEST_COLLECTION_ID_KEY = "TEST_COLLECTION_ID_KEY"
@@ -69,8 +71,8 @@ class PreferencesHandler(val context: Context) {
             sharedPreferences.getBoolean(DB_MIGRATION_KEY, true)
         set(value) {
             sharedPreferences.edit()
-                    .putBoolean(DB_MIGRATION_KEY, value)
-                    .apply()
+                .putBoolean(DB_MIGRATION_KEY, value)
+                .apply()
         }
 
     var testCollectionId: Int
@@ -78,8 +80,8 @@ class PreferencesHandler(val context: Context) {
             sharedPreferences.getInt(TEST_COLLECTION_ID_KEY, DEFAULT_INT_VALUE)
         set(value) {
             sharedPreferences.edit()
-                    .putInt(TEST_COLLECTION_ID_KEY, value)
-                    .apply()
+                .putInt(TEST_COLLECTION_ID_KEY, value)
+                .apply()
         }
 
     var cameraDPI: Int
@@ -87,8 +89,8 @@ class PreferencesHandler(val context: Context) {
             defaultSharedPreferences.getInt(KEY_DPI, DEFAULT_INT_VALUE)
         set(value) {
             defaultSharedPreferences.edit()
-                    .putInt(KEY_DPI, value)
-                    .apply()
+                .putInt(KEY_DPI, value)
+                .apply()
         }
 
     var collectionId: Int?
@@ -103,8 +105,8 @@ class PreferencesHandler(val context: Context) {
         set(value) {
             value?.let {
                 sharedPreferences.edit()
-                        .putInt(COLLECTION_ID_KEY, value)
-                        .apply()
+                    .putInt(COLLECTION_ID_KEY, value)
+                    .apply()
             } ?: let {
                 sharedPreferences.edit().remove(COLLECTION_ID_KEY).apply()
             }
@@ -115,88 +117,112 @@ class PreferencesHandler(val context: Context) {
             sharedPreferences.getBoolean(DOCUMENT_HINT_SHOWN_KEY, false)
         set(value) {
             sharedPreferences.edit()
-                    .putBoolean(DOCUMENT_HINT_SHOWN_KEY, value)
-                    .apply()
+                .putBoolean(DOCUMENT_HINT_SHOWN_KEY, value)
+                .apply()
         }
 
     var useTranskribusTestServer: Boolean
         get() {
-            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_use_test_server), false)
+            return defaultSharedPreferences.getBoolean(
+                context.getString(R.string.key_use_test_server),
+                false
+            )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(context.getString(R.string.key_use_test_server), value)
-                    .apply()
+                .putBoolean(context.getString(R.string.key_use_test_server), value)
+                .apply()
         }
 
     var showFocusValues: Boolean
         get() {
-            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_show_focus_values), false)
+            return defaultSharedPreferences.getBoolean(
+                context.getString(R.string.key_show_focus_values),
+                false
+            )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(context.getString(R.string.key_show_focus_values), value)
-                    .apply()
+                .putBoolean(context.getString(R.string.key_show_focus_values), value)
+                .apply()
         }
 
     var showGrid: Boolean
         get() {
-            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_show_grid), false)
+            return defaultSharedPreferences.getBoolean(
+                context.getString(R.string.key_show_grid),
+                false
+            )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(context.getString(R.string.key_show_grid), value)
-                    .apply()
+                .putBoolean(context.getString(R.string.key_show_grid), value)
+                .apply()
         }
 
-    var isFastSegmentation:Boolean
+    var isFastSegmentation: Boolean
         get() {
-            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_fast_segmentation), false)
+            return defaultSharedPreferences.getBoolean(
+                context.getString(R.string.key_fast_segmentation),
+                false
+            )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(context.getString(R.string.key_fast_segmentation), value)
-                    .apply()
+                .putBoolean(context.getString(R.string.key_fast_segmentation), value)
+                .apply()
         }
 
     var isFocusMeasure: Boolean
         get() {
-            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_focus_measure), true)
+            return defaultSharedPreferences.getBoolean(
+                context.getString(R.string.key_focus_measure),
+                true
+            )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(context.getString(R.string.key_focus_measure), value)
-                    .apply()
+                .putBoolean(context.getString(R.string.key_focus_measure), value)
+                .apply()
         }
 
     var textOrientation: Int
         get() {
-            return defaultSharedPreferences.getInt(context.getString(R.string.key_text_orientation), IMG_ORIENTATION_90)
+            return defaultSharedPreferences.getInt(
+                context.getString(R.string.key_text_orientation),
+                IMG_ORIENTATION_90
+            )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putInt(context.getString(R.string.key_text_orientation), value)
-                    .apply()
+                .putInt(context.getString(R.string.key_text_orientation), value)
+                .apply()
         }
 
     var showDebugView: Boolean
         get() {
-            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_show_debug_view), false)
+            return defaultSharedPreferences.getBoolean(
+                context.getString(R.string.key_show_debug_view),
+                false
+            )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(context.getString(R.string.key_show_debug_view), value)
-                    .apply()
+                .putBoolean(context.getString(R.string.key_show_debug_view), value)
+                .apply()
         }
 
     var showHUD: Boolean
         get() {
-            return defaultSharedPreferences.getBoolean(context.getString(R.string.key_hud_enabled), false)
+            return defaultSharedPreferences.getBoolean(
+                context.getString(R.string.key_hud_enabled),
+                false
+            )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(context.getString(R.string.key_hud_enabled), value)
-                    .apply()
+                .putBoolean(context.getString(R.string.key_hud_enabled), value)
+                .apply()
         }
 
     var showExposureLockWarning: Boolean
@@ -205,8 +231,8 @@ class PreferencesHandler(val context: Context) {
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(KEY_SHOW_EXPOSURE_LOCK_WARNING, value)
-                    .apply()
+                .putBoolean(KEY_SHOW_EXPOSURE_LOCK_WARNING, value)
+                .apply()
         }
 
     var hideSeriesDialog: Boolean
@@ -214,8 +240,8 @@ class PreferencesHandler(val context: Context) {
             sharedPreferences.getBoolean(HIDE_SERIES_DIALOG_KEY, false)
         set(value) {
             sharedPreferences.edit()
-                    .putBoolean(HIDE_SERIES_DIALOG_KEY, value)
-                    .apply()
+                .putBoolean(HIDE_SERIES_DIALOG_KEY, value)
+                .apply()
         }
 
     var isSeriesModeActive: Boolean
@@ -223,8 +249,8 @@ class PreferencesHandler(val context: Context) {
             sharedPreferences.getBoolean(SERIES_MODE_ACTIVE_KEY, false)
         set(value) {
             sharedPreferences.edit()
-                    .putBoolean(SERIES_MODE_ACTIVE_KEY, value)
-                    .apply()
+                .putBoolean(SERIES_MODE_ACTIVE_KEY, value)
+                .apply()
         }
 
     var showIntro: Boolean
@@ -232,8 +258,8 @@ class PreferencesHandler(val context: Context) {
             sharedPreferences.getBoolean(SHOW_INTRO_KEY, true)
         set(value) {
             sharedPreferences.edit()
-                    .putBoolean(SHOW_INTRO_KEY, value)
-                    .apply()
+                .putBoolean(SHOW_INTRO_KEY, value)
+                .apply()
         }
 
     var installedVersionCode: Int
@@ -241,8 +267,8 @@ class PreferencesHandler(val context: Context) {
             sharedPreferences.getInt(INSTALLED_VERSION_KEY, DEFAULT_INT_VALUE)
         set(value) {
             sharedPreferences.edit()
-                    .putInt(INSTALLED_VERSION_KEY, value)
-                    .apply()
+                .putInt(INSTALLED_VERSION_KEY, value)
+                .apply()
         }
 
     var firstStartDate: String?
@@ -250,8 +276,8 @@ class PreferencesHandler(val context: Context) {
             sharedPreferences.getString(KEY_FIRST_START_DATE, null)
         set(value) {
             sharedPreferences.edit()
-                    .putString(KEY_FIRST_START_DATE, value)
-                    .apply()
+                .putString(KEY_FIRST_START_DATE, value)
+                .apply()
         }
 
     var exifArtist: String?
@@ -259,8 +285,8 @@ class PreferencesHandler(val context: Context) {
             defaultSharedPreferences.getString(KEY_EXIF_ARTIST, null)
         set(value) {
             defaultSharedPreferences.edit()
-                    .putString(KEY_EXIF_ARTIST, value)
-                    .apply()
+                .putString(KEY_EXIF_ARTIST, value)
+                .apply()
         }
 
     var exifCopyRight: String?
@@ -268,8 +294,8 @@ class PreferencesHandler(val context: Context) {
             defaultSharedPreferences.getString(KEY_EXIF_COPYRIGHT, null)
         set(value) {
             defaultSharedPreferences.edit()
-                    .putString(KEY_EXIF_COPYRIGHT, value)
-                    .apply()
+                .putString(KEY_EXIF_COPYRIGHT, value)
+                .apply()
         }
 
     var isFlashSeriesMode: Boolean
@@ -277,8 +303,8 @@ class PreferencesHandler(val context: Context) {
             defaultSharedPreferences.getBoolean(KEY_FLASH_SERIES_MODE, false)
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(KEY_FLASH_SERIES_MODE, value)
-                    .apply()
+                .putBoolean(KEY_FLASH_SERIES_MODE, value)
+                .apply()
         }
 
     var showTranskribusMetaData: Boolean
@@ -286,8 +312,8 @@ class PreferencesHandler(val context: Context) {
             defaultSharedPreferences.getBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, false)
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, value)
-                    .apply()
+                .putBoolean(SHOW_TRANSKRIBUS_METADATA_KEY, value)
+                .apply()
         }
 
     var showCroppingInfo: Boolean
@@ -295,8 +321,23 @@ class PreferencesHandler(val context: Context) {
             defaultSharedPreferences.getBoolean(KEY_SKIP_CROPPING_INFO_DIALOG, true)
         set(value) {
             defaultSharedPreferences.edit()
-                    .putBoolean(KEY_SKIP_CROPPING_INFO_DIALOG, value)
-                    .apply()
+                .putBoolean(KEY_SKIP_CROPPING_INFO_DIALOG, value)
+                .apply()
+        }
+
+    /**
+     * @return true if debug messages should be enabled.
+     */
+    var showExtendedDebugErrorMessages: Boolean
+        get() =
+            BuildConfig.DEBUG && defaultSharedPreferences.getBoolean(
+                KEY_EXTENDED_DEBUG_ERROR_MESSAGES,
+                false
+            )
+        set(value) {
+            defaultSharedPreferences.edit()
+                .putBoolean(KEY_EXTENDED_DEBUG_ERROR_MESSAGES, value)
+                .apply()
         }
 
     // TODO: Use encrypted preferences
@@ -306,8 +347,8 @@ class PreferencesHandler(val context: Context) {
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putString(KEY_TRANSKRIBUS_SESSION_COOKIE, value)
-                    .apply()
+                .putString(KEY_TRANSKRIBUS_SESSION_COOKIE, value)
+                .apply()
         }
 
     // TODO: Use encrypted preferences
@@ -317,8 +358,8 @@ class PreferencesHandler(val context: Context) {
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putString(KEY_TRANSKRIBUS_PASSWORD, value)
-                    .apply()
+                .putString(KEY_TRANSKRIBUS_PASSWORD, value)
+                .apply()
         }
 
     var exportDirectoryUri: String?
@@ -327,8 +368,8 @@ class PreferencesHandler(val context: Context) {
         }
         set(value) {
             defaultSharedPreferences.edit()
-                    .putString(context.getString(R.string.key_pdf_dir), value)
-                    .apply()
+                .putString(context.getString(R.string.key_pdf_dir), value)
+                .apply()
         }
 
     init {
@@ -342,6 +383,10 @@ class PreferencesHandler(val context: Context) {
 
             // TODO: migrate previous transkribus login
 
+            // TODO: migrate and delete key "server_changed_shown_key"
+
+            // TODO: migrate and delete key "SERIES_MODE_PAUSED_KEY" (since it's not used anymore)
+            // TODO: migrate and delete key "SERIES_NAME_KEY" (since it's not used anymore)
             // used previously to store the dropbox token
             defaultSharedPreferences.edit().remove("dropboxToken").apply()
             // used previously to distinguish between dropbox/transkribus login

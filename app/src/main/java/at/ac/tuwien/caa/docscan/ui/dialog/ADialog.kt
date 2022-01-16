@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.logic.Event
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.parcelize.Parcelize
@@ -56,7 +57,7 @@ class ADialog : AppCompatDialogFragment() {
         @DrawableRes val icon: Int = EMPTY_RES_PLACEHOLDER,
         val isCancellable: Boolean = true
     ) {
-        GENERIC(R.string.generic_network_error_title, R.string.generic_network_error_text),
+        GENERIC(R.string.generic_error_title, R.string.generic_error_text),
         UPLOAD_WARNING_DOC_ALREADY_UPLOADED(
             R.string.viewer_document_uploaded_title,
             R.string.viewer_document_uploaded_text,

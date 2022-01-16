@@ -30,7 +30,11 @@ object PdfCreator {
         return task.await()
     }
 
-    fun savePDF(outputFile: File, files: List<PDFCreatorFileWrapper>, ocrResults: List<Text>? = null): Resource<Unit> {
+    fun savePDF(
+        outputFile: File,
+        files: List<PDFCreatorFileWrapper>,
+        ocrResults: List<Text>? = null
+    ): Resource<Unit> {
         FileOutputStream(outputFile).use { outputStream ->
             try {
                 val first = files[0]
@@ -48,9 +52,13 @@ object PdfCreator {
                     //add the original image to the pdf and set the DPI of it to 600
                     val image = Image.getInstance(file.file.absolutePath)
                     image.setRotationDegrees(-rotationInDegrees.toFloat())
-                    if (rotationInDegrees == 0 || rotationInDegrees == 180) image.scaleAbsolute(document.pageSize.width,
-                            document.pageSize.height) else image.scaleAbsolute(document.pageSize.height,
-                            document.pageSize.width)
+                    if (rotationInDegrees == 0 || rotationInDegrees == 180) image.scaleAbsolute(
+                        document.pageSize.width,
+                        document.pageSize.height
+                    ) else image.scaleAbsolute(
+                        document.pageSize.height,
+                        document.pageSize.width
+                    )
                     image.setDpi(600, 600)
                     document.add(image)
                     if (ocrResults != null) {
@@ -70,17 +78,24 @@ object PdfCreator {
                                 // one FirebaseVisionText.Line corresponds to one line
                                 // the rectangle we want to draw this line corresponds to the lines boundingBox
                                 val boundingBox = line.boundingBox ?: continue
-                                val left = boundingBox.left.toFloat() / resolution.width.toFloat() * document.pageSize.width
-                                val right = boundingBox.right.toFloat() / resolution.width.toFloat() * document.pageSize.width
-                                val top = boundingBox.top.toFloat() / resolution.height.toFloat() * document.pageSize.height
-                                val bottom = boundingBox.bottom.toFloat() / resolution.height.toFloat() * document.pageSize.height
-                                val rect = Rectangle(left,
-                                        document.pageSize.height - bottom,
-                                        right,
-                                        document.pageSize.height - top)
+                                val left =
+                                    boundingBox.left.toFloat() / resolution.width.toFloat() * document.pageSize.width
+                                val right =
+                                    boundingBox.right.toFloat() / resolution.width.toFloat() * document.pageSize.width
+                                val top =
+                                    boundingBox.top.toFloat() / resolution.height.toFloat() * document.pageSize.height
+                                val bottom =
+                                    boundingBox.bottom.toFloat() / resolution.height.toFloat() * document.pageSize.height
+                                val rect = Rectangle(
+                                    left,
+                                    document.pageSize.height - bottom,
+                                    right,
+                                    document.pageSize.height - top
+                                )
                                 val drawText = line.text
                                 // try to get max font size that fit in rectangle
-                                val textHeightInGlyphSpace = bf.getAscent(drawText) - bf.getDescent(drawText)
+                                val textHeightInGlyphSpace =
+                                    bf.getAscent(drawText) - bf.getDescent(drawText)
                                 var fontSize = 1000f * rect.height / textHeightInGlyphSpace
                                 while (bf.getWidthPoint(drawText, fontSize) < rect.width) {
                                     fontSize++
@@ -90,15 +105,20 @@ object PdfCreator {
                                 }
                                 val phrase = Phrase(drawText, Font(bf, fontSize))
                                 // write the text on the pdf
-                                ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, phrase,  // center horizontally
-                                        (rect.left + rect.right) / 2,  // shift baseline based on descent
-                                        rect.bottom - bf.getDescentPoint(drawText, fontSize), 0f)
+                                ColumnText.showTextAligned(
+                                    cb, Element.ALIGN_CENTER, phrase,  // center horizontally
+                                    (rect.left + rect.right) / 2,  // shift baseline based on descent
+                                    rect.bottom - bf.getDescentPoint(drawText, fontSize), 0f
+                                )
                             }
                         }
                     }
                     if (i < files.size - 1) {
                         file = files[i + 1]
-                        val pageSize = getPageSize(calculateImageResolution(file.file, file.rotation), landscapeFirst)
+                        val pageSize = getPageSize(
+                            calculateImageResolution(file.file, file.rotation),
+                            landscapeFirst
+                        )
                         document.pageSize = pageSize
                         document.newPage()
                     }
@@ -107,7 +127,7 @@ object PdfCreator {
                 return Success(Unit)
             } catch (e: Exception) {
                 outputFile.safelyDelete()
-                return IOErrorCode.PDF_EXPORT_FAILED.asFailure(e)
+                return IOErrorCode.EXPORT_CREATE_PDF_FAILED.asFailure(e)
             }
         }
     }
@@ -143,7 +163,8 @@ object PdfCreator {
                 for (checkBlock in biggestBlocks) {
                     if (checkBlock.boundingBox == null) continue
                     if (block.boundingBox!!.centerX() > checkBlock.boundingBox!!.left &&
-                            block.boundingBox!!.centerX() < checkBlock.boundingBox!!.right) {
+                        block.boundingBox!!.centerX() < checkBlock.boundingBox!!.right
+                    ) {
                         sortedBlocks[biggestBlocks.indexOf(checkBlock)].add(block)
                         if (block.boundingBox!!.width() > checkBlock.boundingBox!!.width()) {
                             biggestBlocks[biggestBlocks.indexOf(checkBlock)] = block
@@ -158,7 +179,8 @@ object PdfCreator {
                     var i = 0
                     while (i < biggestBlocks.size) {
                         if (biggestBlocks[i].boundingBox == null ||
-                                block.boundingBox!!.centerX() > biggestBlocks[i].boundingBox!!.centerX()) {
+                            block.boundingBox!!.centerX() > biggestBlocks[i].boundingBox!!.centerX()
+                        ) {
                             i++
                         } else {
                             break
@@ -185,7 +207,8 @@ object PdfCreator {
                 var i = 0
                 while (i < sortedBlocks.size) {
                     if (sortedBlocks[i].boundingBox == null ||
-                            textBlock.boundingBox!!.width() < sortedBlocks[i].boundingBox!!.width()) {
+                        textBlock.boundingBox!!.width() < sortedBlocks[i].boundingBox!!.width()
+                    ) {
                         i++
                     } else {
                         break
