@@ -284,7 +284,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             if (resource != null) {
                 if (resource instanceof Failure) {
                     mIsPictureSafe = false;
-                    showSaveErrorDialog();
+                    showSaveErrorDialog(((Failure<Page>) resource).getException());
                 } else if (resource instanceof Success) {
                     mIsPictureSafe = true;
 
@@ -1531,8 +1531,8 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 LocationHandler.getInstance(this).getLocation());
     }
 
-    private void showSaveErrorDialog() {
-
+    private void showSaveErrorDialog(Throwable throwable) {
+        // TODO: Take throwable into consideration.
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(CameraActivity.this);
         builder.setMessage(R.string.picture_save_error_text).setTitle(R.string.picture_save_error_title);
 
@@ -3039,6 +3039,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
+    @NonNull
     @Override
     protected NavigationDrawer.NavigationItem getSelfNavDrawerItem() {
         return NavigationDrawer.NavigationItem.CAMERA;

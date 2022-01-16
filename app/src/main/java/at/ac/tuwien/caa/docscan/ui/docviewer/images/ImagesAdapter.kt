@@ -19,12 +19,12 @@ import org.koin.java.KoinJavaComponent.inject
 import kotlin.math.roundToInt
 
 class ImagesAdapter(
-        private val onClick: (PageSelection) -> Unit,
-        private val onLongClick: (PageSelection) -> Unit,
-        screenWidth: Int,
-        private val columnCount: Int,
-        private val paddingPx: Int,
-        private val marginPx: Int
+    private val onClick: (PageSelection) -> Unit,
+    private val onLongClick: (PageSelection) -> Unit,
+    screenWidth: Int,
+    private val columnCount: Int,
+    private val paddingPx: Int,
+    private val marginPx: Int
 ) : ListAdapter<PageSelection, ImagesAdapter.ImageViewHolder>(DiffPageCallback()) {
 
     private val itemWidth = screenWidth / columnCount
@@ -39,7 +39,7 @@ class ImagesAdapter(
     }
 
     inner class ImageViewHolder(val binding: GalleryItemBinding) :
-            RecyclerView.ViewHolder(binding.root), View.OnClickListener, View.OnLongClickListener {
+        RecyclerView.ViewHolder(binding.root), View.OnClickListener, View.OnLongClickListener {
 
         fun bind(page: PageSelection, position: Int) {
             val isProcessing = page.page.postProcessingState == PostProcessingState.PROCESSING
@@ -81,9 +81,9 @@ class ImagesAdapter(
             binding.pageProgressbar.visibility = if (isProcessing) View.VISIBLE else View.INVISIBLE
             binding.pageCheckbox.isEnabled = page.isSelectionActivated
             GlideHelper.loadPageIntoImageView(
-                    page.page,
-                    binding.pageImageview,
-                    if (isCropped) GlideHelper.GlideStyles.IMAGE_CROPPED else GlideHelper.GlideStyles.IMAGES_UNCROPPED
+                page.page,
+                binding.pageImageview,
+                if (isCropped) GlideHelper.GlideStyles.IMAGE_CROPPED else GlideHelper.GlideStyles.IMAGES_UNCROPPED
             )
 
             // set checkbox
@@ -91,16 +91,19 @@ class ImagesAdapter(
                 binding.pageCheckbox.isChecked = page.isSelected
             }
             binding.pageCheckbox.visibility =
-                    if (page.isSelectionActivated) View.VISIBLE else View.GONE
+                if (page.isSelectionActivated) View.VISIBLE else View.GONE
             binding.pageContainer.setBackgroundColor(
-                    ContextCompat.getColor(itemView.context, if (page.isSelectionActivated) R.color.colorSelectLight else R.color.white)
+                ContextCompat.getColor(
+                    itemView.context,
+                    if (page.isSelectionActivated) R.color.colorSelectLight else R.color.white
+                )
             )
             val params = binding.pageImageview.layoutParams as RelativeLayout.LayoutParams
             params.setMargins(
-                    if (page.isSelectionActivated) marginPx else 0,
-                    if (page.isSelectionActivated) marginPx else 0,
-                    0,
-                    0
+                if (page.isSelectionActivated) marginPx else 0,
+                if (page.isSelectionActivated) marginPx else 0,
+                0,
+                0
             )
         }
 
@@ -122,10 +125,13 @@ class DiffPageCallback : DiffUtil.ItemCallback<PageSelection>() {
 
     @SuppressLint("DiffUtilEquals")
     override fun areContentsTheSame(
-            oldItem: PageSelection,
-            newItem: PageSelection
+        oldItem: PageSelection,
+        newItem: PageSelection
     ): Boolean {
-        // TODO: Check if this is sufficient
-        return oldItem == newItem
+        return oldItem.isSelected == newItem.isSelected &&
+                oldItem.isSelectionActivated == newItem.isSelectionActivated &&
+                oldItem.page.fileHash == newItem.page.fileHash &&
+                oldItem.page.singlePageBoundary == newItem.page.singlePageBoundary &&
+                oldItem.page.postProcessingState == newItem.page.postProcessingState
     }
 }

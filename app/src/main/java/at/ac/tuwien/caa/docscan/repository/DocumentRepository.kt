@@ -61,8 +61,6 @@ class DocumentRepository(
         return documentDao.getActiveDocumentasFlow().sortByNumber()
     }
 
-    fun getActiveDocument() = documentDao.getActiveDocument()
-
     @WorkerThread
     suspend fun sanitizeDocuments(): Resource<Unit> {
         documentDao.getAllLockedDocumentWithPages().forEach {
@@ -74,10 +72,19 @@ class DocumentRepository(
                     tryToUnlockDoc(it.document.id, page.id)
                 }
             } else if (it.document.lockState == LockState.FULL_LOCK) {
-                if (it.isUploadInProgress()) {
-                    UploadWorker.spawnUploadJob(workManager, it.document.id)
-                } else {
-                    tryToUnlockDoc(it.document.id, null)
+                when {
+                    it.isUploadInProgress() -> {
+                        UploadWorker.spawnUploadJob(workManager, it.document.id)
+                    }
+                    it.isExporting() -> {
+                        // exporting operation are usually very fast, if this should ever occur
+                        // then the doc is set to not exported.
+                        pageDao.updatePageExportStateForDocument(it.document.id, ExportState.NONE)
+                        tryToUnlockDoc(it.document.id, null)
+                    }
+                    else -> {
+                        tryToUnlockDoc(it.document.id, null)
+                    }
                 }
             }
         }
@@ -86,6 +93,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun deletePages(pages: List<Page>): Resource<Unit> {
+        // TODO: When adding/removing pages, add a generic check to adapt the page number correctly.
         pages.forEach {
             val result = performPageOperation(it.docId, it.id, operation = { _, page ->
                 documentDao.deletePage(page)
@@ -111,7 +119,7 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    suspend fun setDocumentAsActive(documentId: UUID) {
+    fun setDocumentAsActive(documentId: UUID) {
         db.runInTransaction {
             documentDao.setAllDocumentsInactive()
             documentDao.setDocumentActive(documentId = documentId)
@@ -303,7 +311,7 @@ class DocumentRepository(
                     try {
                         fileHandler.readBytes(uri)?.let { bytes ->
                             saveNewImageForDocument(
-                                document,
+                                document.id,
                                 bytes,
                                 null,
                                 null
@@ -320,16 +328,21 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun saveNewImageForDocument(
-        document: Document,
+        documentId: UUID,
         data: ByteArray,
         fileId: UUID? = null,
         exifMetaData: ImageExifMetaData?
     ): Resource<Page> {
+        val document = documentDao.getDocument(documentId) ?: kotlin.run {
+            return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        }
         Timber.d("Starting to save new image for document: ${document.title}")
+        if (document.lockState == LockState.FULL_LOCK) {
+            return DBErrorCode.DOCUMENT_LOCKED.asFailure()
+        }
         // TODO: Make a check here, if there is enough storage to save the file.
         // if fileId is provided, then it means that a file is being replaced.
         val newFileId = fileId ?: UUID.randomUUID()
-        val documentId = document.id
         val file = fileHandler.createDocumentFile(documentId, newFileId, PageFileType.JPEG)
 
         var tempFile: File? = null

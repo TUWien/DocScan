@@ -90,7 +90,6 @@ class CameraViewModel(
     /**
      * Tries to save raw image data to the currently loaded [observableDocumentWithPages], adds
      * all necessary meta data to [Page] and appends it finally to the [Document].
-     * TODO: ERROR_HANDLING: Currently no assistive error handling provided.
      */
     fun saveRawImageData(data: ByteArray, orientation: Int, cameraDpi: Int, location: Location?) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -145,7 +144,7 @@ class CameraViewModel(
                 }
             )
             val result = documentRepository.saveNewImageForDocument(
-                doc,
+                doc.id,
                 data,
                 if (isRetakeMode) retakePageId else null,
                 exifMetaData
@@ -153,7 +152,6 @@ class CameraViewModel(
             when (result) {
                 is Failure -> {
                     FirebaseCrashlytics.getInstance().recordException(result.exception)
-                    // TODO: Add error handling if necessary
                 }
                 is Success -> {
                     if (isRetakeMode) {

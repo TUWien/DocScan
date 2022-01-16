@@ -108,10 +108,10 @@ class DiffDocumentCallback : DiffUtil.ItemCallback<DocumentWithPages>() {
         oldItem: DocumentWithPages,
         newItem: DocumentWithPages
     ): Boolean {
-        // TODO: Check if this is sufficient
         return oldItem.document.title == newItem.document.title &&
                 oldItem.pages.size == newItem.pages.size &&
                 oldItem.isProcessing() == newItem.isProcessing() &&
+                oldItem.isExporting() == newItem.isExporting() &&
                 oldItem.isUploadInProgress() == newItem.isUploadInProgress() &&
                 oldItem.document.metaData == newItem.document.metaData
     }
