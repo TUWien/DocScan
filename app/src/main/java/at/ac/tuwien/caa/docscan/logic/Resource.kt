@@ -47,25 +47,28 @@ fun <T> asUnauthorizedFailure(): Failure<T> {
 
 /**
  * Determines if the upload of a document is recoverable or not.
- * TODO: Double check the conditions!
  */
-fun Resource<UploadStatusResponse>.isRecoverable(): Boolean {
+fun Resource<UploadStatusResponse>.isUploadRecoverable(): Boolean {
     when (this) {
         is Failure -> {
             when (exception) {
                 is DocScanException -> {
                     return when (exception.docScanError) {
                         is DocScanError.DBError -> {
+                            // internal DB errors are not recoverable
                             false
                         }
                         is DocScanError.TranskribusRestError.HttpError -> {
+                            // every http error cannot be recovered.
                             false
                         }
                         is DocScanError.TranskribusRestError.IOError -> {
+                            // if an IO error happened with the transkribus API, then this is very likely recoverable
                             true
                         }
                         is DocScanError.IOError -> {
-                            true
+                            // if an IO error happened, this could mean that a file for the upload is missing.
+                            false
                         }
                     }
                 }
@@ -76,5 +79,5 @@ fun Resource<UploadStatusResponse>.isRecoverable(): Boolean {
             return true
         }
     }
-    return true
+    return false
 }

@@ -8,6 +8,8 @@ import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.worker.UploadWorker
 import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
 import at.ac.tuwien.caa.docscan.api.transkribus.model.login.LoginResponse
+import at.ac.tuwien.caa.docscan.logic.notification.DocScanNotificationChannel
+import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -17,7 +19,8 @@ class UserRepository(
     private val pageDao: PageDao,
     private val api: TranskribusAPIService,
     private val preferencesHandler: PreferencesHandler,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    private val notificationHandler: NotificationHandler
 ) {
 
     fun getUser(): Flow<User?> {
@@ -64,9 +67,12 @@ class UserRepository(
             // logout response doesn't matter
             transkribusResource<Void, Void>(apiCall = { api.logout() })
             // stop all documents with ongoing uplodas
-            pageDao.getAllUploadingPagesWithDistinctDocIds().forEach {
-                UploadWorker.cancelWorkByDocumentId(workManager, it)
-            }
+// TODO: UPLOAD_CONSTRAINT: Check if the pending work should be cancelled (otherwise this would run into an non-recoverable error)
+//            var hasPendingWorkBeenCancelled = false
+//            pageDao.getAllUploadingPagesWithDistinctDocIds().forEach {
+//                hasPendingWorkBeenCancelled = true
+//                UploadWorker.cancelWorkByDocumentId(workManager, it)
+//            }
             // clear the user
             clearUser()
 

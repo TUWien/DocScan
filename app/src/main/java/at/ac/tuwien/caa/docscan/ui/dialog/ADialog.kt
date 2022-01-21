@@ -10,7 +10,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import at.ac.tuwien.caa.docscan.R
-import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.logic.Event
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.parcelize.Parcelize
@@ -64,16 +63,16 @@ class ADialog : AppCompatDialogFragment() {
             positiveBtn = R.string.dialog_btn_upload_again
         ),
 
-        // TODO: Use this message in the error handler for the notifications
+        // TODO: UPLOAD_CONSTRAINT: Check these messages again!
         DOCUMENT_PAGE_DELETED_DURING_UPLOAD(
             R.string.sync_file_deleted_title,
             R.string.sync_file_deleted_text
         ),
 
-        // TODO: Use this message in the error handler for the notifications
+        // TODO: UPLOAD_CONSTRAINT: Check these messages again!
         GENERIC_UPLOAD_ERROR(R.string.sync_file_deleted_title, R.string.sync_file_deleted_text),
 
-        // TODO: Use this message in the error handler for the notifications
+        // TODO: UPLOAD_CONSTRAINT: Check these messages again!
         UPLOAD_FAILED_NO_LOGIN(
             R.string.viewer_not_logged_in_title,
             R.string.sync_not_logged_in_text,
@@ -83,6 +82,7 @@ class ADialog : AppCompatDialogFragment() {
             R.string.viewer_offline_title,
             R.string.viewer_offline_text
         ),
+
         // TODO: Necessary to show? (images that are already cropped would be simply ignored)
         HINT_DOCUMENT_ALREADY_CROPPED(
             R.string.viewer_all_cropped_title,
@@ -134,6 +134,7 @@ class ADialog : AppCompatDialogFragment() {
             positiveBtn = R.string.page_slide_fragment_retake_image_dialog_confirm_text,
             negativeBtn = R.string.dialog_cancel_text
         ),
+
         // TODO: This can no longer be tracked that easily
         HINT_PDF_EXPORT_PERMISSION_GIVEN(
             R.string.viewer_document_dir_set_title,

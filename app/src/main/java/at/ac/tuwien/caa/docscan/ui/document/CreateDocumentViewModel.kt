@@ -24,13 +24,15 @@ class CreateDocumentViewModel(val repository: DocumentRepository) : ViewModel() 
                     relatedUploadId = transkribusMetaData.relatedUploadId,
                     author = transkribusMetaData.author,
                     authority = transkribusMetaData.authority,
+                    hierarchy = transkribusMetaData.hierarchy,
                     genre = transkribusMetaData.genre,
                     language = transkribusMetaData.language,
                     isProjectReadme2020 = transkribusMetaData.readme2020,
                     allowImagePublication = transkribusMetaData.readme2020Public,
                     signature = transkribusMetaData.signature,
                     url = transkribusMetaData.url,
-                    writer = transkribusMetaData.writer
+                    writer = transkribusMetaData.writer,
+                    description = transkribusMetaData.description
                 )
             }
             observableResource.postValue(repository.createDocument(document))

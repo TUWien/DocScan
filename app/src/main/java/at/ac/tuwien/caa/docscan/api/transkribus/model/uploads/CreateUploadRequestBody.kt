@@ -4,7 +4,6 @@ import androidx.annotation.Keep
 import at.ac.tuwien.caa.docscan.db.model.MetaData
 import com.google.gson.annotations.SerializedName
 
-// TODO: Check the old implementation for possibly missing params
 @Keep
 data class CreateUploadRequestBody(
     @SerializedName("md")
@@ -33,13 +32,47 @@ data class UploadPage(
 data class UploadMetaData(
     @SerializedName("title")
     val title: String?,
+    @SerializedName("authority")
+    val authority: String? = null,
+    @SerializedName("hierarchy")
+    val hierarchy: String? = null,
+    @SerializedName("extid")
+    val extid: String? = null,
+    @SerializedName("backlink")
+    val backlink: String? = null,
+    @SerializedName("writer")
+    val writer: String? = null,
     @SerializedName("author")
     val author: String? = null,
     @SerializedName("genre")
-    val genre: String? = null
+    val genre: String? = null,
+    @SerializedName("desc")
+    val desc: String? = null,
+    @SerializedName("language")
+    val language: String? = null
 )
 
 fun MetaData.toUploadMetaData(title: String): UploadMetaData {
-    // TODO: Add missing data!
-    return UploadMetaData(title = title, author = this.author, genre = this.genre)
+    // TODO: UPLOAD_CONSTRAINT: The logic is from the old implementation, the description will get removed if the flags are set, is this correct?
+    var desc: String?
+    if (isProjectReadme2020) {
+        desc = " "
+        desc += " #readme2020"
+        if (allowImagePublication) desc += " #public"
+    } else {
+        desc = description
+    }
+    return UploadMetaData(
+        // TODO: UPLOAD_CONSTRAINT: In the old implementation, the title has not been set
+        title = title,
+        authority = authority,
+        hierarchy = hierarchy,
+        extid = signature,
+        backlink = url,
+        writer = writer,
+        author = author,
+        genre = genre,
+        desc = desc,
+        language = language
+    )
 }

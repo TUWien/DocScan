@@ -411,6 +411,8 @@ class PreferencesHandler(val context: Context) {
 //            private static final String TRANSKRIBUS_PASSWORD_KEY = "userPassword";
 //            private static final String DROPBOX_TOKEN_KEY = "dropboxToken";
 //            private static final String CONNECTION_KEY = "connection";
+
+
         }
 
         installedVersionCode = BuildConfig.VERSION_CODE

@@ -8,11 +8,6 @@ import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
-/**
- * TODO: Consider adding a pipeline status for processing, awaitingUpload, and uploading and also editing.
- * TODO: Save the relatedUploadURL which is retrieved from the URL
- * TODO: It's probably better to remove the doc from being active, when an upload/export is performed.
- */
 @Parcelize
 @Keep
 @Entity(tableName = TABLE_NAME_DOCUMENTS)
@@ -64,8 +59,13 @@ fun Document.sanitizedTitle(): String {
 fun Document.edit(title: String, metaData: MetaData?): Document {
     this.title = title
     val metaDataTemp = metaData
-    // TODO: Check if this is ok, so that the relateduPloadId is copied from the old one.
+    // TODO: UPLOAD_CONSTRAINT: Check if this is ok, so that the relatedUploadId is copied from the old one.
+    // TODO: UPLOAD_CONSTRAINT: Is this just a meta flag, or really the uploadId as used for the upload requests?
     metaData?.relatedUploadId = this.metaData?.relatedUploadId
+
+    // TODO: UPLOAD_CONSTRAINT: Are these flags still necessary (they can be only set via the QR-code)
+    metaData?.hierarchy = this.metaData?.hierarchy
+    metaData?.description = this.metaData?.description
     this.metaData = metaDataTemp
     return this
 }

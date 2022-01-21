@@ -22,6 +22,14 @@ import timber.log.Timber
 import java.io.File
 import java.util.*
 
+/**
+ * An upload repository dealing with the upload of the document and pages.
+ *
+ * TODO: UPLOAD_CONSTRAINT: A worker might be scheduled, but not running (e.g. if the is running on mobile data, but has not opted in for that) - is a scheduled state necessary?
+ * TODO: UPLOAD_CONSTRAINT: If scheduled state is not added to the DB, then this cannot be tracked in the app, the upload could suddenly start if the user isn't aware of that.
+ * TODO: UPLOAD_CONSTRAINT: The current checksum is sent for each image, so if an upload should suddenly, then it would fail if one of the images has been changed/added/removed.
+ * TODO: UPLOAD_CONSTRAINT: Should the document be locked if it's just scheduled? (currently it's locked when the upload is started, but then it's unlocked, if the worker is retried then the doc is not locked anymore!
+ */
 class UploadRepository(
     private val api: TranskribusAPIService,
     private val preferencesHandler: PreferencesHandler,
@@ -42,11 +50,25 @@ class UploadRepository(
      */
     suspend fun uploadDocument(documentId: UUID): Resource<UploadStatusResponse> {
         try {
-            return uploadDocumentInternal(documentId)
+            val resource = uploadDocumentInternal(documentId)
+            when (resource) {
+                is Failure -> {
+                    withContext(NonCancellable) {
+                        tearDownUpload(
+                            documentId,
+                            if (resource.isUploadRecoverable()) UploadResourceState.RECOVERABLE_FAILURE else UploadResourceState.FAILURE
+                        )
+                    }
+                }
+                is Success -> {
+                    // ignore
+                }
+            }
+            return resource
         } catch (e: CancellationException) {
             Timber.i("The upload job has been cancelled - tearing down upload!")
             withContext(NonCancellable) {
-                tearDownUpload(documentId, true)
+                tearDownUpload(documentId, UploadResourceState.FAILURE)
             }
             throw e
         }
@@ -71,7 +93,7 @@ class UploadRepository(
         }
         val uploadCreateResource =
             prepareForUpload(collectionId, documentWithPages)
-        // 3. check current upload ig
+        // 3. check current upload id
         val uploadStatusResponse =
             when (uploadCreateResource) {
                 is Failure -> {
@@ -80,9 +102,6 @@ class UploadRepository(
                             ?: return Failure(uploadCreateResource.exception)
                     return when (docScanError) {
                         is DocScanError.DBError -> {
-                            if (docScanError.code == DBErrorCode.DOCUMENT_ALREADY_UPLOADED) {
-                                tearDownUpload(documentId, uploadNonRecoverableFailure = true)
-                            }
                             Failure(uploadCreateResource.exception)
                         }
                         else -> {
@@ -141,7 +160,7 @@ class UploadRepository(
         }
 
         // tear down the upload
-        tearDownUpload(documentId, false)
+        tearDownUpload(documentId, UploadResourceState.SUCCESS)
         return Success(lastUploadStatusResponse)
     }
 
@@ -193,7 +212,6 @@ class UploadRepository(
         val uploadPages = mutableListOf<UploadPage>()
         for ((index, page) in documentWithPages.pages.sortedBy { it.number }.withIndex()) {
             val pageNr = index + 1
-            // TODO: Check if the checksum should be really added.
             val checkSum = if (page.fileHash.isNotEmpty()) page.fileHash else null
             val fileName = "${docTitle}_${pageNr}.${page.fileType.extension}"
 
@@ -290,7 +308,10 @@ class UploadRepository(
         for ((index, page) in docWithPages.pages.sortedBy { it.number }.withIndex()) {
             val uploadStatusPage = statusResponse.pageList.pages.firstOrNull { uploadStatusPage ->
                 uploadStatusPage.fileName == page.transkribusUpload.uploadFileName &&
-                        uploadStatusPage.pageNr == (index + 1)
+                        uploadStatusPage.pageNr == (index + 1) &&
+                        // if the checksum is returned by the backend, then its checked with our local checksum to detect inconsistencies,
+                        // if it's null, then we haven't sent the checksum during init
+                        (if (uploadStatusPage.imgChecksum != null) uploadStatusPage.imgChecksum == page.fileHash else true)
             } ?: kotlin.run {
                 Timber.e("Inconsistencies in the upload expectations!")
                 return DBErrorCode.DOCUMENT_DIFFERENT_UPLOAD_EXPECTATIONS.asFailure()
@@ -312,26 +333,45 @@ class UploadRepository(
      */
     private suspend fun tearDownUpload(
         documentId: UUID,
-        uploadNonRecoverableFailure: Boolean = false
+        uploadResourceState: UploadResourceState
     ) {
-        val doc = documentDao.getDocumentWithPages(documentId) ?: return
+        Timber.d("Tearing down upload!")
         pageDao.updateUploadStateForDocument(
             documentId,
-            if (uploadNonRecoverableFailure) UploadState.NONE else UploadState.UPLOADED
+            if (uploadResourceState == UploadResourceState.SUCCESS) UploadState.UPLOADED else UploadState.NONE
         )
-        unLockDocAfterLongRunningOperation(doc.document.id)
+        unLockDocAfterLongRunningOperation(documentId)
 
         // delete the associated upload if something goes terribly wrong
-        if (uploadNonRecoverableFailure) {
-            doc.document.uploadId?.let {
-                transkribusResource<Void, Void>(apiCall = {
+        if (uploadResourceState == UploadResourceState.FAILURE) {
+            // load the document again, since this may be an old reference
+            documentDao.getDocument(documentId)?.uploadId?.let {
+                Timber.d("Trying to delete uploadId $it on transkribus server!")
+                when (val result = transkribusResource<Void, Void>(apiCall = {
                     api.deleteUpload(it)
-                })
+                })) {
+                    is Failure -> {
+                        Timber.d("Deleting upload id $it has failed!")
+                    }
+                    is Success -> {
+                        Timber.d("Successfully deleted upload id $it!")
+                    }
+                }
             }
         }
-        // clear the uploadId from the doc
-        documentDao.updateUploadIdForDoc(documentId, null)
-        // clear the upload file names
-        pageDao.clearDocumentPagesUploadFileNames(documentId)
+        // if the failure is recoverable, then we want to keep the uploadId and the file names
+        if (uploadResourceState != UploadResourceState.RECOVERABLE_FAILURE) {
+            // clear the uploadId from the doc
+            documentDao.updateUploadIdForDoc(documentId, null)
+            // clear the upload file names
+            pageDao.clearDocumentPagesUploadFileNames(documentId)
+        }
+        Timber.d("Tearing down upload ended!")
+    }
+
+    enum class UploadResourceState {
+        SUCCESS,
+        RECOVERABLE_FAILURE,
+        FAILURE
     }
 }

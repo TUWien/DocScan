@@ -30,6 +30,7 @@
     <string name="dialog_btn_upload">Upload</string>
     <string name="dialog_btn_upload_again">Upload again</string>
     <string name="dialog_btn_proceed">Proceed</string>
+    <string name="dialog_btn_retry_now">Retry now</string>
 
     <string name="dialog_delete_image_title_singular">Delete image?</string>
     <string name="dialog_delete_image_title_plural">Delete images?</string>
@@ -327,6 +328,14 @@
     <string name="notification_export_text_success">%s has been successfully exported.</string>
     <string name="notification_export_title_error">PDF export has failed!</string>
     <string name="notification_export_text_error">An error happened while creating your pdf, sorry!</string>
+
+    <!-- Uploading doc -->
+    <string name="notification_upload_title_progress">Uploading %s</string>
+    <string name="notification_upload_title_success">%s uploaded!</string>
+    <string name="notification_upload_text_success">%s has been successfully uploaded.</string>
+    <string name="notification_upload_title_error">Upload for %s has failed!</string>
+    <string name="notification_upload_text_error">The upload has failed due to %s</string>
+    <string name="notification_upload_retry">Retry</string>
 
     <!-- OpenDocumentActivity -->
     <string name="document_no_dir_created_title">No document created</string>

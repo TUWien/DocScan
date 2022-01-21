@@ -28,5 +28,9 @@ data class UploadStatusPage(
     @SerializedName("pageUploaded")
     val pageUploaded: Boolean,
     @SerializedName("pageNr")
-    val pageNr: Int
+    val pageNr: Int,
+    // if the checksum has been provided during init of the upload,
+    // then this will be present
+    @SerializedName("imgChecksum")
+    val imgChecksum: String? = null
 )

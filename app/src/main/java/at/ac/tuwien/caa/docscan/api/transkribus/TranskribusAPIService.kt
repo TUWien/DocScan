@@ -93,7 +93,7 @@ interface TranskribusAPIService {
         @Path(PARAM_URL_DOC_ID) docId: Int
     ): Response<DocResponse>
 
-    @DELETE("uploads/{$PARAM_URL_UPLOAD_ID}")
+    @DELETE("uploads/{$PARAM_URL_DOC_ID}")
     suspend fun deleteUpload(
         @Path(PARAM_URL_DOC_ID) docId: Int
     ): Response<Void>

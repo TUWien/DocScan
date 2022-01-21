@@ -2,10 +2,12 @@ package at.ac.tuwien.caa.docscan.worker
 
 import android.content.Context
 import androidx.work.*
+import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.extensions.asUUID
 import at.ac.tuwien.caa.docscan.logic.ExportFormat
 import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Success
+import at.ac.tuwien.caa.docscan.logic.notification.DocScanNotificationChannel
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.ExportRepository
@@ -15,7 +17,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent
-import at.ac.tuwien.caa.docscan.R
 import timber.log.Timber
 import java.util.*
 
@@ -35,30 +36,37 @@ class ExportWorker(
         NotificationHandler::class.java
     )
     private var documentCollectorJob: Job? = null
-    
+
     override suspend fun doWork(): Result {
         val docId = inputData.getString(INPUT_PARAM_DOC_ID)?.asUUID() ?: run {
             Timber.e("ExportWorker has failed, docId is null!")
             return Result.failure()
         }
-        val doc = documentRepository.getDocument(docId)
+        val doc = documentRepository.getDocumentWithPages(docId) ?: run {
+            return Result.failure()
+        }
         val exportFormat =
             ExportFormat.getExportFormatById(inputData.getString(INPUT_PARAM_EXPORT_FORMAT))
 
-        notificationHandler.showExportNotification(
+        notificationHandler.showDocScanNotification(
+            NotificationHandler.DocScanNotification.Init(
+                context.getString(R.string.notification_export_title_progress),
+                doc
+            ),
             docId,
-            NotificationHandler.ExportNotification.Init(context.getString(R.string.notification_export_title_progress))
+            DocScanNotificationChannel.CHANNEL_EXPORT
         )
         return withContext(Dispatchers.IO) {
             documentCollectorJob = async {
                 documentRepository.getDocumentWithPagesAsFlow(documentId = docId).collectLatest {
                     it?.let {
-                        notificationHandler.showExportNotification(
-                            docId,
-                            NotificationHandler.ExportNotification.Progress(
+                        notificationHandler.showDocScanNotification(
+                            NotificationHandler.DocScanNotification.Progress(
                                 context.getString(R.string.notification_export_title_progress),
                                 it
-                            )
+                            ),
+                            docId,
+                            DocScanNotificationChannel.CHANNEL_EXPORT
                         )
                     }
                 }
@@ -67,25 +75,28 @@ class ExportWorker(
             documentCollectorJob?.cancel()
             return@withContext when (resource) {
                 is Failure -> {
-                    notificationHandler.showExportNotification(
-                        docId,
-                        NotificationHandler.ExportNotification.Failure(
+                    notificationHandler.showDocScanNotification(
+                        NotificationHandler.DocScanNotification.Failure(
                             context.getString(R.string.notification_export_title_error),
-                            resource.exception
-                        )
+                            false,
+                            resource.exception,
+                        ),
+                        docId,
+                        DocScanNotificationChannel.CHANNEL_EXPORT
                     )
                     Result.failure()
                 }
                 is Success -> {
-                    notificationHandler.showExportNotification(
-                        docId,
-                        NotificationHandler.ExportNotification.Success(
+                    notificationHandler.showDocScanNotification(
+                        NotificationHandler.DocScanNotification.Success(
                             context.getString(R.string.notification_export_title_success),
                             String.format(
                                 context.getString(R.string.notification_export_text_success),
-                                doc?.title ?: ""
+                                doc.document.title
                             )
-                        )
+                        ),
+                        docId,
+                        DocScanNotificationChannel.CHANNEL_EXPORT
                     )
                     Result.success()
                 }

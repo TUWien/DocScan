@@ -2,10 +2,14 @@ package at.ac.tuwien.caa.docscan.worker
 
 import android.content.Context
 import androidx.work.*
+import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.api.transkribus.model.uploads.UploadStatusResponse
 import at.ac.tuwien.caa.docscan.extensions.asUUID
 import at.ac.tuwien.caa.docscan.logic.Failure
+import at.ac.tuwien.caa.docscan.logic.Resource
 import at.ac.tuwien.caa.docscan.logic.Success
-import at.ac.tuwien.caa.docscan.logic.isRecoverable
+import at.ac.tuwien.caa.docscan.logic.isUploadRecoverable
+import at.ac.tuwien.caa.docscan.logic.notification.DocScanNotificationChannel
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.UploadRepository
@@ -20,7 +24,7 @@ import java.util.concurrent.TimeUnit
  * Represents a worker for uploading a document.
  */
 class UploadWorker(
-    context: Context,
+    private val context: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(context, workerParams) {
 
@@ -30,39 +34,93 @@ class UploadWorker(
 
     private var documentCollectorJob: Job? = null
 
-    /**
-     * TODO: Which notifications should be shown?
-     *
-     * 1) "Upload wird gestartet."
-     * 2) "Upload fuer Doc X, Page ì/n wird hochgeladen."
-     * 3) "Upload ist fehlgeschlagen. (Retry)"
-     * 4) "Upload ist fehlgeschlagen. User session abgelaufen."
-     * 5) "Upload ist fehlgeschlagen. User session abgelaufen."
-     */
     override suspend fun doWork(): Result {
         val docId = inputData.getString(INPUT_PARAM_DOC_ID)?.asUUID() ?: run {
             Timber.e("UploadWorker has failed, docId is null!")
             return Result.failure()
         }
+        val doc = documentRepository.getDocumentWithPages(docId) ?: run {
+            Timber.e("The doc cannot be found for upload!")
+            return Result.failure()
+        }
         return withContext(Dispatchers.IO) {
             documentCollectorJob = async {
                 documentRepository.getDocumentWithPagesAsFlow(documentId = docId).collectLatest {
-                    // TODO: Update progress notification
-                    Timber.d("doc has changed!")
+                    it ?: return@collectLatest
+                    notificationHandler.showDocScanNotification(
+                        NotificationHandler.DocScanNotification.Progress(
+                            String.format(
+                                context.getString(
+                                    R.string.notification_upload_title_progress
+                                ), doc.document.title
+                            ),
+                            it
+                        ),
+                        docId,
+                        DocScanNotificationChannel.CHANNEL_UPLOAD
+                    )
                 }
             }
-            val resource = uploadRepository.uploadDocument(docId)
+            notificationHandler.showDocScanNotification(
+                NotificationHandler.DocScanNotification.Init(
+                    String.format(
+                        context.getString(R.string.notification_upload_title_progress),
+                        doc.document.title
+                    ), doc
+                ),
+                docId,
+                DocScanNotificationChannel.CHANNEL_UPLOAD
+            )
+            val resource: Resource<UploadStatusResponse>
+            try {
+                resource = uploadRepository.uploadDocument(docId)
+            } catch (e: CancellationException) {
+                documentCollectorJob?.cancel()
+                notificationHandler.cancelNotification(
+                    DocScanNotificationChannel.CHANNEL_UPLOAD.tag,
+                    doc.document.id.hashCode()
+                )
+                return@withContext Result.failure()
+            }
             documentCollectorJob?.cancel()
-            // TODO: Update notification with final message!
             return@withContext when (resource) {
                 is Failure -> {
-                    if (resource.isRecoverable()) {
+                    notificationHandler.showDocScanNotification(
+                        NotificationHandler.DocScanNotification.Failure(
+                            String.format(
+                                context.getString(R.string.notification_upload_title_error),
+                                doc.document.title
+                            ),
+                            resource.isUploadRecoverable(),
+                            resource.exception
+                        ),
+                        docId,
+                        DocScanNotificationChannel.CHANNEL_UPLOAD
+                    )
+                    if (resource.isUploadRecoverable()) {
                         Result.retry()
                     } else {
                         Result.failure()
                     }
                 }
-                is Success -> Result.success()
+                is Success -> {
+                    notificationHandler.showDocScanNotification(
+                        NotificationHandler.DocScanNotification.Success(
+                            String.format(
+                                context.getString(
+                                    R.string.notification_upload_title_success
+                                ), doc.document.title
+                            ),
+                            String.format(
+                                context.getString(R.string.notification_upload_text_success),
+                                doc.document.title
+                            )
+                        ),
+                        docId,
+                        DocScanNotificationChannel.CHANNEL_UPLOAD
+                    )
+                    Result.success()
+                }
             }
         }
     }
@@ -86,7 +144,7 @@ class UploadWorker(
                 )
                 .setConstraints(
                     Constraints.Builder()
-                        .setRequiredNetworkType(if (allowMobileData) NetworkType.METERED else NetworkType.UNMETERED)
+                        .setRequiredNetworkType(if (allowMobileData) NetworkType.CONNECTED else NetworkType.METERED)
                         .build()
                 )
                 .setBackoffCriteria(

@@ -7,6 +7,8 @@ data class JsonMetaData(
     var author: String? = null,
     @SerializedName("mAuthority")
     var authority: String? = null,
+    @SerializedName("mHierarchy")
+    var hierarchy: String? = null,
     @SerializedName("mGenre")
     var genre: String? = null,
     @SerializedName("mLanguage")
@@ -20,5 +22,7 @@ data class JsonMetaData(
     @SerializedName("mUrl")
     var uri: String? = null,
     @SerializedName("mWriter")
-    var writer: String? = null
+    var writer: String? = null,
+    @SerializedName("mDesc")
+    var desc: String? = null
 )

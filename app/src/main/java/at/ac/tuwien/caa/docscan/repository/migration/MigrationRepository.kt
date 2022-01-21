@@ -73,13 +73,15 @@ class MigrationRepository(
                         MetaData(
                             author = meta.author,
                             authority = meta.authority,
+                            hierarchy = meta.hierarchy,
                             genre = meta.genre,
                             language = meta.language,
                             isProjectReadme2020 = meta.readme2020,
                             allowImagePublication = meta.readme2020Public,
                             signature = meta.signature,
                             url = meta.uri,
-                            writer = meta.writer
+                            writer = meta.writer,
+                            description = meta.desc
                         )
                     } else {
                         null

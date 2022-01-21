@@ -80,7 +80,7 @@ val viewModelModule = module {
 
 val repositoryModule = module {
     single { DocumentRepository(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
-    single { UserRepository(get(), get(), get(), get(), get()) }
+    single { UserRepository(get(), get(), get(), get(), get(), get()) }
     single { UploadRepository(get(), get(), get(), get(), get()) }
     single { ExportRepository(get(), get(), get(), get(), get()) }
 }
@@ -88,8 +88,8 @@ val repositoryModule = module {
 val networkModule = module {
     single {
         GsonBuilder()
-                .setLenient()
-                .create()
+            .setLenient()
+            .create()
     }
     single {
         TranskribusHeaderInterceptor(get())
@@ -99,22 +99,19 @@ val networkModule = module {
     }
     single {
         provideService(
-                TranskribusAPIService.BASE_URL,
-                get(),
-                get(),
-                TranskribusAPIService::class.java
+            TranskribusAPIService.BASE_URL,
+            get(),
+            get(),
+            TranskribusAPIService::class.java
         )
     }
 }
 
 private fun provideOkHttp(
-        transkribusHeaderInterceptor: TranskribusHeaderInterceptor
+    transkribusHeaderInterceptor: TranskribusHeaderInterceptor
 ): OkHttpClient {
     val okHttpBuilder = OkHttpClient.Builder()
-            .retryOnConnectionFailure(true)
-// TODO: Check timeouts for requests (especially for uploads)
-//            .connectTimeout(10, TimeUnit.SECONDS)
-//            .readTimeout(10, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
     if (BuildConfig.DEBUG) {
         okHttpBuilder.addNetworkInterceptor(HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -125,15 +122,15 @@ private fun provideOkHttp(
 }
 
 private fun <T> provideService(
-        @Suppress("SameParameterValue") baseUrl: String,
-        gson: Gson,
-        okHttpClient: OkHttpClient,
-        type: Class<out T>
+    @Suppress("SameParameterValue") baseUrl: String,
+    gson: Gson,
+    okHttpClient: OkHttpClient,
+    type: Class<out T>
 ): T {
     return Retrofit.Builder()
-            .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .client(okHttpClient)
-            .build()
-            .create(type)
+        .baseUrl(baseUrl)
+        .addConverterFactory(GsonConverterFactory.create(gson))
+        .client(okHttpClient)
+        .build()
+        .create(type)
 }

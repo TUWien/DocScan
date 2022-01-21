@@ -49,6 +49,14 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <receiver
+            android:name=".receiver.NotificationsActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="DOC_SCAN_NOTIFICATION_ACTION" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".ui.start.StartActivity"
             android:exported="true"

@@ -1,8 +1,6 @@
 package at.ac.tuwien.caa.docscan.logic.notification
 
-import android.app.Notification
-import android.app.NotificationManager
-import android.os.Build
+import androidx.core.app.NotificationManagerCompat
 import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.R
 
@@ -14,7 +12,6 @@ enum class DocScanNotificationChannel(
     val channelId: String,
     val channelNameResource: Int,
     val channelDescriptionResource: Int,
-    val priority: Int, // is used for channels at api lvl 26
     val importance: Int,
     val isAutoCancel: Boolean,
     val isActive: Boolean
@@ -26,8 +23,7 @@ enum class DocScanNotificationChannel(
         R.string.notification_channel_exports_title,
         R.string.notification_channel_exports_text,
         @Suppress("DEPRECATION")
-        Notification.PRIORITY_DEFAULT,
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) NotificationManager.IMPORTANCE_DEFAULT else -1,
+        NotificationManagerCompat.IMPORTANCE_DEFAULT,
         true,
         true
     ),
@@ -38,9 +34,8 @@ enum class DocScanNotificationChannel(
         R.string.notification_channel_uploads_title,
         R.string.notification_channel_uploads_text,
         @Suppress("DEPRECATION")
-        Notification.PRIORITY_DEFAULT,
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) NotificationManager.IMPORTANCE_HIGH else -1,
+        NotificationManagerCompat.IMPORTANCE_DEFAULT,
         false,
-        false
+        true
     );
 }

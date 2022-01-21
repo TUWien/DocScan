@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.room.Embedded
 import androidx.room.Relation
 import at.ac.tuwien.caa.docscan.db.model.state.ExportState
+import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -27,6 +28,10 @@ fun DocumentWithPages.isExporting(): Boolean {
 
 fun DocumentWithPages.numberOfFinishedExports(): Int {
     return pages.count { page -> page.exportState == ExportState.DONE }
+}
+
+fun DocumentWithPages.numberOfFinishedUploads(): Int {
+    return pages.count { page -> page.transkribusUpload.state == UploadState.UPLOADED }
 }
 
 /**

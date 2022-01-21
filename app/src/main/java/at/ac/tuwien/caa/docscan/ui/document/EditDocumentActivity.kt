@@ -18,7 +18,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
 /**
- * TODO: Custom file handling is not implemented yet.
+ * TODO: UPLOAD_CONSTRAINT: Custom file handling is not implemented yet.
  */
 class EditDocumentActivity : CreateDocumentActivity() {
 
@@ -67,13 +67,15 @@ class EditDocumentActivity : CreateDocumentActivity() {
         val metaData = MetaData(
             author = binding.createSeriesAuthorEdittext.text.toString(),
             authority = binding.createSeriesAuthorityEdittext.text.toString(),
+            hierarchy = null,
             genre = binding.createSeriesGenreEdittext.text.toString(),
             language = binding.createSeriesReadmeLanguageDropdown.text.toString(),
             isProjectReadme2020 = binding.createSeriesReadmeCheckbox.isChecked,
             allowImagePublication = binding.createSeriesReadmePublicRadioButton.isChecked,
             signature = binding.createSeriesSignatureEdittext.text.toString(),
             url = binding.createSeriesUrlEdittext.text.toString(),
-            writer = binding.createSeriesWriterEdittext.text.toString()
+            writer = binding.createSeriesWriterEdittext.text.toString(),
+            description = null
         )
 
         // TODO: Check saveCustomFileNameAttributes()
