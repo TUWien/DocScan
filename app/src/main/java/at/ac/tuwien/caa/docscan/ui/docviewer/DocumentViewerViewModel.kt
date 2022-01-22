@@ -10,11 +10,16 @@ import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.isUploaded
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
+import at.ac.tuwien.caa.docscan.repository.ExportFileRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
 
-class DocumentViewerViewModel(private val repository: DocumentRepository) : ViewModel() {
+class DocumentViewerViewModel(
+    private val repository: DocumentRepository,
+    private val exportFileRepository: ExportFileRepository
+) : ViewModel() {
 
     val selectedScreen = MutableLiveData(DocumentViewerScreen.DOCUMENTS)
     val observableInitDocumentOptions = MutableLiveData<Event<DocumentWithPages>>()
@@ -26,6 +31,16 @@ class DocumentViewerViewModel(private val repository: DocumentRepository) : View
     val observableResourceAction = MutableLiveData<Event<DocumentViewerModel>>()
     val observableResourceConfirmation =
         MutableLiveData<Event<DocumentConfirmationModel>>()
+
+    val observableNewExportCount = MutableLiveData<Int>()
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            exportFileRepository.getExportFileCount().collectLatest {
+                observableNewExportCount.postValue(it.toInt())
+            }
+        }
+    }
 
     /**
      * This function needs to be called every time the selected fragment in the bottom nav changes.

@@ -67,5 +67,5 @@
         android:paddingBottom="300dp"
         app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
         tools:listitem="@layout/layout_pdflist_row" />
-    
+
 </FrameLayout>

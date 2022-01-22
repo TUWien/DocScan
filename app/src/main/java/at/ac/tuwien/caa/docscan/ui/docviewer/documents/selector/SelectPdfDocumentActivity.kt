@@ -101,6 +101,13 @@ class SelectPdfDocumentActivity : BaseNoNavigationActivity() {
                             )
                         }
                     }
+                    ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING -> {
+                        if (dialogResult.isPositive()) {
+                            viewModel.export(
+                                dialogResult.arguments.appendSkipCropRestriction(true)
+                            )
+                        }
+                    }
                     else -> {
                         // ignore
                     }

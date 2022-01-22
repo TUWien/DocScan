@@ -4,13 +4,11 @@ import android.app.Activity
 import android.os.Bundle
 import android.view.*
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.SheetAction
 import at.ac.tuwien.caa.docscan.databinding.FragmentPdfsBinding
-import at.ac.tuwien.caa.docscan.extensions.bindVisible
-import at.ac.tuwien.caa.docscan.extensions.shareFile
-import at.ac.tuwien.caa.docscan.extensions.showFile
+import at.ac.tuwien.caa.docscan.extensions.*
+import at.ac.tuwien.caa.docscan.logic.LinearLayoutManagerWithSmoothScroller
 import at.ac.tuwien.caa.docscan.logic.appendExportFile
 import at.ac.tuwien.caa.docscan.logic.extractExportFile
 import at.ac.tuwien.caa.docscan.ui.base.BaseFragment
@@ -27,19 +25,19 @@ class PdfFragment : BaseFragment() {
     private lateinit var adapter: PdfAdapter
 
     private val folderPermissionResultCallback =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-                if (it.resultCode == Activity.RESULT_OK) {
-                    // The result data contains a URI for the document or directory that
-                    // the user selected.
-                    it.data?.data?.let { uri ->
-                        viewModel.persistFolderUri(uri)
-                    }
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                // The result data contains a URI for the document or directory that
+                // the user selected.
+                it.data?.data?.let { uri ->
+                    viewModel.persistFolderUri(uri)
                 }
             }
+        }
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         setHasOptionsMenu(true)
         binding = FragmentPdfsBinding.inflate(layoutInflater)
@@ -49,7 +47,7 @@ class PdfFragment : BaseFragment() {
                     // ignore
                 }
                 is ExportList.File -> {
-                    showFile(requireActivity(), it.pageFileType, it.documentFile)
+                    viewModel.openFile(it)
                 }
             }
         }, options = {
@@ -63,7 +61,7 @@ class PdfFragment : BaseFragment() {
             }
         })
         binding.pdfList.adapter = adapter
-        binding.pdfList.layoutManager = LinearLayoutManager(context)
+        binding.pdfList.layoutManager = LinearLayoutManagerWithSmoothScroller(requireContext())
         return binding.root
     }
 
@@ -102,7 +100,18 @@ class PdfFragment : BaseFragment() {
                     binding.pdfEmptyLayout.bindVisible(it.exportEntries.isEmpty())
                     binding.pdfNoPermission.bindVisible(false)
                     adapter.submitList(it.exportEntries)
+                    if (it.scrollToTop) {
+                        binding.pdfList.postDelayed(
+                            { binding.pdfList.scrollToPositionIfNotVisible(0) },
+                            300
+                        )
+                    }
                 }
+            }
+        })
+        viewModel.observableOpenFile.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let {
+                showFile(requireActivity(), it.pageFileType, it.file.documentFile)
             }
         })
         dialogViewModel.observableDialogAction.observe(viewLifecycleOwner, {
@@ -131,19 +140,28 @@ class PdfFragment : BaseFragment() {
                 when (result.pressedSheetAction.id) {
                     SheetActionId.DELETE.id -> {
                         val exportFile = result.arguments.extractExportFile()
-                        showDialog(DialogModel(ADialog.DialogAction.DELETE_PDF,
+                        showDialog(
+                            DialogModel(
+                                ADialog.DialogAction.DELETE_PDF,
                                 customTitle = getString(R.string.viewer_delete_pdf_title) + " ${exportFile?.name}?",
-                                arguments = Bundle().appendExportFile(result.arguments.extractExportFile())))
+                                arguments = Bundle().appendExportFile(result.arguments.extractExportFile())
+                            )
+                        )
                     }
                     SheetActionId.SHARE.id -> {
                         result.arguments.extractExportFile()?.let { file ->
-                            shareFile(requireActivity(), file.pageFileType, file.documentFile)
+                            shareFile(requireActivity(), file.pageFileType, file.file.documentFile)
                         }
                     }
                     else -> {
                         // ignore
                     }
                 }
+            }
+        })
+        DocumentContractNotifier.observableDocumentContract.observe(viewLifecycleOwner, {
+            it.getContentIfNotHandled()?.let {
+                viewModel.load(scrollToTop = true)
             }
         })
     }
@@ -158,19 +176,19 @@ class PdfFragment : BaseFragment() {
         val sheetActions = ArrayList<SheetAction>()
 
         sheetActions.add(
-                SheetAction(
-                        SheetActionId.SHARE.id,
-                        getString(R.string.action_pdf_share),
-                        R.drawable.ic_share_black_24dp
-                )
+            SheetAction(
+                SheetActionId.SHARE.id,
+                getString(R.string.action_pdf_share),
+                R.drawable.ic_share_black_24dp
+            )
         )
 
         sheetActions.add(
-                SheetAction(
-                        SheetActionId.DELETE.id,
-                        getString(R.string.action_document_delete_document),
-                        R.drawable.ic_delete_black_24dp
-                )
+            SheetAction(
+                SheetActionId.DELETE.id,
+                getString(R.string.action_document_delete_document),
+                R.drawable.ic_delete_black_24dp
+            )
         )
 
         SheetModel(sheetActions, Bundle().appendExportFile(export)).show(childFragmentManager)

@@ -183,6 +183,11 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 showDocumentOptions(doc)
             }
         })
+        viewModel.observableNewExportCount.observe(this, {
+            val badge = binding.bottomNav.getOrCreateBadge(R.id.viewer_pdfs)
+            badge.isVisible = it > 0
+            badge.number = it
+        })
         viewModel.observableNumOfSelectedElements.observe(this, {
             if (it > 0) {
                 // the first argument doesn't matter in this case

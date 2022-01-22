@@ -92,7 +92,7 @@ class ExportWorker(
                             context.getString(R.string.notification_export_title_success),
                             String.format(
                                 context.getString(R.string.notification_export_text_success),
-                                doc.document.title
+                                resource.data
                             )
                         ),
                         docId,

@@ -55,6 +55,7 @@ val daoModule = module {
     single { (get() as AppDatabase).documentDao() }
     single { (get() as AppDatabase).pageDao() }
     single { (get() as AppDatabase).userDao() }
+    single { (get() as AppDatabase).exportFileDao() }
 }
 
 val viewModelModule = module {
@@ -62,7 +63,7 @@ val viewModelModule = module {
     viewModel { StartViewModel(get(), get(), get()) }
     viewModel { CameraViewModel(get(), get(), get()) }
     viewModel { DocumentsViewModel(get()) }
-    viewModel { DocumentViewerViewModel(get()) }
+    viewModel { DocumentViewerViewModel(get(), get()) }
     viewModel { CreateDocumentViewModel(get()) }
     viewModel { (extras: Bundle) -> EditDocumentViewModel(extras, get()) }
     viewModel { (extras: Bundle) -> PageSlideViewModel(extras, get(), get()) }
@@ -75,14 +76,15 @@ val viewModelModule = module {
     viewModel { UserViewModel(get()) }
     viewModel { LogoutViewModel(get()) }
     viewModel { SelectDocumentViewModel(get()) }
-    viewModel { PdfViewModel(get(), get()) }
+    viewModel { PdfViewModel(get(), get(), get()) }
 }
 
 val repositoryModule = module {
     single { DocumentRepository(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     single { UserRepository(get(), get(), get(), get(), get(), get()) }
     single { UploadRepository(get(), get(), get(), get(), get()) }
-    single { ExportRepository(get(), get(), get(), get(), get()) }
+    single { ExportRepository(get(), get(), get(), get(), get(), get()) }
+    single { ExportFileRepository(get()) }
 }
 
 val networkModule = module {

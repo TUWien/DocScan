@@ -8,6 +8,7 @@ import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.state.ExportState
+import at.ac.tuwien.caa.docscan.extensions.DocumentContractNotifier
 import at.ac.tuwien.caa.docscan.extensions.asURI
 import at.ac.tuwien.caa.docscan.extensions.saveFile
 import at.ac.tuwien.caa.docscan.logic.*
@@ -23,13 +24,18 @@ class ExportRepository(
     private val documentDao: DocumentDao,
     private val pageDao: PageDao,
     private val fileHandler: FileHandler,
-    private val preferencesHandler: PreferencesHandler
+    private val preferencesHandler: PreferencesHandler,
+    private val exportFileRepository: ExportFileRepository
 ) {
 
-    suspend fun exportDoc(documentId: UUID, exportFormat: ExportFormat): Resource<Unit> {
+    suspend fun exportDoc(documentId: UUID, exportFormat: ExportFormat): Resource<String> {
         val outputFile = fileHandler.createCacheFileForExport(UUID.randomUUID())
         try {
-            return exportDocInternal(documentId, exportFormat, outputFile)
+            val resource = exportDocInternal(documentId, exportFormat, outputFile)
+            withContext(NonCancellable) {
+                tearDownExport(documentId, outputFile)
+            }
+            return resource
         } catch (e: CancellationException) {
             Timber.i("The export job has been cancelled - tearing down export!")
             withContext(NonCancellable) {
@@ -43,7 +49,7 @@ class ExportRepository(
         documentId: UUID,
         exportFormat: ExportFormat,
         outputFile: File
-    ): Resource<Unit> {
+    ): Resource<String> {
         Timber.d("Starting export for $documentId")
         // 1. Retrieve the current document with its pages.
         val documentWithPages = documentDao.getDocumentWithPages(documentId) ?: kotlin.run {
@@ -55,8 +61,7 @@ class ExportRepository(
         if (!PermissionHandler.isPermissionGiven(context, exportDirectory.toString())) {
             return IOErrorCode.EXPORT_FILE_MISSING_PERMISSION.asFailure()
         }
-        withContext(Dispatchers.IO) {
-
+        return withContext(Dispatchers.IO) {
             val textBlocks: MutableList<Text>?
             if (exportFormat == ExportFormat.PDF_WITH_OCR) {
                 textBlocks = mutableListOf()
@@ -77,7 +82,7 @@ class ExportRepository(
                 deferredResults.awaitAll().forEach {
                     when (it) {
                         is Failure -> {
-                            return@withContext IOErrorCode.ML_KIT_OCR_ANALYSIS_FAILED.asFailure<Unit>(
+                            return@withContext IOErrorCode.ML_KIT_OCR_ANALYSIS_FAILED.asFailure(
                                 it.exception
                             )
                         }
@@ -92,30 +97,42 @@ class ExportRepository(
 
             val filesForExport = documentWithPages.pages.map { page ->
                 val pageFile = fileHandler.getFileByPage(page)
-                    ?: return@withContext IOErrorCode.FILE_MISSING
+                    ?: return@withContext IOErrorCode.FILE_MISSING.asFailure()
                 PdfCreator.PDFCreatorFileWrapper(pageFile, page.rotation)
             }
             when (val pdfCreatorResult =
                 PdfCreator.savePDF(outputFile, filesForExport, textBlocks)) {
                 is Failure -> {
                     outputFile.safelyDelete()
-                    return@withContext Failure<Unit>(pdfCreatorResult.exception)
+                    return@withContext Failure(pdfCreatorResult.exception)
                 }
                 is Success -> {
-                    saveFile(
+                    val fileName =
+                        "${documentWithPages.document.title}.${PageFileType.PDF.extension}"
+                    val resource = saveFile(
                         context,
                         fileHandler,
                         outputFile,
                         exportDirectory,
-                        "${documentWithPages.document.title}.${PageFileType.PDF.extension}",
+                        fileName,
                         PageFileType.PDF.mimeType
                     )
                     outputFile.safelyDelete()
+                    when (resource) {
+                        is Failure -> {
+                            Timber.e("Saving export file has failed!", resource.exception)
+                            return@withContext Failure(resource.exception)
+                        }
+                        is Success -> {
+                            exportFileRepository.addFile(resource.data)
+                            // inform that exported documents have changed
+                            DocumentContractNotifier.observableDocumentContract.postValue(Event(Unit))
+                            return@withContext Success(resource.data)
+                        }
+                    }
                 }
             }
         }
-        tearDownExport(documentId, outputFile)
-        return Success(Unit)
     }
 
     private suspend fun tearDownExport(
