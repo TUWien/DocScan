@@ -17,6 +17,7 @@ import com.itextpdf.text.Document
 import com.itextpdf.text.pdf.BaseFont
 import com.itextpdf.text.pdf.ColumnText
 import com.itextpdf.text.pdf.PdfWriter
+import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
 import java.util.*
@@ -30,104 +31,120 @@ object PdfCreator {
         return task.await()
     }
 
-    fun savePDF(
+    // suppressed, since this is expected and mitigated by making this function cooperative
+    @Suppress("BlockingMethodInNonBlockingContext")
+    suspend fun savePDF(
         outputFile: File,
         files: List<PDFCreatorFileWrapper>,
         ocrResults: List<Text>? = null
     ): Resource<Unit> {
         FileOutputStream(outputFile).use { outputStream ->
-            try {
-                val first = files[0]
-                var resolution = calculateImageResolution(first.file, first.rotation)
-                val landscapeFirst = isLandscape(resolution)
-                val firstPageSize = getPageSize(resolution, landscapeFirst)
-                val document = Document(firstPageSize, 0F, 0F, 0F, 0F)
+            return withContext(Dispatchers.IO) {
+                try {
+                    val first = files[0]
+                    var resolution = calculateImageResolution(first.file, first.rotation)
+                    val landscapeFirst = isLandscape(resolution)
+                    val firstPageSize = getPageSize(resolution, landscapeFirst)
+                    val document = Document(firstPageSize, 0F, 0F, 0F, 0F)
 
-                val writer = PdfWriter.getInstance(document, outputStream)
-                document.open()
-                for (i in files.indices) {
-                    var file = files[i]
-                    val rotationInDegrees = file.rotation.angle
+                    val writer = PdfWriter.getInstance(document, outputStream)
+                    document.open()
+                    for (i in files.indices) {
 
-                    //add the original image to the pdf and set the DPI of it to 600
-                    val image = Image.getInstance(file.file.absolutePath)
-                    image.setRotationDegrees(-rotationInDegrees.toFloat())
-                    if (rotationInDegrees == 0 || rotationInDegrees == 180) image.scaleAbsolute(
-                        document.pageSize.width,
-                        document.pageSize.height
-                    ) else image.scaleAbsolute(
-                        document.pageSize.height,
-                        document.pageSize.width
-                    )
-                    image.setDpi(600, 600)
-                    document.add(image)
-                    if (ocrResults != null) {
-                        // the direct content where we write on
-                        // directContentUnder instead of directContent, because then the text is in the background)
-                        //PdfContentByte cb = writer.getDirectContentUnder();
-                        val cb = writer.directContentUnder
-                        val bf = BaseFont.createFont()
+                        // check if the coroutine is still active, if not, close the document and throw a CancellationException
+                        if (!isActive) {
+                            document.close()
+                            throw CancellationException()
+                        }
 
-                        //sort the result based on the y-Axis so that the markup order is correct
-                        val sortedBlocks = sortBlocks(ocrResults[i])
-                        resolution = calculateImageResolution(first.file, first.rotation)
+                        var file = files[i]
+                        val rotationInDegrees = file.rotation.angle
 
-                        //int j = 0;
-                        for (column in sortedBlocks) {
-                            for (line in sortLinesInColumn(column)) {
-                                // one FirebaseVisionText.Line corresponds to one line
-                                // the rectangle we want to draw this line corresponds to the lines boundingBox
-                                val boundingBox = line.boundingBox ?: continue
-                                val left =
-                                    boundingBox.left.toFloat() / resolution.width.toFloat() * document.pageSize.width
-                                val right =
-                                    boundingBox.right.toFloat() / resolution.width.toFloat() * document.pageSize.width
-                                val top =
-                                    boundingBox.top.toFloat() / resolution.height.toFloat() * document.pageSize.height
-                                val bottom =
-                                    boundingBox.bottom.toFloat() / resolution.height.toFloat() * document.pageSize.height
-                                val rect = Rectangle(
-                                    left,
-                                    document.pageSize.height - bottom,
-                                    right,
-                                    document.pageSize.height - top
-                                )
-                                val drawText = line.text
-                                // try to get max font size that fit in rectangle
-                                val textHeightInGlyphSpace =
-                                    bf.getAscent(drawText) - bf.getDescent(drawText)
-                                var fontSize = 1000f * rect.height / textHeightInGlyphSpace
-                                while (bf.getWidthPoint(drawText, fontSize) < rect.width) {
-                                    fontSize++
+                        //add the original image to the pdf and set the DPI of it to 600
+                        val image = Image.getInstance(file.file.absolutePath)
+                        image.setRotationDegrees(-rotationInDegrees.toFloat())
+                        if (rotationInDegrees == 0 || rotationInDegrees == 180) image.scaleAbsolute(
+                            document.pageSize.width,
+                            document.pageSize.height
+                        ) else image.scaleAbsolute(
+                            document.pageSize.height,
+                            document.pageSize.width
+                        )
+                        image.setDpi(600, 600)
+                        document.add(image)
+                        if (ocrResults != null) {
+                            // the direct content where we write on
+                            // directContentUnder instead of directContent, because then the text is in the background)
+                            //PdfContentByte cb = writer.getDirectContentUnder();
+                            val cb = writer.directContentUnder
+                            val bf = BaseFont.createFont()
+
+                            //sort the result based on the y-Axis so that the markup order is correct
+                            val sortedBlocks = sortBlocks(ocrResults[i])
+                            resolution = calculateImageResolution(first.file, first.rotation)
+
+                            //int j = 0;
+                            for (column in sortedBlocks) {
+                                for (line in sortLinesInColumn(column)) {
+                                    // one FirebaseVisionText.Line corresponds to one line
+                                    // the rectangle we want to draw this line corresponds to the lines boundingBox
+                                    val boundingBox = line.boundingBox ?: continue
+                                    val left =
+                                        boundingBox.left.toFloat() / resolution.width.toFloat() * document.pageSize.width
+                                    val right =
+                                        boundingBox.right.toFloat() / resolution.width.toFloat() * document.pageSize.width
+                                    val top =
+                                        boundingBox.top.toFloat() / resolution.height.toFloat() * document.pageSize.height
+                                    val bottom =
+                                        boundingBox.bottom.toFloat() / resolution.height.toFloat() * document.pageSize.height
+                                    val rect = Rectangle(
+                                        left,
+                                        document.pageSize.height - bottom,
+                                        right,
+                                        document.pageSize.height - top
+                                    )
+                                    val drawText = line.text
+                                    // try to get max font size that fit in rectangle
+                                    val textHeightInGlyphSpace =
+                                        bf.getAscent(drawText) - bf.getDescent(drawText)
+                                    var fontSize = 1000f * rect.height / textHeightInGlyphSpace
+                                    while (bf.getWidthPoint(drawText, fontSize) < rect.width) {
+                                        fontSize++
+                                    }
+                                    while (bf.getWidthPoint(drawText, fontSize) > rect.width) {
+                                        fontSize -= 0.1f
+                                    }
+                                    val phrase = Phrase(drawText, Font(bf, fontSize))
+                                    // write the text on the pdf
+                                    ColumnText.showTextAligned(
+                                        cb, Element.ALIGN_CENTER, phrase,  // center horizontally
+                                        (rect.left + rect.right) / 2,  // shift baseline based on descent
+                                        rect.bottom - bf.getDescentPoint(drawText, fontSize), 0f
+                                    )
                                 }
-                                while (bf.getWidthPoint(drawText, fontSize) > rect.width) {
-                                    fontSize -= 0.1f
-                                }
-                                val phrase = Phrase(drawText, Font(bf, fontSize))
-                                // write the text on the pdf
-                                ColumnText.showTextAligned(
-                                    cb, Element.ALIGN_CENTER, phrase,  // center horizontally
-                                    (rect.left + rect.right) / 2,  // shift baseline based on descent
-                                    rect.bottom - bf.getDescentPoint(drawText, fontSize), 0f
-                                )
                             }
                         }
+                        if (i < files.size - 1) {
+                            file = files[i + 1]
+                            val pageSize = getPageSize(
+                                calculateImageResolution(file.file, file.rotation),
+                                landscapeFirst
+                            )
+                            document.pageSize = pageSize
+                            document.newPage()
+                        }
                     }
-                    if (i < files.size - 1) {
-                        file = files[i + 1]
-                        val pageSize = getPageSize(
-                            calculateImageResolution(file.file, file.rotation),
-                            landscapeFirst
-                        )
-                        document.pageSize = pageSize
-                        document.newPage()
+                    document.close()
+                    return@withContext Success(Unit)
+                } catch (e: Exception) {
+                    outputFile.safelyDelete()
+                    // if this has happened because of a cancellation, then this needs to be re-thrown
+                    if (e is CancellationException) {
+                        throw e
+                    } else {
+                        return@withContext IOErrorCode.EXPORT_CREATE_PDF_FAILED.asFailure(e)
                     }
                 }
-                document.close()
-                return Success(Unit)
-            } catch (e: Exception) {
-                outputFile.safelyDelete()
-                return IOErrorCode.EXPORT_CREATE_PDF_FAILED.asFailure(e)
             }
         }
     }

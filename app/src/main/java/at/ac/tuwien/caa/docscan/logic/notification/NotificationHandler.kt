@@ -84,11 +84,23 @@ class NotificationHandler(val context: Context) {
                 }
                 notification.setOnlyAlertOnce(true)
                 notification.setOngoing(true)
-                notification.setProgress(
-                    docScanNotification.documentWithPages.pages.size,
-                    progress,
-                    false
-                )
+                val max = docScanNotification.documentWithPages.pages.size
+                // a special case for the export, since the export state only represents if the file
+                // has been scanned, but saving a file is performed on the end and can take a while too, so
+                // instead of staying at 100& progress bar, this will show an indeterminate state instead.
+                if (docScanNotificationChannel == DocScanNotificationChannel.CHANNEL_EXPORT && (progress == max || progress == 0)) {
+                    notification.setProgress(
+                        0,
+                        0,
+                        true
+                    )
+                } else {
+                    notification.setProgress(
+                        max,
+                        progress,
+                        false
+                    )
+                }
             }
             is DocScanNotification.Success -> {
                 notification.setAutoCancel(true)
