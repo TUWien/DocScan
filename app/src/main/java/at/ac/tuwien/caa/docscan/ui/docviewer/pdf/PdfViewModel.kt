@@ -78,10 +78,15 @@ class PdfViewModel(
         // release the old permissions only if they have changed.
         preferencesHandler.exportDirectoryUri?.asURI()?.let {
             if (it != uri) {
-                app.contentResolver.releasePersistableUriPermission(
-                    it,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                )
+                try {
+                    app.contentResolver.releasePersistableUriPermission(
+                        it,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    )
+                } catch (exception: Exception) {
+                    // this can be an expected exception if the uri does not point to a valid source anymore.
+                    Timber.w("Releasing persistable uri has failed", exception)
+                }
             }
         }
         // save the new permissions

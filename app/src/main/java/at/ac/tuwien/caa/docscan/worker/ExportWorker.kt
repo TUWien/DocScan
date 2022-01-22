@@ -6,16 +6,14 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.extensions.asUUID
 import at.ac.tuwien.caa.docscan.logic.ExportFormat
 import at.ac.tuwien.caa.docscan.logic.Failure
+import at.ac.tuwien.caa.docscan.logic.Resource
 import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.logic.notification.DocScanNotificationChannel
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.ExportRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent
 import timber.log.Timber
 import java.util.*
@@ -71,7 +69,17 @@ class ExportWorker(
                     }
                 }
             }
-            val resource = exportRepository.exportDoc(docId, exportFormat)
+            val resource: Resource<String>
+            try {
+                resource = exportRepository.exportDoc(docId, exportFormat)
+            } catch (e: CancellationException) {
+                documentCollectorJob?.cancel()
+                notificationHandler.cancelNotification(
+                    DocScanNotificationChannel.CHANNEL_EXPORT.tag,
+                    doc.document.id.hashCode()
+                )
+                return@withContext Result.failure()
+            }
             documentCollectorJob?.cancel()
             return@withContext when (resource) {
                 is Failure -> {
