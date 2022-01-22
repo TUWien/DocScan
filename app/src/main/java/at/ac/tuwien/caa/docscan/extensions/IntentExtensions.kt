@@ -59,7 +59,7 @@ fun getExportFolderPermissionIntent(context: Context, initialUri: Uri?): Intent 
     return intent
 }
 
-// TODO: Check if this is really necessary
+// TODO: EXPORT_CONSTRAINT: SAF is used for all platforms
 @RequiresApi(Build.VERSION_CODES.N)
 private fun getDocScanPdfUri(context: Context): Uri {
 
@@ -82,8 +82,7 @@ private fun getDocScanPdfUri(context: Context): Uri {
     return Uri.parse(absoluteDir)
 }
 
-fun shareFile(fragmentActivity: FragmentActivity, pageFileType: PageFileType, docFile: DocumentFile) {
-    val uri = docFile.uri
+fun shareFile(fragmentActivity: FragmentActivity, pageFileType: PageFileType, uri: Uri) {
     val shareIntent = Intent()
     shareIntent.action = Intent.ACTION_SEND
     shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)

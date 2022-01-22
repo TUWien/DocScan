@@ -27,60 +27,60 @@ import java.util.*
 @Parcelize
 @Entity(tableName = TABLE_NAME_PAGES)
 data class Page(
-        /**
-         * Uniquely identifies the page.
-         */
-        @PrimaryKey
-        @ColumnInfo(name = KEY_ID)
-        val id: UUID,
-        /**
-         * The id of [Document] to which the page belongs to.
-         */
-        @ColumnInfo(name = KEY_DOC_ID)
-        val docId: UUID,
-        /**
-         * The hash of the page file.
-         */
-        @ColumnInfo(name = KEY_FILE_HASH)
-        var fileHash: String,
-        /**
-         * The ordering number of the page, across all pages in a single document.
-         *
-         * Do NOT take this as an index, since they might be gaps, the number only takes care of the
-         * ordering.
-         */
-        @ColumnInfo(name = KEY_NUMBER)
-        val number: Int,
-        /**
-         * The rotation of the page. The exif info is saved separately into the file, this
-         * column is necessary to keep track of file changes in the DB.
-         */
-        @ColumnInfo(name = KEY_ROTATION)
-        var rotation: Rotation,
+    /**
+     * Uniquely identifies the page.
+     */
+    @PrimaryKey
+    @ColumnInfo(name = KEY_ID)
+    val id: UUID,
+    /**
+     * The id of [Document] to which the page belongs to.
+     */
+    @ColumnInfo(name = KEY_DOC_ID)
+    val docId: UUID,
+    /**
+     * The hash of the page file.
+     */
+    @ColumnInfo(name = KEY_FILE_HASH)
+    var fileHash: String,
+    /**
+     * The ordering number of the page, across all pages in a single document.
+     *
+     * Do NOT take this as an index, since they might be gaps, the number only takes care of the
+     * ordering.
+     */
+    @ColumnInfo(name = KEY_NUMBER)
+    val number: Int,
+    /**
+     * The rotation of the page. The exif info is saved separately into the file, this
+     * column is necessary to keep track of file changes in the DB.
+     */
+    @ColumnInfo(name = KEY_ROTATION)
+    var rotation: Rotation,
 
-        /**
-         * Represents the page file type.
-         */
-        @ColumnInfo(name = KEY_FILE_TYPE)
-        val fileType: PageFileType,
-        /**
-         * Represents the processing state of the page.
-         */
-        @ColumnInfo(name = KEY_POST_PROCESSING_STATE)
-        var postProcessingState: PostProcessingState,
-        /**
-         * Represents the export state of the page.
-         */
-        @ColumnInfo(name = KEY_EXPORT_STATE)
-        var exportState: ExportState,
-        /**
-         * An optional (cropping) boundary with 4 points.
-         */
-        @Embedded(prefix = KEY_SINGLE_PAGE_BOUNDARY_PREFIX)
-        var singlePageBoundary: SinglePageBoundary?,
+    /**
+     * Represents the page file type.
+     */
+    @ColumnInfo(name = KEY_FILE_TYPE)
+    val fileType: PageFileType,
+    /**
+     * Represents the processing state of the page.
+     */
+    @ColumnInfo(name = KEY_POST_PROCESSING_STATE)
+    var postProcessingState: PostProcessingState,
+    /**
+     * Represents the export state of the page.
+     */
+    @ColumnInfo(name = KEY_EXPORT_STATE)
+    var exportState: ExportState,
+    /**
+     * An optional (cropping) boundary with 4 points.
+     */
+    @Embedded(prefix = KEY_SINGLE_PAGE_BOUNDARY_PREFIX)
+    var singlePageBoundary: SinglePageBoundary?,
 
-        @Embedded(prefix = KEY_UPLOAD_PREFIX)
-        var transkribusUpload: Upload = Upload()
+    @Embedded(prefix = KEY_UPLOAD_PREFIX)
+    var transkribusUpload: Upload = Upload()
 ) : Parcelable {
     companion object {
         const val TABLE_NAME_PAGES = "pages"
@@ -124,7 +124,7 @@ fun Page.isExporting(): Boolean {
 
 fun Page.getSingleBoundaryPoints(): MutableList<PointF> {
     return (singlePageBoundary?.asClockwiseList() ?: SinglePageBoundary.getDefault()
-            .asClockwiseList()).map { point ->
+        .asClockwiseList()).map { point ->
         point.asPoint()
     }.toMutableList()
 }
@@ -133,11 +133,15 @@ fun Page.getSingleBoundaryPoints(): MutableList<PointF> {
  * Pre-Condition: [points] must have at least 4 elments.
  */
 fun Page.setSinglePageBoundary(points: List<PointF>) {
-    singlePageBoundary = SinglePageBoundary(
-            points[0].asPoint(),
-            points[1].asPoint(),
-            points[2].asPoint(),
-            points[3].asPoint()
+    singlePageBoundary = points.toSinglePageBoundary()
+}
+
+fun List<PointF>.toSinglePageBoundary(): SinglePageBoundary {
+    return SinglePageBoundary(
+        this[0].asPoint(),
+        this[1].asPoint(),
+        this[2].asPoint(),
+        this[3].asPoint()
     )
 }
 
@@ -152,14 +156,14 @@ fun Page.computeFileHash(fileHandler: FileHandler): Resource<Unit> {
 }
 
 fun Page.getScaledCropPoints(
-        width: Int,
-        height: Int
-): List<android.graphics.PointF> {
+    width: Int,
+    height: Int
+): List<PointF> {
     val points =
-            (singlePageBoundary?.asClockwiseList()
-                    ?: SinglePageBoundary.getDefault().asClockwiseList()).map { point ->
-                android.graphics.PointF(point.x, point.y)
-            }
+        (singlePageBoundary?.asClockwiseList()
+            ?: SinglePageBoundary.getDefault().asClockwiseList()).map { point ->
+            PointF(point.x, point.y)
+        }
     PageDetector.scalePointsGeneric(points, width, height)
     return points
 }

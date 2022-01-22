@@ -30,7 +30,7 @@ class NotificationHandler(val context: Context) {
         private const val PDF_FILE_NAME = "PDF_FILE_NAME"
         private const val PDF_CHANNEL_ID = "PDF_CHANNEL_ID"
 
-        // TODO: MIGRATION: Remove this channel in the migration
+        // TODO: MIGRATION_CONSTRAINT: Remove this channel in the migration
         private val DEPRECATED_PDF_CHANNEL_NAME: CharSequence =
             "DocScan Pdf" // The user-visible name of the channel.
     }

@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -67,40 +68,43 @@ class CropViewActivity : BaseActivity() {
         binding = ActivityCropViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
         initToolbar()
-        // some devices may use gestures for system wide back navigation, therefore,
-        // the exclusion areas have to be determined, since otherwise, a cropping point on the edge
-        // would trigger a back gesture very easily.
-        lifecycleScope.launchWhenResumed {
-            // this loop is necessary since the CropView doesn't have a callback when cropping points change.
-            while (isActive) {
-                val exclusionRects = mutableListOf<Rect>()
-                with(binding.cropView) {
-                    val bitmap = bitmap
-                    if (cropPoints != null && bitmap != null) {
-                        // the cropview's height is always its parent height, so in order to determine
-                        // the correct coordinates, the bitmap, which is centered inside the cropview,
-                        // needs to be taken into account for calculation of the offset.
-                        val topOffset by lazy { (height - bitmap.height) / 2 }
-                        // loop through all possible cropping points and check if they are on the
-                        // start/end edges.
-                        cropPoints.forEach {
-                            if (it.x < EXCLUSION_THRESHOLD || it.x > (1 - EXCLUSION_THRESHOLD)) {
-                                val height = topOffset + (bitmap.height * it.y).toInt()
-                                val top = height - (exclusionOffset / 2)
-                                val bottom = height + (exclusionOffset / 2)
-                                val left =
-                                    if (it.x < EXCLUSION_THRESHOLD) 0 else width - exclusionOffset
-                                val right =
-                                    if (it.x < EXCLUSION_THRESHOLD) exclusionOffset else width
-                                exclusionRects.add(Rect(left, top, right, bottom))
+
+        // gesture navigation has been introduced since android 10
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // some devices may use gestures for system wide back navigation, therefore,
+            // the exclusion areas have to be determined, since otherwise, a cropping point on the edge
+            // would trigger a back gesture very easily.
+            lifecycleScope.launchWhenResumed {
+                // this loop is necessary since the CropView doesn't have a callback when cropping points change.
+                while (isActive) {
+                    val exclusionRects = mutableListOf<Rect>()
+                    with(binding.cropView) {
+                        val bitmap = bitmap
+                        if (cropPoints != null && bitmap != null) {
+                            // the cropview's height is always its parent height, so in order to determine
+                            // the correct coordinates, the bitmap, which is centered inside the cropview,
+                            // needs to be taken into account for calculation of the offset.
+                            val topOffset by lazy { (height - bitmap.height) / 2 }
+                            // loop through all possible cropping points and check if they are on the
+                            // start/end edges.
+                            cropPoints.forEach {
+                                if (it.x < EXCLUSION_THRESHOLD || it.x > (1 - EXCLUSION_THRESHOLD)) {
+                                    val height = topOffset + (bitmap.height * it.y).toInt()
+                                    val top = height - (exclusionOffset / 2)
+                                    val bottom = height + (exclusionOffset / 2)
+                                    val left =
+                                        if (it.x < EXCLUSION_THRESHOLD) 0 else width - exclusionOffset
+                                    val right =
+                                        if (it.x < EXCLUSION_THRESHOLD) exclusionOffset else width
+                                    exclusionRects.add(Rect(left, top, right, bottom))
+                                }
                             }
                         }
                     }
+                    ViewCompat.setSystemGestureExclusionRects(binding.cropView, exclusionRects)
+                    delay(250)
                 }
-                ViewCompat.setSystemGestureExclusionRects(binding.cropView, exclusionRects)
-                delay(250)
             }
-
         }
         observe()
     }

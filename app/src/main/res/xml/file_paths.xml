@@ -3,10 +3,14 @@
         name="logs"
         path="/" />
     <!--<external-path name="images" path="Android/data/at.ac.tuwien.caa.docscan/files/Pictures" />-->
-    <external-path
-        name="images"
-        path="/Pictures" />
-    <external-path
-        name="pdfs"
-        path="/Documents" />
+<!--    TODO: MIGRATION_CONSTRAINT Check this paths while finalizing paths-->
+<!--    <external-path-->
+<!--        name="images"-->
+<!--        path="/Pictures" />-->
+<!--    <external-path-->
+<!--        name="pdfs"-->
+<!--        path="/Documents" />-->
+    <files-path
+        name="documents"
+        path="/" />
 </paths>

@@ -791,9 +791,11 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 //    }
 
     public ArrayList<PointF> getCropPoints() {
-
+        // it is possible that this is called too early which would result in an NPE
+        if (mCropQuad == null) {
+            return new ArrayList();
+        }
         return mapCropQuadPointsInverse();
-
     }
 
     private ArrayList<PointF> mapCropQuadPointsInverse() {

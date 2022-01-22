@@ -150,7 +150,7 @@ class PdfFragment : BaseFragment() {
                     }
                     SheetActionId.SHARE.id -> {
                         result.arguments.extractExportFile()?.let { file ->
-                            shareFile(requireActivity(), file.pageFileType, file.file.documentFile)
+                            shareFile(requireActivity(), file.pageFileType, file.file.documentFile.uri)
                         }
                     }
                     else -> {

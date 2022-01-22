@@ -14,6 +14,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityPageSlideBinding
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.asDocumentPageExtra
+import at.ac.tuwien.caa.docscan.extensions.shareFile
 import at.ac.tuwien.caa.docscan.logic.PageFileType
 import at.ac.tuwien.caa.docscan.logic.handleError
 import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
@@ -144,19 +145,7 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
         })
         viewModel.observableSharePage.observe(this, {
             it.getContentIfNotHandled()?.let { uri ->
-                val shareIntent = Intent().apply {
-                    action = Intent.ACTION_SEND
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    setDataAndType(uri, contentResolver.getType(uri))
-                    putExtra(Intent.EXTRA_STREAM, uri)
-                    type = PageFileType.JPEG.mimeType
-                }
-                startActivity(
-                    Intent.createChooser(
-                        shareIntent,
-                        getString(R.string.page_slide_fragment_share_choose_app_text)
-                    )
-                )
+                shareFile(this, PageFileType.JPEG, uri)
             }
         })
         viewModel.observableInitSegmentation.observe(this, {

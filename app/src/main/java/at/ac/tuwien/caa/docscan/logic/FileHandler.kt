@@ -54,9 +54,8 @@ class FileHandler(private val context: Context) {
      * Post-Condition: No guarantees if the documents folder exists.
      * @return the file reference to the root's documents folder
      */
-    // TODO: Change this back to internal storage!
     private fun getDocumentsFolder() =
-        File(context.getExternalFilesDir("DocScan")!!.absolutePath + File.separator + FOLDER_DOCUMENTS)
+        File(context.filesDir.absolutePath + File.separator + FOLDER_DOCUMENTS)
 
     /**
      * Post-Condition: No guarantees if the specific documents folder exists.
@@ -274,7 +273,6 @@ class FileHandler(private val context: Context) {
         return if (file.exists()) {
             file
         } else {
-            // TODO: Check if this can ever happen
             null
         }
     }

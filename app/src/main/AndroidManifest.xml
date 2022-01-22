@@ -38,7 +38,6 @@
             android:value="ocr" />
 
         <!-- We need a file provider to enable a sharing of the log file (which is saved in internal memory) -->
-        <!-- TODO: Needs to be adapted, currently sharing pictures is not possible -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

@@ -22,6 +22,15 @@ fun <T> Resource<T>.applyOnSuccess(success: (T) -> Unit): Resource<T> {
     }
 }
 
+fun <T> Resource<T>.isSuccessful(): Boolean {
+    return when (this) {
+        is Failure -> false
+        is Success -> {
+            true
+        }
+    }
+}
+
 fun <T> Throwable.asResource(): Resource<T> {
     return Failure(this)
 }
