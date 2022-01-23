@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.logic
 
 import android.content.Context
 import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.core.content.FileProvider
 import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.db.model.Page
@@ -295,18 +296,7 @@ class FileHandler(private val context: Context) {
         getDocumentFolderById(docId.toString()).safelyRecursiveDelete()
     }
 
-    // TODO: Check the file provider, since the paths have changed!
-    fun getUriByPage(page: Page): Uri? {
-        val file = getFileByPage(page) ?: return null
-        return try {
-            getUri(file)
-        } catch (e: Exception) {
-            Timber.w("Unable to retrieve uri from page!", e)
-            null
-        }
-    }
-
-    fun getUriByPageResource(page: Page): Resource<Uri> {
+    fun getUriByPageResource(page: Page, outputFileName: String): Resource<Uri> {
         val file = when (val fileResource = getFileByPageResource(page)) {
             is Failure -> {
                 return Failure(fileResource.exception)
@@ -317,18 +307,19 @@ class FileHandler(private val context: Context) {
         }
 
         return try {
-            Success(getUri(file))
+            Success(getUri(file, outputFileName))
         } catch (e: Exception) {
             IOErrorCode.SHARE_URI_FAILED.asFailure(e)
         }
     }
 
     @Throws(Exception::class)
-    private fun getUri(file: File): Uri {
+    private fun getUri(file: File, fileName: String): Uri {
         return FileProvider.getUriForFile(
             context,
             "${BuildConfig.APPLICATION_ID}.fileprovider",
-            file
+            file,
+            fileName
         )
     }
 }

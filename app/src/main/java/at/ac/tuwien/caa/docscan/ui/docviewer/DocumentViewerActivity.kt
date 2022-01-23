@@ -22,6 +22,7 @@ import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.isUploaded
 import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
 import at.ac.tuwien.caa.docscan.extensions.getImageImportIntent
+import at.ac.tuwien.caa.docscan.extensions.shareFile
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer
@@ -207,7 +208,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 when (val resource = model.resource) {
                     is Failure -> {
                         when (model.action) {
-                            DocumentAction.DELETE -> {
+                            DocumentAction.DELETE, DocumentAction.SHARE -> {
                                 resource.exception.handleError(this)
                             }
                             DocumentAction.EXPORT -> {
@@ -262,11 +263,19 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         }
                     }
                     is Success<*> -> {
+                        if (model.action == DocumentAction.SHARE) {
+                            model.resource.applyOnSuccess { any ->
+                                (any as? List<Uri>?)?.let { uris ->
+                                    shareFile(this, PageFileType.JPEG, uris)
+                                }
+                            }
+                            return@observe
+                        }
                         if (!model.action.showSuccessMessage) {
                             return@observe
                         }
                         val name = when (model.action) {
-                            DocumentAction.DELETE, DocumentAction.CROP -> ""
+                            DocumentAction.DELETE, DocumentAction.CROP, DocumentAction.SHARE -> ""
                             DocumentAction.EXPORT -> getString(R.string.operation_export)
                             DocumentAction.UPLOAD -> getString(R.string.operation_upload)
                         }
@@ -318,6 +327,9 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                 arguments = model.arguments
                             )
                         )
+                    }
+                    DocumentAction.SHARE -> {
+                        // Share doesn't need a confirmation
                     }
                 }
             }
@@ -439,6 +451,9 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                     }
                     SheetActionId.UPLOAD.id -> {
                         viewModel.applyActionFor(DocumentAction.UPLOAD, result.arguments)
+                    }
+                    SheetActionId.SHARE.id -> {
+                        viewModel.applyActionFor(DocumentAction.SHARE, result.arguments)
                     }
                 }
             }
@@ -587,6 +602,16 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 R.drawable.ic_delete_black_24dp
             )
         )
+
+        if (document.pages.isNotEmpty()) {
+            sheetActions.add(
+                SheetAction(
+                    SheetActionId.SHARE.id,
+                    getString(R.string.action_share),
+                    R.drawable.ic_share_black_24dp
+                )
+            )
+        }
 
         SheetModel(sheetActions, Bundle().appendDocWithPages(document)).show(supportFragmentManager)
     }

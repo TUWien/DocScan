@@ -134,8 +134,6 @@ object GlideHelper {
         onResourceFailed: (isFirstResource: Boolean, e: GlideException?) -> Unit = { _, _ -> }
     ) {
 
-        // TODO: Check https://bumptech.github.io/glide/doc/caching.html and improve this implementation
-        // TODO: Remove images from cache if they are deleted.
         // Needs to be added via factory to prevent issues with partially transparent images
         // see http://bumptech.github.io/glide/doc/transitions.html#cross-fading-with-placeholders-and-transparent-images
         val factory = DrawableCrossFadeFactory.Builder().setCrossFadeEnabled(false).build()

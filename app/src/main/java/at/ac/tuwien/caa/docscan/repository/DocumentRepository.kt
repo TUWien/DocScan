@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.annotation.WorkerThread
 import androidx.room.withTransaction
 import androidx.work.*
+import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.ImageExifMetaData
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
@@ -54,6 +55,13 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun getDocument(documentId: UUID) = documentDao.getDocument(documentId)
+
+    @WorkerThread
+    suspend fun getDocumentResource(documentId: UUID): Resource<Document> {
+        val document = documentDao.getDocument(documentId)
+            ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        return Success(document)
+    }
 
     fun getAllDocumentsAsFlow() = documentDao.getAllDocumentWithPagesAsFlow()
 
@@ -144,6 +152,34 @@ class DocumentRepository(
             documentDao.deleteDocument(documentWithPages.document)
             Success(Unit)
         })
+    }
+
+    @WorkerThread
+    suspend fun shareDocument(documentId: UUID): Resource<List<Uri>> {
+        val doc = documentDao.getDocumentWithPages(documentId)
+            ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        when (val checkLockResult = checkLock(doc.document, null)) {
+            is Failure -> {
+                return Failure(checkLockResult.exception)
+            }
+            is Success -> {
+                val urisResults = doc.pages.map {
+                    val uriResource = fileHandler.getUriByPageResource(
+                        it,
+                        doc.document.getFileName(it.index + 1, it.fileType)
+                    )
+                    when (uriResource) {
+                        is Failure -> {
+                            return Failure(uriResource.exception)
+                        }
+                        is Success -> {
+                            uriResource.data
+                        }
+                    }
+                }
+                return Success(urisResults)
+            }
+        }
     }
 
     @WorkerThread
@@ -266,11 +302,10 @@ class DocumentRepository(
     @WorkerThread
     fun createNewActiveDocument(): Document {
         Timber.d("creating new active document!")
-        // TODO: What should be the document's title in the default case?
         val doc = Document(
             id = UUID.randomUUID(),
-            "Untitled document",
-            true
+            context.getString(R.string.document_default_name),
+            isActive = true
         )
         documentDao.insertDocument(doc)
         return doc
@@ -312,25 +347,31 @@ class DocumentRepository(
         document: Document,
         uris: List<Uri>
     ): Resource<Unit> {
-        return performDocOperation(document.id, operation = {
-            withContext(NonCancellable) {
-                uris.forEach { uri ->
-                    try {
-                        fileHandler.readBytes(uri)?.let { bytes ->
-                            saveNewImageForDocument(
-                                document.id,
-                                bytes,
-                                null,
-                                null
-                            )
+        return withContext(NonCancellable) {
+            uris.forEach { uri ->
+                try {
+                    fileHandler.readBytes(uri)?.let { bytes ->
+                        val resource = saveNewImageForDocument(
+                            document.id,
+                            bytes,
+                            null,
+                            null
+                        )
+                        when (resource) {
+                            is Failure -> {
+                                return@withContext Failure<Unit>(resource.exception)
+                            }
+                            is Success -> {
+                                // ignore
+                            }
                         }
-                    } catch (e: Exception) {
-                        Timber.e(e)
                     }
+                } catch (e: Exception) {
+                    Timber.e(e)
                 }
             }
-            Success(Unit)
-        })
+            return@withContext Success(Unit)
+        }
     }
 
     @WorkerThread
@@ -393,8 +434,8 @@ class DocumentRepository(
         // for a replacement, just take the number of the old page.
         // for a new page, take the max number and add + 1 to it.
         val pageNumber =
-            pageDao.getPageById(newFileId)?.number ?: (pageDao.getPagesByDoc(documentId)
-                .maxByOrNull { page -> page.number })?.number?.let {
+            pageDao.getPageById(newFileId)?.index ?: (pageDao.getPagesByDoc(documentId)
+                .maxByOrNull { page -> page.index })?.index?.let {
                     // increment if there is an existing page
                     it + 1
                 } ?: 0

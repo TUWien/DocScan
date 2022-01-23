@@ -17,9 +17,6 @@ import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
-/**
- * TODO: UPLOAD_CONSTRAINT: Custom file handling is not implemented yet.
- */
 class EditDocumentActivity : CreateDocumentActivity() {
 
     private val viewModel: EditDocumentViewModel by viewModel { parametersOf(intent!!.extras) }
@@ -78,37 +75,34 @@ class EditDocumentActivity : CreateDocumentActivity() {
             description = null
         )
 
-        // TODO: Check saveCustomFileNameAttributes()
-        viewModel.saveDocument(title, metaData)
+        var prefix: String? = null
+        if (binding.createSeriesCustomNameCheckbox.isChecked) {
+            val currentPrefix = binding.createSeriesCustomNamePrefixInput.text.toString()
+            if (currentPrefix.isNotEmpty()) {
+                prefix = currentPrefix
+            }
+        }
+        viewModel.saveDocument(
+            title,
+            prefix,
+            metaData
+        )
     }
-
-// TODO: Check if this custom file naming should be also used for the uploads.
-//    private fun saveCustomFileNameAttributes() {
-//        val customCheckBox = findViewById<CheckBox>(R.id.create_series_custom_name_checkbox)
-//        mDocument.setUseCustomFileName(customCheckBox.isChecked)
-//        if (customCheckBox.isChecked) {
-//            val inputEdit =
-//                findViewById<TextInputEditText>(R.id.create_series_custom_name_prefix_input)
-//            val prefix = inputEdit.text.toString()
-//            mDocument.setFileNamePrefix(prefix)
-//        }
-//    }
 
     private fun fillViews(document: Document) {
         val titleEditText = fillDocumentTitle(document)
         fillTranskribusData(document, titleEditText)
-        // TODO: Check fill custom name
-//        fillCustomName(document)
+        fillCustomName(document)
     }
 
-//    private fun fillCustomName(document: Document) {
-//        val namingCheckbox = findViewById<CheckBox>(R.id.create_series_custom_name_checkbox)
-//        namingCheckbox.isChecked = document.getUseCustomFileName()
-//        if (document.getUseCustomFileName()) {
-//            val input = findViewById<TextInputEditText>(R.id.create_series_custom_name_prefix_input)
-//            input.setText(document.getFileNamePrefix())
-//        }
-//    }
+    private fun fillCustomName(document: Document) {
+        val namingCheckbox = binding.createSeriesCustomNameCheckbox
+        namingCheckbox.isChecked = !document.filePrefix.isNullOrEmpty()
+        if (!document.filePrefix.isNullOrEmpty()) {
+            val input = binding.createSeriesCustomNamePrefixInput
+            input.setText(document.filePrefix)
+        }
+    }
 
     private fun fillTranskribusData(document: Document, titleEditText: EditText) {
         val metaData = document.metaData ?: return

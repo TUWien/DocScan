@@ -311,13 +311,20 @@ open class CreateDocumentActivity : BaseNoNavigationActivity() {
 
 //                The error handling is done in validateInput
             if (validateInput(title)) {
-                viewModel.createDocument(title, mTranskribusMetaData)
+                var prefix: String? = null
+                if (binding.createSeriesCustomNameCheckbox.isChecked) {
+                    val currentPrefix = binding.createSeriesCustomNamePrefixInput.text.toString()
+                    if (currentPrefix.isNotEmpty()) {
+                        prefix = currentPrefix
+                    }
+                }
+                viewModel.createDocument(title, prefix, mTranskribusMetaData)
             }
         }
     }
 
     private fun validateInput(title: String?): Boolean {
-        if (title == null) {
+        if (title.isNullOrEmpty()) {
             return false
         }
 

@@ -40,6 +40,11 @@ class MigrationRepository(
     /**
      * Migrates the json data along with their image references into an internal database and file
      * storage.
+     *
+     * Previously, storing images and
+     *
+     *
+     *
      * TODO: ERROR_HANDLING (1) - Files need to be copied & deleted one by one, otherwise storage issues might occur, if the space is already very limited.
      * TODO: ERROR_HANDLING (2) - If the files have been previously on an external device (SD card), then even if (2) is considered, storage issues might occur.
      * TODO: ERROR_HANDLING (3) - To mitigate (1) and (2), add a more sophisticated migration strategy, e.g. by asking the user if the data should even be migrated.
@@ -144,6 +149,7 @@ class MigrationRepository(
                             Document(
                                 newDocId,
                                 title,
+                                filePrefix = null,
                                 isActive,
                                 LockState.NONE,
                                 metaData

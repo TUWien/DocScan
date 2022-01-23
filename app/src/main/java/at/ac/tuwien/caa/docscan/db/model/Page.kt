@@ -44,13 +44,10 @@ data class Page(
     @ColumnInfo(name = KEY_FILE_HASH)
     var fileHash: String,
     /**
-     * The ordering number of the page, across all pages in a single document.
-     *
-     * Do NOT take this as an index, since they might be gaps, the number only takes care of the
-     * ordering.
+     * The ordering index of the page, across all pages in a single document.
      */
-    @ColumnInfo(name = KEY_NUMBER)
-    val number: Int,
+    @ColumnInfo(name = KEY_INDEX)
+    val index: Int,
     /**
      * The rotation of the page. The exif info is saved separately into the file, this
      * column is necessary to keep track of file changes in the DB.
@@ -87,7 +84,7 @@ data class Page(
         const val KEY_ID = "id"
         const val KEY_DOC_ID = "doc_id"
         const val KEY_FILE_HASH = "file_hash"
-        const val KEY_NUMBER = "number"
+        const val KEY_INDEX = "index"
         const val KEY_ROTATION = "rotation"
         const val KEY_UPLOAD_PREFIX = "upload"
         const val KEY_POST_PROCESSING_STATE = "post_processing_state"

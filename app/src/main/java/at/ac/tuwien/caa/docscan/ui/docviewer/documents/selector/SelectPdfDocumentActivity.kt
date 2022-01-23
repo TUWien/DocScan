@@ -62,7 +62,6 @@ class SelectPdfDocumentActivity : BaseNoNavigationActivity() {
                     resource.exception.handleError(this)
                 }
                 is Success -> {
-                    // TODO: Show snackbar
                     finish()
                 }
             }

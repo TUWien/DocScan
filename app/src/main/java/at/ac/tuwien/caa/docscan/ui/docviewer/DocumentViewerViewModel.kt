@@ -170,6 +170,9 @@ class DocumentViewerViewModel(
             }
 
             val resource = when (action) {
+                DocumentAction.SHARE -> {
+                    repository.shareDocument(documentWithPages.document.id)
+                }
                 DocumentAction.DELETE -> {
                     repository.removeDocument(documentWithPages)
                 }
@@ -236,7 +239,8 @@ enum class DocumentAction(val needsConfirmation: Boolean, val showSuccessMessage
     DELETE(true, false),
     EXPORT(true, true),
     CROP(true, false),
-    UPLOAD(true, true)
+    UPLOAD(true, true),
+    SHARE(false, false)
 }
 
 enum class DocumentViewerScreen {

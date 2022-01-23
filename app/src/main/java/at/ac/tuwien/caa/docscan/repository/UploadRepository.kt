@@ -2,11 +2,7 @@ package at.ac.tuwien.caa.docscan.repository
 
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
-import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
-import at.ac.tuwien.caa.docscan.db.model.Page
-import at.ac.tuwien.caa.docscan.db.model.Upload
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
-import at.ac.tuwien.caa.docscan.db.model.sanitizedTitle
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.worker.UploadWorker
@@ -15,6 +11,8 @@ import at.ac.tuwien.caa.docscan.api.transkribus.mapToMultiPartBody
 import at.ac.tuwien.caa.docscan.api.transkribus.model.collection.CollectionResponse
 import at.ac.tuwien.caa.docscan.api.transkribus.model.collection.DocResponse
 import at.ac.tuwien.caa.docscan.api.transkribus.model.uploads.*
+import at.ac.tuwien.caa.docscan.db.model.*
+import at.ac.tuwien.caa.docscan.db.model.Page
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
@@ -208,12 +206,11 @@ class UploadRepository(
         }
 
         // prepare pages for upload
-        val docTitle = documentWithPages.document.sanitizedTitle()
         val uploadPages = mutableListOf<UploadPage>()
-        for ((index, page) in documentWithPages.pages.sortedBy { it.number }.withIndex()) {
+        for ((index, page) in documentWithPages.pages.sortedBy { it.index }.withIndex()) {
             val pageNr = index + 1
             val checkSum = if (page.fileHash.isNotEmpty()) page.fileHash else null
-            val fileName = "${docTitle}_${pageNr}.${page.fileType.extension}"
+            val fileName = documentWithPages.document.getFileName(pageNr, page.fileType)
 
             // add to the list
             uploadPages.add(
@@ -305,7 +302,7 @@ class UploadRepository(
         val docWithPages = documentDao.getDocumentWithPages(documentId)
             ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
         val pagesToUpload = mutableListOf<UploadPageWrapper>()
-        for ((index, page) in docWithPages.pages.sortedBy { it.number }.withIndex()) {
+        for ((index, page) in docWithPages.pages.sortedBy { it.index }.withIndex()) {
             val uploadStatusPage = statusResponse.pageList.pages.firstOrNull { uploadStatusPage ->
                 uploadStatusPage.fileName == page.transkribusUpload.uploadFileName &&
                         uploadStatusPage.pageNr == (index + 1) &&

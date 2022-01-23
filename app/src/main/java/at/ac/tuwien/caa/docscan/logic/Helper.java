@@ -34,6 +34,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
@@ -788,7 +789,7 @@ public class Helper {
      * @return
      */
     public static String getFileTimeStamp() {
-        return new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        return new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
     }
 
 //    private static boolean areFilesUploaded(ArrayList<File> fileList) {

@@ -56,25 +56,25 @@ open class AModalActionSheet : BottomSheetDialogFragment() {
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         binding = TitledSheetDialogCameraBinding.inflate(layoutInflater)
         model = arguments?.getParcelable(ARG_SHEET_MODEL)
-                ?: throw IllegalArgumentException("No arguments passed!")
+            ?: throw IllegalArgumentException("No arguments passed!")
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val sheetAdapter =
-                SheetAdapter(model.sheetActions) { sheetAction: SheetAction ->
-                    viewModel.select(
-                            sheetAction,
-                            model.arguments
-                    )
-                    dismissAllowingStateLoss()
-                }
+            SheetAdapter(model.sheetActions) { sheetAction: SheetAction ->
+                viewModel.select(
+                    sheetAction,
+                    model.arguments
+                )
+                dismissAllowingStateLoss()
+            }
         binding.sheetDialogRecyclerview.apply {
             adapter = sheetAdapter
             layoutManager = GridLayoutManager(this@AModalActionSheet.context, 2)
@@ -84,8 +84,8 @@ open class AModalActionSheet : BottomSheetDialogFragment() {
     fun show(fragmentManager: FragmentManager) {
         val fragment = fragmentManager.findFragmentByTag(TAG)
         if (fragment == null ||
-                fragment is ADialog &&
-                fragment.dialog?.isShowing != true
+            fragment is ADialog &&
+            fragment.dialog?.isShowing != true
         ) {
             fragmentManager.beginTransaction().add(this, TAG).commitAllowingStateLoss()
         } else {
@@ -120,26 +120,26 @@ class ModalActionSheetViewModel : ViewModel() {
     val observableSheetAction = MutableLiveData<Event<ModalSheetResult>>()
 
     internal fun select(
-            pressedSheetAction: SheetAction,
-            arguments: Bundle
+        pressedSheetAction: SheetAction,
+        arguments: Bundle
     ) {
         observableSheetAction.value = Event(ModalSheetResult(pressedSheetAction, arguments))
     }
 }
 
 data class ModalSheetResult(
-        val pressedSheetAction: SheetAction,
-        val arguments: Bundle
+    val pressedSheetAction: SheetAction,
+    val arguments: Bundle
 )
 
 @Parcelize
 data class SheetModel(
-        val sheetActions: ArrayList<SheetAction>,
-        val arguments: Bundle = Bundle()
+    val sheetActions: ArrayList<SheetAction>,
+    val arguments: Bundle = Bundle()
 ) : Parcelable
 
 fun SheetModel.show(
-        fragmentManager: FragmentManager
+    fragmentManager: FragmentManager
 ) = DocumentSheet.newInstance(this).show(fragmentManager)
 
 /**

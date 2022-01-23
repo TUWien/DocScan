@@ -150,7 +150,11 @@ class PdfFragment : BaseFragment() {
                     }
                     SheetActionId.SHARE.id -> {
                         result.arguments.extractExportFile()?.let { file ->
-                            shareFile(requireActivity(), file.pageFileType, file.file.documentFile.uri)
+                            shareFile(
+                                requireActivity(),
+                                file.pageFileType,
+                                file.file.documentFile.uri
+                            )
                         }
                     }
                     else -> {
@@ -178,7 +182,7 @@ class PdfFragment : BaseFragment() {
         sheetActions.add(
             SheetAction(
                 SheetActionId.SHARE.id,
-                getString(R.string.action_pdf_share),
+                getString(R.string.action_share),
                 R.drawable.ic_share_black_24dp
             )
         )

@@ -48,8 +48,10 @@ fun getImageImportIntent(): Intent {
 fun getExportFolderPermissionIntent(context: Context, initialUri: Uri?): Intent {
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri
-                ?: getDocScanPdfUri(context))
+        intent.putExtra(
+            DocumentsContract.EXTRA_INITIAL_URI, initialUri
+                ?: getDocScanPdfUri(context)
+        )
     }
     // TODO: This is a system setting which may not work
     intent.putExtra("android.provider.extra.SHOW_ADVANCED", true)
@@ -66,13 +68,13 @@ private fun getDocScanPdfUri(context: Context): Uri {
     val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 
     val rootId =
-            if (sm.primaryStorageVolume.isEmulated)
-                "primary"
-            else
-                sm.primaryStorageVolume.uuid
+        if (sm.primaryStorageVolume.isEmulated)
+            "primary"
+        else
+            sm.primaryStorageVolume.uuid
 
     val rootUri =
-            DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", rootId)
+        DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", rootId)
     val documentsDir = Environment.DIRECTORY_DOCUMENTS
     val docScanDir = context.getString(R.string.app_name)
     val concatedDir = ":$documentsDir/$docScanDir"
@@ -83,15 +85,31 @@ private fun getDocScanPdfUri(context: Context): Uri {
 }
 
 fun shareFile(fragmentActivity: FragmentActivity, pageFileType: PageFileType, uri: Uri) {
+    shareFile(fragmentActivity, pageFileType, listOf(uri))
+}
+
+fun shareFile(fragmentActivity: FragmentActivity, pageFileType: PageFileType, uris: List<Uri>) {
     val shareIntent = Intent()
-    shareIntent.action = Intent.ACTION_SEND
+    if (uris.size == 1) {
+        shareIntent.action = Intent.ACTION_SEND
+    } else {
+        shareIntent.action = Intent.ACTION_SEND_MULTIPLE
+    }
     shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
+    if (uris.size == 1) {
+        shareIntent.putExtra(Intent.EXTRA_STREAM, uris[0])
+    } else {
+        shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+    }
     shareIntent.type = pageFileType.mimeType
     fragmentActivity.safeStartActivity(shareIntent)
 }
 
-fun showFile(fragmentActivity: FragmentActivity, pageFileType: PageFileType, docFile: DocumentFile) {
+fun showFile(
+    fragmentActivity: FragmentActivity,
+    pageFileType: PageFileType,
+    docFile: DocumentFile
+) {
     val uri = docFile.uri
     val shareIntent = Intent()
     shareIntent.action = Intent.ACTION_VIEW

@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.transformLatest
 
 fun DocumentWithPages.sortByNumber(): DocumentWithPages {
-    pages = pages.sortedBy { page -> page.number }
+    pages = pages.sortedBy { page -> page.index }
     return this
 }
 

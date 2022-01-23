@@ -5,6 +5,8 @@ import androidx.annotation.Keep
 import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.model.Document.Companion.TABLE_NAME_DOCUMENTS
 import at.ac.tuwien.caa.docscan.db.model.state.LockState
+import at.ac.tuwien.caa.docscan.logic.Helper
+import at.ac.tuwien.caa.docscan.logic.PageFileType
 import kotlinx.parcelize.Parcelize
 import java.util.*
 
@@ -17,6 +19,11 @@ data class Document(
     val id: UUID,
     @ColumnInfo(name = KEY_TITLE)
     var title: String,
+    /**
+     * Represents a custom optional file prefix.
+     */
+    @ColumnInfo(name = KEY_FILE_PREFIX)
+    var filePrefix: String? = null,
     /**
      * Represents the active state of a document, only one document can be active.
      */
@@ -45,6 +52,7 @@ data class Document(
         const val TABLE_NAME_DOCUMENTS = "documents"
         const val KEY_ID = "id"
         const val KEY_TITLE = "title"
+        const val KEY_FILE_PREFIX = "file_prefix"
         const val KEY_META_DATA_PREFIX = "metadata_"
         const val KEY_IS_ACTIVE = "is_active"
         const val KEY_LOCK_STATE = "lock_state"
@@ -52,12 +60,32 @@ data class Document(
     }
 }
 
-fun Document.sanitizedTitle(): String {
+/**
+ * @return a file name for the document.
+ * @param pageNr the pageIndex (starting from 1)
+ * @param fileType the page's filetype.
+ */
+fun Document.getFileName(pageNr: Int, fileType: PageFileType): String {
+    return fileNamePrefix(pageNr) + ".${fileType.extension}"
+}
+
+private fun Document.sanitizedTitle(): String {
     return title.replace(" ", "").lowercase()
 }
 
-fun Document.edit(title: String, metaData: MetaData?): Document {
+// TODO: SHARE_CONSTRAINT: Is the file name prefix correctly constructed
+private fun Document.fileNamePrefix(pageNumber: Int): String {
+    filePrefix?.let {
+        if (it.isNotEmpty()) {
+            return Helper.getFileNamePrefix(Helper.getFileTimeStamp(), it, pageNumber)
+        }
+    }
+    return Helper.getFileNamePrefix(Helper.getFileTimeStamp(), sanitizedTitle(), pageNumber)
+}
+
+fun Document.edit(title: String, prefix: String?, metaData: MetaData?): Document {
     this.title = title
+    this.filePrefix = prefix
     val metaDataTemp = metaData
     // TODO: UPLOAD_CONSTRAINT: Check if this is ok, so that the relatedUploadId is copied from the old one.
     // TODO: UPLOAD_CONSTRAINT: Is this just a meta flag, or really the uploadId as used for the upload requests?

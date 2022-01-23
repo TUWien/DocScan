@@ -508,6 +508,8 @@
     <string name="settings_exif_copyright_title">Copyright</string>
     <string name="settings_exif_copyright_default_value"></string>
 
+    <string name="document_default_name">Untitled document</string>
+
     <string name="crop_view_title">Crop</string>
 
 
@@ -573,7 +575,7 @@
     <string name="action_document_continue_document">Continue imaging</string>
 
     <string name="action_pdf_delete">Delete</string>
-    <string name="action_pdf_share">Share</string>
+    <string name="action_share">Share</string>
 
     <string name="action_rotate_title">Change text orientation</string>
     <string name="action_rotate_left_title">Rotate left</string>

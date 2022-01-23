@@ -37,9 +37,11 @@ suspend fun unLockDocAfterLongRunningOperation(documentId: UUID): Resource<Unit>
 
 suspend fun isPageLocked(documentId: UUID, pageId: UUID): Resource<Page> {
     return withContext(dbLockDispatcher) {
-        val doc = docDao.getDocument(documentId) ?: return@withContext DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
-        val page = docDao.getPage(pageId) ?: return@withContext DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
-        when(val result = checkLock(doc, page)){
+        val doc = docDao.getDocument(documentId)
+            ?: return@withContext DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        val page =
+            docDao.getPage(pageId) ?: return@withContext DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        when (val result = checkLock(doc, page)) {
             is Failure -> {
                 Failure(result.exception)
             }
@@ -49,6 +51,7 @@ suspend fun isPageLocked(documentId: UUID, pageId: UUID): Resource<Page> {
         }
     }
 }
+
 /**
  * Locks the doc entirely until it is unlocked. The caller is responsible for unlocking it.
  */
@@ -149,7 +152,7 @@ private suspend fun <T> lockForOperation(
 /**
  * Checks for the lock state of a document and page
  */
-private fun checkLock(doc: Document, page: Page?): Resource<Unit> {
+fun checkLock(doc: Document, page: Page?): Resource<Unit> {
     when (doc.lockState) {
         LockState.NONE -> {
             // ignore - no, lock state

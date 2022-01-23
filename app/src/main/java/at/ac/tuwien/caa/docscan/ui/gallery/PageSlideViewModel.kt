@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.ac.tuwien.caa.docscan.db.model.Page
+import at.ac.tuwien.caa.docscan.db.model.getFileName
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.Companion.EXTRA_DOCUMENT_ID
@@ -42,7 +43,7 @@ class PageSlideViewModel(
             // TODO: this should be just distinct by the page ids and the number, since changes to the state of the file doesn't matter at this place.
             repository.getDocumentWithPagesAsFlow(docId).collectLatest {
                 it ?: return@collectLatest
-                val list = it.pages.sortedBy { page -> page.number }
+                val list = it.pages.sortedBy { page -> page.index }
                 val scrollToPosition: Int = if (scrollToSpecificPage) {
                     if (selectedPageId != null) {
                         list.indexOfFirst { page -> page.id == selectedPageId }
@@ -104,12 +105,25 @@ class PageSlideViewModel(
                     observableError.postValue(Event(result.exception))
                 }
                 is Success -> {
-                    when (val uriResource = fileHandler.getUriByPageResource(result.data)) {
+                    when (val docResource = repository.getDocumentResource(result.data.docId)) {
                         is Failure -> {
-                            observableError.postValue(Event(uriResource.exception))
+                            observableError.postValue(Event(docResource.exception))
                         }
                         is Success -> {
-                            observableSharePage.postValue(Event(uriResource.data))
+                            when (val uriResource = fileHandler.getUriByPageResource(
+                                result.data,
+                                docResource.data.getFileName(
+                                    result.data.index + 1,
+                                    result.data.fileType
+                                )
+                            )) {
+                                is Failure -> {
+                                    observableError.postValue(Event(uriResource.exception))
+                                }
+                                is Success -> {
+                                    observableSharePage.postValue(Event(uriResource.data))
+                                }
+                            }
                         }
                     }
                 }

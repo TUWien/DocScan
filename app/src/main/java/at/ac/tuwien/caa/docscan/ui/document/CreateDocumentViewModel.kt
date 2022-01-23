@@ -16,9 +16,9 @@ class CreateDocumentViewModel(val repository: DocumentRepository) : ViewModel() 
 
     val observableResource = MutableLiveData<Resource<Document>>()
 
-    fun createDocument(title: String, transkribusMetaData: TranskribusMetaData?) {
+    fun createDocument(title: String, prefix: String?, transkribusMetaData: TranskribusMetaData?) {
         viewModelScope.launch(Dispatchers.IO) {
-            val document = Document(UUID.randomUUID(), title, isActive = true)
+            val document = Document(UUID.randomUUID(), title, filePrefix = prefix, isActive = true)
             transkribusMetaData?.let {
                 document.metaData = MetaData(
                     relatedUploadId = transkribusMetaData.relatedUploadId,

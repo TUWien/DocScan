@@ -20,13 +20,13 @@ class EditDocumentViewModel(extras: Bundle, val documentRepository: DocumentRepo
     val observableDocument = MutableLiveData<Document>(extras.getParcelable(EXTRA_DOCUMENT))
     val observableRequestResource = MutableLiveData<Event<Resource<Document>>>()
 
-    fun saveDocument(title: String, metaData: MetaData) {
+    fun saveDocument(title: String, prefix: String?, metaData: MetaData) {
         val document = observableDocument.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
             observableRequestResource.postValue(
                 Event(
                     documentRepository.updateDocument(
-                        document.edit(title, metaData)
+                        document.edit(title, prefix, metaData)
                     )
                 )
             )
