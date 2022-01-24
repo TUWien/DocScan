@@ -193,6 +193,10 @@ class ADialog : AppCompatDialogFragment() {
             R.string.start_permission_camera_text,
             negativeBtn = R.string.dialog_no_text
         ),
+        MIGRATION_FAILED(
+            R.string.generic_error_title,
+            R.string.generic_error_text
+        ),
         CUSTOM(0, 0)
     }
 

@@ -2,23 +2,24 @@ package at.ac.tuwien.caa.docscan.repository.migration
 
 import android.content.Context
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector
+import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
+import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.Document
-import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.MetaData
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.boundary.asPoint
+import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.migration.domain.JsonStorage
 import at.ac.tuwien.caa.docscan.sync.SyncStorage
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import java.io.BufferedReader
+import timber.log.Timber
 import java.io.File
 import java.util.*
 
@@ -26,7 +27,8 @@ import java.util.*
  * @author matejbartalsky
  */
 class MigrationRepository(
-    private val docRepo: DocumentRepository,
+    private val documentDao: DocumentDao,
+    private val pageDao: PageDao,
     private val fileHandler: FileHandler,
     private val preferencesHandler: PreferencesHandler
 ) {
@@ -41,19 +43,38 @@ class MigrationRepository(
      * Migrates the json data along with their image references into an internal database and file
      * storage.
      *
-     * Previously, storing images and
+     * In previous versions of this app, the data storage was handled by multiple json files in the
+     * internal storage:
+     * - [DocumentStorage.DOCUMENT_STORE_FILE_NAME] the main json file which consists of documents,
+     * pages and references to the images.
+     * - [DocumentStorage.DOCUMENT_STORE_BACKUP_FILE_NAME] same as the main json file, but which has
+     * been saved in the public directory, so that images can be restored.
+     * - [SyncStorage.SYNC_STORAGE_FILE_NAME] the main json file which consists of documents,
+     * pages and references to the images. This is ignored and deleted in the migration.
+     *
+     * The main json file is now migrated into a SQL database.
+     *
+     * The files (images) were saved in the public storage, however, due to android's scoped storage
+     * dealing with public files got more complicated and therefore it has been decided to migrate
+     * these files into the internal storage:
+     * - The internal storage prevents someone else from modifying/deleting and renaming the files,
+     * this is advantageous, especially when complex data is being processed.
+     * - Especially with the usage of a database which holds the metdata of the file, modifying a
+     * file from the outside would have bad consequences.
+     * - The files can be still shared or exported.
      *
      *
-     *
-     * TODO: ERROR_HANDLING (1) - Files need to be copied & deleted one by one, otherwise storage issues might occur, if the space is already very limited.
-     * TODO: ERROR_HANDLING (2) - If the files have been previously on an external device (SD card), then even if (2) is considered, storage issues might occur.
      * TODO: ERROR_HANDLING (3) - To mitigate (1) and (2), add a more sophisticated migration strategy, e.g. by asking the user if the data should even be migrated.
-     * TODO: MIGRATION_LOGIC - If the app is killed during migration and if (1) is considered, then we may loose some data, the name of the files in the public folder are probably necessary for this purpose.
      */
-    suspend fun migrateJsonDataToDatabase(context: Context) {
+    suspend fun migrateJsonDataToDatabase(context: Context): Resource<Unit> {
         if (!preferencesHandler.shouldPerformDBMigration) {
-            return
+            return Success(Unit)
         }
+
+        if (!fileHandler.hasDeviceEnoughSpaceForMigration()) {
+            return IOErrorCode.NOT_ENOUGH_DISK_SPACE.asFailure()
+        }
+
         @Suppress("Deprecation")
         // the main storage file which contains references to images
         val documentStorageFile = File(context.filesDir, DocumentStorage.DOCUMENT_STORE_FILE_NAME)
@@ -62,14 +83,30 @@ class MigrationRepository(
         // the documentBackupStorageFile is usually in the public storage which doesn't matter, since for new app installs it cannot be retrieved anyway.
         val documentBackupStorageFile =
             File(context.filesDir, DocumentStorage.DOCUMENT_STORE_BACKUP_FILE_NAME)
-        if (documentStorageFile.exists()) {
-            try {
-                val reader = documentStorageFile.bufferedReader()
-                val storage = gson.fromJson(reader, JsonStorage::class.java)
-                reader.safeClose()
 
-                val newDocsWithPages = mutableListOf<DocumentWithPages>()
-                storage.documents.forEach { jsonDocument ->
+        // if the document storage file does not exist, then we cannot do anything about it.
+        if (!documentStorageFile.safeExists()) {
+            preferencesHandler.shouldPerformDBMigration = false
+            return Success(Unit)
+        }
+
+        val storage: JsonStorage
+        when (val storageResult = parseJsonStorage(documentStorageFile)) {
+            is Failure -> {
+                // TODO: MIGRATION_LOGIC: Check if the parsing of the file is bullet-proof, since if this fails for whatever reason, then all of the migration is lost.
+                preferencesHandler.shouldPerformDBMigration = false
+                return Success(Unit)
+            }
+            is Success -> {
+                storage = storageResult.data
+            }
+        }
+
+        storage.documents.forEach { jsonDocument ->
+
+            // TODO: MIGRATION_LOGIC Check if all documents have a unique title, since if this is called multiple times, than pages might be added to documents that are unrelated.
+            val document =
+                documentDao.getDocumentsByTitle(jsonDocument.title).firstOrNull() ?: kotlin.run {
                     val newDocId = UUID.randomUUID()
                     val title = jsonDocument.title
                     val isActive = storage.title == jsonDocument.title
@@ -91,102 +128,119 @@ class MigrationRepository(
                     } else {
                         null
                     }
-
-                    val newPages = mutableListOf<Page>()
-                    jsonDocument.pages.forEachIndexed { index, jsonPage ->
-                        val newPageId = UUID.randomUUID()
-                        fileHandler.getFileByAbsolutePath(jsonPage.file.path)?.let {
-                            try {
-                                fileHandler.copyFile(
-                                    it,
-                                    // we assume that all file types are jpeg files
-                                    fileHandler.createDocumentFile(
-                                        newDocId,
-                                        newPageId,
-                                        PageFileType.JPEG
-                                    )
-                                )
-                                val result = PageDetector.getNormedCropPoints(it.absolutePath)
-                                // read out the old
-                                val singlePageBoundary = if (result.points.size == 4) {
-                                    SinglePageBoundary(
-                                        result.points[0].asPoint(),
-                                        result.points[1].asPoint(),
-                                        result.points[2].asPoint(),
-                                        result.points[3].asPoint()
-                                    )
-                                } else {
-                                    SinglePageBoundary.getDefault()
-                                }
-                                // read out old orientation
-                                val rotation = Helper.getNewSafeExifOrientation(it)
-
-                                // if cropping has been already performed, then this will be marked as done
-                                val processingState =
-                                    if (PageDetector.isCropped(it.absolutePath)) PostProcessingState.DONE else PostProcessingState.DRAFT
-
-                                newPages.add(
-                                    Page(
-                                        newPageId,
-                                        newDocId,
-                                        it.getFileHash(),
-                                        index,
-                                        rotation,
-                                        PageFileType.JPEG,
-                                        processingState,
-                                        ExportState.NONE,
-                                        singlePageBoundary
-                                    )
-                                )
-                            } catch (exception: Exception) {
-                                // TODO: Log copying has failed!
-                                // TODO: If the copying fails due to not enough storage, this should be prevented before.
-                            }
-                        }
-                    }
-                    newDocsWithPages.add(
-                        DocumentWithPages(
-                            Document(
-                                newDocId,
-                                title,
-                                filePrefix = null,
-                                isActive,
-                                LockState.NONE,
-                                metaData
-                            ),
-                            newPages
-                        )
+                    Document(
+                        newDocId,
+                        title,
+                        filePrefix = null,
+                        isActive,
+                        LockState.NONE,
+                        metaData
                     )
                 }
 
-                // mark as migration been performed
-                preferencesHandler.shouldPerformDBMigration = false
-                // If copying the files was successful, drop the public files
-                storage.documents.flatMap { document ->
-                    document.pages
-                }.forEach { page ->
-                    fileHandler.getFileByAbsolutePath(page.file.path)?.safelyDelete()
+            documentDao.insertDocument(document)
+
+            jsonDocument.pages.forEachIndexed pageContinue@ { index, jsonPage ->
+
+                // if the page already exists, then skip this
+                val existingPage =
+                    pageDao.getPageByLegacyFilePath(document.id, jsonPage.file.path)
+                        .firstOrNull()
+                if (existingPage != null) {
+                    return@pageContinue
                 }
 
-                documentStorageFile.safelyDelete()
-                syncStorageFile.safelyDelete()
-                documentBackupStorageFile.safelyDelete()
+                val newPageId = UUID.randomUUID()
+                fileHandler.getFileByAbsolutePath(jsonPage.file.path)?.let { oldFile ->
 
-            } catch (exception: Exception) {
-                // T
+                    // create an internal file placeholder
+                    val newFile = fileHandler.createDocumentFile(
+                        document.id,
+                        newPageId,
+                        // every copied file is a jpeg file
+                        PageFileType.JPEG
+                    )
+
+                    // 1. copy file into internal storage.
+                    when (fileHandler.copyFileResource(
+                        oldFile,
+                        newFile
+                    )) {
+                        is Failure -> {
+                            // TODO: MIGRATION_LOGIC: Analyze the reason, if this has just failed due to missing space on the target, then the migration needs to be stopped and an error thrown to the user.
+                            // TODO: MIGRATION_LOGIC: This should actually not happen, since we have already checked if there is enough free space.
+                            return@pageContinue
+                        }
+                        is Success -> {
+
+                        }
+                    }
+
+                    // 2. read out the normed cropping points.
+                    val normedCropPoints =
+                        PageDetector.getNormedCropPoints(newFile.absolutePath)
+                    val singlePageBoundary = if (normedCropPoints.points.size == 4) {
+                        SinglePageBoundary(
+                            normedCropPoints.points[0].asPoint(),
+                            normedCropPoints.points[1].asPoint(),
+                            normedCropPoints.points[2].asPoint(),
+                            normedCropPoints.points[3].asPoint()
+                        )
+                    } else {
+                        SinglePageBoundary.getDefault()
+                    }
+
+                    // 3. read out the exif orientation
+                    val rotation = Helper.getNewSafeExifOrientation(newFile)
+
+                    // 4. read out the state if the page has been already cropped.
+                    val processingState =
+                        if (PageDetector.isCropped(newFile.absolutePath)) PostProcessingState.DONE else PostProcessingState.DRAFT
+
+                    val newPage = Page(
+                        newPageId,
+                        document.id,
+                        newFile.getFileHash(),
+                        index,
+                        rotation,
+                        PageFileType.JPEG,
+                        processingState,
+                        ExportState.NONE,
+                        singlePageBoundary,
+                        legacyFilePath = oldFile.absolutePath
+                    )
+
+                    pageDao.insertPage(newPage)
+
+                    // delete the public file
+                    oldFile.safelyDelete()
+
+                } ?: run {
+                    Timber.w("Ignoring page file, since not file not found!")
+                }
             }
         }
+
+        // mark as migration been performed
+        preferencesHandler.shouldPerformDBMigration = false
+
+        // safely delete all internal files
+        documentStorageFile.safelyDelete()
+        syncStorageFile.safelyDelete()
+        documentBackupStorageFile.safelyDelete()
+
+        return Success(Unit)
     }
 
-
-    /**
-     * Safely closes a [BufferedReader]
-     */
-    private fun BufferedReader.safeClose() {
+    private fun parseJsonStorage(documentStorageFile: File): Resource<JsonStorage> {
         try {
-            close()
-        } catch (exception: Exception) {
-            // ignore
+            documentStorageFile.bufferedReader().use {
+                val storage = gson.fromJson(it, JsonStorage::class.java)
+                return Success(storage)
+            }
+        } catch (e: Exception) {
+            Timber.e("Parsing JsonStorage has failed!", e)
+            return IOErrorCode.PARSING_FAILED.asFailure(e)
         }
     }
 }

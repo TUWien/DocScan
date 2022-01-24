@@ -8,8 +8,8 @@ data class JsonDocument(
      */
     @SerializedName("mTitle")
     val title: String,
-    @SerializedName("mUseCustomFileName")
-    val useCustomFileName: Boolean = false,
+//    @SerializedName("mUseCustomFileName")
+//    val useCustomFileName: Boolean = false,
     @SerializedName("mMetaData")
     val jsonMetaData: JsonMetaData? = null,
     @SerializedName("mIsAwaitingUpload")

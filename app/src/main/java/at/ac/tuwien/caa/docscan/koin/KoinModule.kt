@@ -1,17 +1,21 @@
 package at.ac.tuwien.caa.docscan.koin
 
+import android.content.Context
 import android.os.Bundle
+import android.os.storage.StorageManager
 import androidx.work.WorkManager
 import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.DocScanApp
+import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
+import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusHeaderInterceptor
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
-import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
-import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
-import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusHeaderInterceptor
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.repository.*
+import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
+import at.ac.tuwien.caa.docscan.ui.account.LoginViewModel
+import at.ac.tuwien.caa.docscan.ui.account.logout.LogoutViewModel
 import at.ac.tuwien.caa.docscan.ui.base.UserViewModel
 import at.ac.tuwien.caa.docscan.ui.camera.CameraViewModel
 import at.ac.tuwien.caa.docscan.ui.crop.CropViewModel
@@ -21,15 +25,13 @@ import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentViewModel
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.documents.DocumentsViewModel
+import at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector.SelectDocumentViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.images.ImagesViewModel
+import at.ac.tuwien.caa.docscan.ui.docviewer.pdf.PdfViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.ImageViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideViewModel
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationViewModel
 import at.ac.tuwien.caa.docscan.ui.start.StartViewModel
-import at.ac.tuwien.caa.docscan.ui.account.LoginViewModel
-import at.ac.tuwien.caa.docscan.ui.account.logout.LogoutViewModel
-import at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector.SelectDocumentViewModel
-import at.ac.tuwien.caa.docscan.ui.docviewer.pdf.PdfViewModel
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
@@ -44,11 +46,12 @@ val appModule = module {
     single { androidApplication() as DocScanApp }
     single { AppDatabase.buildDatabase(get()) }
     single { PreferencesHandler(get()) }
-    single { FileHandler(get()) }
-    single { MigrationRepository(get(), get(), get()) }
+    single { FileHandler(get(), get()) }
+    single { MigrationRepository(get(), get(), get(), get()) }
     single { ImageProcessorRepository(get(), get(), get(), get()) }
     single { WorkManager.getInstance(get()) }
     single { NotificationHandler(get()) }
+    single { (get() as Context).getSystemService(Context.STORAGE_SERVICE) as StorageManager }
 }
 
 val daoModule = module {

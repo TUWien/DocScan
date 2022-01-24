@@ -77,8 +77,18 @@ data class Page(
     var singlePageBoundary: SinglePageBoundary?,
 
     @Embedded(prefix = KEY_UPLOAD_PREFIX)
-    var transkribusUpload: Upload = Upload()
-) : Parcelable {
+    var transkribusUpload: Upload = Upload(),
+
+    /**
+     * Represents the old legacy absolute file path, which is just used to check
+     * if a page has not been already migrated, if the migration is performed multiple times.
+     *
+     * Do not use this any further, this will be soon deleted.
+     */
+    @ColumnInfo(name = KEY_LEGACY_ABSOLUTE_FILE_PATH)
+    var legacyFilePath: String? = null,
+
+    ) : Parcelable {
     companion object {
         const val TABLE_NAME_PAGES = "pages"
         const val KEY_ID = "id"
@@ -92,6 +102,7 @@ data class Page(
         const val KEY_SINGLE_PAGE_BOUNDARY = "single_page_boundary"
         const val KEY_EXPORT_STATE = "export_state"
         const val KEY_SINGLE_PAGE_BOUNDARY_PREFIX = "spb"
+        const val KEY_LEGACY_ABSOLUTE_FILE_PATH = "legacy_absolute_file_path"
     }
 }
 

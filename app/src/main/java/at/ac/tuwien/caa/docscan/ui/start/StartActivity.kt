@@ -8,9 +8,11 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import at.ac.tuwien.caa.docscan.databinding.MainContainerViewBinding
 import at.ac.tuwien.caa.docscan.logic.PermissionHandler
+import at.ac.tuwien.caa.docscan.logic.getMessage
 import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
 import at.ac.tuwien.caa.docscan.ui.intro.IntroActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -26,20 +28,20 @@ class StartActivity : BaseActivity() {
     private lateinit var binding: MainContainerViewBinding
 
     private val requestPermissionLauncher =
-            registerForActivityResult(
-                    ActivityResultContracts.RequestMultiplePermissions()
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
 
-            ) { map: Map<String, Boolean> ->
-                if (map.filter { entry -> !entry.value }.isEmpty()) {
-                    viewModel.checkStartUpConditions()
-                } else {
-                    // Explain to the user that the feature is unavailable because the
-                    // features requires a permission that the user has denied. At the
-                    // same time, respect the user's decision. Don't link to system
-                    // settings in an effort to convince the user to change their
-                    // decision.
-                }
+        ) { map: Map<String, Boolean> ->
+            if (map.filter { entry -> !entry.value }.isEmpty()) {
+                viewModel.checkStartUpConditions()
+            } else {
+                // Explain to the user that the feature is unavailable because the
+                // features requires a permission that the user has denied. At the
+                // same time, respect the user's decision. Don't link to system
+                // settings in an effort to convince the user to change their
+                // decision.
             }
+        }
 
 
     companion object {
@@ -85,6 +87,16 @@ class StartActivity : BaseActivity() {
                         requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
                     }
                 }
+            }
+        })
+        viewModel.migrationError.observe(this, {
+            it.getContentIfNotHandled()?.let { throwable ->
+                // TODO: finalize this call
+                val dialogModel = DialogModel(
+                    ADialog.DialogAction.MIGRATION_FAILED,
+                    customMessage = throwable.getMessage(this, true)
+                )
+                showDialog(dialogModel)
             }
         })
         dialogViewModel.observableDialogAction.observe(this, {

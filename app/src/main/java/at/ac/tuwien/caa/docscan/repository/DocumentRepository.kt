@@ -324,9 +324,9 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    fun createOrUpdateDocument(document: Document): Resource<Document> {
-        val docByNewTitle = documentDao.getDocumentByTitle(documentTitle = document.title)
-        return if (docByNewTitle == null || docByNewTitle.id == document.id) {
+    private fun createOrUpdateDocument(document: Document): Resource<Document> {
+        val docsByNewTitle = documentDao.getDocumentsByTitle(documentTitle = document.title)
+        return if (docsByNewTitle.isEmpty() || (docsByNewTitle.size == 1 && docsByNewTitle[0].id == document.id)) {
             db.runInTransaction {
                 if (document.isActive) {
                     documentDao.setAllDocumentsInactive()

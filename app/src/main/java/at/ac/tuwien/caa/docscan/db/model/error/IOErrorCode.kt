@@ -25,6 +25,8 @@ enum class IOErrorCode(
 
     // generic title/message, since the these errors needs to be investigated via the exception.
     FILE_COPY_ERROR(R.string.generic_error_title, R.string.generic_error_text, true),
+    NOT_ENOUGH_DISK_SPACE(R.string.generic_error_title, R.string.generic_error_text, true),
+    PARSING_FAILED(R.string.generic_error_title, R.string.generic_error_text, true),
     CROPPING_FAILED(R.string.generic_error_title, R.string.generic_error_text, true),
     SINGLE_PAGE_DETECTION_FAILED(R.string.generic_error_title, R.string.generic_error_text, true),
     ML_KIT_OCR_ANALYSIS_FAILED(R.string.generic_error_title, R.string.generic_error_text, true),

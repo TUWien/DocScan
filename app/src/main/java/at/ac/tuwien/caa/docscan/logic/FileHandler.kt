@@ -1,7 +1,10 @@
 package at.ac.tuwien.caa.docscan.logic
 
+import android.app.usage.StorageStatsManager
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import android.os.storage.StorageManager
 import android.provider.OpenableColumns
 import androidx.core.content.FileProvider
 import at.ac.tuwien.caa.docscan.BuildConfig
@@ -21,9 +24,10 @@ import java.util.*
  * A utility class for file management
  * @author matejbart
  */
-class FileHandler(private val context: Context) {
+class FileHandler(private val context: Context, private val storageManager: StorageManager) {
 
     private val gson by lazy { GsonBuilder().create() }
+
 
     companion object {
 
@@ -35,6 +39,9 @@ class FileHandler(private val context: Context) {
         const val FOLDER_DOCUMENTS = "documents"
         const val FOLDER_EXPORTS = "exports"
         const val FOLDER_TEMP = "temp"
+
+        const val NUM_BYTES_REQUIRED_FOR_MIGRATION = 1024 * 1024 * 100L
+
     }
 
     /**
@@ -127,6 +134,28 @@ class FileHandler(private val context: Context) {
         } catch (e: Exception) {
             Timber.e(e, "Failed to get list of assets for $subFolder")
             emptyList()
+        }
+    }
+
+    /**
+     * @return true if the device has at least [NUM_BYTES_REQUIRED_FOR_MIGRATION] bytes available.
+     */
+    fun hasDeviceEnoughSpaceForMigration(): Boolean {
+        return isInternalSpaceAvailable(NUM_BYTES_REQUIRED_FOR_MIGRATION)
+    }
+
+    private fun isInternalSpaceAvailable(@Suppress("SameParameterValue") requiredBytes: Long): Boolean {
+        val targetFolder = getDocumentsFolder()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val uuid = storageManager.getUuidForPath(getDocumentsFolder())
+            val availableBytes = storageManager.getAllocatableBytes(uuid)
+            if (availableBytes >= requiredBytes) {
+                storageManager.allocateBytes(uuid, requiredBytes)
+            }
+            true
+        } else {
+            val availableBytes = targetFolder.usableSpace
+            availableBytes >= requiredBytes
         }
     }
 
@@ -373,6 +402,15 @@ enum class PageFileType(val extension: String, val mimeType: String) {
             }
             return JPEG
         }
+    }
+}
+
+fun File.safeExists(): Boolean {
+    return try {
+        exists()
+    } catch (e: Exception) {
+        Timber.e("exists check has failed", e)
+        false
     }
 }
 

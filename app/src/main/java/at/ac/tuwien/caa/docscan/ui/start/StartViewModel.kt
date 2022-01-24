@@ -4,9 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.ac.tuwien.caa.docscan.DocScanApp
-import at.ac.tuwien.caa.docscan.logic.Event
-import at.ac.tuwien.caa.docscan.logic.PermissionHandler
-import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
+import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -20,26 +18,35 @@ class StartViewModel(
 ) : ViewModel() {
     val loadingProgress = MutableLiveData(true)
     val destination: MutableLiveData<Event<StartDestination>> = MutableLiveData()
+    val migrationError: MutableLiveData<Event<Throwable>> = MutableLiveData()
 
     fun checkStartUpConditions() {
         loadingProgress.postValue(true)
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) job@{
             // 1. check if the permissions are given, otherwise it's not possible to use the app.
             if (arePermissionsMissing()) {
                 proceed(StartDestination.PERMISSIONS)
-                return@launch
+                return@job
             }
             // 2. perform the migration if necessary
             if (preferencesHandler.shouldPerformDBMigration) {
                 // the migration shouldn't be cancellable at all
-                withContext(NonCancellable) {
+                val result = withContext(NonCancellable) {
                     migrationRepository.migrateJsonDataToDatabase(app)
+                }
+                when (result) {
+                    is Failure -> {
+                        migrationError.postValue(Event(result.exception))
+                    }
+                    is Success -> {
+                        // ignore, fallthrough to next requirement
+                    }
                 }
             }
             // 3. Check if the intro needs to be shown
             if (preferencesHandler.showIntro) {
                 proceed(StartDestination.INTRO)
-                return@launch
+                return@job
             }
 
             // 4. as a final option, move to the camera
