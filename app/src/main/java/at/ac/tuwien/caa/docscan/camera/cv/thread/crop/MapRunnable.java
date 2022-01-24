@@ -1,11 +1,5 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
-import android.graphics.PointF;
-
-import java.util.ArrayList;
-
-import at.ac.tuwien.caa.docscan.logic.Page;
-
 public class MapRunnable extends CropRunnable {
 
     private static final String CLASS_NAME = "MapRunnable";

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="series_name_default">Untitled document</string>
-    <string name="series_name_key">SERIES_NAME_KEY</string>
     <string name="key_upload_mobile_data">KEY_UPLOAD_MOBILE_DATA</string>
     <string name="key_fast_segmentation">KEY_FAST_SEGMENTATION</string>
     <string name="key_focus_measure">KEY_FOCUS_MEASURE</string>
@@ -14,9 +12,6 @@
     <string name="key_debug_settings">KEY_DEBUG_SETTINGS</string>
     <string name="key_exif_settings">KEY_EXIF_SETTINGS</string>
     <string name="key_show_debug_view">KEY_SHOW_DEBUG_VIEW</string>
-    <string name="key_fragment_image_viewer_file_name">KEY_FRAGMENT_IMAGE_VIEWER_FILE_NAME</string>
-    <string name="key_document_file_name">KEY_DOCUMENT_FILE_NAME</string>
-    <string name="key_page_position">KEY_PAGE_POSITION</string>
     <string name="key_use_test_server">KEY_USE_DEBUG_SERVER</string>
     <string name="key_extended_debug_messages">KEY_EXTENDED_DEBUG_MESSAGES</string>
     <string name="key_exif_artist">KEY_EXIF_ARTIST</string>

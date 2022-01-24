@@ -22,6 +22,7 @@ import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.*
+import at.ac.tuwien.caa.docscan.logic.deprecated.Helper
 import at.ac.tuwien.caa.docscan.worker.ExportWorker
 import at.ac.tuwien.caa.docscan.worker.UploadWorker
 import kotlinx.coroutines.NonCancellable

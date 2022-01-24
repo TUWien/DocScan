@@ -9,7 +9,7 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.logic.DataLog;
+import at.ac.tuwien.caa.docscan.logic.deprecated.DataLog;
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer;
 

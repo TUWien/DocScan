@@ -21,7 +21,7 @@
  *  along with DocScan.  If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************************/
 
-package at.ac.tuwien.caa.docscan.logic;
+package at.ac.tuwien.caa.docscan.logic.deprecated;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;

@@ -1,12 +1,8 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.Context;
 import android.graphics.PointF;
 
 import androidx.annotation.NonNull;
-import androidx.exifinterface.media.ExifInterface;
 
 import android.util.Log;
 
@@ -18,11 +14,10 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
-import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.deprecated.Helper;
 
 public class Mapper {
 

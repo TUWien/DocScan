@@ -1,8 +1,10 @@
-package at.ac.tuwien.caa.docscan.logic;
+package at.ac.tuwien.caa.docscan.logic.deprecated;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import at.ac.tuwien.caa.docscan.logic.TranskribusMetaData;
 
 /**
  * Created by fabian on 01.02.2018.

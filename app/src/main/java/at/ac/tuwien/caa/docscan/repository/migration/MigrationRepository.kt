@@ -14,6 +14,8 @@ import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
+import at.ac.tuwien.caa.docscan.logic.deprecated.DocumentStorage
+import at.ac.tuwien.caa.docscan.logic.deprecated.Helper
 import at.ac.tuwien.caa.docscan.repository.migration.domain.JsonStorage
 import at.ac.tuwien.caa.docscan.sync.SyncStorage
 import com.google.gson.FieldNamingPolicy
@@ -63,8 +65,6 @@ class MigrationRepository(
      * file from the outside would have bad consequences.
      * - The files can be still shared or exported.
      *
-     *
-     * TODO: ERROR_HANDLING (3) - To mitigate (1) and (2), add a more sophisticated migration strategy, e.g. by asking the user if the data should even be migrated.
      */
     suspend fun migrateJsonDataToDatabase(context: Context): Resource<Unit> {
         if (!preferencesHandler.shouldPerformDBMigration) {

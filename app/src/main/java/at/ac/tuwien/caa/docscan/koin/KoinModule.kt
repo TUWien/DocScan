@@ -45,7 +45,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 val appModule = module {
     single { androidApplication() as DocScanApp }
     single { AppDatabase.buildDatabase(get()) }
-    single { PreferencesHandler(get()) }
+    single { PreferencesHandler(get(), get()) }
     single { FileHandler(get(), get()) }
     single { MigrationRepository(get(), get(), get(), get()) }
     single { ImageProcessorRepository(get(), get(), get(), get()) }

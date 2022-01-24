@@ -2,7 +2,7 @@ package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 import java.io.File;
 
-import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.deprecated.Document;
 
 public class ImageProcessTask implements CropRunnable.TaskRunnableCropMethods {
 

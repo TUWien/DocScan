@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import at.ac.tuwien.caa.docscan.logic.DataLog;
-import at.ac.tuwien.caa.docscan.logic.Document;
-import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
+import at.ac.tuwien.caa.docscan.logic.deprecated.DataLog;
+import at.ac.tuwien.caa.docscan.logic.deprecated.Document;
+import at.ac.tuwien.caa.docscan.logic.deprecated.DocumentStorage;
 
 @Deprecated
 public class SyncStorage {

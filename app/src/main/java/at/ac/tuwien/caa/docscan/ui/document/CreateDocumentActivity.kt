@@ -14,6 +14,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityCreateDocumentBinding
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.logic.*
+import at.ac.tuwien.caa.docscan.logic.deprecated.Helper
 import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog

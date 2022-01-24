@@ -1,15 +1,34 @@
 package at.ac.tuwien.caa.docscan.logic
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.db.dao.UserDao
+import at.ac.tuwien.caa.docscan.db.model.User
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity.IMG_ORIENTATION_90
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
+/**
+ * Represents all preference instances used in the app.
+ * - [defaultSharedPreferences] which are the default preferences, mostly used in the preference views.
+ * - [sharedPreferences] other settings related preferences.
+ * - [encryptedPref] encrypted preferences for login credentials and session tokens.
+ */
 @Suppress("PrivatePropertyName")
-class PreferencesHandler(val context: Context) {
+class PreferencesHandler(val context: Context, val userDao: UserDao) {
     private val preferencesName: String by lazy { "settings" }
     private val preferencesMode = Context.MODE_PRIVATE
+
+    private val encryptedPref: SharedPreferences
 
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(
         preferencesName,
@@ -39,43 +58,93 @@ class PreferencesHandler(val context: Context) {
         context.getString(R.string.key_upload_mobile_data)
     }
 
+    private val KEY_EXPORT_DIR by lazy {
+        context.getString(R.string.key_pdf_dir)
+    }
+
+    private val KEY_HUD_ENABLED by lazy {
+        context.getString(R.string.key_hud_enabled)
+    }
+
+    private val KEY_SHOW_DEBUG_VIEW by lazy {
+        context.getString(R.string.key_show_debug_view)
+    }
+
+    private val KEY_TEXT_ORIENTATION by lazy {
+        context.getString(R.string.key_text_orientation)
+    }
+
+    private val KEY_FOCUS_MEASURE by lazy {
+        context.getString(R.string.key_focus_measure)
+    }
+
+    private val KEY_FAST_SEGMENTATION by lazy {
+        context.getString(R.string.key_fast_segmentation)
+    }
+
+    private val KEY_SHOW_GRID by lazy {
+        context.getString(R.string.key_show_grid)
+    }
+
+    private val KEY_SHOW_FOCUS_VALUES by lazy {
+        context.getString(R.string.key_show_focus_values)
+    }
+
+    private val KEY_USE_TEST_SERVER by lazy {
+        context.getString(R.string.key_use_test_server)
+    }
+
     companion object {
-        const val TEST_COLLECTION_ID_KEY = "TEST_COLLECTION_ID_KEY"
-        const val COLLECTION_ID_KEY = "COLLECTION_ID_KEY"
-        const val DOCUMENT_HINT_SHOWN_KEY = "DOCUMENT_HINT_SHOWN_KEY"
-        const val INSTALLED_VERSION_KEY = "INSTALLED_VERSION_KEY"
-        const val HIDE_SERIES_DIALOG_KEY = "HIDE_SERIES_DIALOG_KEY"
-        const val SERIES_MODE_ACTIVE_KEY = "SERIES_MODE_ACTIVE_KEY"
-        const val SHOW_INTRO_KEY = "SHOW_INTRO_KEY"
-        val KEY_FIRST_START_DATE = "KEY_FIRST_START_DATE"
-
-        const val SHOW_TRANSKRIBUS_METADATA_KEY = "SHOW_TRANSKRIBUS_METADATA"
-        private const val KEY_SKIP_CROPPING_INFO_DIALOG = "KEY_SKIP_CROPPING_INFO_DIALOG"
-        const val KEY_SHOW_EXPOSURE_LOCK_WARNING = "KEY_SHOW_EXPOSURE_LOCK_WARNING"
-
-        const val DB_MIGRATION_KEY = "DB_MIGRATION_KEY"
-
-        const val KEY_DPI = "KEY_DPI"
         const val DEFAULT_INT_VALUE = -1
 
-        // session related keys
-        private const val FIRST_NAME_KEY = "firstName"
-        private const val LAST_NAME_KEY = "lastName"
-        private const val NAME_KEY = "userName"
-        private const val TRANSKRIBUS_PASSWORD_KEY = "userPassword"
-        private const val DROPBOX_TOKEN_KEY = "dropboxToken"
-        private const val CONNECTION_KEY = "connection"
-
+        private const val TEST_COLLECTION_ID_KEY = "TEST_COLLECTION_ID_KEY"
+        private const val COLLECTION_ID_KEY = "COLLECTION_ID_KEY"
+        private const val INSTALLED_VERSION_KEY = "INSTALLED_VERSION_KEY"
+        private const val SERIES_MODE_ACTIVE_KEY = "SERIES_MODE_ACTIVE_KEY"
+        private const val SHOW_INTRO_KEY = "SHOW_INTRO_KEY"
+        const val KEY_FIRST_START_DATE = "KEY_FIRST_START_DATE"
+        private const val SHOW_TRANSKRIBUS_METADATA_KEY = "SHOW_TRANSKRIBUS_METADATA"
+        private const val KEY_SKIP_CROPPING_INFO_DIALOG = "KEY_SKIP_CROPPING_INFO_DIALOG"
+        private const val KEY_SHOW_EXPOSURE_LOCK_WARNING = "KEY_SHOW_EXPOSURE_LOCK_WARNING"
+        private const val KEY_DPI = "KEY_DPI"
+        private const val KEY_DB_MIGRATION = "DB_MIGRATION"
         private const val KEY_TRANSKRIBUS_SESSION_COOKIE = "TRANSKRIBUS_SESSION_COOKIE"
         private const val KEY_TRANSKRIBUS_PASSWORD = "TRANSKRIBUS_PASSWORD"
+
+        // previous deprecated keys that are deleted in the migration
+        private const val DEPRECATED_FIRST_NAME_KEY = "firstName"
+        private const val DEPRECATED_LAST_NAME_KEY = "lastName"
+        private const val DEPRECATED_NAME_KEY = "userName"
+        private const val DEPRECATED_TRANSKRIBUS_PASSWORD_KEY = "userPassword"
+        private const val DEPRECATED_DROPBOX_TOKEN_KEY = "dropboxToken"
+        private const val DEPRECATED_CONNECTION_KEY = "connection"
+        private const val DEPRECATED_SERIES_NAME_KEY = "SERIES_NAME_KEY"
+        private const val DEPRECATED_SERIES_MODE_PAUSED_KEY = "SERIES_MODE_PAUSED_KEY"
+        private const val DEPRECATED_SERVER_CHANGED_SHOWN_KEY = "server_changed_shown_key"
+        private const val DEPRECATED_DOCUMENT_HINT_SHOWN_KEY = "DOCUMENT_HINT_SHOWN_KEY"
+        private const val DEPRECATED_HIDE_SERIES_DIALOG_KEY = "HIDE_SERIES_DIALOG_KEY"
+
+        private val KEYS_TO_DROP = listOf(
+            DEPRECATED_FIRST_NAME_KEY,
+            DEPRECATED_LAST_NAME_KEY,
+            DEPRECATED_NAME_KEY,
+            DEPRECATED_TRANSKRIBUS_PASSWORD_KEY,
+            DEPRECATED_CONNECTION_KEY,
+            DEPRECATED_DROPBOX_TOKEN_KEY,
+            DEPRECATED_SERIES_NAME_KEY,
+            DEPRECATED_SERIES_MODE_PAUSED_KEY,
+            DEPRECATED_SERVER_CHANGED_SHOWN_KEY,
+            DEPRECATED_DOCUMENT_HINT_SHOWN_KEY,
+            DEPRECATED_HIDE_SERIES_DIALOG_KEY
+        )
     }
 
     var shouldPerformDBMigration: Boolean
         get() =
-            sharedPreferences.getBoolean(DB_MIGRATION_KEY, true)
+            sharedPreferences.getBoolean(KEY_DB_MIGRATION, true)
         set(value) {
             sharedPreferences.edit()
-                .putBoolean(DB_MIGRATION_KEY, value)
+                .putBoolean(KEY_DB_MIGRATION, value)
                 .apply()
         }
 
@@ -116,116 +185,107 @@ class PreferencesHandler(val context: Context) {
             }
         }
 
-    var hasShownDocumentHint: Boolean
-        get() =
-            sharedPreferences.getBoolean(DOCUMENT_HINT_SHOWN_KEY, false)
-        set(value) {
-            sharedPreferences.edit()
-                .putBoolean(DOCUMENT_HINT_SHOWN_KEY, value)
-                .apply()
-        }
-
     var useTranskribusTestServer: Boolean
         get() {
             return defaultSharedPreferences.getBoolean(
-                context.getString(R.string.key_use_test_server),
+                KEY_USE_TEST_SERVER,
                 false
             )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                .putBoolean(context.getString(R.string.key_use_test_server), value)
+                .putBoolean(KEY_USE_TEST_SERVER, value)
                 .apply()
         }
 
     var showFocusValues: Boolean
         get() {
             return defaultSharedPreferences.getBoolean(
-                context.getString(R.string.key_show_focus_values),
+                KEY_SHOW_FOCUS_VALUES,
                 false
             )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                .putBoolean(context.getString(R.string.key_show_focus_values), value)
+                .putBoolean(KEY_SHOW_FOCUS_VALUES, value)
                 .apply()
         }
 
     var showGrid: Boolean
         get() {
             return defaultSharedPreferences.getBoolean(
-                context.getString(R.string.key_show_grid),
+                KEY_SHOW_GRID,
                 false
             )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                .putBoolean(context.getString(R.string.key_show_grid), value)
+                .putBoolean(KEY_SHOW_GRID, value)
                 .apply()
         }
 
     var isFastSegmentation: Boolean
         get() {
             return defaultSharedPreferences.getBoolean(
-                context.getString(R.string.key_fast_segmentation),
+                KEY_FAST_SEGMENTATION,
                 false
             )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                .putBoolean(context.getString(R.string.key_fast_segmentation), value)
+                .putBoolean(KEY_FAST_SEGMENTATION, value)
                 .apply()
         }
 
     var isFocusMeasure: Boolean
         get() {
             return defaultSharedPreferences.getBoolean(
-                context.getString(R.string.key_focus_measure),
+                KEY_FOCUS_MEASURE,
                 true
             )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                .putBoolean(context.getString(R.string.key_focus_measure), value)
+                .putBoolean(KEY_FOCUS_MEASURE, value)
                 .apply()
         }
 
     var textOrientation: Int
         get() {
             return defaultSharedPreferences.getInt(
-                context.getString(R.string.key_text_orientation),
+                KEY_TEXT_ORIENTATION,
                 IMG_ORIENTATION_90
             )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                .putInt(context.getString(R.string.key_text_orientation), value)
+                .putInt(KEY_TEXT_ORIENTATION, value)
                 .apply()
         }
 
     var showDebugView: Boolean
         get() {
             return defaultSharedPreferences.getBoolean(
-                context.getString(R.string.key_show_debug_view),
+                KEY_SHOW_DEBUG_VIEW,
                 false
             )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                .putBoolean(context.getString(R.string.key_show_debug_view), value)
+                .putBoolean(KEY_SHOW_DEBUG_VIEW, value)
                 .apply()
         }
 
     var showHUD: Boolean
         get() {
             return defaultSharedPreferences.getBoolean(
-                context.getString(R.string.key_hud_enabled),
+                KEY_HUD_ENABLED,
                 false
             )
         }
         set(value) {
             defaultSharedPreferences.edit()
-                .putBoolean(context.getString(R.string.key_hud_enabled), value)
+                .putBoolean(KEY_HUD_ENABLED, value)
                 .apply()
         }
 
@@ -236,15 +296,6 @@ class PreferencesHandler(val context: Context) {
         set(value) {
             defaultSharedPreferences.edit()
                 .putBoolean(KEY_SHOW_EXPOSURE_LOCK_WARNING, value)
-                .apply()
-        }
-
-    var hideSeriesDialog: Boolean
-        get() =
-            sharedPreferences.getBoolean(HIDE_SERIES_DIALOG_KEY, false)
-        set(value) {
-            sharedPreferences.edit()
-                .putBoolean(HIDE_SERIES_DIALOG_KEY, value)
                 .apply()
         }
 
@@ -268,11 +319,11 @@ class PreferencesHandler(val context: Context) {
 
     var installedVersionCode: Int
         get() =
-            sharedPreferences.getInt(INSTALLED_VERSION_KEY, DEFAULT_INT_VALUE)
-        set(value) {
+            sharedPreferences.getInt(INSTALLED_VERSION_KEY, 0)
+        @SuppressLint("ApplySharedPref") private set(value) {
             sharedPreferences.edit()
                 .putInt(INSTALLED_VERSION_KEY, value)
-                .apply()
+                .commit()
         }
 
     var firstStartDate: String?
@@ -353,68 +404,91 @@ class PreferencesHandler(val context: Context) {
                 .apply()
         }
 
-    // TODO: Use encrypted preferences
     var transkribusCookie: String?
         get() {
-            return defaultSharedPreferences.getString(KEY_TRANSKRIBUS_SESSION_COOKIE, null)
+            return encryptedPref.getString(KEY_TRANSKRIBUS_SESSION_COOKIE, null)
         }
         set(value) {
-            defaultSharedPreferences.edit()
+            encryptedPref.edit()
                 .putString(KEY_TRANSKRIBUS_SESSION_COOKIE, value)
                 .apply()
         }
 
-    // TODO: Use encrypted preferences
     var transkribusPassword: String?
         get() {
-            return defaultSharedPreferences.getString(KEY_TRANSKRIBUS_PASSWORD, null)
+            return encryptedPref.getString(KEY_TRANSKRIBUS_PASSWORD, null)
         }
         set(value) {
-            defaultSharedPreferences.edit()
+            encryptedPref.edit()
                 .putString(KEY_TRANSKRIBUS_PASSWORD, value)
                 .apply()
         }
 
     var exportDirectoryUri: String?
         get() {
-            return defaultSharedPreferences.getString(context.getString(R.string.key_pdf_dir), null)
+            return defaultSharedPreferences.getString(KEY_EXPORT_DIR, null)
         }
         set(value) {
             defaultSharedPreferences.edit()
-                .putString(context.getString(R.string.key_pdf_dir), value)
+                .putString(KEY_EXPORT_DIR, value)
                 .apply()
         }
 
     init {
-        // check for migrations
-        if (BuildConfig.VERSION_CODE > 156) {
-//            showIntro = installedVersionCode == DEFAULT_INT_VALUE
-            // TODO: migrate from default to settings preferences
-            // TODO: migrate session data from transkribus
-            // TODO: Clear dropbox data.
-//            firstStartDate = defaultSharedPreferences.getString(KEY_FIRST_START_DATE, null);
-
-            // TODO: migrate previous transkribus login
-
-            // TODO: migrate and delete key "server_changed_shown_key"
-
-            // TODO: migrate and delete key "SERIES_MODE_PAUSED_KEY" (since it's not used anymore)
-            // TODO: migrate and delete key "SERIES_NAME_KEY" (since it's not used anymore)
-            // used previously to store the dropbox token
-            defaultSharedPreferences.edit().remove("dropboxToken").apply()
-            // used previously to distinguish between dropbox/transkribus login
-            defaultSharedPreferences.edit().remove("connection").apply()
-//
-//            private static final String FIRST_NAME_KEY = "firstName";
-//            private static final String LAST_NAME_KEY = "lastName";
-//            private static final String NAME_KEY = "userName";
-//            private static final String TRANSKRIBUS_PASSWORD_KEY = "userPassword";
-//            private static final String DROPBOX_TOKEN_KEY = "dropboxToken";
-//            private static final String CONNECTION_KEY = "connection";
-
-
+        val masterKeyBuilder = MasterKey.Builder(context, MasterKey.DEFAULT_MASTER_KEY_ALIAS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val keyGenParameterSpec = KeyGenParameterSpec.Builder(
+                MasterKey.DEFAULT_MASTER_KEY_ALIAS,
+                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+            )
+                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                .setKeySize(MasterKey.DEFAULT_AES_GCM_MASTER_KEY_SIZE)
+                .build()
+            masterKeyBuilder.setKeyGenParameterSpec(keyGenParameterSpec)
         }
 
+        encryptedPref = EncryptedSharedPreferences.create(
+            context,
+            "encrypted_",
+            masterKeyBuilder.build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+
+
+        // check for migrations
+        if (installedVersionCode > 156) {
+
+            // migrate transkribus user data
+            val firstName = defaultSharedPreferences.getString(DEPRECATED_FIRST_NAME_KEY, null)
+            val lastName = defaultSharedPreferences.getString(DEPRECATED_LAST_NAME_KEY, null)
+            val userName = defaultSharedPreferences.getString(DEPRECATED_NAME_KEY, null)
+            val userPassword =
+                defaultSharedPreferences.getString(DEPRECATED_TRANSKRIBUS_PASSWORD_KEY, null)
+
+            // the sessionIdCookie has not been previously stored in the app.
+            if (userName != null && userPassword != null && firstName != null && lastName != null) {
+                transkribusPassword = userPassword
+                GlobalScope.launch(Dispatchers.IO) {
+                    userDao.insertUser(
+                        User(
+                            firstName = firstName,
+                            lastName = lastName,
+                            userName = userName
+                        )
+                    )
+                }
+            }
+
+            // drop all deprecated keys
+            KEYS_TO_DROP.forEach {
+                defaultSharedPreferences.edit().remove(it).apply()
+                sharedPreferences.edit().remove(it).apply()
+            }
+        }
+
+        // save the installed version code
         installedVersionCode = BuildConfig.VERSION_CODE
     }
 }

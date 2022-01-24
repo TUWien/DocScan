@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.logic;
+package at.ac.tuwien.caa.docscan.logic.deprecated;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
@@ -6,6 +6,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
+
+import at.ac.tuwien.caa.docscan.logic.TranskribusMetaData;
+import at.ac.tuwien.caa.docscan.logic.deprecated.Document;
 
 /**
  * This class is used to generate JSON strings that can be used for the upload to Transkribus.

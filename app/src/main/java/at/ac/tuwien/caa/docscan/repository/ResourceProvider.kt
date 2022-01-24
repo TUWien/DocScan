@@ -16,7 +16,7 @@ suspend fun <ApiType, ResourceType> transkribusResource(
     forceNetwork: () -> Boolean = { false },
     loadFromDisk: (suspend () -> ApiType?)? = null,
     apiCall: suspend () -> Response<ApiType>,
-    persistNetworkResponse: (response: ApiType) -> Unit = { },
+    persistNetworkResponse: suspend (response: ApiType) -> Unit = { },
     transformToResourceType: (result: Resource<ApiType>) -> Resource<ResourceType> = { result ->
         @Suppress("UNCHECKED_CAST")
         result as Resource<ResourceType> // is assumed in default case when no transformation function is provided

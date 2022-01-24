@@ -1,13 +1,12 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
-import at.ac.tuwien.caa.docscan.logic.Document;
+import at.ac.tuwien.caa.docscan.logic.deprecated.Document;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.MESSAGE_COMPLETED_TASK;
 

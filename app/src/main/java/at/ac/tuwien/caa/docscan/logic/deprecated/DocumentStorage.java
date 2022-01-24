@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.logic;
+package at.ac.tuwien.caa.docscan.logic.deprecated;
 
 import android.content.Context;
 import android.os.Build;
@@ -157,33 +157,6 @@ public class DocumentStorage {
         mTitle = title;
 
     }
-
-    public void generateDocument(Context context) {
-
-        if (mTitle == null)
-            mTitle = Helper.getActiveDocumentTitle(context);
-
-        Document document = getDocument(mTitle);
-        if (document == null || document.getPages() == null)
-            createNewDocument(mTitle);
-
-    }
-
-    public void generateDocument(File file, Context context) {
-
-        if (mTitle == null)
-            mTitle = Helper.getActiveDocumentTitle(context);
-
-        Document document = getDocument(mTitle);
-        if (document == null || document.getPages() == null) {
-            createNewDocument(mTitle);
-            document = getDocument(mTitle);
-        }
-
-        document.getPages().add(new Page(file));
-
-    }
-
     /**
      * Returns true if a document with the active title (mTitle) is existing and the file is added
      * to it.
@@ -260,28 +233,6 @@ public class DocumentStorage {
         sInstance = new DocumentStorage();
     }
 
-    public void updateStatus(Context context) {
-
-//        Check if some files are removed from outside:
-        Helper.cleanDocuments(context);
-
-        for (Document document : mDocuments) {
-
-            boolean areFilesUploaded = SyncStorage.getInstance(context).areFilesUploaded(document.getFiles());
-            document.setIsUploaded(areFilesUploaded);
-
-            if (!areFilesUploaded) {
-                boolean isAwaitingUpload = SyncStorage.getInstance(context).
-                        isDocumentAwaitingUpload(document);
-                document.setIsAwaitingUpload(isAwaitingUpload);
-            }
-
-            boolean currentlyProcessed = Helper.isCurrentlyProcessed(document);
-            document.setIsCurrentlyProcessed(currentlyProcessed);
-
-        }
-
-    }
 
     public static String convertStreamToString(InputStream is) throws IOException {
         // http://www.java2s.com/Code/Java/File-Input-Output/ConvertInputStreamtoString.htm
@@ -378,7 +329,6 @@ public class DocumentStorage {
 
         if (!storeFile.exists()) {
             sInstance = new DocumentStorage();
-            sInstance.setTitle(Helper.getActiveDocumentTitle(context));
         } else {
 
 //            File tempFile = null;
@@ -426,8 +376,6 @@ public class DocumentStorage {
 //
 //                }
 
-                if (sInstance.getTitle() == null)
-                    sInstance.setTitle(Helper.getActiveDocumentTitle(context));
 
             } catch (Exception e) {
                 FirebaseCrashlytics.getInstance().recordException(e);

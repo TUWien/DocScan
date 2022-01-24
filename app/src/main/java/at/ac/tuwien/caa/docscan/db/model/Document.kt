@@ -5,7 +5,7 @@ import androidx.annotation.Keep
 import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.model.Document.Companion.TABLE_NAME_DOCUMENTS
 import at.ac.tuwien.caa.docscan.db.model.state.LockState
-import at.ac.tuwien.caa.docscan.logic.Helper
+import at.ac.tuwien.caa.docscan.logic.deprecated.Helper
 import at.ac.tuwien.caa.docscan.logic.PageFileType
 import kotlinx.parcelize.Parcelize
 import java.util.*
@@ -77,10 +77,12 @@ private fun Document.sanitizedTitle(): String {
 private fun Document.fileNamePrefix(pageNumber: Int): String {
     filePrefix?.let {
         if (it.isNotEmpty()) {
-            return Helper.getFileNamePrefix(Helper.getFileTimeStamp(), it, pageNumber)
+            return Helper.getFileNamePrefix(
+                Helper.getFileTimeStamp(), it, pageNumber)
         }
     }
-    return Helper.getFileNamePrefix(Helper.getFileTimeStamp(), sanitizedTitle(), pageNumber)
+    return Helper.getFileNamePrefix(
+        Helper.getFileTimeStamp(), sanitizedTitle(), pageNumber)
 }
 
 fun Document.edit(title: String, prefix: String?, metaData: MetaData?): Document {

@@ -89,7 +89,7 @@ import at.ac.tuwien.caa.docscan.logic.Failure;
 import at.ac.tuwien.caa.docscan.logic.FileHandler;
 import at.ac.tuwien.caa.docscan.logic.GlideHelper;
 import at.ac.tuwien.caa.docscan.logic.GlideLegacyCallback;
-import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.deprecated.Helper;
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler;
 import at.ac.tuwien.caa.docscan.logic.Resource;
 import at.ac.tuwien.caa.docscan.logic.Success;

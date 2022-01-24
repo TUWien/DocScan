@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.logic;
+package at.ac.tuwien.caa.docscan.logic.deprecated;
 
 import java.io.File;
 

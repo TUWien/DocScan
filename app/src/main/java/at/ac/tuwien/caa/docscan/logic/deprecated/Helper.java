@@ -1,4 +1,4 @@
-package at.ac.tuwien.caa.docscan.logic;
+package at.ac.tuwien.caa.docscan.logic.deprecated;
 
 import android.app.Activity;
 import android.content.Context;
@@ -357,20 +357,6 @@ public class Helper {
 
     }
 
-    public static boolean isDocumentFocused(Document document) {
-
-        if (document == null)
-            return true;
-
-        for (Page page : document.getPages()) {
-            if (!page.isFocused())
-                return false;
-        }
-
-        return true;
-
-    }
-
     public static boolean rotateExif90DegreesCCW(File outFile) {
 
         final ExifInterface exif;
@@ -424,33 +410,6 @@ public class Helper {
 
     }
 
-//    public static List<Document> getDocuments(String appName){
-//
-//        List<Document> documents = new ArrayList<>();
-//
-//        File mediaStorageDir = getMediaStorageDir(appName);
-//
-//        FileFilter directoryFilter = new FileFilter() {
-//            public boolean accept(File file) {
-//                return file.isDirectory();
-//            }
-//        };
-//
-//        File[] folders = mediaStorageDir.listFiles(directoryFilter);
-//        if (folders == null)
-//            return documents;
-//
-//        ArrayList<File> dirs = new ArrayList<>(Arrays.asList(folders));
-//
-//        for (File dir : dirs) {
-//            Document document = getDocument(dir.getAbsolutePath());
-//            documents.add(document);
-//        }
-//
-//        return documents;
-//
-//    }
-
     /**
      * @param appName
      * @param fileName
@@ -484,184 +443,6 @@ public class Helper {
         }
 
         return null;
-
-    }
-
-    public static ArrayList<Document> getValidDocuments(List<Document> documents) {
-
-        ArrayList<Document> validDocuments = new ArrayList<>();
-
-        if (documents == null || documents.size() == 0)
-            return validDocuments;
-
-        for (Document document : documents) {
-            if (document.getPages() != null && document.getTitle() != null)
-                validDocuments.add(document);
-        }
-
-        // Sort it based on the upload status:
-        java.util.Collections.sort(validDocuments, new DocumentComparator());
-
-        return validDocuments;
-
-    }
-
-    public static List<Document> getNonEmptyDocuments(List<Document> documents) {
-
-        List<Document> nonEmptyDocuments = new ArrayList<>();
-
-        if (documents == null || documents.size() == 0)
-            return nonEmptyDocuments;
-
-        for (Document document : documents) {
-            if (document.getPages() != null && document.getPages().size() > 0)
-                nonEmptyDocuments.add(document);
-        }
-
-        // Sort it based on the upload status:
-        java.util.Collections.sort(nonEmptyDocuments, new DocumentComparator());
-
-        return nonEmptyDocuments;
-
-    }
-
-    static class DocumentComparator implements Comparator<Document> {
-        @Override
-        public int compare(Document doc1, Document doc2) {
-            int value;
-            if (doc1.isUploaded() && !doc2.isUploaded())
-                value = 1;
-            else if (!doc1.isUploaded() && doc2.isUploaded())
-                value = -1;
-            else {
-                value = doc1.getTitle().compareToIgnoreCase(doc2.getTitle());
-            }
-
-            return value;
-
-        }
-    }
-
-
-//    public static Document getDocument(String dirName) {
-//
-//        Document document = new Document();
-//        ArrayList<File> fileList = getImageList(dirName);
-//        ArrayList<Page> pages = filesToPages(fileList);
-//        document.setPages(pages);
-//        File file = new File(dirName);
-//        document.setTitle(file.getName());
-//
-//        boolean isDocumentUploaded = areFilesUploaded(fileList);
-//        document.setIsUploaded(isDocumentUploaded);
-//
-//        boolean isDocumentCropped = isCurrentlyProcessed(fileList);
-//        document.setIsCurrentlyProcessed(isDocumentCropped);
-//
-//        if (!isDocumentUploaded) {
-//            boolean isAwaitingUpload = isDirAwaitingUpload(new File(dirName), fileList);
-//            document.setIsAwaitingUpload(isAwaitingUpload);
-//        }
-//
-//        return document;
-//
-//    }
-
-    public static String getActiveDocumentTitle(Context context) {
-
-        SharedPreferences sharedPref = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context);
-        String seriesName = sharedPref.getString(
-                context.getResources().getString(R.string.series_name_key),
-                context.getResources().getString(R.string.series_name_default));
-
-        return seriesName;
-
-    }
-
-    /**
-     * Returns the document that contains the file.
-     *
-     * @param context
-     * @param file
-     * @return
-     */
-    public static Document getParentDocument(Context context, File file) {
-
-        ArrayList<Document> documents = DocumentStorage.getInstance(context).getDocuments();
-        for (Document document : documents) {
-            Iterator<Page> iter = document.getPages().iterator();
-
-            while (iter.hasNext()) {
-                Page page = iter.next();
-                if (page.getFile().getAbsolutePath().equalsIgnoreCase(file.getAbsolutePath()))
-                    return document;
-            }
-        }
-
-        return null;
-
-    }
-
-
-    public static boolean isCurrentlyProcessed(Document document) {
-
-        if (document != null) {
-            ArrayList<File> files = document.getFiles();
-            if (files != null && !files.isEmpty()) {
-                for (File file : files) {
-                    if (ImageProcessLogger.isWaitingForProcess(file))
-                        return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Iterates over documents and checks if the files are still existing.
-     *
-     * @param context
-     */
-    public static void cleanDocuments(Context context) {
-
-
-        ArrayList<Document> documents = DocumentStorage.getInstance(context).getDocuments();
-        for (Document document : documents) {
-
-            Iterator<Page> iter = document.getPages().iterator();
-
-            while (iter.hasNext()) {
-                Page page = iter.next();
-                File file = page.getFile();
-                if (!file.exists()) {
-                    iter.remove();
-//                    Removes the document from the uploaded list and the awaiting upload list:
-//                    SyncStorage.getInstance(context).removeDocumentFromUploadList(document);
-//                    SyncStorage.getInstance(context).removeDocument(document.getTitle(), context);
-                    SyncStorage.getInstance(context).removeFile(file);
-                }
-            }
-
-        }
-
-    }
-
-    public static boolean isCurrentlyProcessed(ArrayList<File> fileList) {
-
-        if (fileList == null)
-            return false;
-
-        if (fileList.size() == 0)
-            return false;
-
-
-        for (File file : fileList) {
-            if (ImageProcessLogger.isWaitingForProcess(file))
-                return true;
-        }
-
-        return false;
 
     }
 
@@ -792,55 +573,6 @@ public class Helper {
         return new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
     }
 
-//    private static boolean areFilesUploaded(ArrayList<File> fileList) {
-//
-//        if (fileList == null)
-//            return false;
-//
-//        if (fileList.size() == 0)
-//            return false;
-//
-//        File[] files = fileList.toArray(new File[fileList.size()]);
-//
-//        return SyncInfo.getInstance().areFilesUploaded(files);
-//
-////        if (files.length == 0)
-////            return false;
-////
-////        // Check if every file contained in the folder is already uploaded:
-////        for (File file : files) {
-////            if (!isFileUploaded(file))
-////                return false;
-////        }
-////
-////        return true;
-//
-//    }
-//
-//
-//    private static boolean isDirAwaitingUpload(File dir, ArrayList<File> fileList) {
-//
-//        if (dir == null)
-//            return false;
-//
-//        if (fileList == null)
-//            return false;
-//
-//        if (fileList.size() == 0)
-//            return false;
-//
-//        File[] files = fileList.toArray(new File[fileList.size()]);
-//
-//        return SyncInfo.getInstance().isDirAwaitingUpload(dir, files);
-//
-//    }
-//
-//    private static ArrayList<File> getImageList(String dir) {
-//
-//        return getImageList(new File(dir));
-//
-//    }
-
     private static ArrayList<File> getImageList(File file) {
 
         File[] files = getImageArray(file);
@@ -848,19 +580,6 @@ public class Helper {
         ArrayList<File> fileList = new ArrayList<>(Arrays.asList(files));
 
         return fileList;
-
-    }
-
-
-    private static ArrayList<Page> filesToPages(ArrayList<File> files) {
-
-        ArrayList<Page> pages = new ArrayList<>(files.size());
-
-        for (File file : files) {
-            pages.add(new Page(file));
-        }
-
-        return pages;
 
     }
 
@@ -879,17 +598,6 @@ public class Helper {
         return files;
     }
 
-    public static boolean isOnline(Context context) {
-
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-
-        boolean isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting();
-
-        return isConnected;
-
-    }
-
     /**
      * Check the device to make sure it has the Google Play Services APK. Taken from:
      * https://stackoverflow.com/a/48224404/9827698
@@ -899,7 +607,7 @@ public class Helper {
         int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable
                 (context);
         if (resultCode != ConnectionResult.SUCCESS) {
-            Log.d(CLASS_NAME, "This device does not support Google Play Services. " +
+            Timber.d("This device does not support Google Play Services. " +
                     "Push notifications are not supported");
             return false;
         }
@@ -921,31 +629,4 @@ public class Helper {
         }
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
-
-    public static boolean useTranskribusTestServer(Context context) {
-
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPref.getBoolean(context.getResources().getString(
-                R.string.key_use_test_server), false);
-
-    }
-
-
-    /**
-     * Returns the correct singular or plural form of the word documents, regarding the number of
-     * documents.
-     *
-     * @param numDoc
-     * @return
-     */
-    public static String getDocumentSingularPlural(Context context, int numDoc) {
-
-        if (numDoc == 1)
-            return context.getResources().getString(R.string.sync_selection_single_document_text);
-        else
-            return context.getResources().getString(R.string.sync_selection_many_documents_text);
-
-    }
-
-
 }

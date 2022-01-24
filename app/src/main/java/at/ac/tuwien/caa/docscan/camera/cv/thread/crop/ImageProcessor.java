@@ -30,20 +30,15 @@ import android.os.Message;
 
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import android.util.Log;
-
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import at.ac.tuwien.caa.docscan.logic.Document;
-import at.ac.tuwien.caa.docscan.logic.DocumentStorage;
-import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.deprecated.Document;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_FOCUS_MEASURE;
 import static at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger.TASK_TYPE_MAP;
