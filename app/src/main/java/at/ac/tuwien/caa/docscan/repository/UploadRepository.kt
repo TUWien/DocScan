@@ -112,6 +112,11 @@ class UploadRepository(
                 }
             }
 
+        // set all pages to uploading
+        documentWithPages.pages.forEach {
+            pageDao.updateUploadState(it.id, UploadState.UPLOAD_IN_PROGRESS)
+        }
+
         val pagesToUpload = when (val expectationCheckResult =
             checkUploadExpectations(documentId, uploadStatusResponse)) {
             is Failure -> {
@@ -221,7 +226,7 @@ class UploadRepository(
                 )
             )
 
-            // update the state and save the filename in the database
+            // save the file name (the upload state doesn't really matter at this place
             val upload = Upload(state = UploadState.UPLOAD_IN_PROGRESS, uploadFileName = fileName)
             page.transkribusUpload = upload
             pageDao.insertPage(page)
