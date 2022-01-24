@@ -38,11 +38,6 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
             login()
             hideKeyboard()
         }
-        binding.loginButton.setOnLongClickListener {
-            binding.usernameEdittext.setText("matej.bartalsky@gmail.com")
-            binding.passwordEdittext.setText("XDP5HaPtRtwt6e3")
-            true
-        }
         observe()
 
         // Check what is the parent class that should be shown after the login is done:
