@@ -458,7 +458,7 @@ class PreferencesHandler(val context: Context, val userDao: UserDao) {
 
 
         // check for migrations
-        if (installedVersionCode > 156) {
+        if (BuildConfig.VERSION_CODE > 156) {
 
             // migrate transkribus user data
             val firstName = defaultSharedPreferences.getString(DEPRECATED_FIRST_NAME_KEY, null)
