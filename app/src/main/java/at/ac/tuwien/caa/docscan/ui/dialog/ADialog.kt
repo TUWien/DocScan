@@ -159,6 +159,12 @@ class ADialog : AppCompatDialogFragment() {
             positiveBtn = R.string.dialog_btn_upload,
             negativeBtn = R.string.dialog_cancel_text,
         ),
+        CONFIRM_CANCEL_UPLOAD(
+            R.string.document_viewer_confirm_cancel_upload_title,
+            R.string.document_viewer_confirm_cancel_upload_text,
+            positiveBtn = R.string.dialog_btn_upload,
+            negativeBtn = R.string.dialog_no_text,
+        ),
         LOGIN_SUCCESS(
             R.string.login_dialog_success_title,
             R.string.login_dialog_success_text,

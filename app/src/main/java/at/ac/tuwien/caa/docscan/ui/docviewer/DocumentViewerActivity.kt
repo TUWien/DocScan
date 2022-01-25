@@ -19,6 +19,7 @@ import at.ac.tuwien.caa.docscan.databinding.ActivityDocumentViewerBinding
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
+import at.ac.tuwien.caa.docscan.db.model.isUploadInProgress
 import at.ac.tuwien.caa.docscan.db.model.isUploaded
 import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
 import at.ac.tuwien.caa.docscan.extensions.getImageImportIntent
@@ -260,11 +261,15 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                 }
                                 resource.exception.handleError(this)
                             }
+                            DocumentAction.CANCEL_UPLOAD -> {
+                                resource.exception.handleError(this)
+                            }
                         }
                     }
                     is Success<*> -> {
                         if (model.action == DocumentAction.SHARE) {
                             model.resource.applyOnSuccess { any ->
+                                @Suppress("UNCHECKED_CAST")
                                 (any as? List<Uri>?)?.let { uris ->
                                     shareFile(this, PageFileType.JPEG, uris)
                                 }
@@ -275,7 +280,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                             return@observe
                         }
                         val name = when (model.action) {
-                            DocumentAction.DELETE, DocumentAction.CROP, DocumentAction.SHARE -> ""
+                            DocumentAction.DELETE, DocumentAction.CROP, DocumentAction.SHARE, DocumentAction.CANCEL_UPLOAD -> ""
                             DocumentAction.EXPORT -> getString(R.string.operation_export)
                             DocumentAction.UPLOAD -> getString(R.string.operation_upload)
                         }
@@ -324,6 +329,13 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                     DocumentAction.UPLOAD -> {
                         showDialog(
                             ADialog.DialogAction.CONFIRM_UPLOAD.with(
+                                arguments = model.arguments
+                            )
+                        )
+                    }
+                    DocumentAction.CANCEL_UPLOAD -> {
+                        showDialog(
+                            ADialog.DialogAction.CONFIRM_CANCEL_UPLOAD.with(
                                 arguments = model.arguments
                             )
                         )
@@ -377,6 +389,14 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         if (result.isPositive()) {
                             viewModel.applyActionFor(
                                 DocumentAction.UPLOAD,
+                                result.arguments.appendIsConfirmed(true)
+                            )
+                        }
+                    }
+                    ADialog.DialogAction.CONFIRM_CANCEL_UPLOAD -> {
+                        if (result.isPositive()) {
+                            viewModel.applyActionFor(
+                                DocumentAction.CANCEL_UPLOAD,
                                 result.arguments.appendIsConfirmed(true)
                             )
                         }
@@ -451,6 +471,9 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                     }
                     SheetActionId.UPLOAD.id -> {
                         viewModel.applyActionFor(DocumentAction.UPLOAD, result.arguments)
+                    }
+                    SheetActionId.CANCEL_UPLOAD.id -> {
+                        viewModel.applyActionFor(DocumentAction.CANCEL_UPLOAD, result.arguments)
                     }
                     SheetActionId.SHARE.id -> {
                         viewModel.applyActionFor(DocumentAction.SHARE, result.arguments)
@@ -578,22 +601,30 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                     R.drawable.ic_baseline_picture_as_pdf_24px
                 )
             )
-            if (!document.isUploaded())
-                sheetActions.add(
+            val sheetActionUpload = when {
+                document.isUploaded() -> {
                     SheetAction(
                         SheetActionId.UPLOAD.id,
                         getString(R.string.action_document_upload_document),
                         R.drawable.ic_cloud_upload_black_24dp
                     )
-                )
-            else
-                sheetActions.add(
+                }
+                document.isUploadInProgress() -> {
+                    SheetAction(
+                        SheetActionId.CANCEL_UPLOAD.id,
+                        getString(R.string.action_document_cancel_upload_document),
+                        R.drawable.ic_cloud_upload_gray_24dp
+                    )
+                }
+                else -> {
                     SheetAction(
                         SheetActionId.UPLOAD.id,
                         getString(R.string.action_document_upload_document),
                         R.drawable.ic_cloud_upload_gray_24dp
                     )
-                )
+                }
+            }
+            sheetActions.add(sheetActionUpload)
         }
         sheetActions.add(
             SheetAction(

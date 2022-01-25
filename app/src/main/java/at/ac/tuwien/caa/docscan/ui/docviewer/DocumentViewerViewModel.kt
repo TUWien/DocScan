@@ -193,6 +193,9 @@ class DocumentViewerViewModel(
                         skipAlreadyUploadedRestriction = documentActionArguments.extractSkipAlreadyUploadedRestriction()
                     )
                 }
+                DocumentAction.CANCEL_UPLOAD -> {
+                    repository.cancelDocumentUpload(documentWithPages.document.id)
+                }
             }
             observableResourceAction.postValue(
                 Event(
@@ -240,6 +243,7 @@ enum class DocumentAction(val needsConfirmation: Boolean, val showSuccessMessage
     EXPORT(true, true),
     CROP(true, false),
     UPLOAD(true, true),
+    CANCEL_UPLOAD(true, false),
     SHARE(false, false)
 }
 

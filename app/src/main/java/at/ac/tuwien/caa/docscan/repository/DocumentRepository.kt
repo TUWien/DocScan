@@ -183,6 +183,20 @@ class DocumentRepository(
         }
     }
 
+    suspend fun cancelDocumentUpload(documentId: UUID): Resource<Unit> {
+        val docWithPages = documentDao.getDocumentWithPages(documentId)
+        // non-null checks are not performed here, this is for safety reasons so that the upload worker
+        // is always cancelled, despite the fact if the document does not exist anymore.
+        if (docWithPages?.isUploaded() == false) {
+            // at this point, we do not know if the worker is currently just scheduled or running
+            // if if it's just scheduled, than we need to repair the states first.
+            UploadWorker.cancelWorkByDocumentId(workManager, documentId)
+            pageDao.updateUploadStateForDocument(documentId, UploadState.NONE)
+        }
+        tryToUnlockDoc(documentId, null)
+        return Success(Unit)
+    }
+
     @WorkerThread
     suspend fun uploadDocument(
         documentWithPages: DocumentWithPages,

@@ -153,5 +153,6 @@ enum class SheetActionId(val id: Int) {
     CROP(5),
     EXPORT(6),
     UPLOAD(7),
-    QR(8);
+    CANCEL_UPLOAD(8),
+    QR(9);
 }
