@@ -45,6 +45,13 @@ android {
                 arguments "-DPATH_TO_OPENCV_NATIVE:STRING=${path_to_opencv_native}"
             }
         }
+
+        // export room schema
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
     }
 
     kotlinOptions {
