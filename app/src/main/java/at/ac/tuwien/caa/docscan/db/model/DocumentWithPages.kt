@@ -1,12 +1,14 @@
 package at.ac.tuwien.caa.docscan.db.model
 
 import android.os.Parcelable
+import androidx.annotation.Keep
 import androidx.room.Embedded
 import androidx.room.Relation
 import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import kotlinx.parcelize.Parcelize
 
+@Keep
 @Parcelize
 data class DocumentWithPages(
     @Embedded

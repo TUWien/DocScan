@@ -1,10 +1,12 @@
 package at.ac.tuwien.caa.docscan.db.model.boundary
 
 import android.os.Parcelable
+import androidx.annotation.Keep
 import androidx.room.Embedded
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import kotlinx.parcelize.Parcelize
 
+@Keep
 @Parcelize
 data class SinglePageBoundary(
     @Embedded(prefix = KEY_TOP_LEFT)

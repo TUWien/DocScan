@@ -1,8 +1,10 @@
 package at.ac.tuwien.caa.docscan.db.model.error
 
+import androidx.annotation.Keep
 import androidx.annotation.StringRes
 import at.ac.tuwien.caa.docscan.R
 
+@Keep
 enum class DBErrorCode(@StringRes val titleStringResId: Int, @StringRes val textStringResId: Int) {
     GENERIC(R.string.generic_error_title, R.string.generic_error_text),
     DOCUMENT_LOCKED(R.string.error_document_busy_title, R.string.error_document_busy_text),

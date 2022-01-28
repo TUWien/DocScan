@@ -1,11 +1,13 @@
 package at.ac.tuwien.caa.docscan.db.model.error
 
+import androidx.annotation.Keep
 import androidx.annotation.StringRes
 import at.ac.tuwien.caa.docscan.R
 
 /**
  * Represents internal error codes for IO errors.
  */
+@Keep
 enum class IOErrorCode(
     @StringRes val titleStringResId: Int,
     @StringRes val textStringResId: Int,

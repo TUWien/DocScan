@@ -27,6 +27,8 @@ import android.graphics.PointF;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.Keep;
+
 import java.util.ArrayList;
 
 /**
@@ -34,6 +36,7 @@ import java.util.ArrayList;
  * DocScanInterface.cpp Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetPageSegmentation
  * There the DkPolyRect CPP object is converted to a DkPolyRect Java object.
  */
+@Keep
 public class DkPolyRect implements Parcelable {
 
     public static final String KEY_POLY_RECT = "KEY_POLY_RECT";

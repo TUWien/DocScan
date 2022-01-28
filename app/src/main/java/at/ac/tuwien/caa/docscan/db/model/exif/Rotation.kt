@@ -1,7 +1,9 @@
 package at.ac.tuwien.caa.docscan.db.model.exif
 
+import androidx.annotation.Keep
 import androidx.exifinterface.media.ExifInterface
 
+@Keep
 enum class Rotation(val exifOrientation: Int, val angle: Int) {
     ORIENTATION_NORMAL(ExifInterface.ORIENTATION_NORMAL, 0),
     ORIENTATION_90(ExifInterface.ORIENTATION_ROTATE_90, 90),

@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.db.model
 
 import android.graphics.PointF
 import android.os.Parcelable
+import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
@@ -25,6 +26,7 @@ import java.util.*
  * [id].
  */
 @Parcelize
+@Keep
 @Entity(tableName = TABLE_NAME_PAGES)
 data class Page(
     /**

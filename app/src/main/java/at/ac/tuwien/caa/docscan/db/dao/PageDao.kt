@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.db.dao
 
+import androidx.annotation.Keep
 import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.Upload
@@ -9,6 +10,7 @@ import at.ac.tuwien.caa.docscan.db.model.state.UPLOAD_STATE_ID_UPLOAD_IN_PROGRES
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import java.util.*
 
+@Keep
 @Dao
 interface PageDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)

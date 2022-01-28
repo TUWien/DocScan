@@ -1,9 +1,11 @@
 package at.ac.tuwien.caa.docscan.db.dao
 
+import androidx.annotation.Keep
 import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.model.ExportFile
 import kotlinx.coroutines.flow.Flow
 
+@Keep
 @Dao
 interface ExportFileDao {
 

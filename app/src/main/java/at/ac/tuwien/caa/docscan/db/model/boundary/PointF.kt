@@ -2,10 +2,12 @@ package at.ac.tuwien.caa.docscan.db.model.boundary
 
 import android.graphics.PointF
 import android.os.Parcelable
+import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import kotlinx.parcelize.Parcelize
 
+@Keep
 @Parcelize
 data class PointF(
     @ColumnInfo(name = KEY_X)

@@ -38,7 +38,7 @@
 #include <iostream>
 
 
-JNIEXPORT jobjectArray JNICALL
+extern "C" JNIEXPORT jobjectArray JNICALL
 Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(JNIEnv *env,
                                                                                 jclass cls,
                                                                                 jlong src,
@@ -98,7 +98,7 @@ Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetPageSegmentation(
 
 }
 
-JNIEXPORT jobjectArray JNICALL
+extern "C" JNIEXPORT jobjectArray JNICALL
 Java_at_ac_tuwien_caa_docscan_camera_cv_NativeWrapper_nativeGetFocusMeasures(JNIEnv *env,
                                                                              jclass cls,
                                                                              jlong src) {

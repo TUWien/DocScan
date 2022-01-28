@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.db.dao
 
+import androidx.annotation.Keep
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -7,6 +8,7 @@ import androidx.room.Query
 import at.ac.tuwien.caa.docscan.db.model.User
 import kotlinx.coroutines.flow.Flow
 
+@Keep
 @Dao
 interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)

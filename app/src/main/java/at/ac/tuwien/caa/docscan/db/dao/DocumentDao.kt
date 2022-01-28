@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.db.dao
 
+import androidx.annotation.Keep
 import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
@@ -8,6 +9,7 @@ import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 
+@Keep
 @Dao
 interface DocumentDao {
     @Transaction

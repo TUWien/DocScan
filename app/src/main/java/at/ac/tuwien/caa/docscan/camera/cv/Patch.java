@@ -27,11 +27,14 @@ import android.graphics.PointF;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.Keep;
+
 /**
  * Class containing the output of the focus measurement task. This class is used in
  * DocScanInterface.cpp Java_at_ac_tuwien_caa_docscan_NativeWrapper_nativeGetFocusMeasures
  * There the Patch CPP object is converted to a Patch Java object.
  */
+@Keep
 public class Patch implements Parcelable {
 
     public static final String KEY_FOCUS = "KEY_FOCUS";

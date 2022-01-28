@@ -87,21 +87,11 @@ android {
             // TODO: Adapt the google services json and provide an own version name
             versionNameSuffix ""
             applicationIdSuffix ""
-            debuggable false
-            zipAlignEnabled true
-            minifyEnabled true
-            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig debug.signingConfig
         }
         release {
-            // TODO: This option causes release builds to be not minified, this will have multiple implications:
-            // TODO: 1) The app size will be ca. 2.5 times larger (currently ca. 25MB vs. 76MB)
-            // TODO: 2) A not minified apk is also less performant, many optimizations by R8/D8 are not performed, i.e. all detection algorithms could be speed up. (This should be the major motivation for fixing this)
-            // TODO: However, the builds would crash because of obfuscation issues (mostly in the native libs)
-            // TODO: Also, for migration purposes, consider exclusion for old deprecated domain classes, otherwise their names would be obfuscated too and migrations would fail.
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 //			Uncomment this line if you want to run a release configuration without signing:
             signingConfig debug.signingConfig
         }
