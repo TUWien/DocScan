@@ -95,6 +95,11 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
 
     private fun observe() {
         viewModel.observablePages.observe(this, {
+            // if the document doesn't even contain a single image, then this view needs to be closed.
+            if(it.first.isEmpty()) {
+                finish()
+                return@observe
+            }
             binding.slideViewpager.unregisterOnPageChangeCallback(callback)
             adapter.setItems(it.first)
             // scroll only if a valid position has been requested
@@ -216,6 +221,14 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
     private inner class PageSlideAdapter(private var pages: MutableList<Page> = mutableListOf()) :
         FragmentStateAdapter(this) {
         override fun getItemCount() = pages.size
+
+        override fun getItemId(position: Int): Long {
+            return pages[position].id.hashCode().toLong()
+        }
+
+        override fun containsItem(itemId: Long): Boolean {
+            return pages.any { it.id.hashCode().toLong() == itemId }
+        }
 
         override fun createFragment(position: Int) =
             ImageViewerFragment.newInstance(pages[position].id)

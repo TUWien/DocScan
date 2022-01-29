@@ -190,7 +190,7 @@ dependencies {
 
     // android view related libs
     implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0-rc01'
+    implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.gridlayout:gridlayout:1.0.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.preference:preference:1.1.1'
