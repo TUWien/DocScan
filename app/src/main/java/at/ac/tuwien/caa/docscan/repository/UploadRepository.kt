@@ -1,18 +1,17 @@
 package at.ac.tuwien.caa.docscan.repository
 
-import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
-import at.ac.tuwien.caa.docscan.db.dao.PageDao
-import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
-import at.ac.tuwien.caa.docscan.db.model.state.UploadState
-import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.worker.UploadWorker
 import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
 import at.ac.tuwien.caa.docscan.api.transkribus.mapToMultiPartBody
 import at.ac.tuwien.caa.docscan.api.transkribus.model.collection.CollectionResponse
 import at.ac.tuwien.caa.docscan.api.transkribus.model.collection.DocResponse
 import at.ac.tuwien.caa.docscan.api.transkribus.model.uploads.*
+import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
+import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.*
-import at.ac.tuwien.caa.docscan.db.model.Page
+import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
+import at.ac.tuwien.caa.docscan.db.model.state.UploadState
+import at.ac.tuwien.caa.docscan.logic.*
+import at.ac.tuwien.caa.docscan.worker.UploadWorker
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
@@ -258,6 +257,7 @@ class UploadRepository(
      * this logic will try to get the collectionId and only create a new collection if necessary.
      */
     private suspend fun getCollectionId(): Resource<Int> {
+        // TODO: Check if the collectionId exists on the backend, otherwise this request may fail forever in a loop.
         preferencesHandler.collectionId?.let {
             return Success(it)
         }

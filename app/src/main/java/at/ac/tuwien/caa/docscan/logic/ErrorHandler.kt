@@ -8,6 +8,7 @@ import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
 import org.koin.java.KoinJavaComponent
+import timber.log.Timber
 import java.net.ConnectException
 import java.net.HttpURLConnection.*
 import java.net.SocketTimeoutException
@@ -20,7 +21,7 @@ private val preferencesHandler: PreferencesHandler by KoinJavaComponent.inject(P
 /**
  * A default error handler for all errors which are not explicitly handled in the views itself.
  */
-fun Throwable.handleError(activity: BaseActivity) {
+fun Throwable.handleError(activity: BaseActivity, logAsError: Boolean = false) {
     val dialogModel = DialogModel(
         dialogAction = ADialog.DialogAction.CUSTOM,
         customTitle = getTitle(
@@ -32,6 +33,10 @@ fun Throwable.handleError(activity: BaseActivity) {
         )
     )
     activity.showDialog(dialogModel)
+    if (logAsError) {
+        // TODO: Add information about error that has occurred!
+        Timber.w("Error has occurred!")
+    }
 }
 
 fun Throwable.getDocScanDBError(): DocScanError.DBError? {

@@ -4,8 +4,6 @@ import android.graphics.PointF;
 
 import androidx.annotation.NonNull;
 
-import android.util.Log;
-
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -18,6 +16,7 @@ import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 import at.ac.tuwien.caa.docscan.logic.deprecated.Helper;
+import timber.log.Timber;
 
 public class Mapper {
 
@@ -266,7 +265,7 @@ public class Mapper {
     private static void printPointList(ArrayList<PointF> points, String name) {
 
         for (PointF point : points)
-            Log.d(CLASS_NAME, name + " " + point);
+            Timber.d(name + " " + point);
     }
 
 }

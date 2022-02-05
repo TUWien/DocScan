@@ -1,24 +1,30 @@
+@file:Suppress("BlockingMethodInNonBlockingContext")
+
 package at.ac.tuwien.caa.docscan.logic
 
-import android.app.usage.StorageStatsManager
 import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.storage.StorageManager
-import android.provider.OpenableColumns
+import android.text.format.Formatter
+import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
+import androidx.work.WorkInfo
 import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.TFLiteModel
+import at.ac.tuwien.caa.docscan.worker.DocScanWorkInfo
+import at.ac.tuwien.caa.docscan.worker.getCurrentWorkerJobStates
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.security.MessageDigest
 import java.util.*
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 /**
  * A utility class for file management
@@ -38,9 +44,17 @@ class FileHandler(private val context: Context, private val storageManager: Stor
             ASSET_FOLDER_SEGMENTATION + File.separator + "models"
         const val FOLDER_DOCUMENTS = "documents"
         const val FOLDER_EXPORTS = "exports"
+        const val FOLDER_LOGS = "logs"
         const val FOLDER_TEMP = "temp"
 
+        // the reason for using two dedicated files is that if one exceeds a certain limit,
+        // then the second one will be taken and if both are exceeding, then the newest one (B)
+        // replaces the old one (A).
+        const val FILE_INTERNAL_FILE_LOG_A = "internal_log_A.txt"
+        const val FILE_INTERNAL_FILE_LOG_B = "internal_log_B.txt"
+
         const val NUM_BYTES_REQUIRED_FOR_MIGRATION = 1024 * 1024 * 100L
+        const val MAX_NUM_BYTES_REQUIRED_FOR_LOG_FILE = 1024 * 1024 * 50L
 
     }
 
@@ -66,6 +80,13 @@ class FileHandler(private val context: Context, private val storageManager: Stor
         File(context.filesDir.absolutePath + File.separator + FOLDER_DOCUMENTS)
 
     /**
+     * Post-Condition: No guarantees if the documents folder exists.
+     * @return the file reference to the root's logs folder.
+     */
+    private fun getLogsFolder() =
+        File(context.filesDir.absolutePath + File.separator + FOLDER_LOGS)
+
+    /**
      * Post-Condition: No guarantees if the specific documents folder exists.
      * @return the file reference to the specific document folder.
      */
@@ -73,6 +94,11 @@ class FileHandler(private val context: Context, private val storageManager: Stor
         val docFolder = getDocumentsFolder()
         return File(docFolder.absolutePath + File.separator + id)
     }
+
+    /**
+     * Represents a mutex for appending log output to guarantee thread-safety.
+     */
+    private val logMutex = Mutex()
 
     /**
      * Post-Condition: No guarantees if the specific file exists.
@@ -92,6 +118,155 @@ class FileHandler(private val context: Context, private val storageManager: Stor
             file.createNewFile()
         }
         return file
+    }
+
+    private fun getLogoutPutFiles(): Pair<File, File> {
+        val logFolder = getLogsFolder().createFolderIfNecessary()
+        val fileA =
+            File(logFolder.absolutePath + File.separator + FILE_INTERNAL_FILE_LOG_A).createFileIfNecessary()
+        val fileB =
+            File(logFolder.absolutePath + File.separator + FILE_INTERNAL_FILE_LOG_B).createFileIfNecessary()
+
+        return Pair(fileA, fileB)
+    }
+
+    private fun getOutputLogFile(): File {
+        val logFiles = getLogoutPutFiles()
+        val fileA = logFiles.first
+        val fileB = logFiles.second
+
+        return if (fileA.length() < MAX_NUM_BYTES_REQUIRED_FOR_LOG_FILE) {
+            fileA
+        } else {
+            if (fileB.length() < MAX_NUM_BYTES_REQUIRED_FOR_LOG_FILE) {
+                fileB
+            } else {
+                // if both files are already exceeded, then copy B to A, delete B and return B.
+                fileB.copyTo(fileA, overwrite = true)
+                fileB.safelyDelete()
+                fileB.createFileIfNecessary()
+                fileB
+            }
+        }
+    }
+
+    @WorkerThread
+    suspend fun appendToLog(text: String, throwable: Throwable?) {
+        logMutex.withLock {
+            PrintWriter(FileOutputStream(getOutputLogFile(), true)).use {
+                it.println(text)
+                throwable?.let { throwable ->
+                    throwable.printStackTrace(it)
+                }
+                it.flush()
+            }
+        }
+    }
+
+    @WorkerThread
+    private fun copyLines(bufferedReader: BufferedReader, printWriter: PrintWriter) {
+        var line = bufferedReader.readLine()
+        while (line != null) {
+            printWriter.println(line)
+            line = bufferedReader.readLine()
+        }
+    }
+
+    @WorkerThread
+    suspend fun exportLogAsZip(): Resource<Uri> {
+        logMutex.withLock {
+            val outputFileName = "log"
+            val tempZipFile = createCacheFile(UUID.randomUUID(), PageFileType.ZIP)
+            val logFiles = getLogoutPutFiles()
+            try {
+                tempZipFile.outputStream().buffered().use { buffered ->
+                    ZipOutputStream(buffered).use { out ->
+                        out.bufferedWriter().use {
+                            val entry = ZipEntry(outputFileName + "." + PageFileType.TXT.extension)
+                            out.putNextEntry(entry)
+                            PrintWriter(it).use { writer ->
+                                logFiles.first.bufferedReader().use { reader ->
+                                    copyLines(reader, writer)
+                                }
+                                logFiles.second.bufferedReader().use { reader ->
+                                    copyLines(reader, writer)
+                                }
+                                writer.flush()
+                                out.closeEntry()
+                                val deviceDataEntry =
+                                    ZipEntry("device_info" + "." + PageFileType.TXT.extension)
+                                out.putNextEntry(deviceDataEntry)
+                                writer.appendDeviceInfo()
+                                writer.flush()
+                                out.closeEntry()
+
+                                val workerManagerStates =
+                                    ZipEntry("worker_jobs" + "." + PageFileType.TXT.extension)
+                                out.putNextEntry(workerManagerStates)
+                                writer.appendWorkerManagerInfo(getCurrentWorkerJobStates(context))
+                                writer.flush()
+                                out.closeEntry()
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Export of logs has failed!")
+                return IOErrorCode.APPLY_EXIF_ROTATION_ERROR.asFailure(e)
+            }
+            val resource = getUriResource(
+                tempZipFile,
+                "docscan_log_${BuildConfig.VERSION_NAME}_${BuildConfig.VERSION_CODE}" + "." + PageFileType.ZIP.extension
+            )
+            when (resource) {
+                is Failure -> {
+                    tempZipFile.safelyDelete()
+                    return resource
+                }
+                is Success -> {
+                    // ignore
+                }
+            }
+            return resource
+        }
+    }
+
+    private fun PrintWriter.appendDeviceInfo() {
+        println("Version ${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})")
+        println("Manufacturer:${Build.MANUFACTURER}")
+        println("Device:${Build.DEVICE} Model(${Build.MODEL}) Id(${Build.ID})")
+        println("Android API Version:${Build.VERSION.SDK_INT}")
+        println(
+            "Internal Storage Space: ${
+                getInternalSpace(context.filesDir).asHumanReadableStat(
+                    context
+                )
+            }"
+        )
+    }
+
+    /**
+     * Appends the work infos for all worker jobs, for which the state is not SUCCEEDED.
+     */
+    private fun PrintWriter.appendWorkerManagerInfo(docScanWorkInfos: List<DocScanWorkInfo>) {
+        var currentTag: String? = null
+        docScanWorkInfos.forEach { docScanWorkInfo ->
+            if (currentTag != docScanWorkInfo.tag) {
+                println("***************************")
+                println("*** ${docScanWorkInfo.tag} ***")
+                println("***************************")
+            }
+            if (docScanWorkInfo.workInfo.state != WorkInfo.State.SUCCEEDED) {
+                println("Job:${docScanWorkInfo.jobId}, WorkInfo{state=${docScanWorkInfo.workInfo.state.name}, runAttemptCount=${docScanWorkInfo.workInfo.runAttemptCount}}")
+            }
+            currentTag = docScanWorkInfo.tag
+        }
+    }
+
+    suspend fun clearLogs() {
+        logMutex.withLock {
+            getLogsFolder().safelyRecursiveDelete()
+        }
     }
 
     /**
@@ -141,13 +316,15 @@ class FileHandler(private val context: Context, private val storageManager: Stor
      * @return true if the device has at least [NUM_BYTES_REQUIRED_FOR_MIGRATION] bytes available.
      */
     fun hasDeviceEnoughSpaceForMigration(): Boolean {
-        return isInternalSpaceAvailable(NUM_BYTES_REQUIRED_FOR_MIGRATION)
+        return isInternalSpaceAvailable(NUM_BYTES_REQUIRED_FOR_MIGRATION, getDocumentsFolder())
     }
 
-    private fun isInternalSpaceAvailable(@Suppress("SameParameterValue") requiredBytes: Long): Boolean {
-        val targetFolder = getDocumentsFolder()
+    private fun isInternalSpaceAvailable(
+        @Suppress("SameParameterValue") requiredBytes: Long,
+        targetFolder: File
+    ): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val uuid = storageManager.getUuidForPath(getDocumentsFolder())
+            val uuid = storageManager.getUuidForPath(targetFolder)
             val availableBytes = storageManager.getAllocatableBytes(uuid)
             if (availableBytes >= requiredBytes) {
                 storageManager.allocateBytes(uuid, requiredBytes)
@@ -156,6 +333,31 @@ class FileHandler(private val context: Context, private val storageManager: Stor
         } else {
             val availableBytes = targetFolder.usableSpace
             availableBytes >= requiredBytes
+        }
+    }
+
+    private fun getInternalSpace(targetFolder: File): Space {
+        return Space(targetFolder.totalSpace, targetFolder.usableSpace, targetFolder.freeSpace)
+    }
+
+    private data class Space(
+        val totalStorageSpace: Long,
+        val usableStorageSize: Long,
+        val freeStorageSize: Long
+    ) {
+        fun asHumanReadableStat(context: Context): String {
+            Formatter.formatFileSize(context, totalStorageSpace)
+            return "total:${
+                Formatter.formatFileSize(
+                    context,
+                    totalStorageSpace
+                )
+            }, usable:${
+                Formatter.formatFileSize(
+                    context,
+                    usableStorageSize
+                )
+            }, free:${Formatter.formatFileSize(context, freeStorageSize)}"
         }
     }
 
@@ -335,8 +537,12 @@ class FileHandler(private val context: Context, private val storageManager: Stor
             }
         }
 
+        return getUriResource(file, outputFileName)
+    }
+
+    private fun getUriResource(file: File, fileName: String): Resource<Uri> {
         return try {
-            Success(getUri(file, outputFileName))
+            Success(getUri(file, fileName))
         } catch (e: Exception) {
             IOErrorCode.SHARE_URI_FAILED.asFailure(e)
         }
@@ -390,6 +596,8 @@ private fun ByteArray.toHexString(): String {
 
 enum class PageFileType(val extension: String, val mimeType: String) {
     JPEG("jpg", "image/jpg"),
+    ZIP("zip", "application/zip"),
+    TXT("txt", "text/plain"),
     PDF("pdf", "application/pdf");
 
     companion object {

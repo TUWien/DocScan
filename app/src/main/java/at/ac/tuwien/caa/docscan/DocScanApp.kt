@@ -2,16 +2,17 @@ package at.ac.tuwien.caa.docscan
 
 import android.app.Application
 import androidx.work.WorkManager
-import at.ac.tuwien.caa.docscan.koin.appModule
-import at.ac.tuwien.caa.docscan.koin.daoModule
-import at.ac.tuwien.caa.docscan.koin.repositoryModule
-import at.ac.tuwien.caa.docscan.koin.viewModelModule
-import at.ac.tuwien.caa.docscan.koin.networkModule
+import at.ac.tuwien.caa.docscan.koin.*
+import at.ac.tuwien.caa.docscan.log.FirebaseCrashlyticsTimberTree
+import at.ac.tuwien.caa.docscan.log.InternalLogTimberTree
+import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.worker.DocumentSanitizeWorker
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -29,6 +30,8 @@ class DocScanApp : Application() {
     private val preferencesHandler by inject<PreferencesHandler>()
     private val workManager by inject<WorkManager>()
     private val notificationHandler by inject<NotificationHandler>()
+    private val fileHandler by inject<FileHandler>()
+    private val appIOScope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
@@ -41,6 +44,9 @@ class DocScanApp : Application() {
             val a = FirebaseApp.initializeApp(this)
             if (a == null || a.options.apiKey.isEmpty()) Timber.d(getString(R.string.start_firebase_not_auth_text))
         }
+
+        Timber.plant(FirebaseCrashlyticsTimberTree(preferencesHandler))
+        Timber.plant(InternalLogTimberTree(fileHandler, appIOScope))
 
         // initializes notification channels
         notificationHandler.initNotificationChannels()
@@ -64,7 +70,7 @@ class DocScanApp : Application() {
             preferencesHandler.firstStartDate = timeStamp
             // set for the crashlytics instance
             FirebaseCrashlytics.getInstance()
-                    .setCustomKey(PreferencesHandler.KEY_FIRST_START_DATE, timeStamp)
+                .setCustomKey(PreferencesHandler.KEY_FIRST_START_DATE, timeStamp)
         }
     }
 }

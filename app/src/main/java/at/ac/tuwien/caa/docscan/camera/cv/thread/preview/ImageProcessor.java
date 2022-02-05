@@ -2,9 +2,9 @@ package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
 import android.os.Process;
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
-
 import org.opencv.core.Mat;
+
+import timber.log.Timber;
 
 public abstract class ImageProcessor implements Runnable {
 
@@ -43,7 +43,7 @@ public abstract class ImageProcessor implements Runnable {
             process();
 
         } catch (InterruptedException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         } finally {
             // Clears the Thread's interrupt flag
             Thread.interrupted();

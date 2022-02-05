@@ -2,9 +2,7 @@ package at.ac.tuwien.caa.docscan.ui.segmentation
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
-import android.util.Log
 import at.ac.tuwien.caa.docscan.ui.segmentation.ImageUtils.Companion.convertByteBufferMaskToBitmap
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.MetaResult
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.ModelExecutionResult
@@ -16,6 +14,7 @@ import org.tensorflow.lite.support.common.FileUtil
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.ResizeOp
+import timber.log.Timber
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -121,7 +120,7 @@ class SegmentationExecutor {
         try {
             interpreter.close()
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to close interpreter!", e)
+            Timber.e("Failed to close interpreter!", e)
         }
 
         return ModelExecutionResult(

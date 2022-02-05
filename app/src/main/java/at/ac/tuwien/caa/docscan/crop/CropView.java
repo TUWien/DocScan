@@ -12,7 +12,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import androidx.annotation.Nullable;
@@ -21,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.db.model.exif.Rotation;
+import timber.log.Timber;
 
 /**
  * Created by fabian on 21.11.2017.
@@ -303,8 +302,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         PointF imgTL = imgPoints[0];
         PointF imgBR = imgPoints[1];
 
-        Log.d(getClass().getName(), "Point imgTL " + imgTL.x + " y: " + imgTL.y);
-        Log.d(getClass().getName(), "Point imgBR " + imgBR.x + " y: " + imgBR.y);
+        Timber.d("Point imgTL " + imgTL.x + " y: " + imgTL.y);
+        Timber.d("Point imgBR " + imgBR.x + " y: " + imgBR.y);
 
         PointF offSet = getDetailOffSet(point);
 
@@ -554,7 +553,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
                 mQuadPath.lineTo(point.x, point.y);
 
             // draw the circle around the corner:
-            Log.d(CLASS_NAME, "drawQuad: point: " + point);
+            Timber.d("drawQuad: point: " + point);
             canvas.drawCircle(point.x, point.y, mCircleRadius, mCirclePaint);
 
         }

@@ -14,10 +14,8 @@ import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.logic.deprecated.DocumentStorage
 import at.ac.tuwien.caa.docscan.logic.deprecated.Helper
 import at.ac.tuwien.caa.docscan.repository.migration.domain.JsonStorage
-import at.ac.tuwien.caa.docscan.sync.SyncStorage
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -47,11 +45,11 @@ class MigrationRepository(
      *
      * In previous versions of this app, the data storage was handled by multiple json files in the
      * internal storage:
-     * - [DocumentStorage.DOCUMENT_STORE_FILE_NAME] the main json file which consists of documents,
+     * - "documentstorage.json" the main json file which consists of documents,
      * pages and references to the images.
-     * - [DocumentStorage.DOCUMENT_STORE_BACKUP_FILE_NAME] same as the main json file, but which has
+     * - "documentstorage_bu.json" same as the main json file, but which has
      * been saved in the public directory, so that images can be restored.
-     * - [SyncStorage.SYNC_STORAGE_FILE_NAME] the main json file which consists of documents,
+     * - "syncstorage.json" the main json file which consists of documents,
      * pages and references to the images. This is ignored and deleted in the migration.
      *
      * The main json file is now migrated into a SQL database.
@@ -76,13 +74,14 @@ class MigrationRepository(
         }
 
         @Suppress("Deprecation")
-        // the main storage file which contains references to images
-        val documentStorageFile = File(context.filesDir, DocumentStorage.DOCUMENT_STORE_FILE_NAME)
+        val documentStorageFile = File(context.filesDir, "documentstorage.json")
+        // TODO: Delete syncinfo.txt
+        // TODO: Delete crop_log.txt
         // the sync storage file which is completely omitted, since partial uploads are ignored.
-        val syncStorageFile = File(context.filesDir, SyncStorage.SYNC_STORAGE_FILE_NAME)
+        val syncStorageFile = File(context.filesDir, "syncstorage.json")
         // the documentBackupStorageFile is usually in the public storage which doesn't matter, since for new app installs it cannot be retrieved anyway.
         val documentBackupStorageFile =
-            File(context.filesDir, DocumentStorage.DOCUMENT_STORE_BACKUP_FILE_NAME)
+            File(context.filesDir, "documentstorage_bu.json")
 
         // if the document storage file does not exist, then we cannot do anything about it.
         if (!documentStorageFile.safeExists()) {

@@ -128,7 +128,7 @@ class UploadWorker(
     companion object {
 
         private const val INPUT_PARAM_DOC_ID = "INPUT_PARAM_DOC_ID"
-        private const val UPLOAD_TAG = "transkribus_image_uploader"
+        const val UPLOAD_TAG = "transkribus_image_uploader"
 
         fun spawnUploadJob(
             workManager: WorkManager,
@@ -136,6 +136,7 @@ class UploadWorker(
             allowMobileData: Boolean
         ) {
             val uploadImages = OneTimeWorkRequest.Builder(UploadWorker::class.java)
+                // please note, to not add multiple tags (see getCurrentWorkerJobStates for more info)
                 .addTag(UPLOAD_TAG)
                 .setInputData(
                     workDataOf(

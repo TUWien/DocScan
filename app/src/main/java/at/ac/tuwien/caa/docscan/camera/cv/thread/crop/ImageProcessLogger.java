@@ -1,7 +1,6 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import at.ac.tuwien.caa.docscan.logic.deprecated.Document;
+import timber.log.Timber;
 
 public class ImageProcessLogger implements Serializable {
 
@@ -37,12 +37,12 @@ public class ImageProcessLogger implements Serializable {
 
     public void readFromDisk(Context context) {
 
-        Log.d(CLASS_NAME, "readFromDisk:");
+        Timber.d("readFromDisk:");
 
         File cropLoggerPath = context.getFilesDir();
         File cropFile = new File(cropLoggerPath, CROP_FILE_NAME);
         if (!cropFile.exists()) {
-            Log.d(CLASS_NAME, "readFromDisk: is not existing: " + cropFile);
+            Timber.d("readFromDisk: is not existing: " + cropFile);
             return;
         }
 
@@ -52,7 +52,7 @@ public class ImageProcessLogger implements Serializable {
             sInstance = (ImageProcessLogger) ois.readObject();
             ois.close();
         } catch (Exception e) {
-            Log.d(CLASS_NAME, "readFromDisk: " + e.toString());
+            Timber.d("readFromDisk: " + e.toString());
         }
 
     }

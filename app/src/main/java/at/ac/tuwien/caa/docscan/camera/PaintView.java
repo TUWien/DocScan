@@ -40,8 +40,6 @@ import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
-
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -51,6 +49,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
+import timber.log.Timber;
 
 /**
  * Class responsible for drawing the results of the page segmentation and focus measurement tasks.
@@ -220,7 +219,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                 mDrawerThread.join();
                 retry = false;
             } catch (InterruptedException e) {
-                FirebaseCrashlytics.getInstance().recordException(e);
+                Timber.e(e);
             }
         }
 
@@ -509,7 +508,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback {
                         try {
                             mCVResult.wait(50);
                         } catch (InterruptedException e) {
-                            FirebaseCrashlytics.getInstance().recordException(e);
+                            Timber.e(e);
                         }
 
                         if (!mCVResult.isRedrawNecessary()) {

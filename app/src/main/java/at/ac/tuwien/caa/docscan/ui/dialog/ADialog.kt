@@ -171,6 +171,7 @@ class ADialog : AppCompatDialogFragment() {
             isCancellable = false
         ),
         ACTIVITY_NOT_FOUND(R.string.activity_not_found_title, R.string.activity_not_found_text),
+        ACTIVITY_NOT_FOUND_EMAIL(R.string.activity_not_found_email_title, R.string.activity_not_found_email_text),
         CREATE_DOCUMENT_DUPLICATE(
             R.string.dialog_create_document_error_duplicate_title,
             R.string.dialog_create_document_error_duplicate_text

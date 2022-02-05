@@ -43,6 +43,9 @@
     <string name="activity_not_found_title">No standard app found</string>
     <string name="activity_not_found_text">Sorry, we could not find an app to open the file.</string>
 
+    <string name="activity_not_found_email_title">No email app found</string>
+    <string name="activity_not_found_email_text">Sorry, we could not find an email app to send the log files.</string>
+
     <string name="operation_export">Export</string>
     <string name="operation_upload">Upload</string>
 
@@ -147,9 +150,6 @@
     <string name="toast_series_paused">Automated imaging paused</string>
     <string name="toast_series_started">Images are now taken automatically</string>
     <string name="toast_single">Images are taken manually</string>
-
-    <string name="ui_changes_title">What\'s new</string>
-    <string name="ui_changes_text">Version 1.7 contains major UI changes.\nDo you want to read more about the UI changes? (Requires an internet connection.)</string>
 
     <!-- TranskribusLoginActivity -->
     <string name="login_email_hint">Email</string>

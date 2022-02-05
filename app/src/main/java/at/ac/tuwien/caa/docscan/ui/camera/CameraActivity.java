@@ -8,7 +8,6 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,7 +16,6 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.hardware.Camera;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.Gravity;
@@ -48,15 +46,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.exifinterface.media.ExifInterface;
 
 import com.bumptech.glide.load.engine.GlideException;
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.security.ProviderInstaller;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.google.zxing.Result;
 
 import org.koin.java.KoinJavaComponent;
@@ -84,6 +77,7 @@ import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.db.model.Page;
+import at.ac.tuwien.caa.docscan.extensions.ContextExtensionsKt;
 import at.ac.tuwien.caa.docscan.logic.DocumentViewerLaunchViewType;
 import at.ac.tuwien.caa.docscan.logic.Failure;
 import at.ac.tuwien.caa.docscan.logic.FileHandler;
@@ -95,7 +89,6 @@ import at.ac.tuwien.caa.docscan.logic.Resource;
 import at.ac.tuwien.caa.docscan.logic.Success;
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer;
-import at.ac.tuwien.caa.docscan.ui.dialog.ADialog;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
@@ -392,7 +385,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         showControlsLayout(!mIsQRActive);
 
-        checkProviderInstaller();
+        ContextExtensionsKt.checksGoogleAPIAvailability(this, true);
 
 //        updateThumbnail();
 
@@ -465,31 +458,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (qrLayout != null)
             qrLayout.setVisibility(qrCodeVisibility);
 
-    }
-
-    /**
-     * TODO: LEGACY - Android 4 support is dropped, is this still necessary?
-     * Checks if the ProviderInstaller is up-to-date. This is necessary to fix the SSL
-     * SSLHandshakeException on Android 4 devices.
-     * as it is stated here: https://stackoverflow.com/questions/31269425/how-do-i-tell-the-tls-version-in-android-volley
-     * Could not reproduce that this is really necessary, since TLSSocketFactory already did the trick.
-     * (Google Play Services installed on testing devices were not too old.)
-     */
-    private void checkProviderInstaller() {
-        try {
-            ProviderInstaller.installIfNeeded(this);
-        } catch (GooglePlayServicesRepairableException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
-            // Indicates that Google Play services is out of date, disabled, etc.
-            // Prompt the user to install/update/enable Google Play services.
-            GooglePlayServicesUtil.showErrorNotification(
-                    e.getConnectionStatusCode(), this);
-
-        } catch (GooglePlayServicesNotAvailableException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
-            // Indicates a non-recoverable error; the ProviderInstaller is not able
-            // to install an up-to-date Provider.
-        }
     }
 
     @Override
@@ -792,36 +760,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 R.drawable.ic_qr_code_gray));
 
         return actions;
-    }
-
-    private void showUIChangesDialog() {
-
-        MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(CameraActivity.this);
-
-        String dialogTitle = getString(R.string.ui_changes_title);
-        alertDialog.setTitle(dialogTitle);
-
-        String text = getString(R.string.ui_changes_text);
-        alertDialog.setMessage(text);
-        alertDialog.setPositiveButton(getString(R.string.dialog_yes_text),
-                (dialog, which) -> {
-                    // TODO: Use intent extensions for this check
-                    String pdfUrl = "https://github.com/TUWien/DocScan/wiki/UI-changes-in-version-1.7";
-                    Intent browserIntent = new Intent(Intent.ACTION_VIEW);
-                    browserIntent.setData(Uri.parse(pdfUrl));
-                    try {
-                        startActivity(browserIntent);
-                    } catch (ActivityNotFoundException e) {
-                        FirebaseCrashlytics.getInstance().recordException(e);
-                        showDialog(ADialog.DialogAction.ACTIVITY_NOT_FOUND);
-                    }
-
-                });
-        alertDialog.setNegativeButton(getString(R.string.dialog_cancel_text), null);
-        alertDialog.setCancelable(true);
-        alertDialog.show();
-
-
     }
 
     private void showLockedExposureDialog() {

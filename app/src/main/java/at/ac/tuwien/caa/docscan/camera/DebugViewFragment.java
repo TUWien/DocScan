@@ -24,16 +24,15 @@
 package at.ac.tuwien.caa.docscan.camera;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
+
 import at.ac.tuwien.caa.docscan.R;
+import timber.log.Timber;
 
 /**
  * Fragment used to show the execution time of time intensive tasks.
@@ -103,11 +102,11 @@ public class DebugViewFragment extends Fragment {
                 break;
             case MOVEMENT_CHECK:
                 textView = mMovementCheckTextView;
-                Log.d(this.getTag(), "time: " + time);
+                Timber.d( "time: " + time);
                 break;
             case NEW_DOC:
                 textView = mNewDocTextView;
-                Log.d(this.getTag(), "new doc time: " + time);
+                Timber.d( "new doc time: " + time);
                 break;
         }
 

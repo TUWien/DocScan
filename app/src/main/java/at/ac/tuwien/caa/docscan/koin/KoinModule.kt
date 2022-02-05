@@ -30,6 +30,7 @@ import at.ac.tuwien.caa.docscan.ui.docviewer.images.ImagesViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.pdf.PdfViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.ImageViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideViewModel
+import at.ac.tuwien.caa.docscan.ui.info.LogViewModel
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationViewModel
 import at.ac.tuwien.caa.docscan.ui.start.StartViewModel
 import com.google.gson.Gson
@@ -80,6 +81,7 @@ val viewModelModule = module {
     viewModel { LogoutViewModel(get()) }
     viewModel { SelectDocumentViewModel(get()) }
     viewModel { PdfViewModel(get(), get(), get()) }
+    viewModel { LogViewModel(get()) }
 }
 
 val repositoryModule = module {

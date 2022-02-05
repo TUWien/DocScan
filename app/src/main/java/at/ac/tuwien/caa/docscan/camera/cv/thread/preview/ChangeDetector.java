@@ -1,7 +1,5 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
-import android.util.Log;
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -17,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import at.ac.tuwien.caa.docscan.logic.deprecated.Helper;
+import timber.log.Timber;
 
 public class ChangeDetector {
 
@@ -100,7 +99,7 @@ public class ChangeDetector {
     public boolean isNewFakeFrame(Mat frame) {
 
         double changeRatio = getChangeRatio(frame, mNewFrameDetector, 0);
-        Log.d(CLASS_NAME, "isNewFrame: changeRatio: " + changeRatio);
+        Timber.d("isNewFrame: changeRatio: " + changeRatio);
 
         return changeRatio > .05;
     }
@@ -108,7 +107,7 @@ public class ChangeDetector {
     public boolean isNewFrame(Mat frame) {
 
         double changeRatio = getChangeRatio(frame, mNewFrameDetector, 0);
-        Log.d(CLASS_NAME, "isNewFrame: changeRatio: " + changeRatio);
+        Timber.d("isNewFrame: changeRatio: " + changeRatio);
 
         return changeRatio > .01;
     }
@@ -121,7 +120,7 @@ public class ChangeDetector {
         }
 
         double changeRatio = getChangeRatio(mat, mMovementDetector, 0.8);
-        Log.d(CLASS_NAME, "isMoving: changeRatio: " + changeRatio);
+        Timber.d("isMoving: changeRatio: " + changeRatio);
         boolean isMoving = changeRatio > CHANGE_THRESH;
 
         return isMoving;
@@ -174,7 +173,7 @@ public class ChangeDetector {
 
 
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        Log.d(CLASS_NAME, "taking picture: " + timeStamp);
+        Timber.d("taking picture: " + timeStamp);
 
         String fileName = "mask" + timeStamp + ".jpg";
         File file = new File(Helper.getMediaStorageDir("DocScan"), fileName);

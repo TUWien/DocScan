@@ -1,11 +1,11 @@
 package at.ac.tuwien.caa.docscan.crop;
 
 import android.graphics.PointF;
-import android.util.Log;
 
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
+import timber.log.Timber;
 
 /**
  * Created by fabian on 21.11.2017.
@@ -117,7 +117,7 @@ public class CropQuad {
     private boolean isLeft(int pointIdx, PointF point) {
 
 
-        Log.d(getClass().getName(), "points length: " + mViewPoints.size());
+        Timber.d("points length: " + mViewPoints.size());
 
         int startIdx = (pointIdx - 1) % mViewPoints.size();
         if (startIdx < 0)

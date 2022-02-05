@@ -4,15 +4,13 @@ import android.content.Context
 import android.net.Uri
 import androidx.annotation.WorkerThread
 import androidx.room.withTransaction
-import androidx.work.*
+import androidx.work.WorkManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.ImageExifMetaData
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.*
-import at.ac.tuwien.caa.docscan.db.model.Document
-import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
@@ -21,8 +19,8 @@ import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
+import at.ac.tuwien.caa.docscan.extensions.checksGoogleAPIAvailability
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.logic.deprecated.Helper
 import at.ac.tuwien.caa.docscan.worker.ExportWorker
 import at.ac.tuwien.caa.docscan.worker.UploadWorker
 import kotlinx.coroutines.NonCancellable
@@ -264,7 +262,7 @@ class DocumentRepository(
 
         // TODO: Check if the play services check is really ok, since it has other states too!
         // TODO: The playservices check could be avoided if the ml-kit binary would be added to our apk instead.
-        if (exportFormat == ExportFormat.PDF_WITH_OCR && !Helper.checkPlayServices(context)) {
+        if (exportFormat == ExportFormat.PDF_WITH_OCR && !checksGoogleAPIAvailability(context)) {
             return IOErrorCode.EXPORT_GOOGLE_PLAYSTORE_NOT_INSTALLED_FOR_OCR.asFailure()
         }
 

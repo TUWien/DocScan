@@ -16,13 +16,13 @@ import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.util.*
 
 class CameraViewModel(
@@ -151,7 +151,7 @@ class CameraViewModel(
             )
             when (result) {
                 is Failure -> {
-                    FirebaseCrashlytics.getInstance().recordException(result.exception)
+                    Timber.e("New image failed to be persisted", result.exception)
                 }
                 is Success -> {
                     if (isRetakeMode) {

@@ -25,11 +25,11 @@ package at.ac.tuwien.caa.docscan.camera.cv;
 
 import android.content.Context;
 import android.graphics.PointF;
-import android.util.Log;
 
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.R;
+import timber.log.Timber;
 
 /**
  * Class responsible for holding the results of the page segmentation and focus measurement tasks.
@@ -103,7 +103,7 @@ public class CVResult {
 
             mIsStable = isRectStable(dkPolyRects);
 
-            Log.d(TAG, "stable: " + mIsStable);
+            Timber.d( "stable: " + mIsStable);
             mIsRedrawNecessary = true;
             mLastDKPolyRects = dkPolyRects;
             // notify is necessary, because the PaintView is waiting for updates on the CVResult

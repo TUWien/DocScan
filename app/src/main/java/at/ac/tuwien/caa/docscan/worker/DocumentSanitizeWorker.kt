@@ -9,7 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent
 import timber.log.Timber
-import java.util.*
 
 /**
  * Represents a worker which checks document/page states and repairs them if necessary.
@@ -36,16 +35,21 @@ class DocumentSanitizeWorker(
 
     companion object {
 
-        private const val TAG = "document_sanitizer"
+        const val TAG = "document_sanitizer"
+        const val ID = "c5c52f8b-f238-484e-b988-1f635d06fa4e"
 
         fun spawnSanitize(workManager: WorkManager) {
-
             val sanitizeDocumentsRequest =
                 OneTimeWorkRequest.Builder(DocumentSanitizeWorker::class.java)
+                    // please note, to not add multiple tags (see getCurrentWorkerJobStates for more info)
                     .addTag(TAG)
                     .build()
             Timber.i("Requesting WorkManager to queue DocumentSanitizeWorker")
-            workManager.enqueue(sanitizeDocumentsRequest)
+            workManager.enqueueUniqueWork(
+                "${TAG}_${ID}",
+                ExistingWorkPolicy.REPLACE,
+                sanitizeDocumentsRequest
+            )
         }
     }
 }

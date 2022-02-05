@@ -23,11 +23,6 @@
 
 package at.ac.tuwien.caa.docscan.camera;
 
-import android.util.Log;
-
-import java.util.ArrayList;
-
-import static android.content.ContentValues.TAG;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.CAMERA_FRAME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FLIP_SHOT_TIME;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.FOCUS_MEASURE;
@@ -35,6 +30,10 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.MOVEMENT_CHECK;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.NEW_DOC;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.PAGE_SEGMENTATION;
 import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
+
+import java.util.ArrayList;
+
+import timber.log.Timber;
 
 /**
  * Class used to measure the execution time of time intensive tasks. Each task has an ID and a an
@@ -179,7 +178,7 @@ public class TaskTimer {
                     break;
             }
 
-            Log.d(TAG, "task: " + type + " time: " + averageTime);
+            Timber.d( "task: " + type + " time: " + averageTime);
         }
 
     }

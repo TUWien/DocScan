@@ -13,7 +13,6 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentActivity
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.logic.PageFileType
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
 import java.net.URLEncoder
 
@@ -28,8 +27,7 @@ fun FragmentActivity.safeStartActivity(intent: Intent): Boolean {
         startActivity(intent)
         true
     } catch (exception: ActivityNotFoundException) {
-        FirebaseCrashlytics.getInstance().recordException(exception)
-        Timber.d(exception, "No activity found to start intent.")
+        Timber.e(exception, "No activity found to start intent!")
         false
     }
 }
@@ -89,6 +87,14 @@ fun shareFile(fragmentActivity: FragmentActivity, pageFileType: PageFileType, ur
 }
 
 fun shareFile(fragmentActivity: FragmentActivity, pageFileType: PageFileType, uris: List<Uri>) {
+    fragmentActivity.safeStartActivity(getShareIntent(fragmentActivity, pageFileType, uris))
+}
+
+private fun getShareIntent(
+    fragmentActivity: FragmentActivity,
+    pageFileType: PageFileType,
+    uris: List<Uri>
+): Intent {
     val shareIntent = Intent()
     if (uris.size == 1) {
         shareIntent.action = Intent.ACTION_SEND
@@ -102,7 +108,24 @@ fun shareFile(fragmentActivity: FragmentActivity, pageFileType: PageFileType, ur
         shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
     }
     shareIntent.type = pageFileType.mimeType
-    fragmentActivity.safeStartActivity(shareIntent)
+    return shareIntent
+}
+
+fun shareFileAsEmailLog(
+    fragmentActivity: FragmentActivity,
+    pageFileType: PageFileType,
+    uris: List<Uri>
+): Boolean {
+    val intent = getShareIntent(fragmentActivity, pageFileType, uris)
+    intent.run {
+        putExtra(Intent.EXTRA_EMAIL, arrayOf(fragmentActivity.getString(R.string.log_email_to)))
+        putExtra(
+            Intent.EXTRA_SUBJECT,
+            arrayOf(fragmentActivity.getString(R.string.log_email_subject))
+        )
+        putExtra(Intent.EXTRA_TEXT, arrayOf(fragmentActivity.getString(R.string.log_email_text)))
+    }
+    return fragmentActivity.safeStartActivity(intent)
 }
 
 fun showFile(

@@ -6,7 +6,6 @@ import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import timber.log.Timber
 import java.io.File
-import java.io.InputStream
 
 fun applyExifData(file: File, exifMetaData: ImageExifMetaData) {
     try {
@@ -34,7 +33,7 @@ fun applyExifData(file: File, exifMetaData: ImageExifMetaData) {
         }
         exif.saveAttributes()
     } catch (exception: Exception) {
-        Timber.e(exception, "Couldn't save exif attributes!")
+        Timber.e(exception)
     }
 }
 

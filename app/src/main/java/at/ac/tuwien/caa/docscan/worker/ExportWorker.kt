@@ -116,7 +116,7 @@ class ExportWorker(
 
         private const val INPUT_PARAM_DOC_ID = "INPUT_PARAM_DOC_ID"
         private const val INPUT_PARAM_EXPORT_FORMAT = "INPUT_PARAM_EXPORT_FORMAT"
-        private const val EXPORT_TAG = "export"
+        const val EXPORT_TAG = "export"
 
         fun spawnExportJob(
             workManager: WorkManager,
@@ -124,6 +124,7 @@ class ExportWorker(
             exportFormat: ExportFormat
         ) {
             val exportDocRequest = OneTimeWorkRequest.Builder(ExportWorker::class.java)
+                // please note, to not add multiple tags (see getCurrentWorkerJobStates for more info)
                 .addTag(EXPORT_TAG)
                 .setInputData(
                     workDataOf(

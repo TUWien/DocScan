@@ -43,5 +43,6 @@ enum class IOErrorCode(
         R.string.generic_export_error_title,
         R.string.generic_export_error_text,
         true
-    )
+    ),
+    EXPORT_LOGS_FAILED(R.string.generic_error_title, R.string.generic_error_text, true)
 }

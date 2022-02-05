@@ -49,7 +49,7 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
     }
 
     private fun observe() {
-        viewModel.observableLogin.observe(this, {
+        viewModel.observableLogin.observe(this) {
             when (it) {
                 is Failure -> {
                     // http forbidden means that the username/password is wrong.
@@ -59,9 +59,7 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
                         // focus view so that edittexts error is focused
                         binding.passwordEdittext.requestFocus()
                     } else {
-//                        TODO: Log error
-//                        FirebaseCrashlytics.getInstance().log("login error: " + "login_timeout_error")
-                        it.exception.handleError(this)
+                        it.exception.handleError(this, logAsError = true)
                     }
                 }
                 is Success -> {
@@ -75,11 +73,11 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
                     showDialog(dialog)
                 }
             }
-        })
-        viewModel.observableProgress.observe(this, {
+        }
+        viewModel.observableProgress.observe(this) {
             showLoadingLayout(it)
-        })
-        dialogViewModel.observableDialogAction.observe(this, {
+        }
+        dialogViewModel.observableDialogAction.observe(this) {
             it.getContentIfNotHandled()?.let { result ->
                 when (result.dialogAction) {
                     ADialog.DialogAction.LOGIN_SUCCESS -> {
@@ -93,7 +91,7 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
                     }
                 }
             }
-        })
+        }
     }
 
     private fun login() {

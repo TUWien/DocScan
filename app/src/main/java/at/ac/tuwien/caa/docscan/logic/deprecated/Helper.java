@@ -1,24 +1,13 @@
 package at.ac.tuwien.caa.docscan.logic.deprecated;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.text.InputFilter;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 import androidx.exifinterface.media.ExifInterface;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -26,21 +15,14 @@ import org.opencv.imgcodecs.Imgcodecs;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 
-import at.ac.tuwien.caa.docscan.R;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessLogger;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation;
-import at.ac.tuwien.caa.docscan.sync.SyncStorage;
 import timber.log.Timber;
 
 
@@ -54,13 +36,6 @@ public class Helper {
     private static final String CLASS_NAME = "Helper";
     public static final String START_SAVE_JSON_CALLER = "START_SAVE_JSON_CALLER";
     public static final String END_SAVE_JSON_CALLER = "END_SAVE_JSON_CALLER";
-
-    public static void crashlyticsLog(String className, String methodName, String msg) {
-
-        String log = className + ": " + methodName + ": " + msg;
-        FirebaseCrashlytics.getInstance().log(log);
-
-    }
 
     /**
      * Returns the root path to the directory in which the images are saved.
@@ -153,7 +128,7 @@ public class Helper {
                 return Integer.valueOf(orientation);
             }
         } else
-            Log.d(CLASS_NAME, "getExifOrientation: not existing: " + outFile);
+            Timber.d("getExifOrientation: not existing: " + outFile);
 
 
         return -1;
@@ -357,32 +332,6 @@ public class Helper {
 
     }
 
-    public static boolean rotateExif90DegreesCCW(File outFile) {
-
-        final ExifInterface exif;
-        try {
-            exif = new ExifInterface(outFile.getAbsolutePath());
-            if (exif != null) {
-
-//            Note the regular android.media.ExifInterface has no method for rotation, but the
-//            android.support.media.ExifInterface does.
-
-                exif.rotate(-90);
-                exif.saveAttributes();
-
-                if (!PageDetector.isCropped(outFile.getAbsolutePath()))
-                    PageDetector.rotate90DegreesCCW(outFile.getAbsolutePath());
-
-                return true;
-            }
-        } catch (IOException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
-        }
-
-        return false;
-
-    }
-
 
     public static boolean rotateExif(File outFile) {
 
@@ -403,7 +352,7 @@ public class Helper {
                 return true;
             }
         } catch (IOException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         }
 
         return false;
@@ -470,9 +419,7 @@ public class Helper {
         try {
             tempFile = File.createTempFile("img", ".jpg", originalFile.getParentFile());
         } catch (IOException e) {
-            e.printStackTrace();
-            FirebaseCrashlytics.getInstance().log("Helper.saveMat");
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e, "Helper.saveMat");
             return false;
         }
 
@@ -493,9 +440,7 @@ public class Helper {
                 isSaved = tempFile.renameTo(new File(fileName));
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            FirebaseCrashlytics.getInstance().log("Helper.saveMat");
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e, "Helper.saveMat");
         } finally {
 //            Delete the temporary file, if it still exists:
             if (tempFile != null && tempFile.exists())
@@ -596,23 +541,6 @@ public class Helper {
             Arrays.sort(files);
 
         return files;
-    }
-
-    /**
-     * Check the device to make sure it has the Google Play Services APK. Taken from:
-     * https://stackoverflow.com/a/48224404/9827698
-     */
-    public static boolean checkPlayServices(Context context) {
-
-        int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable
-                (context);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            Timber.d("This device does not support Google Play Services. " +
-                    "Push notifications are not supported");
-            return false;
-        }
-        return true;
-
     }
 
     public static void hideKeyboard(Activity activity) {
