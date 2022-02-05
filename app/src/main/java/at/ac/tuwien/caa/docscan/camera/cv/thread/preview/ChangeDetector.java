@@ -14,6 +14,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import at.ac.tuwien.caa.docscan.extensions.DateExtensionKt;
 import at.ac.tuwien.caa.docscan.logic.deprecated.Helper;
 import timber.log.Timber;
 
@@ -171,8 +172,7 @@ public class ChangeDetector {
 
 //        if (changeRatio > 0.01) {
 
-
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = DateExtensionKt.getTimeStamp(new Date());
         Timber.d("taking picture: " + timeStamp);
 
         String fileName = "mask" + timeStamp + ".jpg";

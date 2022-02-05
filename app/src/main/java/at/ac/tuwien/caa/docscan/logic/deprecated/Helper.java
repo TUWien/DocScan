@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector;
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation;
+import at.ac.tuwien.caa.docscan.extensions.DateExtensionKt;
 import timber.log.Timber;
 
 
@@ -515,7 +516,7 @@ public class Helper {
      * @return
      */
     public static String getFileTimeStamp() {
-        return new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        return DateExtensionKt.getTimeStamp(new Date());
     }
 
     private static ArrayList<File> getImageList(File file) {

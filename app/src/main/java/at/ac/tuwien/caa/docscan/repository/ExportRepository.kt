@@ -28,6 +28,9 @@ class ExportRepository(
     private val exportFileRepository: ExportFileRepository
 ) {
 
+    /**
+     * TODO: Add more Timber.e etc. info tags for logging this internally.
+     */
     suspend fun exportDoc(documentId: UUID, exportFormat: ExportFormat): Resource<String> {
         val outputFile = fileHandler.createCacheFileForExport(UUID.randomUUID())
         try {

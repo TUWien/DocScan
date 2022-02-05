@@ -8,9 +8,9 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.LayoutPdflistRowBinding
+import at.ac.tuwien.caa.docscan.extensions.DATE_FORMAT_EXPORT_FILE
+import at.ac.tuwien.caa.docscan.extensions.asTimeStamp
 import at.ac.tuwien.caa.docscan.extensions.sizeMB
-import java.text.SimpleDateFormat
-import java.util.*
 
 class PdfAdapter(
     private val select: (ExportList) -> Unit,
@@ -37,11 +37,10 @@ class PdfAdapter(
                 }
                 is ExportList.File -> {
                     binding.layoutPdflistRowTitle.text = export.name
+                    // TODO: Use the android's size formatter instead
                     binding.layoutPdflistRowFilesize.text = "${export.file.sizeInBytes.sizeMB()} MB"
-                    binding.layoutPdflistRowDate.text = SimpleDateFormat(
-                        "MMM dd, yyyy HH:mm:ss",
-                        Locale.getDefault()
-                    ).format(export.file.lastModified).toString()
+                    binding.layoutPdflistRowDate.text =
+                        export.file.lastModified.asTimeStamp(dateFormat = DATE_FORMAT_EXPORT_FILE)
                     val iconRes =
                         if (export.isNew) R.drawable.ic_pdf_icon_badge else R.drawable.ic_pdf_icon
                     binding.layoutPdflistRowIcon.setImageResource(iconRes)

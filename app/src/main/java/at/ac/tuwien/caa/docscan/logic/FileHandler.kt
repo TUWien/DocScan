@@ -155,9 +155,7 @@ class FileHandler(private val context: Context, private val storageManager: Stor
         logMutex.withLock {
             PrintWriter(FileOutputStream(getOutputLogFile(), true)).use {
                 it.println(text)
-                throwable?.let { throwable ->
-                    throwable.printStackTrace(it)
-                }
+                throwable?.printStackTrace(it)
                 it.flush()
             }
         }
@@ -172,6 +170,13 @@ class FileHandler(private val context: Context, private val storageManager: Stor
         }
     }
 
+    /**
+     * @return an uri which is a zip of several .txt log files.
+     *
+     * - a text files which consists of the captured logging from custom timber tree.
+     * - a file which contains several infos about the used device (see [appendDeviceInfo])
+     * - a file which contains infos about pending worker manager jobs.
+     */
     @WorkerThread
     suspend fun exportLogAsZip(): Resource<Uri> {
         logMutex.withLock {
@@ -491,7 +496,7 @@ class FileHandler(private val context: Context, private val storageManager: Stor
                 null
             }
         } catch (e: Exception) {
-            // TODO: Log Exception
+            Timber.e(e, "Failed to retrieve the file for absolute path: $absolutePath!")
             null
         }
     }

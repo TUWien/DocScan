@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.databinding.ActivityShareLogBinding
+import at.ac.tuwien.caa.docscan.extensions.bindVisible
 import at.ac.tuwien.caa.docscan.extensions.shareFileAsEmailLog
 import at.ac.tuwien.caa.docscan.logic.PageFileType
 import at.ac.tuwien.caa.docscan.logic.handleError
@@ -20,6 +22,7 @@ class LogActivity : BaseNavigationActivity() {
     override val selfNavDrawerItem = NavigationItem.SHARE_LOG
 
     private val viewModel: LogViewModel by viewModel()
+    private lateinit var binding: ActivityShareLogBinding
 
     companion object {
         fun newInstance(context: Context?): Intent {
@@ -29,7 +32,8 @@ class LogActivity : BaseNavigationActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_share_log)
+        binding = ActivityShareLogBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         val sendButton = findViewById<Button>(R.id.share_log_button)
         sendButton.setOnClickListener {
             viewModel.shareLog()
@@ -51,7 +55,7 @@ class LogActivity : BaseNavigationActivity() {
             }
         }
         viewModel.observableProgress.observe(this) {
-            // TODO: Show blocking progress meanwhile
+            binding.progress.bindVisible(it)
         }
     }
 }

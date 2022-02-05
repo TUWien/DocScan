@@ -14,6 +14,7 @@ import java.util.Locale;
 
 import at.ac.tuwien.caa.docscan.BuildConfig;
 import at.ac.tuwien.caa.docscan.R;
+import at.ac.tuwien.caa.docscan.extensions.DateExtensionKt;
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer;
 import at.ac.tuwien.caa.docscan.ui.intro.IntroActivity;
@@ -39,9 +40,7 @@ public class AboutActivity extends BaseNavigationActivity {
         String buildTime = getResources().getString(R.string.about_buildtime_prefix_text);
         Date buildDate = new Date(BuildConfig.TIMESTAMP);
         TextView buildDateTextView = findViewById(R.id.about_buildtime_textview);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
-        String date = sdf.format(buildDate);
-        buildTime += " " + date;
+        buildTime += " " + DateExtensionKt.getTimeStamp(buildDate);
         buildDateTextView.setText(buildTime);
 
         final Context context = this;

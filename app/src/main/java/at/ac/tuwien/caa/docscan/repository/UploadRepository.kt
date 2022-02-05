@@ -71,6 +71,9 @@ class UploadRepository(
         }
     }
 
+    /**
+     * TODO: Add more Timber.i etc. info tags for logging this internally.
+     */
     private suspend fun uploadDocumentInternal(documentId: UUID): Resource<UploadStatusResponse> {
         Timber.d("Starting upload for $documentId")
         // 1. Retrieve the current document with its pages.

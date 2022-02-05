@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan
 
 import android.app.Application
 import androidx.work.WorkManager
+import at.ac.tuwien.caa.docscan.extensions.getTimeStamp
 import at.ac.tuwien.caa.docscan.koin.*
 import at.ac.tuwien.caa.docscan.log.FirebaseCrashlyticsTimberTree
 import at.ac.tuwien.caa.docscan.log.InternalLogTimberTree
@@ -19,7 +20,6 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import timber.log.Timber
-import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -66,7 +66,7 @@ class DocScanApp : Application() {
 
     private fun logFirstAppStart() {
         if (preferencesHandler.firstStartDate == null) {
-            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val timeStamp = Date().getTimeStamp()
             preferencesHandler.firstStartDate = timeStamp
             // set for the crashlytics instance
             FirebaseCrashlytics.getInstance()

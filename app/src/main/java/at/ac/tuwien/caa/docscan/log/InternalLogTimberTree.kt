@@ -1,11 +1,12 @@
 package at.ac.tuwien.caa.docscan.log
 
 import android.util.Log
+import at.ac.tuwien.caa.docscan.extensions.getTimeStamp
+import at.ac.tuwien.caa.docscan.log.InternalLogTimberTree.Companion.LOGGABLE_PRIORITIES
 import at.ac.tuwien.caa.docscan.logic.FileHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -25,8 +26,7 @@ class InternalLogTimberTree(
     }
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val firstLine = "$timeStamp ${getPriorityPrefix(priority)}${tag ?: ""}: $message"
+        val firstLine = "${Date().getTimeStamp()} ${getPriorityPrefix(priority)}${tag ?: ""}: $message"
         coroutineScope.launch {
             fileHandler.appendToLog(firstLine, t)
         }
