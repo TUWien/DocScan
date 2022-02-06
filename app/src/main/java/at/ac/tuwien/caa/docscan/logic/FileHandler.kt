@@ -573,7 +573,7 @@ fun File.getFileHash(): String {
     return try {
         return calcHash().toHexString().lowercase()
     } catch (e: Exception) {
-        Timber.e("Computing hash of file: $name")
+        Timber.e(e, "Computing hash of file: $name has failed!")
         ""
     }
 }

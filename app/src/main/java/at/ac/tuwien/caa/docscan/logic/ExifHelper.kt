@@ -34,7 +34,7 @@ fun applyExifData(file: File, exifMetaData: ImageExifMetaData) {
         }
         exif.saveAttributes()
     } catch (exception: Exception) {
-        Timber.e(exception)
+        Timber.e(exception, "Apply exif data has failed!")
     }
 }
 
