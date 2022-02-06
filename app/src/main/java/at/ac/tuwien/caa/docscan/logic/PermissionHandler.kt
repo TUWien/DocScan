@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
-import android.provider.DocumentsContract
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 
@@ -22,6 +21,24 @@ object PermissionHandler {
         requiredMandatoryPermissions.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
+
+    fun isLocationPermissionGiven(context: Context): Boolean {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            return true
+        }
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            return true
+        }
+        return false
+    }
 
     /**
      * This function checks several conditions for [folder]:

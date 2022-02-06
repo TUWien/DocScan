@@ -5,17 +5,10 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.video.BackgroundSubtractorMOG2;
 import org.opencv.video.Video;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import at.ac.tuwien.caa.docscan.extensions.DateExtensionKt;
-import at.ac.tuwien.caa.docscan.logic.deprecated.Helper;
 import timber.log.Timber;
 
 public class ChangeDetector {
@@ -151,38 +144,38 @@ public class ChangeDetector {
 //
 //    }
 
-    private double getChangeRatioS(Mat mat, BackgroundSubtractorMOG2 subtractor, double learnRate) {
-
-        Mat resizedMat = resizeMat(mat);
-
-//        Core.absdiff(resizedMat, new Scalar(255), resizedMat);
-//        Imgproc.dilate(resizedMat, resizedMat, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(4,4)));
-//        Core.absdiff(resizedMat, new Scalar(255), resizedMat);
-//        Core.subtract(resizedMat, new Scalar(255), resizedMat);
-
-        Mat fgMask = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC1);
-
-        subtractor.apply(resizedMat, fgMask, learnRate);
-        Mat fgMaskTh = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC1);
-        Imgproc.threshold(fgMask, fgMaskTh, 1, 1, Imgproc.THRESH_BINARY);
-
-        Scalar fgPixels = Core.sumElems(fgMaskTh);
-
-        double changeRatio = fgPixels.val[0] / (fgMask.rows() * fgMask.cols());
-
-//        if (changeRatio > 0.01) {
-
-        String timeStamp = DateExtensionKt.getTimeStamp(new Date());
-        Timber.d("taking picture: " + timeStamp);
-
-        String fileName = "mask" + timeStamp + ".jpg";
-        File file = new File(Helper.getMediaStorageDir("DocScan"), fileName);
-        Imgcodecs.imwrite(file.getAbsolutePath(), fgMask);
-//        }
-
-        return changeRatio;
-
-    }
+//    private double getChangeRatioS(Mat mat, BackgroundSubtractorMOG2 subtractor, double learnRate) {
+//
+//        Mat resizedMat = resizeMat(mat);
+//
+////        Core.absdiff(resizedMat, new Scalar(255), resizedMat);
+////        Imgproc.dilate(resizedMat, resizedMat, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(4,4)));
+////        Core.absdiff(resizedMat, new Scalar(255), resizedMat);
+////        Core.subtract(resizedMat, new Scalar(255), resizedMat);
+//
+//        Mat fgMask = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC1);
+//
+//        subtractor.apply(resizedMat, fgMask, learnRate);
+//        Mat fgMaskTh = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC1);
+//        Imgproc.threshold(fgMask, fgMaskTh, 1, 1, Imgproc.THRESH_BINARY);
+//
+//        Scalar fgPixels = Core.sumElems(fgMaskTh);
+//
+//        double changeRatio = fgPixels.val[0] / (fgMask.rows() * fgMask.cols());
+//
+////        if (changeRatio > 0.01) {
+//
+//        String timeStamp = DateExtensionKt.getTimeStamp(new Date());
+//        Timber.d("taking picture: " + timeStamp);
+//
+//        String fileName = "mask" + timeStamp + ".jpg";
+//        File file = new File(Helper.getMediaStorageDir("DocScan"), fileName);
+//        Imgcodecs.imwrite(file.getAbsolutePath(), fgMask);
+////        }
+//
+//        return changeRatio;
+//
+//    }
 
     private double getChangeRatio(Mat mat, BackgroundSubtractorMOG2 subtractor, double learnRate) {
 

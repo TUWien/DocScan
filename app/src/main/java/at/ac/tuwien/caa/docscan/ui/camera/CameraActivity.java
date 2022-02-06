@@ -74,7 +74,6 @@ import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.db.model.Page;
 import at.ac.tuwien.caa.docscan.extensions.ContextExtensionsKt;
@@ -83,7 +82,7 @@ import at.ac.tuwien.caa.docscan.logic.Failure;
 import at.ac.tuwien.caa.docscan.logic.FileHandler;
 import at.ac.tuwien.caa.docscan.logic.GlideHelper;
 import at.ac.tuwien.caa.docscan.logic.GlideLegacyCallback;
-import at.ac.tuwien.caa.docscan.logic.deprecated.Helper;
+import at.ac.tuwien.caa.docscan.logic.Helper;
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler;
 import at.ac.tuwien.caa.docscan.logic.Resource;
 import at.ac.tuwien.caa.docscan.logic.Success;
@@ -356,7 +355,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //        ImageProcessLogger.getInstance().readFromDisk(this);
 
-        ImageProcessor.initContext(this);
+//        ImageProcessor.initContext(this);
 
         mIsPictureSafe = true;
 

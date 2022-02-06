@@ -7,8 +7,6 @@ import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.*
-import at.ac.tuwien.caa.docscan.db.model.Document
-import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary.Companion.getDefault
 import at.ac.tuwien.caa.docscan.db.model.boundary.asClockwiseList
 import at.ac.tuwien.caa.docscan.db.model.boundary.asPoint
@@ -22,7 +20,6 @@ import kotlinx.coroutines.*
 import timber.log.Timber
 import java.io.File
 import java.util.*
-import kotlin.collections.ArrayList
 
 class ImageProcessorRepository(
     private val pageDao: PageDao,
@@ -117,17 +114,28 @@ class ImageProcessorRepository(
                                     }
                                     val points = (page.singlePageBoundary?.asClockwiseList()
                                         ?: getDefault().asClockwiseList()).map { pointF -> pointF.asPoint() }
-                                    try {
-                                        Mapper.replaceWithMappedImage(
-                                            file.absolutePath,
-                                            ArrayList(points)
-                                        )
+
+                                    // create cache file, copy original file to cache file and apply the operation
+                                    // on that file first.
+                                    val tempFile = fileHandler.createCacheFile(page.id)
+                                    file.copyTo(tempFile, overwrite = true)
+                                    // only if the operation successful, copy the returned file to the original file
+
+                                    // copy the exif data first, otherwise it would get lost through the operation.
+                                    val exifData = getExifInterface(file)
+                                    val newFile = Mapper.applyCropping(tempFile, ArrayList(points))
+                                    if(newFile == null) {
+                                        tempFile.safelyDelete()
+                                        return@pageImageOperation IOErrorCode.CROPPING_FAILED.asFailure()
+                                    } else {
+                                        newFile.copyTo(file, overwrite = true)
+
+                                        // apply the exif data back to the cropped image
+                                        exifData?.let {
+                                            saveExif(it, file)
+                                        }
+                                        tempFile.safelyDelete()
                                         return@pageImageOperation Success(Unit)
-                                    } catch (e: Exception) {
-                                        Timber.e("Cropping has failed!", e)
-                                        return@pageImageOperation IOErrorCode.CROPPING_FAILED.asFailure(
-                                            e
-                                        )
                                     }
                                 },
                                 postOperation = { pageId, _ ->

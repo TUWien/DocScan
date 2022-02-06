@@ -14,7 +14,6 @@ import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.logic.deprecated.Helper
 import at.ac.tuwien.caa.docscan.repository.migration.domain.JsonStorage
 import com.google.gson.FieldNamingPolicy
 import com.google.gson.Gson
@@ -190,7 +189,7 @@ class MigrationRepository(
                     }
 
                     // 3. read out the exif orientation
-                    val rotation = Helper.getNewSafeExifOrientation(newFile)
+                    val rotation = getRotation(newFile)
 
                     // 4. read out the state if the page has been already cropped.
                     val processingState =
