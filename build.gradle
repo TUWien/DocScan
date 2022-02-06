@@ -5,7 +5,7 @@ buildscript {
 
     ext {
         kotlin_version = '1.6.10'
-        koin_version = "3.1.2"
+        koin_version = "3.1.5"
         nav_version = "2.3.5"
     }
 

@@ -18,6 +18,9 @@
         <item name="windowActionModeOverlay">true</item>
 
         <item name="materialAlertDialogTheme">@style/AppTheme.MaterialDialogTheme</item>
+
+        <!-- Used to style androidx.preference dialogs, since android preferences do not use material alert dialogs. -->
+        <item name="alertDialogTheme">@style/AlertDialogTheme</item>
     </style>
 
     <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
@@ -37,6 +40,16 @@
 
     <style name="AppTheme.MaterialAlertDialog.ThemeOverlay.Button" parent="">
         <item name="colorPrimary">@color/colorControlHighlight</item>
+    </style>
+
+    <style name="AlertDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="buttonBarNegativeButtonStyle">@style/AlertDialogButtonStyle</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AlertDialogButtonStyle</item>
+        <item name="buttonBarNeutralButtonStyle">@style/AlertDialogButtonStyle</item>
+    </style>
+
+    <style name="AlertDialogButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/colorControlHighlight</item>
     </style>
 
     <style name="TextInputLayoutAppearance" parent="Widget.Design.TextInputLayout">
