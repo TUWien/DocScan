@@ -476,6 +476,10 @@
     <string name="settings_show_grid_summary">Overlays a grid on the camera view</string>
     <string name="settings_flash_series_title">Flash after imaging</string>
     <string name="settings_flash_series_summary">Activates the flash for a second to show that a picture has been taken. This applies only to the series mode.</string>
+    <string name="settings_category_crash_reports_title">Crash Reports</string>
+    <string name="settings_crash_reports_title">Firebase Crashlytics</string>
+    <string name="settings_crash_reports_summary_on">Anonymous crash reporting is enabled.</string>
+    <string name="settings_crash_reports_summary_off">Help us to find and fix issues more quickly by enabling anonymous crash reporting.</string>
 
     <!-- DebugSettingsFragment -->
     <string name="debug_settings_title">Debug settings</string>

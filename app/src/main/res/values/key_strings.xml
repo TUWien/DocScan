@@ -3,6 +3,7 @@
 
     <string name="key_upload_mobile_data">KEY_UPLOAD_MOBILE_DATA</string>
     <string name="key_fast_segmentation">KEY_FAST_SEGMENTATION</string>
+    <string name="key_crash_reports">KEY_CRASH_REPORTS</string>
     <string name="key_focus_measure">KEY_FOCUS_MEASURE</string>
     <string name="key_show_focus_values">KEY_SHOW_FOCUS_VALUES</string>
     <string name="key_aggressive_autofocus">KEY_AGGRESSIVE_AUTO_FOCUS</string>

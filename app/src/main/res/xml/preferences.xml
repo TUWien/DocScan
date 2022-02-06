@@ -67,4 +67,18 @@
 
     </Preference>
 
+    <PreferenceCategory
+        android:title="@string/settings_category_crash_reports_title"
+        app:iconSpaceReserved="false">
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/key_crash_reports"
+            android:summaryOff="@string/settings_crash_reports_summary_off"
+            android:summaryOn="@string/settings_crash_reports_summary_on"
+            android:title="@string/settings_crash_reports_title"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>

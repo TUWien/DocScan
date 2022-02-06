@@ -94,6 +94,10 @@ class PreferencesHandler(val context: Context, val userDao: UserDao) {
         context.getString(R.string.key_use_test_server)
     }
 
+    private val KEY_SEND_CRASH_REPORTS by lazy {
+        context.getString(R.string.key_crash_reports)
+    }
+
     companion object {
         const val DEFAULT_INT_VALUE = -1
 
@@ -110,8 +114,6 @@ class PreferencesHandler(val context: Context, val userDao: UserDao) {
         private const val KEY_DB_MIGRATION = "DB_MIGRATION"
         private const val KEY_TRANSKRIBUS_SESSION_COOKIE = "TRANSKRIBUS_SESSION_COOKIE"
         private const val KEY_TRANSKRIBUS_PASSWORD = "TRANSKRIBUS_PASSWORD"
-        private const val KEY_CRASH_REPORTING = "KEY_CRASH_REPORTING"
-        private const val KEY_ANALYTICS_REPORTING = "KEY_ANALYTICS_REPORTING"
 
         // previous deprecated keys that are deleted in the migration
         private const val DEPRECATED_FIRST_NAME_KEY = "firstName"
@@ -393,19 +395,10 @@ class PreferencesHandler(val context: Context, val userDao: UserDao) {
 
     var isCrashReportingEnabled: Boolean
         get() =
-            defaultSharedPreferences.getBoolean(KEY_CRASH_REPORTING, true)
+            defaultSharedPreferences.getBoolean(KEY_SEND_CRASH_REPORTS, true)
         set(value) {
             defaultSharedPreferences.edit()
-                .putBoolean(KEY_CRASH_REPORTING, value)
-                .apply()
-        }
-
-    var isAnalyticsEnabled: Boolean
-        get() =
-            defaultSharedPreferences.getBoolean(KEY_ANALYTICS_REPORTING, true)
-        set(value) {
-            defaultSharedPreferences.edit()
-                .putBoolean(KEY_ANALYTICS_REPORTING, value)
+                .putBoolean(KEY_SEND_CRASH_REPORTS, value)
                 .apply()
         }
 

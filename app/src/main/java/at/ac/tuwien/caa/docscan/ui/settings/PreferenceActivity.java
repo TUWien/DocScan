@@ -7,6 +7,9 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceFragmentCompat;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+
 import at.ac.tuwien.caa.docscan.R;
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer;
@@ -44,6 +47,16 @@ public class PreferenceActivity extends BaseNavigationActivity {
             findPreference(exifKey).setOnPreferenceClickListener(preference -> {
                 Intent intent = new Intent(requireActivity(), ExifPreferenceActivity.class);
                 startActivity(intent);
+                return true;
+            });
+
+            String crashReportsKey = getResources().getString(R.string.key_crash_reports);
+            findPreference(crashReportsKey).setOnPreferenceChangeListener((preference, newValue) -> {
+                if (newValue instanceof Boolean) {
+                    // crashlytics and analytics are kind of tight together, therefore both needs to be explicitly enabled/disabled.
+                    FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(((Boolean) newValue));
+                    FirebaseAnalytics.getInstance(requireContext()).setAnalyticsCollectionEnabled(((Boolean) newValue));
+                }
                 return true;
             });
         }
