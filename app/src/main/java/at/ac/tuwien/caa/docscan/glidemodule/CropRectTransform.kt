@@ -51,10 +51,10 @@ class CropRectTransform(private val page: Page, context: Context) : BitmapTransf
         return result
     }
 
-    private fun drawQuad(canvas: Canvas, points: List<PointF>, path: Path?, paint: Paint?) {
+    private fun drawQuad(canvas: Canvas, points: List<PointF>, path: Path, paint: Paint) {
 
 //        initOuterValues(canvas);
-        path!!.reset()
+        path.reset()
         var isStartSet = false
         for (point in points) {
             if (!isStartSet) {
@@ -65,7 +65,7 @@ class CropRectTransform(private val page: Page, context: Context) : BitmapTransf
             }
         }
         path.close()
-        canvas.drawPath(path, paint!!)
+        canvas.drawPath(path, paint)
     }
 
     override fun equals(other: Any?): Boolean {

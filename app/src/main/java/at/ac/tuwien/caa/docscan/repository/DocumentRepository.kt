@@ -70,6 +70,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun sanitizeDocuments(): Resource<Unit> {
+        // TODO: Add a function which returns the reason for the lock.
         documentDao.getAllLockedDocumentWithPages().forEach {
             if (it.document.lockState == LockState.PARTIAL_LOCK) {
                 it.pages.forEach { page ->
@@ -84,7 +85,7 @@ class DocumentRepository(
                         UploadWorker.spawnUploadJob(
                             workManager,
                             it.document.id,
-                            preferencesHandler.isMobileDataAllowed
+                            preferencesHandler.isUploadOnMeteredNetworksAllowed
                         )
                     }
                     it.isExporting() -> {
@@ -237,16 +238,24 @@ class DocumentRepository(
                 // ignore, and perform check
             }
         }
+        spawnUploadJob(documentWithPages.document.id)
+        return Success(Unit)
+    }
+
+    /**
+     * Pre-Condition:
+     * - document is already locked
+     */
+    suspend fun spawnUploadJob(documentId: UUID, replaceWorkerJob: Boolean = false) {
         pageDao.updateUploadStateForDocument(
-            documentWithPages.document.id,
-            UploadState.UPLOAD_IN_PROGRESS
+            documentId,
+            UploadState.SCHEDULED
         )
         UploadWorker.spawnUploadJob(
             workManager,
-            documentWithPages.document.id,
-            preferencesHandler.isMobileDataAllowed
+            documentId,
+            preferencesHandler.isUploadOnMeteredNetworksAllowed
         )
-        return Success(Unit)
     }
 
     @WorkerThread

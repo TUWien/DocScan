@@ -25,6 +25,7 @@ fun getCurrentWorkerJobStates(
 
     val workInfosFuture = WorkManager.getInstance(context)
         .getWorkInfos(WorkQuery.Builder.fromTags(tags).addStates(states).build())
+    // TODO: Call can throw
     val workInfos = workInfosFuture.get()
     workInfos.forEach {
         // we assume that a worker request was always associated with just one tag.
@@ -37,3 +38,22 @@ fun getCurrentWorkerJobStates(
 }
 
 data class DocScanWorkInfo(val tag: String, val jobId: UUID, val workInfo: WorkInfo)
+
+
+fun cancelAllScheduledAndRunningUploadJobs(
+    context: Context,
+    workManager: WorkManager
+): Boolean {
+    // get all unfinished upload jobs
+    val currentUploadJobs =
+        getCurrentWorkerJobStates(context, listOf(UploadWorker.UPLOAD_TAG))
+            .filter { state -> !state.workInfo.state.isFinished }
+
+    return if (currentUploadJobs.isEmpty()) {
+        false
+    } else {
+        // cancel all upload jobs
+        UploadWorker.cancelByTag(workManager)
+        true
+    }
+}

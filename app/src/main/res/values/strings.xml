@@ -382,6 +382,10 @@
     <string name="sync_snackbar_upload_started">Images are uploaded in the background</string>
     <string name="sync_dir_pending_text">upload pending</string>
     <string name="sync_dir_processing_text">processing, please wait</string>
+    <string name="sync_dir_upload_scheduled_text">upload scheduled,</string>
+    <string name="sync_dir_upload_scheduled_begin_shortly_text">will begin shortly</string>
+    <string name="sync_dir_upload_scheduled_unmetered_condition_text">you have to connect to an unmetered network (e.g. wifi) to proceed!</string>
+    <string name="sync_dir_upload_scheduled_internet_condition_text">connect to the internet to proceed!</string>
     <string name="sync_not_focused_text">- partially blurred</string>
     <string name="sync_menu_upload_item_title">Start upload</string>
     <string name="sync_menu_delete_item_title">Delete item</string>
@@ -466,8 +470,8 @@
     <string name="map_crop_view_no_transformation_text">The image could not be transformed. Please try to adjust the cropping rectangle.</string>
     <!-- SettingsFragment -->
     <string name="settings_upload_title">Upload</string>
-    <string name="settings_upload_mobile_data_title">Mobile data</string>
-    <string name="settings_upload_mobile_data_summary">Enable uploads over mobile data connection. Additional charges by your provider may arise. </string>
+    <string name="settings_upload_metered_network_title">Metered networks</string>
+    <string name="settings_upload_metered_network_summary">Enable uploads over metered networks (mobile data, VPNs). Additional charges by your provider may arise.</string>
     <string name="settings_image_processing_title">Image processing</string>
     <string name="settings_fast_segmentation_checkbox_title">Fast page detection</string>
     <string name="settings_focus_measure_checkbox_title">Measure focus</string>
@@ -568,6 +572,9 @@
 
     <string name="document_viewer_confirm_cancel_upload_title">Cancel upload?</string>
     <string name="document_viewer_confirm_cancel_upload_text">Do you want to cancel the upload for the document?</string>
+
+    <string name="upload_warning_unmetered_constraint_changed_title">Uploads cancelled!</string>
+    <string name="upload_warning_unmetered_constraint_changed_text">Due to the recent constraint change, all of your scheduled and running uploads have been cancelled.</string>
 
     <string name="documents_no_documents">No documents\nPlease create a document first!</string>
     <string name="images_no_active_document">No active document\nPlease select a document first!</string>

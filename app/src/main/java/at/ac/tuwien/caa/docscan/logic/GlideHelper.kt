@@ -8,7 +8,6 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.glidemodule.CropRectTransform
-import at.ac.tuwien.caa.docscan.glidemodule.FileSignature
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -21,6 +20,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.bumptech.glide.signature.MediaStoreSignature
+import com.bumptech.glide.signature.ObjectKey
 import org.koin.java.KoinJavaComponent.inject
 import timber.log.Timber
 import java.io.File
@@ -144,7 +144,7 @@ object GlideHelper {
 //            .diskCacheStrategy(DiskCacheStrategy.NONE)
             .signature(
                 if (fileHash != null) {
-                    FileSignature(fileHash)
+                    ObjectKey(fileHash)
                 } else {
                     MediaStoreSignature(
                         fileType.mimeType,

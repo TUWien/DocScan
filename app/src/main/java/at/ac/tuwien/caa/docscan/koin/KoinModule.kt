@@ -1,6 +1,7 @@
 package at.ac.tuwien.caa.docscan.koin
 
 import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.storage.StorageManager
 import androidx.work.WorkManager
@@ -10,6 +11,7 @@ import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
 import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusHeaderInterceptor
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.logic.FileHandler
+import at.ac.tuwien.caa.docscan.logic.NetworkUtil
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.repository.*
@@ -53,6 +55,8 @@ val appModule = module {
     single { WorkManager.getInstance(get()) }
     single { NotificationHandler(get()) }
     single { (get() as Context).getSystemService(Context.STORAGE_SERVICE) as StorageManager }
+    single { (get() as Context).getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager }
+    single { NetworkUtil(get()) }
 }
 
 val daoModule = module {
@@ -66,7 +70,7 @@ val viewModelModule = module {
     viewModel { (extras: Bundle) -> SegmentationViewModel(extras, get(), get()) }
     viewModel { StartViewModel(get(), get(), get()) }
     viewModel { CameraViewModel(get(), get(), get()) }
-    viewModel { DocumentsViewModel(get()) }
+    viewModel { DocumentsViewModel(get(), get(), get()) }
     viewModel { DocumentViewerViewModel(get(), get()) }
     viewModel { CreateDocumentViewModel(get()) }
     viewModel { (extras: Bundle) -> EditDocumentViewModel(extras, get()) }

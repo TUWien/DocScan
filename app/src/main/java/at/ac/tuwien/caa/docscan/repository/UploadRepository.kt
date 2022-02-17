@@ -7,8 +7,11 @@ import at.ac.tuwien.caa.docscan.api.transkribus.model.collection.DocResponse
 import at.ac.tuwien.caa.docscan.api.transkribus.model.uploads.*
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
-import at.ac.tuwien.caa.docscan.db.model.*
+import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
+import at.ac.tuwien.caa.docscan.db.model.Page
+import at.ac.tuwien.caa.docscan.db.model.Upload
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
+import at.ac.tuwien.caa.docscan.db.model.getFileName
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.worker.UploadWorker
@@ -21,11 +24,6 @@ import java.util.*
 
 /**
  * An upload repository dealing with the upload of the document and pages.
- *
- * TODO: UPLOAD_CONSTRAINT: A worker might be scheduled, but not running (e.g. if the is running on mobile data, but has not opted in for that) - is a scheduled state necessary?
- * TODO: UPLOAD_CONSTRAINT: If scheduled state is not added to the DB, then this cannot be tracked in the app, the upload could suddenly start if the user isn't aware of that.
- * TODO: UPLOAD_CONSTRAINT: The current checksum is sent for each image, so if an upload should suddenly, then it would fail if one of the images has been changed/added/removed.
- * TODO: UPLOAD_CONSTRAINT: Should the document be locked if it's just scheduled? (currently it's locked when the upload is started, but then it's unlocked, if the worker is retried then the doc is not locked anymore!
  */
 class UploadRepository(
     private val api: TranskribusAPIService,
@@ -50,6 +48,7 @@ class UploadRepository(
             val resource = uploadDocumentInternal(documentId)
             when (resource) {
                 is Failure -> {
+                    Timber.i(resource.exception, "The upload job for $documentId has failed!")
                     withContext(NonCancellable) {
                         tearDownUpload(
                             documentId,
@@ -58,12 +57,13 @@ class UploadRepository(
                     }
                 }
                 is Success -> {
+                    Timber.i("The upload job for $documentId has successfully finished!")
                     // ignore
                 }
             }
             return resource
         } catch (e: CancellationException) {
-            Timber.i("The upload job has been cancelled - tearing down upload!")
+            Timber.i("The upload job for $documentId has been cancelled - tearing down upload!")
             withContext(NonCancellable) {
                 tearDownUpload(documentId, UploadResourceState.FAILURE)
             }
@@ -71,9 +71,6 @@ class UploadRepository(
         }
     }
 
-    /**
-     * TODO: Add more Timber.i etc. info tags for logging this internally.
-     */
     private suspend fun uploadDocumentInternal(documentId: UUID): Resource<UploadStatusResponse> {
         Timber.d("Starting upload for $documentId")
         // 1. Retrieve the current document with its pages.
@@ -141,6 +138,7 @@ class UploadRepository(
         }
 
         for (page in pagesToUpload) {
+            Timber.i("Uploading page ${page.page.id} with uploadId ${uploadStatusResponse.uploadId}!")
             if (page.uploadStatus.pageUploaded) {
                 continue
             }
@@ -155,9 +153,14 @@ class UploadRepository(
 
             when (uploadResource) {
                 is Failure -> {
+                    Timber.i(
+                        uploadResource.exception,
+                        "Upload for page ${page.page.id} has failed!"
+                    )
                     return Failure(uploadResource.exception)
                 }
                 is Success -> {
+                    Timber.i("Page ${page.page.id} successfully uploaded!")
                     pageDao.updateUploadState(page.page.id, UploadState.UPLOADED)
                     lastUploadStatusResponse = uploadResource.data
                 }
@@ -165,8 +168,13 @@ class UploadRepository(
         }
 
         // tear down the upload
-        tearDownUpload(documentId, UploadResourceState.SUCCESS)
-        return Success(lastUploadStatusResponse)
+        // if the upload should be cancelled right after the last document has succeeded, we need
+        // to ensure that the following state update would not throw a cancellation exception, since
+        // otherwise it would get the wrong state
+        return withContext(NonCancellable) {
+            tearDownUpload(documentId, UploadResourceState.SUCCESS)
+            Success(lastUploadStatusResponse)
+        }
     }
 
     private data class UploadPageWrapper(
@@ -182,12 +190,14 @@ class UploadRepository(
         collectionId: Int,
         documentWithPages: DocumentWithPages
     ): Resource<UploadStatusResponse> {
+        Timber.i("Preparing for multi-part upload!")
         documentWithPages.document.uploadId?.let {
             val resource: Resource<UploadStatusResponse> = transkribusResource(apiCall = {
                 api.getUploadStatus(it)
             })
             when (resource) {
                 is Success -> {
+                    Timber.i("Upload with persisted id $it still active!")
                     return resource
                 }
                 is Failure -> {
@@ -207,6 +217,8 @@ class UploadRepository(
                     // that the doc is neither fully uploaded, nor partially uploaded.
                     if (!docResource.exception.is404()) {
                         return Failure(docResource.exception)
+                    } else {
+                        Timber.i("Upload status of persisted id $it 404!")
                     }
                 }
             }
@@ -254,25 +266,29 @@ class UploadRepository(
 
     /**
      * @return a resource with the collection id where the documents should be assigned.
-     * TODO: log the collection operation failures
      * Every document must belong to a collection, however, from the client's perspective, there is
      * just a single collection called [TranskribusAPIService.TRANSKRIBUS_UPLOAD_COLLECTION_NAME], so
      * this logic will try to get the collectionId and only create a new collection if necessary.
      */
     private suspend fun getCollectionId(): Resource<Int> {
-        // TODO: Check if the collectionId exists on the backend, otherwise this request may fail forever in a loop.
-        preferencesHandler.collectionId?.let {
-            return Success(it)
-        }
+        Timber.i("Start to obtain collectionId!")
         val collections: Resource<List<CollectionResponse>> = transkribusResource(apiCall = {
             api.getCollections()
         })
         when (collections) {
             is Success -> {
+                collections.data.firstOrNull { collectionResponse -> collectionResponse.id == preferencesHandler.collectionId }
+                    ?.let {
+                        Timber.i("Persisted collectionId found in BE's response!")
+                        return Success(it.id)
+                    }
+                // clear the existing collection id if it cannot be found among the ones from the backend.
+                preferencesHandler.collectionId = null
                 // select highest id with the matching name
                 collections.data.sortedBy { it.id }.lastOrNull {
                     it.name == TranskribusAPIService.TRANSKRIBUS_UPLOAD_COLLECTION_NAME
                 }?.let {
+                    Timber.i("Found collection with id ${it.id} with DocScan's app default name!")
                     return Success(it.id)
                 }
             }
@@ -280,12 +296,15 @@ class UploadRepository(
                 return Failure(collections.exception)
             }
         }
+        Timber.i("Start to obtain new collectionId!")
         // if the collectionId cannot be found, then a new one is created.
         val newCollection: Resource<String> = transkribusResource(apiCall = {
             api.createCollection(TranskribusAPIService.TRANSKRIBUS_UPLOAD_COLLECTION_NAME)
         })
         return when (newCollection) {
             is Success -> {
+                Timber.i("New collection id ${newCollection.data} created!")
+                preferencesHandler.collectionId = newCollection.data.toInt()
                 Success(newCollection.data.toInt())
             }
             is Failure -> {
@@ -307,6 +326,7 @@ class UploadRepository(
         documentId: UUID,
         statusResponse: UploadStatusResponse
     ): Resource<List<UploadPageWrapper>> {
+        Timber.i("Checking upload expectations!")
         val docWithPages = documentDao.getDocumentWithPages(documentId)
             ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
         val pagesToUpload = mutableListOf<UploadPageWrapper>()
@@ -333,33 +353,41 @@ class UploadRepository(
 
     /**
      * Tears down an upload for a document.
-     * @param uploadNonRecoverableFailure if true, then this tears down operation is performed in a way
-     * so that the entire association with the upload job is removed.
+     * @param uploadResourceState is used to determine how the upload is teared down.
      */
     private suspend fun tearDownUpload(
         documentId: UUID,
         uploadResourceState: UploadResourceState
     ) {
-        Timber.d("Tearing down upload!")
+        Timber.d("Start tearing down upload!")
         pageDao.updateUploadStateForDocument(
             documentId,
-            if (uploadResourceState == UploadResourceState.SUCCESS) UploadState.UPLOADED else UploadState.NONE
+            when (uploadResourceState) {
+                UploadResourceState.SUCCESS -> UploadState.UPLOADED
+                UploadResourceState.RECOVERABLE_FAILURE -> UploadState.SCHEDULED
+                UploadResourceState.FAILURE -> UploadState.NONE
+            }
         )
-        unLockDocAfterLongRunningOperation(documentId)
+
+        // keep the lock for recoverable failures, since the doc's page have been moved to
+        // upload state SCHEDULED.
+        if (uploadResourceState != UploadResourceState.RECOVERABLE_FAILURE) {
+            unLockDocAfterLongRunningOperation(documentId)
+        }
 
         // delete the associated upload if something goes terribly wrong
         if (uploadResourceState == UploadResourceState.FAILURE) {
             // load the document again, since this may be an old reference
             documentDao.getDocument(documentId)?.uploadId?.let {
                 Timber.d("Trying to delete uploadId $it on transkribus server!")
-                when (val result = transkribusResource<Void, Void>(apiCall = {
+                when (transkribusResource<Void, Void>(apiCall = {
                     api.deleteUpload(it)
                 })) {
                     is Failure -> {
                         Timber.d("Deleting upload id $it has failed!")
                     }
                     is Success -> {
-                        Timber.d("Successfully deleted upload id $it!")
+                        Timber.d("Successfully deleted uploadId $it!")
                     }
                 }
             }

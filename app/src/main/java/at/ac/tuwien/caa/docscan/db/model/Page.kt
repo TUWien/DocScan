@@ -120,6 +120,10 @@ fun Page.isUploadInProgress(): Boolean {
     return transkribusUpload.state == UploadState.UPLOAD_IN_PROGRESS
 }
 
+fun Page.isUploadScheduled(): Boolean {
+    return transkribusUpload.state == UploadState.SCHEDULED
+}
+
 fun Page.isProcessing(): Boolean {
     return postProcessingState == PostProcessingState.PROCESSING
 }

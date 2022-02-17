@@ -145,7 +145,7 @@ class UploadWorker(
                 )
                 .setConstraints(
                     Constraints.Builder()
-                        .setRequiredNetworkType(if (allowMobileData) NetworkType.CONNECTED else NetworkType.METERED)
+                        .setRequiredNetworkType(if (allowMobileData) NetworkType.CONNECTED else NetworkType.UNMETERED)
                         .build()
                 )
                 .setBackoffCriteria(
@@ -163,13 +163,41 @@ class UploadWorker(
             )
         }
 
-        private fun getWorkNameByDocId(documentId: UUID) = UPLOAD_TAG + "_" + documentId.toString()
+        private fun workNamePrefix() = "${UPLOAD_TAG}_"
+
+        private fun getWorkNameByDocId(documentId: UUID) = workNamePrefix() + documentId.toString()
+
+        fun getDocumentIdByWorkName(workName: String): String {
+            return workName.replace(workNamePrefix(), "")
+        }
 
         /**
          * Cancels a worker job per documentId.
          */
         fun cancelWorkByDocumentId(workManager: WorkManager, documentId: UUID) {
             workManager.cancelUniqueWork(getWorkNameByDocId(documentId))
+        }
+
+        /**
+         * Cancels a worker job per name.
+         */
+        fun cancelWorkByUniqueName(workManager: WorkManager, name: String) {
+            workManager.cancelUniqueWork(name)
+        }
+
+        /**
+         * Cancels all worker jobs for the [UPLOAD_TAG].
+         */
+        fun cancelByTag(workManager: WorkManager) {
+            workManager.cancelAllWorkByTag(UPLOAD_TAG)
+        }
+
+        /**
+         * Cancels a worker job by its internal workId (this is not the same as the unique name/id
+         * which can be set from the caller!)
+         */
+        fun cancelByWorkId(workManager: WorkManager, workId: UUID) {
+            workManager.cancelWorkById(workId)
         }
     }
 }

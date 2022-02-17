@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
  * - [encryptedPref] encrypted preferences for login credentials and session tokens.
  */
 @Suppress("PrivatePropertyName")
-class PreferencesHandler(val context: Context, val userDao: UserDao) {
+class PreferencesHandler(val context: Context, private val userDao: UserDao) {
     private val preferencesName: String by lazy { "settings" }
     private val preferencesMode = Context.MODE_PRIVATE
 
@@ -384,7 +384,7 @@ class PreferencesHandler(val context: Context, val userDao: UserDao) {
                 .apply()
         }
 
-    var isMobileDataAllowed: Boolean
+    var isUploadOnMeteredNetworksAllowed: Boolean
         get() =
             defaultSharedPreferences.getBoolean(KEY_UPLOAD_MOBILE_DATA, true)
         set(value) {

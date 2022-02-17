@@ -6,7 +6,6 @@ import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.Upload
 import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
-import at.ac.tuwien.caa.docscan.db.model.state.UPLOAD_STATE_ID_UPLOAD_IN_PROGRESS
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
 import java.util.*
 
@@ -35,7 +34,7 @@ interface PageDao {
     suspend fun getPagesByDoc(docId: UUID): List<Page>
 
     @Query("SELECT DISTINCT ${Page.KEY_DOC_ID} FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :state")
-    suspend fun getAllUploadingPagesWithDistinctDocIds(state: UploadState = UploadState.UPLOAD_IN_PROGRESS): List<UUID>
+    suspend fun getAllDocIdsWithScheduledState(state: UploadState = UploadState.SCHEDULED): List<UUID>
 
     @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_POST_PROCESSING_STATE}= :state WHERE ${Page.KEY_ID} = :pageId ")
     fun updatePageProcessingState(pageId: UUID, state: PostProcessingState)

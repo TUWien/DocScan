@@ -128,9 +128,43 @@ class DiffPageCallback : DiffUtil.ItemCallback<PageSelection>() {
         oldItem: PageSelection,
         newItem: PageSelection
     ): Boolean {
+        return isPrimaryEqual(oldItem, newItem) && isSecondaryEqual(oldItem, newItem)
+    }
+
+    /**
+     * See [at.ac.tuwien.caa.docscan.ui.docviewer.documents.DocumentAdapter] for the same function
+     * on why this is necessary.
+     */
+    override fun getChangePayload(oldItem: PageSelection, newItem: PageSelection): Any? {
+        return when {
+            isPrimaryEqual(
+                oldItem,
+                newItem
+            ) && !isSecondaryEqual(oldItem, newItem) -> Any()
+            else -> null
+        }
+    }
+
+    /**
+     * The primary equal check for which the default animation of the recyclerview is always applied
+     * if it's not equal.
+     */
+    private fun isPrimaryEqual(
+        oldItem: PageSelection,
+        newItem: PageSelection
+    ): Boolean {
+        return oldItem.page.fileHash == newItem.page.fileHash
+    }
+
+    /**
+     * In contrast to [isPrimaryEqual] these changes won't trigger a default animation.
+     */
+    private fun isSecondaryEqual(
+        oldItem: PageSelection,
+        newItem: PageSelection
+    ): Boolean {
         return oldItem.isSelected == newItem.isSelected &&
                 oldItem.isSelectionActivated == newItem.isSelectionActivated &&
-                oldItem.page.fileHash == newItem.page.fileHash &&
                 oldItem.page.singlePageBoundary == newItem.page.singlePageBoundary &&
                 oldItem.page.postProcessingState == newItem.page.postProcessingState
     }

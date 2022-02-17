@@ -10,6 +10,11 @@ enum class UploadState(val id: String) {
     NONE("NONE"),
 
     /**
+     * The entity is scheduled for upload and will began shortly or after some conditions are met.
+     */
+    SCHEDULED("SCHEDULED"),
+
+    /**
      * The entity is being uploaded.
      */
     UPLOAD_IN_PROGRESS(UPLOAD_STATE_ID_UPLOAD_IN_PROGRESS),
@@ -22,7 +27,7 @@ enum class UploadState(val id: String) {
     companion object {
         fun getUploadStateById(id: String?): UploadState {
             id ?: return NONE
-            return UploadState.values().firstOrNull { state ->
+            return values().firstOrNull { state ->
                 state.id == id
             } ?: NONE
         }

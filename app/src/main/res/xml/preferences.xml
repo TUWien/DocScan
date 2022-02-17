@@ -8,8 +8,8 @@
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="@string/key_upload_mobile_data"
-            android:summary="@string/settings_upload_mobile_data_summary"
-            android:title="@string/settings_upload_mobile_data_title"
+            android:summary="@string/settings_upload_metered_network_summary"
+            android:title="@string/settings_upload_metered_network_title"
             app:iconSpaceReserved="false" />
 
     </PreferenceCategory>
