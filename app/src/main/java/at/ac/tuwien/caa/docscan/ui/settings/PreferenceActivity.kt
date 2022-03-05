@@ -32,14 +32,14 @@ class PreferenceActivity : BaseNavigationActivity() {
             setPreferencesFromResource(R.xml.preferences, rootKey)
             val preferenceKey = resources.getString(R.string.key_debug_settings)
             findPreference<Preference>(preferenceKey)!!.onPreferenceClickListener =
-                Preference.OnPreferenceClickListener { preference: Preference? ->
+                Preference.OnPreferenceClickListener {
                     val intent = Intent(requireActivity(), DebugPreferenceActivity::class.java)
                     startActivity(intent)
                     true
                 }
             val exifKey = resources.getString(R.string.key_exif_settings)
             findPreference<Preference>(exifKey)!!.onPreferenceClickListener =
-                Preference.OnPreferenceClickListener { preference: Preference? ->
+                Preference.OnPreferenceClickListener {
                     val intent = Intent(requireActivity(), ExifPreferenceActivity::class.java)
                     startActivity(intent)
                     true
@@ -60,7 +60,7 @@ class PreferenceActivity : BaseNavigationActivity() {
                 }
             val crashReportsKey = resources.getString(R.string.key_crash_reports)
             findPreference<Preference>(crashReportsKey)!!.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { preference: Preference?, newValue: Any? ->
+                Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                     if (newValue is Boolean) {
                         // crashlytics and analytics are kind of tight together, therefore both needs to be explicitly enabled/disabled.
                         FirebaseCrashlytics.getInstance()

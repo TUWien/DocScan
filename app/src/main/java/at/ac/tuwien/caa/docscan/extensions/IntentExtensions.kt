@@ -87,11 +87,10 @@ fun shareFile(fragmentActivity: FragmentActivity, pageFileType: PageFileType, ur
 }
 
 fun shareFile(fragmentActivity: FragmentActivity, pageFileType: PageFileType, uris: List<Uri>) {
-    fragmentActivity.safeStartActivity(getShareIntent(fragmentActivity, pageFileType, uris))
+    fragmentActivity.safeStartActivity(getShareIntent(pageFileType, uris))
 }
 
 private fun getShareIntent(
-    fragmentActivity: FragmentActivity,
     pageFileType: PageFileType,
     uris: List<Uri>
 ): Intent {
@@ -116,7 +115,7 @@ fun shareFileAsEmailLog(
     pageFileType: PageFileType,
     uris: List<Uri>
 ): Boolean {
-    val intent = getShareIntent(fragmentActivity, pageFileType, uris)
+    val intent = getShareIntent(pageFileType, uris)
     intent.run {
         putExtra(Intent.EXTRA_EMAIL, arrayOf(fragmentActivity.getString(R.string.log_email_to)))
         putExtra(

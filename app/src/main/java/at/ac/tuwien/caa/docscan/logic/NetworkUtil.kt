@@ -30,11 +30,13 @@ constructor(
         NetworkCapabilities.NET_CAPABILITY_INTERNET
     )
 
+    @Suppress("unused")
     fun getNetworkStatus(): NetworkStatus {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
                 ?.getNetworkStatus() ?: NetworkStatus.DISCONNECTED
         } else {
+            @Suppress("DEPRECATION")
             if (connectivityManager.activeNetworkInfo?.isConnected == true) {
                 if (connectivityManager.isActiveNetworkMetered) {
                     NetworkStatus.CONNECTED_METERED

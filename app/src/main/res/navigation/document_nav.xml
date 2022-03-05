@@ -12,10 +12,16 @@
         tools:layout="@layout/fragment_documents">
         <action
             android:id="@+id/action_viewer_documents_to_viewer_images"
-            app:destination="@id/viewer_images" />
+            app:destination="@id/viewer_images"
+            app:popUpTo="@id/viewer_documents"
+            app:popUpToInclusive="true"
+            app:popUpToSaveState="true" />
         <action
             android:id="@+id/action_viewer_documents_to_viewer_pdfs"
-            app:destination="@id/viewer_pdfs" />
+            app:destination="@id/viewer_pdfs"
+            app:popUpTo="@id/viewer_documents"
+            app:popUpToInclusive="true"
+            app:popUpToSaveState="true" />
     </fragment>
 
     <fragment
