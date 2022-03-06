@@ -25,16 +25,6 @@ import java.util.*
 
 class NotificationHandler(val context: Context) {
 
-    companion object {
-        private const val PDF_INTENT = "PDF_INTENT"
-        private const val PDF_FILE_NAME = "PDF_FILE_NAME"
-        private const val PDF_CHANNEL_ID = "PDF_CHANNEL_ID"
-
-        // TODO: MIGRATION_CONSTRAINT: Remove this channel in the migration
-        private val DEPRECATED_PDF_CHANNEL_NAME: CharSequence =
-            "DocScan Pdf" // The user-visible name of the channel.
-    }
-
     sealed class DocScanNotification(val title: String, val showCancelButton: Boolean) {
         class Init(title: String, val documentWithPages: DocumentWithPages) :
             DocScanNotification(title, true)
@@ -94,6 +84,10 @@ class NotificationHandler(val context: Context) {
                         0,
                         true
                     )
+                } else if (docScanNotificationChannel == DocScanNotificationChannel.CHANNEL_UPLOAD && progress == max) {
+                    // ignore the progress update, if the progress reaches the max, since the success case will be followed
+                    // very shortly afterwards and sometimes it happens that notifications are ignored if they are sent too quickly.
+                    return
                 } else {
                     notification.setProgress(
                         max,
@@ -258,17 +252,18 @@ class NotificationHandler(val context: Context) {
 
     /**
      * Initializes notification channels. Call this early upon app-start.
+     * - Removes all deprecated channels.
+     * - Adds all active channels.
      */
     fun initNotificationChannels() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return
         }
+        DeprecatedNotificationChannels.values().forEach { channel ->
+            removeNotificationChannel(context, channel.channelId)
+        }
         DocScanNotificationChannel.values().forEach { channel ->
-            if (channel.isActive) {
-                createNotificationChannel(context, getNotificationChannelTemplate(channel))
-            } else {
-                removeNotificationChannel(context, channel.channelId)
-            }
+            createNotificationChannel(context, getNotificationChannelTemplate(channel))
         }
     }
 

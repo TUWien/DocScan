@@ -13,8 +13,7 @@ enum class DocScanNotificationChannel(
     val channelNameResource: Int,
     val channelDescriptionResource: Int,
     val importance: Int,
-    val isAutoCancel: Boolean,
-    val isActive: Boolean
+    val isAutoCancel: Boolean
 ) {
 
     CHANNEL_EXPORT(
@@ -24,7 +23,6 @@ enum class DocScanNotificationChannel(
         R.string.notification_channel_exports_text,
         @Suppress("DEPRECATION")
         NotificationManagerCompat.IMPORTANCE_DEFAULT,
-        true,
         true
     ),
 
@@ -35,7 +33,13 @@ enum class DocScanNotificationChannel(
         R.string.notification_channel_uploads_text,
         @Suppress("DEPRECATION")
         NotificationManagerCompat.IMPORTANCE_DEFAULT,
-        false,
-        true
+        false
     );
+}
+
+/**
+ * Represents all deprecated and unused notification channels.
+ */
+enum class DeprecatedNotificationChannels(val tag: String, val channelId: String) {
+    PDF_CHANNEL("DocScan Pdf", "PDF_CHANNEL_ID")
 }
