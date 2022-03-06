@@ -20,6 +20,7 @@ import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.isUploadInProgress
+import at.ac.tuwien.caa.docscan.db.model.isUploadScheduled
 import at.ac.tuwien.caa.docscan.db.model.isUploaded
 import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
 import at.ac.tuwien.caa.docscan.extensions.getImageImportIntent
@@ -600,18 +601,18 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         R.drawable.ic_cloud_upload_black_24dp
                     )
                 }
-                document.isUploadInProgress() -> {
+                document.isUploadInProgress() || document.isUploadScheduled() -> {
                     SheetAction(
                         SheetActionId.CANCEL_UPLOAD.id,
                         getString(R.string.action_document_cancel_upload_document),
-                        R.drawable.ic_cloud_upload_gray_24dp
+                        R.drawable.ic_cloud_off_black_24dp
                     )
                 }
                 else -> {
                     SheetAction(
                         SheetActionId.UPLOAD.id,
                         getString(R.string.action_document_upload_document),
-                        R.drawable.ic_cloud_upload_gray_24dp
+                        R.drawable.ic_baseline_cloud_upload_24
                     )
                 }
             }

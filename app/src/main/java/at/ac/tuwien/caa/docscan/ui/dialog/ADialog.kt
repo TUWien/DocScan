@@ -60,33 +60,8 @@ class ADialog : AppCompatDialogFragment() {
         UPLOAD_WARNING_DOC_ALREADY_UPLOADED(
             R.string.viewer_document_uploaded_title,
             R.string.viewer_document_uploaded_text,
-            positiveBtn = R.string.dialog_btn_upload_again
-        ),
-
-        // TODO: UPLOAD_CONSTRAINT: Check these messages again!
-        DOCUMENT_PAGE_DELETED_DURING_UPLOAD(
-            R.string.sync_file_deleted_title,
-            R.string.sync_file_deleted_text
-        ),
-
-        // TODO: UPLOAD_CONSTRAINT: Check these messages again!
-        GENERIC_UPLOAD_ERROR(R.string.sync_file_deleted_title, R.string.sync_file_deleted_text),
-
-        // TODO: UPLOAD_CONSTRAINT: Check these messages again!
-        UPLOAD_FAILED_NO_LOGIN(
-            R.string.viewer_not_logged_in_title,
-            R.string.sync_not_logged_in_text,
+            positiveBtn = R.string.dialog_btn_upload_again,
             negativeBtn = R.string.dialog_cancel_text
-        ),
-        UPLOAD_FAILED_NO_INTERNET_CONNECTION(
-            R.string.viewer_offline_title,
-            R.string.viewer_offline_text
-        ),
-
-        // TODO: Necessary to show? (images that are already cropped would be simply ignored)
-        HINT_DOCUMENT_ALREADY_CROPPED(
-            R.string.viewer_all_cropped_title,
-            R.string.viewer_all_cropped_text
         ),
         UPLOAD_WARNING_IMAGE_CROP_MISSING(
             R.string.viewer_not_cropped_confirm_title,
@@ -134,8 +109,6 @@ class ADialog : AppCompatDialogFragment() {
             positiveBtn = R.string.page_slide_fragment_retake_image_dialog_confirm_text,
             negativeBtn = R.string.dialog_cancel_text
         ),
-
-        // TODO: This can no longer be tracked that easily
         HINT_PDF_EXPORT_PERMISSION_GIVEN(
             R.string.viewer_document_dir_set_title,
             R.string.viewer_document_dir_set_text
@@ -175,7 +148,10 @@ class ADialog : AppCompatDialogFragment() {
             isCancellable = false
         ),
         ACTIVITY_NOT_FOUND(R.string.activity_not_found_title, R.string.activity_not_found_text),
-        ACTIVITY_NOT_FOUND_EMAIL(R.string.activity_not_found_email_title, R.string.activity_not_found_email_text),
+        ACTIVITY_NOT_FOUND_EMAIL(
+            R.string.activity_not_found_email_title,
+            R.string.activity_not_found_email_text
+        ),
         CREATE_DOCUMENT_DUPLICATE(
             R.string.dialog_create_document_error_duplicate_title,
             R.string.dialog_create_document_error_duplicate_text

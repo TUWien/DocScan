@@ -91,7 +91,6 @@ class UploadWorker(
                                 context.getString(R.string.notification_upload_title_error),
                                 doc.document.title
                             ),
-                            resource.isUploadRecoverable(),
                             resource.exception
                         ),
                         docId,

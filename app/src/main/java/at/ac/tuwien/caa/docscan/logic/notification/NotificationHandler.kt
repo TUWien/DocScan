@@ -33,7 +33,7 @@ class NotificationHandler(val context: Context) {
             DocScanNotification(title, true)
 
         class Success(title: String, val text: String) : DocScanNotification(title, false)
-        class Failure(title: String, val retryNow: Boolean, val throwable: Throwable) :
+        class Failure(title: String, val throwable: Throwable) :
             DocScanNotification(title, false)
     }
 
@@ -145,19 +145,6 @@ class NotificationHandler(val context: Context) {
             )
         }
 
-        if ((docScanNotification as? DocScanNotification.Failure)?.retryNow == true) {
-            val retryNotification = NotificationsActionReceiver.newInstance(
-                context,
-                NotificationWrapper(docScanNotificationChannel, NotificationButton.RETRY, docId)
-            )
-            val retryIntent: PendingIntent =
-                PendingIntent.getBroadcast(context, 0, retryNotification, flags)
-            notification.addAction(
-                R.drawable.ic_baseline_refresh_24, context.getString(R.string.dialog_btn_retry_now),
-                retryIntent
-            )
-        }
-
         showNotification(
             docScanNotificationChannel.tag,
             docId.hashCode(),
@@ -165,7 +152,7 @@ class NotificationHandler(val context: Context) {
         )
     }
 
-    fun showNotification(
+    private fun showNotification(
         tag: String,
         notificationId: Int,
         notification: Notification
@@ -228,7 +215,7 @@ class NotificationHandler(val context: Context) {
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
 
-    fun createBuilder(
+    private fun createBuilder(
         docScanNotificationChannel: DocScanNotificationChannel,
         groupKey: String? = null,
         contentTitle: String,

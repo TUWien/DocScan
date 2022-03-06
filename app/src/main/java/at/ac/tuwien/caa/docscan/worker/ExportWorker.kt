@@ -86,7 +86,6 @@ class ExportWorker(
                     notificationHandler.showDocScanNotification(
                         NotificationHandler.DocScanNotification.Failure(
                             context.getString(R.string.notification_export_title_error),
-                            false,
                             resource.exception,
                         ),
                         docId,

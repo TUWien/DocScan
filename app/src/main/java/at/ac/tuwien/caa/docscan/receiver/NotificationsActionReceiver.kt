@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Parcelable
 import androidx.work.WorkManager
-import at.ac.tuwien.caa.docscan.logic.ExportFormat
 import at.ac.tuwien.caa.docscan.logic.notification.DocScanNotificationChannel
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.worker.ExportWorker
@@ -56,18 +55,6 @@ class NotificationsActionReceiver : BroadcastReceiver() {
                                     notificationWrapper.docId.hashCode()
                                 )
                             }
-                            NotificationButton.RETRY -> {
-                                notificationHandler.cancelNotification(
-                                    notificationWrapper.channel.tag,
-                                    notificationWrapper.docId.hashCode()
-                                )
-                                // TODO: EXPORT_CONSTRAINT - export format needs to be passed as an param
-                                ExportWorker.spawnExportJob(
-                                    workManager,
-                                    notificationWrapper.docId,
-                                    ExportFormat.PDF
-                                )
-                            }
                         }
                     }
                     DocScanNotificationChannel.CHANNEL_UPLOAD -> {
@@ -77,13 +64,6 @@ class NotificationsActionReceiver : BroadcastReceiver() {
                                     workManager,
                                     notificationWrapper.docId
                                 )
-                                notificationHandler.cancelNotification(
-                                    notificationWrapper.channel.tag,
-                                    notificationWrapper.docId.hashCode()
-                                )
-                            }
-                            NotificationButton.RETRY -> {
-                                // TODO: UPLOAD_CONSTRAINT: Should a notification contain an explicit retry button? (without scheduling it automatically)
                                 notificationHandler.cancelNotification(
                                     notificationWrapper.channel.tag,
                                     notificationWrapper.docId.hashCode()
@@ -106,6 +86,5 @@ data class NotificationWrapper(
 ) : Parcelable
 
 enum class NotificationButton {
-    CANCEL,
-    RETRY
+    CANCEL
 }

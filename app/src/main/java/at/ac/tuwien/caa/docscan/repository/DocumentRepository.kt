@@ -81,7 +81,7 @@ class DocumentRepository(
                 }
             } else if (it.document.lockState == LockState.FULL_LOCK) {
                 when {
-                    it.isUploadInProgress() -> {
+                    it.isUploadInProgress() || it.isUploadScheduled() -> {
                         UploadWorker.spawnUploadJob(
                             workManager,
                             it.document.id,
@@ -246,7 +246,7 @@ class DocumentRepository(
      * Pre-Condition:
      * - document is already locked
      */
-    suspend fun spawnUploadJob(documentId: UUID, replaceWorkerJob: Boolean = false) {
+    private fun spawnUploadJob(documentId: UUID) {
         pageDao.updateUploadStateForDocument(
             documentId,
             UploadState.SCHEDULED

@@ -25,6 +25,8 @@ class PdfFragment : BaseFragment() {
     private lateinit var binding: FragmentPdfsBinding
     private lateinit var adapter: PdfAdapter
 
+    private var isAskingForPermission = false
+
     private val folderPermissionResultCallback =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == Activity.RESULT_OK) {
@@ -32,8 +34,12 @@ class PdfFragment : BaseFragment() {
                 // the user selected.
                 it.data?.data?.let { uri ->
                     viewModel.persistFolderUri(uri)
+                    if (isAskingForPermission) {
+                        showDialog(ADialog.DialogAction.HINT_PDF_EXPORT_PERMISSION_GIVEN)
+                    }
                 }
             }
+            isAskingForPermission = false
         }
 
     override fun onCreateView(
@@ -119,6 +125,7 @@ class PdfFragment : BaseFragment() {
                 when (dialogResult.dialogAction) {
                     ADialog.DialogAction.EXPORT_FOLDER_PERMISSION -> {
                         if (dialogResult.isPositive()) {
+                            isAskingForPermission = true
                             viewModel.launchFolderSelection(folderPermissionResultCallback)
                         }
                     }
