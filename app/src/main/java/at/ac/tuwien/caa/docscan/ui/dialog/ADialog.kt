@@ -167,13 +167,13 @@ class ADialog : AppCompatDialogFragment() {
         DELETE_PDF(
             R.string.viewer_delete_pdf_title,
             R.string.viewer_delete_pdf_text,
-            positiveBtn = R.string.sync_confirm_delete_button_text,
-            negativeBtn = R.string.sync_cancel_delete_button_text
+            positiveBtn = R.string.dialog_btn_delete,
+            negativeBtn = R.string.dialog_cancel_text
         ),
         EXPORT_FOLDER_PERMISSION(
             R.string.pdf_fragment_persisted_permission_title,
             R.string.pdf_fragment_persisted_permission_text,
-            negativeBtn = R.string.sync_cancel_delete_button_text
+            negativeBtn = R.string.dialog_cancel_text
         ),
         RATIONALE_CAMERA_PERMISSION(
             R.string.start_permission_title,
@@ -183,6 +183,12 @@ class ADialog : AppCompatDialogFragment() {
         MIGRATION_FAILED(
             R.string.generic_error_title,
             R.string.generic_error_text
+        ),
+        UPLOAD_FAILED_UNAUTHORIZED(
+            R.string.sync_not_logged_in_title,
+            R.string.sync_not_logged_in_text,
+            negativeBtn = R.string.dialog_cancel_text,
+            positiveBtn = R.string.login_button_text
         ),
         CUSTOM(0, 0)
     }

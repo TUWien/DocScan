@@ -926,24 +926,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 v -> viewModel.getValue().initiateGallery());
     }
 
-    /**
-     * Shows a dialog saying that no saved picture has been found.
-     */
-    private void showNoFileFoundDialog() {
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(CameraActivity.this);
-        builder.setMessage(R.string.no_file_found_msg).setTitle(R.string.no_file_found_title);
-
-        builder.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            }
-        });
-
-        builder.create().show();
-
-    }
-
-
     // ================= end: methods for opening the gallery =================
 
     // ================= start: methods for accessing the location =================
@@ -1469,6 +1451,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     private void showSaveErrorDialog(Throwable throwable) {
+        // TODO: Play an error sound, to indicate that something is wrong as the user might not see the display during automatic series mode.
         // TODO: Take throwable into consideration.
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(CameraActivity.this);
         builder.setMessage(R.string.picture_save_error_text).setTitle(R.string.picture_save_error_title);

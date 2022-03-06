@@ -26,6 +26,7 @@ import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
 import at.ac.tuwien.caa.docscan.extensions.getImageImportIntent
 import at.ac.tuwien.caa.docscan.extensions.shareFile
 import at.ac.tuwien.caa.docscan.logic.*
+import at.ac.tuwien.caa.docscan.ui.account.TranskribusLoginActivity
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
@@ -39,6 +40,7 @@ import com.google.android.material.snackbar.Snackbar
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.opencv.android.OpenCVLoader
 import timber.log.Timber
+import java.net.HttpURLConnection
 
 /**
  * The main document viewer which consists of multiple fragments using the navigation component.
@@ -258,6 +260,19 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                     }
                                 }
                             }
+                            resource.exception.getDocScanTranskribusRESTError()?.let { restError ->
+                                when (restError) {
+                                    is DocScanError.TranskribusRestError.HttpError -> {
+                                        if (restError.httpStatusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                                            showDialog(ADialog.DialogAction.UPLOAD_FAILED_UNAUTHORIZED)
+                                            return@ConsumableEvent
+                                        }
+                                    }
+                                    is DocScanError.TranskribusRestError.IOError -> {
+                                        // ignore
+                                    }
+                                }
+                            }
                             resource.exception.handleError(this)
                         }
                         DocumentAction.CANCEL_UPLOAD -> {
@@ -426,6 +441,11 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                             DocumentAction.EXPORT,
                             result.arguments.appendUseOCR(false)
                         )
+                    }
+                }
+                ADialog.DialogAction.UPLOAD_FAILED_UNAUTHORIZED -> {
+                    if (result.isPositive()) {
+                        startActivity(TranskribusLoginActivity.newInstance(this))
                     }
                 }
                 else -> {

@@ -31,7 +31,6 @@
     <string name="dialog_btn_upload_again">Upload again</string>
     <string name="dialog_btn_cancel_upload">Cancel upload</string>
     <string name="dialog_btn_proceed">Proceed</string>
-    <string name="dialog_btn_retry_now">Retry now</string>
 
     <string name="dialog_delete_image_title_singular">Delete image?</string>
     <string name="dialog_delete_image_title_plural">Delete images?</string>
@@ -51,16 +50,10 @@
 
     <!-- StartActivity -->
     <string name="start_permission_title">Permission required</string>
-    <string name="start_permission_retry_text">Do you want to give this permission?</string>
     <string name="start_permission_camera_text">The app requires permission to access the camera, otherwise it will not work.</string>
     <string name="start_permission_storage_text">The app requires permission to access your files, otherwise it will not work.</string>
     <string name="start_confirm_button_text">OK</string>
-    <string name="start_cancel_button_text">Cancel</string>
     <string name="start_firebase_not_auth_text">Could not authenticate with Firebase / google-services. If you are a developer, you probably want the API key. In that case, take a look at the readme.</string>
-    <string name="start_restore_button">Restore</string>
-    <string name="start_clear_button">No</string>
-    <string name="start_restore_backup_title">Restore backup?</string>
-    <string name="start_restore_backup_text">It seems that you have DocScan installed before. Do you want to restore your previous documents?</string>
 
     <!--CameraActivity-->
 
@@ -79,14 +72,6 @@
     <string name="camera_tab_manual">Manual</string>
     <string name="camera_tab_auto">Automatic</string>
     <string name="camera_tab_settings">Settings</string>
-    <!-- Just used for debugging: -->
-
-
-    <!-- Use in the MainActivity: end -->
-
-    <!-- Use in the camera_unavailable_view: -->
-
-    <!-- Use in the debug view: start -->
 
     <string name="table_head_task_text">Task</string>
     <string name="table_head_time_text">time (ms)</string>
@@ -95,8 +80,6 @@
 
     <!-- Use in the debug view: end -->
 
-    <string name="no_file_found_msg">No picture file found.</string>
-    <string name="no_file_found_title">File not found</string>
     <string name="button_ok">OK</string>
 
     <!-- Navigation Drawer -->
@@ -156,7 +139,6 @@
     <string name="login_password_hint">Password</string>
     <string name="login_button_text">Login</string>
     <string name="login_check_input_toast">Please check your login credentials.</string>
-    <string name="login_welcome_text">Welcome</string>
     <string name="login_loading_text">Login, please wait</string>
     <string name="login_auth_error_text">User name or password is incorrect. Please reenter your credentials.</string>
 
@@ -164,21 +146,11 @@
     <string name="login_dialog_success_text">You have successfully logged in!</string>
 
     <!--  These are the error messages for handling specific VolleyError's:  -->
-    <string name="login_no_connection_error_title">No internet connection</string>
-    <string name="login_no_connection_error_text">Your device is not connected to the internet. Please connect to the internet and try again to log in.</string>
+    <string name="no_connection_error_title">No internet connection</string>
+    <string name="no_connection_error_text">Please connect to the internet!</string>
 
-    <string name="login_network_error_title">Network error</string>
-    <string name="login_network_error_text">There was a network error. Please check your internet connection status.</string>
-
-    <string name="login_parse_error_title">Server response not valid</string>
-    <string name="login_parse_error_text">Could not parse the server response. Please try again in a while.</string>
-
-    <string name="login_timeout_error_title">Timeout error</string>
-    <string name="login_timeout_error_text">Looks like the server is taking to long to respond, this can be caused by either poor connectivity or an error with the server. Please try again in a while.</string>
-
-    <string name="login_server_error_title">Server error</string>
-    <string name="login_server_error_text">The server responded with an error message. Please try again in a while.</string>
-
+    <string name="timeout_error_title">Timeout error</string>
+    <string name="timeout_error_text">The connection to the server is taking too long to respond, please try again later!</string>
 
     <string name="login_title">Login to Transkribus</string>
 
@@ -218,28 +190,11 @@
     <!-- AutoLoginActivity -->
 
     <!-- Menus -->
-    <string name="document_item">Documents</string>
-    <string name="flash_mode">Flash mode</string>
-    <string name="flash_off_mode">Flash off</string>
-    <string name="flash_auto_mode">Flash auto</string>
-    <string name="flash_on_mode">Flash on</string>
-    <string name="flash_torch_mode">Torch</string>
     <string name="show_grid_item_title">Show grid</string>
     <string name="hide_grid_item_title">Hide grid</string>
-    <string name="gallery_item_title">Open gallery</string>
-
-    <string name="upload_item">Upload</string>
-    <string name="lock_exposure_item">Lock exposure and white balance</string>
-    <string name="unlock_exposure_item">Unlock exposure and white balance</string>
-
-    <string name="series_create">New document</string>
-    <string name="series_edit">Edit document</string>
-    <string name="series_switch">Open document</string>
-    <string name="series_qr">New document from QR code</string>
 
     <!--  CropViewActivitiy  -->
     <string name="crop_view_item_rotate">Rotate 90 degrees</string>
-    <string name="crop_view_item_map">Preview mapping</string>
     <string name="crop_view_crop_dialog_title">Page boundary saved</string>
     <string name="crop_view_crop_dialog_text">The saved page boundary is used when you transform the images.
         All document images can be transformed at once in the document view.</string>
@@ -247,15 +202,9 @@
 
     <!-- MapViewActivity -->
     <string name="map_view_item_save">Save image</string>
-    <string name="map_view_loading_text">Please wait</string>
 
     <!-- PageSlideActivity -->
     <string name="page_slide_toolbar_btn_all_images">All images</string>
-
-    <!-- Preferences -->
-
-    <!-- Image naming -->
-    <string name="img_prefix">IMG_</string>
 
     <!-- Log  -->
     <string name="log_activity_text">Improve DocScan by sending us a log.
@@ -263,65 +212,22 @@
         Do you want to share your log file now?</string>
     <string name="share_log_button_text">OK</string>
     <string name="log_email_subject">DocScan - Log</string>
-    <!--<string name="log_email_to">docscan@cvl.tuwien.ac.at</string>-->
     <string name="log_email_to">holl@cvl.tuwien.ac.at</string>
     <string name="log_email_text">We highly appreciate your feedback! You can leave us a comment here:</string>
-
-
-    <string-array name="shoot_mode_array">
-        <item>Single</item>
-        <item>Series</item>
-    </string-array>
 
     <string name="picture_save_error_text">Unfortunately, the image was not saved. Please take care that it is captured.</string>
     <string name="picture_save_error_title">Image saving error</string>
 
-    <!-- Sync: -->
-<!--    <string name="sync_connect_dropbox_button_text">Dropbox</string>-->
-    <string name="sync_connect_transkribus_button_text">Transkribus</string>
-<!--    <string name="sync_dropbox_text">Dropbox</string>-->
     <string name="sync_transkribus_text">Transkribus</string>
-    <string name="sync_not_connected_text">Offline</string>
-
-    <!-- DropboxLoginActivity: TODO: Remove unused strings -->
-    <string name="dropbox_text">It is necessary to allow DocScan to access your Dropbox
-        account. This authentication will be done in your browser.</string>
-    <string name="dropbox_title">Dropbox Authentication</string>
-    <string name="dropbox_authenticate_button_text">Start authentication</string>
-    <string name="dropbox_loading_text">Authenticating...</string>
-    <string name="dropbox_not_auth_title">Not authenticated</string>
-    <string name="dropbox_not_auth_text">Could not authenticate with Dropbox. If you are a developer, you probably want the API key. In that case, take a look at the readme.</string>
 
     <!-- LogoutActivity -->
     <string name="logout_text">Do you really want to logout? You will have to login again if you want
         to automatically upload your images.</string>
     <string name="logout_confirm_button_text">Logout</string>
-    <string name="logout_cancel_button_text">Cancel</string>
+    <string name="logout_cancel_button_text">Cancel</string>g>
 
-    <!-- AccountActivity TODO: Remove unused strings -->
-    <string name="account_heading_text">Your current account:</string>
-    <string name="account_user_textview_text">Name:</string>
-    <string name="account_cloud_textview_text">Cloud service:</string>
-    <string name="account_setup_text">Set up an account:</string>
-    <string name="account_offline_text">You are currently offline. Please establish a network connection to proceed.</string>
-    <string name="account_delete_sync_storage_title">Warning: Sync information will be lost</string>
-    <string name="account_delete_sync_storage_message">Please take care that if you proceed the information about previous uploads will be deleted. This cannot be undone. Are you sure you want to proceed?</string>
-
-    <!-- SyncService -->
-    <string name="sync_notification_title">Image upload</string>
-    <string name="sync_notification_uploading_dropbox_text">Uploading to Dropbox.</string>
-    <string name="sync_notification_uploading_transkribus_text">Uploading to Transkribus.</string>
-    <string name="sync_notification_uploading_finished_title">Upload finished</string>
-    <string name="sync_notification_uploading_finished_text">Finished image upload.</string>
-    <string name="sync_notification_uploading_canceled_title">Upload canceled</string>
-    <string name="sync_notification_uploading_canceled_text">Upload canceled on user request.</string>
-    <string name="sync_notification_stoped_title">Upload stopped</string>
-    <string name="sync_notification_stoped_text">Could not find selected file(s).</string>
-    <string name="sync_notification_error_title">Upload interrupted</string>
-    <string name="sync_notification_error_text">Upload postponed.</string>
-    <string name="sync_notification_time_out_text">Server is temporary not responding.</string>
-
-    <!-- PdfCreator -->
+    <string name="notification_session_expired_title">Session expired!</string>
+    <string name="notification_session_expired_text">Your session has expired, please login again!</string>
 
     <!-- Exporting a PDF -->
     <string name="notification_export_title_progress">Exporting PDF</string>
@@ -335,70 +241,30 @@
     <string name="notification_upload_title_success">%s uploaded!</string>
     <string name="notification_upload_text_success">%s has been successfully uploaded.</string>
     <string name="notification_upload_title_error">Upload for %s has failed!</string>
-    <string name="notification_upload_text_error">The upload has failed due to %s</string>
-    <string name="notification_upload_retry">Retry</string>
 
     <!-- OpenDocumentActivity -->
-    <string name="document_no_dir_created_title">No document created</string>
-    <string name="document_dir_existing_prefix_message">The folder </string>
-    <string name="document_dir_existing_postfix_message">is already created. Please use another name.</string>
     <string name="document_qr_parse_error_title">QR code invalid</string>
     <string name="document_qr_parse_error_message">Sorry, the QR code is invalid.</string>
-    <string name="document_no_dir_created_message">Could not create the specified folder.</string>
     <string name="document_invalid_url_title">Url not valid</string>
     <string name="document_invalid_url_message">The following URL cannot be opened in browser:</string>
 
     <!-- SelectDocumentActivity -->
     <string name="select_document_title">Select a document</string>
-    <string name="select_document_select_button_text">Use selected document</string>
 
     <!-- SyncActivity -->
-    <string name="sync_no_dir_selected_title">No directory selected</string>
-    <string name="sync_no_dir_selected_message">Please select at least one folder.</string>
-    <string name="sync_selection_many_documents_text">documents</string>
-    <string name="sync_selection_single_document_text">document</string>
-    <string name="sync_snackbar_uploading_prefix_text">Uploading\</string>
-    <string name="sync_snackbar_already_uploaded_prefix_text">Selected</string>
-    <string name="sync_snackbar_already_uploaded_singular_text">was</string>
-    <string name="sync_snackbar_already_uploaded_plural_text">were</string>
-    <string name="sync_snackbar_already_uploaded_postfix_text">already uploaded.</string>
-    <string name="sync_error_upload_title">Upload error</string>
-    <string name="sync_error_upload_text">An error happened while uploading your files. Please try to upload your files again.</string>
-    <string name="sync_confirm_delete_button_text">Delete</string>
-    <string name="sync_cancel_delete_button_text">Cancel</string>
     <string name="sync_confirm_delete_title">Delete</string>
-    <string name="sync_confirm_delete_prefix_text">Are you sure you want to delete</string>
     <string name="sync_confirm_delete_doc_prefix_text">Are you sure you want to delete the document? This cannot be undone.</string>
-    <string name="sync_confirm_delete_postfix_text">from your device?\n\nHint: Documents already uploaded are not deleted from the server, but you cannot add new images to uploaded documents.</string>
-    <string name="sync_snackbar_finished_upload_text">Finished upload.</string>
-    <string name="sync_snackbar_offline_text">Your device is currently offline. Upload postponed.</string>
-    <string name="sync_snackbar_disconnected_text">Could not login on the server. Upload postponed.</string>
-    <string name="sync_snackbar_no_permissions">Files cannot be uploaded without permission.</string>
-    <string name="sync_snackbar_files_deleted_prefix">Deleted</string>
-    <string name="sync_snackbar_file_deleted_postfix">file</string>
-    <string name="sync_snackbar_files_deleted_postfix">files</string>
-    <string name="sync_snackbar_upload_started">Images are uploaded in the background</string>
     <string name="sync_dir_pending_text">upload pending</string>
     <string name="sync_dir_processing_text">processing, please wait</string>
     <string name="sync_dir_upload_scheduled_text">upload scheduled,</string>
     <string name="sync_dir_upload_scheduled_begin_shortly_text">will begin shortly</string>
     <string name="sync_dir_upload_scheduled_unmetered_condition_text">you have to connect to an unmetered network (e.g. wifi) to proceed!</string>
-    <string name="sync_dir_upload_scheduled_internet_condition_text">connect to the internet to proceed!</string>
-    <string name="sync_not_focused_text">- partially blurred</string>
-    <string name="sync_menu_upload_item_title">Start upload</string>
     <string name="sync_menu_delete_item_title">Delete item</string>
-    <string name="sync_menu_select_all_item_title">Select all items</string>
-    <string name="sync_pages_text">Images: </string>
     <string name="sync_doc_active_text"> - active</string>
     <string name="sync_doc_image">%1$d image</string>
     <string name="sync_doc_images">%1$d images</string>
-    <string name="sync_cancel_login_button_text">Cancel</string>
-    <string name="sync_confirm_login_button_text">Login</string>
     <string name="sync_not_logged_in_title">Cannot start upload</string>
     <string name="sync_not_logged_in_text">You are currently not logged in, please log in first.</string>
-    <string name="sync_not_logged_in_button_text">Log in</string>
-
-
     <!-- UploadingActivity -->
 
     <!-- document_navigation_menu -->
@@ -462,10 +328,6 @@
     <string name="create_series_custom_name_example_textview_empty_prefix_text">Please enter a prefix first</string>
     <string name="create_series_custom_name_prefix_input_empty_text">Prefix must not be empty</string>
 
-
-    <string name="map_crop_view_title">Warp image</string>
-    <string name="map_crop_view_no_transformation_title">Image not transformed</string>
-    <string name="map_crop_view_no_transformation_text">The image could not be transformed. Please try to adjust the cropping rectangle.</string>
     <!-- SettingsFragment -->
     <string name="settings_upload_title">Upload</string>
     <string name="settings_upload_metered_network_title">Metered networks</string>
@@ -518,52 +380,21 @@
 
     <string name="document_default_name">Untitled document</string>
 
-    <string name="crop_view_title">Crop</string>
-
-
     <!-- ImageViewFragmentment -->
-    <string name="page_slide_fragment_confirm_delete_text">Delete image?</string>
-    <string name="page_slide_fragment_confirm_delete_confirm_title">Delete</string>
-    <string name="page_slide_fragment_confirm_delete_cancel_text">Cancel</string>
-    <string name="page_slide_fragment_share_choose_app_text">Choose an app</string>
     <string name="page_slide_fragment_loading_text">Please wait while the page is detected</string>
-    <string name="page_slide_fragment_retake_image_item_text">Retake image</string>
-    <string name="page_slide_fragment_show_gallery_item_text">Show gallery</string>
     <string name="page_slide_fragment_retake_image_dialog_title">Retake image</string>
     <string name="page_slide_fragment_retake_image_dialog_text">This will replace the current image with a newly taken one. Do you want to proceed?</string>
     <string name="page_slide_fragment_retake_image_dialog_confirm_text">Retake</string>
-    <string name="page_slide_fragment_retake_image_dialog_cancel_text">Cancel</string>
 
     <!-- GalleryActivity -->
-    <string name="gallery_menu_edit_item_title">Edit document</string>
-    <string name="gallery_menu_delete_item_title">Delete item</string>
     <string name="gallery_menu_select_all_item_title">Select all items</string>
-    <string name="gallery_menu_create_pdf_item_title">Create pdf from item</string>
-    <string name="gallery_menu_clear_sync">Clear upload data</string>
-    <string name="gallery_menu_cancel_upload">Cancel upload</string>
-    <string name="gallery_menu_crop_item_title">Crop item</string>
     <string name="gallery_selected">selected</string>
     <string name="gallery_menu_rotate_item_title">Rotate right</string>
-    <string name="gallery_confirm_delete_title_prefix">Delete</string>
-    <string name="gallery_confirm_delete_title_single_postfix">document?</string>
-    <string name="gallery_confirm_delete_title_multiple_postfix">documents?</string>
-    <string name="gallery_confirm_delete_images_title_single_postfix">image?</string>
-    <string name="gallery_confirm_delete_images_title_multiple_postfix">images?</string>
-    <string name="gallery_confirm_delete_text">Are you sure? This cannot be undone.</string>
-    <string name="gallery_confirm_delete_confirm_button_text">Delete</string>
-    <string name="gallery_confirm_delete_cancel_button_text">Cancel</string>
     <string name="gallery_confirm_no_ocr_available_title">OCR not available</string>
     <string name="gallery_confirm_no_ocr_available_text">Sorry, we could not find Google Play services. Try to reinstall the app via Google Play store. Do you want to generate a PDF without OCR?</string>
     <string name="gallery_confirm_ocr_title">Make PDF machine readable?</string>
     <string name="gallery_confirm_ocr_text">This will apply OCR and make the text in the picture(s)
         selectable.</string>
-    <string name="gallery_confirm_overwrite_title">Replace images?</string>
-    <string name="gallery_confirm_overwrite_text">This will replace the original images and cannot
-        be undone. Are you sure you want to continue?</string>
-    <string name="gallery_unfocused_snackbar_text">Images are partially not focused</string>
-    <string name="gallery_unfocused_info">Info</string>
-    <string name="gallery_unfocused_title">Focus issues</string>
-    <string name="gallery_unfocused_text">Some images appear to be not focused and should be checked and eventually be replaced. These images are marked with a red rectangle.</string>
 
     <string name="document_viewer_confirm_upload_title">Upload?</string>
     <string name="document_viewer_confirm_upload_text">Do you really want to upload the document?</string>
@@ -578,10 +409,7 @@
     <string name="images_no_active_document">No active document\nPlease select a document first!</string>
     <string name="images_no_images">No images for document\nPlease take an image first!</string>
 
-    <string name="action_document_create_title">New document</string>
-    <string name="action_document_select_title">Select document</string>
     <string name="action_document_crop_title">Crop images</string>
-    <string name="action_document_qr_title">Document from QR code</string>
     <string name="action_document_upload_document">Upload</string>
     <string name="action_document_cancel_upload_document">Cancel Upload</string>
     <string name="action_document_pdf_title">Save as PDF</string>
@@ -589,10 +417,8 @@
     <string name="action_document_edit_document">Edit document</string>
     <string name="action_document_continue_document">Continue imaging</string>
 
-    <string name="action_pdf_delete">Delete</string>
     <string name="action_share">Share</string>
 
-    <string name="action_rotate_title">Change text orientation</string>
     <string name="action_rotate_left_title">Rotate left</string>
     <string name="action_rotate_right_title">Rotate right</string>
 
@@ -602,8 +428,6 @@
     <string name="action_setting_lock_wb">Lock white balance and exposure</string>
     <string name="action_setting_unlock_wb">Unlock white balance and exposure</string>
     <string name="action_setting_rotate_text_dir">Change text orientation</string>
-    <string name="action_setting_flash_series">Flash after automated imaging</string>
-    <string name="action_setting_no_flash_series">No flash after automated imaging</string>
     <string name="action_setting_qr_mode">Create Document from QR code</string>
 
     <string name="viewer_document_operation_success">The %1$s has been successfully initiated!</string>
@@ -623,25 +447,13 @@
     <string name="viewer_crop_confirm_title">Crop</string>
     <string name="viewer_crop_confirm_text">Are you sure you want to crop all images in the document?
         This cannot be undone.</string>
-    <string name="viewer_selected">selected</string>
     <string name="viewer_not_cropped_confirm_title">Uncropped images</string>
     <string name="viewer_not_cropped_upload_confirm_text">Some images are not cropped.\nDo you want to proceed with the upload?</string>
     <string name="viewer_not_cropped_export_confirm_text">Some images are not cropped.\nDo you want to proceed with the export?</string>
-    <string name="viewer_images_fragment_not_cropped_confirm_text">Some images are not cropped. Cropping option can be found in the overflow menu at the top-right.\nDo you want to proceed with the</string>
-    <string name="viewer_not_cropped_pdf">PDF export</string>
-    <string name="viewer_not_cropped_upload">upload</string>
     <string name="viewer_delete_pdf_title">Delete</string>
     <string name="viewer_delete_pdf_text">Are you sure you want to delete the pdf? This cannot be undone.</string>
-    <string name="viewer_offline_title">Offline</string>
-    <string name="viewer_offline_text">Your device is currently offline. Please connect to the internet before uploading.</string>
-    <string name="viewer_not_logged_in_title">Not logged in</string>
-    <string name="viewer_not_logged_in_text">You are currently not logged in. Do you want to login to a cloud service?</string>
-    <string name="viewer_pdf_created_snackbar_text">Created pdf</string>
     <string name="viewer_document_dir_set_title">Permission given</string>
     <string name="viewer_document_dir_set_text">You can now proceed and export documents to pdf.</string>
-    <string name="viewer_document_dir_permission_title">Permission required</string>
-    <string name="viewer_document_dir_permission_text">Your permission is required to save pdf\'s
-        in a certain document folder. Do you want to grant your permission for this folder now?</string>
 
     <string name="pdf_fragment_persisted_permission_title">Permission required</string>
     <string name="pdf_fragment_persisted_permission_text">Your permission is required to show the
@@ -649,15 +461,16 @@
         Do you want to grant your permission for this folder now?</string>
 
     <!-- PdfSelectorActivity -->
-    <string name="pdf_selector_title">Save document as PDF</string>
 
-    <string name="dialog_create_document_error_duplicate_title">No document created</string>>
-    <string name="dialog_create_document_error_duplicate_text">There is already a document with the same name, please choose another name!</string>>
+    <string name="dialog_create_document_error_duplicate_title">No document created</string>
+    <string name="dialog_create_document_error_duplicate_text">There is already a document with the same name, please choose another name!</string>
 
     <string name="notification_channel_exports_title">Exports</string>
     <string name="notification_channel_exports_text">Exports</string>
     <string name="notification_channel_uploads_title">Uploads</string>
     <string name="notification_channel_uploads_text">Uploads</string>
+    <string name="notification_channel_general_title">General</string>
+    <string name="notification_channel_general_text">General</string>
 
     <string-array name="create_document_languages">
         <item>Arabic</item>

@@ -1,7 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic
 
-import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.api.transkribus.model.error.TranskribusApiError
+import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 
 class DocScanException(val docScanError: DocScanError) : Exception()
@@ -16,11 +16,11 @@ sealed class DocScanError {
         data class HttpError(
             val httpStatusCode: Int,
             val transkribusApiError: TranskribusApiError?
-        ) : DocScanError()
+        ) : TranskribusRestError()
 
         data class IOError(
             val throwable: Throwable
-        ) : DocScanError()
+        ) : TranskribusRestError()
     }
 
     /**

@@ -34,6 +34,16 @@ enum class DocScanNotificationChannel(
         @Suppress("DEPRECATION")
         NotificationManagerCompat.IMPORTANCE_DEFAULT,
         false
+    ),
+
+    CHANNEL_GENERAL(
+        "GENERAL_NOTIFICATION",
+        BuildConfig.APPLICATION_ID + ".generalchannel",
+        R.string.notification_channel_general_title,
+        R.string.notification_channel_general_text,
+        @Suppress("DEPRECATION")
+        NotificationManagerCompat.IMPORTANCE_DEFAULT,
+        false
     );
 }
 

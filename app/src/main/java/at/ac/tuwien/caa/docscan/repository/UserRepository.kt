@@ -1,25 +1,22 @@
 package at.ac.tuwien.caa.docscan.repository
 
-import androidx.work.WorkManager
-import at.ac.tuwien.caa.docscan.db.dao.PageDao
+import android.content.Context
+import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
+import at.ac.tuwien.caa.docscan.api.transkribus.model.login.LoginResponse
 import at.ac.tuwien.caa.docscan.db.dao.UserDao
 import at.ac.tuwien.caa.docscan.db.model.User
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.worker.UploadWorker
-import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService
-import at.ac.tuwien.caa.docscan.api.transkribus.model.login.LoginResponse
-import at.ac.tuwien.caa.docscan.logic.notification.DocScanNotificationChannel
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 class UserRepository(
+    private val context: Context,
     private val userDao: UserDao,
-    private val pageDao: PageDao,
     private val api: TranskribusAPIService,
     private val preferencesHandler: PreferencesHandler,
-    private val workManager: WorkManager,
     private val notificationHandler: NotificationHandler
 ) {
 
@@ -66,25 +63,21 @@ class UserRepository(
         return withContext(NonCancellable) {
             // logout response doesn't matter
             transkribusResource<Void, Void>(apiCall = { api.logout() })
-            // stop all documents with ongoing uplodas
-// TODO: UPLOAD_CONSTRAINT: Check if the pending work should be cancelled (otherwise this would run into an non-recoverable error)
-//            var hasPendingWorkBeenCancelled = false
-//            pageDao.getAllUploadingPagesWithDistinctDocIds().forEach {
-//                hasPendingWorkBeenCancelled = true
-//                UploadWorker.cancelWorkByDocumentId(workManager, it)
-//            }
             // clear the user
             clearUser()
 
             if (!initiatedByUser) {
-                // TODO: Show system notification that user has been logged out!
+                notificationHandler.showLogoutNotification(
+                    context.getString(R.string.notification_session_expired_title),
+                    context.getString(R.string.notification_session_expired_text)
+                )
             }
         }
     }
 
-    suspend fun checkLogin(): Resource<LoginResponse> {
+    suspend fun checkLogin(initiatedByUser: Boolean = true): Resource<LoginResponse> {
         return withContext(NonCancellable) {
-            return@withContext when (val credentials = checkCredentials()) {
+            return@withContext when (val credentials = checkCredentials(initiatedByUser)) {
                 is Failure -> {
                     Failure(credentials.exception)
                 }
@@ -95,13 +88,13 @@ class UserRepository(
         }
     }
 
-    private suspend fun checkCredentials(): Resource<Pair<String, String>> {
+    private suspend fun checkCredentials(initiatedByUser: Boolean): Resource<Pair<String, String>> {
         val username = userDao.getUser()?.userName
         val password = preferencesHandler.transkribusPassword
         if (username != null && password != null) {
             return Success(Pair(username, password))
         }
-        logout()
+        logout(initiatedByUser)
         return asUnauthorizedFailure()
     }
 

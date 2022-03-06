@@ -10,7 +10,7 @@ import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
 import org.koin.java.KoinJavaComponent
 import timber.log.Timber
 import java.net.ConnectException
-import java.net.HttpURLConnection.*
+import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 
@@ -176,16 +176,16 @@ private fun getMessageIOErrorCode(ioErrorCode: IOErrorCode, throwable: Throwable
 
 private fun getTitleInternal(throwable: Throwable): Int {
     return when (throwable) {
-        is UnknownHostException, is ConnectException -> R.string.login_no_connection_error_title
-        is SocketTimeoutException -> R.string.login_timeout_error_title
+        is UnknownHostException, is ConnectException -> R.string.no_connection_error_title
+        is SocketTimeoutException -> R.string.timeout_error_title
         else -> R.string.generic_error_title
     }
 }
 
 private fun getMessageInternal(throwable: Throwable): Int {
     return when (throwable) {
-        is UnknownHostException, is ConnectException -> R.string.login_no_connection_error_text
-        is SocketTimeoutException -> R.string.login_timeout_error_text
+        is UnknownHostException, is ConnectException -> R.string.no_connection_error_text
+        is SocketTimeoutException -> R.string.timeout_error_text
         else -> R.string.generic_error_text
     }
 }

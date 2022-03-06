@@ -19,11 +19,16 @@ import at.ac.tuwien.caa.docscan.logic.getMessage
 import at.ac.tuwien.caa.docscan.receiver.NotificationButton
 import at.ac.tuwien.caa.docscan.receiver.NotificationWrapper
 import at.ac.tuwien.caa.docscan.receiver.NotificationsActionReceiver
+import at.ac.tuwien.caa.docscan.ui.account.TranskribusLoginActivity
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
 import timber.log.Timber
 import java.util.*
 
 class NotificationHandler(val context: Context) {
+
+    companion object {
+        private const val GENERAL_NOTIFICATION_ID = 375324
+    }
 
     sealed class DocScanNotification(val title: String, val showCancelButton: Boolean) {
         class Init(title: String, val documentWithPages: DocumentWithPages) :
@@ -37,13 +42,56 @@ class NotificationHandler(val context: Context) {
             DocScanNotification(title, false)
     }
 
-    fun showDocScanNotification(
+    /**
+     * Shows a notification by indicating that the user has been logged out.
+     */
+    fun showLogoutNotification(title: String, text: String) {
+        val channel = DocScanNotificationChannel.CHANNEL_GENERAL
+        val notification = createBuilder(
+            channel,
+            null,
+            title,
+            text,
+            null
+        )
+
+        // Create an explicit intent for the login activity
+        val intent = TranskribusLoginActivity.newInstance(context).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            flags
+        )
+
+        notification.setContentIntent(pendingIntent)
+
+        showNotification(
+            channel.tag,
+            GENERAL_NOTIFICATION_ID,
+            notification.build()
+        )
+    }
+
+    /**
+     * Shows a document related notification of a specific type.
+     */
+    fun showDocumentNotification(
         docScanNotification: DocScanNotification,
         docId: UUID,
-        docScanNotificationChannel: DocScanNotificationChannel
+        notificationType: DocumentNotificationType
     ) {
         val notification = createBuilder(
-            docScanNotificationChannel,
+            notificationType.getChannel(),
             null,
             docScanNotification.title,
             null,
@@ -64,11 +112,11 @@ class NotificationHandler(val context: Context) {
                 notification.setProgress(0, 0, true)
             }
             is DocScanNotification.Progress -> {
-                val progress = when (docScanNotificationChannel) {
-                    DocScanNotificationChannel.CHANNEL_EXPORT -> {
+                val progress = when (notificationType) {
+                    DocumentNotificationType.EXPORT -> {
                         docScanNotification.documentWithPages.numberOfFinishedExports()
                     }
-                    DocScanNotificationChannel.CHANNEL_UPLOAD -> {
+                    DocumentNotificationType.UPLOAD -> {
                         docScanNotification.documentWithPages.numberOfFinishedUploads()
                     }
                 }
@@ -78,13 +126,13 @@ class NotificationHandler(val context: Context) {
                 // a special case for the export, since the export state only represents if the file
                 // has been scanned, but saving a file is performed on the end and can take a while too, so
                 // instead of staying at 100& progress bar, this will show an indeterminate state instead.
-                if (docScanNotificationChannel == DocScanNotificationChannel.CHANNEL_EXPORT && (progress == max || progress == 0)) {
+                if (notificationType == DocumentNotificationType.EXPORT && (progress == max || progress == 0)) {
                     notification.setProgress(
                         0,
                         0,
                         true
                     )
-                } else if (docScanNotificationChannel == DocScanNotificationChannel.CHANNEL_UPLOAD && progress == max) {
+                } else if (notificationType == DocumentNotificationType.UPLOAD && progress == max) {
                     // ignore the progress update, if the progress reaches the max, since the success case will be followed
                     // very shortly afterwards and sometimes it happens that notifications are ignored if they are sent too quickly.
                     return
@@ -106,11 +154,11 @@ class NotificationHandler(val context: Context) {
         }
 
         // Create an explicit intent for an Activity in your app
-        val intent = when (docScanNotificationChannel) {
-            DocScanNotificationChannel.CHANNEL_EXPORT -> {
+        val intent = when (notificationType) {
+            DocumentNotificationType.EXPORT -> {
                 DocumentViewerActivity.newInstance(context, DocumentViewerLaunchViewType.PDFS)
             }
-            DocScanNotificationChannel.CHANNEL_UPLOAD -> {
+            DocumentNotificationType.UPLOAD -> {
                 DocumentViewerActivity.newInstance(context, DocumentViewerLaunchViewType.DOCUMENTS)
             }
         }.apply {
@@ -135,7 +183,7 @@ class NotificationHandler(val context: Context) {
         if (docScanNotification.showCancelButton) {
             val cancelNotification = NotificationsActionReceiver.newInstance(
                 context,
-                NotificationWrapper(docScanNotificationChannel, NotificationButton.CANCEL, docId)
+                NotificationWrapper(notificationType.getChannel(), NotificationButton.CANCEL, docId)
             )
             val cancelIntent: PendingIntent =
                 PendingIntent.getBroadcast(context, 0, cancelNotification, flags)
@@ -146,7 +194,7 @@ class NotificationHandler(val context: Context) {
         }
 
         showNotification(
-            docScanNotificationChannel.tag,
+            notificationType.getChannel().tag,
             docId.hashCode(),
             notification.build()
         )
@@ -223,7 +271,7 @@ class NotificationHandler(val context: Context) {
         ticker: String?,
         date: Long = System.currentTimeMillis()
     ): NotificationCompat.Builder {
-        return NotificationCompat.Builder(context, docScanNotificationChannel.channelId)
+        val builder = NotificationCompat.Builder(context, docScanNotificationChannel.channelId)
             .setSmallIcon(R.drawable.ic_docscan_notification)
             .setContentText(contentText)
             .setContentTitle(contentTitle)
@@ -235,6 +283,10 @@ class NotificationHandler(val context: Context) {
             // importance param needs to be set as priority to support the importance on devices with < android 8
             .setPriority(docScanNotificationChannel.importance)
             .setGroup(groupKey)
+        contentText?.let {
+            addBigTextStyleToBuilder(builder, contentText)
+        }
+        return builder
     }
 
     /**
@@ -255,23 +307,9 @@ class NotificationHandler(val context: Context) {
     }
 
     /**
-     * Creates a new [NotificationCompat.Builder] object, for a summay.
-     */
-    fun createBuilderForSummary(
-        docScanNotificationChannel: DocScanNotificationChannel,
-        groupKey: String
-    ): NotificationCompat.Builder {
-        return NotificationCompat.Builder(context, docScanNotificationChannel.channelId)
-            .setSmallIcon(R.drawable.ic_docscan_notification)
-            .setGroupSummary(true)
-            .setGroup(groupKey)
-            .setAutoCancel(docScanNotificationChannel.isAutoCancel)
-    }
-
-    /**
      * Add bigTextStyle with text to builder.
      */
-    fun addBigTextStyleToBuilder(
+    private fun addBigTextStyleToBuilder(
         builder: NotificationCompat.Builder,
         bigText: String
     ) {

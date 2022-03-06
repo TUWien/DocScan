@@ -10,6 +10,7 @@ import at.ac.tuwien.caa.docscan.logic.Resource
 import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.logic.isUploadRecoverable
 import at.ac.tuwien.caa.docscan.logic.notification.DocScanNotificationChannel
+import at.ac.tuwien.caa.docscan.logic.notification.DocumentNotificationType
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.UploadRepository
@@ -47,7 +48,7 @@ class UploadWorker(
             documentCollectorJob = async {
                 documentRepository.getDocumentWithPagesAsFlow(documentId = docId).collectLatest {
                     it ?: return@collectLatest
-                    notificationHandler.showDocScanNotification(
+                    notificationHandler.showDocumentNotification(
                         NotificationHandler.DocScanNotification.Progress(
                             String.format(
                                 context.getString(
@@ -57,11 +58,11 @@ class UploadWorker(
                             it
                         ),
                         docId,
-                        DocScanNotificationChannel.CHANNEL_UPLOAD
+                        DocumentNotificationType.UPLOAD
                     )
                 }
             }
-            notificationHandler.showDocScanNotification(
+            notificationHandler.showDocumentNotification(
                 NotificationHandler.DocScanNotification.Init(
                     String.format(
                         context.getString(R.string.notification_upload_title_progress),
@@ -69,7 +70,7 @@ class UploadWorker(
                     ), doc
                 ),
                 docId,
-                DocScanNotificationChannel.CHANNEL_UPLOAD
+                DocumentNotificationType.UPLOAD
             )
             val resource: Resource<UploadStatusResponse>
             try {
@@ -85,7 +86,7 @@ class UploadWorker(
             documentCollectorJob?.cancel()
             return@withContext when (resource) {
                 is Failure -> {
-                    notificationHandler.showDocScanNotification(
+                    notificationHandler.showDocumentNotification(
                         NotificationHandler.DocScanNotification.Failure(
                             String.format(
                                 context.getString(R.string.notification_upload_title_error),
@@ -94,7 +95,7 @@ class UploadWorker(
                             resource.exception
                         ),
                         docId,
-                        DocScanNotificationChannel.CHANNEL_UPLOAD
+                        DocumentNotificationType.UPLOAD
                     )
                     if (resource.isUploadRecoverable()) {
                         Result.retry()
@@ -103,7 +104,7 @@ class UploadWorker(
                     }
                 }
                 is Success -> {
-                    notificationHandler.showDocScanNotification(
+                    notificationHandler.showDocumentNotification(
                         NotificationHandler.DocScanNotification.Success(
                             String.format(
                                 context.getString(
@@ -116,7 +117,7 @@ class UploadWorker(
                             )
                         ),
                         docId,
-                        DocScanNotificationChannel.CHANNEL_UPLOAD
+                        DocumentNotificationType.UPLOAD
                     )
                     Result.success()
                 }

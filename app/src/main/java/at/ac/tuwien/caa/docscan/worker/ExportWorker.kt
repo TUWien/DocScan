@@ -9,6 +9,7 @@ import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Resource
 import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.logic.notification.DocScanNotificationChannel
+import at.ac.tuwien.caa.docscan.logic.notification.DocumentNotificationType
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.repository.ExportRepository
@@ -46,25 +47,25 @@ class ExportWorker(
         val exportFormat =
             ExportFormat.getExportFormatById(inputData.getString(INPUT_PARAM_EXPORT_FORMAT))
 
-        notificationHandler.showDocScanNotification(
+        notificationHandler.showDocumentNotification(
             NotificationHandler.DocScanNotification.Init(
                 context.getString(R.string.notification_export_title_progress),
                 doc
             ),
             docId,
-            DocScanNotificationChannel.CHANNEL_EXPORT
+            DocumentNotificationType.EXPORT
         )
         return withContext(Dispatchers.IO) {
             documentCollectorJob = async {
                 documentRepository.getDocumentWithPagesAsFlow(documentId = docId).collectLatest {
                     it?.let {
-                        notificationHandler.showDocScanNotification(
+                        notificationHandler.showDocumentNotification(
                             NotificationHandler.DocScanNotification.Progress(
                                 context.getString(R.string.notification_export_title_progress),
                                 it
                             ),
                             docId,
-                            DocScanNotificationChannel.CHANNEL_EXPORT
+                            DocumentNotificationType.EXPORT
                         )
                     }
                 }
@@ -83,18 +84,18 @@ class ExportWorker(
             documentCollectorJob?.cancel()
             return@withContext when (resource) {
                 is Failure -> {
-                    notificationHandler.showDocScanNotification(
+                    notificationHandler.showDocumentNotification(
                         NotificationHandler.DocScanNotification.Failure(
                             context.getString(R.string.notification_export_title_error),
                             resource.exception,
                         ),
                         docId,
-                        DocScanNotificationChannel.CHANNEL_EXPORT
+                        DocumentNotificationType.EXPORT
                     )
                     Result.failure()
                 }
                 is Success -> {
-                    notificationHandler.showDocScanNotification(
+                    notificationHandler.showDocumentNotification(
                         NotificationHandler.DocScanNotification.Success(
                             context.getString(R.string.notification_export_title_success),
                             String.format(
@@ -103,7 +104,7 @@ class ExportWorker(
                             )
                         ),
                         docId,
-                        DocScanNotificationChannel.CHANNEL_EXPORT
+                        DocumentNotificationType.EXPORT
                     )
                     Result.success()
                 }
