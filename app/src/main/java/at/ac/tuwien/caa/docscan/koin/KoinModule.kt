@@ -44,6 +44,7 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 val appModule = module {
     single { androidApplication() as DocScanApp }
@@ -123,6 +124,10 @@ private fun provideOkHttp(
 ): OkHttpClient {
     val okHttpBuilder = OkHttpClient.Builder()
         .retryOnConnectionFailure(true)
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
+            // the write timeout is increased due to big image uploads
+        .writeTimeout(60, TimeUnit.SECONDS)
     if (BuildConfig.DEBUG) {
         okHttpBuilder.addNetworkInterceptor(HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
