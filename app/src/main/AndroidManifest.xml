@@ -4,7 +4,6 @@
     package="at.ac.tuwien.caa.docscan">
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -59,7 +58,6 @@
         <activity
             android:name=".ui.start.StartActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -69,88 +67,42 @@
 
         <activity
             android:name=".ui.intro.IntroActivity"
-            android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/SplashTheme" />
 
-        <activity
-            android:name=".ui.info.AboutActivity"
-            android:exported="true" />
-
-        <activity
-            android:name=".ui.docviewer.documents.selector.SelectPdfDocumentActivity"
-            android:exported="true" />
+        <activity android:name=".ui.info.AboutActivity" />
+        <activity android:name=".ui.docviewer.documents.selector.SelectPdfDocumentActivity" />
 
         <activity
             android:name=".ui.gallery.PageSlideActivity"
-            android:exported="true"
             android:launchMode="singleTop" />
 
-        <activity
-            android:name=".ui.segmentation.SegmentationActivity"
-            android:exported="true" />
-
-        <activity
-            android:name=".ui.account.TranskribusLoginActivity"
-            android:exported="false" />
+        <activity android:name=".ui.segmentation.SegmentationActivity" />
+        <activity android:name=".ui.account.TranskribusLoginActivity" />
 
         <!-- The orientation is set to portrait, since the CameraActivity would crash at on rotation, see ActionSheet.kt -->
         <activity
             android:name=".ui.camera.CameraActivity"
             android:configChanges="orientation|screenSize"
-            android:exported="true"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
 
-        <activity
-            android:name=".ui.crop.CropViewActivity"
-            android:exported="true" />
-
+        <activity android:name=".ui.crop.CropViewActivity" />
         <activity
             android:name=".ui.document.CreateDocumentActivity"
-            android:configChanges="orientation|screenSize"
-            android:exported="true" />
-
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".ui.document.EditDocumentActivity"
             android:configChanges="orientation|screenSize" />
 
-        <activity
-            android:name=".ui.settings.PreferenceActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.settings.DebugPreferenceActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.settings.ExifPreferenceActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.info.LogActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.account.logout.LogoutActivity"
-            android:exported="false" />
-
-        <!--Debugging activities: -->
-
-        <activity
-            android:name=".ui.license.LicenseActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.docviewer.DocumentViewerActivity"
-            android:exported="true" />
-
-        <!--<receiver android:name=".sync.BootReceiver">-->
-        <!--<intent-filter>-->
-        <!--<action android:name="android.intent.action.BOOT_COMPLETED" />-->
-        <!--</intent-filter>-->
-        <!--</receiver>-->
+        <activity android:name=".ui.settings.PreferenceActivity" />
+        <activity android:name=".ui.settings.DebugPreferenceActivity" />
+        <activity android:name=".ui.settings.ExifPreferenceActivity" />
+        <activity android:name=".ui.info.LogActivity" />
+        <activity android:name=".ui.account.logout.LogoutActivity" />
+        <activity android:name=".ui.license.LicenseActivity" />
+        <activity android:name=".ui.docviewer.DocumentViewerActivity" />
 
         <uses-library
             android:name="android.test.runner"

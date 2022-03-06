@@ -8,6 +8,7 @@ import at.ac.tuwien.caa.docscan.databinding.ActivityLoginBinding
 import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
 import at.ac.tuwien.caa.docscan.extensions.bindInvisible
 import at.ac.tuwien.caa.docscan.extensions.hideKeyboard
+import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
 import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.logic.handleError
@@ -77,21 +78,19 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
         viewModel.observableProgress.observe(this) {
             showLoadingLayout(it)
         }
-        dialogViewModel.observableDialogAction.observe(this) {
-            it.getContentIfNotHandled()?.let { result ->
-                when (result.dialogAction) {
-                    ADialog.DialogAction.LOGIN_SUCCESS -> {
-                        // Start the parent activity and remove everything from the back stack:
-                        val intent = Intent(applicationContext, mParentClass)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                        startActivity(intent)
-                    }
-                    else -> {
-                        // ignore
-                    }
+        dialogViewModel.observableDialogAction.observe(this, ConsumableEvent { result ->
+            when (result.dialogAction) {
+                ADialog.DialogAction.LOGIN_SUCCESS -> {
+                    // Start the parent activity and remove everything from the back stack:
+                    val intent = Intent(applicationContext, mParentClass)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                    startActivity(intent)
+                }
+                else -> {
+                    // ignore
                 }
             }
-        }
+        })
     }
 
     private fun login() {

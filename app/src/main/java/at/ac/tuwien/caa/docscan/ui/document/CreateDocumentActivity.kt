@@ -14,7 +14,6 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityCreateDocumentBinding
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.logic.Helper
 import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
@@ -89,7 +88,7 @@ open class CreateDocumentActivity : BaseNoNavigationActivity() {
     }
 
     private fun observe() {
-        viewModel.observableResource.observe(this, {
+        viewModel.observableResource.observe(this) {
             when (it) {
                 is Failure -> {
                     if (it.exception.getDocScanDBError()?.code == DBErrorCode.DUPLICATE) {
@@ -105,7 +104,7 @@ open class CreateDocumentActivity : BaseNoNavigationActivity() {
                     finish()
                 }
             }
-        })
+        }
     }
 
     private fun initCustomNamingFields() {

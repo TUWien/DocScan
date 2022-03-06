@@ -9,10 +9,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.db.model.Document
 import at.ac.tuwien.caa.docscan.db.model.MetaData
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
-import at.ac.tuwien.caa.docscan.logic.Failure
-import at.ac.tuwien.caa.docscan.logic.Success
-import at.ac.tuwien.caa.docscan.logic.getDocScanDBError
-import at.ac.tuwien.caa.docscan.logic.handleError
+import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -28,22 +25,20 @@ class EditDocumentActivity : CreateDocumentActivity() {
     }
 
     private fun observe() {
-        viewModel.observableDocument.observe(this, {
+        viewModel.observableDocument.observe(this) {
             fillViews(it)
-        })
-        viewModel.observableRequestResource.observe(this, {
-            it.getContentIfNotHandled()?.let { resource ->
-                when (resource) {
-                    is Failure -> {
-                        if (resource.exception.getDocScanDBError()?.code == DBErrorCode.DUPLICATE) {
-                            showDialog(ADialog.DialogAction.CREATE_DOCUMENT_DUPLICATE)
-                        } else {
-                            resource.exception.handleError(this)
-                        }
+        }
+        viewModel.observableRequestResource.observe(this, ConsumableEvent { resource ->
+            when (resource) {
+                is Failure -> {
+                    if (resource.exception.getDocScanDBError()?.code == DBErrorCode.DUPLICATE) {
+                        showDialog(ADialog.DialogAction.CREATE_DOCUMENT_DUPLICATE)
+                    } else {
+                        resource.exception.handleError(this)
                     }
-                    is Success -> {
-                        finish()
-                    }
+                }
+                is Success -> {
+                    finish()
                 }
             }
         })

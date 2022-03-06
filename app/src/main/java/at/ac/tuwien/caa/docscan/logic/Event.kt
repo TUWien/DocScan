@@ -1,5 +1,7 @@
 package at.ac.tuwien.caa.docscan.logic
 
+import androidx.lifecycle.Observer
+
 /**
  * Used as a wrapper for data that is exposed via a LiveData that represents an event.
  *
@@ -47,5 +49,13 @@ open class Event<out T>(private val content: T) {
      */
     fun markAsHandled() {
         hasBeenHandled = true
+    }
+}
+
+class ConsumableEvent<T>(private val onEventUnhandledAction: (T) -> Unit) : Observer<Event<T>> {
+    override fun onChanged(event: Event<T>?) {
+        event?.getContentIfNotHandled()?.let { value ->
+            onEventUnhandledAction(value)
+        }
     }
 }

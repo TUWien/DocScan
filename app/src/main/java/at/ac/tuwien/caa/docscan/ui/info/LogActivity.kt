@@ -8,6 +8,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityShareLogBinding
 import at.ac.tuwien.caa.docscan.extensions.bindVisible
 import at.ac.tuwien.caa.docscan.extensions.shareFileAsEmailLog
+import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
 import at.ac.tuwien.caa.docscan.logic.PageFileType
 import at.ac.tuwien.caa.docscan.logic.handleError
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity
@@ -42,18 +43,14 @@ class LogActivity : BaseNavigationActivity() {
     }
 
     private fun observe() {
-        viewModel.observableShareUris.observe(this) {
-            it.getContentIfNotHandled()?.let { uris ->
-                if (!shareFileAsEmailLog(this, PageFileType.ZIP, uris)) {
-                    showDialog(ADialog.DialogAction.ACTIVITY_NOT_FOUND_EMAIL)
-                }
+        viewModel.observableShareUris.observe(this, ConsumableEvent { uris ->
+            if (!shareFileAsEmailLog(this, PageFileType.ZIP, uris)) {
+                showDialog(ADialog.DialogAction.ACTIVITY_NOT_FOUND_EMAIL)
             }
-        }
-        viewModel.observableError.observe(this) {
-            it.getContentIfNotHandled()?.let { error ->
-                error.handleError(this, logAsError = true)
-            }
-        }
+        })
+        viewModel.observableError.observe(this, ConsumableEvent { throwable ->
+            throwable.handleError(this, logAsError = true)
+        })
         viewModel.observableProgress.observe(this) {
             binding.progress.bindVisible(it)
         }

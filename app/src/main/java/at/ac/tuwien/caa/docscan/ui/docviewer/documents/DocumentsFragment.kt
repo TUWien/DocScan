@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import at.ac.tuwien.caa.docscan.databinding.FragmentDocumentsBinding
+import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
 import at.ac.tuwien.caa.docscan.logic.DocumentPage
 import at.ac.tuwien.caa.docscan.logic.extractDocWithPages
 import at.ac.tuwien.caa.docscan.ui.base.BaseFragment
@@ -55,7 +56,7 @@ class DocumentsFragment : BaseFragment() {
     }
 
     private fun observe() {
-        viewModel.observableDocuments.observe(viewLifecycleOwner, {
+        viewModel.observableDocuments.observe(viewLifecycleOwner) {
             adapter.submitList(it)
             if (it.isEmpty()) {
                 binding.documentsEmptyLayout.visibility = View.VISIBLE
@@ -72,9 +73,10 @@ class DocumentsFragment : BaseFragment() {
                 }
                 scroll = false
             }
-        })
-        dialogViewModel.observableDialogAction.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { result ->
+        }
+        dialogViewModel.observableDialogAction.observe(
+            viewLifecycleOwner,
+            ConsumableEvent { result ->
                 when (result.dialogAction) {
                     ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT -> {
                         if (result.isPositive()) {
@@ -87,7 +89,6 @@ class DocumentsFragment : BaseFragment() {
                         // ignore
                     }
                 }
-            }
-        })
+            })
     }
 }

@@ -6,6 +6,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.FragmentImagesBinding
+import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
 import at.ac.tuwien.caa.docscan.logic.computeScreenWidth
 import at.ac.tuwien.caa.docscan.logic.handleError
 import at.ac.tuwien.caa.docscan.ui.base.BaseFragment
@@ -116,7 +117,7 @@ class ImagesFragment : BaseFragment() {
     }
 
     private fun observe() {
-        viewModel.observablePages.observe(viewLifecycleOwner, {
+        viewModel.observablePages.observe(viewLifecycleOwner) {
             imagesAdapter.submitList(it.pages)
             if (it.pages.isEmpty()) {
                 binding.imagesList.visibility = View.INVISIBLE
@@ -140,41 +141,36 @@ class ImagesFragment : BaseFragment() {
             val result = it.pages.isSelectionActivated()
             actionBarSelection(result.second)
             sharedViewModel.setSelectedElements(result.second)
-        })
-        viewModel.observableDocWithPages.observe(viewLifecycleOwner, {
+        }
+        viewModel.observableDocWithPages.observe(viewLifecycleOwner) {
             setTitle(it?.document?.title ?: getString(R.string.document_navigation_images))
             // this is important to call to inform the sharedViewModel about the document
             // that is displayed here.
             sharedViewModel.informAboutImageViewer(it)
+        }
+        viewModel.observableInitGallery.observe(viewLifecycleOwner, ConsumableEvent { page ->
+            startActivity(PageSlideActivity.newInstance(requireActivity(), page.docId, page.id))
         })
-        viewModel.observableInitGallery.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { page ->
-                startActivity(PageSlideActivity.newInstance(requireActivity(), page.docId, page.id))
-            }
+        viewModel.observableError.observe(viewLifecycleOwner, ConsumableEvent { throwable ->
+            throwable.handleError(requireBaseActivity())
         })
-        viewModel.observableError.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { throwable ->
-                throwable.handleError(requireBaseActivity())
-            }
+        viewModel.observableConfirmDelete.observe(viewLifecycleOwner, ConsumableEvent { pageCount ->
+            val title = resources.getQuantityString(R.plurals.confirm_delete_pages, pageCount)
+            val message = resources.getQuantityString(
+                R.plurals.confirm_delete_pages_with_count,
+                pageCount,
+                pageCount
+            )
+            val dialogModel = DialogModel(
+                ADialog.DialogAction.CONFIRM_DELETE_PAGES,
+                customTitle = title,
+                customMessage = message
+            )
+            showDialog(dialogModel)
         })
-        viewModel.observableConfirmDelete.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { pageCount ->
-                val title = resources.getQuantityString(R.plurals.confirm_delete_pages, pageCount)
-                val message = resources.getQuantityString(
-                    R.plurals.confirm_delete_pages_with_count,
-                    pageCount,
-                    pageCount
-                )
-                val dialogModel = DialogModel(
-                    ADialog.DialogAction.CONFIRM_DELETE_PAGES,
-                    customTitle = title,
-                    customMessage = message
-                )
-                showDialog(dialogModel)
-            }
-        })
-        dialogViewModel.observableDialogAction.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { result ->
+        dialogViewModel.observableDialogAction.observe(
+            viewLifecycleOwner,
+            ConsumableEvent { result ->
                 when (result.dialogAction) {
                     ADialog.DialogAction.CONFIRM_DELETE_PAGES -> {
                         if (result.isPositive()) {
@@ -185,8 +181,7 @@ class ImagesFragment : BaseFragment() {
                         // ignore
                     }
                 }
-            }
-        })
+            })
     }
 
     override fun onPause() {
@@ -223,43 +218,4 @@ class ImagesFragment : BaseFragment() {
                 selectedItems.toString() + " " + getString(R.string.gallery_selected)
         }
     }
-
-// TODO: handle transitions
-//    private fun openImagesView(document: DocumentWithPages) {
-//
-//        val imagesFragment = setupImagesFragment(document)
-//
-//        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-//        //                The animation depends on the position of the selected item:
-//        if (binding.bottomNav.selectedItemId == R.id.viewer_documents)
-//            ft.setCustomAnimations(
-//                R.anim.translate_left_to_right_in,
-//                R.anim.translate_left_to_right_out
-//            )
-//        else
-//            ft.setCustomAnimations(
-//                R.anim.translate_right_to_left_in,
-//                R.anim.translate_right_to_left_out
-//            )
-//
-//////                Create the shared element transition:
-////        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-////            if ((this as DocumentsFragment).isVisible) {
-//////          Check if the document has pages, otherwise use no shared element transition:
-////                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && selectedDocument?.pages?.isNotEmpty()!!) {
-////                    setExitTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.fade))
-////                    imagesFragment.postponeEnterTransition()
-////                    imagesFragment.sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(R.transition.image_shared_element_transition)
-////                    var imageView = getImageView(document)
-////                    ft.addSharedElement(imageView!!, imageView!!.transitionName)
-////                    ft.setReorderingAllowed(true)
-////                }
-////            }
-////        }
-//
-////        ft.replace(
-////            R.id.viewer_fragment_layout, imagesFragment,
-////            ImagesFragment.TAG
-////        ).commit()
-
 }

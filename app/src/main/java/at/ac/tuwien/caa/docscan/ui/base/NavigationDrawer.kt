@@ -16,14 +16,14 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.db.model.User
 import at.ac.tuwien.caa.docscan.extensions.safeStartActivity
 import at.ac.tuwien.caa.docscan.glidemodule.GlideApp
-import at.ac.tuwien.caa.docscan.ui.info.AboutActivity
-import at.ac.tuwien.caa.docscan.ui.info.LogActivity
+import at.ac.tuwien.caa.docscan.ui.account.TranskribusLoginActivity
+import at.ac.tuwien.caa.docscan.ui.account.logout.LogoutActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
+import at.ac.tuwien.caa.docscan.ui.info.AboutActivity
+import at.ac.tuwien.caa.docscan.ui.info.LogActivity
 import at.ac.tuwien.caa.docscan.ui.settings.PreferenceActivity
-import at.ac.tuwien.caa.docscan.ui.account.TranskribusLoginActivity
-import at.ac.tuwien.caa.docscan.ui.account.logout.LogoutActivity
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.navigation.NavigationView
 import timber.log.Timber
@@ -87,7 +87,6 @@ class NavigationDrawer(
                     headerLayout.findViewById<View>(R.id.navigation_view_header_account_setting) as ImageButton
                 button.rotation = 0f
                 // Hide the account items:
-                // TODO: Show the loggedIn state correctly!
                 setAccountGroupVisible(false, false)
             }
         }

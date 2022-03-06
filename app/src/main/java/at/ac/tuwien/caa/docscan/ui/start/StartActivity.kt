@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import at.ac.tuwien.caa.docscan.databinding.MainContainerViewBinding
+import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
 import at.ac.tuwien.caa.docscan.logic.PermissionHandler
 import at.ac.tuwien.caa.docscan.logic.getMessage
 import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
@@ -65,49 +66,43 @@ class StartActivity : BaseActivity() {
     }
 
     private fun observe() {
-        viewModel.loadingProgress.observe(this, {
+        viewModel.loadingProgress.observe(this) {
             binding.progress.visibility = if (it) View.VISIBLE else View.GONE
-        })
-        viewModel.destination.observe(this, {
-            it.getContentIfNotHandled()?.let { destination ->
-                when (destination) {
-                    StartDestination.CAMERA -> {
-                        startCameraIntent()
-                    }
-                    StartDestination.INTRO -> {
-                        startActivity(IntroActivity.newInstance(this))
-                    }
-                    StartDestination.PERMISSIONS -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            if (shouldShowRequestPermissionRationale(PermissionHandler.requiredMandatoryPermissions.first())) {
-                                showDialog(ADialog.DialogAction.RATIONALE_CAMERA_PERMISSION)
-                                return@let
-                            }
+        }
+        viewModel.destination.observe(this, ConsumableEvent { destination ->
+            when (destination) {
+                StartDestination.CAMERA -> {
+                    startCameraIntent()
+                }
+                StartDestination.INTRO -> {
+                    startActivity(IntroActivity.newInstance(this))
+                }
+                StartDestination.PERMISSIONS -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (shouldShowRequestPermissionRationale(PermissionHandler.requiredMandatoryPermissions.first())) {
+                            showDialog(ADialog.DialogAction.RATIONALE_CAMERA_PERMISSION)
+                            return@ConsumableEvent
                         }
-                        requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
                     }
+                    requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
                 }
             }
         })
-        viewModel.migrationError.observe(this, {
-            it.getContentIfNotHandled()?.let { throwable ->
-                // TODO: finalize this call
-                val dialogModel = DialogModel(
-                    ADialog.DialogAction.MIGRATION_FAILED,
-                    customMessage = throwable.getMessage(this, true)
-                )
-                showDialog(dialogModel)
-            }
+        viewModel.migrationError.observe(this, ConsumableEvent { throwable ->
+            // TODO: finalize this call
+            val dialogModel = DialogModel(
+                ADialog.DialogAction.MIGRATION_FAILED,
+                customMessage = throwable.getMessage(this, true)
+            )
+            showDialog(dialogModel)
         })
-        dialogViewModel.observableDialogAction.observe(this, {
-            it.getContentIfNotHandled()?.let { dialogResult ->
-                when (dialogResult.dialogAction) {
-                    ADialog.DialogAction.RATIONALE_CAMERA_PERMISSION -> {
-                        requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
-                    }
-                    else -> {
-                        // ignore
-                    }
+        dialogViewModel.observableDialogAction.observe(this, ConsumableEvent { dialogResult ->
+            when (dialogResult.dialogAction) {
+                ADialog.DialogAction.RATIONALE_CAMERA_PERMISSION -> {
+                    requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
+                }
+                else -> {
+                    // ignore
                 }
             }
         })

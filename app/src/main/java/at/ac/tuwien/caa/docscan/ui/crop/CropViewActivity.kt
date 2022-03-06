@@ -14,6 +14,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityCropViewBinding
 import at.ac.tuwien.caa.docscan.databinding.CropInfoDialogBinding
 import at.ac.tuwien.caa.docscan.db.model.Page
+import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
 import at.ac.tuwien.caa.docscan.logic.DocumentPage
 import at.ac.tuwien.caa.docscan.logic.GlideHelper
 import at.ac.tuwien.caa.docscan.logic.handleError
@@ -110,41 +111,35 @@ class CropViewActivity : BaseActivity() {
     }
 
     private fun observe() {
-        viewModel.observableInitBackNavigation.observe(this, {
-            it.getContentIfNotHandled()?.let {
-                finish()
-            }
+        viewModel.observableInitBackNavigation.observe(this, ConsumableEvent {
+            finish()
         })
-        viewModel.observableError.observe(this, {
-            it.getContentIfNotHandled()?.let { throwable ->
-                throwable.handleError(this)
-            }
+        viewModel.observableError.observe(this, ConsumableEvent { throwable ->
+            throwable.handleError(this)
         })
-        viewModel.observableShowCroppingInfo.observe(this, {
-            it.getContentIfNotHandled()?.let {
-                MaterialAlertDialogBuilder(this).apply {
-                    val binding = CropInfoDialogBinding.inflate(layoutInflater)
-                    setView(binding.root)
-                    setTitle(R.string.crop_view_crop_dialog_title)
-                    setMessage(R.string.crop_view_crop_dialog_text)
-                    setCancelable(false)
-                    binding.openDocumentViewerButton.setOnClickListener {
-                        startActivity(
-                            DocumentViewerActivity.newInstance(
-                                this@CropViewActivity,
-                                DocumentPage(viewModel.page.docId, viewModel.page.id)
-                            )
+        viewModel.observableShowCroppingInfo.observe(this, ConsumableEvent {
+            MaterialAlertDialogBuilder(this).apply {
+                val binding = CropInfoDialogBinding.inflate(layoutInflater)
+                setView(binding.root)
+                setTitle(R.string.crop_view_crop_dialog_title)
+                setMessage(R.string.crop_view_crop_dialog_text)
+                setCancelable(false)
+                binding.openDocumentViewerButton.setOnClickListener {
+                    startActivity(
+                        DocumentViewerActivity.newInstance(
+                            this@CropViewActivity,
+                            DocumentPage(viewModel.page.docId, viewModel.page.id)
                         )
-                        finish()
-                    }
-                    setPositiveButton(getString(R.string.button_ok)) { _, _ ->
-                        viewModel.preferencesHandler.showCroppingInfo = !binding.skip.isChecked
-                        viewModel.navigateBack()
-                    }
-                }.show()
-            }
+                    )
+                    finish()
+                }
+                setPositiveButton(getString(R.string.button_ok)) { _, _ ->
+                    viewModel.preferencesHandler.showCroppingInfo = !binding.skip.isChecked
+                    viewModel.navigateBack()
+                }
+            }.show()
         })
-        viewModel.observableModel.observe(this, {
+        viewModel.observableModel.observe(this) {
             binding.cropView.setPoints(it.points)
             // the initial image load will position the image into the correct rotation.
             if (initialImageLoad) {
@@ -216,7 +211,7 @@ class CropViewActivity : BaseActivity() {
                 }
 
             }
-        })
+        }
     }
 
     override fun onBackPressed() {

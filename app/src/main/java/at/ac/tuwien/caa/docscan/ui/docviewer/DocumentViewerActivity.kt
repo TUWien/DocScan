@@ -173,311 +173,302 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
     }
 
     private fun observeViewModel() {
-        viewModel.selectedScreen.observe(this, { screen ->
+        viewModel.selectedScreen.observe(this) { screen ->
             // do not update the FABs since this will be already updated in this case.
             if ((viewModel.observableNumOfSelectedElements.value ?: 0) > 0) {
                 return@observe
             }
             handleFABVisibilityForScreen(screen)
+        }
+        viewModel.observableInitDocumentOptions.observe(this, ConsumableEvent {
+            showDocumentOptions(it)
         })
-        viewModel.observableInitDocumentOptions.observe(this, {
-            it.getContentIfNotHandled()?.let { doc ->
-                showDocumentOptions(doc)
-            }
-        })
-        viewModel.observableNewExportCount.observe(this, {
+        viewModel.observableNewExportCount.observe(this) {
             val badge = binding.bottomNav.getOrCreateBadge(R.id.viewer_pdfs)
             badge.isVisible = it > 0
             badge.number = it
-        })
-        viewModel.observableNumOfSelectedElements.observe(this, {
+        }
+        viewModel.observableNumOfSelectedElements.observe(this) {
             if (it > 0) {
                 // the first argument doesn't matter in this case
                 handleFABVisibilityForScreen(DocumentViewerScreen.DOCUMENTS, false)
             } else {
                 handleFABVisibilityForScreen(viewModel.selectedScreen.value!!)
             }
+        }
+        viewModel.observableInitCamera.observe(this, ConsumableEvent {
+            startActivity(CameraActivity.newInstance(this, false))
+            finish()
         })
-        viewModel.observableInitCamera.observe(this, {
-            it?.getContentIfNotHandled()?.let {
-                startActivity(CameraActivity.newInstance(this, false))
-                finish()
-            }
-        })
-        viewModel.observableResourceAction.observe(this, {
-            it.getContentIfNotHandled()?.let { model ->
-                when (val resource = model.resource) {
-                    is Failure -> {
-                        when (model.action) {
-                            DocumentAction.DELETE, DocumentAction.SHARE -> {
-                                resource.exception.handleError(this)
+        viewModel.observableResourceAction.observe(this, ConsumableEvent { model ->
+            when (val resource = model.resource) {
+                is Failure -> {
+                    when (model.action) {
+                        DocumentAction.DELETE, DocumentAction.SHARE -> {
+                            resource.exception.handleError(this)
+                        }
+                        DocumentAction.EXPORT -> {
+                            resource.exception.getDocScanDBError()?.let { dbError ->
+                                if (dbError.code == DBErrorCode.DOCUMENT_NOT_CROPPED) {
+                                    showDialog(
+                                        ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING,
+                                        model.arguments
+                                    )
+                                    return@ConsumableEvent
+                                }
                             }
-                            DocumentAction.EXPORT -> {
-                                resource.exception.getDocScanDBError()?.let { dbError ->
-                                    if (dbError.code == DBErrorCode.DOCUMENT_NOT_CROPPED) {
+                            resource.exception.getDocScanIOError()?.let { dbError ->
+                                if (dbError.ioErrorCode == IOErrorCode.EXPORT_GOOGLE_PLAYSTORE_NOT_INSTALLED_FOR_OCR) {
+                                    showDialog(
+                                        ADialog.DialogAction.EXPORT_WARNING_OCR_NOT_AVAILABLE,
+                                        model.arguments
+                                    )
+                                    return@ConsumableEvent
+                                } else if (dbError.ioErrorCode == IOErrorCode.EXPORT_FILE_MISSING_PERMISSION) {
+                                    binding.bottomNav.selectedItemId = R.id.viewer_pdfs
+                                    return@ConsumableEvent
+                                }
+                            }
+                            resource.exception.handleError(this)
+                        }
+                        DocumentAction.CROP -> {
+                            resource.exception.handleError(this)
+                        }
+                        DocumentAction.UPLOAD -> {
+                            resource.exception.getDocScanDBError()?.let { dbError ->
+                                when (dbError.code) {
+                                    DBErrorCode.DOCUMENT_ALREADY_UPLOADED -> {
                                         showDialog(
-                                            ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING,
+                                            ADialog.DialogAction.UPLOAD_WARNING_DOC_ALREADY_UPLOADED,
                                             model.arguments
                                         )
-                                        return@observe
+                                        return@ConsumableEvent
                                     }
-                                }
-                                resource.exception.getDocScanIOError()?.let { dbError ->
-                                    if (dbError.ioErrorCode == IOErrorCode.EXPORT_GOOGLE_PLAYSTORE_NOT_INSTALLED_FOR_OCR) {
+                                    DBErrorCode.DOCUMENT_NOT_CROPPED -> {
                                         showDialog(
-                                            ADialog.DialogAction.EXPORT_WARNING_OCR_NOT_AVAILABLE,
+                                            ADialog.DialogAction.UPLOAD_WARNING_IMAGE_CROP_MISSING,
                                             model.arguments
                                         )
-                                        return@observe
+                                        return@ConsumableEvent
+                                    }
+                                    else -> {
+                                        resource.exception.handleError(this)
+                                        return@ConsumableEvent
                                     }
                                 }
-                                resource.exception.handleError(this)
                             }
-                            DocumentAction.CROP -> {
-                                resource.exception.handleError(this)
-                            }
-                            DocumentAction.UPLOAD -> {
-                                resource.exception.getDocScanDBError()?.let { dbError ->
-                                    when (dbError.code) {
-                                        DBErrorCode.DOCUMENT_ALREADY_UPLOADED -> {
-                                            showDialog(
-                                                ADialog.DialogAction.UPLOAD_WARNING_DOC_ALREADY_UPLOADED,
-                                                model.arguments
-                                            )
-                                            return@observe
-                                        }
-                                        DBErrorCode.DOCUMENT_NOT_CROPPED -> {
-                                            showDialog(
-                                                ADialog.DialogAction.UPLOAD_WARNING_IMAGE_CROP_MISSING,
-                                                model.arguments
-                                            )
-                                            return@observe
-                                        }
-                                        else -> {
-                                            resource.exception.handleError(this)
-                                            return@observe
-                                        }
-                                    }
-                                }
-                                resource.exception.handleError(this)
-                            }
-                            DocumentAction.CANCEL_UPLOAD -> {
-                                resource.exception.handleError(this)
-                            }
+                            resource.exception.handleError(this)
+                        }
+                        DocumentAction.CANCEL_UPLOAD -> {
+                            resource.exception.handleError(this)
                         }
                     }
-                    is Success<*> -> {
-                        if (model.action == DocumentAction.SHARE) {
-                            model.resource.applyOnSuccess { any ->
-                                @Suppress("UNCHECKED_CAST")
-                                (any as? List<Uri>?)?.let { uris ->
-                                    shareFile(this, PageFileType.JPEG, uris)
-                                }
+                }
+                is Success<*> -> {
+                    if (model.action == DocumentAction.SHARE) {
+                        model.resource.applyOnSuccess { any ->
+                            @Suppress("UNCHECKED_CAST")
+                            (any as? List<Uri>?)?.let { uris ->
+                                shareFile(this, PageFileType.JPEG, uris)
                             }
-                            return@observe
                         }
-                        if (!model.action.showSuccessMessage) {
-                            return@observe
-                        }
-                        val name = when (model.action) {
-                            DocumentAction.DELETE, DocumentAction.CROP, DocumentAction.SHARE, DocumentAction.CANCEL_UPLOAD -> ""
-                            DocumentAction.EXPORT -> getString(R.string.operation_export)
-                            DocumentAction.UPLOAD -> getString(R.string.operation_upload)
-                        }
-                        singleSnackbar(
-                            binding.syncCoordinatorlayout,
-                            SnackbarOptions(
-                                String.format(
-                                    getString(R.string.viewer_document_operation_success),
-                                    name
-                                ),
-                                Snackbar.LENGTH_LONG
-                            )
+                        return@ConsumableEvent
+                    }
+                    if (!model.action.showSuccessMessage) {
+                        return@ConsumableEvent
+                    }
+                    val name = when (model.action) {
+                        DocumentAction.DELETE, DocumentAction.CROP, DocumentAction.SHARE, DocumentAction.CANCEL_UPLOAD -> ""
+                        DocumentAction.EXPORT -> getString(R.string.operation_export)
+                        DocumentAction.UPLOAD -> getString(R.string.operation_upload)
+                    }
+                    singleSnackbar(
+                        binding.syncCoordinatorlayout,
+                        SnackbarOptions(
+                            String.format(
+                                getString(R.string.viewer_document_operation_success),
+                                name
+                            ),
+                            Snackbar.LENGTH_LONG
                         )
-                    }
+                    )
                 }
             }
         })
 
-        viewModel.observableResourceConfirmation.observe(this, {
-            it.getContentIfNotHandled()?.let { model ->
-                when (model.action) {
-                    DocumentAction.DELETE -> {
-                        showDialog(
-                            ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT.with(
-                                customTitle = "${getString(R.string.sync_confirm_delete_title)} " + model.documentWithPages.document.title,
-                                arguments = model.arguments
-                            )
+        viewModel.observableResourceConfirmation.observe(this, ConsumableEvent { model ->
+            when (model.action) {
+                DocumentAction.DELETE -> {
+                    showDialog(
+                        ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT.with(
+                            customTitle = "${getString(R.string.sync_confirm_delete_title)} " + model.documentWithPages.document.title,
+                            arguments = model.arguments
                         )
-                    }
-                    DocumentAction.EXPORT -> {
-                        showDialog(
-                            ADialog.DialogAction.CONFIRM_OCR_SCAN.with(
-                                customTitle = "${getString(R.string.gallery_confirm_ocr_title)} " + model.documentWithPages.document.title,
-                                arguments = model.arguments
-                            )
+                    )
+                }
+                DocumentAction.EXPORT -> {
+                    showDialog(
+                        ADialog.DialogAction.CONFIRM_OCR_SCAN.with(
+                            customTitle = "${getString(R.string.gallery_confirm_ocr_title)} " + model.documentWithPages.document.title,
+                            arguments = model.arguments
                         )
-                    }
-                    DocumentAction.CROP -> {
-                        showDialog(
-                            ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION.with(
-                                customTitle = "${getString(R.string.viewer_crop_confirm_title)} " + model.documentWithPages.document.title,
-                                arguments = model.arguments
-                            )
+                    )
+                }
+                DocumentAction.CROP -> {
+                    showDialog(
+                        ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION.with(
+                            customTitle = "${getString(R.string.viewer_crop_confirm_title)} " + model.documentWithPages.document.title,
+                            arguments = model.arguments
                         )
-                    }
-                    DocumentAction.UPLOAD -> {
-                        showDialog(
-                            ADialog.DialogAction.CONFIRM_UPLOAD.with(
-                                arguments = model.arguments
-                            )
+                    )
+                }
+                DocumentAction.UPLOAD -> {
+                    showDialog(
+                        ADialog.DialogAction.CONFIRM_UPLOAD.with(
+                            arguments = model.arguments
                         )
-                    }
-                    DocumentAction.CANCEL_UPLOAD -> {
-                        showDialog(
-                            ADialog.DialogAction.CONFIRM_CANCEL_UPLOAD.with(
-                                arguments = model.arguments
-                            )
+                    )
+                }
+                DocumentAction.CANCEL_UPLOAD -> {
+                    showDialog(
+                        ADialog.DialogAction.CONFIRM_CANCEL_UPLOAD.with(
+                            arguments = model.arguments
                         )
-                    }
-                    DocumentAction.SHARE -> {
-                        // Share doesn't need a confirmation
-                    }
+                    )
+                }
+                DocumentAction.SHARE -> {
+                    // Share doesn't need a confirmation
                 }
             }
         })
 
-        dialogViewModel.observableDialogAction.observe(this, {
-            it.getContentIfNotHandled()?.let { result ->
-                when (result.dialogAction) {
-                    ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION -> {
-                        if (result.isPositive()) {
-                            viewModel.applyActionFor(
-                                DocumentAction.CROP,
-                                result.arguments.appendIsConfirmed(true)
-                            )
-                        }
+        dialogViewModel.observableDialogAction.observe(this, ConsumableEvent { result ->
+            when (result.dialogAction) {
+                ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.CROP,
+                            result.arguments.appendIsConfirmed(true)
+                        )
                     }
-                    ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT -> {
-                        if (result.isPositive()) {
-                            viewModel.applyActionFor(
-                                DocumentAction.DELETE,
-                                result.arguments.appendIsConfirmed(true)
-                            )
-                        }
+                }
+                ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.DELETE,
+                            result.arguments.appendIsConfirmed(true)
+                        )
                     }
-                    ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
-                        when (result.pressedAction) {
-                            DialogButton.POSITIVE -> {
-                                viewModel.applyActionFor(
-                                    DocumentAction.EXPORT,
-                                    result.arguments.appendIsConfirmed(true).appendUseOCR(true)
-                                )
-                            }
-                            DialogButton.NEGATIVE -> {
-                                viewModel.applyActionFor(
-                                    DocumentAction.EXPORT,
-                                    result.arguments.appendIsConfirmed(true).appendUseOCR(false)
-                                )
-                            }
-                            DialogButton.NEUTRAL -> {
-                                // ignore
-                            }
-                        }
-                    }
-                    ADialog.DialogAction.CONFIRM_UPLOAD -> {
-                        if (result.isPositive()) {
-                            viewModel.applyActionFor(
-                                DocumentAction.UPLOAD,
-                                result.arguments.appendIsConfirmed(true)
-                            )
-                        }
-                    }
-                    ADialog.DialogAction.CONFIRM_CANCEL_UPLOAD -> {
-                        if (result.isPositive()) {
-                            viewModel.applyActionFor(
-                                DocumentAction.CANCEL_UPLOAD,
-                                result.arguments.appendIsConfirmed(true)
-                            )
-                        }
-                    }
-                    ADialog.DialogAction.UPLOAD_WARNING_DOC_ALREADY_UPLOADED -> {
-                        if (result.isPositive()) {
-                            viewModel.applyActionFor(
-                                DocumentAction.UPLOAD,
-                                result.arguments.appendSkipAlreadyUploadedRestriction(true)
-                            )
-                        }
-                    }
-                    ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING -> {
-                        if (result.isPositive()) {
+                }
+                ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
+                    when (result.pressedAction) {
+                        DialogButton.POSITIVE -> {
                             viewModel.applyActionFor(
                                 DocumentAction.EXPORT,
-                                result.arguments.appendSkipCropRestriction(true)
+                                result.arguments.appendIsConfirmed(true).appendUseOCR(true)
                             )
                         }
-                    }
-                    ADialog.DialogAction.UPLOAD_WARNING_IMAGE_CROP_MISSING -> {
-                        if (result.isPositive()) {
-                            viewModel.applyActionFor(
-                                DocumentAction.UPLOAD,
-                                result.arguments.appendSkipCropRestriction(true)
-                            )
-                        }
-                    }
-                    ADialog.DialogAction.EXPORT_WARNING_OCR_NOT_AVAILABLE -> {
-                        if (result.isPositive()) {
+                        DialogButton.NEGATIVE -> {
                             viewModel.applyActionFor(
                                 DocumentAction.EXPORT,
-                                result.arguments.appendUseOCR(false)
+                                result.arguments.appendIsConfirmed(true).appendUseOCR(false)
                             )
                         }
+                        DialogButton.NEUTRAL -> {
+                            // ignore
+                        }
                     }
-                    else -> {
-                        // ignore
+                }
+                ADialog.DialogAction.CONFIRM_UPLOAD -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.UPLOAD,
+                            result.arguments.appendIsConfirmed(true)
+                        )
                     }
+                }
+                ADialog.DialogAction.CONFIRM_CANCEL_UPLOAD -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.CANCEL_UPLOAD,
+                            result.arguments.appendIsConfirmed(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.UPLOAD_WARNING_DOC_ALREADY_UPLOADED -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.UPLOAD,
+                            result.arguments.appendSkipAlreadyUploadedRestriction(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.EXPORT,
+                            result.arguments.appendSkipCropRestriction(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.UPLOAD_WARNING_IMAGE_CROP_MISSING -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.UPLOAD,
+                            result.arguments.appendSkipCropRestriction(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.EXPORT_WARNING_OCR_NOT_AVAILABLE -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.EXPORT,
+                            result.arguments.appendUseOCR(false)
+                        )
+                    }
+                }
+                else -> {
+                    // ignore
                 }
             }
         })
-        modalSheetViewModel.observableSheetAction.observe(this, {
-            it.getContentIfNotHandled()?.let { result ->
-                when (result.pressedSheetAction.id) {
-                    SheetActionId.CONTINUE_IMAGING.id -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            viewModel.startImagingWith(doc.document.id)
-                        } ?: kotlin.run {
-                            // Check if this is ok to call
-                            viewModel.startImagingWith(null)
-                        }
+        modalSheetViewModel.observableSheetAction.observe(this, ConsumableEvent { result ->
+            when (result.pressedSheetAction.id) {
+                SheetActionId.CONTINUE_IMAGING.id -> {
+                    result.arguments.extractDocWithPages()?.let { doc ->
+                        viewModel.startImagingWith(doc.document.id)
+                    } ?: kotlin.run {
+                        // Check if this is ok to call
+                        viewModel.startImagingWith(null)
                     }
-                    SheetActionId.EXPORT.id -> {
-                        viewModel.applyActionFor(DocumentAction.EXPORT, result.arguments)
-                    }
-                    SheetActionId.EDIT.id -> {
-                        result.arguments.extractDocWithPages()?.let { doc ->
-                            startActivity(
-                                EditDocumentActivity.newInstance(
-                                    this,
-                                    document = doc.document
-                                )
+                }
+                SheetActionId.EXPORT.id -> {
+                    viewModel.applyActionFor(DocumentAction.EXPORT, result.arguments)
+                }
+                SheetActionId.EDIT.id -> {
+                    result.arguments.extractDocWithPages()?.let { doc ->
+                        startActivity(
+                            EditDocumentActivity.newInstance(
+                                this,
+                                document = doc.document
                             )
-                        }
+                        )
                     }
-                    SheetActionId.DELETE.id -> {
-                        viewModel.applyActionFor(DocumentAction.DELETE, result.arguments)
-                    }
-                    SheetActionId.CROP.id -> {
-                        viewModel.applyActionFor(DocumentAction.CROP, result.arguments)
-                    }
-                    SheetActionId.UPLOAD.id -> {
-                        viewModel.applyActionFor(DocumentAction.UPLOAD, result.arguments)
-                    }
-                    SheetActionId.CANCEL_UPLOAD.id -> {
-                        viewModel.applyActionFor(DocumentAction.CANCEL_UPLOAD, result.arguments)
-                    }
-                    SheetActionId.SHARE.id -> {
-                        viewModel.applyActionFor(DocumentAction.SHARE, result.arguments)
-                    }
+                }
+                SheetActionId.DELETE.id -> {
+                    viewModel.applyActionFor(DocumentAction.DELETE, result.arguments)
+                }
+                SheetActionId.CROP.id -> {
+                    viewModel.applyActionFor(DocumentAction.CROP, result.arguments)
+                }
+                SheetActionId.UPLOAD.id -> {
+                    viewModel.applyActionFor(DocumentAction.UPLOAD, result.arguments)
+                }
+                SheetActionId.CANCEL_UPLOAD.id -> {
+                    viewModel.applyActionFor(DocumentAction.CANCEL_UPLOAD, result.arguments)
+                }
+                SheetActionId.SHARE.id -> {
+                    viewModel.applyActionFor(DocumentAction.SHARE, result.arguments)
                 }
             }
         })

@@ -2,7 +2,6 @@ package at.ac.tuwien.caa.docscan.ui.license
 
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.appcompat.widget.Toolbar
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityLicensesBinding
 import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
@@ -30,5 +29,4 @@ class LicenseActivity : BaseNoNavigationActivity() {
         var mUrl: String = url
 
     }
-
 }

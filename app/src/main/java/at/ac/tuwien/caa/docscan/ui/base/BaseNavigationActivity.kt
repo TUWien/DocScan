@@ -30,11 +30,11 @@ abstract class BaseNavigationActivity : BaseActivity() {
     }
 
     private fun observe() {
-        viewModel.observableUser.observe(this, {
+        viewModel.observableUser.observe(this) {
             if (!isFinishing) {
                 drawer.setupDrawerHeader(it)
             }
-        })
+        }
     }
 
     override fun setContentView(layoutResID: Int) {

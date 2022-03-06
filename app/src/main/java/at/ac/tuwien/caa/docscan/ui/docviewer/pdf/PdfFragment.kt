@@ -8,6 +8,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.SheetAction
 import at.ac.tuwien.caa.docscan.databinding.FragmentPdfsBinding
 import at.ac.tuwien.caa.docscan.extensions.*
+import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
 import at.ac.tuwien.caa.docscan.logic.LinearLayoutManagerWithSmoothScroller
 import at.ac.tuwien.caa.docscan.logic.appendExportFile
 import at.ac.tuwien.caa.docscan.logic.extractExportFile
@@ -86,7 +87,7 @@ class PdfFragment : BaseFragment() {
     }
 
     private fun observe() {
-        viewModel.observableExportModel.observe(viewLifecycleOwner, {
+        viewModel.observableExportModel.observe(viewLifecycleOwner) {
             when (it) {
                 is ExportModel.MissingPermissions -> {
                     binding.pdfList.bindVisible(false)
@@ -108,14 +109,13 @@ class PdfFragment : BaseFragment() {
                     }
                 }
             }
+        }
+        viewModel.observableOpenFile.observe(viewLifecycleOwner, ConsumableEvent {
+            showFile(requireActivity(), it.pageFileType, it.file.documentFile)
         })
-        viewModel.observableOpenFile.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let {
-                showFile(requireActivity(), it.pageFileType, it.file.documentFile)
-            }
-        })
-        dialogViewModel.observableDialogAction.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { dialogResult ->
+        dialogViewModel.observableDialogAction.observe(
+            viewLifecycleOwner,
+            ConsumableEvent { dialogResult ->
                 when (dialogResult.dialogAction) {
                     ADialog.DialogAction.EXPORT_FOLDER_PERMISSION -> {
                         if (dialogResult.isPositive()) {
@@ -133,10 +133,10 @@ class PdfFragment : BaseFragment() {
                         // ignore
                     }
                 }
-            }
-        })
-        modalSheetViewModel.observableSheetAction.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let { result ->
+            })
+        modalSheetViewModel.observableSheetAction.observe(
+            viewLifecycleOwner,
+            ConsumableEvent { result ->
                 when (result.pressedSheetAction.id) {
                     SheetActionId.DELETE.id -> {
                         val exportFile = result.arguments.extractExportFile()
@@ -161,13 +161,12 @@ class PdfFragment : BaseFragment() {
                         // ignore
                     }
                 }
-            }
-        })
-        DocumentContractNotifier.observableDocumentContract.observe(viewLifecycleOwner, {
-            it.getContentIfNotHandled()?.let {
+            })
+        DocumentContractNotifier.observableDocumentContract.observe(
+            viewLifecycleOwner,
+            ConsumableEvent {
                 viewModel.load(scrollToTop = true)
-            }
-        })
+            })
     }
 
     override fun onResume() {

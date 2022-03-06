@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivitySegmentationBinding
 import at.ac.tuwien.caa.docscan.db.model.Page
+import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
 import at.ac.tuwien.caa.docscan.logic.computeScreenWidth
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -53,22 +54,22 @@ class SegmentationActivity : AppCompatActivity() {
         // it will drop the adapter.
         binding.model.setText(viewModel.latestModel.title, false)
         ArrayAdapterNoFilter(
-                this,
-                android.R.layout.simple_list_item_1,
-                viewModel.models.map { model -> model.title }
+            this,
+            android.R.layout.simple_list_item_1,
+            viewModel.models.map { model -> model.title }
         ).also { adapter ->
             binding.model.setAdapter(adapter)
         }
 
         binding.model.onItemClickListener =
-                AdapterView.OnItemClickListener { parent, _, position, _ ->
-                    val current = parent?.getItemAtPosition(position).toString()
-                    viewModel.performSegmentationByModelName(
-                            current,
-                            binding.cbGpu.isChecked,
-                            binding.cbAll.isChecked
-                    )
-                }
+            AdapterView.OnItemClickListener { parent, _, position, _ ->
+                val current = parent?.getItemAtPosition(position).toString()
+                viewModel.performSegmentationByModelName(
+                    current,
+                    binding.cbGpu.isChecked,
+                    binding.cbAll.isChecked
+                )
+            }
         binding.cbGpu.setOnCheckedChangeListener { view, isChecked ->
             if (!view.isPressed) {
                 return@setOnCheckedChangeListener
@@ -90,15 +91,13 @@ class SegmentationActivity : AppCompatActivity() {
     }
 
     private fun subscribeToModel() {
-        viewModel.observableImagePath.observe(this, {
-            it.getContentIfNotHandled()?.let { imagePath ->
-                Glide.with(this).load(File(imagePath))
-                        .transition(DrawableTransitionOptions.withCrossFade())
-                        .into(binding.image)
-            }
+        viewModel.observableImagePath.observe(this, ConsumableEvent { imagePath ->
+            Glide.with(this).load(File(imagePath))
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .into(binding.image)
         })
 
-        viewModel.observableResults.observe(this, {
+        viewModel.observableResults.observe(this) {
             adapter.submitList(it)
             it.firstOrNull()?.let { first ->
                 binding.result = first
@@ -107,7 +106,7 @@ class SegmentationActivity : AppCompatActivity() {
                 binding.list.visibility = View.GONE
                 binding.image.visibility = View.VISIBLE
                 Glide.with(this).load(it.firstOrNull()?.bitmapResult).transition(
-                        DrawableTransitionOptions.withCrossFade()
+                    DrawableTransitionOptions.withCrossFade()
                 ).into(binding.image)
             } else {
                 binding.list.visibility = View.VISIBLE
@@ -115,13 +114,11 @@ class SegmentationActivity : AppCompatActivity() {
             }
             bottomSheetBehavior.isHideable = false
             bottomSheetBehavior.state = STATE_COLLAPSED
-        })
+        }
 
-        viewModel.observableError.observe(this, {
-            it.getContentIfNotHandled()?.let { exception ->
-                MaterialAlertDialogBuilder(this).setTitle("Error").setMessage(exception.message)
-                        .create().show()
-            }
+        viewModel.observableError.observe(this, ConsumableEvent { exception ->
+            MaterialAlertDialogBuilder(this).setTitle("Error").setMessage(exception.message)
+                .create().show()
         })
     }
 
@@ -130,23 +127,23 @@ class SegmentationActivity : AppCompatActivity() {
      */
     private fun computeBestItemSize(): Pair<Int, Int> {
         val itemMargin =
-                resources.getDimensionPixelSize(R.dimen.item_model_result_margin)
+            resources.getDimensionPixelSize(R.dimen.item_model_result_margin)
         val width = computeScreenWidth(this)
 
         // window size minus the
         val availableSize = width - 2 * itemMargin
 
         val defaultItemSize =
-                resources.getDimensionPixelSize(R.dimen.item_model_result_size)
+            resources.getDimensionPixelSize(R.dimen.item_model_result_size)
         val stepSize =
-                resources.getDimensionPixelSize(R.dimen.item_model_result_size_step)
+            resources.getDimensionPixelSize(R.dimen.item_model_result_size_step)
         val bufferSize =
-                resources.getDimensionPixelSize(R.dimen.item_model_result_buffer)
+            resources.getDimensionPixelSize(R.dimen.item_model_result_buffer)
 
         var bestItemSize = defaultItemSize - itemMargin
         var spanCount = availableSize / bestItemSize
         var remainingSize =
-                availableSize - spanCount * bestItemSize
+            availableSize - spanCount * bestItemSize
 
         // loop between minus buffer and plus buffer and get the best span and size with the least remaining size
         // so in the end we have a size and a fitter where the space between the elements is as small as possible.
