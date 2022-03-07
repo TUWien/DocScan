@@ -190,6 +190,11 @@ class DocumentRepository(
             // at this point, we do not know if the worker is currently just scheduled or running
             // if if it's just scheduled, than we need to repair the states first.
             UploadWorker.cancelWorkByDocumentId(workManager, documentId)
+            // clear the uploadId from the doc
+            documentDao.updateUploadIdForDoc(documentId, null)
+            // clear the upload file names
+            pageDao.clearDocumentPagesUploadFileNames(documentId)
+            // update upload state to none
             pageDao.updateUploadStateForDocument(documentId, UploadState.NONE)
         }
         tryToUnlockDoc(documentId, null)
