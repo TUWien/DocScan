@@ -18,11 +18,13 @@ open class BaseActivity : AppCompatActivity() {
 
     private var snackbar: Snackbar? = null
 
-    protected var keepScreenOn: Boolean = false
+    open protected fun keepScreenOn(): Boolean {
+        return false
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (keepScreenOn) {
+        if (keepScreenOn()) {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

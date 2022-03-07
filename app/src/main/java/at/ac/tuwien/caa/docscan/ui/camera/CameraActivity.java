@@ -232,7 +232,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //    private boolean mIsAggressiveAutoFocus = false;
 
 
-    // ================= start: methods from the Activity lifecycle =================
+    @Override
+    protected boolean keepScreenOn() {
+        return true;
+    }
 
     /**
      * Creates the camera Activity.
