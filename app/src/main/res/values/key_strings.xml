@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="key_geo_tagging">KEY_GEO_TAGGING</string>
     <string name="key_upload_mobile_data">KEY_UPLOAD_MOBILE_DATA</string>
     <string name="key_fast_segmentation">KEY_FAST_SEGMENTATION</string>
     <string name="key_crash_reports">KEY_CRASH_REPORTS</string>

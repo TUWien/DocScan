@@ -98,6 +98,10 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         context.getString(R.string.key_crash_reports)
     }
 
+    private val KEY_GEO_TAGGING by lazy {
+        context.getString(R.string.key_geo_tagging)
+    }
+
     companion object {
         const val DEFAULT_INT_VALUE = -1
 
@@ -114,6 +118,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         private const val KEY_DB_MIGRATION = "DB_MIGRATION"
         private const val KEY_TRANSKRIBUS_SESSION_COOKIE = "TRANSKRIBUS_SESSION_COOKIE"
         private const val KEY_TRANSKRIBUS_PASSWORD = "TRANSKRIBUS_PASSWORD"
+        private const val KEY_MIGRATION_TO_PREFS_V1_80 = "MIGRATION_TO_PREFS_V1_80"
 
         // previous deprecated keys that are deleted in the migration
         private const val DEPRECATED_FIRST_NAME_KEY = "firstName"
@@ -143,13 +148,32 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         )
     }
 
+    /**
+     * A flag indicating if the initial DB migrations (since v1_80) should be performed.
+     */
     var shouldPerformDBMigration: Boolean
         get() =
             sharedPreferences.getBoolean(KEY_DB_MIGRATION, true)
+        // commit is used to avoid race conditions
+        @SuppressLint("ApplySharedPref")
         set(value) {
             sharedPreferences.edit()
                 .putBoolean(KEY_DB_MIGRATION, value)
-                .apply()
+                .commit()
+        }
+
+    /**
+     * A flag indicating if the shared preferences migration should be performed!
+     */
+    private var shouldPerformV1_80_PrefsMigration: Boolean
+        get() =
+            sharedPreferences.getBoolean(KEY_MIGRATION_TO_PREFS_V1_80, true)
+        // commit is used to avoid race conditions
+        @SuppressLint("ApplySharedPref")
+        set(value) {
+            sharedPreferences.edit()
+                .putBoolean(KEY_MIGRATION_TO_PREFS_V1_80, value)
+                .commit()
         }
 
     var testCollectionId: Int
@@ -199,6 +223,19 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         set(value) {
             defaultSharedPreferences.edit()
                 .putBoolean(KEY_USE_TEST_SERVER, value)
+                .apply()
+        }
+
+    var isGeoTaggingEnabled: Boolean
+        get() {
+            return defaultSharedPreferences.getBoolean(
+                KEY_GEO_TAGGING,
+                false
+            )
+        }
+        set(value) {
+            defaultSharedPreferences.edit()
+                .putBoolean(KEY_GEO_TAGGING, value)
                 .apply()
         }
 
@@ -321,10 +358,16 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
                 .apply()
         }
 
-    var installedVersionCode: Int
-        get() =
-            sharedPreferences.getInt(INSTALLED_VERSION_KEY, 0)
-        @SuppressLint("ApplySharedPref") private set(value) {
+    private var installedVersionCode: Int
+        get() {
+            // if the installed version key does not exist on the phone, then add the current one immediately, this
+            // is important, otherwise migrations would be performed on clean installs too.
+            if (!sharedPreferences.contains(INSTALLED_VERSION_KEY)) {
+                installedVersionCode = BuildConfig.VERSION_CODE
+            }
+            return sharedPreferences.getInt(INSTALLED_VERSION_KEY, 0)
+        }
+        @SuppressLint("ApplySharedPref") set(value) {
             sharedPreferences.edit()
                 .putInt(INSTALLED_VERSION_KEY, value)
                 .commit()
@@ -469,38 +512,50 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
-
-        // check for migrations
-        if (BuildConfig.VERSION_CODE > 156) {
-
-            // migrate transkribus user data
-            val firstName = defaultSharedPreferences.getString(DEPRECATED_FIRST_NAME_KEY, null)
-            val lastName = defaultSharedPreferences.getString(DEPRECATED_LAST_NAME_KEY, null)
-            val userName = defaultSharedPreferences.getString(DEPRECATED_NAME_KEY, null)
-            val userPassword =
-                defaultSharedPreferences.getString(DEPRECATED_TRANSKRIBUS_PASSWORD_KEY, null)
-
-            // the sessionIdCookie has not been previously stored in the app.
-            if (userName != null && userPassword != null && firstName != null && lastName != null) {
-                transkribusPassword = userPassword
-                GlobalScope.launch(Dispatchers.IO) {
-                    userDao.insertUser(
-                        User(
-                            firstName = firstName,
-                            lastName = lastName,
-                            userName = userName
-                        )
-                    )
-                }
-            }
-
-            // drop all deprecated keys
-            KEYS_TO_DROP.forEach {
-                defaultSharedPreferences.edit().remove(it).apply()
-                sharedPreferences.edit().remove(it).apply()
-            }
+        // represents a clean install or an already updated version
+        if (BuildConfig.VERSION_CODE == installedVersionCode) {
+            // disable migration flags, otherwise for a clean install they could be run too.
+            shouldPerformDBMigration = false
+            shouldPerformV1_80_PrefsMigration = false
         }
 
+        // check for app updates and perform possible migrations
+        if (BuildConfig.VERSION_CODE > installedVersionCode) {
+            if (shouldPerformV1_80_PrefsMigration) {
+                // if the location permission has been given before, then enable the preference option
+                val isLocationPermissionGiven = PermissionHandler.isLocationPermissionGiven(context)
+                isGeoTaggingEnabled = isLocationPermissionGiven
+
+                // migrate transkribus user data
+                val firstName = defaultSharedPreferences.getString(DEPRECATED_FIRST_NAME_KEY, null)
+                val lastName = defaultSharedPreferences.getString(DEPRECATED_LAST_NAME_KEY, null)
+                val userName = defaultSharedPreferences.getString(DEPRECATED_NAME_KEY, null)
+                val userPassword =
+                    defaultSharedPreferences.getString(DEPRECATED_TRANSKRIBUS_PASSWORD_KEY, null)
+
+                // the sessionIdCookie has not been previously stored in the app.
+                if (userName != null && userPassword != null && firstName != null && lastName != null) {
+                    transkribusPassword = userPassword
+                    GlobalScope.launch(Dispatchers.IO) {
+                        userDao.insertUser(
+                            User(
+                                firstName = firstName,
+                                lastName = lastName,
+                                userName = userName
+                            )
+                        )
+                    }
+                }
+
+                // drop all deprecated keys
+                KEYS_TO_DROP.forEach {
+                    defaultSharedPreferences.edit().remove(it).apply()
+                    sharedPreferences.edit().remove(it).apply()
+                }
+                // mark migration as performed
+                shouldPerformV1_80_PrefsMigration = false
+            }
+        }
         // save the installed version code
         installedVersionCode = BuildConfig.VERSION_CODE
     }

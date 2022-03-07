@@ -7,8 +7,6 @@ import static at.ac.tuwien.caa.docscan.camera.TaskTimer.TaskType.SHOT_TIME;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,9 +15,7 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.hardware.Camera;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -56,6 +52,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.zxing.Result;
 
+import org.koin.android.compat.ViewModelCompat;
 import org.koin.java.KoinJavaComponent;
 import org.opencv.android.OpenCVLoader;
 
@@ -138,7 +135,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
     private static final int PERMISSION_CAMERA = 1;
-    private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
+    private static final int PERMISSION_REQUEST_CODE_LOCATION = 2;
     private static final int CREATE_DOCUMENT_FROM_QR_REQUEST = 0;
 
     private static final String EXTRA_DOC_ID = "EXTRA_DOC_ID";
@@ -149,11 +146,10 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public static final int IMG_ORIENTATION_180 = 2;
     public static final int IMG_ORIENTATION_270 = 3;
 
-    // TODO: CODE_STYLE - injection of the viewModel should be done with viewModel()
-    private final Lazy<CameraViewModel> viewModel = KoinJavaComponent.inject(CameraViewModel.class);
+    private final Lazy<CameraViewModel> viewModel = ViewModelCompat.viewModel(this, CameraViewModel.class);
+    private final Lazy<DialogViewModel> dialogViewModel = ViewModelCompat.viewModel(this, DialogViewModel.class);
     private final Lazy<PreferencesHandler> preferencesHandler = KoinJavaComponent.inject(PreferencesHandler.class);
     private final Lazy<FileHandler> fileHandler = KoinJavaComponent.inject(FileHandler.class);
-    private final Lazy<DialogViewModel> dialogViewModel = KoinJavaComponent.inject(DialogViewModel.class);
 
     @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
@@ -305,6 +301,12 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                     if (dialogResult.getPressedAction() == DialogButton.POSITIVE) {
                         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
                     }
+                } else if (dialogResult.getDialogAction() == ADialog.DialogAction.RATIONALE_LOCATION_PERMISSION) {
+                    if (dialogResult.getPressedAction() == DialogButton.POSITIVE) {
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_CODE_LOCATION);
+                    } else if (dialogResult.getPressedAction() == DialogButton.DISMISS || dialogResult.getPressedAction() == DialogButton.NEGATIVE) {
+                        preferencesHandler.getValue().setGeoTaggingEnabled(false);
+                    }
                 }
             }
         });
@@ -383,6 +385,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         mIsPictureSafe = true;
         boolean hasCameraPermission = PermissionHandler.INSTANCE.isCameraPermissionGiven(getBaseContext());
         enablePreview(hasCameraPermission);
+        if (hasCameraPermission) {
+            requestLocation();
+        }
 
         // Read user settings:
 
@@ -518,8 +523,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //        initDrawables();
         initPictureCallback();
         initButtons();
-
-        requestLocation();
 
 //        TODO: this is not that beautiful...
         final TabLayout t = findViewById(R.id.camera_tablayout);
@@ -877,18 +880,29 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+        boolean isPermissionGiven = false;
         switch (requestCode) {
-            case PERMISSION_ACCESS_FINE_LOCATION:
-                if (isPermissionGiven)
+            case PERMISSION_REQUEST_CODE_LOCATION:
+                // we accept either coarse or fine location
+                for (int result : grantResults) {
+                    if (result == PackageManager.PERMISSION_GRANTED) {
+                        isPermissionGiven = true;
+                        break;
+                    }
+                }
+                if (isPermissionGiven) {
                     startLocationAccess();
+                } else {
+                    preferencesHandler.getValue().setGeoTaggingEnabled(false);
+                    showDialog(ADialog.DialogAction.LOCATION_PERMISSION_DISABLED);
+                }
                 break;
             case PERMISSION_CAMERA:
+                isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
                 enablePreview(isPermissionGiven);
                 break;
         }
     }
-
 
     /**
      * Start the CreateDocumentActivity via an intent.
@@ -928,17 +942,18 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     // ================= end: methods for opening the gallery =================
 
     // ================= start: methods for accessing the location =================
-    @TargetApi(16)
     private void requestLocation() {
-
-        // Check permission
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // ask for permission:
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
-        } else {
-            startLocationAccess();
+        if (preferencesHandler.getValue().isGeoTaggingEnabled()) {
+            if (!PermissionHandler.INSTANCE.isLocationPermissionGiven(this)) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    showDialog(ADialog.DialogAction.RATIONALE_LOCATION_PERMISSION);
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_CODE_LOCATION);
+                }
+            } else {
+                startLocationAccess();
+            }
         }
-
     }
 
     private void startLocationAccess() {
@@ -946,6 +961,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //        This can be used to let the user enable GPS:
 //        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 //        startActivity(intent);
+        // TODO: this does not ensure that the location services are enabled.
         LocationHandler.getInstance(this);
 
     }

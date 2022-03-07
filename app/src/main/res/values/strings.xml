@@ -60,6 +60,12 @@
     <string name="permission_request_cawdwwmera">Request camera permission</string>
     <string name="app_settings">App Settings</string>
 
+    <string name="permission_location_title">Image geotagging</string>
+    <string name="permission_location_text">In order to activate geo tagging, you have to grant the location permission!</string>
+
+    <string name="permission_location_disabled_title">Image geotagging disabled</string>
+    <string name="permission_location_disabled_text">Image geotagging has been disabled due to missing location permission, you can enable it any time in the settings again!</string>
+
     <!--CameraActivity-->
 
     <string name="taking_picture_text">Taking picture</string>
@@ -337,6 +343,7 @@
     <string name="settings_upload_title">Upload</string>
     <string name="settings_upload_metered_network_title">Metered networks</string>
     <string name="settings_upload_metered_network_summary">Enable uploads over metered networks (mobile data, VPNs). Additional charges by your provider may arise.</string>
+    <string name="settings_exif_information_title">Exif Information</string>
     <string name="settings_image_processing_title">Image processing</string>
     <string name="settings_fast_segmentation_checkbox_title">Fast page detection</string>
     <string name="settings_focus_measure_checkbox_title">Measure focus</string>
@@ -349,6 +356,9 @@
     <string name="settings_crash_reports_title">Firebase Crashlytics</string>
     <string name="settings_crash_reports_summary_on">Anonymous crash reporting is enabled.</string>
     <string name="settings_crash_reports_summary_off">Help us to find and fix issues more quickly by enabling anonymous crash reporting.</string>
+    <string name="settings_gps_tag_title">Geotagging</string>
+    <string name="settings_geo_tag_summary_off">Enable geotagging to tag your images with the current device\'s location data.</string>
+    <string name="settings_geo_tag_summary_on">Image geotagging is enabled. Please ensure that your location services are enabled.</string>
 
     <!-- DebugSettingsFragment -->
     <string name="debug_settings_title">Debug settings</string>

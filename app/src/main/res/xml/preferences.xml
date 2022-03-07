@@ -14,6 +14,27 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:title="@string/settings_exif_information_title"
+        app:iconSpaceReserved="false">
+        <!-- opens another nested subscreen -->
+
+        <Preference
+            android:key="@string/key_exif_settings"
+            android:persistent="false"
+            android:summary="@string/exif_settings_summary"
+            android:title="@string/exif_settings_title"
+            app:iconSpaceReserved="false" />
+
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/key_geo_tagging"
+            android:summaryOff="@string/settings_geo_tag_summary_off"
+            android:summaryOn="@string/settings_geo_tag_summary_on"
+            android:title="@string/settings_gps_tag_title"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:title="@string/settings_image_processing_title"

@@ -181,6 +181,16 @@ class ADialog : AppCompatDialogFragment() {
             positiveBtn = R.string.dialog_btn_grant_permission,
             negativeBtn = R.string.dialog_no_text
         ),
+        RATIONALE_LOCATION_PERMISSION(
+            R.string.permission_location_title,
+            R.string.permission_location_text,
+            positiveBtn = R.string.dialog_btn_grant_permission,
+            negativeBtn = R.string.dialog_no_text
+        ),
+        LOCATION_PERMISSION_DISABLED(
+            R.string.permission_location_disabled_title,
+            R.string.permission_location_disabled_text
+        ),
         MIGRATION_FAILED(
             R.string.generic_error_title,
             R.string.generic_error_text
@@ -230,6 +240,9 @@ class ADialog : AppCompatDialogFragment() {
                 viewModel.select(action, DialogButton.NEUTRAL, model.arguments)
             }
         }
+        builder.setOnDismissListener {
+            viewModel.select(action, DialogButton.DISMISS, model.arguments)
+        }
         return builder.create()
     }
 
@@ -262,7 +275,8 @@ data class DialogModel(
 enum class DialogButton {
     POSITIVE,
     NEUTRAL,
-    NEGATIVE
+    NEGATIVE,
+    DISMISS
 }
 
 data class DialogResult(
@@ -309,3 +323,4 @@ fun DialogModel.show(
 
 fun DialogResult.isPositive() = pressedAction == DialogButton.POSITIVE
 fun DialogResult.isNegative() = pressedAction == DialogButton.NEGATIVE
+fun DialogResult.isDismiss() = pressedAction == DialogButton.DISMISS
