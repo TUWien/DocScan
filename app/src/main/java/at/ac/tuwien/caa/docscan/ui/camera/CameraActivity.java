@@ -8,6 +8,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,7 +17,9 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.hardware.Camera;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -46,6 +49,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.exifinterface.media.ExifInterface;
 
 import com.bumptech.glide.load.engine.GlideException;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
@@ -77,17 +81,23 @@ import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
 import at.ac.tuwien.caa.docscan.db.model.Page;
 import at.ac.tuwien.caa.docscan.extensions.ContextExtensionsKt;
+import at.ac.tuwien.caa.docscan.extensions.IntentExtensionsKt;
 import at.ac.tuwien.caa.docscan.logic.DocumentViewerLaunchViewType;
 import at.ac.tuwien.caa.docscan.logic.Failure;
 import at.ac.tuwien.caa.docscan.logic.FileHandler;
 import at.ac.tuwien.caa.docscan.logic.GlideHelper;
 import at.ac.tuwien.caa.docscan.logic.GlideLegacyCallback;
 import at.ac.tuwien.caa.docscan.logic.Helper;
+import at.ac.tuwien.caa.docscan.logic.PermissionHandler;
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler;
 import at.ac.tuwien.caa.docscan.logic.Resource;
 import at.ac.tuwien.caa.docscan.logic.Success;
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity;
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer;
+import at.ac.tuwien.caa.docscan.ui.dialog.ADialog;
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogButton;
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogResult;
+import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel;
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity;
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity;
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity;
@@ -126,11 +136,8 @@ import timber.log.Timber;
 public class CameraActivity extends BaseNavigationActivity implements TaskTimer.TimerCallbacks,
         CameraPreview.CVCallback, CameraPreview.CameraPreviewCallback, CVResult.CVResultCallback {
 
-    private static final String FLASH_MODE_KEY = "flashMode"; // used for saving the current flash status
     private static final String DEBUG_VIEW_FRAGMENT = "DebugViewFragment";
-    private static final String KEY_SHOW_TEXT_DIR_DIALOG = "KEY_SHOW_TEXT_DIR_DIALOG";
-    private static final int PERMISSION_READ_EXTERNAL_STORAGE = 0;
-    private static final int PERMISSION_WRITE_EXTERNAL_STORAGE = 1;
+    private static final int PERMISSION_CAMERA = 1;
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
     private static final int CREATE_DOCUMENT_FROM_QR_REQUEST = 0;
 
@@ -146,17 +153,16 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private final Lazy<CameraViewModel> viewModel = KoinJavaComponent.inject(CameraViewModel.class);
     private final Lazy<PreferencesHandler> preferencesHandler = KoinJavaComponent.inject(PreferencesHandler.class);
     private final Lazy<FileHandler> fileHandler = KoinJavaComponent.inject(FileHandler.class);
+    private final Lazy<DialogViewModel> dialogViewModel = KoinJavaComponent.inject(DialogViewModel.class);
 
     @SuppressWarnings("deprecation")
     private Camera.PictureCallback mPictureCallback;
     private ImageButton mGalleryButton;
     //    removing mForceShootButton:
-//    private AppCompatButton mForceShootButton;
     private TaskTimer mTaskTimer;
     private CameraPreview mCameraPreview;
     private PaintView mPaintView;
     private TextView mCounterView;
-    private boolean mShowCounter = true;
     private CVResult mCVResult;
     // Debugging variables:
     private DebugViewFragment mDebugViewFragment;
@@ -166,15 +172,11 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private ActionBarDrawerToggle mDrawerToggle;
     private boolean mIsPictureSafe;
     private TextView mTextView;
-    //    private MenuItem mFlashMenuItem, mDocumentMenuItem, mGalleryMenuItem, mUploadMenuItem,
-//            mLockExposureMenuItem, mUnlockExposureMenuItem;
-//    private Drawable mFlashOffDrawable, mFlashOnDrawable, mFlashAutoDrawable, mFlashTorchDrawable;
     private boolean mIsSeriesMode = false;
     private boolean mIsSeriesModePaused = true;
     // We hold here a reference to the popupmenu and the list, because we are not sure what is first initialized:
     private List<String> mFlashModes;
     private PopupMenu mFlashPopupMenu, mWhiteBalancePopupMenu;
-    private byte[] mPictureData;
     //    private Drawable mGalleryButtonDrawable;
     private ProgressBar mProgressBar;
     private TaskTimer.TimerCallbacks mTimerCallbacks;
@@ -226,11 +228,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     }
 
     private long mLastTime;
-    private boolean mItemSelectedAutomatically = false;
-    private int mLastDisplayRotation = -1;
     private boolean mIsFocusMeasured;
-//    private boolean mIsAggressiveAutoFocus = false;
-
 
     @Override
     protected boolean keepScreenOn() {
@@ -300,6 +298,44 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
                 navigateToGallery(pair.getFirst(), pair.getSecond());
             }
         });
+        dialogViewModel.getValue().getObservableDialogAction().observe(this, event -> {
+            DialogResult dialogResult = event.getContentIfNotHandled();
+            if (dialogResult != null) {
+                if (dialogResult.getDialogAction() == ADialog.DialogAction.RATIONALE_CAMERA_PERMISSION) {
+                    if (dialogResult.getPressedAction() == DialogButton.POSITIVE) {
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (!PermissionHandler.INSTANCE.isCameraPermissionGiven(getBaseContext())) {
+            requestCameraPermission();
+        }
+    }
+
+    private void requestCameraPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+            showDialog(ADialog.DialogAction.RATIONALE_CAMERA_PERMISSION);
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
+        }
+    }
+
+    private void enablePreview(boolean isEnabled) {
+        findViewById(R.id.camera_permission_container).setVisibility(isEnabled ? View.GONE : View.VISIBLE);
+        if (isEnabled) {
+            // Resume camera access:
+            mCameraPreview.resume();
+            mPaintView.resume();
+        } else {
+            mCameraPreview.stop();
+            mPaintView.pause();
+        }
     }
 
     /**
@@ -308,18 +344,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     @Override
     public void onPause() {
         super.onPause();
-
-        if (mPaintView != null)
-            mPaintView.pause();
-
-        if (mCameraPreview != null)
-            mCameraPreview.pause();
-
+        mPaintView.pause();
+        mCameraPreview.pause();
         preferencesHandler.getValue().setSeriesModeActive(mIsSeriesMode);
-//        DocumentStorage.saveJSON(this);
-
-        mPictureData = null;
-
     }
 
     /**
@@ -353,22 +380,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         }
         viewModel.getValue().load(documentId, pageId);
 
-        // Read the sync information:
-//        SyncInfo.getInstance().readFromDisk(this);
-
-//        ImageProcessLogger.getInstance().readFromDisk(this);
-
-//        ImageProcessor.initContext(this);
-
         mIsPictureSafe = true;
-
-        // Resume camera access:
-        if (mCameraPreview != null)
-            mCameraPreview.resume();
-
-        // Resume drawing thread:
-        if (mPaintView != null)
-            mPaintView.resume();
+        boolean hasCameraPermission = PermissionHandler.INSTANCE.isCameraPermissionGiven(getBaseContext());
+        enablePreview(hasCameraPermission);
 
         // Read user settings:
 
@@ -389,17 +403,9 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         ContextExtensionsKt.checksGoogleAPIAvailability(this, true);
 
-//        updateThumbnail();
-
         LinearLayout lockExposureTextView = findViewById(R.id.lock_exposure_text_view);
         if (lockExposureTextView != null)
             lockExposureTextView.setVisibility(View.INVISIBLE);
-
-////        A new document was created -> show a dialog for text direction
-//        boolean documentCreated = getIntent().getBooleanExtra(DOCUMENT_CREATED_KEY, false);
-//        if (documentCreated) {
-//            showTextDirDialog();
-//        }
 
     }
 
@@ -462,17 +468,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-
-        // Save the current flash mode
-//        if (mCameraPreview != null)
-//            savedInstanceState.putString(FLASH_MODE_KEY, mCameraPreview.getFlashMode());
-
-        // Always call the superclass so it can save the view hierarchy state
-        super.onSaveInstanceState(savedInstanceState);
-    }
-
     // ================= end: methods from the Activity lifecyle =================
 
     /**
@@ -482,6 +477,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     private void initActivity() {
 
         setContentView(R.layout.activity_camera);
+
+        MaterialButton cameraPermission = findViewById(R.id.btn_grant_camera_permission);
+        cameraPermission.setOnClickListener(v -> requestCameraPermission());
+        MaterialButton appSettings = findViewById(R.id.btn_request_app_settings);
+        appSettings.setOnClickListener(v -> {
+            IntentExtensionsKt.showAppSettings(this);
+        });
 
         loadPreferences();
 
@@ -651,30 +653,27 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
         ArrayList<SheetAction> actions = getSettingsSheetActions();
 
-        ActionSheet.SheetSelection s = new ActionSheet.SheetSelection() {
-            @Override
-            public void onSheetSelected(SheetAction action) {
+        ActionSheet.SheetSelection s = action -> {
 
-                switch (action.getId()) {
-                    case R.id.action_show_grid_item:
-                        showGrid(true);
-                        break;
-                    case R.id.action_hide_grid_item:
-                        showGrid(false);
-                        break;
-                    case R.id.action_lock_wb_item:
-                        lockExposure();
-                        break;
-                    case R.id.action_unlock_wb_item:
-                        unlockExposure();
-                        break;
-                    case R.id.action_rotate_text_dir_item:
-                        openRotateTextDirMenu();
-                        break;
-                    case R.id.action_document_qr_item:
-                        startQRMode();
-                        break;
-                }
+            switch (action.getId()) {
+                case R.id.action_show_grid_item:
+                    showGrid(true);
+                    break;
+                case R.id.action_hide_grid_item:
+                    showGrid(false);
+                    break;
+                case R.id.action_lock_wb_item:
+                    lockExposure();
+                    break;
+                case R.id.action_unlock_wb_item:
+                    unlockExposure();
+                    break;
+                case R.id.action_rotate_text_dir_item:
+                    openRotateTextDirMenu();
+                    break;
+                case R.id.action_document_qr_item:
+                    startQRMode();
+                    break;
             }
         };
 
@@ -879,16 +878,13 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         boolean isPermissionGiven = (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
-//        initCamera();
         switch (requestCode) {
-
-            case PERMISSION_WRITE_EXTERNAL_STORAGE:
-                if (isPermissionGiven && mPictureData != null)
-                    savePicture(mPictureData);
-                break;
             case PERMISSION_ACCESS_FINE_LOCATION:
                 if (isPermissionGiven)
                     startLocationAccess();
+                break;
+            case PERMISSION_CAMERA:
+                enablePreview(isPermissionGiven);
                 break;
         }
     }
@@ -961,42 +957,26 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      */
     @SuppressWarnings("deprecation")
     private void initPictureCallback() {
-
         mIsPictureSafe = true;
-
         // Callback for picture saving:
-        mPictureCallback = new Camera.PictureCallback() {
+        mPictureCallback = (data, camera) -> {
 
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
+            mTimerCallbacks.onTimerStopped(SHOT_TIME);
+            mTimerCallbacks.onTimerStarted(SHOT_TIME);
+            mTimerCallbacks.onTimerStopped(FLIP_SHOT_TIME);
 
-                mTimerCallbacks.onTimerStopped(SHOT_TIME);
-                mTimerCallbacks.onTimerStarted(SHOT_TIME);
-                mTimerCallbacks.onTimerStopped(FLIP_SHOT_TIME);
-
-                try {
-                    // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
-                    if (mCameraPreview.getCamera() != null && !viewModel.getValue().isRetakeMode()) {
-                        mCameraPreview.getCamera().startPreview();
-                    }
-                } catch (RuntimeException e) {
+            try {
+                // resume the camera again (this is necessary on the Nexus 5X, but not on the Samsung S5)
+                if (mCameraPreview.getCamera() != null && !viewModel.getValue().isRetakeMode()) {
+                    mCameraPreview.getCamera().startPreview();
+                }
+            } catch (RuntimeException e) {
 //                    We catch this to avoid:
 //                    java.lang.RuntimeException: Camera is being used after Camera.release() was called
-                }
-
-
-//                try {
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-                requestPictureSave(data);
-
-                Timber.d("took picture");
-
             }
-        };
 
+            savePicture(data);
+        };
     }
 
     /**
@@ -1009,31 +989,27 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
             return;
 
         photoButton.setOnClickListener(
-
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (mIsSeriesMode) {
-                            mIsSeriesModePaused = !mIsSeriesModePaused;
+                v -> {
+                    if (mIsSeriesMode) {
+                        mIsSeriesModePaused = !mIsSeriesModePaused;
 //    removing mForceShootButton:
 //                            if (mIsSeriesMode && mForceShootButton != null)
 //                                mForceShootButton.setVisibility(View.INVISIBLE);
 //                            showShootModeToast();
-                            if (mIsSeriesModePaused)
-                                setInstructionText(getString(R.string.instruction_series_paused));
-                            updateMode();
+                        if (mIsSeriesModePaused)
+                            setInstructionText(getString(R.string.instruction_series_paused));
+                        updateMode();
 
 //                            // Show the SeriesGeneralActivity just if the user started the series mode and the hide
 //                            // dialog setting is not true:
 //                            if (mIsSeriesMode && !mIsSeriesModePaused &&  !mHideSeriesDialog)
 //                                startDocumentActivity();
-                        } else if (mIsPictureSafe) {
+                    } else if (mIsPictureSafe) {
 //                            In manual mode remove the focus point:
-                            if (mCameraPreview != null)
-                                mCameraPreview.startContinousFocus();
-                            // get an image from the camera
-                            takePicture();
-                        }
+                        if (mCameraPreview != null)
+                            mCameraPreview.startContinousFocus();
+                        // get an image from the camera
+                        takePicture();
                     }
                 });
 
@@ -1409,36 +1385,17 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 //            return;
 
         mIsPictureSafe = false;
-        Camera.ShutterCallback shutterCallback = new Camera.ShutterCallback() {
-            @Override
-            public void onShutter() {
-                mPaintView.showFlicker();
-                boolean flashInSeriesMode = preferencesHandler.getValue().isFlashSeriesMode();
+        Camera.ShutterCallback shutterCallback = () -> {
+            mPaintView.showFlicker();
+            boolean flashInSeriesMode = preferencesHandler.getValue().isFlashSeriesMode();
 
-                if (flashInSeriesMode && mIsSeriesMode)
-                    mCameraPreview.shortFlash();
-            }
+            if (flashInSeriesMode && mIsSeriesMode)
+                mCameraPreview.shortFlash();
         };
 
         if (mCameraPreview.getCamera() != null) {
             mCameraPreview.getCamera().takePicture(shutterCallback, null, mPictureCallback);
         }
-
-
-    }
-
-    private void requestPictureSave(byte[] data) {
-
-        // TODO: ERROR_HANDLING - The storage permission is currently not necessary, evaluate if this is even nedded.
-        // Check if we have the permission to save images:
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            mPictureData = data;
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_WRITE_EXTERNAL_STORAGE);
-            savePicture(data);
-        } else
-            savePicture(data);
-
-
     }
 
     /**
@@ -1447,6 +1404,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
      * @param data image as a byte stream.
      */
     private void savePicture(byte[] data) {
+        Timber.d("savePicture");
         viewModel.getValue().saveRawImageData(data,
                 getExifOrientation(),
                 getDPI(),

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <FrameLayout
-
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -37,35 +36,35 @@
             -->
             <FrameLayout
                 android:id="@+id/bugfixview"
-                android:layout_height="match_parent"
                 android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:background="@android:color/transparent" />
 
             <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/hud_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="56dp"
                 android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="56dp"
                 android:background="@color/debug_view_bg_color"
                 app:srcCompat="@drawable/ic_flip_black_24dp" />
 
             <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="60dp"
-                android:layout_gravity="center_horizontal">
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="60dp">
 
                 <LinearLayout
                     android:id="@+id/lock_exposure_text_view"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/camera_text_overlay_height"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:visibility="visible"
-                    android:paddingHorizontal="@dimen/activity_horizontal_margin"
                     android:background="@drawable/camera_text_overlay_bg"
-                    android:padding="3dp">
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="3dp"
+                    android:paddingHorizontal="@dimen/activity_horizontal_margin"
+                    android:visibility="visible">
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:layout_width="wrap_content"
@@ -76,8 +75,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/camera_text_overlay_height"
-                        android:gravity="center"
                         android:layout_gravity="center"
+                        android:gravity="center"
                         android:text="@string/locked_exposure_text"
                         android:textColor="@color/white"
                         android:textSize="14sp" />
@@ -87,12 +86,12 @@
                     android:id="@+id/unlock_exposure_text_view"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/camera_text_overlay_height"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:visibility="invisible"
-                    android:paddingHorizontal="@dimen/activity_horizontal_margin"
                     android:background="@drawable/camera_text_overlay_bg"
-                    android:padding="3dp">
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="3dp"
+                    android:paddingHorizontal="@dimen/activity_horizontal_margin"
+                    android:visibility="invisible">
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:layout_width="wrap_content"
@@ -103,8 +102,8 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="@dimen/camera_text_overlay_height"
-                        android:gravity="center"
                         android:layout_gravity="center"
+                        android:gravity="center"
                         android:text="@string/unlocked_exposure_text"
                         android:textColor="@color/white"
                         android:textSize="14sp" />
@@ -140,10 +139,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|center_horizontal"
-                android:textColor="@color/button_bg_color"
                 android:gravity="center"
-                android:visibility="invisible"
-                android:textSize="@dimen/draw_view_counter_font_size" />
+                android:textColor="@color/button_bg_color"
+                android:textSize="@dimen/draw_view_counter_font_size"
+                android:visibility="invisible" />
 
             <!--<RelativeLayout-->
             <!--android:layout_width="160dp"-->
@@ -173,13 +172,5 @@
             <!--</android.support.design.widget.AppBarLayout>-->
 
         </FrameLayout>
-
-        <include
-            layout="@layout/toolbar_camera"
-            android:id="@+id/main_toolbar" />
-
-
     </FrameLayout>
-
-
 </LinearLayout>

@@ -178,6 +178,7 @@ class ADialog : AppCompatDialogFragment() {
         RATIONALE_CAMERA_PERMISSION(
             R.string.start_permission_title,
             R.string.start_permission_camera_text,
+            positiveBtn = R.string.dialog_btn_grant_permission,
             negativeBtn = R.string.dialog_no_text
         ),
         MIGRATION_FAILED(

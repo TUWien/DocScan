@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Environment
 import android.os.storage.StorageManager
 import android.provider.DocumentsContract
+import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentActivity
@@ -138,4 +139,11 @@ fun showFile(
     shareIntent.setDataAndType(uri, pageFileType.mimeType)
     shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     fragmentActivity.safeStartActivity(shareIntent)
+}
+
+fun showAppSettings(fragmentActivity: FragmentActivity) {
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+    val uri = Uri.fromParts("package", fragmentActivity.baseContext.packageName, null)
+    intent.data = uri
+    fragmentActivity.safeStartActivity(intent)
 }

@@ -31,6 +31,7 @@
     <string name="dialog_btn_upload_again">Upload again</string>
     <string name="dialog_btn_cancel_upload">Cancel upload</string>
     <string name="dialog_btn_proceed">Proceed</string>
+    <string name="dialog_btn_grant_permission">Grant Permission</string>
 
     <string name="dialog_delete_image_title_singular">Delete image?</string>
     <string name="dialog_delete_image_title_plural">Delete images?</string>
@@ -51,9 +52,13 @@
     <!-- StartActivity -->
     <string name="start_permission_title">Permission required</string>
     <string name="start_permission_camera_text">The app requires permission to access the camera, otherwise it will not work.</string>
+    <string name="start_permission_camera_text_additional">Please navigate to the app settings and request the camera permission!</string>
     <string name="start_permission_storage_text">The app requires permission to access your files, otherwise it will not work.</string>
     <string name="start_confirm_button_text">OK</string>
     <string name="start_firebase_not_auth_text">Could not authenticate with Firebase / google-services. If you are a developer, you probably want the API key. In that case, take a look at the readme.</string>
+    <string name="grant_camera_permission">Grant camera permission</string>
+    <string name="permission_request_cawdwwmera">Request camera permission</string>
+    <string name="app_settings">App Settings</string>
 
     <!--CameraActivity-->
 

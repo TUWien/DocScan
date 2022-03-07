@@ -2,14 +2,14 @@
 <androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/drawer_layout">
+    android:layout_height="match_parent">
 
     <RelativeLayout
+        android:id="@+id/main_frame_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/main_frame_layout"
         android:background="@color/control_background_color">
 
         <!--We need here a nested FrameLayout, because the debug view can also be placed here: -->
@@ -23,34 +23,80 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="@dimen/camera_text_overlay_height"
-            android:layout_marginLeft="5dp"
-            android:layout_above="@+id/camera_controls_layout"
+            android:layout_above="@+id/controls"
+            android:layout_marginStart="5dp"
             android:layout_marginBottom="100dp">
 
             <androidx.appcompat.widget.AppCompatImageButton
                 android:id="@+id/camera_info_button"
                 android:layout_width="@dimen/camera_text_overlay_height"
                 android:layout_height="@dimen/camera_text_overlay_height"
-                android:background="@drawable/camera_text_overlay_bg"
                 android:layout_centerVertical="true"
+                android:background="@drawable/camera_text_overlay_bg"
                 app:srcCompat="@drawable/ic_info_outline_white_24dp" />
 
             <TextView
                 android:id="@+id/instruction_view"
-                android:layout_toRightOf="@+id/camera_info_button"
-                android:layout_marginLeft="5dp"
-                android:layout_centerHorizontal="true"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/camera_text_overlay_height"
-                android:paddingHorizontal="@dimen/activity_horizontal_margin"
-                android:gravity="center"
+                android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
-                android:textColor="@color/white"
+                android:layout_marginStart="5dp"
+                android:layout_toEndOf="@+id/camera_info_button"
                 android:background="@drawable/camera_text_overlay_bg"
+                android:gravity="center"
+                android:paddingHorizontal="@dimen/activity_horizontal_margin"
+                android:textColor="@color/white"
                 android:textSize="16sp" />
         </RelativeLayout>
 
-        <include layout="@layout/camera_controls_layout" />
+        <LinearLayout
+            android:id="@+id/camera_permission_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/controls"
+            android:background="@color/black"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:drawablePadding="8dp"
+                android:gravity="center"
+                android:padding="16dp"
+                android:text="@string/start_permission_camera_text"
+                android:textColor="@color/white"
+                app:drawableTint="@color/white"
+                app:drawableTopCompat="@drawable/ic_warning_black_48dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_grant_camera_permission"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/grant_camera_permission"
+                android:textColor="@color/colorControlHighlight" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_request_app_settings"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_settings"
+                android:textColor="@color/colorControlHighlight" />
+        </LinearLayout>
+
+        <include
+            android:id="@+id/main_toolbar"
+            layout="@layout/toolbar_camera" />
+
+        <include
+            android:id="@+id/controls"
+            layout="@layout/camera_controls_layout" />
 
     </RelativeLayout>
 

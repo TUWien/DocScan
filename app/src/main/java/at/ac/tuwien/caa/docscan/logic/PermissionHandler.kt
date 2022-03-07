@@ -12,15 +12,22 @@ object PermissionHandler {
 
     val requiredMandatoryPermissions =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            arrayOf(Manifest.permission.CAMERA)
+            arrayOf()
         } else {
-            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
 
     fun checkMandatoryPermissions(context: Context) =
         requiredMandatoryPermissions.all {
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
+
+    fun isCameraPermissionGiven(context: Context): Boolean {
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+    }
 
     fun isLocationPermissionGiven(context: Context): Boolean {
         if (ContextCompat.checkSelfPermission(

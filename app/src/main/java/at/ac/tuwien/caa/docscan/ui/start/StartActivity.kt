@@ -2,7 +2,6 @@ package at.ac.tuwien.caa.docscan.ui.start
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,7 +43,6 @@ class StartActivity : BaseActivity() {
             }
         }
 
-
     companion object {
         fun newInstance(context: Context): Intent {
             return Intent(context, StartActivity::class.java).apply {
@@ -78,12 +76,6 @@ class StartActivity : BaseActivity() {
                     startActivity(IntroActivity.newInstance(this))
                 }
                 StartDestination.PERMISSIONS -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (shouldShowRequestPermissionRationale(PermissionHandler.requiredMandatoryPermissions.first())) {
-                            showDialog(ADialog.DialogAction.RATIONALE_CAMERA_PERMISSION)
-                            return@ConsumableEvent
-                        }
-                    }
                     requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
                 }
             }

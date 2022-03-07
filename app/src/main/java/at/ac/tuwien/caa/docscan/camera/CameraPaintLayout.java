@@ -30,7 +30,7 @@ import android.widget.FrameLayout;
 public class CameraPaintLayout extends FrameLayout {
 
     private int mFrameWidth, mFrameHeight;
-    private CameraPreview.CameraPreviewCallback mCameraPreviewCallback;
+    private final CameraPreview.CameraPreviewCallback mCameraPreviewCallback;
 
     public CameraPaintLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -38,10 +38,11 @@ public class CameraPaintLayout extends FrameLayout {
     }
 
     public void setFrameDimensions(int frameWidth, int frameHeight) {
-
         mFrameWidth = frameWidth;
         mFrameHeight = frameHeight;
-
+        // request layout needs to be called, otherwise onMeasure might not be called again to
+        // re-calculate the height/width
+        requestLayout();
     }
 
     @Override
