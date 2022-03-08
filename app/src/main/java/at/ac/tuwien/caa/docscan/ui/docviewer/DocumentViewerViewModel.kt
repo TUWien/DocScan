@@ -180,7 +180,7 @@ class DocumentViewerViewModel(
                     repository.exportDocument(
                         documentWithPages,
                         skipCropRestriction = documentActionArguments.extractSkipCropRestriction(),
-                        ExportFormat.PDF
+                        if(documentActionArguments.extractUseOCR()) ExportFormat.PDF_WITH_OCR else ExportFormat.PDF
                     )
                 }
                 DocumentAction.CROP -> {

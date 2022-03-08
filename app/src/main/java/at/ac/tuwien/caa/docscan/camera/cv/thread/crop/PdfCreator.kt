@@ -13,14 +13,15 @@ import com.google.mlkit.vision.text.Text.TextBlock
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.itextpdf.text.*
-import com.itextpdf.text.Document
 import com.itextpdf.text.pdf.BaseFont
 import com.itextpdf.text.pdf.ColumnText
 import com.itextpdf.text.pdf.PdfWriter
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
-import java.util.*
 
 object PdfCreator {
 
@@ -81,7 +82,7 @@ object PdfCreator {
 
                             //sort the result based on the y-Axis so that the markup order is correct
                             val sortedBlocks = sortBlocks(ocrResults[i])
-                            resolution = calculateImageResolution(first.file, first.rotation)
+                            resolution = calculateImageResolution(file.file, file.rotation)
 
                             //int j = 0;
                             for (column in sortedBlocks) {
