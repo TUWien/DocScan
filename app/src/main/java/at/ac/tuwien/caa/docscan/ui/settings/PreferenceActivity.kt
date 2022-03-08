@@ -3,17 +3,23 @@ package at.ac.tuwien.caa.docscan.ui.settings
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.work.WorkManager
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.logic.Failure
+import at.ac.tuwien.caa.docscan.logic.Success
+import at.ac.tuwien.caa.docscan.repository.DocumentRepository
 import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer.NavigationItem
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.show
-import at.ac.tuwien.caa.docscan.worker.cancelAllScheduledAndRunningUploadJobs
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.koin.android.ext.android.inject
+import timber.log.Timber
 
 /**
  * Created by fabian on 26.01.2018.
@@ -28,6 +34,9 @@ class PreferenceActivity : BaseNavigationActivity() {
     }
 
     class SettingsFragment : PreferenceFragmentCompat() {
+
+        private val documentRepository by inject<DocumentRepository>()
+
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.preferences, rootKey)
             val preferenceKey = resources.getString(R.string.key_debug_settings)
@@ -46,15 +55,25 @@ class PreferenceActivity : BaseNavigationActivity() {
                 }
             val mobileKey = resources.getString(R.string.key_upload_mobile_data)
             findPreference<Preference>(mobileKey)!!.onPreferenceChangeListener =
-                Preference.OnPreferenceChangeListener { _: Preference?, _: Any? ->
-                    if (cancelAllScheduledAndRunningUploadJobs(
-                            requireContext(),
-                            WorkManager.getInstance(requireContext())
-                        )
-                    ) {
-                        ADialog.DialogAction.UPLOADS_CANCELLED_DUE_CONSTRAINTS_CHANGE.show(
-                            parentFragmentManager
-                        )
+                Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
+                    if (newValue is Boolean) {
+                        Timber.i("Preference option metered uploads: $newValue")
+                    }
+                    lifecycleScope.launchWhenResumed {
+                        withContext(Dispatchers.IO) {
+                            when (val result = documentRepository.cancelAllPendingUploads()) {
+                                is Failure -> {
+                                    // ignore
+                                }
+                                is Success -> {
+                                    if (result.data) {
+                                        ADialog.DialogAction.UPLOADS_CANCELLED_DUE_CONSTRAINTS_CHANGE.show(
+                                            parentFragmentManager
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                     true
                 }

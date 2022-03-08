@@ -33,8 +33,8 @@ interface PageDao {
     @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_DOC_ID} = :docId")
     suspend fun getPagesByDoc(docId: UUID): List<Page>
 
-    @Query("SELECT DISTINCT ${Page.KEY_DOC_ID} FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :state")
-    suspend fun getAllDocIdsWithScheduledState(state: UploadState = UploadState.SCHEDULED): List<UUID>
+    @Query("SELECT DISTINCT ${Page.KEY_DOC_ID} FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :state OR ${Page.KEY_UPLOAD_PREFIX}${Upload.KEY_UPLOAD_STATE} = :stateTwo")
+    suspend fun getAllDocIdsWithPendingUploadState(state: UploadState = UploadState.SCHEDULED, stateTwo: UploadState = UploadState.UPLOAD_IN_PROGRESS): List<UUID>
 
     @Query("UPDATE ${Page.TABLE_NAME_PAGES} SET ${Page.KEY_POST_PROCESSING_STATE}= :state WHERE ${Page.KEY_ID} = :pageId ")
     fun updatePageProcessingState(pageId: UUID, state: PostProcessingState)

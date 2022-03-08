@@ -38,22 +38,3 @@ fun getCurrentWorkerJobStates(
 }
 
 data class DocScanWorkInfo(val tag: String, val jobId: UUID, val workInfo: WorkInfo)
-
-
-fun cancelAllScheduledAndRunningUploadJobs(
-    context: Context,
-    workManager: WorkManager
-): Boolean {
-    // get all unfinished upload jobs
-    val currentUploadJobs =
-        getCurrentWorkerJobStates(context, listOf(UploadWorker.UPLOAD_TAG))
-            .filter { state -> !state.workInfo.state.isFinished }
-
-    return if (currentUploadJobs.isEmpty()) {
-        false
-    } else {
-        // cancel all upload jobs
-        UploadWorker.cancelByTag(workManager)
-        true
-    }
-}

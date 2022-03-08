@@ -67,17 +67,7 @@
         android:summary="@string/settings_flash_series_summary"
         android:title="@string/settings_flash_series_title"
         app:iconSpaceReserved="false" />
-
-    <!-- opens another nested subscreen -->
-    <Preference
-        android:key="@string/key_exif_settings"
-        android:persistent="false"
-        android:summary="@string/exif_settings_summary"
-        android:title="@string/exif_settings_title"
-        app:iconSpaceReserved="false">
-
-    </Preference>
-
+    
     <!-- opens another nested subscreen -->
     <Preference
         android:key="@string/key_debug_settings"

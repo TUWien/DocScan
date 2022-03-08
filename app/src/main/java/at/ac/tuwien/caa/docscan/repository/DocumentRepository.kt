@@ -182,6 +182,7 @@ class DocumentRepository(
         }
     }
 
+    @WorkerThread
     suspend fun cancelDocumentUpload(documentId: UUID): Resource<Unit> {
         val docWithPages = documentDao.getDocumentWithPages(documentId)
         // non-null checks are not performed here, this is for safety reasons so that the upload worker
@@ -199,6 +200,19 @@ class DocumentRepository(
         }
         tryToUnlockDoc(documentId, null)
         return Success(Unit)
+    }
+
+    /**
+     * Cancels all uploads in the state [UploadState.SCHEDULED] and [UploadState.UPLOAD_IN_PROGRESS]
+     */
+    @WorkerThread
+    suspend fun cancelAllPendingUploads(): Resource<Boolean> {
+        var cancellationsPerformed = false
+        pageDao.getAllDocIdsWithPendingUploadState().forEach {
+            cancelDocumentUpload(it)
+            cancellationsPerformed = true
+        }
+        return Success(cancellationsPerformed)
     }
 
     @WorkerThread

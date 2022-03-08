@@ -53,7 +53,6 @@ data class UploadMetaData(
 )
 
 fun MetaData.toUploadMetaData(title: String): UploadMetaData {
-    // TODO: UPLOAD_CONSTRAINT: The logic is from the old implementation, the description will get removed if the flags are set, is this correct?
     var desc: String?
     if (isProjectReadme2020) {
         desc = " "
@@ -63,7 +62,6 @@ fun MetaData.toUploadMetaData(title: String): UploadMetaData {
         desc = description
     }
     return UploadMetaData(
-        // TODO: UPLOAD_CONSTRAINT: In the old implementation, the title has not been set
         title = title,
         authority = authority,
         hierarchy = hierarchy,
