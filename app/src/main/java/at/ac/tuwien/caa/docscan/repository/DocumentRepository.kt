@@ -53,9 +53,6 @@ class DocumentRepository(
         documentDao.getDocumentWithPages(documentId)?.sortByNumber()
 
     @WorkerThread
-    suspend fun getDocument(documentId: UUID) = documentDao.getDocument(documentId)
-
-    @WorkerThread
     suspend fun getDocumentResource(documentId: UUID): Resource<Document> {
         val document = documentDao.getDocument(documentId)
             ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
@@ -70,7 +67,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun sanitizeDocuments(): Resource<Unit> {
-        // TODO: Add a function which returns the reason for the lock.
+        Timber.i("sanitize documents!")
         documentDao.getAllLockedDocumentWithPages().forEach {
             if (it.document.lockState == LockState.PARTIAL_LOCK) {
                 it.pages.forEach { page ->
@@ -105,6 +102,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun deletePages(pages: List<Page>): Resource<Unit> {
+        Timber.i("delete pages, n=${pages.size}")
         // TODO: When adding/removing pages, add a generic check to adapt the page number correctly.
         pages.forEach {
             val result = performPageOperation(it.docId, it.id, operation = { _, page ->
@@ -120,6 +118,10 @@ class DocumentRepository(
                     // ignore - continue loop
                 }
             }
+        }
+        // every time a doc is modified, the upload state has to be reset.
+        pages.firstOrNull()?.let {
+            clearUploadStateFor(it.docId)
         }
         return Success(Unit)
     }
@@ -146,6 +148,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun removeDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
+        Timber.i("remove document")
         return performDocOperation(documentWithPages.document.id, operation = { doc ->
             fileHandler.deleteEntireDocumentFolder(doc.id)
             pageDao.deletePages(documentWithPages.pages)
@@ -156,6 +159,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun shareDocument(documentId: UUID): Resource<List<Uri>> {
+        Timber.i("share document")
         val doc = documentDao.getDocumentWithPages(documentId)
             ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
         when (val checkLockResult = checkLock(doc.document, null)) {
@@ -184,6 +188,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun cancelDocumentUpload(documentId: UUID): Resource<Unit> {
+        Timber.i("cancel upload for document: $documentId")
         val docWithPages = documentDao.getDocumentWithPages(documentId)
         // non-null checks are not performed here, this is for safety reasons so that the upload worker
         // is always cancelled, despite the fact if the document does not exist anymore.
@@ -191,15 +196,19 @@ class DocumentRepository(
             // at this point, we do not know if the worker is currently just scheduled or running
             // if if it's just scheduled, than we need to repair the states first.
             UploadWorker.cancelWorkByDocumentId(workManager, documentId)
-            // clear the uploadId from the doc
-            documentDao.updateUploadIdForDoc(documentId, null)
-            // clear the upload file names
-            pageDao.clearDocumentPagesUploadFileNames(documentId)
-            // update upload state to none
-            pageDao.updateUploadStateForDocument(documentId, UploadState.NONE)
+            clearUploadStateFor(documentId)
         }
         tryToUnlockDoc(documentId, null)
         return Success(Unit)
+    }
+
+    private suspend fun clearUploadStateFor(documentId: UUID) {
+        // clear the uploadId from the doc
+        documentDao.updateUploadIdForDoc(documentId, null)
+        // clear the upload file names
+        pageDao.clearDocumentPagesUploadFileNames(documentId)
+        // update upload state to none
+        pageDao.updateUploadStateForDocument(documentId, UploadState.NONE)
     }
 
     /**
@@ -207,6 +216,7 @@ class DocumentRepository(
      */
     @WorkerThread
     suspend fun cancelAllPendingUploads(): Resource<Boolean> {
+        Timber.i("cancel all pending uploads")
         var cancellationsPerformed = false
         pageDao.getAllDocIdsWithPendingUploadState().forEach {
             cancelDocumentUpload(it)
@@ -221,6 +231,7 @@ class DocumentRepository(
         skipAlreadyUploadedRestriction: Boolean = false,
         skipCropRestriction: Boolean = false
     ): Resource<Unit> {
+        Timber.i("upload document")
         if (!skipAlreadyUploadedRestriction && documentDao.getDocumentWithPages(documentWithPages.document.id)
                 ?.isUploaded() == true
         ) {
@@ -283,13 +294,11 @@ class DocumentRepository(
         skipCropRestriction: Boolean = false,
         exportFormat: ExportFormat
     ): Resource<Unit> {
-
+        Timber.i("export document")
         if (!PermissionHandler.isPermissionGiven(context, preferencesHandler.exportDirectoryUri)) {
             return IOErrorCode.EXPORT_FILE_MISSING_PERMISSION.asFailure()
         }
 
-        // TODO: Check if the play services check is really ok, since it has other states too!
-        // TODO: The playservices check could be avoided if the ml-kit binary would be added to our apk instead.
         if (exportFormat == ExportFormat.PDF_WITH_OCR && !checksGoogleAPIAvailability(context)) {
             return IOErrorCode.EXPORT_GOOGLE_PLAYSTORE_NOT_INSTALLED_FOR_OCR.asFailure()
         }
@@ -318,12 +327,15 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun cropDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
+        Timber.i("crop document")
         return when (val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
             is Failure -> {
                 Failure(result.exception)
             }
             is Success -> {
                 imageProcessorRepository.cropDocument(documentWithPages.document)
+                // every time a doc is modified, the upload state has to be reset.
+                clearUploadStateFor(documentWithPages.document.id)
                 Success(Unit)
             }
         }
@@ -335,6 +347,10 @@ class DocumentRepository(
         return performDocOperation(firstPage.docId, operation = {
             withContext(NonCancellable) {
                 imageProcessorRepository.rotatePages90CW(pages)
+                // every time a doc is modified, the upload state has to be reset.
+                pages.firstOrNull()?.let {
+                    clearUploadStateFor(it.docId)
+                }
             }
             Success(Unit)
         })
@@ -354,11 +370,13 @@ class DocumentRepository(
 
     @WorkerThread
     fun createDocument(document: Document): Resource<Document> {
+        Timber.i("create document")
         return createOrUpdateDocument(document)
     }
 
     @WorkerThread
     suspend fun updateDocument(document: Document): Resource<Document> {
+        Timber.i("update document")
         return performDocOperation(document.id, operation = {
             createOrUpdateDocument(document)
         })

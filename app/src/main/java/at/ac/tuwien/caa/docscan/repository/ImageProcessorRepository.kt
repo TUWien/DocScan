@@ -107,9 +107,8 @@ class ImageProcessorRepository(
                                 pageId = page.id,
                                 preOperation = { defaultPrePageOperation(page.id) },
                                 imageOperation = { page, file ->
-                                    // skip page cropping the boundary is not available or if the boundary
-                                    // is just the default one.
-                                    if (page.singlePageBoundary == null || page.singlePageBoundary == getDefault()) {
+                                    // skip page cropping the boundary is not available
+                                    if (page.singlePageBoundary == null) {
                                         return@pageImageOperation Success(Unit)
                                     }
                                     val points = (page.singlePageBoundary?.asClockwiseList()
@@ -124,7 +123,7 @@ class ImageProcessorRepository(
                                     // copy the exif data first, otherwise it would get lost through the operation.
                                     val exifData = getExifInterface(file)
                                     val newFile = Mapper.applyCropping(tempFile, ArrayList(points))
-                                    if(newFile == null) {
+                                    if (newFile == null) {
                                         tempFile.safelyDelete()
                                         return@pageImageOperation IOErrorCode.CROPPING_FAILED.asFailure()
                                     } else {
