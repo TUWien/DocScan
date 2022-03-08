@@ -128,10 +128,9 @@ class ImageProcessorRepository(
                                         return@pageImageOperation IOErrorCode.CROPPING_FAILED.asFailure()
                                     } else {
                                         newFile.copyTo(file, overwrite = true)
-
                                         // apply the exif data back to the cropped image
                                         exifData?.let {
-                                            saveExif(it, file)
+                                            saveExifAfterCrop(it, file)
                                         }
                                         tempFile.safelyDelete()
                                         return@pageImageOperation Success(Unit)
@@ -145,6 +144,9 @@ class ImageProcessorRepository(
                                     ) { page ->
                                         // clear the single page boundary
                                         page.singlePageBoundary = null
+                                        // after a crop, the exif orientation is always reset and therefore
+                                        // needs to be also set here.
+                                        page.rotation = Rotation.ORIENTATION_NORMAL
                                     }
                                 })
                         }

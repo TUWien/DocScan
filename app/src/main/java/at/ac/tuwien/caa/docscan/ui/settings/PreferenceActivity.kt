@@ -14,8 +14,6 @@ import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer.NavigationItem
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.show
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
@@ -82,10 +80,10 @@ class PreferenceActivity : BaseNavigationActivity() {
                 Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                     if (newValue is Boolean) {
                         // crashlytics and analytics are kind of tight together, therefore both needs to be explicitly enabled/disabled.
-                        FirebaseCrashlytics.getInstance()
-                            .setCrashlyticsCollectionEnabled(newValue as Boolean?)
-                        FirebaseAnalytics.getInstance(requireContext())
-                            .setAnalyticsCollectionEnabled((newValue as Boolean?)!!)
+//                        FirebaseCrashlytics.getInstance()
+//                            .setCrashlyticsCollectionEnabled(newValue as Boolean?)
+//                        FirebaseAnalytics.getInstance(requireContext())
+//                            .setAnalyticsCollectionEnabled((newValue as Boolean?)!!)
                     }
                     true
                 }

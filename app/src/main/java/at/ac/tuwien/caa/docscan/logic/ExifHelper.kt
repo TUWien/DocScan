@@ -100,7 +100,10 @@ fun removeRotation(file: File) {
     }
 }
 
-fun saveExif(exif: ExifInterface, targetFile: File) {
+/**
+ * Copies all existing exif information and resets the orientation to normal.
+ */
+fun saveExifAfterCrop(exif: ExifInterface, targetFile: File) {
     try {
         val newExif = ExifInterface(targetFile)
         for (i in attributes.indices) {
@@ -118,6 +121,7 @@ fun saveExif(exif: ExifInterface, targetFile: File) {
  * Represents all exif attributes which are preserved when files are copied.
  */
 private val attributes = arrayOf(
+//    ExifInterface.TAG_ORIENTATION,
     ExifInterface.TAG_ARTIST,
     ExifInterface.TAG_BITS_PER_SAMPLE,
     ExifInterface.TAG_BRIGHTNESS_VALUE,

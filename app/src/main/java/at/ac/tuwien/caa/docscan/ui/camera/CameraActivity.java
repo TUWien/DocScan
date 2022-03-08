@@ -597,14 +597,14 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         ActionSheet.DialogStatus f = new ActionSheet.DialogStatus() {
             @Override
             public void onShown() {
-                View v = findViewById(R.id.camera_controls_layout);
+                View v = findViewById(R.id.controls);
                 v.setVisibility(View.INVISIBLE);
                 mPaintView.drawTextOrientationLarge(true);
             }
 
             @Override
             public void onDismiss() {
-                View v = findViewById(R.id.camera_controls_layout);
+                View v = findViewById(R.id.controls);
                 v.setVisibility(View.VISIBLE);
                 mPaintView.drawTextOrientationLarge(false);
             }
@@ -1517,7 +1517,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (appRoot == null)
             return;
 
-        View f = findViewById(R.id.camera_controls_layout);
+        View f = findViewById(R.id.controls);
         if (f == null)
             return;
 
@@ -1536,7 +1536,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
     public Point getPreviewDimension() {
 
 //        Taken from: http://stackoverflow.com/questions/1016896/get-screen-dimensions-in-pixels
-        View v = findViewById(R.id.camera_controls_layout);
+        View v = findViewById(R.id.controls);
 
         WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         if (wm == null || wm.getDefaultDisplay() == null)
@@ -2564,7 +2564,7 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
         if (mCameraPreview == null)
             return;
 
-        View v = findViewById(R.id.camera_controls_layout);
+        View v = findViewById(R.id.controls);
         if ((v != null) && (!mCameraPreview.isPreviewFitting()))
             v.setBackgroundColor(getResources().getColor(R.color.control_background_color_transparent));
 
