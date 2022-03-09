@@ -8,16 +8,16 @@ import androidx.room.PrimaryKey
 @Keep
 @Entity(tableName = ExportFile.TABLE_NAME_EXPORT_FILES)
 data class ExportFile(
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = KEY_ID)
-    val id: Int = 0,
+    @PrimaryKey
     @ColumnInfo(name = KEY_FILE_NAME)
-    val fileName: String
+    val fileName: String,
+    @ColumnInfo(name = KEY_IS_PROCESSING)
+    val isProcessing: Boolean
 ) {
     companion object {
 
         const val TABLE_NAME_EXPORT_FILES = "export_files"
-        const val KEY_ID = "id"
         const val KEY_FILE_NAME = "file_name"
+        const val KEY_IS_PROCESSING = "is_processing"
     }
 }

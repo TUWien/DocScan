@@ -16,22 +16,15 @@
 
 package at.ac.tuwien.caa.docscan
 
-import android.widget.Toast
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.NoActivityResumedException
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.rule.ActivityTestRule
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
-import junit.framework.Assert.fail
-import me.drakeet.support.toast.ToastCompat
-import org.hamcrest.CoreMatchers.allOf
 import org.junit.Rule
 import org.junit.Test
 
@@ -48,7 +41,7 @@ class BottomNavigationTest {
                     .check(matches(isDisplayed()))
         }
         fun assertThirdScreen() {
-            onView(withId(R.id.viewer_pdfs))
+            onView(withId(R.id.viewer_exports))
                     .check(matches(isDisplayed()))
         }
         fun assertSecondScreen() {
@@ -67,7 +60,7 @@ class BottomNavigationTest {
         }
 
         fun openThirdScreen() {
-            onView(withId(R.id.viewer_pdfs))
+            onView(withId(R.id.viewer_exports))
                     .perform(click())
         }
     }

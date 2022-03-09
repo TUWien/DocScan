@@ -46,10 +46,14 @@ class ExportWorker(
         }
         val exportFormat =
             ExportFormat.getExportFormatById(inputData.getString(INPUT_PARAM_EXPORT_FORMAT))
+        val fileType = exportFormat.getFileType().extension.uppercase()
 
         notificationHandler.showDocumentNotification(
             NotificationHandler.DocScanNotification.Init(
-                context.getString(R.string.notification_export_title_progress),
+                String.format(
+                    context.getString(R.string.notification_export_title_progress),
+                    fileType
+                ),
                 doc
             ),
             docId,
@@ -61,7 +65,10 @@ class ExportWorker(
                     it?.let {
                         notificationHandler.showDocumentNotification(
                             NotificationHandler.DocScanNotification.Progress(
-                                context.getString(R.string.notification_export_title_progress),
+                                String.format(
+                                    context.getString(R.string.notification_export_title_progress),
+                                    fileType
+                                ),
                                 it
                             ),
                             docId,

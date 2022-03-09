@@ -29,7 +29,7 @@ import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.documents.DocumentsViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector.SelectDocumentViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.images.ImagesViewModel
-import at.ac.tuwien.caa.docscan.ui.docviewer.pdf.PdfViewModel
+import at.ac.tuwien.caa.docscan.ui.docviewer.pdf.ExportViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.ImageViewModel
 import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideViewModel
 import at.ac.tuwien.caa.docscan.ui.info.LogViewModel
@@ -85,7 +85,7 @@ val viewModelModule = module {
     viewModel { UserViewModel(get()) }
     viewModel { LogoutViewModel(get()) }
     viewModel { SelectDocumentViewModel(get()) }
-    viewModel { PdfViewModel(get(), get(), get()) }
+    viewModel { ExportViewModel(get(), get(), get()) }
     viewModel { LogViewModel(get()) }
 }
 

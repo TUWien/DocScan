@@ -113,7 +113,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
     private val topLevelDestinations = setOf(
         R.id.viewer_documents,
         R.id.viewer_images,
-        R.id.viewer_pdfs
+        R.id.viewer_exports
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -144,7 +144,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 R.id.viewer_images -> {
                     viewModel.changeScreen(DocumentViewerScreen.IMAGES)
                 }
-                R.id.viewer_pdfs -> {
+                R.id.viewer_exports -> {
                     viewModel.changeScreen(DocumentViewerScreen.PDFS)
                 }
                 else -> {
@@ -165,7 +165,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
         } else {
             when (type) {
                 DocumentViewerLaunchViewType.PDFS -> {
-                    navController.navigate(DocumentsFragmentDirections.actionViewerDocumentsToViewerPdfs())
+                    navController.navigate(DocumentsFragmentDirections.actionViewerDocumentsToViewerExports())
                 }
                 else -> {
                     // ignore
@@ -187,7 +187,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
             showDocumentOptions(it)
         })
         viewModel.observableNewExportCount.observe(this) {
-            val badge = binding.bottomNav.getOrCreateBadge(R.id.viewer_pdfs)
+            val badge = binding.bottomNav.getOrCreateBadge(R.id.viewer_exports)
             badge.isVisible = it > 0
             badge.number = it
         }
@@ -207,7 +207,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
             when (val resource = model.resource) {
                 is Failure -> {
                     when (model.action) {
-                        DocumentAction.DELETE, DocumentAction.SHARE -> {
+                        DocumentAction.DELETE, DocumentAction.SHARE, DocumentAction.EXPORT_ZIP -> {
                             resource.exception.handleError(this)
                         }
                         DocumentAction.EXPORT -> {
@@ -228,7 +228,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                     )
                                     return@ConsumableEvent
                                 } else if (dbError.ioErrorCode == IOErrorCode.EXPORT_FILE_MISSING_PERMISSION) {
-                                    binding.bottomNav.selectedItemId = R.id.viewer_pdfs
+                                    binding.bottomNav.selectedItemId = R.id.viewer_exports
                                     return@ConsumableEvent
                                 }
                             }
@@ -295,7 +295,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                     }
                     val name = when (model.action) {
                         DocumentAction.DELETE, DocumentAction.CROP, DocumentAction.SHARE, DocumentAction.CANCEL_UPLOAD -> ""
-                        DocumentAction.EXPORT -> getString(R.string.operation_export)
+                        DocumentAction.EXPORT, DocumentAction.EXPORT_ZIP -> getString(R.string.operation_export)
                         DocumentAction.UPLOAD -> getString(R.string.operation_upload)
                     }
                     singleSnackbar(
@@ -352,8 +352,8 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         )
                     )
                 }
-                DocumentAction.SHARE -> {
-                    // Share doesn't need a confirmation
+                DocumentAction.SHARE, DocumentAction.EXPORT_ZIP -> {
+                    // These options do not need any confirmation
                 }
             }
         })
@@ -390,7 +390,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                 result.arguments.appendIsConfirmed(true).appendUseOCR(false)
                             )
                         }
-                        DialogButton.NEUTRAL -> {
+                        DialogButton.NEUTRAL, DialogButton.DISMISS -> {
                             // ignore
                         }
                     }
@@ -463,6 +463,9 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                         viewModel.startImagingWith(null)
                     }
                 }
+                SheetActionId.EXPORT_AS_ZIP.id -> {
+                    viewModel.applyActionFor(DocumentAction.EXPORT_ZIP, result.arguments)
+                }
                 SheetActionId.EXPORT.id -> {
                     viewModel.applyActionFor(DocumentAction.EXPORT, result.arguments)
                 }
@@ -507,7 +510,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 super.onBackPressed()
             }
 //            Open the DocumentsFragment:
-            R.id.viewer_pdfs -> binding.bottomNav.selectedItemId = R.id.viewer_documents
+            R.id.viewer_exports -> binding.bottomNav.selectedItemId = R.id.viewer_documents
 //            Special case for ImagesFragment:
             R.id.viewer_images -> {
                 binding.bottomNav.selectedItemId = R.id.viewer_documents
@@ -606,13 +609,6 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                     R.drawable.ic_transform_black_24dp
                 )
             )
-            sheetActions.add(
-                SheetAction(
-                    SheetActionId.EXPORT.id,
-                    getString(R.string.action_document_pdf_title),
-                    R.drawable.ic_baseline_picture_as_pdf_24px
-                )
-            )
             val sheetActionUpload = when {
                 document.isUploaded() -> {
                     SheetAction(
@@ -637,6 +633,20 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 }
             }
             sheetActions.add(sheetActionUpload)
+            sheetActions.add(
+                SheetAction(
+                    SheetActionId.EXPORT.id,
+                    getString(R.string.action_document_pdf_title),
+                    R.drawable.ic_baseline_picture_as_pdf_24px
+                )
+            )
+            sheetActions.add(
+                SheetAction(
+                    SheetActionId.EXPORT_AS_ZIP.id,
+                    getString(R.string.action_document_zip_title),
+                    R.drawable.ic_baseline_file_present_black_24
+                )
+            )
         }
         sheetActions.add(
             SheetAction(

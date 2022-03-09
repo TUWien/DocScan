@@ -1,11 +1,14 @@
-package at.ac.tuwien.caa.docscan.camera.cv.thread.crop
+package at.ac.tuwien.caa.docscan.export
 
 import android.content.Context
 import android.net.Uri
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.extensions.await
-import at.ac.tuwien.caa.docscan.logic.*
+import at.ac.tuwien.caa.docscan.logic.Resource
+import at.ac.tuwien.caa.docscan.logic.Success
+import at.ac.tuwien.caa.docscan.logic.asFailure
+import at.ac.tuwien.caa.docscan.logic.calculateImageResolution
 import at.ac.tuwien.caa.docscan.ui.crop.ImageMeta
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
@@ -21,7 +24,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
 
 object PdfCreator {
 
@@ -35,11 +37,12 @@ object PdfCreator {
     // suppressed, since this is expected and mitigated by making this function cooperative
     @Suppress("BlockingMethodInNonBlockingContext")
     suspend fun savePDF(
-        outputFile: File,
-        files: List<PDFCreatorFileWrapper>,
+        context: Context,
+        outputUri: Uri,
+        files: List<FileWrapper>,
         ocrResults: List<Text>? = null
     ): Resource<Unit> {
-        FileOutputStream(outputFile).use { outputStream ->
+        context.contentResolver.openOutputStream(outputUri, "rw").use { outputStream ->
             return withContext(Dispatchers.IO) {
                 try {
                     val first = files[0]
@@ -138,7 +141,6 @@ object PdfCreator {
                     document.close()
                     return@withContext Success(Unit)
                 } catch (e: Exception) {
-                    outputFile.safelyDelete()
                     // if this has happened because of a cancellation, then this needs to be re-thrown
                     if (e is CancellationException) {
                         throw e
@@ -260,6 +262,6 @@ object PdfCreator {
         return sortedLines
     }
 
-    data class PDFCreatorFileWrapper(val file: File, val rotation: Rotation)
+    data class FileWrapper(val file: File, val rotation: Rotation)
 
 }

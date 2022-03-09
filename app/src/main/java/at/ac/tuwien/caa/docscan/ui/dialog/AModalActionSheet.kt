@@ -2,6 +2,7 @@ package at.ac.tuwien.caa.docscan.ui.dialog
 
 import android.os.Bundle
 import android.os.Parcelable
+import android.text.format.Formatter.formatShortFileSize
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,11 +13,14 @@ import androidx.recyclerview.widget.GridLayoutManager
 import at.ac.tuwien.caa.docscan.camera.SheetAction
 import at.ac.tuwien.caa.docscan.camera.SheetAdapter
 import at.ac.tuwien.caa.docscan.databinding.TitledSheetDialogCameraBinding
+import at.ac.tuwien.caa.docscan.extensions.bindVisible
 import at.ac.tuwien.caa.docscan.logic.Event
+import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.extractDocWithPages
 import at.ac.tuwien.caa.docscan.logic.extractExportFile
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.parcelize.Parcelize
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.getViewModel
 import timber.log.Timber
 
@@ -95,6 +99,9 @@ open class AModalActionSheet : BottomSheetDialogFragment() {
 }
 
 class DocumentSheet : AModalActionSheet() {
+
+    private val fileHandler by inject<FileHandler>()
+
     companion object {
         fun newInstance(model: SheetModel): DocumentSheet {
             return DocumentSheet().apply {
@@ -109,6 +116,8 @@ class DocumentSheet : AModalActionSheet() {
         super.onViewCreated(view, savedInstanceState)
         model.arguments.extractDocWithPages()?.let {
             binding.sheetDialogTitle.text = it.document.title
+            binding.docSize.bindVisible(it.pages.isNotEmpty())
+            binding.docSize.text = formatShortFileSize(view.context, fileHandler.getSizeOf(it))
         }
         model.arguments.extractExportFile()?.let {
             binding.sheetDialogTitle.text = it.name
@@ -154,5 +163,6 @@ enum class SheetActionId(val id: Int) {
     EXPORT(6),
     UPLOAD(7),
     CANCEL_UPLOAD(8),
-    QR(9);
+    QR(9),
+    EXPORT_AS_ZIP(10);
 }

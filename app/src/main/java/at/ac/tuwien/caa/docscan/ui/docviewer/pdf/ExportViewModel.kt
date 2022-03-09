@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import timber.log.Timber
 
-class PdfViewModel(
+class ExportViewModel(
     private val app: DocScanApp,
     private val preferencesHandler: PreferencesHandler,
     private val exportFileRepository: ExportFileRepository
@@ -47,11 +47,11 @@ class PdfViewModel(
                     getDocumentFilesForDirectoryTree(
                         app,
                         folderUri,
-                        PageFileType.PDF
+                        listOf(PageFileType.PDF, PageFileType.ZIP)
                     ).map { file ->
                         ExportList.File(
                             file,
-                            pageFileType = PageFileType.PDF,
+                            pageFileType = file.fileType,
                             file.displayName
                         )
                     })
@@ -78,6 +78,9 @@ class PdfViewModel(
         // release the old permissions only if they have changed.
         preferencesHandler.exportDirectoryUri?.asURI()?.let {
             if (it != uri) {
+                viewModelScope.launch(Dispatchers.IO) {
+                    exportFileRepository.removeAll()
+                }
                 try {
                     app.contentResolver.releasePersistableUriPermission(
                         it,
@@ -130,6 +133,12 @@ sealed class ExportList {
         val file: DocumentFileWrapper,
         val pageFileType: PageFileType,
         val name: String,
-        var isNew: Boolean = false
+        var state: ExportState = ExportState.ALREADY_OPENED
     ) : ExportList(), Parcelable
+}
+
+enum class ExportState {
+    EXPORTING,
+    NEW,
+    ALREADY_OPENED
 }

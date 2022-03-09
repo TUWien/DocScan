@@ -15,6 +15,9 @@ interface ExportFileDao {
     @Query("DELETE FROM ${ExportFile.TABLE_NAME_EXPORT_FILES} WHERE ${ExportFile.KEY_FILE_NAME} = :fileName")
     suspend fun deleteExportFileByFileName(fileName: String)
 
+    @Query("DELETE FROM ${ExportFile.TABLE_NAME_EXPORT_FILES}")
+    suspend fun deleteAll()
+
     @Delete
     suspend fun delete(exportFiles: List<ExportFile>)
 
@@ -24,6 +27,6 @@ interface ExportFileDao {
     @Query("SELECT * FROM ${ExportFile.TABLE_NAME_EXPORT_FILES}")
     suspend fun getExportFiles(): List<ExportFile>
 
-    @Query("SELECT COUNT(*) FROM ${ExportFile.TABLE_NAME_EXPORT_FILES}")
+    @Query("SELECT COUNT(*) FROM ${ExportFile.TABLE_NAME_EXPORT_FILES} WHERE ${ExportFile.KEY_IS_PROCESSING} = 0")
     fun getExportFileCount(): Flow<Long>
 }

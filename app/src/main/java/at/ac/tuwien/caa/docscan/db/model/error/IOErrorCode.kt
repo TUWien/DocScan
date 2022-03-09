@@ -39,6 +39,11 @@ enum class IOErrorCode(
         R.string.generic_export_error_text,
         true
     ),
+    EXPORT_CREATE_ZIP_FAILED(
+        R.string.generic_export_error_title,
+        R.string.generic_export_error_text,
+        true
+    ),
     EXPORT_CREATE_URI_DOCUMENT_FAILED(
         R.string.generic_export_error_title,
         R.string.generic_export_error_text,

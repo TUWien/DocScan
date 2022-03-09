@@ -8,7 +8,6 @@
     <string name="sync_item_text">Upload</string>
     <string name="upload_item_text">Upload</string>
     <string name="help_item_text">Help</string>
-    <string name="pdf_item_text">Saved PDFs</string>
     <string name="documents_item_text">Documents</string>
     <string name="camera_item_text">Camera</string>
     <string name="header_text">DocScan</string>
@@ -66,6 +65,8 @@
     <string name="permission_location_disabled_title">Image geotagging disabled</string>
     <string name="permission_location_disabled_text">Image geotagging has been disabled due to missing location permission, you can enable it any time in the settings again!</string>
 
+    <string name="export_permission_missing">Folder Permission missing!</string>
+    <string name="export_folder_empty">No exports in this folder\nPlease create a PDF or ZIP first</string>
     <!--CameraActivity-->
 
     <string name="taking_picture_text">Taking picture</string>
@@ -241,11 +242,10 @@
     <string name="notification_session_expired_text">Your session has expired, please login again!</string>
 
     <!-- Exporting a PDF -->
-    <string name="notification_export_title_progress">Exporting PDF</string>
-    <string name="notification_export_title_success">PDF exported!</string>
+    <string name="notification_export_title_progress">Exporting %1$s</string>
+    <string name="notification_export_title_success">Export successful</string>
     <string name="notification_export_text_success">%s has been successfully exported.</string>
-    <string name="notification_export_title_error">PDF export has failed!</string>
-    <string name="notification_export_text_error">An error happened while creating your pdf, sorry!</string>
+    <string name="notification_export_title_error">Export has failed!</string>
 
     <!-- Uploading doc -->
     <string name="notification_upload_title_progress">Uploading %s</string>
@@ -281,7 +281,7 @@
     <!-- document_navigation_menu -->
     <string name="document_navigation_documents">Documents</string>
     <string name="document_navigation_images">Images</string>
-    <string name="document_navigation_pdfs">PDFs</string>
+    <string name="document_navigation_exports">Exports</string>
 
     <!-- SeriesGeneralActivity -->
 
@@ -428,6 +428,7 @@
     <string name="action_document_upload_document">Upload</string>
     <string name="action_document_cancel_upload_document">Cancel Upload</string>
     <string name="action_document_pdf_title">Save as PDF</string>
+    <string name="action_document_zip_title">Save as ZIP</string>
     <string name="action_document_delete_document">Delete</string>
     <string name="action_document_edit_document">Edit document</string>
     <string name="action_document_continue_document">Continue imaging</string>

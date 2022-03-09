@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "f1000032d5c6546a4e84e4d9269f5f0f",
+    "identityHash": "b992c557a2cf15fd6225924d205a1d50",
     "entities": [
       {
         "tableName": "documents",
@@ -294,26 +294,26 @@
       },
       {
         "tableName": "export_files",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `file_name` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`file_name` TEXT NOT NULL, `is_processing` INTEGER NOT NULL, PRIMARY KEY(`file_name`))",
         "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
           {
             "fieldPath": "fileName",
             "columnName": "file_name",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "isProcessing",
+            "columnName": "is_processing",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "id"
+            "file_name"
           ],
-          "autoGenerate": true
+          "autoGenerate": false
         },
         "indices": [],
         "foreignKeys": []
@@ -322,7 +322,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f1000032d5c6546a4e84e4d9269f5f0f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b992c557a2cf15fd6225924d205a1d50')"
     ]
   }
 }

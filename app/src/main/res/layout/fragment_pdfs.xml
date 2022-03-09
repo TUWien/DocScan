@@ -11,14 +11,31 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:visibility="gone"
+        tools:visibility="visible">
 
-        <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center_horizontal"
-            android:contentDescription="@null"
-            app:srcCompat="@drawable/ic_baseline_picture_as_pdf_24px_gray" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@null"
+                app:srcCompat="@drawable/ic_baseline_picture_as_pdf_24px_gray" />
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@null"
+                app:srcCompat="@drawable/ic_baseline_file_present_grey_24" />
+
+        </LinearLayout>
+
 
         <View
             android:layout_width="wrap_content"
@@ -28,7 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="No PDFs\nPlease create a PDF first"
+            android:text="@string/export_folder_empty"
             android:textAlignment="center" />
     </LinearLayout>
 
@@ -54,7 +71,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="8dp"
-            android:text="No folder permission!"
+            android:text="@string/export_permission_missing"
             android:textAlignment="center" />
     </LinearLayout>
 

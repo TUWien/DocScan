@@ -21,6 +21,15 @@
             android:drawablePadding="@dimen/activity_horizontal_margin"
             android:textSize="20sp"
             app:drawableLeftCompat="@drawable/ic_folder_gray_24dp" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/doc_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:textSize="16sp"
+            android:visibility="gone"
+            tools:visibility="visible" />
     </LinearLayout>
 
     <View

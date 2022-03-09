@@ -11,7 +11,6 @@ import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.logic.*
 import kotlinx.parcelize.Parcelize
 import kotlinx.parcelize.RawValue
-import java.io.File
 
 object DocumentContractNotifier {
     val observableDocumentContract = MutableLiveData<Event<Unit>>()
@@ -20,7 +19,7 @@ object DocumentContractNotifier {
 fun getDocumentFilesForDirectoryTree(
     context: Context,
     documentFolderUri: Uri,
-    fileType: PageFileType
+    fileTypes: List<PageFileType>
 ): List<DocumentFileWrapper> {
     val uriFolder = DocumentsContract.buildChildDocumentsUriUsingTree(
         documentFolderUri,
@@ -51,8 +50,9 @@ fun getDocumentFilesForDirectoryTree(
             val pdfUri =
                 DocumentsContract.buildDocumentUriUsingTree(documentFolderUri, documentId)
 
+            val fileType = PageFileType.getFileTypeByMimeType(mimeType)
             // ignore file if it doesn't match the mimetype
-            if (mimeType != fileType.mimeType) {
+            if (fileType == null || !fileTypes.contains(fileType)) {
                 continue
             }
 
@@ -60,6 +60,7 @@ fun getDocumentFilesForDirectoryTree(
                 documents.add(
                     DocumentFileWrapper(
                         documentFile,
+                        fileType,
                         documentId,
                         lastModified,
                         displayName,
@@ -82,31 +83,25 @@ fun getDocumentFilesForDirectoryTree(
 @Parcelize
 data class DocumentFileWrapper(
     val documentFile: @RawValue DocumentFile,
+    val fileType: PageFileType,
     val documentId: String,
     val lastModified: Long,
     val displayName: String,
     val sizeInBytes: Int
 ) : Parcelable
 
-/**
- * Pre-Condition: write access for [documentFolderUri]
- * Saves [newFile] into [documentFolderUri]
- */
-fun saveFile(
+fun createFile(
     context: Context,
-    fileHandler: FileHandler,
-    newFile: File,
     documentFolderUri: Uri,
-    displayName: String,
-    mimeType: String
-): Resource<String> {
-    val uriFolder = DocumentsContract.buildDocumentUriUsingTree(
-        documentFolderUri,
-        DocumentsContract.getTreeDocumentId(documentFolderUri)
-    )
-
+    mimeType: String,
+    displayName: String
+): Resource<Pair<Uri, String>> {
     val fileUri: Uri
     try {
+        val uriFolder = DocumentsContract.buildDocumentUriUsingTree(
+            documentFolderUri,
+            DocumentsContract.getTreeDocumentId(documentFolderUri)
+        )
         fileUri = DocumentsContract.createDocument(
             context.contentResolver,
             uriFolder,
@@ -121,14 +116,11 @@ fun saveFile(
     // name already exists in the folder (test.pdf -> test(1).pdf), therefore
     val outputFileName = DocumentFile.fromSingleUri(context, fileUri)?.name ?: displayName
 
-    return try {
-        fileHandler.copyFileToUri(newFile, fileUri)
-        Success(outputFileName)
-    } catch (e: Exception) {
-        // delete the previously created file if the copy fails
-        DocumentFile.fromSingleUri(context, fileUri)?.delete()
-        IOErrorCode.FILE_COPY_ERROR.asFailure()
-    }
+    return Success(Pair(fileUri, outputFileName))
+}
+
+fun deleteFile(context: Context, fileUri: Uri) {
+    DocumentFile.fromSingleUri(context, fileUri)?.delete()
 }
 
 fun deleteFile(file: DocumentFile) {

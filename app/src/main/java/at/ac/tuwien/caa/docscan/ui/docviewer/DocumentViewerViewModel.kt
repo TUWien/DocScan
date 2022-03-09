@@ -176,6 +176,13 @@ class DocumentViewerViewModel(
                 DocumentAction.DELETE -> {
                     repository.removeDocument(documentWithPages)
                 }
+                DocumentAction.EXPORT_ZIP -> {
+                    repository.exportDocument(
+                        documentWithPages,
+                        skipCropRestriction = true,
+                        ExportFormat.ZIP
+                    )
+                }
                 DocumentAction.EXPORT -> {
                     repository.exportDocument(
                         documentWithPages,
@@ -240,6 +247,7 @@ data class DocumentConfirmationModel(
 
 enum class DocumentAction(val needsConfirmation: Boolean, val showSuccessMessage: Boolean) {
     DELETE(true, false),
+    EXPORT_ZIP(false, true),
     EXPORT(true, true),
     CROP(true, false),
     UPLOAD(true, true),

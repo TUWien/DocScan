@@ -11,6 +11,7 @@ import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
 import androidx.work.WorkInfo
 import at.ac.tuwien.caa.docscan.BuildConfig
+import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.ui.segmentation.model.TFLiteModel
@@ -33,7 +34,6 @@ import java.util.zip.ZipOutputStream
 class FileHandler(private val context: Context, private val storageManager: StorageManager) {
 
     private val gson by lazy { GsonBuilder().create() }
-
 
     companion object {
 
@@ -170,6 +170,14 @@ class FileHandler(private val context: Context, private val storageManager: Stor
         }
     }
 
+    fun getSizeOf(documentWithPages: DocumentWithPages): Long {
+        var bytes = 0L
+        documentWithPages.pages.forEach { page ->
+            bytes += getFileByPage(page)?.length() ?: 0L
+        }
+        return bytes
+    }
+
     /**
      * @return an uri which is a zip of several .txt log files.
      *
@@ -284,21 +292,6 @@ class FileHandler(private val context: Context, private val storageManager: Stor
             context.contentResolver.openFileDescriptor(
                 this,
                 "r",
-                null
-            )!!.fileDescriptor
-        )
-    }
-
-    /**
-     * Pre-Condition: [this] [Uri] has write access.
-     * @return [FileOutputStream] of [Uri].
-     */
-    @Throws(Exception::class)
-    private fun Uri.fileOutputStream(): FileOutputStream {
-        return FileOutputStream(
-            context.contentResolver.openFileDescriptor(
-                this,
-                "rw",
                 null
             )!!.fileDescriptor
         )
@@ -474,7 +467,7 @@ class FileHandler(private val context: Context, private val storageManager: Stor
     fun copyFileToUri(from: File, to: Uri) {
         try {
             from.inputStream().use { input ->
-                to.fileOutputStream().use { output ->
+                to.outputStream(context).use { output ->
                     input.copyTo(output)
                 }
             }
@@ -606,14 +599,13 @@ enum class PageFileType(val extension: String, val mimeType: String) {
     PDF("pdf", "application/pdf");
 
     companion object {
-        fun getFileTypeByExtension(extension: String?): PageFileType {
-            extension ?: return JPEG
+        fun getFileTypeByMimeType(mimeType: String): PageFileType? {
             values().forEach { fileType ->
-                if (fileType.extension == extension) {
-                    return JPEG
+                if (fileType.mimeType == mimeType) {
+                    return fileType
                 }
             }
-            return JPEG
+            return null
         }
     }
 }
@@ -657,4 +649,20 @@ private fun File.createFileIfNecessary(): File {
         this.createNewFile()
     }
     return this
+}
+
+
+/**
+ * Pre-Condition: [this] [Uri] has write access.
+ * @return [FileOutputStream] of [Uri].
+ */
+@Throws(Exception::class)
+fun Uri.outputStream(context: Context): OutputStream {
+    return FileOutputStream(
+        context.contentResolver.openFileDescriptor(
+            this,
+            "rw",
+            null
+        )!!.fileDescriptor
+    )
 }

@@ -3,6 +3,7 @@ package at.ac.tuwien.caa.docscan.repository
 import at.ac.tuwien.caa.docscan.db.dao.ExportFileDao
 import at.ac.tuwien.caa.docscan.db.model.ExportFile
 import at.ac.tuwien.caa.docscan.ui.docviewer.pdf.ExportList
+import at.ac.tuwien.caa.docscan.ui.docviewer.pdf.ExportState
 
 class ExportFileRepository(
     private val exportFileDao: ExportFileDao
@@ -16,16 +17,28 @@ class ExportFileRepository(
         // 2. loop through each requested file and check if it's name is in the DB.
         files.forEach { file ->
             val exportFile = exportFileDao.getExportFileByFileName(file.name).firstOrNull()
-            file.isNew = exportFile != null
+            val exportState: ExportState = when {
+                exportFile == null -> {
+                    ExportState.ALREADY_OPENED
+                }
+                exportFile.isProcessing -> {
+                    ExportState.EXPORTING
+                }
+                else -> {
+                    ExportState.NEW
+                }
+            }
+            file.state = exportState
         }
         return files
     }
 
-    suspend fun addFile(fileName: String) {
-        val file = exportFileDao.getExportFileByFileName(fileName).firstOrNull()
-        if (file == null) {
-            exportFileDao.insertExportFile(ExportFile(fileName = fileName))
-        }
+    suspend fun insertOrUpdateFile(fileName: String, isProcessing: Boolean) {
+        exportFileDao.insertExportFile(ExportFile(fileName = fileName, isProcessing = isProcessing))
+    }
+
+    suspend fun removeAll() {
+        exportFileDao.deleteAll()
     }
 
     suspend fun removeFile(fileName: String) {

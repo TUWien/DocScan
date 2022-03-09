@@ -15,15 +15,16 @@ import at.ac.tuwien.caa.docscan.logic.extractExportFile
 import at.ac.tuwien.caa.docscan.ui.base.BaseFragment
 import at.ac.tuwien.caa.docscan.ui.dialog.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 
-class PdfFragment : BaseFragment() {
+class ExportFragment : BaseFragment() {
 
-    private val viewModel: PdfViewModel by viewModel()
+    private val viewModel: ExportViewModel by viewModel()
     private val dialogViewModel: DialogViewModel by viewModel()
     private val modalSheetViewModel: ModalActionSheetViewModel by viewModel()
 
     private lateinit var binding: FragmentPdfsBinding
-    private lateinit var adapter: PdfAdapter
+    private lateinit var adapter: ExportAdapter
 
     private var isAskingForPermission = false
 
@@ -48,13 +49,18 @@ class PdfFragment : BaseFragment() {
     ): View {
         setHasOptionsMenu(true)
         binding = FragmentPdfsBinding.inflate(layoutInflater)
-        adapter = PdfAdapter(select = {
+        adapter = ExportAdapter(select = {
             when (it) {
                 is ExportList.ExportHeader -> {
                     // ignore
                 }
                 is ExportList.File -> {
-                    viewModel.openFile(it)
+                    if (it.state != ExportState.EXPORTING) {
+                        viewModel.openFile(it)
+                    } else {
+                        Timber.d("Clicked on document that is being currently exported!")
+                        // ignore
+                    }
                 }
             }
         }, options = {

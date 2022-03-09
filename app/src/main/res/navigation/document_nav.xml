@@ -17,8 +17,8 @@
             app:popUpToInclusive="true"
             app:popUpToSaveState="true" />
         <action
-            android:id="@+id/action_viewer_documents_to_viewer_pdfs"
-            app:destination="@id/viewer_pdfs"
+            android:id="@+id/action_viewer_documents_to_viewer_exports"
+            app:destination="@id/viewer_exports"
             app:popUpTo="@id/viewer_documents"
             app:popUpToInclusive="true"
             app:popUpToSaveState="true" />
@@ -37,9 +37,9 @@
     </fragment>
 
     <fragment
-        android:id="@+id/viewer_pdfs"
-        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.pdf.PdfFragment"
-        android:label="@string/document_navigation_pdfs"
+        android:id="@+id/viewer_exports"
+        android:name="at.ac.tuwien.caa.docscan.ui.docviewer.pdf.ExportFragment"
+        android:label="@string/document_navigation_exports"
         tools:layout="@layout/fragment_pdfs" />
 
 </navigation>
