@@ -11,7 +11,11 @@ enum class DBErrorCode(@StringRes val titleStringResId: Int, @StringRes val text
     DOCUMENT_PARTIALLY_LOCKED(R.string.error_page_busy_title, R.string.error_page_busy_text),
     DOCUMENT_ALREADY_UPLOADED(
         R.string.viewer_document_uploaded_title,
-        R.string.viewer_document_uploaded_title
+        R.string.viewer_document_uploaded_text
+    ),
+    NO_IMAGES_TO_UPLOAD(
+        R.string.viewer_document_empty_title,
+        R.string.viewer_document_empty_text
     ),
     DOCUMENT_NOT_CROPPED(
         R.string.viewer_document_error_not_cropped_title,

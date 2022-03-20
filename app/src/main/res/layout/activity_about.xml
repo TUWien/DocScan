@@ -32,10 +32,10 @@
 
                 <ImageView
                     android:id="@+id/logo_imageview"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="108dp"
+                    android:layout_height="108dp"
                     android:layout_centerHorizontal="true"
-                    android:src="@mipmap/docscan_launcher" />
+                    android:src="@drawable/ic_launcher_foreground" />
 
                 <TextView
                     android:id="@+id/about_textview"

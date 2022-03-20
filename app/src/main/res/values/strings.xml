@@ -451,6 +451,9 @@
     <string name="viewer_document_uploaded_title">Already uploaded</string>
     <string name="viewer_document_uploaded_text">The document is already uploaded. Do you want to upload it again?</string>
 
+    <string name="viewer_document_empty_title">Document empty</string>
+    <string name="viewer_document_empty_text">The document has to contain at least one image for the upload!</string>
+
     <string name="viewer_document_error_not_cropped_title">Uncropped images</string>
     <string name="viewer_document_error_not_cropped_text">The document is not cropped!</string>
 

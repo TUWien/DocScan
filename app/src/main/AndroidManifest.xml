@@ -24,7 +24,7 @@
     <application
         android:name=".DocScanApp"
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher_adaptive"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:preserveLegacyExternalStorage="true"
         android:requestLegacyExternalStorage="true"
@@ -58,7 +58,7 @@
         <activity
             android:name=".ui.start.StartActivity"
             android:exported="true"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/Theme.App.Starting">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -67,8 +67,7 @@
 
         <activity
             android:name=".ui.intro.IntroActivity"
-            android:launchMode="singleTop"
-            android:theme="@style/SplashTheme" />
+            android:launchMode="singleTop" />
 
         <activity android:name=".ui.info.AboutActivity" />
         <activity android:name=".ui.docviewer.documents.selector.SelectPdfDocumentActivity" />

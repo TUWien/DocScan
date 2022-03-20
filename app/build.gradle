@@ -201,6 +201,8 @@ dependencies {
     implementation 'me.drakeet.support:toastcompat:1.1.0'
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
 
+    implementation 'androidx.core:core-splashscreen:1.0.0-beta01'
+
     // firebase/google related libs
 //    implementation 'com.google.firebase:firebase-core:20.1.0'
 //    implementation 'com.google.firebase:firebase-crashlytics:18.2.8'
@@ -229,7 +231,7 @@ dependencies {
 
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
     // firebase/google related
-    implementation 'com.google.firebase:firebase-core:20.1.0'
+    implementation 'com.google.firebase:firebase-core:20.1.1'
     // uses the "thin" variant, i.e. app size is reduced but dependencies are downloaded after app install.
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.0'
 

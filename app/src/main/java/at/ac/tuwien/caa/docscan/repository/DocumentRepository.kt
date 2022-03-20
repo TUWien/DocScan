@@ -232,8 +232,15 @@ class DocumentRepository(
         skipCropRestriction: Boolean = false
     ): Resource<Unit> {
         Timber.i("upload document")
-        if (!skipAlreadyUploadedRestriction && documentDao.getDocumentWithPages(documentWithPages.document.id)
-                ?.isUploaded() == true
+        val docWithPages = documentDao.getDocumentWithPages(documentWithPages.document.id)
+            ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+
+        if (docWithPages.pages.isEmpty()
+        ) {
+            return DBErrorCode.NO_IMAGES_TO_UPLOAD.asFailure()
+        }
+
+        if (!skipAlreadyUploadedRestriction && docWithPages.isUploaded()
         ) {
             return DBErrorCode.DOCUMENT_ALREADY_UPLOADED.asFailure()
         }

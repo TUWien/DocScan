@@ -5,9 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import at.ac.tuwien.caa.docscan.databinding.MainContainerViewBinding
 import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
 import at.ac.tuwien.caa.docscan.logic.PermissionHandler
+import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
 import at.ac.tuwien.caa.docscan.logic.getMessage
 import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
@@ -15,6 +17,7 @@ import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
 import at.ac.tuwien.caa.docscan.ui.intro.IntroActivity
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
@@ -24,6 +27,7 @@ class StartActivity : BaseActivity() {
 
     private val viewModel: StartViewModel by viewModel()
     private val dialogViewModel: DialogViewModel by viewModel()
+    private val preferenceHandler: PreferencesHandler by inject()
 
     private lateinit var binding: MainContainerViewBinding
 
@@ -52,7 +56,11 @@ class StartActivity : BaseActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        // Keep the splash screen visible for this Activity
+        val shouldPerformDBMigration = preferenceHandler.shouldPerformDBMigration
+        splashScreen.setKeepOnScreenCondition { shouldPerformDBMigration }
         binding = MainContainerViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
         observe()
