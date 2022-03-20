@@ -2,7 +2,7 @@ package at.ac.tuwien.caa.docscan.log
 
 import android.util.Log
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
-//import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import timber.log.Timber
 
 /**
@@ -22,9 +22,9 @@ class FirebaseCrashlyticsTimberTree(
     }
 
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-//        FirebaseCrashlytics.getInstance().log((tag ?: "") + message)
-//        t?.let {
-//            FirebaseCrashlytics.getInstance().recordException(it)
-//        }
+        FirebaseCrashlytics.getInstance().log((tag ?: "") + message)
+        t?.let {
+            FirebaseCrashlytics.getInstance().recordException(it)
+        }
     }
 }

@@ -10,6 +10,8 @@ import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
 import at.ac.tuwien.caa.docscan.worker.DocumentSanitizeWorker
+import com.google.firebase.FirebaseApp
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.android.inject
@@ -39,8 +41,8 @@ class DocScanApp : Application() {
             Timber.plant(Timber.DebugTree())
             // initializing the firebase app is not necessary but only performed to indicate that if
             // there is a problem with the google services json
-//            val a = FirebaseApp.initializeApp(this)
-//            if (a == null || a.options.apiKey.isEmpty()) Timber.d(getString(R.string.start_firebase_not_auth_text))
+            val a = FirebaseApp.initializeApp(this)
+            if (a == null || a.options.apiKey.isEmpty()) Timber.d(getString(R.string.start_firebase_not_auth_text))
         }
 
         Timber.plant(FirebaseCrashlyticsTimberTree(preferencesHandler))
@@ -67,8 +69,8 @@ class DocScanApp : Application() {
             val timeStamp = Date().getTimeStamp()
             preferencesHandler.firstStartDate = timeStamp
             // set for the crashlytics instance
-//            FirebaseCrashlytics.getInstance()
-//                .setCustomKey(PreferencesHandler.KEY_FIRST_START_DATE, timeStamp)
+            FirebaseCrashlytics.getInstance()
+                .setCustomKey(PreferencesHandler.KEY_FIRST_START_DATE, timeStamp)
         }
     }
 }

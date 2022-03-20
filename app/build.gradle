@@ -76,7 +76,6 @@ android {
 
     buildTypes {
         debug {
-            // TODO: Adapt the google services json and provide an own version name
             versionNameSuffix ""
             applicationIdSuffix ""
             debuggable true
@@ -84,7 +83,6 @@ android {
             zipAlignEnabled false
         }
         preview {
-            // TODO: Adapt the google services json and provide an own version name
             versionNameSuffix ""
             applicationIdSuffix ""
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -204,9 +202,11 @@ dependencies {
     implementation 'androidx.core:core-splashscreen:1.0.0-beta01'
 
     // firebase/google related libs
-//    implementation 'com.google.firebase:firebase-core:20.1.0'
-//    implementation 'com.google.firebase:firebase-crashlytics:18.2.8'
-//    implementation 'com.google.firebase:firebase-analytics:20.1.0'
+    implementation 'com.google.firebase:firebase-core:20.1.1'
+    implementation 'com.google.firebase:firebase-crashlytics:18.2.9'
+    implementation 'com.google.firebase:firebase-analytics:20.1.1'
+    // uses the "thin" variant, i.e. app size is reduced but dependencies are downloaded after app install.
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.0'
 
     // libs for document sync/export
     implementation 'com.itextpdf:itextg:5.5.10'
@@ -230,10 +230,6 @@ dependencies {
     kapt "androidx.room:room-compiler:$room_version"
 
     implementation 'androidx.work:work-runtime-ktx:2.7.1'
-    // firebase/google related
-    implementation 'com.google.firebase:firebase-core:20.1.1'
-    // uses the "thin" variant, i.e. app size is reduced but dependencies are downloaded after app install.
-    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.0'
 
     // helper libs
     implementation 'com.github.hollaus:OpenCVLibrary:1.0'
