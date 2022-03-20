@@ -71,6 +71,9 @@ class NotificationsActionReceiver : BroadcastReceiver() {
                             }
                         }
                     }
+                    DocScanNotificationChannel.CHANNEL_GENERAL -> {
+                        // ignore
+                    }
                 }
             } ?: kotlin.run {
             Timber.e("Cannot parse notification wrapper in NotificationsActionReceiver!")

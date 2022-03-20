@@ -34,7 +34,7 @@ class ADialog : AppCompatDialogFragment() {
     }
 
     companion object {
-        private val TAG = "ADialog"
+        private const val TAG = "ADialog"
         const val EMPTY_RES_PLACEHOLDER = 0
         const val EXTRA_DIALOG_MODEL = "EXTRA_DIALOG_MODEL"
 
@@ -176,8 +176,8 @@ class ADialog : AppCompatDialogFragment() {
             negativeBtn = R.string.dialog_cancel_text
         ),
         RATIONALE_CAMERA_PERMISSION(
-            R.string.start_permission_title,
-            R.string.start_permission_camera_text,
+            R.string.camera_permission_title,
+            R.string.camera_permission_camera_text,
             positiveBtn = R.string.dialog_btn_grant_permission,
             negativeBtn = R.string.dialog_no_text
         ),
@@ -200,6 +200,28 @@ class ADialog : AppCompatDialogFragment() {
             R.string.sync_not_logged_in_text,
             negativeBtn = R.string.dialog_cancel_text,
             positiveBtn = R.string.login_button_text
+        ),
+        MIGRATION_DIALOG_ONE(
+            R.string.start_migration_dialog_1_title,
+            R.string.start_migration_dialog_1_text,
+            positiveBtn = R.string.dialog_btn_proceed,
+            negativeBtn = R.string.dialog_cancel_text,
+            isCancellable = false
+        ),
+        MIGRATION_DIALOG_TWO(
+            R.string.start_migration_dialog_2_title,
+            R.string.start_migration_dialog_2_text,
+            positiveBtn = R.string.dialog_btn_proceed,
+            negativeBtn = R.string.dialog_cancel_text,
+            isCancellable = false
+        ),
+        RATIONALE_MIGRATION_PERMISSION(
+            R.string.start_permission_title,
+            R.string.start_permission_text,
+            positiveBtn = R.string.dialog_btn_grant_permission,
+            negativeBtn = R.string.dialog_no_text,
+            neutralBtn = R.string.app_settings,
+            isCancellable = false
         ),
         CUSTOM(0, 0)
     }
@@ -324,3 +346,4 @@ fun DialogModel.show(
 fun DialogResult.isPositive() = pressedAction == DialogButton.POSITIVE
 fun DialogResult.isNegative() = pressedAction == DialogButton.NEGATIVE
 fun DialogResult.isDismiss() = pressedAction == DialogButton.DISMISS
+fun DialogResult.isNeutral() = pressedAction == DialogButton.NEUTRAL

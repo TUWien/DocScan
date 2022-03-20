@@ -3,19 +3,12 @@ package at.ac.tuwien.caa.docscan.logic
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 
-
 object PermissionHandler {
 
-    val requiredMandatoryPermissions =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            arrayOf()
-        } else {
-            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        }
+    val requiredMandatoryPermissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     fun checkMandatoryPermissions(context: Context) =
         requiredMandatoryPermissions.all {

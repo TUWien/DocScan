@@ -7,22 +7,15 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import at.ac.tuwien.caa.docscan.databinding.MainContainerViewBinding
-import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
-import at.ac.tuwien.caa.docscan.logic.PermissionHandler
-import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
-import at.ac.tuwien.caa.docscan.logic.getMessage
+import at.ac.tuwien.caa.docscan.extensions.showAppSettings
+import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
-import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
-import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
-import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
+import at.ac.tuwien.caa.docscan.ui.dialog.*
 import at.ac.tuwien.caa.docscan.ui.intro.IntroActivity
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-/**
- * TODO: MIGRATION_LOGIC - Check if more sophisticated migration options with user feedback are necessary.
- */
 class StartActivity : BaseActivity() {
 
     private val viewModel: StartViewModel by viewModel()
@@ -37,21 +30,15 @@ class StartActivity : BaseActivity() {
 
         ) { map: Map<String, Boolean> ->
             if (map.filter { entry -> !entry.value }.isEmpty()) {
-                viewModel.checkStartUpConditions()
+                viewModel.checkStartUpConditions(Bundle())
             } else {
-                // Explain to the user that the feature is unavailable because the
-                // features requires a permission that the user has denied. At the
-                // same time, respect the user's decision. Don't link to system
-                // settings in an effort to convince the user to change their
-                // decision.
+                showDialog(ADialog.DialogAction.RATIONALE_MIGRATION_PERMISSION)
             }
         }
 
     companion object {
         fun newInstance(context: Context): Intent {
-            return Intent(context, StartActivity::class.java).apply {
-                // TODO: This is necessary when the intro needs to be shown again.
-            }
+            return Intent(context, StartActivity::class.java)
         }
     }
 
@@ -60,23 +47,23 @@ class StartActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         // Keep the splash screen visible for this Activity
         val shouldPerformDBMigration = preferenceHandler.shouldPerformDBMigration
-        splashScreen.setKeepOnScreenCondition { shouldPerformDBMigration }
+        splashScreen.setKeepOnScreenCondition { !shouldPerformDBMigration }
         binding = MainContainerViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
         observe()
     }
 
-    override fun onResume() {
-        super.onResume()
-        viewModel.checkStartUpConditions()
+    override fun onStart() {
+        super.onStart()
+        viewModel.checkStartUpConditions(Bundle())
     }
 
     private fun observe() {
         viewModel.loadingProgress.observe(this) {
             binding.progress.visibility = if (it) View.VISIBLE else View.GONE
         }
-        viewModel.destination.observe(this, ConsumableEvent { destination ->
-            when (destination) {
+        viewModel.destination.observe(this, ConsumableEvent { pair ->
+            when (pair.first) {
                 StartDestination.CAMERA -> {
                     startCameraIntent()
                 }
@@ -85,6 +72,12 @@ class StartActivity : BaseActivity() {
                 }
                 StartDestination.PERMISSIONS -> {
                     requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
+                }
+                StartDestination.MIGRATION_DIALOG_1 -> {
+                    showDialog(ADialog.DialogAction.MIGRATION_DIALOG_ONE, pair.second)
+                }
+                StartDestination.MIGRATION_DIALOG_2 -> {
+                    showDialog(ADialog.DialogAction.MIGRATION_DIALOG_TWO, pair.second)
                 }
             }
         })
@@ -98,8 +91,32 @@ class StartActivity : BaseActivity() {
         })
         dialogViewModel.observableDialogAction.observe(this, ConsumableEvent { dialogResult ->
             when (dialogResult.dialogAction) {
-                ADialog.DialogAction.RATIONALE_CAMERA_PERMISSION -> {
-                    requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
+                ADialog.DialogAction.RATIONALE_MIGRATION_PERMISSION -> {
+                    when {
+                        dialogResult.isPositive() -> {
+                            requestPermissionLauncher.launch(PermissionHandler.requiredMandatoryPermissions)
+                        }
+                        dialogResult.isNegative() -> {
+                            finish()
+                        }
+                        dialogResult.isNeutral() -> {
+                            showAppSettings(this)
+                        }
+                    }
+                }
+                ADialog.DialogAction.MIGRATION_DIALOG_ONE -> {
+                    if (dialogResult.isPositive()) {
+                        viewModel.checkStartUpConditions(dialogResult.arguments.appendMigrationDialogOne())
+                    } else if (dialogResult.isNegative()) {
+                        finish()
+                    }
+                }
+                ADialog.DialogAction.MIGRATION_DIALOG_TWO -> {
+                    if (dialogResult.isPositive()) {
+                        viewModel.checkStartUpConditions(dialogResult.arguments.appendMigrationDialogTwo())
+                    } else if (dialogResult.isNegative()) {
+                        finish()
+                    }
                 }
                 else -> {
                     // ignore

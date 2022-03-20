@@ -68,7 +68,7 @@
                 android:drawablePadding="8dp"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="@string/start_permission_camera_text"
+                android:text="@string/camera_permission_camera_text"
                 android:textColor="@color/white"
                 app:drawableTint="@color/white"
                 app:drawableTopCompat="@drawable/ic_warning_black_48dp" />

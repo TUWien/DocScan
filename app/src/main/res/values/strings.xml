@@ -49,8 +49,8 @@
     <string name="operation_upload">Upload</string>
 
     <!-- StartActivity -->
-    <string name="start_permission_title">Permission required</string>
-    <string name="start_permission_camera_text">The app requires permission to access the camera, otherwise it will not work.</string>
+    <string name="camera_permission_title">Permission required</string>
+    <string name="camera_permission_camera_text">The app requires permission to access the camera, otherwise it will not work.</string>
     <string name="start_permission_camera_text_additional">Please navigate to the app settings and request the camera permission!</string>
     <string name="start_permission_storage_text">The app requires permission to access your files, otherwise it will not work.</string>
     <string name="start_confirm_button_text">OK</string>
@@ -58,6 +58,15 @@
     <string name="grant_camera_permission">Grant camera permission</string>
     <string name="permission_request_cawdwwmera">Request camera permission</string>
     <string name="app_settings">App Settings</string>
+
+    <string name="start_migration_dialog_1_title">Attention</string>
+    <string name="start_migration_dialog_1_text">Due to the changes of the Android\'s storage system in the last two years, your data needs to be migrated into the app\'s internal database. Your data will be no longer accessible from the public storage of your device if you proceed, but can be explicitly exported from the app afterwards. If you want to make a safe copy of your data first, then please cancel this operation, make a safe copy and proceed later!</string>
+
+    <string name="start_migration_dialog_2_title">Data migration</string>
+    <string name="start_migration_dialog_2_text">If you proceed, then your image data will be moved from the public storage into the app\'s internal storage. The exporting features have been enhanced to export your data from the app\'s internal storage. Do you want to proceed? This action cannot be undone!</string>
+
+    <string name="start_permission_title">Permission required</string>
+    <string name="start_permission_text">The app requires a one-time permission for the storage to perform mandatory data migrations!</string>
 
     <string name="permission_location_title">Image geotagging</string>
     <string name="permission_location_text">In order to activate geo tagging, you have to grant the location permission!</string>

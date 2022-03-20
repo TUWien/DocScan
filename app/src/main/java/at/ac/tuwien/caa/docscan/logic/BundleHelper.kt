@@ -11,6 +11,9 @@ private const val ARG_SKIP_CROP_RESTRICTION = "ARG_SKIP_CROP_RESTRICTION"
 private const val ARG_SKIP_ALREADY_UPLOADED_RESTRICTION = "ARG_SKIP_ALREADY_UPLOADED_RESTRICTION"
 private const val ARG_EXPORT_USE_OCR = "ARG_EXPORT_USE_OCR"
 
+private const val ARG_CONFIRM_MIGRATION_DIALOG_1 = "ARG_CONFIRM_MIGRATION_DIALOG_1"
+private const val ARG_CONFIRM_MIGRATION_DIALOG_2 = "ARG_CONFIRM_MIGRATION_DIALOG_2"
+
 /**
  * Appends [documentWithPages] to the [Bundle] for key [ARG_DOCUMENTS_WITH_PAGES].
  */
@@ -99,4 +102,34 @@ fun Bundle.appendUseOCR(useOCR: Boolean): Bundle {
  */
 fun Bundle.extractUseOCR(): Boolean {
     return getBoolean(ARG_EXPORT_USE_OCR, false)
+}
+
+/**
+ * Appends true to the [Bundle] for key [ARG_CONFIRM_MIGRATION_DIALOG_1].
+ */
+fun Bundle.appendMigrationDialogOne(): Bundle {
+    putBoolean(ARG_CONFIRM_MIGRATION_DIALOG_1, true)
+    return this
+}
+
+/**
+ * Appends true to the [Bundle] for key [ARG_CONFIRM_MIGRATION_DIALOG_2].
+ */
+fun Bundle.appendMigrationDialogTwo(): Bundle {
+    putBoolean(ARG_CONFIRM_MIGRATION_DIALOG_2, true)
+    return this
+}
+
+/**
+ * Appends true to the [Bundle] for key [ARG_CONFIRM_MIGRATION_DIALOG_1].
+ */
+fun Bundle.extractMigrationDialogOne(): Boolean {
+    return getBoolean(ARG_CONFIRM_MIGRATION_DIALOG_1)
+}
+
+/**
+ * Appends true to the [Bundle] for key [ARG_CONFIRM_MIGRATION_DIALOG_2].
+ */
+fun Bundle.extractMigrationDialogTwo(): Boolean {
+    return getBoolean(ARG_CONFIRM_MIGRATION_DIALOG_2)
 }

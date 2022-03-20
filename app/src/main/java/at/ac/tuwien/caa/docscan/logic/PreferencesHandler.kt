@@ -522,6 +522,8 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         // check for app updates and perform possible migrations
         if (BuildConfig.VERSION_CODE > installedVersionCode) {
             if (shouldPerformV1_80_PrefsMigration) {
+                // intro has been already shown for those who needs the migration
+                showIntro = false
                 // if the location permission has been given before, then enable the preference option
                 val isLocationPermissionGiven = PermissionHandler.isLocationPermissionGiven(context)
                 isGeoTaggingEnabled = isLocationPermissionGiven

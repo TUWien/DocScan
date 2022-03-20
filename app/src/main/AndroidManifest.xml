@@ -4,9 +4,10 @@
     package="at.ac.tuwien.caa.docscan">
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- The permission is kept only for migration purposes -->
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28" />
+        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />

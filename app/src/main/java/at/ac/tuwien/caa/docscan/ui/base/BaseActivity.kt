@@ -18,7 +18,7 @@ open class BaseActivity : AppCompatActivity() {
 
     private var snackbar: Snackbar? = null
 
-    open protected fun keepScreenOn(): Boolean {
+    protected open fun keepScreenOn(): Boolean {
         return false
     }
 
