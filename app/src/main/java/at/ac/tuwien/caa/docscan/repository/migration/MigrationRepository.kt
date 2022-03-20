@@ -74,8 +74,6 @@ class MigrationRepository(
 
         @Suppress("Deprecation")
         val documentStorageFile = File(context.filesDir, "documentstorage.json")
-        // TODO: Delete syncinfo.txt
-        // TODO: Delete crop_log.txt
         // the sync storage file which is completely omitted, since partial uploads are ignored.
         val syncStorageFile = File(context.filesDir, "syncstorage.json")
         // the documentBackupStorageFile is usually in the public storage which doesn't matter, since for new app installs it cannot be retrieved anyway.
@@ -102,7 +100,7 @@ class MigrationRepository(
 
         storage.documents.forEach { jsonDocument ->
 
-            // TODO: MIGRATION_LOGIC Check if all documents have a unique title, since if this is called multiple times, than pages might be added to documents that are unrelated.
+            // even if it cannot be assured 100%, it is assumed that documents have a unique title.
             val document =
                 documentDao.getDocumentsByTitle(jsonDocument.title).firstOrNull() ?: kotlin.run {
                     val newDocId = UUID.randomUUID()
@@ -138,13 +136,14 @@ class MigrationRepository(
 
             documentDao.insertDocument(document)
 
-            jsonDocument.pages.forEachIndexed pageContinue@ { index, jsonPage ->
+            jsonDocument.pages.forEachIndexed pageContinue@{ index, jsonPage ->
 
                 // if the page already exists, then skip this
                 val existingPage =
                     pageDao.getPageByLegacyFilePath(document.id, jsonPage.file.path)
                         .firstOrNull()
                 if (existingPage != null) {
+                    Timber.i("Skipping page ${existingPage.id} since it already has been created!")
                     return@pageContinue
                 }
 
@@ -160,17 +159,24 @@ class MigrationRepository(
                     )
 
                     // 1. copy file into internal storage.
-                    when (fileHandler.copyFileResource(
+                    when (val resource = fileHandler.copyFileResource(
                         oldFile,
                         newFile
                     )) {
                         is Failure -> {
-                            // TODO: MIGRATION_LOGIC: Analyze the reason, if this has just failed due to missing space on the target, then the migration needs to be stopped and an error thrown to the user.
-                            // TODO: MIGRATION_LOGIC: This should actually not happen, since we have already checked if there is enough free space.
-                            return@pageContinue
+                            // TODO: Check the reason for this, this should only stop the migration if there is not enough space!
+                            // TODO: If this is stopped for an error that would always occur, then the migration would be stuck in an endless loop where the user cannot come out.
+
+                            // This error should basically not occur, since we have already checked if the device has enough storage.
+                            Timber.e(
+                                "A file copy for the migration has failed!",
+                                resource.exception
+                            )
+                            return Failure(resource.exception)
                         }
                         is Success -> {
-
+                            // continue if the file has been successfully copied
+                            Timber.i("File ${oldFile.absolutePath} successfully copied to ${newFile.absolutePath} for document ${document.id}")
                         }
                     }
 
@@ -214,7 +220,7 @@ class MigrationRepository(
                     oldFile.safelyDelete()
 
                 } ?: run {
-                    Timber.w("Ignoring page file, since not file not found!")
+                    Timber.e("Ignoring page file, since not file not found!")
                 }
             }
         }
@@ -226,6 +232,9 @@ class MigrationRepository(
         documentStorageFile.safelyDelete()
         syncStorageFile.safelyDelete()
         documentBackupStorageFile.safelyDelete()
+
+        File(context.filesDir, "syncinfo.txt").safelyDelete()
+        File(context.filesDir, "crop_log.txt").safelyDelete()
 
         return Success(Unit)
     }

@@ -15,6 +15,7 @@ import at.ac.tuwien.caa.docscan.ui.dialog.*
 import at.ac.tuwien.caa.docscan.ui.intro.IntroActivity
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 
 class StartActivity : BaseActivity() {
 
@@ -82,7 +83,7 @@ class StartActivity : BaseActivity() {
             }
         })
         viewModel.migrationError.observe(this, ConsumableEvent { throwable ->
-            // TODO: finalize this call
+            Timber.e("Migration error occurred", throwable)
             val dialogModel = DialogModel(
                 ADialog.DialogAction.MIGRATION_FAILED,
                 customMessage = throwable.getMessage(this, true)

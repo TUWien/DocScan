@@ -192,7 +192,7 @@ class ADialog : AppCompatDialogFragment() {
             R.string.permission_location_disabled_text
         ),
         MIGRATION_FAILED(
-            R.string.generic_error_title,
+            R.string.migration_failed_title,
             R.string.generic_error_text
         ),
         UPLOAD_FAILED_UNAUTHORIZED(
