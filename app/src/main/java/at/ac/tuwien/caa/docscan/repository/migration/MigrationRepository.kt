@@ -20,6 +20,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import java.util.*
 
 /**
@@ -137,6 +138,7 @@ class MigrationRepository(
 
             jsonDocument.pages.forEachIndexed pageContinue@{ index, jsonPage ->
 
+                var skipDeletionOfSourceFile = false
                 // if the page already exists, then skip this
                 val existingPage =
                     pageDao.getPageByLegacyFilePath(document.id, jsonPage.file.path)
@@ -163,15 +165,23 @@ class MigrationRepository(
                         newFile
                     )) {
                         is Failure -> {
-                            // TODO: Check the reason for this, this should only stop the migration if there is not enough space!
-                            // TODO: If this is stopped for an error that would always occur, then the migration would be stuck in an endless loop where the user cannot come out.
-
-                            // This error should basically not occur, since we have already checked if the device has enough storage.
                             Timber.e(
                                 resource.exception,
                                 "A file copy for the migration has failed!"
                             )
-                            return Failure(resource.exception)
+
+                            // all of these errors should basically not occur since we have already checked the space + after every image is copied
+                            // the source is deleted to free up space
+
+                            // if an IOException should occur, then there is probably no space left or the read/write has failed, therefore
+                            // it will end the migration and show an error to the user
+                            if (resource.exception is IOException) {
+                                return IOErrorCode.FILE_COPY_ERROR.asFailure(resource.exception)
+                            } else {
+                                // ignore every other error type, move on with the next page - there is probably no way to deal with this.
+                                Timber.i("File ${oldFile.absolutePath} is not going to be deleted, due to an unknown error that has happened!")
+                                skipDeletionOfSourceFile = true
+                            }
                         }
                         is Success -> {
                             // continue if the file has been successfully copied
@@ -216,7 +226,9 @@ class MigrationRepository(
                     pageDao.insertPage(newPage)
 
                     // delete the public file
-                    oldFile.safelyDelete()
+                    if (!skipDeletionOfSourceFile) {
+                        oldFile.safelyDelete()
+                    }
 
                 } ?: run {
                     Timber.e("Ignoring page file, since not file not found!")

@@ -193,7 +193,9 @@ class ADialog : AppCompatDialogFragment() {
         ),
         MIGRATION_FAILED(
             R.string.migration_failed_title,
-            R.string.generic_error_text
+            R.string.generic_error_text,
+            negativeBtn = R.string.migration_failed_neg_btn,
+            isCancellable = false
         ),
         UPLOAD_FAILED_UNAUTHORIZED(
             R.string.sync_not_logged_in_title,

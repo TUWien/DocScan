@@ -43,8 +43,8 @@ class LogActivity : BaseNavigationActivity() {
     }
 
     private fun observe() {
-        viewModel.observableShareUris.observe(this, ConsumableEvent { uris ->
-            if (!shareFileAsEmailLog(this, PageFileType.ZIP, uris)) {
+        viewModel.observableShareUris.observe(this, ConsumableEvent { uri ->
+            if (!shareFileAsEmailLog(this, PageFileType.ZIP, uri)) {
                 showDialog(ADialog.DialogAction.ACTIVITY_NOT_FOUND_EMAIL)
             }
         })

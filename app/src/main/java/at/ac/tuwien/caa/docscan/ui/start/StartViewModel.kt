@@ -47,6 +47,7 @@ class StartViewModel(
                 when (result) {
                     is Failure -> {
                         migrationError.postValue(Event(result.exception))
+                        return@job
                     }
                     is Success -> {
                         // ignore, fallthrough to next requirement

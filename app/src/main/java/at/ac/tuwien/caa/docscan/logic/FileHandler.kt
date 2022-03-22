@@ -324,12 +324,16 @@ class FileHandler(private val context: Context, private val storageManager: Stor
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val uuid = storageManager.getUuidForPath(targetFolder)
             val availableBytes = storageManager.getAllocatableBytes(uuid)
+            Timber.i("Available bytes: ${availableBytes}, required bytes: $requiredBytes")
             if (availableBytes >= requiredBytes) {
                 storageManager.allocateBytes(uuid, requiredBytes)
+                true
+            } else {
+                false
             }
-            true
         } else {
             val availableBytes = targetFolder.usableSpace
+            Timber.i("Available bytes: ${availableBytes}, required bytes: $requiredBytes")
             availableBytes >= requiredBytes
         }
     }
@@ -632,7 +636,7 @@ fun File.safelyDelete(forceLog: Boolean = false) {
         this.delete()
     } catch (exception: Exception) {
         if (forceLog) {
-            Timber.e(exception,"Unable to delete file!")
+            Timber.e(exception, "Unable to delete file!")
         }
     }
 }

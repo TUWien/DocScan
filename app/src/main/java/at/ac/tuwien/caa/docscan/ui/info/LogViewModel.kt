@@ -17,7 +17,7 @@ class LogViewModel(
 
     val observableProgress = MutableLiveData<Boolean>()
     val observableError = MutableLiveData<Event<Throwable>>()
-    val observableShareUris = MutableLiveData<Event<List<Uri>>>()
+    val observableShareUris = MutableLiveData<Event<Uri>>()
 
     fun shareLog() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -27,7 +27,7 @@ class LogViewModel(
                     observableError.postValue(Event(result.exception))
                 }
                 is Success -> {
-                    observableShareUris.postValue(Event(listOf(result.data)))
+                    observableShareUris.postValue(Event(result.data))
                 }
             }
             observableProgress.postValue(false)

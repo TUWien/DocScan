@@ -6,12 +6,16 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.MainContainerViewBinding
+import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
+import at.ac.tuwien.caa.docscan.extensions.shareFileAsEmailLog
 import at.ac.tuwien.caa.docscan.extensions.showAppSettings
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.*
+import at.ac.tuwien.caa.docscan.ui.info.LogViewModel
 import at.ac.tuwien.caa.docscan.ui.intro.IntroActivity
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -20,6 +24,7 @@ import timber.log.Timber
 class StartActivity : BaseActivity() {
 
     private val viewModel: StartViewModel by viewModel()
+    private val logViewModel: LogViewModel by viewModel()
     private val dialogViewModel: DialogViewModel by viewModel()
     private val preferenceHandler: PreferencesHandler by inject()
 
@@ -63,6 +68,11 @@ class StartActivity : BaseActivity() {
         viewModel.loadingProgress.observe(this) {
             binding.progress.visibility = if (it) View.VISIBLE else View.GONE
         }
+        logViewModel.observableShareUris.observe(this, ConsumableEvent { uri ->
+            if (!shareFileAsEmailLog(this, PageFileType.ZIP, uri)) {
+                showDialog(ADialog.DialogAction.ACTIVITY_NOT_FOUND_EMAIL)
+            }
+        })
         viewModel.destination.observe(this, ConsumableEvent { pair ->
             when (pair.first) {
                 StartDestination.CAMERA -> {
@@ -84,9 +94,19 @@ class StartActivity : BaseActivity() {
         })
         viewModel.migrationError.observe(this, ConsumableEvent { throwable ->
             Timber.e(throwable, "Migration error occurred")
+            val hasIOErrorHappenedDueToMissingSpace =
+                when (throwable.getDocScanIOError()?.ioErrorCode) {
+                    // it is very likely that these errors have happened due to missing storage
+                    IOErrorCode.FILE_COPY_ERROR, IOErrorCode.NOT_ENOUGH_DISK_SPACE -> {
+                        true
+                    }
+                    else -> {
+                        false
+                    }
+                }
             val dialogModel = DialogModel(
                 ADialog.DialogAction.MIGRATION_FAILED,
-                customMessage = throwable.getMessage(this, true)
+                customMessage = getString(if (hasIOErrorHappenedDueToMissingSpace) R.string.migration_failed_missing_space_text else R.string.migration_failed_text)
             )
             showDialog(dialogModel)
         })
@@ -117,6 +137,13 @@ class StartActivity : BaseActivity() {
                         viewModel.checkStartUpConditions(dialogResult.arguments.appendMigrationDialogTwo())
                     } else if (dialogResult.isNegative()) {
                         finish()
+                    }
+                }
+                ADialog.DialogAction.MIGRATION_FAILED -> {
+                    if (dialogResult.isPositive()) {
+                        finish()
+                    } else if (dialogResult.isNegative()) {
+                        logViewModel.shareLog()
                     }
                 }
                 else -> {

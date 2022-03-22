@@ -29,7 +29,7 @@ class DocScanException(val docScanError: DocScanError) : Exception() {
                     "DocScanError.DBError: Error code: ${docScanError.code.name}"
                 }
                 is DocScanError.IOError -> {
-                    docScanError.throwable?.message ?: "DocScanError.IOError: Error unknown!"
+                    "DocScanError.IOError: ${docScanError.ioErrorCode.name}  ${docScanError.throwable?.message ?: "Error trace unknown!"}"
                 }
                 is DocScanError.TranskribusRestError.HttpError -> {
                     "DocScanError.TranskribusRestError.HttpError: HTTP Code ${docScanError.httpStatusCode}\n Error response: ${docScanError.jsonErrorResponse}"
