@@ -2,6 +2,7 @@
 
 package at.ac.tuwien.caa.docscan.api.transkribus
 
+import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.api.transkribus.TranskribusAPIService.Companion.TRANSKRIBUS_UPLOAD_COLLECTION_NAME
 import at.ac.tuwien.caa.docscan.api.transkribus.model.collection.CollectionResponse
 import at.ac.tuwien.caa.docscan.api.transkribus.model.collection.DocResponse
@@ -43,8 +44,7 @@ import java.io.File
  */
 interface TranskribusAPIService {
     companion object {
-        const val BASE_URL = "https://transkribus.eu/TrpServer/rest/"
-        const val BASE_TEST_URL = "https://transkribus.eu/TrpServerTesting/rest/"
+        const val BASE_URL = BuildConfig.TRANSKRIBUS_BASE_URL
 
         const val TRANSKRIBUS_UPLOAD_COLLECTION_NAME = "DocScan - Uploads"
 

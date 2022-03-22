@@ -33,6 +33,35 @@
                     ]
                 }
             }
+        },
+        {
+            "client_info": {
+                "mobilesdk_app_id": "1:106380798245:android:6fd5e4a15dacd62298d2cc",
+                "android_client_info": {
+                    "package_name": "at.ac.tuwien.caa.docscan.test"
+                }
+            },
+            "oauth_client": [
+                {
+                    "client_id": "106380798245-8agbja3s9glshcohljkdpff1o63nvpeg.apps.googleusercontent.com",
+                    "client_type": 3
+                }
+            ],
+            "api_key": [
+                {
+                    "current_key": "AIzaSyDnV2QqMbMRk0TvcNsWyGiomuLASJXdk_Y"
+                }
+            ],
+            "services": {
+                "appinvite_service": {
+                    "other_platform_oauth_client": [
+                        {
+                            "client_id": "106380798245-8agbja3s9glshcohljkdpff1o63nvpeg.apps.googleusercontent.com",
+                            "client_type": 3
+                        }
+                    ]
+                }
+            }
         }
     ],
     "configuration_version": "1"

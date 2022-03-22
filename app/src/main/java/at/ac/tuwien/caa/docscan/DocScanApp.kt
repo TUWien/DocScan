@@ -6,6 +6,7 @@ import at.ac.tuwien.caa.docscan.extensions.getTimeStamp
 import at.ac.tuwien.caa.docscan.koin.*
 import at.ac.tuwien.caa.docscan.log.FirebaseCrashlyticsTimberTree
 import at.ac.tuwien.caa.docscan.log.InternalLogTimberTree
+import at.ac.tuwien.caa.docscan.logic.AnalyticsUtil
 import at.ac.tuwien.caa.docscan.logic.FileHandler
 import at.ac.tuwien.caa.docscan.logic.PreferencesHandler
 import at.ac.tuwien.caa.docscan.logic.notification.NotificationHandler
@@ -43,6 +44,11 @@ class DocScanApp : Application() {
             // there is a problem with the google services json
             val a = FirebaseApp.initializeApp(this)
             if (a == null || a.options.apiKey.isEmpty()) Timber.d(getString(R.string.start_firebase_not_auth_text))
+            // check analytics reporting on startup for debug builds, as analytics is disabled for debug builds.
+            AnalyticsUtil.setAnalyticsReportingEnabled(
+                this,
+                preferencesHandler.isCrashReportingEnabled
+            )
         }
 
         Timber.plant(FirebaseCrashlyticsTimberTree(preferencesHandler))

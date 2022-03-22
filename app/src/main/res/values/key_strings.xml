@@ -2,24 +2,49 @@
 <resources>
 
     <string name="key_geo_tagging">KEY_GEO_TAGGING</string>
+    <bool name="key_geo_tagging_default">false</bool>
+
     <string name="key_upload_mobile_data">KEY_UPLOAD_MOBILE_DATA</string>
+    <bool name="key_upload_mobile_data_default">true</bool>
+
     <string name="key_fast_segmentation">KEY_FAST_SEGMENTATION</string>
+    <bool name="key_fast_segmentation_default">true</bool>
+
     <string name="key_crash_reports">KEY_CRASH_REPORTS</string>
+    <bool name="key_crash_reports_default">true</bool>
+
     <string name="key_focus_measure">KEY_FOCUS_MEASURE</string>
+    <bool name="key_focus_measure_default">true</bool>
+
     <string name="key_show_focus_values">KEY_SHOW_FOCUS_VALUES</string>
+    <bool name="key_show_focus_values_default">false</bool>
+
     <string name="key_aggressive_autofocus">KEY_AGGRESSIVE_AUTO_FOCUS</string>
+    <bool name="key_aggressive_autofocus_default">false</bool>
+
     <string name="key_show_grid">KEY_SHOW_GRID</string>
+    <bool name="key_show_grid_default">false</bool>
+
     <string name="key_text_orientation">KEY_TEXT_ORIENTATION</string>
+
     <string name="key_flash_series_mode">KEY_FLASH_SERIES_MODE</string>
+    <bool name="key_flash_series_mode_default">false</bool>
+
     <string name="key_debug_settings">KEY_DEBUG_SETTINGS</string>
     <string name="key_exif_settings">KEY_EXIF_SETTINGS</string>
+
     <string name="key_show_debug_view">KEY_SHOW_DEBUG_VIEW</string>
-    <string name="key_use_test_server">KEY_USE_DEBUG_SERVER</string>
+    <bool name="key_show_debug_view_default">false</bool>
+
     <string name="key_extended_debug_messages">KEY_EXTENDED_DEBUG_MESSAGES</string>
+    <bool name="key_extended_debug_messages_default">false</bool>
+
     <string name="key_exif_artist">KEY_EXIF_ARTIST</string>
     <string name="key_exif_copyright">KEY_EXIF_COPYRIGHT</string>
-    <string name="key_hud_enabled">KEY_HUD_ENABLED</string>
-    <string name="key_pdf_dir">KEY_PDF_DIR</string>
 
+    <string name="key_hud_enabled">KEY_HUD_ENABLED</string>
+    <bool name="key_hud_enabled_default">false</bool>
+
+    <string name="key_pdf_dir">KEY_PDF_DIR</string>
 
 </resources>

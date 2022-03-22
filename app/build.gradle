@@ -88,6 +88,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig debug.signingConfig
         }
+        // a special build type for testing migrations
+        // it's release signed, obfuscated, but unlile release, it's debuggable
+        previewDebugReleaseSigned {
+            versionNameSuffix ""
+            applicationIdSuffix ""
+            debuggable true
+            minifyEnabled true
+            shrinkResources true
+
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig release.signingConfig
+        }
         release {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 //			Uncomment this line if you want to run a release configuration without signing:
@@ -98,23 +110,17 @@ android {
     flavorDimensions "version"
 
     productFlavors {
-        // When building a variant that uses this flavor, the following configurations
-        // override those in the defaultConfig block.
-        dev {
-//			applicationID "at.ac.tuwien.caa.docscan"
+
+        envTest {
             dimension "version"
-//			minSdkVersion 21
-            versionNameSuffix "-dev"
-//			applicationIdSuffix '.dev'
+            buildConfigField("String", "TRANSKRIBUS_BASE_URL", "\"https://transkribus.eu/TrpServerTesting/rest/\"")
+            versionNameSuffix "-test"
+			applicationIdSuffix '.test'
         }
 
-        prod {
-            // If you've configured the defaultConfig block for the release version of
-            // your app, you can leave this block empty and Gradle uses configurations in
-            // the defaultConfig block instead. You still need to create this flavor.
-            // Otherwise, all variants use the "dev" flavor configurations.
+        envProd {
             dimension "version"
-
+            buildConfigField("String", "TRANSKRIBUS_BASE_URL", "\"https://transkribus.eu/TrpServer/rest/\"")
         }
     }
 

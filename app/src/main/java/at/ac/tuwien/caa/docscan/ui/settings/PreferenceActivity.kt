@@ -7,6 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import at.ac.tuwien.caa.docscan.R
+import at.ac.tuwien.caa.docscan.logic.AnalyticsUtil
 import at.ac.tuwien.caa.docscan.logic.Failure
 import at.ac.tuwien.caa.docscan.logic.Success
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
@@ -14,8 +15,6 @@ import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity
 import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer.NavigationItem
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.show
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
@@ -81,11 +80,7 @@ class PreferenceActivity : BaseNavigationActivity() {
             findPreference<Preference>(crashReportsKey)!!.onPreferenceChangeListener =
                 Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any? ->
                     if (newValue is Boolean) {
-                        // crashlytics and analytics are kind of tight together, therefore both needs to be explicitly enabled/disabled.
-                        FirebaseCrashlytics.getInstance()
-                            .setCrashlyticsCollectionEnabled(newValue as Boolean?)
-                        FirebaseAnalytics.getInstance(requireContext())
-                            .setAnalyticsCollectionEnabled((newValue as Boolean?)!!)
+                        AnalyticsUtil.setAnalyticsReportingEnabled(requireContext(), newValue)
                     }
                     true
                 }

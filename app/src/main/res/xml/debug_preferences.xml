@@ -5,15 +5,15 @@
     <PreferenceCategory
         android:title="@string/settings_preview_title"
         app:iconSpaceReserved="false">
+
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="@bool/key_show_focus_values_default"
             android:key="@string/key_show_focus_values"
             android:title="@string/settings_show_focus_values_checkbox_title"
             app:iconSpaceReserved="false" />
 
-
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="@bool/key_show_debug_view_default"
             android:key="@string/key_show_debug_view"
             android:summary="@string/settings_show_debug_view_checkbox_summary"
             android:title="@string/settings_show_debug_view_checkbox_title"
@@ -26,36 +26,38 @@
     <!--android:summary="@string/settings_show_advanced_qr_code_checkbox_summary"-->
     <!--android:defaultValue="false" />-->
 
-    <PreferenceCategory android:title="@string/settings_debug_title"
+    <PreferenceCategory
+        android:title="@string/settings_debug_title"
         app:iconSpaceReserved="false">
+
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="@bool/key_aggressive_autofocus_default"
             android:key="@string/key_aggressive_autofocus"
             android:summary="@string/settings_aggressive_auto_focus_summary"
             android:title="@string/settings_aggressive_auto_focus_title"
             app:iconSpaceReserved="false" />
 
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="@bool/key_hud_enabled_default"
             android:key="@string/key_hud_enabled"
             android:summary="@string/settings_hud_summary"
             android:title="@string/settings_hud_title"
             app:iconSpaceReserved="false" />
 
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="@string/key_use_test_server"
-            android:summary="@string/settings_use_transkribus_test_server_summary"
-            android:title="@string/settings_use_transkribus_test_server_title"
-            app:iconSpaceReserved="false" />
+        <!-- Currently commented, since there is a new flavor which targets the test backend -->
+        <!--        <CheckBoxPreference-->
+        <!--            android:defaultValue="false"-->
+        <!--            android:key="@string/key_use_test_server"-->
+        <!--            android:summary="@string/settings_use_transkribus_test_server_summary"-->
+        <!--            android:title="@string/settings_use_transkribus_test_server_title"-->
+        <!--            app:iconSpaceReserved="false" />-->
 
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="@bool/key_extended_debug_messages_default"
             android:key="@string/key_extended_debug_messages"
             android:summary="@string/settings_extended_debug_messages_summary"
             android:title="@string/settings_extended_debug_messages_title"
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
-
 
 </PreferenceScreen>

@@ -6,7 +6,7 @@
         android:title="@string/settings_upload_title"
         app:iconSpaceReserved="false">
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="@bool/key_upload_mobile_data_default"
             android:key="@string/key_upload_mobile_data"
             android:summary="@string/settings_upload_metered_network_summary"
             android:title="@string/settings_upload_metered_network_title"
@@ -27,7 +27,7 @@
             app:iconSpaceReserved="false" />
 
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="@bool/key_geo_tagging_default"
             android:key="@string/key_geo_tagging"
             android:summaryOff="@string/settings_geo_tag_summary_off"
             android:summaryOn="@string/settings_geo_tag_summary_on"
@@ -41,28 +41,22 @@
         app:iconSpaceReserved="false">
 
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="@bool/key_fast_segmentation_default"
             android:key="@string/key_fast_segmentation"
             android:summary="@string/settings_fast_segmentation_checkbox_summary"
             android:title="@string/settings_fast_segmentation_checkbox_title"
             app:iconSpaceReserved="false" />
 
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="@bool/key_focus_measure_default"
             android:key="@string/key_focus_measure"
             android:title="@string/settings_focus_measure_checkbox_title"
             app:iconSpaceReserved="false" />
 
     </PreferenceCategory>
 
-    <!--    <CheckBoxPreference-->
-    <!--        android:key="@string/key_show_grid"-->
-    <!--        android:title="@string/settings_show_grid_title"-->
-    <!--        android:summary="@string/settings_show_grid_summary"-->
-    <!--        android:defaultValue="false" />-->
-
     <CheckBoxPreference
-        android:defaultValue="false"
+        android:defaultValue="@bool/key_flash_series_mode_default"
         android:key="@string/key_flash_series_mode"
         android:summary="@string/settings_flash_series_summary"
         android:title="@string/settings_flash_series_title"
@@ -83,7 +77,7 @@
         app:iconSpaceReserved="false">
 
         <CheckBoxPreference
-            android:defaultValue="true"
+            android:defaultValue="@bool/key_crash_reports_default"
             android:key="@string/key_crash_reports"
             android:summaryOff="@string/settings_crash_reports_summary_off"
             android:summaryOn="@string/settings_crash_reports_summary_on"

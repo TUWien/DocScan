@@ -42,6 +42,10 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         context.getString(R.string.key_flash_series_mode)
     }
 
+    private val DEFAULT_FLASH_SERIES_MODE by lazy {
+        context.resources.getBoolean(R.bool.key_flash_series_mode_default)
+    }
+
     private val KEY_EXIF_ARTIST by lazy {
         context.getString(R.string.key_exif_artist)
     }
@@ -54,8 +58,16 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         context.getString(R.string.key_extended_debug_messages)
     }
 
+    private val DEFAULT_EXTENDED_DEBUG_ERROR_MESSAGES by lazy {
+        context.resources.getBoolean(R.bool.key_extended_debug_messages_default)
+    }
+
     private val KEY_UPLOAD_MOBILE_DATA by lazy {
         context.getString(R.string.key_upload_mobile_data)
+    }
+
+    private val DEFAULT_UPLOAD_MOBILE_DATA by lazy {
+        context.resources.getBoolean(R.bool.key_upload_mobile_data_default)
     }
 
     private val KEY_EXPORT_DIR by lazy {
@@ -66,8 +78,16 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         context.getString(R.string.key_hud_enabled)
     }
 
+    private val DEFAULT_HUD_ENABLED by lazy {
+        context.resources.getBoolean(R.bool.key_hud_enabled_default)
+    }
+
     private val KEY_SHOW_DEBUG_VIEW by lazy {
         context.getString(R.string.key_show_debug_view)
+    }
+
+    private val DEFAULT_SHOW_DEBUG_VIEW by lazy {
+        context.resources.getBoolean(R.bool.key_show_debug_view_default)
     }
 
     private val KEY_TEXT_ORIENTATION by lazy {
@@ -78,34 +98,53 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         context.getString(R.string.key_focus_measure)
     }
 
+    private val DEFAULT_FOCUS_MEASURE by lazy {
+        context.resources.getBoolean(R.bool.key_focus_measure_default)
+    }
+
     private val KEY_FAST_SEGMENTATION by lazy {
         context.getString(R.string.key_fast_segmentation)
+    }
+
+    private val DEFAULT_FAST_SEGMENTATION by lazy {
+        context.resources.getBoolean(R.bool.key_fast_segmentation_default)
     }
 
     private val KEY_SHOW_GRID by lazy {
         context.getString(R.string.key_show_grid)
     }
 
+    private val DEFAULT_SHOW_GRID by lazy {
+        context.resources.getBoolean(R.bool.key_show_grid_default)
+    }
+
     private val KEY_SHOW_FOCUS_VALUES by lazy {
         context.getString(R.string.key_show_focus_values)
     }
 
-    private val KEY_USE_TEST_SERVER by lazy {
-        context.getString(R.string.key_use_test_server)
+    private val DEFAULT_SHOW_FOCUS_VALUES by lazy {
+        context.resources.getBoolean(R.bool.key_show_focus_values_default)
     }
 
     private val KEY_SEND_CRASH_REPORTS by lazy {
         context.getString(R.string.key_crash_reports)
     }
 
+    private val DEFAULT_CRASH_REPORTS by lazy {
+        context.resources.getBoolean(R.bool.key_crash_reports_default)
+    }
+
     private val KEY_GEO_TAGGING by lazy {
         context.getString(R.string.key_geo_tagging)
+    }
+
+    private val DEFAULT_GEO_TAGGING by lazy {
+        context.resources.getBoolean(R.bool.key_geo_tagging_default)
     }
 
     companion object {
         const val DEFAULT_INT_VALUE = -1
 
-        private const val TEST_COLLECTION_ID_KEY = "TEST_COLLECTION_ID_KEY"
         private const val COLLECTION_ID_KEY = "COLLECTION_ID_KEY"
         private const val INSTALLED_VERSION_KEY = "INSTALLED_VERSION_KEY"
         private const val SERIES_MODE_ACTIVE_KEY = "SERIES_MODE_ACTIVE_KEY"
@@ -132,6 +171,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         private const val DEPRECATED_SERVER_CHANGED_SHOWN_KEY = "server_changed_shown_key"
         private const val DEPRECATED_DOCUMENT_HINT_SHOWN_KEY = "DOCUMENT_HINT_SHOWN_KEY"
         private const val DEPRECATED_HIDE_SERIES_DIALOG_KEY = "HIDE_SERIES_DIALOG_KEY"
+        private const val DEPRECATED_TEST_COLLECTION_ID_KEY = "TEST_COLLECTION_ID_KEY"
 
         private val KEYS_TO_DROP = listOf(
             DEPRECATED_FIRST_NAME_KEY,
@@ -144,7 +184,8 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
             DEPRECATED_SERIES_MODE_PAUSED_KEY,
             DEPRECATED_SERVER_CHANGED_SHOWN_KEY,
             DEPRECATED_DOCUMENT_HINT_SHOWN_KEY,
-            DEPRECATED_HIDE_SERIES_DIALOG_KEY
+            DEPRECATED_HIDE_SERIES_DIALOG_KEY,
+            DEPRECATED_TEST_COLLECTION_ID_KEY
         )
     }
 
@@ -176,15 +217,6 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
                 .commit()
         }
 
-    var testCollectionId: Int
-        get() =
-            sharedPreferences.getInt(TEST_COLLECTION_ID_KEY, DEFAULT_INT_VALUE)
-        set(value) {
-            sharedPreferences.edit()
-                .putInt(TEST_COLLECTION_ID_KEY, value)
-                .apply()
-        }
-
     var cameraDPI: Int
         get() =
             defaultSharedPreferences.getInt(KEY_DPI, DEFAULT_INT_VALUE)
@@ -213,24 +245,11 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
             }
         }
 
-    var useTranskribusTestServer: Boolean
-        get() {
-            return defaultSharedPreferences.getBoolean(
-                KEY_USE_TEST_SERVER,
-                false
-            )
-        }
-        set(value) {
-            defaultSharedPreferences.edit()
-                .putBoolean(KEY_USE_TEST_SERVER, value)
-                .apply()
-        }
-
     var isGeoTaggingEnabled: Boolean
         get() {
             return defaultSharedPreferences.getBoolean(
                 KEY_GEO_TAGGING,
-                false
+                DEFAULT_GEO_TAGGING
             )
         }
         set(value) {
@@ -243,7 +262,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         get() {
             return defaultSharedPreferences.getBoolean(
                 KEY_SHOW_FOCUS_VALUES,
-                false
+                DEFAULT_SHOW_FOCUS_VALUES
             )
         }
         set(value) {
@@ -256,7 +275,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         get() {
             return defaultSharedPreferences.getBoolean(
                 KEY_SHOW_GRID,
-                false
+                DEFAULT_SHOW_GRID
             )
         }
         set(value) {
@@ -269,7 +288,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         get() {
             return defaultSharedPreferences.getBoolean(
                 KEY_FAST_SEGMENTATION,
-                false
+                DEFAULT_FAST_SEGMENTATION
             )
         }
         set(value) {
@@ -282,7 +301,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         get() {
             return defaultSharedPreferences.getBoolean(
                 KEY_FOCUS_MEASURE,
-                true
+                DEFAULT_FOCUS_MEASURE
             )
         }
         set(value) {
@@ -308,7 +327,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         get() {
             return defaultSharedPreferences.getBoolean(
                 KEY_SHOW_DEBUG_VIEW,
-                false
+                DEFAULT_SHOW_DEBUG_VIEW
             )
         }
         set(value) {
@@ -321,7 +340,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         get() {
             return defaultSharedPreferences.getBoolean(
                 KEY_HUD_ENABLED,
-                false
+                DEFAULT_HUD_ENABLED
             )
         }
         set(value) {
@@ -402,7 +421,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
 
     var isFlashSeriesMode: Boolean
         get() =
-            defaultSharedPreferences.getBoolean(KEY_FLASH_SERIES_MODE, false)
+            defaultSharedPreferences.getBoolean(KEY_FLASH_SERIES_MODE, DEFAULT_FLASH_SERIES_MODE)
         set(value) {
             defaultSharedPreferences.edit()
                 .putBoolean(KEY_FLASH_SERIES_MODE, value)
@@ -429,7 +448,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
 
     var isUploadOnMeteredNetworksAllowed: Boolean
         get() =
-            defaultSharedPreferences.getBoolean(KEY_UPLOAD_MOBILE_DATA, true)
+            defaultSharedPreferences.getBoolean(KEY_UPLOAD_MOBILE_DATA, DEFAULT_UPLOAD_MOBILE_DATA)
         set(value) {
             defaultSharedPreferences.edit()
                 .putBoolean(KEY_UPLOAD_MOBILE_DATA, value)
@@ -438,7 +457,10 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
 
     var isCrashReportingEnabled: Boolean
         get() =
-            defaultSharedPreferences.getBoolean(KEY_SEND_CRASH_REPORTS, true)
+            defaultSharedPreferences.getBoolean(
+                KEY_SEND_CRASH_REPORTS,
+                !BuildConfig.DEBUG && DEFAULT_CRASH_REPORTS
+            )
         set(value) {
             defaultSharedPreferences.edit()
                 .putBoolean(KEY_SEND_CRASH_REPORTS, value)
@@ -452,7 +474,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
         get() =
             BuildConfig.DEBUG && defaultSharedPreferences.getBoolean(
                 KEY_EXTENDED_DEBUG_ERROR_MESSAGES,
-                false
+                DEFAULT_EXTENDED_DEBUG_ERROR_MESSAGES
             )
         set(value) {
             defaultSharedPreferences.edit()
