@@ -7,21 +7,22 @@ import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 import at.ac.tuwien.caa.docscan.ui.base.BaseActivity
 import at.ac.tuwien.caa.docscan.ui.dialog.ADialog
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
+import okhttp3.internal.closeQuietly
 import org.koin.java.KoinJavaComponent
 import timber.log.Timber
+import java.io.PrintWriter
+import java.io.StringWriter
 import java.net.ConnectException
 import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-
-// TODO: handle EXPORT_FILE_MISSING_PERMISSION explicitly!
 
 private val preferencesHandler: PreferencesHandler by KoinJavaComponent.inject(PreferencesHandler::class.java)
 
 /**
  * A default error handler for all errors which are not explicitly handled in the views itself.
  */
-fun Throwable.handleError(activity: BaseActivity, logAsError: Boolean = false) {
+fun Throwable.handleError(activity: BaseActivity, logAsWarning: Boolean = false) {
     val dialogModel = DialogModel(
         dialogAction = ADialog.DialogAction.CUSTOM,
         customTitle = getTitle(
@@ -33,9 +34,17 @@ fun Throwable.handleError(activity: BaseActivity, logAsError: Boolean = false) {
         )
     )
     activity.showDialog(dialogModel)
-    if (logAsError) {
-        // TODO: Add information about error that has occurred!
-        Timber.w("Error has occurred!")
+    if (logAsWarning) {
+        // logs the current exception, also by adding the stacktrace of a new throwable, this used to
+        // determine the caller.
+        val sw = StringWriter()
+        Throwable().printStackTrace(PrintWriter(sw))
+        val stackTrace: String = sw.toString()
+        sw.closeQuietly()
+        Timber.w(
+            this,
+            "Error has occurred for caller:\n ${stackTrace}\n with throwable:"
+        )
     }
 }
 

@@ -165,7 +165,7 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
         })
         viewModel.observableError.observe(this, {
             it.getContentIfNotHandled()?.let { throwable ->
-                throwable.handleError(this)
+                throwable.handleError(this, logAsWarning = true)
             }
         })
         dialogViewModel.observableDialogAction.observe(this, {

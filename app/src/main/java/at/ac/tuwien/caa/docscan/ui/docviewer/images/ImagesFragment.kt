@@ -152,7 +152,7 @@ class ImagesFragment : BaseFragment() {
             startActivity(PageSlideActivity.newInstance(requireActivity(), page.docId, page.id))
         })
         viewModel.observableError.observe(viewLifecycleOwner, ConsumableEvent { throwable ->
-            throwable.handleError(requireBaseActivity())
+            throwable.handleError(requireBaseActivity(), logAsWarning = true)
         })
         viewModel.observableConfirmDelete.observe(viewLifecycleOwner, ConsumableEvent { pageCount ->
             val title = resources.getQuantityString(R.plurals.confirm_delete_pages, pageCount)

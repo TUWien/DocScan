@@ -151,7 +151,7 @@ class CameraViewModel(
             )
             when (result) {
                 is Failure -> {
-                    Timber.e("New image failed to be persisted", result.exception)
+                    Timber.e(result.exception, "New image failed to be persisted")
                 }
                 is Success -> {
                     if (isRetakeMode) {

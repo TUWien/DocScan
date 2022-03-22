@@ -34,7 +34,7 @@ class EditDocumentActivity : CreateDocumentActivity() {
                     if (resource.exception.getDocScanDBError()?.code == DBErrorCode.DUPLICATE) {
                         showDialog(ADialog.DialogAction.CREATE_DOCUMENT_DUPLICATE)
                     } else {
-                        resource.exception.handleError(this)
+                        resource.exception.handleError(this, logAsWarning = true)
                     }
                 }
                 is Success -> {

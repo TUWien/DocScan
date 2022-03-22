@@ -614,7 +614,7 @@ fun File.safeExists(): Boolean {
     return try {
         exists()
     } catch (e: Exception) {
-        Timber.e("exists check has failed", e)
+        Timber.e(e, "exists check has failed")
         false
     }
 }
@@ -632,7 +632,7 @@ fun File.safelyDelete(forceLog: Boolean = false) {
         this.delete()
     } catch (exception: Exception) {
         if (forceLog) {
-            Timber.e("Unable to delete file!", exception)
+            Timber.e(exception,"Unable to delete file!")
         }
     }
 }

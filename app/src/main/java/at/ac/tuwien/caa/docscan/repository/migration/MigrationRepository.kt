@@ -169,8 +169,8 @@ class MigrationRepository(
 
                             // This error should basically not occur, since we have already checked if the device has enough storage.
                             Timber.e(
-                                "A file copy for the migration has failed!",
-                                resource.exception
+                                resource.exception,
+                                "A file copy for the migration has failed!"
                             )
                             return Failure(resource.exception)
                         }
@@ -246,7 +246,7 @@ class MigrationRepository(
                 return Success(storage)
             }
         } catch (e: Exception) {
-            Timber.e("Parsing JsonStorage has failed!", e)
+            Timber.e(e, "Parsing JsonStorage has failed!")
             return IOErrorCode.PARSING_FAILED.asFailure(e)
         }
     }

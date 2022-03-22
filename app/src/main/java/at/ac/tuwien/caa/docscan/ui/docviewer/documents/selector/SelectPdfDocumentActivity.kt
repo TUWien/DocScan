@@ -59,7 +59,7 @@ class SelectPdfDocumentActivity : BaseNoNavigationActivity() {
                             return@observe
                         }
                     }
-                    resource.exception.handleError(this)
+                    resource.exception.handleError(this, logAsWarning = true)
                 }
                 is Success -> {
                     finish()

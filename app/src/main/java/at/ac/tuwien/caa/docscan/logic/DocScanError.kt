@@ -1,10 +1,46 @@
 package at.ac.tuwien.caa.docscan.logic
 
-import at.ac.tuwien.caa.docscan.api.transkribus.model.error.TranskribusApiError
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
 
-class DocScanException(val docScanError: DocScanError) : Exception()
+class DocScanException(val docScanError: DocScanError) : Exception() {
+    override val cause: Throwable?
+        get() {
+            return when (docScanError) {
+                is DocScanError.DBError -> {
+                    super.cause
+                }
+                is DocScanError.IOError -> {
+                    docScanError.throwable?.cause ?: super.cause
+                }
+                is DocScanError.TranskribusRestError.HttpError -> {
+                    super.cause
+                }
+                is DocScanError.TranskribusRestError.IOError -> {
+                    docScanError.throwable.cause
+                }
+            }
+        }
+
+    override val message: String
+        get() {
+            return when (docScanError) {
+                is DocScanError.DBError -> {
+                    "DocScanError.DBError: Error code: ${docScanError.code.name}"
+                }
+                is DocScanError.IOError -> {
+                    docScanError.throwable?.message ?: "DocScanError.IOError: Error unknown!"
+                }
+                is DocScanError.TranskribusRestError.HttpError -> {
+                    "DocScanError.TranskribusRestError.HttpError: HTTP Code ${docScanError.httpStatusCode}\n Error response: ${docScanError.jsonErrorResponse}"
+                }
+                is DocScanError.TranskribusRestError.IOError -> {
+                    docScanError.throwable.message
+                        ?: "DocScanError.TranskribusRestError.IOError: Error unknown!"
+                }
+            }
+        }
+}
 
 sealed class DocScanError {
 
@@ -15,7 +51,7 @@ sealed class DocScanError {
 
         data class HttpError(
             val httpStatusCode: Int,
-            val transkribusApiError: TranskribusApiError?
+            val jsonErrorResponse: String?
         ) : TranskribusRestError()
 
         data class IOError(

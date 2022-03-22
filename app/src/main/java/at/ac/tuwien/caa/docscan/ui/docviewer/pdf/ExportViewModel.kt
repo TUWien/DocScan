@@ -88,7 +88,7 @@ class ExportViewModel(
                     )
                 } catch (exception: Exception) {
                     // this can be an expected exception if the uri does not point to a valid source anymore.
-                    Timber.w("Releasing persistable uri has failed", exception)
+                    Timber.w(exception, "Releasing persistable uri has failed")
                 }
             }
         }

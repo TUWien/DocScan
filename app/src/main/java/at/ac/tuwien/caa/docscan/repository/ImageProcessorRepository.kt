@@ -65,7 +65,7 @@ class ImageProcessorRepository(
                             IOErrorCode.SINGLE_PAGE_DETECTION_FAILED.asFailure()
                         }
                     } catch (e: Exception) {
-                        Timber.w("Page detection has failed!", e)
+                        Timber.w(e,"Page detection has failed!")
                         IOErrorCode.SINGLE_PAGE_DETECTION_FAILED.asFailure(e)
                     }
                 }, postOperation = { pageId, result ->

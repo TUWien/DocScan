@@ -115,7 +115,7 @@ class CropViewActivity : BaseActivity() {
             finish()
         })
         viewModel.observableError.observe(this, ConsumableEvent { throwable ->
-            throwable.handleError(this)
+            throwable.handleError(this, logAsWarning = true)
         })
         viewModel.observableShowCroppingInfo.observe(this, ConsumableEvent {
             MaterialAlertDialogBuilder(this).apply {
@@ -148,7 +148,7 @@ class CropViewActivity : BaseActivity() {
                     GlideHelper.GlideStyles.DEFAULT, {
 
                     }, { _, exception ->
-                        Timber.e("Loading image into CropView has failed!", exception)
+                        Timber.e(exception, "Loading image into CropView has failed!")
                     }
                 )
             } else {

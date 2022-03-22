@@ -83,7 +83,7 @@ class StartActivity : BaseActivity() {
             }
         })
         viewModel.migrationError.observe(this, ConsumableEvent { throwable ->
-            Timber.e("Migration error occurred", throwable)
+            Timber.e(throwable, "Migration error occurred")
             val dialogModel = DialogModel(
                 ADialog.DialogAction.MIGRATION_FAILED,
                 customMessage = throwable.getMessage(this, true)

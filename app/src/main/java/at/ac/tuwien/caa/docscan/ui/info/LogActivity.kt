@@ -49,7 +49,7 @@ class LogActivity : BaseNavigationActivity() {
             }
         })
         viewModel.observableError.observe(this, ConsumableEvent { throwable ->
-            throwable.handleError(this, logAsError = true)
+            throwable.handleError(this, logAsWarning = true)
         })
         viewModel.observableProgress.observe(this) {
             binding.progress.bindVisible(it)

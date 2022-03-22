@@ -1,11 +1,7 @@
 package at.ac.tuwien.caa.docscan.repository
 
 import androidx.annotation.IntRange
-import at.ac.tuwien.caa.docscan.logic.Failure
-import at.ac.tuwien.caa.docscan.logic.Resource
-import at.ac.tuwien.caa.docscan.logic.Success
-import at.ac.tuwien.caa.docscan.logic.DocScanError
-import at.ac.tuwien.caa.docscan.logic.DocScanException
+import at.ac.tuwien.caa.docscan.logic.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Response
@@ -116,7 +112,7 @@ fun <T> Response<T>.convertToResource(): Resource<T> {
             DocScanException(
                 DocScanError.TranskribusRestError.HttpError(
                     httpStatusCode = code(),
-                    null
+                    errorBody()?.string()
                 )
             )
         )

@@ -20,6 +20,7 @@ import at.ac.tuwien.caa.docscan.ui.dialog.DialogModel
 import at.ac.tuwien.caa.docscan.ui.dialog.DialogViewModel
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 
 /**
  * Created by fabian on 08.02.2017.
@@ -59,8 +60,9 @@ class TranskribusLoginActivity : BaseNoNavigationActivity() {
                             resources.getString(R.string.login_auth_error_text)
                         // focus view so that edittexts error is focused
                         binding.passwordEdittext.requestFocus()
+                        Timber.w(it.exception, "Wrong credentials!")
                     } else {
-                        it.exception.handleError(this, logAsError = true)
+                        it.exception.handleError(this, logAsWarning = true)
                     }
                 }
                 is Success -> {

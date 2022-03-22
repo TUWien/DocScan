@@ -94,7 +94,7 @@ open class CreateDocumentActivity : BaseNoNavigationActivity() {
                     if (it.exception.getDocScanDBError()?.code == DBErrorCode.DUPLICATE) {
                         showDialog(ADialog.DialogAction.CREATE_DOCUMENT_DUPLICATE)
                     } else {
-                        it.exception.handleError(this)
+                        it.exception.handleError(this, logAsWarning = true)
                     }
                 }
                 is Success -> {

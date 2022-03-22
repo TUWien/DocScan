@@ -22,7 +22,7 @@ fun calculateImageResolution(file: File, rotation: Rotation): ImageMeta {
         }
         return ImageMeta(width, height, width / height.toDouble())
     } catch (e: Exception) {
-        Timber.e("Could not determine aspect ratio", e)
+        Timber.e(e, "Could not determine aspect ratio")
     }
     return ImageMeta(0, 0, .0)
 }

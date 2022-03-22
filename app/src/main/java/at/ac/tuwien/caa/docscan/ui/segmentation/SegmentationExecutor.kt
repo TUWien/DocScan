@@ -120,7 +120,7 @@ class SegmentationExecutor {
         try {
             interpreter.close()
         } catch (e: Exception) {
-            Timber.e("Failed to close interpreter!", e)
+            Timber.e(e, "Failed to close interpreter!")
         }
 
         return ModelExecutionResult(

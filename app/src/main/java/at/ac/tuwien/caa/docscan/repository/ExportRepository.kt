@@ -126,7 +126,7 @@ class ExportRepository(
 
             when (exportResource) {
                 is Failure -> {
-                    Timber.e("Saving export file has failed!", exportResource.exception)
+                    Timber.e( exportResource.exception, "Saving export file has failed!")
                     exportFileRepository.removeFile(output.second)
                     return@withContext Failure(exportResource.exception)
                 }

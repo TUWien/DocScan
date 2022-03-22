@@ -28,7 +28,9 @@ class InternalLogTimberTree(
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         val firstLine = "${Date().getTimeStamp()} ${getPriorityPrefix(priority)}${tag ?: ""}: $message"
         coroutineScope.launch {
-            fileHandler.appendToLog(firstLine, t)
+            // we don't need to explicitly pass the throwable here, since the stacktrace is already in
+            // the message which is prepared by the Timber API.
+            fileHandler.appendToLog(firstLine, null)
         }
     }
 

@@ -208,7 +208,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                 is Failure -> {
                     when (model.action) {
                         DocumentAction.DELETE, DocumentAction.SHARE, DocumentAction.EXPORT_ZIP -> {
-                            resource.exception.handleError(this)
+                            resource.exception.handleError(this, logAsWarning = true)
                         }
                         DocumentAction.EXPORT -> {
                             resource.exception.getDocScanDBError()?.let { dbError ->
@@ -232,10 +232,10 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                     return@ConsumableEvent
                                 }
                             }
-                            resource.exception.handleError(this)
+                            resource.exception.handleError(this, logAsWarning = true)
                         }
                         DocumentAction.CROP -> {
-                            resource.exception.handleError(this)
+                            resource.exception.handleError(this, logAsWarning = true)
                         }
                         DocumentAction.UPLOAD -> {
                             resource.exception.getDocScanDBError()?.let { dbError ->
@@ -255,7 +255,7 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                         return@ConsumableEvent
                                     }
                                     else -> {
-                                        resource.exception.handleError(this)
+                                        resource.exception.handleError(this, logAsWarning = true)
                                         return@ConsumableEvent
                                     }
                                 }
@@ -273,10 +273,10 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
                                     }
                                 }
                             }
-                            resource.exception.handleError(this)
+                            resource.exception.handleError(this, logAsWarning = true)
                         }
                         DocumentAction.CANCEL_UPLOAD -> {
-                            resource.exception.handleError(this)
+                            resource.exception.handleError(this, logAsWarning = true)
                         }
                     }
                 }
