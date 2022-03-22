@@ -103,7 +103,7 @@ class DocumentRepository(
     @WorkerThread
     suspend fun deletePages(pages: List<Page>): Resource<Unit> {
         Timber.i("delete pages, n=${pages.size}")
-        // TODO: When adding/removing pages, add a generic check to adapt the page number correctly.
+        // TODO: OPTIMIZATION: When adding/removing pages, add a generic check to adapt the page number correctly.
         pages.forEach {
             val result = performPageOperation(it.docId, it.id, operation = { _, page ->
                 documentDao.deletePage(page)

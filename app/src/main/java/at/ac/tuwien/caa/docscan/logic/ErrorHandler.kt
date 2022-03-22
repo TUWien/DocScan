@@ -166,7 +166,6 @@ private fun getMessageByDBErrorCode(dbErrorCode: DBErrorCode): Int {
 }
 
 private fun getTitleByIOErrorCode(ioErrorCode: IOErrorCode, throwable: Throwable?): Int {
-    // TODO: For some errors, the throwable needs to be investigated to find the real reason
     if (ioErrorCode.needsInvestigation) {
         throwable ?: return R.string.generic_error_title
         return getMessageInternal(throwable)
@@ -175,7 +174,6 @@ private fun getTitleByIOErrorCode(ioErrorCode: IOErrorCode, throwable: Throwable
 }
 
 private fun getMessageIOErrorCode(ioErrorCode: IOErrorCode, throwable: Throwable?): Int {
-    // TODO: For some errors, the throwable needs to be investigated to find the real reason
     if (ioErrorCode.needsInvestigation) {
         throwable ?: return R.string.generic_error_text
         return getMessageInternal(throwable)

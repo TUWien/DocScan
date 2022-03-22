@@ -60,7 +60,6 @@ fun getExportFolderPermissionIntent(context: Context, initialUri: Uri?): Intent 
     return intent
 }
 
-// TODO: EXPORT_CONSTRAINT: SAF is used for all platforms
 @RequiresApi(Build.VERSION_CODES.N)
 private fun getDocScanPdfUri(context: Context): Uri {
 

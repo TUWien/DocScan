@@ -196,7 +196,6 @@ object GlideHelper {
                 transformation?.let {
                     glideRequest.transform(it).transition(withCrossFade(factory))
                 } ?: glideRequest.transition(withCrossFade(factory))
-//                    TODO: check if this is necessary: .override(400, 400)
             }
         }
 

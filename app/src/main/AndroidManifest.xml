@@ -21,7 +21,7 @@
         android:name="android.hardware.location.gps"
         android:required="false" />
 
-    <!-- TODO: Check if both preserveLegacyExternalStorage/requestLegacyExternalStorage are necessary -->
+    <!--both external storage flags are kept in order to make a migration possible for old apps -->
     <application
         android:name=".DocScanApp"
         android:allowBackup="false"

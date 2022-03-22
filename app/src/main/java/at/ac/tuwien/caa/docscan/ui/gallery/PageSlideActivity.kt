@@ -15,6 +15,7 @@ import at.ac.tuwien.caa.docscan.databinding.ActivityPageSlideBinding
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.asDocumentPageExtra
 import at.ac.tuwien.caa.docscan.extensions.shareFile
+import at.ac.tuwien.caa.docscan.logic.ConsumableEvent
 import at.ac.tuwien.caa.docscan.logic.PageFileType
 import at.ac.tuwien.caa.docscan.logic.handleError
 import at.ac.tuwien.caa.docscan.ui.base.BaseNoNavigationActivity
@@ -94,9 +95,9 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
     }
 
     private fun observe() {
-        viewModel.observablePages.observe(this, {
+        viewModel.observablePages.observe(this) {
             // if the document doesn't even contain a single image, then this view needs to be closed.
-            if(it.first.isEmpty()) {
+            if (it.first.isEmpty()) {
                 finish()
                 return@observe
             }
@@ -108,14 +109,13 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
             }
             updateTitle(binding.slideViewpager.currentItem, it.first.size)
             binding.slideViewpager.registerOnPageChangeCallback(callback)
-        })
-        viewModel.observableInitCrop.observe(this, {
-            it.getContentIfNotHandled()?.let { page ->
-                navigateToCropActivity(page)
-                // TODO: Checkout how to handle zoom out transitions.
-                // TODO: Zoom out of scale for this specific image view
+        }
+        viewModel.observableInitCrop.observe(this, ConsumableEvent { page ->
+            navigateToCropActivity(page)
+            // TODO: Checkout how to handle zoom out transitions.
+            // TODO: Zoom out of scale for this specific image view
 
-                //                    Zoom out before opening the CropViewActivity:
+            //                    Zoom out before opening the CropViewActivity:
 //                PageImageView imageView = mPagerAdapter.getCurrentFragment().getImageView();
 //                SubsamplingScaleImageView.AnimationBuilder ab = imageView.animateScale(0);
 ////            I am not sure, why this is happening, but it happened once on MotoG3
@@ -141,49 +141,36 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
 //                        startCropView();
 //                    }
 //                }).start();
-            }
         })
-        viewModel.observableInitRetake.observe(this, {
-            it.getContentIfNotHandled()?.let { pair ->
-                startActivity(CameraActivity.newInstance(this, pair.first, pair.second))
-            }
+        viewModel.observableInitRetake.observe(this, ConsumableEvent { pair ->
+            startActivity(CameraActivity.newInstance(this, pair.first, pair.second))
         })
-        viewModel.observableSharePage.observe(this, {
-            it.getContentIfNotHandled()?.let { uri ->
-                shareFile(this, PageFileType.JPEG, uri)
-            }
+        viewModel.observableSharePage.observe(this, ConsumableEvent {
+            shareFile(this, PageFileType.JPEG, it)
         })
-        viewModel.observableInitSegmentation.observe(this, {
-            it.getContentIfNotHandled()?.let { page ->
-                startActivity(SegmentationActivity.newInstance(this, page))
-            }
+        viewModel.observableInitSegmentation.observe(this, ConsumableEvent { page ->
+            startActivity(SegmentationActivity.newInstance(this, page))
         })
-        viewModel.observableInitDocumentViewer.observe(this, {
-            it.getContentIfNotHandled()?.let { page ->
-                startActivity(DocumentViewerActivity.newInstance(this, page.asDocumentPageExtra()))
-            }
+        viewModel.observableInitDocumentViewer.observe(this, ConsumableEvent { page ->
+            startActivity(DocumentViewerActivity.newInstance(this, page.asDocumentPageExtra()))
         })
-        viewModel.observableError.observe(this, {
-            it.getContentIfNotHandled()?.let { throwable ->
-                throwable.handleError(this, logAsWarning = true)
-            }
+        viewModel.observableError.observe(this, ConsumableEvent { throwable ->
+            throwable.handleError(this, logAsWarning = true)
         })
-        dialogViewModel.observableDialogAction.observe(this, {
-            it.getContentIfNotHandled()?.let { dialogResult ->
-                when (dialogResult.dialogAction) {
-                    ADialog.DialogAction.CONFIRM_DELETE_PAGE -> {
-                        if (dialogResult.isPositive()) {
-                            viewModel.deletePageAtPosition(binding.slideViewpager.currentItem)
-                        }
+        dialogViewModel.observableDialogAction.observe(this, ConsumableEvent { dialogResult ->
+            when (dialogResult.dialogAction) {
+                ADialog.DialogAction.CONFIRM_DELETE_PAGE -> {
+                    if (dialogResult.isPositive()) {
+                        viewModel.deletePageAtPosition(binding.slideViewpager.currentItem)
                     }
-                    ADialog.DialogAction.CONFIRM_RETAKE_IMAGE -> {
-                        if (dialogResult.isPositive()) {
-                            viewModel.retakeImageAtPosition(binding.slideViewpager.currentItem)
-                        }
+                }
+                ADialog.DialogAction.CONFIRM_RETAKE_IMAGE -> {
+                    if (dialogResult.isPositive()) {
+                        viewModel.retakeImageAtPosition(binding.slideViewpager.currentItem)
                     }
-                    else -> {
-                        // ignore
-                    }
+                }
+                else -> {
+                    // ignore
                 }
             }
         })

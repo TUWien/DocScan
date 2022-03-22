@@ -2894,7 +2894,6 @@ public class CameraActivity extends BaseNavigationActivity implements TaskTimer.
 
 //            int camTextOrientation = mTextOrientation;
 ////            Compensate the camera rotation:
-// TODO: CAMERA_LOGIC - it seems that the camera rotation is ignored entirely?
         int camTextOrientation = IMG_ORIENTATION_0;
         if (mCameraOrientation == 90)
             camTextOrientation = IMG_ORIENTATION_90;

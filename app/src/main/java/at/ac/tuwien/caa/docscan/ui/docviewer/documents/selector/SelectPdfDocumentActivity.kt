@@ -35,10 +35,10 @@ class SelectPdfDocumentActivity : BaseNoNavigationActivity() {
     }
 
     private fun observeViewModel() {
-        viewModel.observableDocuments.observe(this, {
+        viewModel.observableDocuments.observe(this) {
             adapter.submitList(it)
-        })
-        viewModel.observableSelectionResource.observe(this, { model ->
+        }
+        viewModel.observableSelectionResource.observe(this) { model ->
             when (val resource = model.resource) {
                 is Failure -> {
                     resource.exception.getDocScanDBError()?.let { dbError ->
@@ -65,51 +65,47 @@ class SelectPdfDocumentActivity : BaseNoNavigationActivity() {
                     finish()
                 }
             }
+        }
+        viewModel.observableConfirmExport.observe(this, ConsumableEvent { bundle ->
+            showDialog(ADialog.DialogAction.CONFIRM_OCR_SCAN, arguments = bundle)
         })
-        viewModel.observableConfirmExport.observe(this, {
-            it.getContentIfNotHandled()?.let { bundle ->
-                showDialog(ADialog.DialogAction.CONFIRM_OCR_SCAN, arguments = bundle)
-            }
-        })
-        dialogViewModel.observableDialogAction.observe(this, {
-            it.getContentIfNotHandled()?.let { dialogResult ->
-                when (dialogResult.dialogAction) {
-                    ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
-                        when (dialogResult.pressedAction) {
-                            DialogButton.POSITIVE -> {
-                                viewModel.export(
-                                    dialogResult.arguments.appendIsConfirmed(true)
-                                        .appendUseOCR(true)
-                                )
-                            }
-                            DialogButton.NEGATIVE -> {
-                                viewModel.export(
-                                    dialogResult.arguments.appendIsConfirmed(true)
-                                        .appendUseOCR(false)
-                                )
-                            }
-                            DialogButton.NEUTRAL -> {
-                                // ignore
-                            }
-                        }
-                    }
-                    ADialog.DialogAction.EXPORT_WARNING_OCR_NOT_AVAILABLE -> {
-                        if (dialogResult.isPositive()) {
+        dialogViewModel.observableDialogAction.observe(this, ConsumableEvent { dialogResult ->
+            when (dialogResult.dialogAction) {
+                ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
+                    when (dialogResult.pressedAction) {
+                        DialogButton.POSITIVE -> {
                             viewModel.export(
-                                dialogResult.arguments.appendUseOCR(false)
+                                dialogResult.arguments.appendIsConfirmed(true)
+                                    .appendUseOCR(true)
                             )
                         }
-                    }
-                    ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING -> {
-                        if (dialogResult.isPositive()) {
+                        DialogButton.NEGATIVE -> {
                             viewModel.export(
-                                dialogResult.arguments.appendSkipCropRestriction(true)
+                                dialogResult.arguments.appendIsConfirmed(true)
+                                    .appendUseOCR(false)
                             )
                         }
+                        DialogButton.NEUTRAL, DialogButton.DISMISS -> {
+                            // ignore
+                        }
                     }
-                    else -> {
-                        // ignore
+                }
+                ADialog.DialogAction.EXPORT_WARNING_OCR_NOT_AVAILABLE -> {
+                    if (dialogResult.isPositive()) {
+                        viewModel.export(
+                            dialogResult.arguments.appendUseOCR(false)
+                        )
                     }
+                }
+                ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING -> {
+                    if (dialogResult.isPositive()) {
+                        viewModel.export(
+                            dialogResult.arguments.appendSkipCropRestriction(true)
+                        )
+                    }
+                }
+                else -> {
+                    // ignore
                 }
             }
         })

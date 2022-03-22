@@ -73,7 +73,6 @@ private fun Document.sanitizedTitle(): String {
     return title.replace(" ", "").lowercase()
 }
 
-// TODO: SHARE_CONSTRAINT: Is the file name prefix correctly constructed
 private fun Document.fileNamePrefix(pageNumber: Int): String {
     filePrefix?.let {
         if (it.isNotEmpty()) {
@@ -89,11 +88,8 @@ fun Document.edit(title: String, prefix: String?, metaData: MetaData?): Document
     this.title = title
     this.filePrefix = prefix
     val metaDataTemp = metaData
-    // TODO: UPLOAD_CONSTRAINT: Check if this is ok, so that the relatedUploadId is copied from the old one.
-    // TODO: UPLOAD_CONSTRAINT: Is this just a meta flag, or really the uploadId as used for the upload requests?
     metaData?.relatedUploadId = this.metaData?.relatedUploadId
 
-    // TODO: UPLOAD_CONSTRAINT: Are these flags still necessary (they can be only set via the QR-code)
     metaData?.hierarchy = this.metaData?.hierarchy
     metaData?.description = this.metaData?.description
     this.metaData = metaDataTemp

@@ -89,7 +89,6 @@ class MigrationRepository(
         val storage: JsonStorage
         when (val storageResult = parseJsonStorage(documentStorageFile)) {
             is Failure -> {
-                // TODO: MIGRATION_LOGIC: Check if the parsing of the file is bullet-proof, since if this fails for whatever reason, then all of the migration is lost.
                 preferencesHandler.shouldPerformDBMigration = false
                 return Success(Unit)
             }

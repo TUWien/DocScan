@@ -56,7 +56,7 @@ class ImageViewerFragment : Fragment() {
     }
 
     private fun observe() {
-        viewModel.observablePage.observe(viewLifecycleOwner, { page ->
+        viewModel.observablePage.observe(viewLifecycleOwner) { page ->
             binding.imageViewerImageView.apply {
                 transitionName = page.id.toString()
 
@@ -66,13 +66,13 @@ class ImageViewerFragment : Fragment() {
                     val resolution = calculateImageResolution(it, page.rotation)
                     if (page.postProcessingState != PostProcessingState.DONE) {
                         binding.imageViewerImageView.setPoints(
-                                page.getScaledCropPoints(resolution.width, resolution.height)
+                            page.getScaledCropPoints(resolution.width, resolution.height)
                         )
                     } else {
                         resetPoints()
                     }
                 } ?: resetPoints()
             }
-        })
+        }
     }
 }
