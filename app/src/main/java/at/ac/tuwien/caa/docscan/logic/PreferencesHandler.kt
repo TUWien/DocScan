@@ -379,12 +379,7 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
 
     private var installedVersionCode: Int
         get() {
-            // if the installed version key does not exist on the phone, then add the current one immediately, this
-            // is important, otherwise migrations would be performed on clean installs too.
-            if (!sharedPreferences.contains(INSTALLED_VERSION_KEY)) {
-                installedVersionCode = BuildConfig.VERSION_CODE
-            }
-            return sharedPreferences.getInt(INSTALLED_VERSION_KEY, 0)
+            return sharedPreferences.getInt(INSTALLED_VERSION_KEY, BuildConfig.VERSION_CODE)
         }
         @SuppressLint("ApplySharedPref") set(value) {
             sharedPreferences.edit()
@@ -534,8 +529,9 @@ class PreferencesHandler(val context: Context, private val userDao: UserDao) {
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )
 
-        // represents a clean install or an already updated version
-        if (BuildConfig.VERSION_CODE == installedVersionCode) {
+        // if the shared preferences do not contain the installed version, then this means that this
+        // is a clean install, therefore all major migrations can be skipped
+        if (!sharedPreferences.contains(INSTALLED_VERSION_KEY)) {
             // disable migration flags, otherwise for a clean install they could be run too.
             shouldPerformDBMigration = false
             shouldPerformV1_80_PrefsMigration = false
