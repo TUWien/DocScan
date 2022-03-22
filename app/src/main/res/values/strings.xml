@@ -60,7 +60,7 @@
     <string name="app_settings">App Settings</string>
 
     <string name="start_migration_dialog_1_title">Attention</string>
-    <string name="start_migration_dialog_1_text">Due to the changes of the Android\'s storage system in the last two years, your data needs to be migrated into the app\'s internal database. Your data will be no longer accessible from the public storage of your device if you proceed, but can be explicitly exported from the app afterwards. If you want to make a safe copy of your data first, then please cancel this operation, make a safe copy and proceed later!</string>
+    <string name="start_migration_dialog_1_text">Due to the changes of the Android\'s storage system in the last two years, your data needs to be migrated into the app\'s internal database. Your data will be no longer accessible from the public storage of your device if you proceed, but can be explicitly exported from the app afterwards. If you want to make a safe copy of your data first, then please cancel this operation, make a safe copy and proceed later.\n Please also note that uninstalling this app would permanently delete your images.</string>
 
     <string name="start_migration_dialog_2_title">Data migration</string>
     <string name="start_migration_dialog_2_text">If you proceed, then your image data will be moved from the public storage into the app\'s internal storage. The exporting features have been enhanced to export your data from the app\'s internal storage. Do you want to proceed? This action cannot be undone!</string>
