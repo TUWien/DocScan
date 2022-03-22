@@ -90,6 +90,10 @@ class MigrationRepository(
         val storage: JsonStorage
         when (val storageResult = parseJsonStorage(documentStorageFile)) {
             is Failure -> {
+                Timber.e(
+                    storageResult.exception,
+                    "Unable to parse documentStorage.json - skipping migration entirely!"
+                )
                 preferencesHandler.shouldPerformDBMigration = false
                 return Success(Unit)
             }
