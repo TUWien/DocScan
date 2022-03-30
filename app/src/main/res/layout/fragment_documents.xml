@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textAlignment="center"
-            android:text="No documents\nPlease create a document first" />
+            android:text="@string/documents_no_documents" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -17,7 +17,6 @@ downloads the resources.
 
 ## API keys
 The app makes use of two APIs that require keys which are not published in the repository and should never be provided to the public. Instead not working dummy keys are provided in the following files:
-- `gradle.properties`: contains the key for Dropbox integration
 - `google-services.json`: contains the key for Firebase integration (needed for OCR)
 
 You can get the API key if you send a mail to docscan@cvl.tuwien.ac.at. Before you replace the dummy keys, assure that you do not commit the keys with the following commands:

@@ -9,7 +9,7 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity
+import at.ac.tuwien.caa.docscan.ui.account.TranskribusLoginActivity
 
 @RunWith(AndroidJUnit4::class)
 class LoginActivityTest {

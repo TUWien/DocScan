@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/image_options"
         android:icon="@drawable/ic_more_vert_black_24dp"
-        android:title="@string/gallery_menu_rotate_item_title"
-        android:onClick="openDocumentOption"
+        android:title="@string/menu_options"
         app:showAsAction="always" />
 
 </menu>

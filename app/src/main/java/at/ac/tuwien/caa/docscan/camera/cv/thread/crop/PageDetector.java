@@ -4,11 +4,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.PointF;
 import android.os.Looper;
 
+import androidx.annotation.WorkerThread;
 import androidx.exifinterface.media.ExifInterface;
-
-import android.util.Log;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -16,11 +13,13 @@ import org.opencv.imgproc.Imgproc;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
-import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
+import at.ac.tuwien.caa.docscan.camera.cv.NativeWrapper;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import timber.log.Timber;
 
 public class PageDetector {
 
@@ -42,7 +41,7 @@ public class PageDetector {
     static ArrayList<PointF> findRect(String fileName) {
 
         if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
-            Log.d(CLASS_TAG, "findRect: you should not perform this on the main thread!");
+            Timber.d("findRect: you should not perform this on the main thread!");
         }
 
         Mat inputMat = Imgcodecs.imread(fileName);
@@ -70,12 +69,13 @@ public class PageDetector {
 
     }
 
+    @WorkerThread
     public static PageFocusResult findRectAndFocus(String fileName) {
 
-        Log.d(CLASS_TAG, "findRectAndFocus");
+        Timber.d("findRectAndFocus");
 
         if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
-            Log.d(CLASS_TAG, "findRect: you should not perform this on the main thread!");
+            Timber.d("findRect: you should not perform this on the main thread!");
         }
 
         Mat inputMat = Imgcodecs.imread(fileName);
@@ -158,7 +158,7 @@ public class PageDetector {
         try {
             savePointsToExif(fileName, result.getPoints(), result.isFocused());
         } catch (IOException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         }
 
     }
@@ -177,7 +177,7 @@ public class PageDetector {
         try {
             savePointsToExif(fileName, result.getPoints(), result.isFocused());
         } catch (IOException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         }
 
     }
@@ -243,7 +243,7 @@ public class PageDetector {
             if (coordString != null) {
                 exif.setAttribute(ExifInterface.TAG_MAKER_NOTE, coordString);
                 exif.saveAttributes();
-                Log.d(CLASS_TAG, "savePointsToExif: coordString" + coordString);
+                Timber.d("savePointsToExif: coordString" + coordString);
             }
         }
 
@@ -431,7 +431,7 @@ public class PageDetector {
 
             }
         } catch (IOException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         }
 
 //        If no point set is found use the entire image dimension:
@@ -440,6 +440,10 @@ public class PageDetector {
     }
 
     private static void scalePoints(ArrayList<PointF> points, int width, int height) {
+        scalePointsGeneric(points, width, height);
+    }
+
+    public static void scalePointsGeneric(List<PointF> points, int width, int height) {
 
         for (PointF point : points) {
             point.x *= width;
@@ -479,7 +483,7 @@ public class PageDetector {
             }
 
         } catch (IOException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         }
 
     }
@@ -495,7 +499,7 @@ public class PageDetector {
             }
 
         } catch (IOException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         }
 
         return false;

@@ -1,25 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="at.ac.tuwien.caa.docscan">
 
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- The permission is kept only for migration purposes -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+
+    <!--both external storage flags are kept in order to make a migration possible for old apps -->
     <application
+        android:name=".DocScanApp"
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher_adaptive"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:name="androidx.multidex.MultiDexApplication"
+        android:preserveLegacyExternalStorage="true"
         android:requestLegacyExternalStorage="true"
-        android:theme="@style/AppTheme" >
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
 
         <!-- Download the ML kit model for OCR, after the app is installed from the play store -->
         <meta-data
-            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="ocr" />
 
         <!-- We need a file provider to enable a sharing of the log file (which is saved in internal memory) -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="at.ac.tuwien.caa.fileprovider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -27,182 +48,65 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <service
-            android:exported="false"
-            android:name=".sync.UploadService">
+        <receiver
+            android:name=".receiver.NotificationsActionReceiver"
+            android:exported="false">
             <intent-filter>
-                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE"/>
+                <action android:name="DOC_SCAN_NOTIFICATION_ACTION" />
             </intent-filter>
-        </service>
+        </receiver>
 
         <activity
-            android:name=".ui.StartActivity"
-            android:theme="@style/SplashTheme"
-            android:label="@string/app_name">
+            android:name=".ui.start.StartActivity"
+            android:exported="true"
+            android:theme="@style/Theme.App.Starting">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
         <activity
-            android:name=".ui.AboutActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.CameraActivity"
-            />
-        <activity
-            android:name=".ui.docviewer.SelectPdfDocumentActivity"
-            android:exported="true"
-            />
+            android:name=".ui.intro.IntroActivity"
+            android:launchMode="singleTop" />
 
-        <activity
-            android:name=".ui.document.SelectDocumentActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.CameraActivity"
-            />
+        <activity android:name=".ui.info.AboutActivity" />
+        <activity android:name=".ui.docviewer.documents.selector.SelectPdfDocumentActivity" />
 
         <activity
             android:name=".ui.gallery.PageSlideActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.CameraActivity"
-            />
+            android:launchMode="singleTop" />
 
-        <activity
-            android:name=".ui.gallery.GalleryActivity"
-            android:exported="true"
-            android:launchMode="singleTop"
-            android:parentActivityName=".ui.CameraActivity"
-            />
+        <activity android:name=".ui.segmentation.SegmentationActivity" />
+        <activity android:name=".ui.account.TranskribusLoginActivity" />
 
+        <!-- The orientation is set to portrait, since the CameraActivity would crash at on rotation, see ActionSheet.kt -->
         <activity
-            android:name=".ui.TranskribusLoginActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.CameraActivity"
-            />
-
-        <activity
-            android:name=".ui.CameraActivity"
-            android:exported="true"
-            android:screenOrientation="portrait"
+            android:name=".ui.camera.CameraActivity"
             android:configChanges="orientation|screenSize"
-            />
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
 
-
-        <activity
-            android:name=".ui.CropViewActivity"
-            android:exported="true"
-            />
-
+        <activity android:name=".ui.crop.CropViewActivity" />
         <activity
             android:name=".ui.document.CreateDocumentActivity"
-            android:exported="true"
-            android:configChanges="orientation|screenSize"
-            />
-
-        <!--<activity-->
-            <!--android:name=".ui.docviewer.NewDocumentActivity"-->
-            <!--android:exported="true"-->
-            <!--android:configChanges="orientation|screenSize"-->
-            <!--/>-->
-
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".ui.document.EditDocumentActivity"
-            android:configChanges="orientation|screenSize"
-            />
+            android:configChanges="orientation|screenSize" />
 
-		<activity
-            android:name=".ui.settings.PreferenceActivity"
-            android:parentActivityName=".ui.CameraActivity"
-            android:exported="true"
-		/>
+        <activity android:name=".ui.settings.PreferenceActivity" />
+        <activity android:name=".ui.settings.DebugPreferenceActivity" />
+        <activity android:name=".ui.settings.ExifPreferenceActivity" />
+        <activity android:name=".ui.info.LogActivity" />
+        <activity android:name=".ui.account.logout.LogoutActivity" />
+        <activity android:name=".ui.license.LicenseActivity" />
+        <activity android:name=".ui.docviewer.DocumentViewerActivity" />
 
-		<activity
-            android:name=".ui.MapViewActivity"
-            android:exported="false"
-		/>
-
-		<activity
-            android:name=".ui.settings.DebugPreferenceActivity"
-            android:exported="false"
-		/>
-
-        <activity
-            android:name=".ui.settings.ExifPreferenceActivity"
-            android:exported="false"
-            />
-
-        <activity
-            android:name=".ui.LogActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.CameraActivity"
-            />
-
-        <activity
-            android:name=".ui.AccountActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.CameraActivity"
-            />
-
-        <activity
-            android:name=".ui.DropboxLoginActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.CameraActivity"
-            />
-
-        <activity
-            android:name=".ui.LogoutActivity"
-            android:exported="false"
-            android:parentActivityName=".ui.CameraActivity"
-            />
-
-        <!--Debugging activities: -->
-
-        <activity
-            android:name=".ui.license.LicenseActivity"
-            android:exported="false"
-            />
-
-        <activity
-            android:name=".ui.docviewer.DocumentViewerActivity"
-            android:exported="true"
-            android:parentActivityName=".ui.CameraActivity"
-            />
-
-        <activity
-            android:name="com.dropbox.core.android.AuthActivity"
-            android:configChanges="orientation|keyboard"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <data android:scheme="@string/dropbox_api_key" />
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <!--<receiver android:name=".sync.BootReceiver">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.BOOT_COMPLETED" />-->
-            <!--</intent-filter>-->
-        <!--</receiver>-->
-
-        <uses-library android:name="android.test.runner"
+        <uses-library
+            android:name="android.test.runner"
             android:required="false" />
 
     </application>
-
-
-
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-feature android:name="android.hardware.camera"/>
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
-    <uses-feature android:name="android.hardware.location.gps" android:required="false"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-
-
-
 </manifest>

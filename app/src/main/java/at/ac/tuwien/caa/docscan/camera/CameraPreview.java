@@ -23,22 +23,27 @@
 
 package at.ac.tuwien.caa.docscan.camera;
 
+import static android.hardware.Camera.Parameters.FLASH_MODE_OFF;
+import static android.hardware.Camera.Parameters.FLASH_MODE_TORCH;
+import static android.hardware.Camera.Parameters.FOCUS_MODE_AUTO;
+import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
+import static com.google.zxing.BarcodeFormat.QR_CODE;
+
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.hardware.Camera;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
+import androidx.annotation.NonNull;
+
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
@@ -47,8 +52,6 @@ import com.google.zxing.NotFoundException;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.common.HybridBinarizer;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -59,13 +62,8 @@ import java.util.Map;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
 import at.ac.tuwien.caa.docscan.camera.cv.thread.preview.IPManager;
-import at.ac.tuwien.caa.docscan.ui.CameraActivity;
-
-import static android.hardware.Camera.Parameters.FLASH_MODE_OFF;
-import static android.hardware.Camera.Parameters.FLASH_MODE_TORCH;
-import static android.hardware.Camera.Parameters.FOCUS_MODE_AUTO;
-import static android.hardware.Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE;
-import static com.google.zxing.BarcodeFormat.QR_CODE;
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity;
+import timber.log.Timber;
 
 
 /**
@@ -76,7 +74,6 @@ import static com.google.zxing.BarcodeFormat.QR_CODE;
 @SuppressWarnings("deprecation")
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.AutoFocusCallback {
 
-    private static final String CLASS_NAME = "CameraPreview";
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private Camera.CameraInfo mCameraInfo;
@@ -154,7 +151,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
         Result result = null;
 
-        Log.d(CLASS_NAME, "detectBarcode");
+        Timber.d("detectBarcode");
 
         Map<DecodeHintType, Object> hintsMap = new EnumMap<>(DecodeHintType.class);
         hintsMap.put(DecodeHintType.POSSIBLE_FORMATS, EnumSet.of(BarcodeFormat.QR_CODE));
@@ -162,18 +159,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         try {
             result = mMultiFormatReader.decode(bitmap, hintsMap);
             if (result != null)
-                Log.d(CLASS_NAME, "result: " + result.toString());
+                Timber.d("result: %s", result.toString());
             else
-                Log.d(CLASS_NAME, "detectBarcode: no result");
+                Timber.d("detectBarcode: no result");
         } catch (NotFoundException e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.d(e, "Barcode in image not found!");
         }
 
         if (result != null) {
-            Log.d(CLASS_NAME, "rawresult output: " + result.toString());
+            Timber.d("rawresult output: %s", result.toString());
             mCVCallback.onQRCode(result);
         } else
-            Log.d(CLASS_NAME, "rawresult still null");
+            Timber.d("rawresult still null");
 
     }
 
@@ -186,7 +183,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             source = new PlanarYUVLuminanceSource(data, mFrameWidth, mFrameHeight, 0, 0,
                     mFrameWidth, mFrameHeight, false);
         } catch (Exception e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         }
 
         return source;
@@ -206,7 +203,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             return;
 
         if (mIsQRMode) {
-            Log.d(CLASS_NAME, "detecting qr code");
+            Timber.d("detecting qr code");
             detectBarcode(pixels);
         } else {
 //            Log.d(CLASS_NAME, "doing cv stuff");
@@ -254,30 +251,30 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public void startContinousFocus() {
 
-        Log.d(CLASS_NAME, "starting continous focus");
+        Timber.d("starting continous focus");
         try {
             if (mCamera != null) {
                 Camera.Parameters params = mCamera.getParameters();
                 if (params.getSupportedFocusModes().contains(FOCUS_MODE_CONTINUOUS_PICTURE)) {
-                    Log.d(CLASS_NAME, "contains continous focus");
+                    Timber.d("contains continous focus");
 //                    We must cancel the autofocus, because otherwise continuous focus is not possible
                     mCamera.cancelAutoFocus();
                     params.setFocusMode(FOCUS_MODE_CONTINUOUS_PICTURE);
                     mCamera.setParameters(params);
-                    Log.d(CLASS_NAME, "continous focus started");
+                    Timber.d("continous focus started");
                 } else if (params.getSupportedFocusModes().contains(FOCUS_MODE_AUTO))
                     startAutoFocus();
             }
         } catch (RuntimeException e) {
 //            Nothing to do here, probably camera.release has been called from somewhere.
-            Log.d(CLASS_NAME, "catched RuntimeException");
+            Timber.d("catched RuntimeException");
         }
 
     }
 
     public void startAutoFocus() {
 
-        Log.d(CLASS_NAME, "starting auto focus");
+        Timber.d("starting auto focus");
         try {
             if (mCamera != null) {
                 Camera.Parameters params = mCamera.getParameters();
@@ -294,7 +291,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             }
         } catch (RuntimeException e) {
 //            Nothing to do here, probably camera.release has been called from somewhere.
-            Log.d(CLASS_NAME, "catched RuntimeException");
+            Timber.d("catched RuntimeException");
         }
 
 
@@ -302,7 +299,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private PointF getCenterPoint() {
 
-        Log.d(CLASS_NAME, "getCenterPoint: " + getWidth() + " " + getHeight());
+        Timber.d("getCenterPoint: " + getWidth() + " " + getHeight());
         PointF point = new PointF();
         point.x = getWidth() / 2;
         point.y = getHeight() / 2;
@@ -337,7 +334,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             try {
                 wait();
             } catch (InterruptedException e) {
-                FirebaseCrashlytics.getInstance().recordException(e);
+                Timber.e(e);
             }
         }
     }
@@ -431,7 +428,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         if (mHolder.getSurface() == null) {
             // preview surface does not exist
-            Log.d(CLASS_NAME, "Preview surface does not exist");
+            Timber.d("Preview surface does not exist");
             return;
         }
 
@@ -449,7 +446,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private void releaseCamera() {
 
-        Log.d(CLASS_NAME, "releasing camera");
+        Timber.d("releasing camera");
         isCameraInitialized = false;
         if (mCamera != null) {
             try {
@@ -484,7 +481,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     @SuppressWarnings("deprecation")
     public boolean onTouchEvent(MotionEvent event) {
 
-        Log.d(CLASS_NAME, "onTouchEvent");
+        Timber.d("onTouchEvent");
 
         if (mCamera == null)
             return true;
@@ -500,7 +497,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 //        final PointF screenPoint = getTouchPoint(event);
 
-        Log.d(CLASS_NAME, "onTouchEvent: " + event);
+        Timber.d("onTouchEvent: " + event);
 
         mLastTouchPoint = screenPoint;
         mCameraPreviewCallback.onFocusTouch(screenPoint);
@@ -524,7 +521,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
             Rect focusRect = getFocusRect(screenPoint);
             if (focusRect == null) {
-                Log.d(CLASS_NAME, "focus rectangle is not valid!");
+                Timber.d("focus rectangle is not valid!");
                 return true;
             }
 
@@ -574,7 +571,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         } catch (RuntimeException e) {
             //            This can happen if the user touches the CameraPreview, while the preview is not
             //            started. In this case we do nothing.
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         }
 
 
@@ -587,7 +584,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // The camera field of view is normalized so that -1000,-1000 is top left and 1000, 1000 is
         // bottom right. Note that multiple areas are possible, but currently only one is used.
 
-        int orientation = calculatePreviewOrientation(mCameraInfo);
+        int orientation = calculatePreviewOrientation(getContext(), mCameraInfo);
 
         // Transform the point:
         PointF rotatedPoint = rotatePoint(touchScreen, orientation);
@@ -599,7 +596,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         PointF result = new PointF();
 
-        Log.d(CLASS_NAME, "orientation: " + orientation);
+        Timber.d("orientation: " + orientation);
 
         switch (orientation) {
             case 0:
@@ -694,17 +691,17 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         // stop preview before making changes
         try {
             mCamera.stopPreview();
-            Log.d(CLASS_NAME, "Preview stopped.");
+            Timber.d("Preview stopped.");
         } catch (Exception e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         }
 
-        Log.d(CLASS_NAME, "initPreview");
+        Timber.d("initPreview");
 
         if (mCamera == null)
             return;
 
-        int orientation = calculatePreviewOrientation(mCameraInfo);
+        int orientation = calculatePreviewOrientation(getContext(), mCameraInfo);
         mCamera.setDisplayOrientation(orientation);
 
         Camera.Parameters params = initParameters();
@@ -716,7 +713,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.setPreviewCallback(this);
             mCamera.startPreview();
         } catch (Exception e) {
-            FirebaseCrashlytics.getInstance().recordException(e);
+            Timber.e(e);
         }
 
         // Tell the dependent Activity that the frame dimension (might have) change:
@@ -729,7 +726,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     }
 
-    @NotNull
+    @NonNull
     private Camera.Parameters initParameters() {
 
         //        Load the camera parameters:
@@ -753,7 +750,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             params.setFlashMode(mFlashMode);
     }
 
-    @NotNull
+    @NonNull
     private Camera.Size initPictureSize(Camera.Parameters params) {
         Camera.Size pictureSize = getLargestPictureSize();
         params.setPictureSize(pictureSize.width, pictureSize.height);
@@ -836,7 +833,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 //        so that the height returned the entire height without subtracting the height of the camera control layout.
 //        Therefore, we calculate the dimension of the preview manually.
 //        int height = getHeight();
-        Point dim = CameraActivity.getPreviewDimension();
+        // TODO: This is a dirty cast hack, which will only work here, this should be avoided
+        Point dim = ((CameraActivity) getContext()).getPreviewDimension();
         if (dim != null) {
             width = dim.x;
             height = dim.y;
@@ -919,10 +917,10 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
      * {@link Camera#setDisplayOrientation(int)}.
      */
     @SuppressWarnings("deprecation")
-    public static int calculatePreviewOrientation(Camera.CameraInfo info) {
+    public static int calculatePreviewOrientation(Context context, Camera.CameraInfo info) {
 
         // Get the rotation of the screen to adjust the preview image accordingly.
-        int rotation = CameraActivity.getDisplayRotation();
+        int rotation = CameraActivity.getDisplayRotation(context);
 
         int degrees = 0;
 
@@ -991,7 +989,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     @SuppressWarnings("deprecation")
     private void initCamera() {
 
-        Log.d(CLASS_NAME, "initCamera:");
+        Timber.d("initCamera:");
 //        releaseCamera();
         // Open an instance of the first camera and retrieve its info.
 //        try {
@@ -1015,7 +1013,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         if (mCamera == null)
             return;
 
-        int cameraOrienation = calculatePreviewOrientation(mCameraInfo);
+        int cameraOrienation = calculatePreviewOrientation(getContext(), mCameraInfo);
         mCamera.setDisplayOrientation(cameraOrienation);
 
         mLastTouchPoint = null;

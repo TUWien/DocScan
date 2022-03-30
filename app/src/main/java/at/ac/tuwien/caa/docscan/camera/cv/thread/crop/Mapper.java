@@ -1,14 +1,8 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.crop;
 
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.Context;
 import android.graphics.PointF;
 
 import androidx.annotation.NonNull;
-import androidx.exifinterface.media.ExifInterface;
-
-import android.util.Log;
 
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
@@ -18,11 +12,10 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import at.ac.tuwien.caa.docscan.camera.cv.DkVector;
-import at.ac.tuwien.caa.docscan.logic.Helper;
+import timber.log.Timber;
 
 public class Mapper {
 
@@ -31,83 +24,57 @@ public class Mapper {
     private static final int DOWN = 2;
     private static final int LEFT = 3;
 
-    private static final String CLASS_NAME = "Mapper";
-
     /**
-     * Maps the image and replaces the corresponding file after mapping.
-     *
-     * @param fileName
-     * @param points
-     * @return
+     * Applies the cropping to the provided file.
+     * Post-Condition: Existing exif data is lost after a successfully operation.
      */
-    public static boolean replaceWithMappedImage(String fileName, ArrayList<PointF> points) {
-
+    public static File applyCropping(File file, ArrayList<PointF> points) {
         Mat transformedMat = null;
-
         try {
-            transformedMat = cropAndTransform(fileName, points);
+            transformedMat = cropAndTransform(file, points);
             if (transformedMat != null) {
-//            First copy the exif data, because we do not want to loose this data:
-//                    TODO; check if exif is not already saved in replaceImage
-                boolean fileSaved = Helper.replaceImage(fileName, transformedMat);
-                return fileSaved;
+                File newFile = replaceImage(file, transformedMat);
+                transformedMat.release();
+                return newFile;
             }
+        } catch (Exception e) {
+            Timber.e(e, "replaceWithMappedImage has failed!");
+            return null;
         } finally {
             if (transformedMat != null)
                 transformedMat.release();
         }
-
-        return false;
-
+        return null;
     }
 
-
-    /**
-     * Maps the image and saves it in the file with the name: newFileName
-     *
-     * @param fileName
-     * @param newFileName
-     * @param points
-     * @return
-     */
-    public static boolean mapImage(String fileName, String newFileName, ArrayList<PointF> points) {
-
-        Mat transformedMat = null;
+    private static File replaceImage(File file, Mat mat) {
         try {
-            transformedMat = cropAndTransform(fileName, points);
-            if (transformedMat != null)
-                return Imgcodecs.imwrite(newFileName, transformedMat);
-        } finally {
-            if (transformedMat != null)
-                transformedMat.release();
+            boolean fileSaved = Imgcodecs.imwrite(file.getAbsolutePath(), mat);
+            if (fileSaved) {
+                return file;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            Timber.e(e, "replaceImage has failed!");
         }
-
-        return false;
-
+        return null;
     }
 
-//    private static Bitmap matToBitmap(Mat transformedMat) {
-//
-//        Bitmap result = Bitmap.createBitmap(transformedMat.cols(), transformedMat.rows(), Bitmap.Config.ARGB_8888);
-//        Utils.matToBitmap(transformedMat, result);
-//        return result;
-//
-//    }
+    private static Mat cropAndTransform(File file, ArrayList<PointF> srcPoints) {
 
-    private static Mat cropAndTransform(String fileName, ArrayList<PointF> srcPoints) {
-
-        if (!new File(fileName).exists())
+        if (!file.exists())
             return null;
 
         Mat inputMat = null;
 
         try {
-            inputMat = Imgcodecs.imread(fileName);
+            inputMat = Imgcodecs.imread(file.getAbsolutePath());
 
             // Scale the points since they are normed:
             scalePoints(srcPoints, inputMat.width(), inputMat.height());
 //        Add an offset to the crop coordinates:
-            srcPoints = PageDetector.getParallelPoints(srcPoints, fileName);
+            srcPoints = PageDetector.getParallelPoints(srcPoints, file.getAbsolutePath());
 
             // Sort the points so that the bottom left corner is on the first index:
             sortPoints(srcPoints);
@@ -117,7 +84,7 @@ public class Mapper {
             float height = (float) size.height;
 
 //        Get the destination points:
-            ArrayList destPoints = getDestinationPoints(width, height);
+            ArrayList<PointF> destPoints = getDestinationPoints(width, height);
 
             // Transform the image:
             return warpMat(inputMat, srcPoints, destPoints, Math.round(width), Math.round(height));
@@ -200,8 +167,8 @@ public class Mapper {
     }
 
     @NonNull
-    private static ArrayList getDestinationPoints(float width, float height) {
-        ArrayList destPoints = new ArrayList();
+    private static ArrayList<PointF> getDestinationPoints(float width, float height) {
+        ArrayList<PointF> destPoints = new ArrayList<>();
         destPoints.add(new PointF(0, height));
         destPoints.add(new PointF(0, 0));
         destPoints.add(new PointF(width, 0));
@@ -267,11 +234,4 @@ public class Mapper {
         return -1;
 
     }
-
-    private static void printPointList(ArrayList<PointF> points, String name) {
-
-        for (PointF point : points)
-            Log.d(CLASS_NAME, name + " " + point);
-    }
-
 }

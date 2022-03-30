@@ -1,0 +1,34 @@
+{
+  "vsc_start_date_time": "2021-02-08T21:19:23+0100",
+  "vsc_end_date_time": "2021-02-09T03:10:18+0100",
+  "vsc_job_id": 9327810,
+  "dataset_name": "finger_db",
+  "dataset_id": 0,
+  "deeplab_model_name": "mobilenet_v3_large_seg",
+  "image_size": 769,
+  "input_tensor_name": "MobilenetV3/MobilenetV3/input:0",
+  "tflite_model_file_name": "9327810_769_mobilenet_v3_large_seg_0.tflite",
+  "label_weight_0": 15.706,
+  "label_weight_1": 1.097,
+  "label_weight_2": 64.937,
+  "label_weight_3": 104.722,
+  "num_iterations": 30000,
+  "num_q_iterations": 5000,
+  "eval_model": {
+    "class_0": 0.767136216,
+    "class_1": 0.968841076,
+    "class_2": 0.555016,
+    "class_3": 0.839465678,
+    "overall": 0.782614708
+  },
+  "eval_q_model": {
+    "class_0": 0.700967371,
+    "class_1": 0.968481719,
+    "class_2": 0.56587714,
+    "class_3": 0.790367484,
+    "overall": 0.756423414
+  },
+  "output_log_file_name": "full_log_9327810_769_mobilenet_v3_large_seg_0_08_02_2021_21_19_23.txt",
+  "note": "",
+  "base_learning_rate_q": 0.0003
+}

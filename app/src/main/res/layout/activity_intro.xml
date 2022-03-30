@@ -4,19 +4,16 @@
     android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     android:background="@color/light_gray"
-    android:theme="@style/AppTheme">
+    android:fitsSystemWindows="true">
 
-    <androidx.viewpager.widget.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/intro_viewpager"
-        android:paddingTop="32dp"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewpager2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/bottom_layout"
         android:layout_centerInParent="true"
-
-        />
+        android:paddingTop="32dp" />
 
     <RelativeLayout
         android:id="@+id/bottom_layout"
@@ -38,8 +35,8 @@
             android:id="@+id/intro_skip_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
             android:layout_below="@id/tabDots"
+            android:layout_centerHorizontal="true"
             android:text="@string/intro_skip_button_text"
             android:textColor="@color/white"
             app:backgroundTint="@color/colorAccent" />

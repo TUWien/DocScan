@@ -23,19 +23,16 @@
 
 package at.ac.tuwien.caa.docscan.camera.cv;
 
-import android.os.Looper;
-import android.util.Log;
+import androidx.annotation.Keep;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
-import at.ac.tuwien.caa.docscan.camera.cv.Patch;
-
 /**
  * Class responsible for calling native methods (for page segmentation and focus measurement).
  */
+@Keep
 public class NativeWrapper {
 
     private static final String CLASS_NAME = "NativeWrapper";
@@ -95,9 +92,9 @@ public class NativeWrapper {
 
     }
 
-    public static double getIllumination(Mat src, DkPolyRect polyRect) {
-        return nativeGetIllumination(src.getNativeObjAddr(), polyRect);
-    }
+//    public static double getIllumination(Mat src, DkPolyRect polyRect) {
+//        return nativeGetIllumination(src.getNativeObjAddr(), polyRect);
+//    }
 
     /**
      * Native method for focus measurement.
@@ -125,8 +122,8 @@ public class NativeWrapper {
      * @param polyRect rectangle describing the page
      * @return double value measuring the illumination quality
      */
-    @SuppressWarnings("JniMissingFunction")
-    private static native double nativeGetIllumination(long src, DkPolyRect polyRect);
+//    @SuppressWarnings("JniMissingFunction")
+//    private static native double nativeGetIllumination(long src, DkPolyRect polyRect);
 
     public static void setUseLab(boolean useLab) {
         mUseLab = useLab;

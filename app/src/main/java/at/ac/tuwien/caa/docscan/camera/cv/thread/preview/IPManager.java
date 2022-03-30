@@ -22,6 +22,7 @@ import at.ac.tuwien.caa.docscan.camera.CameraPreview;
 import at.ac.tuwien.caa.docscan.camera.cv.CVResult;
 import at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect;
 import at.ac.tuwien.caa.docscan.camera.cv.Patch;
+import timber.log.Timber;
 
 import static at.ac.tuwien.caa.docscan.camera.cv.DkPolyRect.KEY_POLY_RECT;
 import static at.ac.tuwien.caa.docscan.camera.cv.Patch.KEY_FOCUS;
@@ -84,7 +85,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
     static {
 
-        Log.d(CLASS_NAME, "==========================creating new instance\"==========================");
+        Timber.d("==========================creating new instance\"==========================");
 
         sInstance = new IPManager();
 
@@ -136,7 +137,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                             mNoMoveCycles = 0;
                             mIsAlreadyChanged = true;
-                            Log.d(CLASS_NAME, "handleMessage: onMovement: true");
+                            Timber.d("handleMessage: onMovement: true");
 
                             mIsAutoFocusDone = false;
 
@@ -151,13 +152,13 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                         case MESSAGE_NO_CHANGE_DETECTED:
 
-                            Log.d(CLASS_NAME, "handleMessage: onMovement: false");
+                            Timber.d("handleMessage: onMovement: false");
 
                             if (!mIsAlreadyChanged) {
 
                                 if (!ChangeDetector.getInstance().isNewFakeFrame(mat)) {
 
-                                    Log.d(CLASS_NAME, "handleMessage: FAKE onWaitingForDoc: true");
+                                    Timber.d("handleMessage: FAKE onWaitingForDoc: true");
 
                                     mCVCallback.onWaitingForDoc(true, false);
 
@@ -168,7 +169,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                                     break;
 
                                 } else
-                                    Log.d(CLASS_NAME, "handleMessage: is new fake " +
+                                    Timber.d("handleMessage: is new fake " +
                                             "frame");
 
 
@@ -176,7 +177,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                             mNoMoveCycles++;
 
-                            Log.d(CLASS_NAME, "is new fake: TEST");
+                            Timber.d("is new fake: TEST");
 
                             mCVCallback.onMovement(false);
 //                            Initialize the time if it is not initialized:
@@ -190,9 +191,9 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 //                            if (System.currentTimeMillis() - mLastSteadyTime > MIN_STEADY_TIME) {
 
                                 if (System.currentTimeMillis() - mLastSteadyTime > MIN_STEADY_TIME)
-                                    Log.d(CLASS_NAME, "no movement: min time passed");
+                                    Timber.d("no movement: min time passed");
                                 else
-                                    Log.d(CLASS_NAME, "no movement: min cycle num passed");
+                                    Timber.d("no movement: min cycle num passed");
 
                                 mLastSteadyTime = NO_TIME_SET;
                                 createProcessor(mat, ImageProcessor.ProcessorType.DUPLICATE);
@@ -207,7 +208,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                         case MESSAGE_DUPLICATE_FOUND:
 
-                            Log.d(CLASS_NAME, "handleMessage: onWaitingForDoc: true");
+                            Timber.d("handleMessage: onWaitingForDoc: true");
 
                             mCVCallback.onWaitingForDoc(true, false);
 
@@ -219,7 +220,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                         case MESSAGE_NO_DUPLICATE_FOUND:
 
-                            Log.d(CLASS_NAME, "handleMessage: onWaitingForDoc: false");
+                            Timber.d("handleMessage: onWaitingForDoc: false");
 
 //                            In case we are in aggressive auto focus mode, wait for focus and after
 //                            focus is found start the page detection:
@@ -236,7 +237,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                         case MESSAGE_PAGE_DETECTED:
 
-                            Log.d(CLASS_NAME, "handleMessage: onPageSegmented");
+                            Timber.d("handleMessage: onPageSegmented");
 
                             Bundle pageBundle = inputMessage.getData();
                             DkPolyRect[] polyRects = (DkPolyRect[]) pageBundle.getParcelableArray(KEY_POLY_RECT);
@@ -250,13 +251,13 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                                 //                        Start the verification task:
                                 if (mCVResult.getCVState() == CVResult.DOCUMENT_STATE_OK) {
-                                    Log.d(CLASS_NAME, "handleMessage: starting verification");
+                                    Timber.d("handleMessage: starting verification");
                                     ChangeDetector.getInstance().initVerifyDetector(mat);
                                     mCheckState = CHANGE_TASK_CHECK_VERIFY_FRAME;
                                 }
                                 //                        Start the change task:
                                 else {
-                                    Log.d(CLASS_NAME, "handleMessage: starting check movement");
+                                    Timber.d("handleMessage: starting check movement");
                                     mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                                 }
 
@@ -270,7 +271,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                         case MESSAGE_FOCUS_MEASURED:
 
-                            Log.d(CLASS_NAME, "handleMessage: onFocusMeasured");
+                            Timber.d("handleMessage: onFocusMeasured");
 
                             Bundle focusBundle = inputMessage.getData();
                             Patch[] patches = (Patch[]) focusBundle.getParcelableArray(KEY_FOCUS);
@@ -278,13 +279,13 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
 //                        Start the verification task:
                             if (mCVResult.getCVState() == CVResult.DOCUMENT_STATE_OK) {
-                                Log.d(CLASS_NAME, "handleMessage: starting verification");
+                                Timber.d("handleMessage: starting verification");
                                 ChangeDetector.getInstance().initVerifyDetector(mat);
                                 mCheckState = CHANGE_TASK_CHECK_VERIFY_FRAME;
                             }
                             //                        Start the change task:
                             else {
-                                Log.d(CLASS_NAME, "handleMessage: starting check movement");
+                                Timber.d("handleMessage: starting check movement");
                                 mCheckState = CHANGE_TASK_CHECK_MOVEMENT;
                             }
 
@@ -298,7 +299,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                             //                        The last frame received is different than the one on which the image
                             //                        processing was done.
-                            Log.d(CLASS_NAME, "handleMessage: unverified frame");
+                            Timber.d("handleMessage: unverified frame");
 
                             mCVCallback.onMovement(true);
                             releaseMat(mat);
@@ -312,7 +313,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                             //                        The last frame received is the same as the one on which the image
                             //                        processing was done.
-                            Log.d(CLASS_NAME, "handleMessage: verified frame");
+                            Timber.d("handleMessage: verified frame");
 
                             ChangeDetector.getInstance().initDetectors(mat);
 
@@ -334,7 +335,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                         case MESSAGE_PAGE_DETECTED:
 
-                            Log.d(CLASS_NAME, "handleMessage: onPageSegmented");
+                            Timber.d("handleMessage: onPageSegmented");
 
                             Bundle pageBundle = inputMessage.getData();
                             DkPolyRect[] polyRects = (DkPolyRect[]) pageBundle.getParcelableArray(KEY_POLY_RECT);
@@ -354,7 +355,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
                         case MESSAGE_FOCUS_MEASURED:
 
-                            Log.d(CLASS_NAME, "handleMessage: onFocusMeasured");
+                            Timber.d("handleMessage: onFocusMeasured");
 
                             Bundle focusBundle = inputMessage.getData();
                             Patch[] patches = (Patch[]) focusBundle.getParcelableArray(KEY_FOCUS);
@@ -379,7 +380,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
     private void releaseMat(Mat mat) {
         mat.release();
-        Log.d(CLASS_NAME, "releaseMat: released mat");
+        Timber.d("releaseMat: released mat");
     }
 
     private void processNextFrame() {
@@ -417,7 +418,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
 
     public void receiveFrame(byte[] pixels, int frameWidth, int frameHeight) {
 
-        Log.d(CLASS_NAME, "receiveFrame: mProcessFrame: " + mProcessFrame + " mIsPaused: " + mIsPaused);
+        Timber.d("receiveFrame: mProcessFrame: " + mProcessFrame + " mIsPaused: " + mIsPaused);
 
 //        Check if a thread is running or if we should wait in order to lower CPU usage:
         if (mProcessFrame && !mIsPaused) {
@@ -436,7 +437,7 @@ public class IPManager implements ImageProcessor.ImageProcessorCallback {
                 mProcessFrame = false;
                 Mat mat = byte2Mat(pixels, frameWidth, frameHeight);
 
-                Log.d(CLASS_NAME, "receiveFrame: allocated mat");
+                Timber.d("receiveFrame: allocated mat");
 
                 //            Remember the last time we received a frame:
                 mLastFrameReceivedTime = System.currentTimeMillis();

@@ -20,6 +20,7 @@
     <dimen name="crop_detail_outer_width">35dp</dimen>
     <dimen name="crop_detail_offset">70dp</dimen>
     <dimen name="document_preview_corner_radius">10dp</dimen>
+    <dimen name="crop_view_exclusion_offset">100dp</dimen>
 
     <dimen name="page_live_preview_stroke_width">4dp</dimen>
     <dimen name="page_gallery_stroke_width">2.5dp</dimen>
@@ -33,5 +34,17 @@
     <dimen name="login_margin">50dp</dimen>
     <dimen name="login_spinner_size">100dp</dimen>
     <dimen name="sync_footer_height">80dp</dimen>
+
+    <!-- basic margin offset for item_model_result !-->
+    <dimen name="item_model_result_margin">4dp</dimen>
+    <!-- initial size for item_model_result (width and height are equal) !-->
+    <dimen name="item_model_result_size">200dp</dimen>
+    <!-- a possible range buffer for the default item size which gets dynamically adapted to get the best fit size !-->
+    <dimen name="item_model_result_buffer">40dp</dimen>
+    <!-- the granularity step size for the dynamically adapted size !-->
+    <dimen name="item_model_result_size_step">1dp</dimen>
+
+    <dimen name="images_padding">3dp</dimen>
+    <dimen name="images_selected_margin">-30dp</dimen>
 
 </resources>

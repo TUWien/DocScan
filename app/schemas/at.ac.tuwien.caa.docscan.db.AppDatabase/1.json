@@ -1,0 +1,328 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "b992c557a2cf15fd6225924d205a1d50",
+    "entities": [
+      {
+        "tableName": "documents",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `file_prefix` TEXT, `is_active` INTEGER NOT NULL, `lock_state` TEXT NOT NULL, `transkribus_upload_id` INTEGER, `metadata_related_upload_id` INTEGER, `metadata_author` TEXT, `metadata_authority` TEXT, `metadata_hierarchy` TEXT, `metadata_genre` TEXT, `metadata_language` TEXT, `metadata_is_project_readme_2020` INTEGER, `metadata_allow_image_publication` INTEGER, `metadata_signature` TEXT, `metadata_url` TEXT, `metadata_writer` TEXT, `metadata_description` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "filePrefix",
+            "columnName": "file_prefix",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isActive",
+            "columnName": "is_active",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lockState",
+            "columnName": "lock_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uploadId",
+            "columnName": "transkribus_upload_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.relatedUploadId",
+            "columnName": "metadata_related_upload_id",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.author",
+            "columnName": "metadata_author",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.authority",
+            "columnName": "metadata_authority",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.hierarchy",
+            "columnName": "metadata_hierarchy",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.genre",
+            "columnName": "metadata_genre",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.language",
+            "columnName": "metadata_language",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.isProjectReadme2020",
+            "columnName": "metadata_is_project_readme_2020",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.allowImagePublication",
+            "columnName": "metadata_allow_image_publication",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.signature",
+            "columnName": "metadata_signature",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.url",
+            "columnName": "metadata_url",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.writer",
+            "columnName": "metadata_writer",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metaData.description",
+            "columnName": "metadata_description",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "pages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `doc_id` TEXT NOT NULL, `file_hash` TEXT NOT NULL, `index` INTEGER NOT NULL, `rotation` INTEGER NOT NULL, `file_type` TEXT NOT NULL, `post_processing_state` TEXT NOT NULL, `export_state` TEXT NOT NULL, `legacy_absolute_file_path` TEXT, `spbtop_leftx` REAL, `spbtop_lefty` REAL, `spbtop_rightx` REAL, `spbtop_righty` REAL, `spbbottom_leftx` REAL, `spbbottom_lefty` REAL, `spbbottom_rightx` REAL, `spbbottom_righty` REAL, `uploadupload_state` TEXT NOT NULL, `uploadupload_file_name` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "docId",
+            "columnName": "doc_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileHash",
+            "columnName": "file_hash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "index",
+            "columnName": "index",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rotation",
+            "columnName": "rotation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fileType",
+            "columnName": "file_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "postProcessingState",
+            "columnName": "post_processing_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exportState",
+            "columnName": "export_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "legacyFilePath",
+            "columnName": "legacy_absolute_file_path",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "singlePageBoundary.topLeft.x",
+            "columnName": "spbtop_leftx",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "singlePageBoundary.topLeft.y",
+            "columnName": "spbtop_lefty",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "singlePageBoundary.topRight.x",
+            "columnName": "spbtop_rightx",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "singlePageBoundary.topRight.y",
+            "columnName": "spbtop_righty",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "singlePageBoundary.bottomLeft.x",
+            "columnName": "spbbottom_leftx",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "singlePageBoundary.bottomLeft.y",
+            "columnName": "spbbottom_lefty",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "singlePageBoundary.bottomRight.x",
+            "columnName": "spbbottom_rightx",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "singlePageBoundary.bottomRight.y",
+            "columnName": "spbbottom_righty",
+            "affinity": "REAL",
+            "notNull": false
+          },
+          {
+            "fieldPath": "transkribusUpload.state",
+            "columnName": "uploadupload_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transkribusUpload.uploadFileName",
+            "columnName": "uploadupload_file_name",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "users",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `first_name` TEXT NOT NULL, `last_name` TEXT NOT NULL, `user_name` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firstName",
+            "columnName": "first_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastName",
+            "columnName": "last_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userName",
+            "columnName": "user_name",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "export_files",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`file_name` TEXT NOT NULL, `is_processing` INTEGER NOT NULL, PRIMARY KEY(`file_name`))",
+        "fields": [
+          {
+            "fieldPath": "fileName",
+            "columnName": "file_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isProcessing",
+            "columnName": "is_processing",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "file_name"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b992c557a2cf15fd6225924d205a1d50')"
+    ]
+  }
+}

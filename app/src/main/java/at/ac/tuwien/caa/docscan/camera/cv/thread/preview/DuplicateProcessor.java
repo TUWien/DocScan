@@ -1,8 +1,8 @@
 package at.ac.tuwien.caa.docscan.camera.cv.thread.preview;
 
-import android.util.Log;
-
 import org.opencv.core.Mat;
+
+import timber.log.Timber;
 
 
 /**
@@ -22,7 +22,7 @@ public class DuplicateProcessor extends ImageProcessor {
     @Override
     protected void process() {
 
-        Log.d(CLASS_NAME, "process");
+        Timber.d("process");
 
         if (ChangeDetector.getInstance().isNewFrame(mMat))
             mImageProcessorCallback.handleState(IPManager.MESSAGE_NO_DUPLICATE_FOUND, mMat);

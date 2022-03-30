@@ -23,17 +23,16 @@
 
 package at.ac.tuwien.caa.docscan.camera;
 
-import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 
-import androidx.core.app.ActivityCompat;
-
 import java.util.List;
+
+import at.ac.tuwien.caa.docscan.logic.PermissionHandler;
 
 /**
  * Created by fabian on 17.01.2017.
@@ -52,8 +51,8 @@ public class LocationHandler implements LocationListener {
     private static LocationHandler mInstance = null;
 
     private Location mLocation;
-    private LocationManager mLocationManager;
-    private Context mContext;
+    private final LocationManager mLocationManager;
+    private final Context mContext;
     private long mStartTime;
 
     public static LocationHandler getInstance(Context context) {
@@ -66,63 +65,41 @@ public class LocationHandler implements LocationListener {
     }
 
     private LocationHandler(Context context) {
-
         mContext = context;
-
         mLocationManager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
+        requestLocation();
+    }
 
-        LocationListener locationListener = new LocationListener() {
-            public void onLocationChanged(Location location) {
-
-                boolean stopManager = false;
-
-                // Called when a new location is found:
-                if (isBetterLocation(location, mLocation)) {
-                    mLocation = location;
-
-                    if (mLocation.getAccuracy() <= MIN_ACCURACY)
-                        stopManager = true;
-                }
-                if (System.currentTimeMillis() - mStartTime >= MAX_TIME_RUNNING)
-                    stopManager = true;
-
-                if (stopManager && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-                    mLocationManager.removeUpdates(this);
-
-            }
-
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-            }
-
-            public void onProviderEnabled(String provider) {
-            }
-
-            public void onProviderDisabled(String provider) {
-            }
-        };
-
-        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+    @SuppressLint("MissingPermission")
+    private void requestLocation() {
+        if (PermissionHandler.INSTANCE.isLocationPermissionGiven(mContext)) {
             List<String> providers = mLocationManager.getProviders(true);
             if (providers.contains(LocationManager.NETWORK_PROVIDER))
-                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, UPDATE_TIME, UPDATE_DISTANCE, locationListener);
+                mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, UPDATE_TIME, UPDATE_DISTANCE, this);
             if (providers.contains(LocationManager.GPS_PROVIDER))
-                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, UPDATE_TIME, UPDATE_DISTANCE, locationListener);
+                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, UPDATE_TIME, UPDATE_DISTANCE, this);
 
             mStartTime = System.currentTimeMillis();
         }
-
-
     }
 
+    @SuppressLint("MissingPermission")
     public Location getLocation() {
 
         if (mLocation != null)
             return mLocation;
         else {
 //            If no location has been found yet, use the last known location as a fallback:
-            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (PermissionHandler.INSTANCE.isLocationPermissionGiven(mContext)) {
                 Location l1 = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
                 Location l2 = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+                if (l1 == null && l2 == null) {
+                    // if both locations are null, then this means that the permission is given, but
+                    // the location services were disabled.
+                    requestLocation();
+                    return null;
+                }
 
                 if (l1 != null && l2 != null) {
                     if (l1.getAccuracy() > l2.getAccuracy())
@@ -144,6 +121,21 @@ public class LocationHandler implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+
+        boolean stopManager = false;
+
+        // Called when a new location is found:
+        if (isBetterLocation(location, mLocation)) {
+            mLocation = location;
+
+            if (mLocation.getAccuracy() <= MIN_ACCURACY)
+                stopManager = true;
+        }
+        if (System.currentTimeMillis() - mStartTime >= MAX_TIME_RUNNING)
+            stopManager = true;
+
+        if (stopManager && PermissionHandler.INSTANCE.isLocationPermissionGiven(mContext))
+            mLocationManager.removeUpdates(this);
 
     }
 

@@ -2,26 +2,33 @@ ext {
     var = kotlin_version
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext.kotlin_version = '1.4.21'
+
+    ext {
+        kotlin_version = '1.6.10'
+        koin_version = "3.1.5"
+        nav_version = "2.4.1"
+    }
+
     repositories {
-        jcenter()
+        mavenCentral()
+        maven { url "https://jitpack.io" }        // necessary for XmlToJson
+
+        maven { url "https://maven.google.com" }        // necessary for Google Play Services
         google()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath 'com.android.tools.build:gradle:7.1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
 
-        // Check for v3.1.2 or higher
         classpath 'com.google.gms:google-services:4.3.10'
-
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.7.1'
-
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.8.1'
     }
 }
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
         maven { url "https://jitpack.io" }        // necessary for XmlToJson
         maven { url "https://maven.google.com" }        // necessary for Google Play Services
         google()

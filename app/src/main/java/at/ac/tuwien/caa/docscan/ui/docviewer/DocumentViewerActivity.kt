@@ -1,1620 +1,671 @@
 package at.ac.tuwien.caa.docscan.ui.docviewer
 
 import android.app.Activity
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.os.Build
+import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import androidx.annotation.IdRes
-import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.Toolbar
-import androidx.documentfile.provider.DocumentFile
-import androidx.fragment.app.FragmentTransaction
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.GravityCompat
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupWithNavController
+import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.R
-import at.ac.tuwien.caa.docscan.camera.ActionSheet
-import at.ac.tuwien.caa.docscan.camera.DocumentActionSheet
-import at.ac.tuwien.caa.docscan.camera.PdfActionSheet
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.ImageProcessor.*
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PageDetector
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PdfCreator.PDF_FILE_NAME
-import at.ac.tuwien.caa.docscan.camera.cv.thread.crop.PdfCreator.PDF_INTENT
+import at.ac.tuwien.caa.docscan.camera.SheetAction
+import at.ac.tuwien.caa.docscan.databinding.ActivityDocumentViewerBinding
+import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
+import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
+import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
+import at.ac.tuwien.caa.docscan.db.model.isUploadInProgress
+import at.ac.tuwien.caa.docscan.db.model.isUploadScheduled
+import at.ac.tuwien.caa.docscan.db.model.isUploaded
+import at.ac.tuwien.caa.docscan.extensions.SnackbarOptions
+import at.ac.tuwien.caa.docscan.extensions.getImageImportIntent
+import at.ac.tuwien.caa.docscan.extensions.shareFile
 import at.ac.tuwien.caa.docscan.logic.*
-import at.ac.tuwien.caa.docscan.rest.User
-import at.ac.tuwien.caa.docscan.sync.SyncStorage
-import at.ac.tuwien.caa.docscan.sync.SyncUtils
-import at.ac.tuwien.caa.docscan.sync.UploadService.*
-import at.ac.tuwien.caa.docscan.ui.AccountActivity
-import at.ac.tuwien.caa.docscan.ui.BaseNavigationActivity
-import at.ac.tuwien.caa.docscan.ui.NavigationDrawer
-import at.ac.tuwien.caa.docscan.ui.TranskribusLoginActivity.PARENT_ACTIVITY_NAME
+import at.ac.tuwien.caa.docscan.ui.account.TranskribusLoginActivity
+import at.ac.tuwien.caa.docscan.ui.base.BaseNavigationActivity
+import at.ac.tuwien.caa.docscan.ui.base.NavigationDrawer
+import at.ac.tuwien.caa.docscan.ui.camera.CameraActivity
+import at.ac.tuwien.caa.docscan.ui.dialog.*
 import at.ac.tuwien.caa.docscan.ui.document.CreateDocumentActivity
 import at.ac.tuwien.caa.docscan.ui.document.EditDocumentActivity
-import at.ac.tuwien.caa.docscan.ui.docviewer.ImagesFragment.Companion.DOCUMENT_NAME_KEY
-import at.ac.tuwien.caa.docscan.ui.docviewer.PdfFragment.Companion.NEW_PDFS_KEY
-import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.*
-import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import at.ac.tuwien.caa.docscan.ui.docviewer.documents.DocumentsFragmentDirections
+import at.ac.tuwien.caa.docscan.ui.docviewer.documents.selector.SelectPdfDocumentActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.opencv.android.OpenCVLoader
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.ArrayList
+import timber.log.Timber
+import java.net.HttpURLConnection
 
 /**
- * Partly based on this tutorial:
- * https://pspdfkit.com/blog/2019/using-the-bottom-navigation-view-in-android/
+ * The main document viewer which consists of multiple fragments using the navigation component.
  */
-
-class DocumentViewerActivity : BaseNavigationActivity(),
-    BottomNavigationView.OnNavigationItemSelectedListener,
-    DocumentsFragment.DocumentListener,
-    ImagesAdapter.ImagesAdapterCallback,
-    ActionSheet.SheetSelection,
-    ActionSheet.DocumentSheetSelection,
-    ActionSheet.PdfSheetSelection,
-    ActionSheet.DialogStatus,
-    SelectableToolbar.SelectableToolbarCallback, PdfFragment.PdfListener {
-
-    override fun onScrollImageLoaded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            startPostponedEnterTransition()
-        }
-    }
-
-    override fun onImageLoaded() {
-//        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-//            startPostponedEnterTransition()
-//        }
-
-    }
+class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
 
     companion object {
-        val TAG = "DocumentViewerActivity"
-        const val DOCUMENT_RENAMING_REQUEST = 0
-        const val LAUNCH_VIEWER_REQUEST = 1
-        const val DOCUMENT_PDF_SELECTION_REQUEST = 2
-        const val PERSISTABLE_URI_PERMISSION = 3
-        var selectedFileName: String? = null
+
+        private const val EXTRA_DOCUMENT_PAGE = "EXTRA_DOCUMENT_PAGE"
+        private const val EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW = "EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW"
 
         init {
 //         We need this for Android 4:
             //         We need this for Android 4:
             if (!OpenCVLoader.initDebug()) {
-                Log.d(TAG, "Error while initializing OpenCV.")
+                Timber.d("Error while initializing OpenCV.")
             } else {
                 System.loadLibrary("opencv_java3")
                 System.loadLibrary("docscan-native")
             }
         }
 
-    }
-
-    //    This is needed if the Activity is opened with an intent extra in order to show a certain
-//    fragment: ImagesFragment or PdfFragment. In this case the fragments are created and the
-//    selected item should change, without doing anything else:
-//    private var updateSelectedNavigationItem = false
-    private lateinit var messageReceiver: BroadcastReceiver
-    private lateinit var selectableToolbar: SelectableToolbar
-    private var newPdfs = mutableListOf<String?>()
-
-    override fun onPdfSheetSelected(pdf: DocumentFile, sheetAction: ActionSheet.SheetAction) {
-
-        when (sheetAction.mId) {
-            R.id.action_pdf_share_item -> {
-                sharePdf(pdf)
+        /**
+         * @return an intent which will pre-select the passed document and navigate to the images
+         * fragment and scroll to the specific element in the list.
+         */
+        fun newInstance(context: Context, documentPage: DocumentPage): Intent {
+            return Intent(context, DocumentViewerActivity::class.java).apply {
+                putExtra(EXTRA_DOCUMENT_PAGE, documentPage)
             }
-            R.id.action_pdf_delete_item -> {
-                showDeletePdfConfirmationDialog(pdf)
+        }
+
+        /**
+         * @return an intent which will open one of the bottom navigation based on the type.
+         */
+        fun newInstance(
+            context: Context,
+            documentViewerLaunchViewType: DocumentViewerLaunchViewType = DocumentViewerLaunchViewType.DOCUMENTS
+        ): Intent {
+            return Intent(context, DocumentViewerActivity::class.java).apply {
+                putExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW, documentViewerLaunchViewType)
             }
         }
     }
 
-    private fun deletePdf(pdf: DocumentFile) {
+    override val selfNavDrawerItem = NavigationDrawer.NavigationItem.DOCUMENTS
 
-        val name = pdf.name
-        pdf.delete()
+    private lateinit var binding: ActivityDocumentViewerBinding
+    private val viewModel: DocumentViewerViewModel by viewModel()
+    private val dialogViewModel: DialogViewModel by viewModel()
+    private val modalSheetViewModel: ModalActionSheetViewModel by viewModel()
 
-        supportFragmentManager.findFragmentByTag(PdfFragment.TAG)?.apply {
-            //                    Scan again for the files:
-            if ((this as PdfFragment).isVisible)
-                name?.let { removeFile(it) }
+    private val galleryResultCallback =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == Activity.RESULT_OK) {
+                it.data?.clipData?.let { clipData ->
+                    val uris = mutableListOf<Uri>()
+                    for (i in 0 until clipData.itemCount) {
+                        uris.add(clipData.getItemAt(i).uri)
+                    }
+                    viewModel.addNewImages(uris)
+                } ?: run {
+                    it.data?.data?.let { uriFile ->
+                        viewModel.addNewImages(listOf(uriFile))
+                    }
+                }
+            }
         }
 
-        showDocumentsDeletedSnackbar(name)
-    }
+    private val topLevelDestinations = setOf(
+        R.id.viewer_documents,
+        R.id.viewer_images,
+        R.id.viewer_exports
+    )
 
-    private fun sharePdf(pdf: DocumentFile) {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityDocumentViewerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.mainToolbar.mainToolbar)
 
-        val uri = pdf.uri
-        val shareIntent = Intent()
-        shareIntent.action = Intent.ACTION_SEND
-        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION) // temp permission for receiving app to read this file
-        //                    check here if the content resolver is null
-        shareIntent.setDataAndType(uri, contentResolver.getType(uri))
-        shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
-        shareIntent.type = "application/pdf"
-        startActivity(
-            Intent.createChooser(
-                shareIntent,
-                getString(R.string.page_slide_fragment_share_choose_app_text)
+        binding.viewerAddFab.setOnClickListener(this)
+        binding.viewerAddPdfFab.setOnClickListener(this)
+        binding.viewerUploadFab.setOnClickListener(this)
+        binding.viewerCameraFab.setOnClickListener(this)
+        binding.viewerGalleryFab.setOnClickListener(this)
+
+        val navController = findNavController(R.id.nav_host_fragment)
+        val appBarConfiguration = AppBarConfiguration(topLevelDestinations, binding.drawerLayout)
+        binding.mainToolbar.mainToolbar.setupWithNavController(navController, appBarConfiguration)
+        binding.bottomNav.setupWithNavController(navController)
+        binding.bottomNav.setOnItemReselectedListener {
+            // ignore the reselection, otherwise the fragment would be recreated again.
+        }
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.viewer_documents -> {
+                    viewModel.changeScreen(DocumentViewerScreen.DOCUMENTS)
+                }
+                R.id.viewer_images -> {
+                    viewModel.changeScreen(DocumentViewerScreen.IMAGES)
+                }
+                R.id.viewer_exports -> {
+                    viewModel.changeScreen(DocumentViewerScreen.PDFS)
+                }
+                else -> {
+                    // ignore
+                }
+            }
+        }
+
+        val documentPage = intent.getParcelableExtra<DocumentPage>(EXTRA_DOCUMENT_PAGE)
+        val type =
+            intent.getSerializableExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW) as? DocumentViewerLaunchViewType
+
+        // a navigation case when user wants to directly open the images fragment
+        if (documentPage != null) {
+            navController.navigate(
+                DocumentsFragmentDirections.actionViewerDocumentsToViewerImages(documentPage)
             )
-        )
-    }
-
-
-    override fun onSelectionActivated(activated: Boolean) {
-
-//        Update the toolbar:
-        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-            if ((this as ImagesFragment).isVisible) {
-                selectableToolbar.toolbar.menu.clear()
-
-                if (activated)
-                    selectableToolbar.toolbar.inflateMenu(R.menu.images_selected_menu)
-                else
-                    selectableToolbar.toolbar.inflateMenu(R.menu.images_menu)
-            }
-        }
-
-///        Update the floating action buttons:
-        if (activated) {
-            findViewById<FloatingActionButton>(R.id.viewer_camera_fab).hide()
-//            hide all other fab's as well:
-            showFAB(-1)
         } else {
-//            show the camera fab:
-            findViewById<FloatingActionButton>(R.id.viewer_camera_fab).show()
-            when (bottomNavigationView.selectedItemId) {
-                R.id.viewer_documents -> showFAB(R.id.viewer_add_fab)
-                R.id.viewer_images -> showFAB(R.id.viewer_upload_fab)
-            }
-        }
-
-    }
-
-    private fun showDeletePdfConfirmationDialog(pdf: DocumentFile) {
-
-
-//        val deleteText = resources.getString(R.string.sync_confirm_delete_prefix_text)
-
-        val deleteText = getString(R.string.viewer_delete_pdf_text)
-        val deleteTitle = "${getString(R.string.viewer_delete_pdf_title)}: ${pdf.name}?"
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-            .setTitle(deleteTitle)
-            .setMessage(deleteText)
-            .setPositiveButton(R.string.sync_confirm_delete_button_text) { dialogInterface, i ->
-                deletePdf(pdf)
-            }
-            .setNegativeButton(R.string.sync_cancel_delete_button_text, null)
-            .setCancelable(true)
-
-        // create alert dialog
-        val alertDialog = alertDialogBuilder.create()
-
-        // show it
-        alertDialog.show()
-
-    }
-
-    fun deleteImages(item: MenuItem) {
-
-        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-            deleteImagesDialog(this as ImagesFragment, this.getSelectionCount())
-        }
-    }
-
-    private fun deleteImages(imgFragment: ImagesFragment) {
-
-        val selCount = imgFragment.getSelectionCount()
-        imgFragment.deleteSelections()
-
-//        Cancel the selection mode:
-        imgFragment.deselectAllItems()
-
-        showImagesDeletedSnackbar(selCount)
-        //            Reset the toolbar to default mode:
-        selectableToolbar.resetToolbar()
-    }
-
-    private fun deleteImagesDialog(imgFragment: ImagesFragment, selCount: Int) {
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-
-        val prefix = resources.getString(R.string.gallery_confirm_delete_title_prefix)
-        val postfix =
-            if (selCount == 1)
-                resources.getString(R.string.gallery_confirm_delete_images_title_single_postfix)
-            else
-                resources.getString(R.string.gallery_confirm_delete_images_title_multiple_postfix)
-        val title = "$prefix $selCount $postfix"
-
-        // set dialog message
-        alertDialogBuilder
-            .setMessage(R.string.gallery_confirm_delete_text)
-            .setTitle(title)
-            .setPositiveButton(R.string.gallery_confirm_delete_confirm_button_text) { dialogInterface, i ->
-                deleteImages(
-                    imgFragment
-                )
-            }
-            .setNegativeButton(R.string.gallery_confirm_delete_cancel_button_text, null)
-            .setCancelable(true)
-
-        // create alert dialog
-        val alertDialog = alertDialogBuilder.create()
-
-        // show it
-        alertDialog.show()
-
-    }
-
-    fun rotateImages(item: MenuItem) {
-
-        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-            val files = (this as ImagesFragment).getSelectedFiles()
-            for (file in files)
-                rotateFile(file)
-        }
-    }
-
-
-    fun selectAll(item: MenuItem) {
-        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-            if ((this as ImagesFragment).isVisible) {
-                this.selectAll()
-            }
-        }
-    }
-
-    fun openDocumentOption(item: MenuItem) {
-
-        selectedDocument?.let { showDocumentOptions(it) }
-
-    }
-
-
-    override fun onDocumentSheetSelected(document: Document, sheetAction: ActionSheet.SheetAction) {
-
-        when (sheetAction.mId) {
-            R.id.action_document_continue_item -> {
-                DocumentStorage.getInstance(this).title = document.title
-                Helper.startCameraActivity(this)
-                finish()
-            }
-            R.id.action_document_pdf_item -> {
-                if (KtHelper.isPdfFolderPermissionGiven(this)) {
-                    if (Helper.isDocumentCropped(document))
-                        showPdfOcrDialog(document)
-                    else
-                        showNotCropDialog(document, false)
+            when (type) {
+                DocumentViewerLaunchViewType.PDFS -> {
+                    navController.navigate(DocumentsFragmentDirections.actionViewerDocumentsToViewerExports())
                 }
-                else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        showDirectoryPermissionRequiredAlert()
-                    }
+                else -> {
+                    // ignore
                 }
             }
-            R.id.action_document_edit_item -> {
-//                Start the rename activity and wait for the result:
-                val intent = Intent(applicationContext, EditDocumentActivity::class.java)
-                intent.putExtra(EditDocumentActivity.DOCUMENT_NAME_KEY, document.title)
-                startActivityForResult(intent, DOCUMENT_RENAMING_REQUEST)
-//                startActivity(intent)
-            }
-            R.id.action_document_delete_item -> showDeleteConfirmationDialog(document)
-            R.id.action_document_crop_item -> {
-                if (Helper.isDocumentCropped(document))
-                    showNoCropDialog()
-                else
-                    showCropConfirmationDialog(document)
-            }
-
-            R.id.action_document_upload_item -> {
-
-                DataLog.getInstance()
-                    .writeUploadLog(this, TAG, "onDocumentSheetSelected: ${document.title}")
-
-//                Do nothing if the document is already uploaded:
-                if (document.isUploaded)
-                    return
-
-                if (Helper.isDocumentCropped(document))
-                    uploadDocument(document)
-                else
-                    showNotCropDialog(document, true)
-            }
         }
-
+        observeViewModel()
     }
 
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-
-//            Permissions:
-            PERSISTABLE_URI_PERMISSION -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    // The result data contains a URI for the document or directory that
-                    // the user selected.
-                    data?.data?.also { uri ->
-                        KtHelper.saveDocumentDir(this, uri)
-                        showDocumentDirSetDialog()
-                    }
-                }
+    private fun observeViewModel() {
+        viewModel.selectedScreen.observe(this) { screen ->
+            // do not update the FABs since this will be already updated in this case.
+            if ((viewModel.observableNumOfSelectedElements.value ?: 0) > 0) {
+                return@observe
             }
-//            Document rename:
-            DOCUMENT_RENAMING_REQUEST, LAUNCH_VIEWER_REQUEST -> {
-                supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-                    if ((this as ImagesFragment).isVisible) {
-                        selectableToolbar.resetToolbar()
-
-                        if (resultCode == Activity.RESULT_OK) {
-//                    Did the user rename the current document?
-                            if (requestCode == DOCUMENT_RENAMING_REQUEST) {
-                                if (data!!.data != null) {
-                                    val docName = data.data!!.toString()
-                                    selectableToolbar.setTitle(docName)
-                                    updateDocumentName(docName)
-                                }
-                            }
-//                    Did the user change one or multiple images in the PageSlideActivity?
-                            else if (requestCode == LAUNCH_VIEWER_REQUEST) {
-                                if (data != null && data.getBooleanExtra(
-                                        KEY_IMAGE_CHANGED,
-                                        false
+            handleFABVisibilityForScreen(screen)
+        }
+        viewModel.observableInitDocumentOptions.observe(this, ConsumableEvent {
+            showDocumentOptions(it)
+        })
+        viewModel.observableNewExportCount.observe(this) {
+            val badge = binding.bottomNav.getOrCreateBadge(R.id.viewer_exports)
+            badge.isVisible = it > 0
+            badge.number = it
+        }
+        viewModel.observableNumOfSelectedElements.observe(this) {
+            if (it > 0) {
+                // the first argument doesn't matter in this case
+                handleFABVisibilityForScreen(DocumentViewerScreen.DOCUMENTS, false)
+            } else {
+                handleFABVisibilityForScreen(viewModel.selectedScreen.value!!)
+            }
+        }
+        viewModel.observableInitCamera.observe(this, ConsumableEvent {
+            startActivity(CameraActivity.newInstance(this, false))
+            finish()
+        })
+        viewModel.observableResourceAction.observe(this, ConsumableEvent { model ->
+            when (val resource = model.resource) {
+                is Failure -> {
+                    when (model.action) {
+                        DocumentAction.DELETE, DocumentAction.SHARE, DocumentAction.EXPORT_ZIP -> {
+                            resource.exception.handleError(this, logAsWarning = true)
+                        }
+                        DocumentAction.EXPORT -> {
+                            resource.exception.getDocScanDBError()?.let { dbError ->
+                                if (dbError.code == DBErrorCode.DOCUMENT_NOT_CROPPED) {
+                                    showDialog(
+                                        ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING,
+                                        model.arguments
                                     )
-                                ) {
-                                    redrawItems()
+                                    return@ConsumableEvent
                                 }
-
                             }
+                            resource.exception.getDocScanIOError()?.let { dbError ->
+                                if (dbError.ioErrorCode == IOErrorCode.EXPORT_GOOGLE_PLAYSTORE_NOT_INSTALLED_FOR_OCR) {
+                                    showDialog(
+                                        ADialog.DialogAction.EXPORT_WARNING_OCR_NOT_AVAILABLE,
+                                        model.arguments
+                                    )
+                                    return@ConsumableEvent
+                                } else if (dbError.ioErrorCode == IOErrorCode.EXPORT_FILE_MISSING_PERMISSION) {
+                                    binding.bottomNav.selectedItemId = R.id.viewer_exports
+                                    return@ConsumableEvent
+                                }
+                            }
+                            resource.exception.handleError(this, logAsWarning = true)
+                        }
+                        DocumentAction.CROP -> {
+                            resource.exception.handleError(this, logAsWarning = true)
+                        }
+                        DocumentAction.UPLOAD -> {
+                            resource.exception.getDocScanDBError()?.let { dbError ->
+                                when (dbError.code) {
+                                    DBErrorCode.DOCUMENT_ALREADY_UPLOADED -> {
+                                        showDialog(
+                                            ADialog.DialogAction.UPLOAD_WARNING_DOC_ALREADY_UPLOADED,
+                                            model.arguments
+                                        )
+                                        return@ConsumableEvent
+                                    }
+                                    DBErrorCode.DOCUMENT_NOT_CROPPED -> {
+                                        showDialog(
+                                            ADialog.DialogAction.UPLOAD_WARNING_IMAGE_CROP_MISSING,
+                                            model.arguments
+                                        )
+                                        return@ConsumableEvent
+                                    }
+                                    else -> {
+                                        resource.exception.handleError(this, logAsWarning = true)
+                                        return@ConsumableEvent
+                                    }
+                                }
+                            }
+                            resource.exception.getDocScanTranskribusRESTError()?.let { restError ->
+                                when (restError) {
+                                    is DocScanError.TranskribusRestError.HttpError -> {
+                                        if (restError.httpStatusCode == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                                            showDialog(ADialog.DialogAction.UPLOAD_FAILED_UNAUTHORIZED)
+                                            return@ConsumableEvent
+                                        }
+                                    }
+                                    is DocScanError.TranskribusRestError.IOError -> {
+                                        // ignore
+                                    }
+                                }
+                            }
+                            resource.exception.handleError(this, logAsWarning = true)
+                        }
+                        DocumentAction.CANCEL_UPLOAD -> {
+                            resource.exception.handleError(this, logAsWarning = true)
                         }
                     }
                 }
-            }
-            DOCUMENT_PDF_SELECTION_REQUEST -> {
-                if (resultCode == Activity.RESULT_OK && data!!.data != null) {
-                    val docName = data.data!!.toString()
-
-                    val document = DocumentStorage.getInstance(this).getDocument(docName)
-
-//                    Check if the pdf fragment is shown:
-//                    if (supportFragmentManager.findFragmentByTag(PdfFragment.TAG) == null)
-//                        openPDFFragment()
-//                    bottomNavigationView.selectedItemId = R.id.viewer_pdfs
-                    openPDFsView()
-                    selectBottomNavigationViewMenuItem(R.id.viewer_pdfs)
-                    showFAB(R.id.viewer_add_pdf_fab)
-                    toolbar.title = getText(R.string.document_navigation_pdfs)
-
-                    if (Helper.isDocumentCropped(document))
-                        showPdfOcrDialog(document)
-                    else
-                        showNotCropDialog(document, false)
+                is Success<*> -> {
+                    if (model.action == DocumentAction.SHARE) {
+                        model.resource.applyOnSuccess { any ->
+                            @Suppress("UNCHECKED_CAST")
+                            (any as? List<Uri>?)?.let { uris ->
+                                shareFile(this, PageFileType.JPEG, uris)
+                            }
+                        }
+                        return@ConsumableEvent
+                    }
+                    if (!model.action.showSuccessMessage) {
+                        return@ConsumableEvent
+                    }
+                    val name = when (model.action) {
+                        DocumentAction.DELETE, DocumentAction.CROP, DocumentAction.SHARE, DocumentAction.CANCEL_UPLOAD -> ""
+                        DocumentAction.EXPORT, DocumentAction.EXPORT_ZIP -> getString(R.string.operation_export)
+                        DocumentAction.UPLOAD -> getString(R.string.operation_upload)
+                    }
+                    singleSnackbar(
+                        binding.syncCoordinatorlayout,
+                        SnackbarOptions(
+                            String.format(
+                                getString(R.string.viewer_document_operation_success),
+                                name
+                            ),
+                            Snackbar.LENGTH_LONG
+                        )
+                    )
                 }
             }
+        })
 
-        }
-
-
-    }
-
-
-    private fun uploadDocument(document: Document) {
-
-        DataLog.getInstance().writeUploadLog(this, TAG, "uploadDocument: ${document.title}")
-
-//        First check if user is online
-        if (!Helper.isOnline(this)) {
-            showOfflineDialog()
-            return
-        }
-//        Check if the user is logged in:
-        if (User.getInstance().isLoggedIn)
-            startUpload(document)
-        else
-            showNotLoggedInDialog()
-
-    }
-
-    private fun showNotLoggedInDialog() {
-
-        val dialogTitle = "${getString(R.string.viewer_not_logged_in_title)}"
-        val dialogText = "${getString(R.string.sync_not_logged_in_text)}"
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder
-            .setTitle(dialogTitle)
-            .setMessage(dialogText)
-            .setPositiveButton(R.string.dialog_yes_text) { _, _ ->
-                run {
-                    val intent = Intent(applicationContext, AccountActivity::class.java)
-                    intent.putExtra(PARENT_ACTIVITY_NAME, this.javaClass.name)
-                    startActivity(intent)
+        viewModel.observableResourceConfirmation.observe(this, ConsumableEvent { model ->
+            when (model.action) {
+                DocumentAction.DELETE -> {
+                    showDialog(
+                        ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT.with(
+                            customTitle = "${getString(R.string.sync_confirm_delete_title)} " + model.documentWithPages.document.title,
+                            arguments = model.arguments
+                        )
+                    )
+                }
+                DocumentAction.EXPORT -> {
+                    showDialog(
+                        ADialog.DialogAction.CONFIRM_OCR_SCAN.with(
+                            customTitle = "${getString(R.string.gallery_confirm_ocr_title)} " + model.documentWithPages.document.title,
+                            arguments = model.arguments
+                        )
+                    )
+                }
+                DocumentAction.CROP -> {
+                    showDialog(
+                        ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION.with(
+                            customTitle = "${getString(R.string.viewer_crop_confirm_title)} " + model.documentWithPages.document.title,
+                            arguments = model.arguments
+                        )
+                    )
+                }
+                DocumentAction.UPLOAD -> {
+                    showDialog(
+                        ADialog.DialogAction.CONFIRM_UPLOAD.with(
+                            arguments = model.arguments
+                        )
+                    )
+                }
+                DocumentAction.CANCEL_UPLOAD -> {
+                    showDialog(
+                        ADialog.DialogAction.CONFIRM_CANCEL_UPLOAD.with(
+                            arguments = model.arguments
+                        )
+                    )
+                }
+                DocumentAction.SHARE, DocumentAction.EXPORT_ZIP -> {
+                    // These options do not need any confirmation
                 }
             }
-            .setNegativeButton(R.string.dialog_cancel_text, null)
-            .setCancelable(true)
-        alertDialogBuilder.create().show()
+        })
 
-    }
-
-    private fun startUpload(document: Document) {
-
-        if (document != null) {
-            DataLog.getInstance().writeUploadLog(this, TAG, "startUpload document: $document")
-            DataLog.getInstance()
-                .writeUploadLog(this, TAG, "startUpload document: ${document.title}")
-        }
-
-        var dirs = ArrayList<String>()
-        dirs.add(document.title)
-        startUpload(dirs)
-
-        showUploadStartedSnackbar()
-
-        //        DocumentsFragment might be null, hence use apply:
-        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-            //            This is necessary to change the upload state icon of the document:
-            (this as DocumentsFragment).reloadDocuments()
-        }
-    }
-
-    /**
-     * Shows a snackbar indicating that the upload started.
-     */
-    private fun showUploadStartedSnackbar() {
-
-        val snackbarText = "${getString(R.string.sync_snackbar_upload_started)}"
-        val s = Snackbar.make(
-            findViewById(R.id.sync_coordinatorlayout),
-            snackbarText,
-            Snackbar.LENGTH_LONG
-        )
-        s.show()
-
-    }
-
-    private fun showOfflineDialog() {
-
-        val dialogTitle = "${getString(R.string.viewer_offline_title)}"
-        val dialogText = "${getString(R.string.viewer_offline_text)}"
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder
-            .setTitle(dialogTitle)
-            .setMessage(dialogText)
-            .setPositiveButton(R.string.dialog_ok_text, null)
-            .setCancelable(true)
-        alertDialogBuilder.create().show()
-
-    }
-
-
-    /**
-     * This method creates simply a CollectionsRequest in order to find the ID of the DocScan Transkribus
-     * upload folder.
-     */
-    private fun startUpload(uploadDirs: java.util.ArrayList<String>) {
-
-        DataLog.getInstance().writeUploadLog(this, TAG, "startUpload: $uploadDirs")
-
-        SyncStorage.getInstance(this).addUploadDirs(this, uploadDirs)
-        SyncUtils.startSyncJob(this, false)
-
+        dialogViewModel.observableDialogAction.observe(this, ConsumableEvent { result ->
+            when (result.dialogAction) {
+                ADialog.DialogAction.CONFIRM_DOCUMENT_CROP_OPERATION -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.CROP,
+                            result.arguments.appendIsConfirmed(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.CONFIRM_DELETE_DOCUMENT -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.DELETE,
+                            result.arguments.appendIsConfirmed(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.CONFIRM_OCR_SCAN -> {
+                    when (result.pressedAction) {
+                        DialogButton.POSITIVE -> {
+                            viewModel.applyActionFor(
+                                DocumentAction.EXPORT,
+                                result.arguments.appendIsConfirmed(true).appendUseOCR(true)
+                            )
+                        }
+                        DialogButton.NEGATIVE -> {
+                            viewModel.applyActionFor(
+                                DocumentAction.EXPORT,
+                                result.arguments.appendIsConfirmed(true).appendUseOCR(false)
+                            )
+                        }
+                        DialogButton.NEUTRAL, DialogButton.DISMISS -> {
+                            // ignore
+                        }
+                    }
+                }
+                ADialog.DialogAction.CONFIRM_UPLOAD -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.UPLOAD,
+                            result.arguments.appendIsConfirmed(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.CONFIRM_CANCEL_UPLOAD -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.CANCEL_UPLOAD,
+                            result.arguments.appendIsConfirmed(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.UPLOAD_WARNING_DOC_ALREADY_UPLOADED -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.UPLOAD,
+                            result.arguments.appendSkipAlreadyUploadedRestriction(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.EXPORT_WARNING_IMAGE_CROP_MISSING -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.EXPORT,
+                            result.arguments.appendSkipCropRestriction(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.UPLOAD_WARNING_IMAGE_CROP_MISSING -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.UPLOAD,
+                            result.arguments.appendSkipCropRestriction(true)
+                        )
+                    }
+                }
+                ADialog.DialogAction.EXPORT_WARNING_OCR_NOT_AVAILABLE -> {
+                    if (result.isPositive()) {
+                        viewModel.applyActionFor(
+                            DocumentAction.EXPORT,
+                            result.arguments.appendUseOCR(false)
+                        )
+                    }
+                }
+                ADialog.DialogAction.UPLOAD_FAILED_UNAUTHORIZED -> {
+                    if (result.isPositive()) {
+                        startActivity(TranskribusLoginActivity.newInstance(this))
+                    }
+                }
+                else -> {
+                    // ignore
+                }
+            }
+        })
+        modalSheetViewModel.observableSheetAction.observe(this, ConsumableEvent { result ->
+            when (result.pressedSheetAction.id) {
+                SheetActionId.CONTINUE_IMAGING.id -> {
+                    result.arguments.extractDocWithPages()?.let { doc ->
+                        viewModel.startImagingWith(doc.document.id)
+                    } ?: kotlin.run {
+                        // Check if this is ok to call
+                        viewModel.startImagingWith(null)
+                    }
+                }
+                SheetActionId.EXPORT_AS_ZIP.id -> {
+                    viewModel.applyActionFor(DocumentAction.EXPORT_ZIP, result.arguments)
+                }
+                SheetActionId.EXPORT.id -> {
+                    viewModel.applyActionFor(DocumentAction.EXPORT, result.arguments)
+                }
+                SheetActionId.EDIT.id -> {
+                    result.arguments.extractDocWithPages()?.let { doc ->
+                        startActivity(
+                            EditDocumentActivity.newInstance(
+                                this,
+                                document = doc.document
+                            )
+                        )
+                    }
+                }
+                SheetActionId.DELETE.id -> {
+                    viewModel.applyActionFor(DocumentAction.DELETE, result.arguments)
+                }
+                SheetActionId.CROP.id -> {
+                    viewModel.applyActionFor(DocumentAction.CROP, result.arguments)
+                }
+                SheetActionId.UPLOAD.id -> {
+                    viewModel.applyActionFor(DocumentAction.UPLOAD, result.arguments)
+                }
+                SheetActionId.CANCEL_UPLOAD.id -> {
+                    viewModel.applyActionFor(DocumentAction.CANCEL_UPLOAD, result.arguments)
+                }
+                SheetActionId.SHARE.id -> {
+                    viewModel.applyActionFor(DocumentAction.SHARE, result.arguments)
+                }
+            }
+        })
     }
 
     override fun onBackPressed() {
-
-        when (bottomNavigationView.selectedItemId) {
-
+        // close the drawer first if it's opened
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.close()
+            return
+        }
+        when (binding.bottomNav.selectedItemId) {
 //            Open the CameraActivity:
-            R.id.viewer_documents -> Helper.startCameraActivity(this)
+            R.id.viewer_documents -> {
+                super.onBackPressed()
+            }
 //            Open the DocumentsFragment:
-            R.id.viewer_pdfs -> bottomNavigationView.selectedItemId = R.id.viewer_documents
+            R.id.viewer_exports -> binding.bottomNav.selectedItemId = R.id.viewer_documents
 //            Special case for ImagesFragment:
             R.id.viewer_images -> {
-                supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-                    //                If there are currently some files selected, just deselect them:
-                    if ((this as ImagesFragment).isVisible && this.getSelectionCount() > 0) {
-                        this.deselectAllItems()
-                        this.redrawItems()
-                        selectableToolbar.resetToolbar()
-                    }
-//                Otherwise open the DocumentFragment
-                    else
-                        bottomNavigationView.selectedItemId = R.id.viewer_documents
-                }
+                binding.bottomNav.selectedItemId = R.id.viewer_documents
             }
         }
-
-
     }
-
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
         when (item.itemId) {
             android.R.id.home -> {
-//                The user pressed the exit icon in the toolbar:
-                if (selectableToolbar.isSelectMode) {
-                    selectableToolbar.resetToolbar()
-
-                    supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-                        if ((this as ImagesFragment).isVisible) {
-                            this.deselectAllItems()
-                            //        We need to redraw the check boxes:
-                            this.redrawItems()
-                        }
-                    }
-                }
-//                The user pressed the navigation icon: Show the navigation drawer in this case:
-                else
-                    mNavigationDrawer.showNavigation()
+                binding.drawerLayout.openDrawer(GravityCompat.START)
             }
-
         }
-
-        return true
-
+        return super.onOptionsItemSelected(item)
     }
 
-    private fun showNotCropDialog(
-        document: Document,
-        upload: Boolean,
-        extendedInfo: Boolean = false
-    ) {
+    private fun handleFABVisibilityForScreen(screen: DocumentViewerScreen, force: Boolean? = null) {
+        setFABVisibility(
+            binding.viewerGalleryFab,
+            force ?: BuildConfig.DEBUG && screen == DocumentViewerScreen.IMAGES
+        )
+        setFABVisibility(
+            binding.viewerAddFab,
+            force ?: screen == DocumentViewerScreen.DOCUMENTS
+        )
+        setFABVisibility(
+            binding.viewerAddPdfFab,
+            force ?: screen == DocumentViewerScreen.PDFS
+        )
+        setFABVisibility(
+            binding.viewerUploadFab,
+            force ?: screen == DocumentViewerScreen.IMAGES
+        )
+        setFABVisibility(
+            binding.viewerCameraFab,
+            force ?: true
+        )
+    }
 
-        val proceed =
-            if (upload) getString(R.string.viewer_not_cropped_upload)
-            else getString(R.string.viewer_not_cropped_pdf)
+    private fun setFABVisibility(fab: FloatingActionButton, isVisible: Boolean) {
+        if (isVisible) {
+            fab.show()
+        } else {
+            fab.hide()
+        }
+    }
 
-        val text: String
-        if (extendedInfo)
-            text = getString(R.string.viewer_images_fragment_not_cropped_confirm_text)
-        else
-            text = getString(R.string.viewer_not_cropped_confirm_text)
-
-//        val text = getString(R.string.viewer_not_cropped_confirm_text)
-        val cropText = "$text $proceed?"
-        val cropTitle = "${getString(R.string.viewer_not_cropped_confirm_title)}"
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder
-            .setTitle(cropTitle)
-            .setMessage(cropText)
-            .setPositiveButton(R.string.dialog_yes_text) { _, _ ->
-                run {
-                    if (upload)
-                        uploadDocument(document)
-                    else
-                        showOCRAlertDialog(document)
-                }
+    override fun onClick(p0: View) {
+        when (p0.id) {
+            R.id.viewer_add_fab -> {
+                startActivity(CreateDocumentActivity.newInstance(this, null))
             }
-            .setNegativeButton(R.string.dialog_cancel_text, null)
-        alertDialogBuilder.create().show()
-
-    }
-
-//    /**
-//     * Checks if the document contains images that have not been cropped.
-//     */
-//    private fun containsUncroppedImages(document: Document): Boolean {
-//
-//        val pageIt = document.pages.iterator()
-//        while (pageIt.hasNext()) {
-//            val file = pageIt.next().file
-//            if (!PageDetector.isCurrentlyProcessed(file.absolutePath))
-//                return true
-//        }
-//        return false
-//
-//    }
-
-    private fun showNoCropDialog() {
-
-        val cropText = getString(R.string.viewer_all_cropped_text)
-        val cropTitle = "${getString(R.string.viewer_all_cropped_title)}"
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder
-            .setTitle(cropTitle)
-            .setMessage(cropText)
-            .setPositiveButton(R.string.dialog_ok_text, null)
-            .setCancelable(true)
-        alertDialogBuilder.create().show()
-
-    }
-
-    private fun showCropConfirmationDialog(document: Document) {
-
-        val cropText = getString(R.string.viewer_crop_confirm_text)
-        val cropTitle = "${getString(R.string.viewer_crop_confirm_title)}: ${document.title}?"
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder
-            .setTitle(cropTitle)
-            .setMessage(cropText)
-            .setPositiveButton(R.string.dialog_yes_text) { dialogInterface, i ->
-                cropDocument(document)
-            }
-            .setNegativeButton(R.string.dialog_cancel_text, null)
-            .setCancelable(true)
-        alertDialogBuilder.create().show()
-
-    }
-
-    private fun cropDocument(document: Document) {
-
-        //        Update the UI:
-        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-            (this as ImagesFragment).showCropStart()
-        }
-
-        val pageIt = document.pages.iterator()
-        while (pageIt.hasNext()) {
-            val file = pageIt.next().file
-//            Just crop it if it is not already cropped:
-            if (!PageDetector.isCropped(file.absolutePath))
-                mapFile(file)
-        }
-
-    }
-
-//    Delete functionality
-
-    private fun showDeleteConfirmationDialog(document: Document) {
-
-
-//        val deleteText = resources.getString(R.string.sync_confirm_delete_prefix_text)
-
-        val deleteText = getString(R.string.sync_confirm_delete_doc_prefix_text)
-        val deleteTitle = "${getString(R.string.sync_confirm_delete_title)}: ${document.title}?"
-
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-            .setTitle(deleteTitle)
-            .setMessage(deleteText)
-            .setPositiveButton(R.string.sync_confirm_delete_button_text) { dialogInterface, i ->
-                deleteDocument(
-                    document
+            R.id.viewer_add_pdf_fab -> {
+                startActivity(
+                    Intent(
+                        applicationContext,
+                        SelectPdfDocumentActivity::class.java
+                    )
                 )
             }
-            .setNegativeButton(R.string.sync_cancel_delete_button_text, null)
-            .setCancelable(true)
-
-        // create alert dialog
-        val alertDialog = alertDialogBuilder.create()
-
-        // show it
-        alertDialog.show()
-
-    }
-
-    private fun deleteDocument(document: Document) {
-
-        if (document == selectedDocument)
-            selectedDocument = null
-
-//        Update the UI:
-
-//        Remove the document from the list:
-        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-            if ((this as DocumentsFragment).isVisible) {
-                //                update the ui:
-                deleteDocument(document)
-                showDocumentsDeletedSnackbar(document.title)
+            R.id.viewer_upload_fab -> {
+                viewModel.uploadSelectedDocument()
+            }
+            R.id.viewer_camera_fab -> {
+                viewModel.startImagingWith()
+            }
+            R.id.viewer_gallery_fab -> {
+                galleryResultCallback.launch(getImageImportIntent())
             }
         }
-
-//        Close the ImagesFragment, if the request was called within it:
-        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-            if ((this as ImagesFragment).isVisible)
-                bottomNavigationView.selectedItemId = R.id.viewer_documents
-        }
-
-//                update the documents:
-        DocumentStorage.getInstance(this).documents.remove(document)
-        document.deleteImages()
-        DocumentStorage.saveJSON(this)
-
-        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-            if ((this as DocumentsFragment).isVisible) {
-//                update the ui:
-                checkEmptyDocuments()
-            }
-        }
-
     }
 
-    /**
-     * Shows a snackbar indicating that images have been deleted.
-     */
-    private fun showImagesDeletedSnackbar(count: Int) {
+    private fun showDocumentOptions(document: DocumentWithPages) {
 
-        val postfix = if (count == 1) "${getString(R.string.sync_snackbar_file_deleted_postfix)}"
-        else "${getString(R.string.sync_snackbar_files_deleted_postfix)}"
-        val snackbarText =
-            "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $count $postfix"
-        val s = Snackbar.make(
-            findViewById(R.id.sync_coordinatorlayout),
-            snackbarText,
-            Snackbar.LENGTH_LONG
-        )
-        s.show()
-
-    }
-
-
-    /**
-     * Shows a snackbar indicating that documents have been deleted.
-     */
-    private fun showDocumentsDeletedSnackbar(title: String?) {
-
-        val snackbarText = "${getString(R.string.sync_snackbar_files_deleted_prefix)}: $title"
-        val s = Snackbar.make(
-            findViewById(R.id.sync_coordinatorlayout),
-            snackbarText,
-            Snackbar.LENGTH_LONG
-        )
-        s.show()
-
-    }
-
-    private fun showPdfCreatedSnackbar(title: String) {
-
-        val snackbarText = "${getString(R.string.viewer_pdf_created_snackbar_text)}: $title"
-        val s = Snackbar.make(
-            findViewById(R.id.sync_coordinatorlayout),
-            snackbarText,
-            Snackbar.LENGTH_LONG
-        )
-        s.show()
-
-    }
-
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun grantPdfDirAccess() {
-
-        val intent = KtHelper.getOpenDocumentDirIntent(this)
-        startActivityForResult(intent, PERSISTABLE_URI_PERMISSION)
-
-    }
-
-    @RequiresApi(Build.VERSION_CODES.N)
-    private fun showDirectoryPermissionRequiredAlert() {
-
-        val title = getString(R.string.viewer_document_dir_permission_title)
-        val text = getString(R.string.viewer_document_dir_permission_text)
-
-//        val text = getString(R.string.pdf_fragment_persisted_permission_text)
-//        val title = getString(R.string.pdf_fragment_persisted_permission_title)
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-            .setTitle(title)
-            .setMessage(text)
-            .setPositiveButton(R.string.dialog_ok_text) { _, _ ->
-                grantPdfDirAccess()
-            }
-            .setNegativeButton(R.string.dialog_cancel_text, null)
-            .setCancelable(true)
-        alertDialogBuilder.create().show()
-
-    }
-
-    //    OCR functionality
-    fun showPdfOcrDialog(document: Document) {
-
-        //        Check if the play services are installed first:
-        if (!Helper.checkPlayServices(this))
-            showNoPlayServicesDialog(document)
-        else
-            showOCRAlertDialog(document)
-
-    }
-
-    private fun showNoPlayServicesDialog(document: Document) {
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-
-        // set dialog message
-        alertDialogBuilder
-            .setTitle(R.string.gallery_confirm_no_ocr_available_title)
-            .setPositiveButton(R.string.dialog_yes_text) { dialog, which ->
-                createPdf(document, false)
-//                    deselectListViewItems()
-            }
-            .setNegativeButton(R.string.dialog_no_text) { dialogInterface, i -> }
-            .setCancelable(true)
-            .setMessage(R.string.gallery_confirm_no_ocr_available_text)
-
-        alertDialogBuilder.create().show()
-
-    }
-
-    private fun showDocumentDirSetDialog() {
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-
-        // set dialog message
-        alertDialogBuilder
-            .setTitle(R.string.viewer_document_dir_set_title)
-            .setPositiveButton(R.string.dialog_ok_text) { _, _ ->            }
-            .setCancelable(true)
-            .setMessage(R.string.viewer_document_dir_set_text)
-
-        alertDialogBuilder.create().show()
-
-    }
-
-
-    private fun createPdf(document: Document, withOCR: Boolean) {
-
-        if (withOCR)
-            createPdfWithOCR(document)
-        else
-            createPdf(document)
-
-    }
-
-    private fun showOCRAlertDialog(document: Document) {
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        // set dialog message
-        alertDialogBuilder
-            .setTitle(R.string.gallery_confirm_ocr_title)
-            .setPositiveButton(R.string.dialog_yes_text) { dialog, which ->
-                createPdf(document, true)
-//                    deselectListViewItems()
-            }
-            .setNegativeButton(R.string.dialog_no_text) { dialogInterface, i ->
-                createPdf(document, false)
-//                    deselectListViewItems()
-            }
-            .setCancelable(true)
-            .setMessage(R.string.gallery_confirm_ocr_text)
-
-        val alertDialog = alertDialogBuilder.create()
-        alertDialog.setButton(
-            AlertDialog.BUTTON_NEUTRAL, getString(R.string.dialog_cancel_text)
-        ) { dialog, which -> alertDialog.cancel() }
-        alertDialog.show()
-
-    }
-
-
-    override fun onSheetSelected(sheetAction: ActionSheet.SheetAction) {
-
-    }
-
-    override fun onShown() {
-    }
-
-    override fun onDismiss() {
-    }
-
-    fun startCamera(view: View) {
-
-        Helper.startCameraActivity(this)
-        finish()
-
-    }
-
-    fun newDocument(view: View) {
-
-        startActivity(Intent(applicationContext, CreateDocumentActivity::class.java))
-
-    }
-
-    fun uploadFABPressed(view: View) {
-
-//        selectedDocument?.title?.let { showDocumentOptions(selectedDocument!!) }
-
-        selectedDocument?.let {
-            when {
-                it.isUploaded -> showDocumentUploadedDialog()
-                Helper.isDocumentCropped(it) -> uploadDocument(it)
-                else -> showNotCropDialog(it, true, true)
-            }
-
-        }
-
-    }
-
-    private fun showDocumentUploadedDialog() {
-
-        val dialogText = getString(R.string.viewer_document_uploaded_text)
-        val dialogTitle = getString(R.string.viewer_document_uploaded_title)
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder
-            .setTitle(dialogTitle)
-            .setMessage(dialogText)
-            .setPositiveButton(R.string.dialog_ok_text, null)
-        alertDialogBuilder.create().show()
-
-
-    }
-
-    fun newPDF(view: View) {
-
-        val intent = Intent(applicationContext, SelectPdfDocumentActivity::class.java)
-        startActivityForResult(intent, DOCUMENT_PDF_SELECTION_REQUEST)
-
-    }
-
-    override fun onDocumentOptions(document: Document) {
-
-        showDocumentOptions(document)
-
-    }
-
-    override fun getSelfNavDrawerItem(): NavigationDrawer.NavigationItemEnum {
-        return NavigationDrawer.NavigationItemEnum.DOCUMENTS
-    }
-
-    private fun showPdfOptions(file: DocumentFile) {
-
-        val sheetActions = ArrayList<ActionSheet.SheetAction>()
-
+        val sheetActions = ArrayList<SheetAction>()
         sheetActions.add(
-            ActionSheet.SheetAction(
-                R.id.action_pdf_share_item,
-                getString(R.string.action_pdf_share),
-                R.drawable.ic_share_black_24dp
-            )
-        )
-
-        sheetActions.add(
-            ActionSheet.SheetAction(
-                R.id.action_pdf_delete_item,
-                getString(R.string.action_document_delete_document),
-                R.drawable.ic_delete_black_24dp
-            )
-        )
-
-        val actionSheet = PdfActionSheet(file, sheetActions, this, this)
-        supportFragmentManager.beginTransaction().add(actionSheet, "TAG").commit()
-
-    }
-
-    private fun showDocumentOptions(document: Document) {
-
-        val sheetActions = ArrayList<ActionSheet.SheetAction>()
-        sheetActions.add(
-            ActionSheet.SheetAction(
-                R.id.action_document_continue_item,
+            SheetAction(
+                SheetActionId.CONTINUE_IMAGING.id,
                 getString(R.string.action_document_continue_document),
                 R.drawable.ic_add_a_photo_black_24dp
             )
         )
         sheetActions.add(
-            ActionSheet.SheetAction(
-                R.id.action_document_edit_item,
+            SheetAction(
+                SheetActionId.EDIT.id,
                 getString(R.string.action_document_edit_document),
                 R.drawable.ic_edit_black_24dp
             )
         )
 //        This options are just available if the document contains at least one image:
-        if (!document.pages.isEmpty()) {
+        if (document.pages.isNotEmpty()) {
             sheetActions.add(
-                ActionSheet.SheetAction(
-                    R.id.action_document_crop_item,
+                SheetAction(
+                    SheetActionId.CROP.id,
                     getString(R.string.action_document_crop_title),
                     R.drawable.ic_transform_black_24dp
                 )
             )
+            val sheetActionUpload = when {
+                document.isUploaded() -> {
+                    SheetAction(
+                        SheetActionId.UPLOAD.id,
+                        getString(R.string.action_document_upload_document),
+                        R.drawable.ic_cloud_upload_black_24dp
+                    )
+                }
+                document.isUploadInProgress() || document.isUploadScheduled() -> {
+                    SheetAction(
+                        SheetActionId.CANCEL_UPLOAD.id,
+                        getString(R.string.action_document_cancel_upload_document),
+                        R.drawable.ic_cloud_off_black_24dp
+                    )
+                }
+                else -> {
+                    SheetAction(
+                        SheetActionId.UPLOAD.id,
+                        getString(R.string.action_document_upload_document),
+                        R.drawable.ic_baseline_cloud_upload_24
+                    )
+                }
+            }
+            sheetActions.add(sheetActionUpload)
             sheetActions.add(
-                ActionSheet.SheetAction(
-                    R.id.action_document_pdf_item,
+                SheetAction(
+                    SheetActionId.EXPORT.id,
                     getString(R.string.action_document_pdf_title),
                     R.drawable.ic_baseline_picture_as_pdf_24px
                 )
             )
-            if (!document.isUploaded)
-                sheetActions.add(
-                    ActionSheet.SheetAction(
-                        R.id.action_document_upload_item,
-                        getString(R.string.action_document_upload_document),
-                        R.drawable.ic_cloud_upload_black_24dp
-                    )
+            sheetActions.add(
+                SheetAction(
+                    SheetActionId.EXPORT_AS_ZIP.id,
+                    getString(R.string.action_document_zip_title),
+                    R.drawable.ic_baseline_file_present_black_24
                 )
-            else
-                sheetActions.add(
-                    ActionSheet.SheetAction(
-                        R.id.action_document_upload_item,
-                        getString(R.string.action_document_upload_document),
-                        R.drawable.ic_cloud_upload_gray_24dp
-                    )
-                )
+            )
         }
         sheetActions.add(
-            ActionSheet.SheetAction(
-                R.id.action_document_delete_item,
+            SheetAction(
+                SheetActionId.DELETE.id,
                 getString(R.string.action_document_delete_document),
                 R.drawable.ic_delete_black_24dp
             )
         )
 
-        val actionSheet = DocumentActionSheet(document, sheetActions, this, this)
-        supportFragmentManager.beginTransaction().add(actionSheet, "TAG").commit()
-
-    }
-
-    /**
-     * Displays the number of selected items if it is larger than zero in the toolbar. Otherwise
-     * shows the default toolbar title.
-     */
-    override fun onSelectionChange(selectionCount: Int) {
-
-        selectableToolbar.update(selectionCount)
-
-    }
-
-    private var selectedDocument: Document? = null
-
-    override fun onDocumentOpened(document: Document) {
-        selectedDocument = document
-//        updateSelectedNavigationItem = false
-//        Opens the ImagesFragment:
-        bottomNavigationView.selectedItemId = R.id.viewer_images
-
-    }
-
-    private lateinit var bottomNavigationView: BottomNavigationView
-
-    /**
-     * Shows the new floating action button and hides any previous fab. If newFABID is -1 all fab's
-     * are hidden except for the camera fab.
-     */
-    private fun showFAB(newFABID: Int) {
-
-        var newFAB: FloatingActionButton? = null
-        if (newFABID != -1)
-            newFAB = findViewById(newFABID)
-
-        if (newFABID == R.id.viewer_add_fab || newFABID == -1) {
-            hideFab(R.id.viewer_add_pdf_fab)
-            hideFab(R.id.viewer_upload_fab)
-        }
-        if (newFABID == R.id.viewer_add_pdf_fab || newFABID == -1) {
-            hideFab(R.id.viewer_add_fab)
-            hideFab(R.id.viewer_upload_fab)
-        }
-
-        if (newFABID == R.id.viewer_upload_fab || newFABID == -1) {
-            hideFab(R.id.viewer_add_fab)
-            hideFab(R.id.viewer_add_pdf_fab)
-        }
-//        Show the button if it is assigned:
-        newFAB?.show()
-
-    }
-
-    private fun hideFab(id: Int) {
-        val fab: FloatingActionButton = findViewById(id)
-        if (fab.visibility == View.VISIBLE)
-            fab.hide()
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_document_viewer)
-
-        bottomNavigationView = findViewById(R.id.viewer_navigation)
-        bottomNavigationView.setOnNavigationItemSelectedListener(this)
-
-        initToolbar()
-
-        val isPdfIntent = intent.getBooleanExtra(PDF_INTENT, false)
-        val isGalleryIntent = intent.getBooleanExtra(KEY_OPEN_GALLERY, false)
-        val isUploadIntent = intent.getBooleanExtra(KEY_UPLOAD_INTENT, false)
-//        val isGalleryIntent = false
-
-//        Did the user click on the pdf notification?
-        if (isPdfIntent) {
-
-
-            val pdfName = intent.getStringExtra(PDF_FILE_NAME)
-            newPdfs.add(pdfName)
-
-            val arguments = Bundle().apply {
-                putStringArrayList(NEW_PDFS_KEY, newPdfs as java.util.ArrayList<String>?)
-            }
-            val pdfFragment = PdfFragment.newInstance(arguments)
-
-            supportFragmentManager.beginTransaction().replace(
-                R.id.viewer_fragment_layout,
-                pdfFragment, PdfFragment.TAG
-            ).commit()
-//            selectNavigationItem(R.id.viewer_pdfs)
-
-            toolbar.title = getText(R.string.document_navigation_pdfs)
-            showFAB(R.id.viewer_add_pdf_fab)
-
-        } else if (isGalleryIntent) {
-            intent.putExtra(KEY_OPEN_GALLERY, false)
-
-            val fileName = intent.getStringExtra(KEY_FILE_NAME)
-            val documentName = intent.getStringExtra(KEY_DOCUMENT_NAME)
-            val document = DocumentStorage.getInstance(this).getDocument(documentName)
-
-            openImagesFragmentFromIntent(document, fileName)
-//            openImagesFragment(document, fileName)
-//            selectNavigationItem(R.id.viewer_images)
-//            bottomNavigationView.selectedItemId = R.id.viewer_images
-        } else if (isUploadIntent) {
-            openDocumentsView()
-            showFAB(R.id.viewer_add_fab)
-            toolbar.title = getText(R.string.document_navigation_documents)
-        }
-//        Open the DocumentsFragment first / as default view:
-        else {
-//            Just open the document view if no other fragment is already shown:
-            if (supportFragmentManager.findFragmentByTag(ImagesFragment.TAG) == null &&
-                supportFragmentManager.findFragmentByTag(PdfFragment.TAG) == null
+        if (document.pages.isNotEmpty()) {
+            sheetActions.add(
+                SheetAction(
+                    SheetActionId.SHARE.id,
+                    getString(R.string.action_share),
+                    R.drawable.ic_share_black_24dp
+                )
             )
-                openDocumentsView()
-//            val documentsFragment = DocumentsFragment.newInstance()
-//            documentsFragment.scrollToActiveDocument()
-//            supportFragmentManager.beginTransaction().replace(R.id.viewer_fragment_layout,
-//                    documentsFragment, DocumentsFragment.TAG).commit()
-//            selectNavigationItem(R.id.viewer_documents)
-
-//            getItemIdOfActiveFragment()
         }
 
+        SheetModel(sheetActions, Bundle().appendDocWithPages(document)).show(supportFragmentManager)
     }
-
-    override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
-
-//        Do nothing in case the item is already selected:
-        if (bottomNavigationView.selectedItemId == menuItem.itemId)
-            return false
-
-
-        return openNavigationView(menuItem.itemId)
-
-    }
-
-    private fun openNavigationView(@IdRes itemId: Int): Boolean {
-
-        //        Clear the toolbar menu:
-        selectableToolbar.resetToolbar()
-        toolbar.menu.clear()
-
-        when (itemId) {
-            R.id.viewer_documents -> openDocumentsView()
-            R.id.viewer_images -> openImagesView()
-            R.id.viewer_pdfs -> openPDFsView()
-//            This should not happen:
-            else -> return false
-        }
-
-        //        Expand the AppBarLayout without any animation
-        findViewById<AppBarLayout>(R.id.gallery_appbar).setExpanded(true, false)
-
-        return true
-
-    }
-
-    private fun openDocumentsView() {
-
-        val documentsFragment = DocumentsFragment.newInstance()
-
-        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-        ft.setCustomAnimations(
-            R.anim.translate_right_to_left_in,
-            R.anim.translate_right_to_left_out
-        )
-        ft.replace(
-            R.id.viewer_fragment_layout, documentsFragment,
-            DocumentsFragment.TAG
-        ).commit()
-
-        documentsFragment.scrollToActiveDocument()
-
-        showFAB(R.id.viewer_add_fab)
-
-        toolbar.title = getText(R.string.document_navigation_documents)
-
-    }
-
-    private fun openPDFsView() {
-
-//        Hide any badge if existing:
-        bottomNavigationView.removeBadge(R.id.viewer_pdfs)
-
-        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-        ft.setCustomAnimations(
-            R.anim.translate_left_to_right_in,
-            R.anim.translate_left_to_right_out
-        )
-
-        val arguments = Bundle().apply {
-            putStringArrayList(NEW_PDFS_KEY, newPdfs as java.util.ArrayList<String>?)
-        }
-        val frag = PdfFragment.newInstance(arguments)
-        ft.replace(R.id.viewer_fragment_layout, frag, PdfFragment.TAG).commit()
-        showFAB(R.id.viewer_add_pdf_fab)
-
-        toolbar.title = getText(R.string.document_navigation_pdfs)
-    }
-
-    private fun openImagesView() {
-
-//        The user just clicked images tab and did not open any document:
-        if (selectedDocument == null)
-            selectedDocument = DocumentStorage.getInstance(this).activeDocument
-
-        selectedDocument?.let { openImagesView(it) }
-
-    }
-
-
-    private fun openImagesView(document: Document) {
-
-        val imagesFragment = setupImagesFragment(document)
-
-        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-        //                The animation depends on the position of the selected item:
-        if (bottomNavigationView.selectedItemId == R.id.viewer_documents)
-            ft.setCustomAnimations(
-                R.anim.translate_left_to_right_in,
-                R.anim.translate_left_to_right_out
-            )
-        else
-            ft.setCustomAnimations(
-                R.anim.translate_right_to_left_in,
-                R.anim.translate_right_to_left_out
-            )
-
-////                Create the shared element transition:
-//        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-//            if ((this as DocumentsFragment).isVisible) {
-////          Check if the document has pages, otherwise use no shared element transition:
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && selectedDocument?.pages?.isNotEmpty()!!) {
-//                    setExitTransition(TransitionInflater.from(context).inflateTransition(android.R.transition.fade))
-//                    imagesFragment.postponeEnterTransition()
-//                    imagesFragment.sharedElementEnterTransition = TransitionInflater.from(context).inflateTransition(R.transition.image_shared_element_transition)
-//                    var imageView = getImageView(document)
-//                    ft.addSharedElement(imageView!!, imageView!!.transitionName)
-//                    ft.setReorderingAllowed(true)
-//                }
-//            }
-//        }
-
-        ft.replace(
-            R.id.viewer_fragment_layout, imagesFragment,
-            ImagesFragment.TAG
-        ).commit()
-
-    }
-
-    private fun openImagesFragmentFromIntent(document: Document, fileName: String? = null) {
-
-        selectedDocument = document
-
-        val imagesFragment = setupImagesFragment(document)
-
-//        Create the enter transition:
-        if (fileName != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                postponeEnterTransition()
-            }
-            imagesFragment.scrollToFile(fileName)
-        }
-        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-        ft.replace(
-            R.id.viewer_fragment_layout, imagesFragment,
-            ImagesFragment.TAG
-        ).commit()
-
-//        selectNavigationItem(R.id.viewer_images)
-        selectBottomNavigationViewMenuItem(R.id.viewer_images)
-
-//        setupImagesFragmentToolbar(document)
-
-    }
-
-    private fun setupImagesFragment(document: Document): ImagesFragment {
-
-        val arguments = Bundle().apply {
-            putString(DOCUMENT_NAME_KEY, document.title)
-        }
-        val imagesFragment = ImagesFragment.newInstance(arguments)
-
-//        Setup the toolbar
-        setupImagesFragmentToolbar(document)
-//        Hide any additional floating action button
-        showFAB(R.id.viewer_upload_fab)
-
-        return imagesFragment
-
-    }
-
-    private fun setupImagesFragmentToolbar(document: Document) {
-
-        //        Update the toolbar title:
-        if (document != null)
-            toolbar.setTitle(document?.title)
-        else
-            toolbar.setTitle(getString(R.string.document_navigation_images))
-    }
-
-//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-//
-//        val inflater = menuInflater
-//        inflater.inflate(R.menu.images_menu, menu)
-//
-//        return true
-//
-//    }
-
-    private fun initToolbar() {
-
-        val toolbar: Toolbar = findViewById(R.id.main_toolbar)
-        val appBarLayout: AppBarLayout = findViewById(R.id.gallery_appbar)
-
-        selectableToolbar = SelectableToolbar(this, toolbar, appBarLayout)
-        //        Enable back navigation in action bar:
-        setSupportActionBar(toolbar)
-        selectableToolbar.setTitle(getText(R.string.document_navigation_documents))
-
-    }
-
-
-    /**
-     * Selects the specified item in the bottom navigation view without triggering a callback.
-     */
-    private fun selectBottomNavigationViewMenuItem(@IdRes menuItemId: Int) {
-        bottomNavigationView.setOnNavigationItemSelectedListener(null)
-        bottomNavigationView.selectedItemId = menuItemId
-        bottomNavigationView.setOnNavigationItemSelectedListener(this)
-    }
-
-    override fun onResume() {
-
-        super.onResume()
-        // Register to receive messages:
-        messageReceiver = getReceiver()
-        val filter = IntentFilter()
-        filter.addAction(INTENT_UPLOAD_ACTION)
-        filter.addAction(INTENT_IMAGE_PROCESS_ACTION)
-        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, filter)
-
-
-//        Assure that the current fragment and the selected item are corresponding.
-//        We are using this, because the selection after resuming is not always corresponding to the
-//        fragment. It seems the behavior is different for different devices.
-        val selItemId = getItemIdOfActiveFragment()
-        if (selItemId != bottomNavigationView.selectedItemId)
-            selectBottomNavigationViewMenuItem(selItemId)
-//            openNavigationView(selItemId)
-
-//        Assure that the FAB is correct:
-        when (selItemId) {
-            R.id.viewer_pdfs -> {
-                showFAB(R.id.viewer_add_pdf_fab)
-                toolbar.title = getText(R.string.document_navigation_pdfs)
-            }
-            R.id.viewer_images -> {
-                showFAB(R.id.viewer_upload_fab)
-                selectedDocument?.let { toolbar.title = it.title }
-            }
-            R.id.viewer_documents -> {
-                showFAB(R.id.viewer_add_fab)
-                toolbar.title = getText(R.string.document_navigation_documents)
-            }
-        }
-//        Assure that the title is correct:
-
-//            selectBottomNavigationViewMenuItem(selItemId)
-
-    }
-
-    /**
-     * Returns the item id of the current and active fragment.
-     */
-    private fun getItemIdOfActiveFragment(): Int {
-
-        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.isVisible
-        return when {
-            supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG) != null -> R.id.viewer_documents
-            supportFragmentManager.findFragmentByTag(ImagesFragment.TAG) != null -> R.id.viewer_images
-            supportFragmentManager.findFragmentByTag(PdfFragment.TAG) != null -> R.id.viewer_pdfs
-            else -> -1
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(messageReceiver)
-
-    }
-
-//    override fun onStop() {
-//        super.onStop()
-////        DocumentStorage.saveJSON(this)
-//        //        if (changeRatio > 0.01) {
-//        val t1 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
-//        Crashlytics.setString(Helper.START_SAVE_JSON_CALLER, "DocumentViewerActivity::1258 $t1")
-//        DocumentStorage.saveJSON(this)
-//        val t2 = SimpleDateFormat("yyyyMMdd_HHmmssSS").format(Date())
-//        Crashlytics.setString(Helper.END_SAVE_JSON_CALLER, "DocumentViewerActivity:1260 $t2")
-//    }
-
-    private fun getReceiver(): BroadcastReceiver {
-
-        return object : BroadcastReceiver() {
-            override fun onReceive(contxt: Context?, intent: Intent?) {
-
-                when (intent?.action) {
-                    INTENT_IMAGE_PROCESS_ACTION -> {
-                        val defValue = -1
-                        val fileName = intent.getStringExtra(INTENT_FILE_NAME) + ".pdf"
-
-                        when (intent.getIntExtra(INTENT_IMAGE_PROCESS_TYPE, defValue)) {
-                            INTENT_PDF_PROCESS_FINISHED -> {
-//                                The intent is directly consumed if the PdfFragment is open:
-                                var intentConsumed = false
-                                supportFragmentManager.findFragmentByTag(PdfFragment.TAG)?.apply {
-                                    if ((this as PdfFragment).isVisible) {
-                                        this.updateFile(fileName)
-                                        intentConsumed = true
-                                    }
-                                }
-//                                If the PdfFragment is not opened remember the new PDFs:
-                                if (!intentConsumed)
-                                    newPdfs.add(fileName)
-
-                                showPdfCreatedSnackbar(File(fileName).name)
-
-                                bottomNavigationView.getOrCreateBadge(R.id.viewer_pdfs)
-                            }
-                            INTENT_IMAGE_PROCESS_FINISHED -> {
-                                updateGallery(fileName)
-                                updateDocumentList(fileName)
-                            }
-//                            INTENT_IMAGE_PROCESS_STARTED, INTENT_IMAGE_PROCESS_FINISHED -> {
-//                                updateGallery(fileName)
-//                                updateDocumentList(fileName)
-//                            }
-                        }
-                    }
-
-                    INTENT_UPLOAD_ACTION -> {
-                        if (supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG) != null) {
-                            supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-                                (this as DocumentsFragment).reloadDocuments()
-                            }
-                        } else {
-                            bottomNavigationView.selectedItemId = R.id.viewer_documents
-                        }
-
-                        when (intent.getStringExtra(UPLOAD_INTEND_TYPE)) {
-                            UPLOAD_ERROR_ID -> showUploadErrorDialog()
-                            UPLOAD_OFFLINE_ERROR_ID -> showOfflineSnackbar()
-                            UPLOAD_FINISHED_ID -> showUploadFinishedSnackbar()
-                            UPLOAD_FILE_DELETED_ERROR_ID -> showFileDeletedErrorDialog()
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Shows a snackbar indicating that the device is offline.
-     */
-    private fun showOfflineSnackbar() {
-
-        val snackbarText = resources.getString(R.string.sync_snackbar_offline_text)
-
-        Snackbar.make(
-            findViewById(R.id.sync_coordinatorlayout),
-            snackbarText, Snackbar.LENGTH_LONG
-        ).show()
-
-    }
-
-    private fun showFileDeletedErrorDialog() {
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-
-        // set dialog message
-        alertDialogBuilder
-            .setTitle(R.string.sync_file_deleted_title)
-            .setPositiveButton("OK", null)
-            .setMessage(R.string.sync_file_deleted_text)
-
-        // create alert dialog
-        val alertDialog = alertDialogBuilder.create()
-
-        // show it
-        alertDialog.show()
-
-    }
-
-
-    /**
-     * Shows a snackbar indicating that the upload process starts. We need this because we have
-     * little control of the time when the upload starts really.
-     */
-    private fun showUploadFinishedSnackbar() {
-
-        val snackbarText = resources.getString(R.string.sync_snackbar_finished_upload_text)
-
-//        closeSnackbar()
-        Snackbar.make(
-            findViewById(R.id.sync_coordinatorlayout),
-            snackbarText, Snackbar.LENGTH_LONG
-        ).show()
-
-
-    }
-
-
-    private fun showUploadErrorDialog() {
-
-        val alertDialogBuilder = AlertDialog.Builder(this)
-
-        // set dialog message
-        alertDialogBuilder
-            .setTitle(R.string.sync_error_upload_title)
-            .setPositiveButton("OK", null)
-            .setMessage(R.string.sync_error_upload_text)
-
-        // create alert dialog
-        val alertDialog = alertDialogBuilder.create()
-
-        // show it
-        alertDialog.show()
-
-    }
-
-    private fun updateDocumentList(fileName: String?) {
-
-        if (fileName == null)
-            return
-
-        supportFragmentManager.findFragmentByTag(DocumentsFragment.TAG)?.apply {
-            if ((this as DocumentsFragment).isVisible) {
-                this.checkDocumentProcessStatus(File(fileName))
-            }
-        }
-
-    }
-
-    private fun updateGallery(fileName: String?) {
-
-        if (fileName == null)
-            return
-
-        supportFragmentManager.findFragmentByTag(ImagesFragment.TAG)?.apply {
-            if ((this as ImagesFragment).isVisible) {
-                this.updateGallery(fileName)
-            }
-        }
-
-    }
-
-    override fun onPdfOptions(file: DocumentFile) {
-        showPdfOptions(file)
-    }
-
-
 }

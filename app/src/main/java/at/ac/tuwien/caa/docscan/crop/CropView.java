@@ -12,12 +12,15 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
+import java.util.List;
 
 import at.ac.tuwien.caa.docscan.R;
+import timber.log.Timber;
 
 /**
  * Created by fabian on 21.11.2017.
@@ -46,7 +49,7 @@ import at.ac.tuwien.caa.docscan.R;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
+// TODO: Add a callback for the cropping points, every time they change, call the listener to inform the parent view.
 public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     private static final int TRANSPARENT = 0x00000000;
@@ -138,9 +141,9 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
     }
 
 
-    public void setPoints(ArrayList<PointF> normedPoints) {
+    public void setPoints(List<PointF> normedPoints) {
 
-        mNormedPoints = normedPoints;
+        mNormedPoints = new ArrayList(normedPoints);
 //        mCropQuad = new CropQuad(normedPoints, getBitmap().getWidth(), getBitmap().getHeight());
     }
 
@@ -299,8 +302,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         PointF imgTL = imgPoints[0];
         PointF imgBR = imgPoints[1];
 
-        Log.d(getClass().getName(), "Point imgTL " + imgTL.x + " y: " + imgTL.y);
-        Log.d(getClass().getName(), "Point imgBR " + imgBR.x + " y: " + imgBR.y);
+        Timber.d("Point imgTL " + imgTL.x + " y: " + imgTL.y);
+        Timber.d("Point imgBR " + imgBR.x + " y: " + imgBR.y);
 
         PointF offSet = getDetailOffSet(point);
 
@@ -550,7 +553,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
                 mQuadPath.lineTo(point.x, point.y);
 
             // draw the circle around the corner:
-            Log.d(CLASS_NAME, "drawQuad: point: " + point);
+            Timber.d("drawQuad: point: " + point);
             canvas.drawCircle(point.x, point.y, mCircleRadius, mCirclePaint);
 
         }
@@ -787,9 +790,11 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 //    }
 
     public ArrayList<PointF> getCropPoints() {
-
+        // it is possible that this is called too early which would result in an NPE
+        if (mCropQuad == null) {
+            return new ArrayList();
+        }
         return mapCropQuadPointsInverse();
-
     }
 
     private ArrayList<PointF> mapCropQuadPointsInverse() {
@@ -870,7 +875,8 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     }
 
-    private Bitmap getBitmap() {
+    @Nullable
+    public Bitmap getBitmap() {
         Bitmap bm = null;
         Drawable d = getDrawable();
         if (d != null && d instanceof BitmapDrawable) bm = ((BitmapDrawable) d).getBitmap();
