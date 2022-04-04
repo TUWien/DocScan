@@ -30,7 +30,7 @@
     <string name="dialog_btn_upload_again">Upload again</string>
     <string name="dialog_btn_cancel_upload">Cancel upload</string>
     <string name="dialog_btn_proceed">Proceed</string>
-    <string name="dialog_btn_grant_permission">Grant Permission</string>
+    <string name="dialog_btn_grant_permission">Grant permission</string>
 
     <string name="dialog_delete_image_title_singular">Delete image?</string>
     <string name="dialog_delete_image_title_plural">Delete images?</string>
@@ -79,7 +79,7 @@
     <string name="permission_location_disabled_title">Image geotagging disabled</string>
     <string name="permission_location_disabled_text">Image geotagging has been disabled due to missing location permission, you can enable it any time in the settings again!</string>
 
-    <string name="export_permission_missing">Folder Permission missing!</string>
+    <string name="export_permission_missing">Folder permission missing!</string>
     <string name="export_folder_empty">No exports in this folder\nPlease create a PDF or ZIP first</string>
     <!--CameraActivity-->
 
@@ -241,7 +241,8 @@
         Do you want to share your log file now?</string>
     <string name="share_log_button_text">OK</string>
     <string name="log_email_subject">DocScan - Log</string>
-    <string name="log_email_to">holl@cvl.tuwien.ac.at</string>
+    <string name="log_email_to_first">holl@cvl.tuwien.ac.at</string>
+    <string name="log_email_to_second">mb.docscan@mailbox.org</string>
     <string name="log_email_text">We highly appreciate your feedback! You can leave us a comment here:</string>
 
     <string name="picture_save_error_text">Unfortunately, the image was not saved. Please take care that it is captured.</string>
@@ -306,7 +307,7 @@
     <string name="license_title">Open Source Licenses</string>
 
     <!-- AboutActivity -->
-    <string name="about_heading_text">DocScan 2020</string>
+    <string name="about_heading_text">DocScan 2022</string>
     <string name="about_version_prefix_text">Version:</string>
     <string name="about_buildtime_prefix_text">Built:</string>
     <string name="about_intro_text">Show DocScan intro</string>
@@ -443,7 +444,7 @@
 
     <string name="action_document_crop_title">Crop images</string>
     <string name="action_document_upload_document">Upload</string>
-    <string name="action_document_cancel_upload_document">Cancel Upload</string>
+    <string name="action_document_cancel_upload_document">Cancel upload</string>
     <string name="action_document_pdf_title">Save as PDF</string>
     <string name="action_document_zip_title">Save as ZIP</string>
     <string name="action_document_delete_document">Delete</string>

@@ -54,7 +54,10 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
         @JvmStatic
         fun newInstance(context: Context, docId: UUID, selectedPageId: UUID?): Intent {
             return Intent(context, PageSlideActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+//                Always open a new instance, to make sure that the PageSlideActivity always shows
+//                the current selected page:
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+//                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra(EXTRA_DOCUMENT_ID, docId)
                 putExtra(EXTRA_SELECTED_PAGE_ID, selectedPageId)
             }
@@ -177,9 +180,9 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
     }
 
     private fun initButtons() {
-        if (BuildConfig.DEBUG) {
-            binding.pageViewButtons.debugSegmentation.visibility = View.VISIBLE
-        }
+//        if (BuildConfig.DEBUG) {
+//            binding.pageViewButtons.debugSegmentation.visibility = View.VISIBLE
+//        }
         binding.pageViewButtons.pageViewButtonsLayoutDeleteButton.setOnClickListener {
             showDialog(ADialog.DialogAction.CONFIRM_DELETE_PAGE)
         }
