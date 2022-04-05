@@ -75,7 +75,7 @@ val viewModelModule = module {
     viewModel { DocumentViewerViewModel(get(), get()) }
     viewModel { CreateDocumentViewModel(get()) }
     viewModel { (extras: Bundle) -> EditDocumentViewModel(extras, get()) }
-    viewModel { (extras: Bundle) -> PageSlideViewModel(extras, get(), get()) }
+    viewModel { PageSlideViewModel(get(), get()) }
     viewModel { (extras: Bundle) -> ImageViewModel(extras, get()) }
     viewModel { (extras: Bundle) -> CropViewModel(extras, get(), get(), get()) }
     viewModel { ImagesViewModel(get()) }
