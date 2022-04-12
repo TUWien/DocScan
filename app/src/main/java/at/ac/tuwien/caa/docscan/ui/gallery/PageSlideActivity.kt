@@ -9,6 +9,7 @@ import android.view.View
 import androidx.recyclerview.widget.DiffUtil
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import at.ac.tuwien.caa.docscan.BuildConfig
 import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.databinding.ActivityPageSlideBinding
 import at.ac.tuwien.caa.docscan.db.model.Page
@@ -26,12 +27,13 @@ import at.ac.tuwien.caa.docscan.ui.dialog.isPositive
 import at.ac.tuwien.caa.docscan.ui.docviewer.DocumentViewerActivity
 import at.ac.tuwien.caa.docscan.ui.segmentation.SegmentationActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 import java.util.*
 
 class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickListener {
 
     private lateinit var binding: ActivityPageSlideBinding
-    private val viewModel: PageSlideViewModel by viewModel()
+    private val viewModel: PageSlideViewModel by viewModel { parametersOf(intent.extras!!) }
     private val dialogViewModel: DialogViewModel by viewModel()
     private val adapter = PageSlideAdapter()
 
@@ -52,6 +54,10 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
         @JvmStatic
         fun newInstance(context: Context, docId: UUID, selectedPageId: UUID?): Intent {
             return Intent(context, PageSlideActivity::class.java).apply {
+//                Always open a new instance, to make sure that the PageSlideActivity always shows
+//                the current selected page:
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+//                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra(EXTRA_DOCUMENT_ID, docId)
                 putExtra(EXTRA_SELECTED_PAGE_ID, selectedPageId)
             }
@@ -75,23 +81,6 @@ class PageSlideActivity : BaseNoNavigationActivity(), PageImageView.SingleClickL
         binding.slideViewpager.adapter = adapter
         initButtons()
         observe()
-        initLoad(intent.extras)
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        initLoad(intent?.extras)
-    }
-
-    /**
-     * Initializes the loading of the requested document by extracting the ids from the [bundle].
-     */
-    private fun initLoad(bundle: Bundle?) {
-        bundle ?: return
-        val docId = bundle.getSerializable(EXTRA_DOCUMENT_ID) as UUID
-        val selectedPageId = bundle.getSerializable(EXTRA_SELECTED_PAGE_ID) as UUID?
-        viewModel.load(docId, selectedPageId)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

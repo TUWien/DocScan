@@ -1,27 +1,29 @@
 package at.ac.tuwien.caa.docscan.ui.gallery
 
 import android.net.Uri
+import android.os.Bundle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import at.ac.tuwien.caa.docscan.db.model.Page
 import at.ac.tuwien.caa.docscan.db.model.getFileName
-import at.ac.tuwien.caa.docscan.logic.Event
-import at.ac.tuwien.caa.docscan.logic.Failure
-import at.ac.tuwien.caa.docscan.logic.FileHandler
-import at.ac.tuwien.caa.docscan.logic.Success
+import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.DocumentRepository
+import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.Companion.EXTRA_DOCUMENT_ID
+import at.ac.tuwien.caa.docscan.ui.gallery.PageSlideActivity.Companion.EXTRA_SELECTED_PAGE_ID
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
 
 class PageSlideViewModel(
+    extras: Bundle,
     val repository: DocumentRepository,
     val fileHandler: FileHandler
 ) : ViewModel() {
 
+    private val docId = extras.getSerializable(EXTRA_DOCUMENT_ID) as UUID
+    private val selectedPageId = extras.getSerializable(EXTRA_SELECTED_PAGE_ID) as UUID?
     val observablePages = MutableLiveData<Pair<List<Page>, Int>>()
     val observableInitCrop = MutableLiveData<Event<Page>>()
     val observableInitRetake = MutableLiveData<Event<Pair<UUID, UUID>>>()
@@ -31,12 +33,13 @@ class PageSlideViewModel(
     val observableError = MutableLiveData<Event<Throwable>>()
 
     private var scrollToSpecificPage = true
-    private var collectorJob: Job? = null
 
-    fun load(docId: UUID, selectedPageId: UUID?) {
-        // cancel previous collector jobs
-        collectorJob?.cancel()
-        collectorJob = viewModelScope.launch {
+    init {
+        load()
+    }
+
+    private fun load() {
+        viewModelScope.launch {
             // TODO: this should be just distinct by the page ids and the number, since changes to the state of the file doesn't matter at this place.
             repository.getDocumentWithPagesAsFlow(docId).collectLatest {
                 it ?: return@collectLatest
@@ -89,7 +92,7 @@ class PageSlideViewModel(
                     observableError.postValue(Event(result.exception))
                 }
                 is Success -> {
-                    observableInitRetake.postValue(Event(Pair(result.data.docId, result.data.id)))
+                    observableInitRetake.postValue(Event(Pair(docId, result.data.id)))
                 }
             }
         }
