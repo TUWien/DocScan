@@ -156,7 +156,7 @@ class NotificationHandler(val context: Context) {
         // Create an explicit intent for an Activity in your app
         val intent = when (notificationType) {
             DocumentNotificationType.EXPORT -> {
-                DocumentViewerActivity.newInstance(context, DocumentViewerLaunchViewType.PDFS)
+                DocumentViewerActivity.newInstance(context, DocumentViewerLaunchViewType.EXPORTS)
             }
             DocumentNotificationType.UPLOAD -> {
                 DocumentViewerActivity.newInstance(context, DocumentViewerLaunchViewType.DOCUMENTS)
