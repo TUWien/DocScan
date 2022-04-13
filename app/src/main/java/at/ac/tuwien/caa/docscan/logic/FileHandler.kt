@@ -317,10 +317,18 @@ class FileHandler(private val context: Context, private val storageManager: Stor
         return isInternalSpaceAvailable(NUM_BYTES_REQUIRED_FOR_MIGRATION, getDocumentsFolder())
     }
 
+    /**
+     * @return true if [requiredBytes] are available for [targetFolder]
+     *
+     * Post-Condition: [targetFolder] is created if it does not exist.
+     * (The creation is necessary, otherwise [File.getUsableSpace] may return 0 even if the device
+     * has enough storage available.)
+     */
     private fun isInternalSpaceAvailable(
         @Suppress("SameParameterValue") requiredBytes: Long,
         targetFolder: File
     ): Boolean {
+        targetFolder.createFolderIfNecessary()
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val uuid = storageManager.getUuidForPath(targetFolder)
             val availableBytes = storageManager.getAllocatableBytes(uuid)
