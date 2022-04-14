@@ -157,18 +157,23 @@ class DocumentViewerActivity : BaseNavigationActivity(), View.OnClickListener {
         val type =
             intent.getSerializableExtra(EXTRA_DOCUMENT_VIEWER_LAUNCH_VIEW) as? DocumentViewerLaunchViewType
 
-        // a navigation case when user wants to directly open the images fragment
-        if (documentPage != null) {
-            navController.navigate(
-                DocumentsFragmentDirections.actionViewerDocumentsToViewerImages(documentPage)
-            )
-        } else {
-            when (type) {
-                DocumentViewerLaunchViewType.PDFS -> {
-                    navController.navigate(DocumentsFragmentDirections.actionViewerDocumentsToViewerExports())
-                }
-                else -> {
-                    // ignore
+        // direct navigation to images or exports
+        // the destination check is necessary, otherwise, if the current activity is re-created
+        // and another fragment than DocumentsFragment is currently shown, then the app would crash,
+        // since the direction actions would be wrong for the image fragment.
+        if (navController.currentDestination?.id == R.id.viewer_documents) {
+            if (documentPage != null) {
+                navController.navigate(
+                    DocumentsFragmentDirections.actionViewerDocumentsToViewerImages(documentPage)
+                )
+            } else {
+                when (type) {
+                    DocumentViewerLaunchViewType.EXPORTS -> {
+                        navController.navigate(DocumentsFragmentDirections.actionViewerDocumentsToViewerExports())
+                    }
+                    else -> {
+                        // ignore
+                    }
                 }
             }
         }
