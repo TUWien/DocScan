@@ -376,7 +376,7 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    fun createDocument(document: Document): Resource<Document> {
+    suspend fun createDocument(document: Document): Resource<Document> {
         Timber.i("create document")
         return createOrUpdateDocument(document)
     }
@@ -390,7 +390,7 @@ class DocumentRepository(
     }
 
     @WorkerThread
-    private fun createOrUpdateDocument(document: Document): Resource<Document> {
+    private suspend fun createOrUpdateDocument(document: Document): Resource<Document> {
         val docsByNewTitle = documentDao.getDocumentsByTitle(documentTitle = document.title)
         return if (docsByNewTitle.isEmpty() || (docsByNewTitle.size == 1 && docsByNewTitle[0].id == document.id)) {
             db.runInTransaction {

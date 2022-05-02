@@ -64,6 +64,14 @@ class StartActivity : BaseActivity() {
         viewModel.checkStartUpConditions(Bundle())
     }
 
+    override fun onBackPressed() {
+        if (viewModel.loadingProgress.value == true) {
+            showDialog(ADialog.DialogAction.MIGRATION_ABORT)
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     private fun observe() {
         viewModel.loadingProgress.observe(this) {
             binding.progress.visibility = if (it) View.VISIBLE else View.GONE
@@ -144,6 +152,12 @@ class StartActivity : BaseActivity() {
                         finish()
                     } else if (dialogResult.isNegative()) {
                         logViewModel.shareLog()
+                    }
+                }
+                ADialog.DialogAction.MIGRATION_ABORT -> {
+                    if (dialogResult.isPositive()) {
+                        Timber.w("User aborted migration!")
+                        finish()
                     }
                 }
                 else -> {

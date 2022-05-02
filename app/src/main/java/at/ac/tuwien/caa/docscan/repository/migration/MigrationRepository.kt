@@ -66,6 +66,7 @@ class MigrationRepository(
      */
     suspend fun migrateJsonDataToDatabase(context: Context): Resource<Unit> {
         if (!preferencesHandler.shouldPerformDBMigration) {
+            Timber.i("Migration is skipped, since it already has been performed!")
             return Success(Unit)
         }
 
@@ -84,6 +85,7 @@ class MigrationRepository(
         // if the document storage file does not exist, then we cannot do anything about it.
         if (!documentStorageFile.safeExists()) {
             preferencesHandler.shouldPerformDBMigration = false
+            Timber.e("Migration is not performed, since documentstorage.json is missing!")
             return Success(Unit)
         }
 
@@ -128,6 +130,7 @@ class MigrationRepository(
                     } else {
                         null
                     }
+                    Timber.i("Creating new doc with id $newDocId")
                     Document(
                         newDocId,
                         title,
@@ -251,6 +254,7 @@ class MigrationRepository(
         File(context.filesDir, "syncinfo.txt").safelyDelete()
         File(context.filesDir, "crop_log.txt").safelyDelete()
 
+        Timber.e("Migration has successfully ended!")
         return Success(Unit)
     }
 
