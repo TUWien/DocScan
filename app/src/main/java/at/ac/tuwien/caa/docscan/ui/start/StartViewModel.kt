@@ -8,9 +8,9 @@ import at.ac.tuwien.caa.docscan.DocScanApp
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.repository.migration.MigrationRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 class StartViewModel(
     private val app: DocScanApp,
@@ -21,9 +21,15 @@ class StartViewModel(
     val destination: MutableLiveData<Event<Pair<StartDestination, Bundle>>> = MutableLiveData()
     val migrationError: MutableLiveData<Event<Throwable>> = MutableLiveData()
 
+    private var migrationJob: Job? = null
+
     fun checkStartUpConditions(arguments: Bundle) {
         loadingProgress.postValue(true)
-        viewModelScope.launch(Dispatchers.IO) job@{
+        if (migrationJob?.isActive == true) {
+            Timber.w("Skip checkStartUpConditions as it is already active!")
+            return
+        }
+        migrationJob = viewModelScope.launch(Dispatchers.IO) job@{
 
             // permissions are only necessary if the migration is performed
             if (preferencesHandler.shouldPerformDBMigration && arePermissionsMissing()) {
@@ -40,11 +46,7 @@ class StartViewModel(
                     proceed(StartDestination.MIGRATION_DIALOG_2, arguments)
                     return@job
                 }
-                // the migration shouldn't be cancellable at all
-                val result = withContext(NonCancellable) {
-                    migrationRepository.migrateJsonDataToDatabase(app)
-                }
-                when (result) {
+                when (val result = migrationRepository.migrateJsonDataToDatabase(app)) {
                     is Failure -> {
                         migrationError.postValue(Event(result.exception))
                         return@job

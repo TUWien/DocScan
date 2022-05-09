@@ -217,6 +217,12 @@ class ADialog : AppCompatDialogFragment() {
             negativeBtn = R.string.dialog_cancel_text,
             isCancellable = false
         ),
+        MIGRATION_ABORT(
+            R.string.abort_migration_title,
+            R.string.abort_migration_text,
+            positiveBtn = R.string.dialog_btn_abort_migration,
+            negativeBtn = R.string.dialog_cancel_text
+        ),
         RATIONALE_MIGRATION_PERMISSION(
             R.string.start_permission_title,
             R.string.start_permission_text,

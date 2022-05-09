@@ -22,8 +22,8 @@ android {
         applicationId "at.ac.tuwien.caa.docscan"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 167
-        versionName "1.8.0"
+        versionCode 169
+        versionName "1.8.2"
 
 //		this is used to show the build time in the AboutActivity
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
@@ -205,12 +205,12 @@ dependencies {
     implementation 'me.drakeet.support:toastcompat:1.1.0'
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
 
-    implementation 'androidx.core:core-splashscreen:1.0.0-beta01'
+    implementation 'androidx.core:core-splashscreen:1.0.0-beta02'
 
     // firebase/google related libs
-    implementation 'com.google.firebase:firebase-core:20.1.1'
-    implementation 'com.google.firebase:firebase-crashlytics:18.2.9'
-    implementation 'com.google.firebase:firebase-analytics:20.1.1'
+    implementation 'com.google.firebase:firebase-core:20.1.2'
+    implementation 'com.google.firebase:firebase-crashlytics:18.2.10'
+    implementation 'com.google.firebase:firebase-analytics:20.1.2'
     // uses the "thin" variant, i.e. app size is reduced but dependencies are downloaded after app install.
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.0'
 
@@ -225,7 +225,7 @@ dependencies {
     implementation group: 'com.squareup.retrofit2', name: 'retrofit', version: retrofit_version
     implementation group: 'com.squareup.retrofit2', name: 'converter-gson', version: retrofit_version
     // okhttp client
-    def okhttp_version = "4.9.1"
+    def okhttp_version = "4.9.3"
     implementation "com.squareup.okhttp3:okhttp:$okhttp_version"
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttp_version"
 

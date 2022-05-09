@@ -71,7 +71,7 @@ interface DocumentDao {
     fun setDocumentActive(documentId: UUID)
 
     @Query("SELECT * FROM ${Document.TABLE_NAME_DOCUMENTS} WHERE ${Document.KEY_TITLE} =:documentTitle")
-    fun getDocumentsByTitle(documentTitle: String): List<Document>
+    suspend fun getDocumentsByTitle(documentTitle: String): List<Document>
 
     @Query("UPDATE ${Document.TABLE_NAME_DOCUMENTS} SET ${Document.KEY_LOCK_STATE} = :state WHERE ${Document.KEY_ID} = :documentId")
     fun setDocumentLock(documentId: UUID, state: LockState)

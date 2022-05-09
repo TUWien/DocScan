@@ -30,6 +30,7 @@
     <string name="dialog_btn_upload_again">Upload again</string>
     <string name="dialog_btn_cancel_upload">Cancel upload</string>
     <string name="dialog_btn_proceed">Proceed</string>
+    <string name="dialog_btn_abort_migration">Abort Migration</string>
     <string name="dialog_btn_grant_permission">Grant permission</string>
 
     <string name="dialog_delete_image_title_singular">Delete image?</string>
@@ -65,10 +66,15 @@
     <string name="start_migration_dialog_2_title">Data migration</string>
     <string name="start_migration_dialog_2_text">If you proceed, then your image data will be moved from the public storage into the app\'s internal storage. The exporting features have been enhanced to export your data from the app\'s internal storage. Do you want to proceed? This action cannot be undone!</string>
 
+    <string name="abort_migration_title">Abort migration</string>
+    <string name="abort_migration_text">Do you really want to abort the migration and perform it later?</string>
+
     <string name="migration_failed_title">Migration error</string>
     <string name="migration_failed_text">An unknown error has occurred during the migration, please contact the app developer and send us your logs!</string>
     <string name="migration_failed_missing_space_text">The migration has failed, because some of your files could not have been successfully copied to the internal storage. Please ensure that your device has enough storage left and then proceed. If you\'re stuck here, you can also contact us and send us your logs.</string>
     <string name="migration_failed_neg_btn">Send logs</string>
+
+    <string name="migration_loading_text">Your data is being migrated, this might take several minutes.</string>
 
     <string name="start_permission_title">Permission required</string>
     <string name="start_permission_text">The app requires a one-time permission for the storage to perform mandatory data migrations!</string>
