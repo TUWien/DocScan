@@ -571,7 +571,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         } catch (RuntimeException e) {
             //            This can happen if the user touches the CameraPreview, while the preview is not
             //            started. In this case we do nothing.
-            Timber.e(e);
+            Timber.w("Auto focus has failed!");
         }
 
 

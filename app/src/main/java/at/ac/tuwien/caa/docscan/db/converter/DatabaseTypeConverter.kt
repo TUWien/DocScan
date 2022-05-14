@@ -1,5 +1,6 @@
 package at.ac.tuwien.caa.docscan.db.converter
 
+import android.net.Uri
 import androidx.room.TypeConverter
 import at.ac.tuwien.caa.docscan.db.model.exif.Rotation
 import at.ac.tuwien.caa.docscan.db.model.state.ExportState
@@ -17,6 +18,18 @@ class DatabaseTypeConverter {
 
     @TypeConverter
     fun fromUUIDtoString(value: UUID): String {
+        return value.toString()
+    }
+
+    @TypeConverter
+    fun fromStringToUri(value: String?): Uri? {
+        value ?: return null
+        return Uri.parse(value)
+    }
+
+    @TypeConverter
+    fun fromUriToString(value: Uri?): String? {
+        value ?: return null
         return value.toString()
     }
 

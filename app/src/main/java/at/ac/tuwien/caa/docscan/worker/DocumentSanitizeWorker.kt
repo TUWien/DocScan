@@ -38,6 +38,9 @@ class DocumentSanitizeWorker(
         const val TAG = "document_sanitizer"
         const val ID = "c5c52f8b-f238-484e-b988-1f635d06fa4e"
 
+        /**
+         * Spawns a new worker job that executes [DocumentRepository.sanitizeDocuments].
+         */
         fun spawnSanitize(workManager: WorkManager) {
             val sanitizeDocumentsRequest =
                 OneTimeWorkRequest.Builder(DocumentSanitizeWorker::class.java)

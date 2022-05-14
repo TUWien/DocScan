@@ -79,7 +79,7 @@ class ExportRepository(
         }
 
         // inform that exported documents have changed
-        exportFileRepository.insertOrUpdateFile(output.second, true)
+        exportFileRepository.insertOrUpdateFile(documentId, output.second, output.first, true)
         DocumentContractNotifier.observableDocumentContract.postValue(Event(Unit))
 
         return withContext(Dispatchers.IO) {
@@ -126,13 +126,21 @@ class ExportRepository(
 
             when (exportResource) {
                 is Failure -> {
-                    Timber.e( exportResource.exception, "Saving export file has failed!")
+                    Timber.e(exportResource.exception, "Export for doc $documentId has failed!")
                     exportFileRepository.removeFile(output.second)
                     return@withContext Failure(exportResource.exception)
                 }
                 is Success -> {
+                    Timber.i("Export for doc $documentId has succeeded")
                     // inform that exported documents have changed
-                    exportFileRepository.insertOrUpdateFile(output.second, false)
+                    exportFileRepository.insertOrUpdateFile(
+                        documentId,
+                        output.second,
+                        // as soon as the processing has finished, we don't need to keep the fileUri
+                        // anymore as this is only kept to clean-up interrupted exports.
+                        null,
+                        false
+                    )
                     DocumentContractNotifier.observableDocumentContract.postValue(Event(Unit))
                     return@withContext Success(output.second)
                 }
@@ -182,6 +190,8 @@ class ExportRepository(
             if (isCancelled) ExportState.NONE else ExportState.DONE
         )
 
+        // inform the UI in case that the export has been cancelled
+        DocumentContractNotifier.observableDocumentContract.postValue(Event(Unit))
         tryToUnlockDoc(documentId, null)
     }
 }

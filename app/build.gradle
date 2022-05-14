@@ -22,8 +22,8 @@ android {
         applicationId "at.ac.tuwien.caa.docscan"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 169
-        versionName "1.8.2"
+        versionCode 171
+        versionName "1.8.4"
 
 //		this is used to show the build time in the AboutActivity
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"

@@ -77,11 +77,13 @@ private fun Document.fileNamePrefix(pageNumber: Int): String {
     filePrefix?.let {
         if (it.isNotEmpty()) {
             return Helper.getFileNamePrefix(
-                Helper.getFileTimeStamp(), it, pageNumber)
+                Helper.getFileTimeStamp(), it, pageNumber
+            )
         }
     }
     return Helper.getFileNamePrefix(
-        Helper.getFileTimeStamp(), sanitizedTitle(), pageNumber)
+        Helper.getFileTimeStamp(), sanitizedTitle(), pageNumber
+    )
 }
 
 fun Document.edit(title: String, prefix: String?, metaData: MetaData?): Document {

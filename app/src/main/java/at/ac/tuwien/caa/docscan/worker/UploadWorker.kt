@@ -135,6 +135,7 @@ class UploadWorker(
             documentId: UUID,
             allowMobileData: Boolean
         ) {
+            Timber.i("Requesting WorkManager to queue UploadWorker for docId $documentId")
             val uploadImages = OneTimeWorkRequest.Builder(UploadWorker::class.java)
                 // please note, to not add multiple tags (see getCurrentWorkerJobStates for more info)
                 .addTag(UPLOAD_TAG)
@@ -155,7 +156,6 @@ class UploadWorker(
                 )
                 .build()
 
-            Timber.i("Requesting WorkManager to queue UploadWorker")
             workManager.enqueueUniqueWork(
                 getWorkNameByDocId(documentId),
                 ExistingWorkPolicy.KEEP,

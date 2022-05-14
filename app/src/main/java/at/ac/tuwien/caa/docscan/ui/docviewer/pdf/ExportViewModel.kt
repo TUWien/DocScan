@@ -39,8 +39,6 @@ class ExportViewModel(
                     folderUri.toString()
                 )
             ) {
-                val systemMilliSeconds = System.currentTimeMillis()
-                Timber.d("DOCUMENTS")
                 val list = mutableListOf<ExportList>()
 //            val header = ExportList.ExportHeader(folderUri.path ?: "Unknown path!")
                 val files = exportFileRepository.checkFileNames(
@@ -55,14 +53,12 @@ class ExportViewModel(
                             file.displayName
                         )
                     })
-                Timber.d("DOCUMENTS - ${System.currentTimeMillis() - systemMilliSeconds}")
 //            list.add(header)
                 list.addAll(files.sortedByDescending { file -> file.file.lastModified })
-                Timber.d("DOCUMENTS - ${System.currentTimeMillis() - systemMilliSeconds}")
 
                 observableExportModel.postValue(ExportModel.Success(list, scrollToTop))
             } else {
-                observableExportModel.postValue(ExportModel.MissingPermissions())
+                observableExportModel.postValue(ExportModel.MissingPermissions)
             }
         }
     }
@@ -120,7 +116,7 @@ class ExportViewModel(
 }
 
 sealed class ExportModel {
-    class MissingPermissions : ExportModel()
+    object MissingPermissions : ExportModel()
     class Success(val exportEntries: List<ExportList>, val scrollToTop: Boolean) : ExportModel()
 }
 

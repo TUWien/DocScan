@@ -90,7 +90,7 @@ val viewModelModule = module {
 }
 
 val repositoryModule = module {
-    single { DocumentRepository(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { DocumentRepository(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     single { UserRepository(get(), get(), get(), get(), get()) }
     single { UploadRepository(get(), get(), get(), get(), get()) }
     single { ExportRepository(get(), get(), get(), get(), get(), get()) }
