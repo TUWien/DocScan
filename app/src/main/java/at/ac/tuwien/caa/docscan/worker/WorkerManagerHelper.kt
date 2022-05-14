@@ -37,4 +37,8 @@ fun getCurrentWorkerJobStates(
     return docScanWorkInfos.sortedBy { docScanWorkInfo -> docScanWorkInfo.tag }
 }
 
-data class DocScanWorkInfo(val tag: String, val jobId: UUID, val workInfo: WorkInfo)
+data class DocScanWorkInfo(val tag: String, val jobId: UUID, val workInfo: WorkInfo) {
+    override fun toString(): String {
+        return "DocScanWorkInfo{tag=${tag}, jobId=${jobId}, workInfo=$workInfo}}"
+    }
+}

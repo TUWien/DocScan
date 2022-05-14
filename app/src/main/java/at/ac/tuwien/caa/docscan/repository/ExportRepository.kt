@@ -16,7 +16,9 @@ import at.ac.tuwien.caa.docscan.extensions.createFile
 import at.ac.tuwien.caa.docscan.extensions.deleteFile
 import at.ac.tuwien.caa.docscan.logic.*
 import com.google.mlkit.vision.text.Text
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.*
 import kotlin.coroutines.cancellation.CancellationException
@@ -151,20 +153,17 @@ class ExportRepository(
     private suspend fun ocr(documentWithPages: DocumentWithPages): Resource<List<Text>> {
         return withContext(Dispatchers.IO) {
             val textBlocks = mutableListOf<Text>()
-            val deferredResults = mutableListOf<Deferred<Resource<Text>>>()
+            val results = mutableListOf<Resource<Text>>()
             documentWithPages.pages.forEach { page ->
                 // Only for debugging purposes
                 //delay(1000)
-                val deferredResult = async {
-                    val file = fileHandler.getFileByPage(page)
-                        ?: return@async DBErrorCode.DOCUMENT_PAGE_FILE_FOR_EXPORT_MISSING.asFailure()
-                    val result = PdfCreator.analyzeFileWithOCR(context, Uri.fromFile(file))
-                    pageDao.updateExportState(page.id, ExportState.DONE)
-                    result
-                }
-                deferredResults.add(deferredResult)
+                val file = fileHandler.getFileByPage(page)
+                    ?: return@withContext DBErrorCode.DOCUMENT_PAGE_FILE_FOR_EXPORT_MISSING.asFailure()
+                val result = PdfCreator.analyzeFileWithOCR(context, Uri.fromFile(file))
+                pageDao.updateExportState(page.id, ExportState.DONE)
+                results.add(result)
             }
-            deferredResults.awaitAll().forEach {
+            results.forEach {
                 when (it) {
                     is Failure -> {
                         return@withContext IOErrorCode.ML_KIT_OCR_ANALYSIS_FAILED.asFailure(
