@@ -14,6 +14,7 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.Text.TextBlock
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.itextpdf.text.*
 import com.itextpdf.text.pdf.BaseFont
@@ -27,10 +28,16 @@ import java.io.File
 
 object PdfCreator {
 
-    suspend fun analyzeFileWithOCR(context: Context, uri: Uri): Resource<Text> {
+    suspend fun analyzeFileWithOCR(
+        context: Context,
+        uri: Uri,
+        textRecognizer: TextRecognizer = TextRecognition.getClient(
+            TextRecognizerOptions.DEFAULT_OPTIONS
+        )
+    ): Resource<Text> {
         @Suppress("BlockingMethodInNonBlockingContext")
         val image = InputImage.fromFilePath(context, uri)
-        val task = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS).process(image)
+        val task = textRecognizer.process(image)
         return task.await()
     }
 

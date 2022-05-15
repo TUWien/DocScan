@@ -65,7 +65,7 @@ class ImageProcessorRepository(
                             IOErrorCode.SINGLE_PAGE_DETECTION_FAILED.asFailure()
                         }
                     } catch (e: Exception) {
-                        Timber.w(e,"Page detection has failed!")
+                        Timber.w(e, "Page detection has failed!")
                         IOErrorCode.SINGLE_PAGE_DETECTION_FAILED.asFailure(e)
                     }
                 }, postOperation = { pageId, result ->
@@ -99,7 +99,7 @@ class ImageProcessorRepository(
                     doc.document.id,
                     PostProcessingState.PROCESSING
                 )
-                withContext(Dispatchers.IO) {
+                withContext(Dispatchers.IO.limitedParallelism(4)) {
                     val deferredJobs = mutableListOf<Deferred<Resource<Unit>>>()
                     doc.pages.forEach { page ->
                         val deferred = async {
@@ -204,7 +204,7 @@ class ImageProcessorRepository(
         }
     }
 
-    suspend fun replacePageFileBy(
+    fun replacePageFileBy(
         pageId: UUID,
         cachedFile: File,
         rotation: Rotation,
@@ -226,12 +226,13 @@ class ImageProcessorRepository(
         )
     }
 
-    private suspend fun defaultPagePostOperation(
+    private fun defaultPagePostOperation(
         pageId: UUID,
         postProcessingState: PostProcessingState = PostProcessingState.DRAFT,
-        applyOnPage: suspend (page: Page) -> Unit = {},
+        applyOnPage: (page: Page) -> Unit = {},
     ): Resource<Unit> {
-        val page = pageDao.getPageById(pageId) ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
+        val page = pageDao.getPageByIdNonSuspendable(pageId)
+            ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
         page.postProcessingState = postProcessingState
         applyOnPage(page)
         page.computeFileHash(fileHandler)
@@ -239,8 +240,8 @@ class ImageProcessorRepository(
         return Success(Unit)
     }
 
-    private suspend fun defaultPrePageOperation(pageId: UUID): Resource<Pair<Page, File>> {
-        val page = pageDao.getPageById(pageId)
+    private fun defaultPrePageOperation(pageId: UUID): Resource<Pair<Page, File>> {
+        val page = pageDao.getPageByIdNonSuspendable(pageId)
             ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
         return when (val fileResource = fileHandler.getFileByPageResource(page)) {
             is Failure -> {
