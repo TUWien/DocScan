@@ -321,7 +321,7 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
         // draw the bitmap:
         Rect src = new Rect(Math.round(imgTL.x), Math.round(imgTL.y), Math.round(imgBR.x), Math.round(imgBR.y));
 
-        Rect dst = getDestRect(point, imgTL, imgBR, offSet);
+        Rect dst = getDestRect(point, offSet);
 
         canvas.drawBitmap(bitmap, src, dst, mPaintBitmap);
 
@@ -333,38 +333,13 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
 
     }
 
-    private Rect getDestRect(PointF viewPoint, PointF imgTL, PointF imgBR, PointF offSet) {
-
-        int bmpW = getBitmap().getWidth();
-        int bmpH = getBitmap().getHeight();
+    private Rect getDestRect(PointF viewPoint, PointF offSet) {
 
         PointF tl = new PointF(viewPoint.x - mDetailWidth + offSet.x, viewPoint.y - mDetailWidth - offSet.y);
         PointF br = new PointF(viewPoint.x + mDetailWidth + offSet.x, viewPoint.y + mDetailWidth - offSet.y);
 
-        if (imgTL.x < 0)
-            tl.x += getDetailOffSet(Math.abs(imgTL.x)); // shift the detail to the right
-        else if (imgBR.x > bmpW)
-            br.x -= getDetailOffSet(imgBR.x - bmpW); // shift the detail to the left
-        if (imgTL.y < 0)
-            tl.y += getDetailOffSet(Math.abs(imgTL.y)); // shift the detail to the bottom
-        else if (imgBR.y > bmpH)
-            br.y -= getDetailOffSet(imgBR.y - bmpH); // shift the detail to the top
-
-        Rect dst = new Rect(Math.round(tl.x), Math.round(tl.y),
+        return new Rect(Math.round(tl.x), Math.round(tl.y),
                 Math.round(br.x), Math.round(br.y));
-
-        return dst;
-
-    }
-
-    /**
-     * Calculates the length of the shift for an detail that would lay partially outside the image border.
-     *
-     * @param overlapLength
-     * @return
-     */
-    private float getDetailOffSet(float overlapLength) {
-        return overlapLength / DETAIL_IMG_WIDTH * mDetailWidth;
     }
 
     private PointF getDetailOffSet(PointF point) {
@@ -591,14 +566,9 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
     }
 
     private void onMove(MotionEvent e) {
-
-        PointF point = getPoint(e);
-
-        // Just draw updates if a point is really moved:
-        if (isInsideFrame(point)) {
-
-            if (mCropQuad.moveActivePoint(point))
-                invalidate();
+        PointF point = sanitizePoint(getPoint(e));
+        if (mCropQuad.moveActivePoint(point)) {
+            invalidate();
         }
     }
 
@@ -627,6 +597,20 @@ public class CropView extends androidx.appcompat.widget.AppCompatImageView {
             }
         }
         return false;
+    }
+
+    /**
+     * @return a sanitized point that is always in-bounds of the mFrameRect.
+     */
+    private PointF sanitizePoint(PointF point) {
+        float x, y;
+        if (point.x < mFrameRect.left) {
+            x = mFrameRect.left;
+        } else x = Math.min(point.x, mFrameRect.right);
+        if (point.y < mFrameRect.top) {
+            y = mFrameRect.top;
+        } else y = Math.min(point.y, mFrameRect.bottom);
+        return new PointF(x, y);
     }
 
     private boolean isLeftOfCenter(PointF point, int rotation) {
