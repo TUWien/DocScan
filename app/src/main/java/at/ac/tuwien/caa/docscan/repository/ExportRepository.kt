@@ -16,7 +16,9 @@ import at.ac.tuwien.caa.docscan.extensions.createFile
 import at.ac.tuwien.caa.docscan.extensions.deleteFile
 import at.ac.tuwien.caa.docscan.logic.*
 import com.google.mlkit.vision.text.Text
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.*
 import kotlin.coroutines.cancellation.CancellationException
@@ -79,7 +81,7 @@ class ExportRepository(
         }
 
         // inform that exported documents have changed
-        exportFileRepository.insertOrUpdateFile(output.second, true)
+        exportFileRepository.insertOrUpdateFile(documentId, output.second, output.first, true)
         DocumentContractNotifier.observableDocumentContract.postValue(Event(Unit))
 
         return withContext(Dispatchers.IO) {
@@ -126,13 +128,21 @@ class ExportRepository(
 
             when (exportResource) {
                 is Failure -> {
-                    Timber.e( exportResource.exception, "Saving export file has failed!")
+                    Timber.e(exportResource.exception, "Export for doc $documentId has failed!")
                     exportFileRepository.removeFile(output.second)
                     return@withContext Failure(exportResource.exception)
                 }
                 is Success -> {
+                    Timber.i("Export for doc $documentId has succeeded")
                     // inform that exported documents have changed
-                    exportFileRepository.insertOrUpdateFile(output.second, false)
+                    exportFileRepository.insertOrUpdateFile(
+                        documentId,
+                        output.second,
+                        // as soon as the processing has finished, we don't need to keep the fileUri
+                        // anymore as this is only kept to clean-up interrupted exports.
+                        null,
+                        false
+                    )
                     DocumentContractNotifier.observableDocumentContract.postValue(Event(Unit))
                     return@withContext Success(output.second)
                 }
@@ -143,20 +153,17 @@ class ExportRepository(
     private suspend fun ocr(documentWithPages: DocumentWithPages): Resource<List<Text>> {
         return withContext(Dispatchers.IO) {
             val textBlocks = mutableListOf<Text>()
-            val deferredResults = mutableListOf<Deferred<Resource<Text>>>()
+            val results = mutableListOf<Resource<Text>>()
             documentWithPages.pages.forEach { page ->
                 // Only for debugging purposes
                 //delay(1000)
-                val deferredResult = async {
-                    val file = fileHandler.getFileByPage(page)
-                        ?: return@async DBErrorCode.DOCUMENT_PAGE_FILE_FOR_EXPORT_MISSING.asFailure()
-                    val result = PdfCreator.analyzeFileWithOCR(context, Uri.fromFile(file))
-                    pageDao.updateExportState(page.id, ExportState.DONE)
-                    result
-                }
-                deferredResults.add(deferredResult)
+                val file = fileHandler.getFileByPage(page)
+                    ?: return@withContext DBErrorCode.DOCUMENT_PAGE_FILE_FOR_EXPORT_MISSING.asFailure()
+                val result = PdfCreator.analyzeFileWithOCR(context, Uri.fromFile(file))
+                pageDao.updateExportState(page.id, ExportState.DONE)
+                results.add(result)
             }
-            deferredResults.awaitAll().forEach {
+            results.forEach {
                 when (it) {
                     is Failure -> {
                         return@withContext IOErrorCode.ML_KIT_OCR_ANALYSIS_FAILED.asFailure(
@@ -182,6 +189,8 @@ class ExportRepository(
             if (isCancelled) ExportState.NONE else ExportState.DONE
         )
 
+        // inform the UI in case that the export has been cancelled
+        DocumentContractNotifier.observableDocumentContract.postValue(Event(Unit))
         tryToUnlockDoc(documentId, null)
     }
 }

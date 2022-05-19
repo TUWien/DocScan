@@ -9,6 +9,7 @@ import at.ac.tuwien.caa.docscan.R
 import at.ac.tuwien.caa.docscan.camera.ImageExifMetaData
 import at.ac.tuwien.caa.docscan.db.AppDatabase
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
+import at.ac.tuwien.caa.docscan.db.dao.ExportFileDao
 import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.*
 import at.ac.tuwien.caa.docscan.db.model.boundary.SinglePageBoundary
@@ -19,7 +20,9 @@ import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.db.model.state.LockState
 import at.ac.tuwien.caa.docscan.db.model.state.PostProcessingState
 import at.ac.tuwien.caa.docscan.db.model.state.UploadState
+import at.ac.tuwien.caa.docscan.extensions.DocumentContractNotifier
 import at.ac.tuwien.caa.docscan.extensions.checksGoogleAPIAvailability
+import at.ac.tuwien.caa.docscan.extensions.deleteFile
 import at.ac.tuwien.caa.docscan.logic.*
 import at.ac.tuwien.caa.docscan.worker.ExportWorker
 import at.ac.tuwien.caa.docscan.worker.UploadWorker
@@ -36,6 +39,7 @@ class DocumentRepository(
     private val fileHandler: FileHandler,
     private val pageDao: PageDao,
     private val documentDao: DocumentDao,
+    private val exportFileDao: ExportFileDao,
     private val db: AppDatabase,
     private val imageProcessorRepository: ImageProcessorRepository,
     private val workManager: WorkManager,
@@ -65,13 +69,24 @@ class DocumentRepository(
         return documentDao.getActiveDocumentasFlow().sortByNumber()
     }
 
+    /**
+     * Tries to sanitize documents and their states in order, basically all locked documents and
+     * pages are trying to be resolved:
+     * - Documents/Pages for which the upload has been already ongoing or scheduled, the worker job
+     * is retried again, in this case the document is not unlocked.
+     * - If the Document/Pages have been exporting previously, then the export job has been interrupted
+     * which cannot be retried, therefore, the export state is reset and possible exported files
+     * are also deleted.
+     * - If the document/pages are locked due to any other occurrence, then they are simply unlocked.
+     */
     @WorkerThread
     suspend fun sanitizeDocuments(): Resource<Unit> {
-        Timber.i("sanitize documents!")
+        Timber.i("Starting sanitizeDocuments...")
         documentDao.getAllLockedDocumentWithPages().forEach {
             if (it.document.lockState == LockState.PARTIAL_LOCK) {
                 it.pages.forEach { page ->
                     if (page.isProcessing()) {
+                        Timber.i("Page ${page.id} is reset to draft state.")
                         pageDao.updatePageProcessingState(page.id, PostProcessingState.DRAFT)
                     }
                     tryToUnlockDoc(it.document.id, page.id)
@@ -89,6 +104,29 @@ class DocumentRepository(
                         // exporting operation are usually very fast, if this should ever occur
                         // then the doc is set to not exported.
                         pageDao.updatePageExportStateForDocument(it.document.id, ExportState.NONE)
+
+                        // get all export files that are being processed for the current docId,
+                        // the docId is not unique at this place as they might be several exported
+                        // files for a single document.
+                        exportFileDao.getProcessingExportFiles(it.document.id)
+                            .forEach { exportFile ->
+                                // try to delete the file that has been associated with the export file.
+                                exportFile.fileUri?.let { documentUri ->
+                                    deleteFile(context, documentUri)
+                                }
+                                // delete the export file from the database - if the corresponding file
+                                // might still exist, then this will get correctly refreshed as soon as
+                                // the user visits the export fragment.
+                                exportFileDao.deleteExportFileByFileName(exportFile.fileName)
+
+                                // notify the UI as well to refresh in case the user quickly navigated
+                                // to the export fragments.
+                                DocumentContractNotifier.observableDocumentContract.postValue(
+                                    Event(
+                                        Unit
+                                    )
+                                )
+                            }
                         tryToUnlockDoc(it.document.id, null)
                     }
                     else -> {
@@ -97,12 +135,16 @@ class DocumentRepository(
                 }
             }
         }
+
+        // they might be still some export files around that are still in processing state
+        // this call will update them all to false.
+        exportFileDao.updatesAllProcessingStatesToFalse()
         return Success(Unit)
     }
 
     @WorkerThread
     suspend fun deletePages(pages: List<Page>): Resource<Unit> {
-        Timber.i("delete pages, n=${pages.size}")
+        Timber.i("delete pages, n=${pages.size} for doc ${pages.firstOrNull()?.docId}")
         // TODO: OPTIMIZATION: When adding/removing pages, add a generic check to adapt the page number correctly.
         pages.forEach {
             val result = performPageOperation(it.docId, it.id, operation = { _, page ->
@@ -128,6 +170,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun deletePage(page: Page?): Resource<Unit> {
+        Timber.i("Delete page ${page?.id}")
         page ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
         return deletePages(listOf(page))
     }
@@ -148,7 +191,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun removeDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
-        Timber.i("remove document")
+        Timber.i("delete doc ${documentWithPages.document.id}")
         return performDocOperation(documentWithPages.document.id, operation = { doc ->
             fileHandler.deleteEntireDocumentFolder(doc.id)
             pageDao.deletePages(documentWithPages.pages)
@@ -159,7 +202,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun shareDocument(documentId: UUID): Resource<List<Uri>> {
-        Timber.i("share document")
+        Timber.i("share doc ${documentId}")
         val doc = documentDao.getDocumentWithPages(documentId)
             ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
         when (val checkLockResult = checkLock(doc.document, null)) {
@@ -231,7 +274,7 @@ class DocumentRepository(
         skipAlreadyUploadedRestriction: Boolean = false,
         skipCropRestriction: Boolean = false
     ): Resource<Unit> {
-        Timber.i("upload document")
+        Timber.i("init upload for doc ${documentWithPages.document.id}")
         val docWithPages = documentDao.getDocumentWithPages(documentWithPages.document.id)
             ?: return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
 
@@ -301,7 +344,7 @@ class DocumentRepository(
         skipCropRestriction: Boolean = false,
         exportFormat: ExportFormat
     ): Resource<Unit> {
-        Timber.i("export document")
+        Timber.i("export doc ${documentWithPages.document.id} with format ${exportFormat.name}")
         if (!PermissionHandler.isPermissionGiven(context, preferencesHandler.exportDirectoryUri)) {
             return IOErrorCode.EXPORT_FILE_MISSING_PERMISSION.asFailure()
         }
@@ -334,7 +377,7 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun cropDocument(documentWithPages: DocumentWithPages): Resource<Unit> {
-        Timber.i("crop document")
+        Timber.i("crop doc ${documentWithPages.document.id}")
         return when (val result = lockDocForLongRunningOperation(documentWithPages.document.id)) {
             is Failure -> {
                 Failure(result.exception)
@@ -377,13 +420,13 @@ class DocumentRepository(
 
     @WorkerThread
     suspend fun createDocument(document: Document): Resource<Document> {
-        Timber.i("create document")
+        Timber.i("create doc ${document.id}")
         return createOrUpdateDocument(document)
     }
 
     @WorkerThread
     suspend fun updateDocument(document: Document): Resource<Document> {
-        Timber.i("update document")
+        Timber.i("update doc ${document.id}")
         return performDocOperation(document.id, operation = {
             createOrUpdateDocument(document)
         })
@@ -447,10 +490,10 @@ class DocumentRepository(
         fileId: UUID? = null,
         exifMetaData: ImageExifMetaData?
     ): Resource<Page> {
+        Timber.d("save new image for doc $documentId")
         val document = documentDao.getDocument(documentId) ?: kotlin.run {
             return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
         }
-        Timber.d("Starting to save new image for document: ${document.title}")
         if (document.lockState == LockState.FULL_LOCK) {
             return DBErrorCode.DOCUMENT_LOCKED.asFailure()
         }

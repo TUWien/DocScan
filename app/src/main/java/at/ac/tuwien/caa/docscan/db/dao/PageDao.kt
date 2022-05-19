@@ -24,11 +24,11 @@ interface PageDao {
     @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_ID} = :id")
     suspend fun getPageById(id: UUID): Page?
 
-    @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_LEGACY_ABSOLUTE_FILE_PATH} = :legacyFilePath AND ${Page.KEY_DOC_ID} = :docId")
-    suspend fun getPageByLegacyFilePath(docId: UUID, legacyFilePath: String): List<Page>
-
     @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_ID} = :id")
     fun getPageByIdNonSuspendable(id: UUID): Page?
+
+    @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_LEGACY_ABSOLUTE_FILE_PATH} = :legacyFilePath AND ${Page.KEY_DOC_ID} = :docId")
+    suspend fun getPageByLegacyFilePath(docId: UUID, legacyFilePath: String): List<Page>
 
     @Query("SELECT * FROM ${Page.TABLE_NAME_PAGES} WHERE ${Page.KEY_DOC_ID} = :docId")
     suspend fun getPagesByDoc(docId: UUID): List<Page>

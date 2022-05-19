@@ -1,9 +1,11 @@
 package at.ac.tuwien.caa.docscan.repository
 
+import android.net.Uri
 import at.ac.tuwien.caa.docscan.db.dao.ExportFileDao
 import at.ac.tuwien.caa.docscan.db.model.ExportFile
 import at.ac.tuwien.caa.docscan.ui.docviewer.pdf.ExportList
 import at.ac.tuwien.caa.docscan.ui.docviewer.pdf.ExportState
+import java.util.*
 
 class ExportFileRepository(
     private val exportFileDao: ExportFileDao
@@ -14,7 +16,7 @@ class ExportFileRepository(
             .filter { exportFile -> files.firstOrNull { file -> file.name == exportFile.fileName } == null }
         exportFileDao.delete(notFoundFiles)
 
-        // 2. loop through each requested file and check if it's name is in the DB.
+        // 2. loop through each requested file and check if its name is in the DB.
         files.forEach { file ->
             val exportFile = exportFileDao.getExportFileByFileName(file.name).firstOrNull()
             val exportState: ExportState = when {
@@ -33,8 +35,20 @@ class ExportFileRepository(
         return files
     }
 
-    suspend fun insertOrUpdateFile(fileName: String, isProcessing: Boolean) {
-        exportFileDao.insertExportFile(ExportFile(fileName = fileName, isProcessing = isProcessing))
+    suspend fun insertOrUpdateFile(
+        docId: UUID,
+        fileName: String,
+        fileUri: Uri?,
+        isProcessing: Boolean
+    ) {
+        exportFileDao.insertExportFile(
+            ExportFile(
+                fileName = fileName,
+                docId = docId,
+                fileUri = fileUri,
+                isProcessing = isProcessing
+            )
+        )
     }
 
     suspend fun removeAll() {

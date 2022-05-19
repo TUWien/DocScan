@@ -212,6 +212,16 @@ class NotificationHandler(val context: Context) {
         getNotificationManager(context).cancel(tag, notificationId)
     }
 
+    fun cancelAllNotificationsByChannel(channel: DocScanNotificationChannel) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getNotificationManager(context).activeNotifications.forEach { statusBarNotification ->
+                if (statusBarNotification.tag == channel.tag) {
+                    cancelNotification(statusBarNotification.tag, statusBarNotification.id)
+                }
+            }
+        }
+    }
+
     fun cancelNotificationByGroup(groupKey: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getNotificationManager(context).activeNotifications.forEach { statusBarNotification ->

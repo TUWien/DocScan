@@ -1,10 +1,7 @@
 package at.ac.tuwien.caa.docscan.db
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
+import androidx.room.*
 import at.ac.tuwien.caa.docscan.db.converter.DatabaseTypeConverter
 import at.ac.tuwien.caa.docscan.db.dao.DocumentDao
 import at.ac.tuwien.caa.docscan.db.dao.ExportFileDao
@@ -17,7 +14,11 @@ import at.ac.tuwien.caa.docscan.db.model.User
 
 @Database(
     entities = [Document::class, Page::class, User::class, ExportFile::class],
-    version = 1
+    version = 2,
+    autoMigrations = [
+        // a minor migration, where just attributes have been added for ExportFile.
+        AutoMigration(from = 1, to = 2)
+    ]
 )
 @TypeConverters(DatabaseTypeConverter::class)
 abstract class AppDatabase : RoomDatabase() {

@@ -57,7 +57,7 @@ class DocScanApp : Application() {
         // initializes notification channels
         notificationHandler.initNotificationChannels()
         // spawn the sanitizer to check potential broken states
-        DocumentSanitizeWorker.spawnSanitize(workManager)
+        DocumentSanitizeWorker.sanitizeWorkerJobs(this, notificationHandler, workManager)
         logFirstAppStart()
     }
 

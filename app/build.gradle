@@ -22,8 +22,8 @@ android {
         applicationId "at.ac.tuwien.caa.docscan"
         minSdkVersion 21
         targetSdkVersion 31
-        versionCode 169
-        versionName "1.8.2"
+        versionCode 171
+        versionName "1.8.4"
 
 //		this is used to show the build time in the AboutActivity
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
@@ -183,6 +183,7 @@ dependencies {
     implementation "io.insert-koin:koin-android:$koin_version"
     // a compat lib only used for injecting viewModels in a java class
     implementation "io.insert-koin:koin-android-compat:$koin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1"
 
     // fragment/navigation ktx related libs
     implementation 'androidx.fragment:fragment-ktx:1.4.1'
