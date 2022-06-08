@@ -7,6 +7,7 @@ import at.ac.tuwien.caa.docscan.db.dao.PageDao
 import at.ac.tuwien.caa.docscan.db.model.DocumentWithPages
 import at.ac.tuwien.caa.docscan.db.model.error.DBErrorCode
 import at.ac.tuwien.caa.docscan.db.model.error.IOErrorCode
+import at.ac.tuwien.caa.docscan.db.model.sortByNumber
 import at.ac.tuwien.caa.docscan.db.model.state.ExportState
 import at.ac.tuwien.caa.docscan.export.PdfCreator
 import at.ac.tuwien.caa.docscan.export.ZipCreator
@@ -53,8 +54,8 @@ class ExportRepository(
         exportFormat: ExportFormat
     ): Resource<String> {
         Timber.d("Starting export for $documentId")
-        // 1. Retrieve the current document with its pages.
-        val documentWithPages = documentDao.getDocumentWithPages(documentId) ?: kotlin.run {
+        // 1. Retrieve the current document with its pages sorted by the index number.
+        val documentWithPages = documentDao.getDocumentWithPages(documentId)?.sortByNumber() ?: kotlin.run {
             return DBErrorCode.ENTRY_NOT_AVAILABLE.asFailure()
         }
         val exportDirectory = preferencesHandler.exportDirectoryUri?.asURI() ?: kotlin.run {
